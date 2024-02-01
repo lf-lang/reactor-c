@@ -2112,7 +2112,7 @@ int32_t start_rti_server() {
     return success;
 }
 
-void net_wait_for_federates(netdrv_t *netdrv) {
+void wait_for_federates(netdrv_t *netdrv) {
     // Wait for connections from federates and create a thread for each.
     net_lf_connect_to_federates(netdrv);
 
@@ -2138,54 +2138,9 @@ void net_wait_for_federates(netdrv_t *netdrv) {
 
     rti_remote->all_federates_exited = true;
 
-    close_netdrvs(netdrv, rti_remote->clock_netdrv);
-}
-
-void wait_for_federates(int socket_descriptor) {
-    // Wait for connections from federates and create a thread for each.
-    lf_connect_to_federates(socket_descriptor);
-
-    // All federates have connected.
-    lf_print("RTI: All expected federates have connected. Starting execution.");
-
-    // The socket server will not continue to accept connections after all the federates
-    // have joined.
-    // In case some other federation's federates are trying to join the wrong
-    // federation, need to respond. Start a separate thread to do that.
-    lf_thread_t responder_thread;
-    lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
-
-    // Wait for federate threads to exit.
-    void *thread_exit_status;
-    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-        federate_info_t *fed = GET_FED_INFO(i);
-        lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
-        lf_thread_join(fed->thread_id, &thread_exit_status);
-        pqueue_tag_free(fed->in_transit_message_tags);
-        lf_print("RTI: Federate %d thread exited.", fed->enclave.id);
-    }
-
-    rti_remote->all_federates_exited = true;
-
-    // Shutdown and close the socket that is listening for incoming connections
-    // so that the accept() call in respond_to_erroneous_connections returns.
-    // That thread should then check rti->all_federates_exited and it should exit.
-    if (shutdown(socket_descriptor, SHUT_RDWR)) {
-        LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
-    }
-    // NOTE: In all common TCP/IP stacks, there is a time period,
-    // typically between 30 and 120 seconds, called the TIME_WAIT period,
-    // before the port is released after this close. This is because
-    // the OS is preventing another program from accidentally receiving
-    // duplicated packets intended for this program.
-    close(socket_descriptor);
-
-    if (rti_remote->socket_descriptor_UDP > 0) {
-        if (shutdown(rti_remote->socket_descriptor_UDP, SHUT_RDWR)) {
-            LF_PRINT_LOG("On shut down UDP socket, received reply: %s", strerror(errno));
-        }
-        close(rti_remote->socket_descriptor_UDP);
-    }
+    netdrv->close(netdrv);
+    rti_remote->clock_netdrv->close(rti_remote->clock_netdrv);
+    // close_netdrvs(netdrv, rti_remote->clock_netdrv);
 }
 
 void initialize_RTI(rti_remote_t *rti) {

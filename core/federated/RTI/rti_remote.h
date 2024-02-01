@@ -394,24 +394,24 @@ void initialize_federate(federate_info_t* fed, uint16_t id);
 //TODO: Need to add descriptions.
 int32_t start_net_rti_server();
 
-/**
- * Start the socket server for the runtime infrastructure (RTI) and
- * return the socket descriptor.
- * @param num_feds Number of federates.
- * @param port The port on which to listen for socket connections, or
- *  0 to use the default port range.
- */
-int32_t start_rti_server(uint16_t port);
+// /**
+//  * Start the socket server for the runtime infrastructure (RTI) and
+//  * return the socket descriptor.
+//  * @param num_feds Number of federates.
+//  * @param port The port on which to listen for socket connections, or
+//  *  0 to use the default port range.
+//  */
+// int32_t start_rti_server(uint16_t port);
 
 //TODO: Add documentation.
-void net_wait_for_federates(netdrv_t *netdrv);
+void wait_for_federates(netdrv_t *netdrv);
 
-/**
- * Start the runtime infrastructure (RTI) interaction with the federates
- * and wait for the federates to exit.
- * @param socket_descriptor The socket descriptor returned by start_rti_server().
- */
-void wait_for_federates(int socket_descriptor);
+// /**
+//  * Start the runtime infrastructure (RTI) interaction with the federates
+//  * and wait for the federates to exit.
+//  * @param socket_descriptor The socket descriptor returned by start_rti_server().
+//  */
+// void wait_for_federates(int socket_descriptor);
 
 /**
  * Print a usage message.
