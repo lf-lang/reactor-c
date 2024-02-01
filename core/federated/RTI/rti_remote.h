@@ -247,7 +247,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
  *
  * @param fed The federate that has completed a logical tag.
  */
-void handle_latest_tag_complete(federate_info_t* fed);
+void handle_latest_tag_complete(federate_info_t* fed, unsigned char *buffer);
 
 /**
  * Handle a next event tag (NET) message. @see MSG_TYPE_NEXT_EVENT_TAG in rti.h.

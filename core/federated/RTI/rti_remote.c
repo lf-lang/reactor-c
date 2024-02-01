@@ -522,11 +522,7 @@ void handle_timed_message(federate_info_t *sending_federate, unsigned char *buff
     LF_MUTEX_UNLOCK(rti_mutex);
 }
 
-void handle_latest_tag_complete(federate_info_t *fed) {
-    unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
-    read_from_socket_fail_on_error(&fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-            "RTI failed to read the content of the logical tag complete from federate %d.",
-            fed->enclave.id);
+void handle_latest_tag_complete(federate_info_t *fed, unsigned char *buffer) {
     tag_t completed = extract_tag(buffer);
     if (rti_remote->base.tracing_enabled)     {
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_LTC, fed->enclave.id, &completed);
@@ -1212,7 +1208,7 @@ void *federate_info_thread_TCP(void *fed) {
             handle_next_event_tag(my_fed, buffer + 1);
             break;
         case MSG_TYPE_LATEST_TAG_COMPLETE:
-            handle_latest_tag_complete(my_fed);
+            handle_latest_tag_complete(my_fed, buffer + 1);
             break;
         case MSG_TYPE_STOP_REQUEST:
             handle_stop_request_message(my_fed); // FIXME: Reviewed until here.
