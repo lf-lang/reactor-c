@@ -31,7 +31,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
-#include "semaphore.h"
+#include "lf_semaphore.h"
 #include <assert.h>
 
 /**
