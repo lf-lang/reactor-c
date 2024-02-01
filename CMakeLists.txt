@@ -15,16 +15,32 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE ${DEFAULT_BUILD_TYPE} CACHE STRING "Choose the type of build." FORCE)
 endif()
 
+# Whether or not we are using THREADED or SINGLE-THREADED runtime is a global
+# flag. If it is passed to cmake. Then add it as a global compile def which
+# is inherited by all child nodes (add_subdirectory)
+if(DEFINED LF_SINGLE_THREADED)
+    add_compile_definitions(LF_SINGLE_THREADED=1)
+endif()
+
 set(Test test)
 set(Lib lib)
-set(CoreLib core)
+set(CoreLibPath core)
+set(CoreLib reactor-c)
 set(PlatformLib platform)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include/core)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/federated)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/federated/network)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/modal_models)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/platform)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/threaded)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/utils)
+include_directories(${CMAKE_SOURCE_DIR}/include/api)
 
 enable_testing()
 add_subdirectory(${Test})
 add_subdirectory(${Lib})
-add_subdirectory(${CoreLib})
+add_subdirectory(${CoreLibPath})
 
 include(test/Tests.cmake)

@@ -1,3 +1,4 @@
+#ifdef PLATFORM_Linux
 /* MacOS API support for the C target of Lingua Franca. */
 
 /*************
@@ -24,36 +25,52 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** Linux API support for the C target of Lingua Franca.
- *  
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
- */
-
-#include "lf_linux_support.h"
-#include "../platform.h"
-
-#ifdef NUMBER_OF_WORKERS
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.c"
-#else
-#include "lf_C11_threads_support.c"
-#endif
-#endif
-
-#include "lf_unix_clock_support.c"
-#include "lf_unix_syscall_support.c"
-
 /**
- * Pause execution for a number of nanoseconds.
- *
- * A Linux-specific clock_nanosleep is used underneath that is supposedly more
- * accurate.
- *
- * @return 0 for success, or -1 for failure. In case of failure, errno will be
- *  set appropriately (see `man 2 clock_nanosleep`).
+ * @brief Platform support for the Linux operating system.
+ * 
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
-int lf_nanosleep(instant_t requested_time) {
-    const struct timespec tp = convert_ns_to_timespec(requested_time);
+ 
+#include "lf_linux_support.h"
+#include "platform.h"
+#include "tag.h"
+
+#define LF_MAX_SLEEP_NS USEC(UINT64_MAX)
+#define LF_MIN_SLEEP_NS USEC(10)
+
+#if defined LF_SINGLE_THREADED
+    #include "lf_os_single_threaded_support.c"
+#endif
+
+#if !defined LF_SINGLE_THREADED
+    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
+        // (Not C++11 or later) or no threads support
+        #include "lf_POSIX_threads_support.c"
+    #else
+        #include "lf_C11_threads_support.c"
+    #endif
+#endif
+
+#include "lf_unix_clock_support.h"
+
+int lf_sleep(interval_t sleep_duration) {
+    const struct timespec tp = convert_ns_to_timespec(sleep_duration);
     struct timespec remaining;
     return clock_nanosleep(_LF_CLOCK, 0, (const struct timespec*)&tp, (struct timespec*)&remaining);
 }
+
+int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
+    interval_t sleep_duration = wakeup_time - lf_time_physical();
+
+    if (sleep_duration < LF_MIN_SLEEP_NS) {
+        return 0;
+    } else {
+        return lf_sleep(sleep_duration);
+    }
+}
+
+int lf_nanosleep(interval_t sleep_duration) {
+    return lf_sleep(sleep_duration);
+}
+#endif

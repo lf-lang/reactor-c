@@ -2,33 +2,10 @@
  * @file
  * @author Edward A. Lee
  * @author Soroush Bateni
- *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley and TU Dresden
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
+ * @copyright (c) 2020-2023, The University of California at Berkeley and UT Dallas.
+ * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  * 
- * Audio functions for Linux.
+ * @brief Utility function for playing audio on Linux.
  * 
  * See audio_loop.h for instructions.
  * 
@@ -313,13 +290,6 @@ void* run_audio_loop(void* ignored) {
 pthread_t loop_thread_id;
 bool loop_thread_started = false;
 
-/**
- * Start an audio loop thread that becomes ready to receive
- * audio amplitude samples via add_to_sound(). If there is
- * already an audio loop running, then do nothing.
- * @param start_time The logical time that aligns with the
- *  first audio buffer.
- */
 void lf_start_audio_loop(instant_t start_time) {
     
     if (loop_thread_started) return;
@@ -341,30 +311,10 @@ void lf_start_audio_loop(instant_t start_time) {
     pthread_create(&loop_thread_id, NULL, &run_audio_loop, NULL);
 }
 
-/**
- * Stop the audio loop thread.
- */
 void lf_stop_audio_loop() {
     stop_audio = true;
 }
 
-/**
- * Play the specified waveform with the specified emphasis at
- * the specified time. If the waveform is null, play a simple tick
- * (an impulse). If the waveform has length zero or volume 0,
- * play nothing.
- * 
- * If the time is too far in the future
- * (beyond the window of the current audio write buffer), then
- * block until the audio output catches up. If the audio playback
- * has already passed the specified point, then play the waveform
- * as soon as possible and return 1.
- * Otherwise, return 0.
- * 
- * @param waveform The waveform to play or NULL to just play a tick.
- * @param emphasis The emphasis (0.0 for silence, 1.0 for waveform volume).
- * @param start_time The time to start playing the waveform.
- */
 int lf_play_audio_waveform(lf_waveform_t* waveform, float emphasis, instant_t start_time) {
     int result = 0;
     pthread_mutex_lock(&lf_audio_mutex);
@@ -392,7 +342,13 @@ int lf_play_audio_waveform(lf_waveform_t* waveform, float emphasis, instant_t st
     // occur.
     while (index_offset >= AUDIO_BUFFER_SIZE) {
         pthread_cond_wait(&lf_audio_cond, &lf_audio_mutex);
-        time_offset = lf_time_logical() - next_buffer_start_time;
+        // next_buffer_start_time has been incremented by BUFFER_DURATION_NS.
+        time_offset = start_time - next_buffer_start_time;
+        // time_offset should be >= 0, but just in case:
+        if (time_offset < 0) {
+            time_offset = 0;
+            result = 1;
+        }
         index_offset = (time_offset * SAMPLE_RATE) / BILLION;
     }
     

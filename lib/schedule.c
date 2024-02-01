@@ -37,7 +37,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
 
-#include "../include/ctarget/schedule.h"
+#include "api.h"
+#include "reactor.h"
 
 /**
  * Schedule an action to occur with the specified value and time offset
@@ -49,14 +50,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t lf_schedule(void* action, interval_t offset) {
-    return _lf_schedule_token(action, offset, NULL);
-}
-
-/**
- * @deprecated version of 'lf_schedule'
- */
-trigger_handle_t schedule(void* action, interval_t offset) {
-    return lf_schedule(action, offset);
+    return _lf_schedule_token((lf_action_base_t*)action, offset, NULL);
 }
 
 /**
@@ -72,15 +66,7 @@ trigger_handle_t schedule(void* action, interval_t offset) {
  */
 trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value)
 {
-    return _lf_schedule_int(action, extra_delay, value);
-}
-
-/**
- * @deprecated version of 'lf_schedule_int'
- */
-trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
-{
-    return lf_schedule_int(action, extra_delay, value);
+    return _lf_schedule_int((lf_action_base_t*)action, extra_delay, value);
 }
 
 /**
@@ -111,9 +97,6 @@ trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
  * current physical time and the time it would be assigned if it
  * were a logical action.
  *
- * The token is required to be either NULL or a pointer to
- * a token created using create_token().
- *
  * There are three conditions under which this function will not
  * actually put an event on the event queue and decrement the reference count
  * of the token (if there is one), which could result in the payload being
@@ -134,14 +117,7 @@ trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return _lf_schedule_token(action, extra_delay, token);
-}
-
-/**
- * @deprecated version of 'lf_schedule_token'
- */
-trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return lf_schedule_token(action, extra_delay, token);
+    return _lf_schedule_token((lf_action_base_t*)action, extra_delay, token);
 }
 
 /**
@@ -169,14 +145,7 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
         );
         return -1;
     }
-    return _lf_schedule_copy(action, offset, value, (size_t)length);
-}
-
-/**
- * @deprecated version of 'lf_schedule_copy'
- */
-trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length) {
-    return lf_schedule_copy(action, offset, value, length);
+    return _lf_schedule_copy((lf_action_base_t*)action, offset, value, (size_t)length);
 }
 
 
@@ -205,14 +174,7 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
         );
         return -1;
     }
-    return _lf_schedule_value(action, extra_delay, value, (size_t)length);
-}
-
-/**
- * @deprecated version of 'lf_schedule_value'
- */
-trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length) {
-    return lf_schedule_value(action, extra_delay, value, length);
+    return _lf_schedule_value((lf_action_base_t*)action, extra_delay, value, (size_t)length);
 }
 
 
@@ -221,19 +183,19 @@ trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* valu
  * current physical time. If the deadline has passed, invoke the deadline
  * handler (if invoke_deadline_handler parameter is set true) and return true.
  * Otherwise, return false.
- * 
+ *
  * @param self The self struct of the reactor.
  * @param invoke_deadline_handler When this is set true, also invoke deadline
  *  handler if the deadline has passed.
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
-	return _lf_check_deadline((self_base_t*)self, invoke_deadline_handler);
-}
-
-/**
- * @deprecated version of 'lf_check_deadline'
- */
-bool check_deadline(void* self, bool invoke_deadline_handler) {
-	return lf_check_deadline(self, invoke_deadline_handler);
+    reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
+    if (lf_time_physical() > (lf_time_logical(((self_base_t *)self)->environment) + reaction->deadline)) {
+        if (invoke_deadline_handler) {
+            reaction->deadline_violation_handler(self);
+        }
+        return true;
+    }
+    return false;
 }

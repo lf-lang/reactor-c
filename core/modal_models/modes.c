@@ -37,8 +37,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #ifdef MODAL_REACTORS
 
+#include <string.h>
+
+#include "platform.h"
+#include "lf_types.h"
 #include "modes.h"
-#include "../reactor.h"
+#include "reactor_common.h"
 
 // Bit masks for the internally used flags on modes
 #define _LF_MODE_FLAG_MASK_ACTIVE        (1 << 0)
@@ -49,14 +53,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
 
 // Forward declaration of functions and variables supplied by reactor_common.c
-void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
-event_t* _lf_create_dummy_events(trigger_t* trigger, instant_t time, event_t* next, microstep_t offset);
-extern pqueue_t* event_q;
-
-// ----------------------------------------------------------------------------
-
-// Global variable to communicate mode triggered reactions
-uint8_t _lf_mode_triggered_reactions_request = 0;
+void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);
+event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant_t time, event_t* next, microstep_t offset);
 
 // ----------------------------------------------------------------------------
 
@@ -177,7 +175,7 @@ bool _lf_mode_is_active_fallback(reactor_mode_t* mode) {
  * @param state An array of all mode states of modal reactor instance
  * @param states_size
  */
-void _lf_initialize_mode_states(reactor_mode_state_t* states[], int states_size) {
+void _lf_initialize_mode_states(environment_t* env, reactor_mode_state_t* states[], int states_size) {
     LF_PRINT_DEBUG("Modes: Initialization");
     // Initialize all modes (top down for correct active flags)
     for (int i = 0; i < states_size; i++) {
@@ -190,7 +188,7 @@ void _lf_initialize_mode_states(reactor_mode_state_t* states[], int states_size)
         }
     }
     // Register execution of special triggers
-    _lf_mode_triggered_reactions_request |= _LF_MODE_FLAG_MASK_NEEDS_STARTUP;
+    env->modes->triggered_reactions_request |= _LF_MODE_FLAG_MASK_NEEDS_STARTUP;
 }
 
 /**
@@ -219,6 +217,7 @@ void _lf_initialize_mode_states(reactor_mode_state_t* states[], int states_size)
  *
  */
 void _lf_handle_mode_startup_reset_reactions(
+        environment_t* env,
         reaction_t** startup_reactions,
         int startup_reactions_size,
         reaction_t** reset_reactions,
@@ -227,7 +226,7 @@ void _lf_handle_mode_startup_reset_reactions(
         int states_size
 ) {
     // Handle startup reactions
-    if (_lf_mode_triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_STARTUP) {
+    if (env->modes->triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_STARTUP) {
         if (startup_reactions != NULL) {
             for (int i = 0; i < startup_reactions_size; i++) {
                 reaction_t* reaction = startup_reactions[i];
@@ -238,7 +237,7 @@ void _lf_handle_mode_startup_reset_reactions(
                     ) {
                         // Trigger reaction if not already triggered, is active,
                         // and requires startup
-                        _lf_trigger_reaction(reaction, -1);
+                        _lf_trigger_reaction(env, reaction, -1);
                     }
                 }
             }
@@ -246,7 +245,7 @@ void _lf_handle_mode_startup_reset_reactions(
     }
 
     // Handle reset reactions
-    if (_lf_mode_triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_RESET) {
+    if (env->modes->triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_RESET) {
         if (reset_reactions != NULL) {
             for (int i = 0; i < reset_reactions_size; i++) {
                 reaction_t* reaction = reset_reactions[i];
@@ -257,7 +256,7 @@ void _lf_handle_mode_startup_reset_reactions(
                     ) {
                         // Trigger reaction if not already triggered, is active,
                         // and requires reset
-                        _lf_trigger_reaction(reaction, -1);
+                        _lf_trigger_reaction(env, reaction, -1);
                     }
                 }
             }
@@ -282,7 +281,7 @@ void _lf_handle_mode_startup_reset_reactions(
     }
 
     // Clear request
-    _lf_mode_triggered_reactions_request = 0;
+    env->modes->triggered_reactions_request = 0;
 }
 
 /**
@@ -301,6 +300,7 @@ void _lf_handle_mode_startup_reset_reactions(
  *
  */
 void _lf_handle_mode_shutdown_reactions(
+        environment_t* env,
         reaction_t** shutdown_reactions,
         int shutdown_reactions_size
 ) {
@@ -317,7 +317,7 @@ void _lf_handle_mode_shutdown_reactions(
 
                     if(reaction->status == inactive) {
                         // Trigger reaction if not already triggered
-                        _lf_trigger_reaction(reaction, -1);
+                        _lf_trigger_reaction(env, reaction, -1);
                     }
                 }
             }
@@ -337,6 +337,7 @@ void _lf_handle_mode_shutdown_reactions(
  * @param timer_triggers_size
  */
 void _lf_process_mode_changes(
+    environment_t* env,
     reactor_mode_state_t* states[],
     int states_size,
     mode_state_variable_reset_data_t reset_data[],
@@ -374,8 +375,8 @@ void _lf_process_mode_changes(
                     // Reset state variables (if explicitly requested for automatic reset).
                     // The generated code will not register all state variables by default.
                     // Usually the reset trigger is used.
-                    for (int i = 0; i < reset_data_size; i++) {
-                        mode_state_variable_reset_data_t data = reset_data[i];
+                    for (int j = 0; j < reset_data_size; j++) {
+                        mode_state_variable_reset_data_t data = reset_data[j];
                         if (data.mode == state->next_mode) {
                             LF_PRINT_DEBUG("Modes: Reseting state variable.");
                             memcpy(data.target, data.source, data.size);
@@ -386,10 +387,10 @@ void _lf_process_mode_changes(
                     // once and will not be on the event_q after their initial triggering.
                     // Therefore, the logic above cannot handle these timers. We need
                     // to trigger these timers manually if there is a reset transition.
-                    for (int i = 0; i < timer_triggers_size; i++) {
-                        trigger_t* timer = timer_triggers[i];
+                    for (int j = 0; j < timer_triggers_size; j++) {
+                        trigger_t* timer = timer_triggers[j];
                         if (timer->period == 0 && timer->mode == state->next_mode) {
-                            _lf_schedule(timer, timer->offset, NULL);
+                            _lf_schedule(env, timer, timer->offset, NULL);
                         }
                     }
                 }
@@ -406,30 +407,34 @@ void _lf_process_mode_changes(
                                 LF_PRINT_DEBUG("Modes: Re-enqueuing reset timer.");
                                 // Reschedule the timer with no additional delay.
                                 // This will take care of super dense time when offset is 0.
-                                _lf_schedule(timer, event->trigger->offset, NULL);
+                                _lf_schedule(env, timer, event->trigger->offset, NULL);
                             }
                             // No further processing; drops all events upon reset (timer event was recreated by schedule and original can be removed here)
                         } else if (state->next_mode != state->current_mode && event->trigger != NULL) { // History transition to a different mode
                             // Remaining time that the event would have been waiting before mode was left
                             instant_t local_remaining_delay = event->time - (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : lf_time_start());
-                            tag_t current_logical_tag = lf_tag();
+                            tag_t current_logical_tag = env->current_tag;
 
                             // Reschedule event with original local delay
-                            LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of %d (previous TTH: %u, Mode suspended at: %u).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
+                            LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of " PRINTF_TIME
+                            		" (previous TTH: " PRINTF_TIME ", Mode suspended at: " PRINTF_TIME ").",
+                            		local_remaining_delay, event->time, state->next_mode->deactivation_time);
                             tag_t schedule_tag = {.time = current_logical_tag.time + local_remaining_delay, .microstep = (local_remaining_delay == 0 ? current_logical_tag.microstep + 1 : 0)};
-                            _lf_schedule_at_tag(event->trigger, schedule_tag, event->token);
+                            _lf_schedule_at_tag(env, event->trigger, schedule_tag, event->token);
 
-                            if (event->next != NULL) {
-                                // The event has more events stacked up in super dense time, attach them to the newly created event.
-                                if (event->trigger->last->next == NULL) {
-                                    event->trigger->last->next = event->next;
-                                } else {
-                                    lf_print_error("Modes: Cannot attach events stacked up in super dense to the just unsuspended root event.");
-                                }
+                            // Also schedule events stacked up in super dense time.
+                            event_t* e = event;
+                            while (e->next != NULL) {
+                                schedule_tag.microstep++;
+                                _lf_schedule_at_tag(env, e->next->trigger, schedule_tag, e->next->token);
+                                event_t* tmp = e->next;
+                                e = tmp->next;
+                                // A fresh event was created by schedule, hence, recycle old one
+                                _lf_recycle_event(env, tmp);
                             }
                         }
                         // A fresh event was created by schedule, hence, recycle old one
-                        _lf_recycle_event(event);
+                        _lf_recycle_event(env, event);
 
                         // Remove suspended event and continue
                         suspended_event = _lf_remove_suspended_event(suspended_event);
@@ -455,7 +460,7 @@ void _lf_process_mode_changes(
                 // Apply transition effect
                 if (state->next_mode != NULL) {
                     // Save time when mode was left to handle suspended events in the future
-                    state->current_mode->deactivation_time = lf_time_logical();
+                    state->current_mode->deactivation_time = lf_time_logical(env);
 
                     // Apply transition
                     state->current_mode = state->next_mode;
@@ -487,22 +492,22 @@ void _lf_process_mode_changes(
                     // Register execution of special triggers
                     // This is not done when setting the flag because actual triggering
                     // might be delayed by parent mode inactivity.
-                    _lf_mode_triggered_reactions_request |= state->current_mode->flags &
+                    env->modes->triggered_reactions_request |= state->current_mode->flags &
                             (_LF_MODE_FLAG_MASK_NEEDS_STARTUP | _LF_MODE_FLAG_MASK_NEEDS_RESET);
                 }
             }
         }
 
         // Retract all events from the event queue that are associated with now inactive modes
-        if (event_q != NULL) {
-            size_t q_size = pqueue_size(event_q);
+        if (env->event_q != NULL) {
+            size_t q_size = pqueue_size(env->event_q);
             if (q_size > 0) {
                 event_t** delayed_removal = (event_t**) calloc(q_size, sizeof(event_t*));
                 size_t delayed_removal_count = 0;
 
                 // Find events
-                for (int i = 0; i < q_size; i++) {
-                    event_t* event = (event_t*)event_q->d[i + 1]; // internal queue data structure omits index 0
+                for (size_t i = 0; i < q_size; i++) {
+                    event_t* event = (event_t*)env->event_q->d[i + 1]; // internal queue data structure omits index 0
                     if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
                         delayed_removal[delayed_removal_count++] = event;
                         // This will store the event including possibly those chained up in super dense time
@@ -511,19 +516,20 @@ void _lf_process_mode_changes(
                 }
 
                 // Events are removed delayed in order to allow linear iteration over the queue
-                LF_PRINT_DEBUG("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _lf_suspended_events_num);
-                for (int i = 0; i < delayed_removal_count; i++) {
-                    pqueue_remove(event_q, delayed_removal[i]);
+                LF_PRINT_DEBUG("Modes: Pulling %zu events from the event queue to suspend them. %d events are now suspended.",
+                		delayed_removal_count, _lf_suspended_events_num);
+                for (size_t i = 0; i < delayed_removal_count; i++) {
+                    pqueue_remove(env->event_q, delayed_removal[i]);
                 }
 
                 free(delayed_removal);
             }
         }
 
-        if (_lf_mode_triggered_reactions_request) {
+        if (env->modes->triggered_reactions_request) {
             // Insert a dummy event in the event queue for the next microstep to make
             // sure startup/reset reactions (if any) are triggered as soon as possible.
-            pqueue_insert(event_q, _lf_create_dummy_events(NULL, current_tag.time, NULL, 1));
+            pqueue_insert(env->event_q, _lf_create_dummy_events(env, NULL, env->current_tag.time, NULL, 1));
         }
     }
 }
@@ -532,10 +538,10 @@ void _lf_process_mode_changes(
  * Release internal data structures for modes.
  * - Frees all suspended events.
  */
-void _lf_terminate_modal_reactors() {
+void _lf_terminate_modal_reactors(environment_t* env) {
     _lf_suspended_event_t* suspended_event = _lf_suspended_events_head;
     while(suspended_event != NULL) {
-        _lf_recycle_event(suspended_event->event);
+        _lf_recycle_event(env, suspended_event->event);
         _lf_suspended_event_t* next = suspended_event->next;
         free(suspended_event);
         suspended_event = next;
@@ -552,4 +558,38 @@ void _lf_terminate_modal_reactors() {
     }
     _lf_unsused_suspended_events_head = NULL;
 }
+void _lf_initialize_modes(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+    if (env->modes) {
+        _lf_initialize_mode_states(
+            env, 
+            env->modes->modal_reactor_states, 
+            env->modes->modal_reactor_states_size);
+    }
+}
+void _lf_handle_mode_changes(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+    if (env->modes) {
+        _lf_process_mode_changes(
+            env, 
+            env->modes->modal_reactor_states, 
+            env->modes->modal_reactor_states_size, 
+            env->modes->state_resets, 
+            env->modes->state_resets_size, 
+            env->timer_triggers, 
+            env->timer_triggers_size
+        );
+    }
+}
+
+void _lf_handle_mode_triggered_reactions(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+    if (env->modes) {
+        _lf_handle_mode_startup_reset_reactions(
+            env, env->startup_reactions, env->startup_reactions_size,
+            env->reset_reactions, env->reset_reactions_size,
+            env->modes->modal_reactor_states, env->modes->modal_reactor_states_size);
+    }
+}
+
 #endif

@@ -1,42 +1,33 @@
+#if defined(PLATFORM_Linux) || defined(PLATFORM_Darwin)
 #include <time.h>
 #include <errno.h>
 
+#include "platform.h"
+#include "util.h"
+#include "lf_unix_clock_support.h"
+
 /**
  * Offset to _LF_CLOCK that would convert it
- * to epoch time.
+ * to epoch time. This is applied to the physical clock
+ * to get a more meaningful and universal time.
+ *
  * For CLOCK_REALTIME, this offset is always zero.
  * For CLOCK_MONOTONIC, it is the difference between those
  * clocks at the start of the execution.
  */
 interval_t _lf_time_epoch_offset = 0LL;
 
-/**
- * Convert a _lf_time_spec_t ('tp') to an instant_t representation in
- * nanoseconds.
- *
- * @return nanoseconds (long long).
- */
 instant_t convert_timespec_to_ns(struct timespec tp) {
-    return tp.tv_sec * 1000000000 + tp.tv_nsec;
+    return ((instant_t) tp.tv_sec) * BILLION + tp.tv_nsec;
 }
 
-/**
- * Convert an instant_t ('t') representation in nanoseconds to a
- * _lf_time_spec_t.
- *
- * @return _lf_time_spec_t representation of 't'.
- */
 struct timespec convert_ns_to_timespec(instant_t t) {
     struct timespec tp;
-    tp.tv_sec = t / 1000000000;
-    tp.tv_nsec = (t % 1000000000);
+    tp.tv_sec = t / BILLION;
+    tp.tv_nsec = (t % BILLION);
     return tp;
 }
 
-/**
- * Calculate the necessary offset to bring _LF_CLOCK in parity with the epoch
- * time reported by CLOCK_REALTIME.
- */
 void calculate_epoch_offset(void) {
     if (_LF_CLOCK == CLOCK_REALTIME) {
         // Set the epoch offset to zero (see tag.h)
@@ -58,11 +49,16 @@ void calculate_epoch_offset(void) {
     }
 }
 
-/**
- * Initialize the LF clock.
- */
-void lf_initialize_clock() {
+void _lf_initialize_clock() {
     calculate_epoch_offset();
+
+    struct timespec res;
+    int return_value = clock_getres(_LF_CLOCK, (struct timespec*) &res);
+    if (return_value < 0) {
+        lf_print_error_and_exit("Could not obtain resolution for _LF_CLOCK");
+    }
+
+    lf_print("---- System clock resolution: %ld nsec", res.tv_nsec);
 }
 
 /**
@@ -73,7 +69,7 @@ void lf_initialize_clock() {
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
  *  set appropriately (see `man 2 clock_gettime`).
  */
-int lf_clock_gettime(instant_t* t) {
+int _lf_clock_now(instant_t* t) {
     struct timespec tp;
     // Adjust the clock by the epoch offset, so epoch time is always reported.
     int return_value = clock_gettime(_LF_CLOCK, (struct timespec*) &tp);
@@ -87,7 +83,7 @@ int lf_clock_gettime(instant_t* t) {
     if (_lf_time_epoch_offset != 0) {
         tp_in_ns += _lf_time_epoch_offset;
     }
-    
+
     if (t == NULL) {
         // The t argument address references invalid memory
         errno = EFAULT;
@@ -97,3 +93,4 @@ int lf_clock_gettime(instant_t* t) {
     *t = tp_in_ns;
     return return_value;
 }
+#endif

@@ -1,3 +1,4 @@
+#if defined(PLATFORM_Linux) || defined(PLATFORM_Darwin)
 /**
  * @file lf_unix_syscall_support.c
  * @author Soroush Bateni (soroush@utdallas.edu)
@@ -11,9 +12,7 @@
 
 #include <unistd.h>
 
-/**
- * @brief Get the number of cores on the host machine.
- */
 int lf_available_cores() {
     return (int)sysconf(_SC_NPROCESSORS_ONLN);
 }
+#endif
