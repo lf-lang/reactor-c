@@ -6,6 +6,10 @@ add_library(DefaultTracing STATIC trace/default-trace.c)
 target_include_directories(DefaultTracing PRIVATE ../../include/plugin-apis)
 target_include_directories(DefaultTracing PRIVATE ./include)
 
+# handle compile-time parameters
+target_compile_definitions(DefaultTracing PRIVATE LOG_LEVEL=${LOG_LEVEL})
+# build type parameter (release, debug, etc) is implicitly handled by CMake
+
 # make name platform-independent
 set_target_properties(DefaultTracing PROPERTIES PREFIX "")
 set_target_properties(DefaultTracing PROPERTIES OUTPUT_NAME "defaulttracing")

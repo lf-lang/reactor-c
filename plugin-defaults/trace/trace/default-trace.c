@@ -6,6 +6,7 @@
 
 #include "trace-abi.h"
 #include "platform-abi.h"
+#include "logging-abi.h"
 #include "default-trace.h"
 
 /** Macro to use when access to trace file fails. */
@@ -32,7 +33,6 @@ static int64_t start_time;
  * @return The number of items written to the object table or -1 for failure.
  */
 static int write_trace_header(trace_t* trace) {
-    printf("DEBUG: Writing trace header.\n"); // FIXME
     if (trace->_lf_trace_file != NULL) {
         size_t items_written = fwrite(
                 &start_time,
@@ -101,7 +101,6 @@ static int write_trace_header(trace_t* trace) {
  * @param worker Index specifying the trace to flush.
  */
 static void flush_trace_locked(trace_t* trace, int worker) {
-    printf("DEBUG: _lf_trace_stop = %d, _lf_trace_file = %p, _lf_trace_buffer_size = %d\n", trace->_lf_trace_stop, trace->_lf_trace_file, trace->_lf_trace_buffer_size[worker]); // FIXME
     if (trace->_lf_trace_stop == 0
         && trace->_lf_trace_file != NULL
         && trace->_lf_trace_buffer_size[worker] > 0
@@ -111,8 +110,7 @@ static void flush_trace_locked(trace_t* trace, int worker) {
         // registered in startup reactions.
         if (!trace->_lf_trace_header_written) {
             if (write_trace_header(trace) < 0) {
-                // lf_print_error("Failed to write trace header. Trace file will be incomplete.");
-                printf("Failed to write trace header. Trace file will be incomplete."); // FIXME
+                lf_print_error("Failed to write trace header. Trace file will be incomplete.");
                 return;
             }
             trace->_lf_trace_header_written = true;
@@ -177,21 +175,17 @@ static void start_trace(trace_t* trace, int max_num_local_threads) {
     trace->_lf_trace_buffer_size = (int*)calloc(sizeof(int), trace->_lf_number_of_trace_buffers);
 
     trace->_lf_trace_stop = 0;
-    // LF_PRINT_DEBUG("Started tracing."); // FIXME
+    LF_PRINT_DEBUG("Started tracing.");
 }
 
 static void trace_new(char * filename) {
-
-    // trace->_lf_trace_stop=1; // FIXME: This was in the original code and IDK why
-    // trace->env = env;
 
     // Determine length of the filename
     size_t len = strlen(filename) + 1;
 
     // Allocate memory for the filename on the trace struct
     trace.filename = (char*) malloc(len * sizeof(char));
-    // LF_ASSERT(trace.filename, "Out of memory");
-    assert(trace.filename); // FIXME
+    LF_ASSERT(trace.filename, "Out of memory");
 
     // Copy it to the struct
     strncpy(trace.filename, filename, len);
@@ -201,7 +195,7 @@ static void trace_new(char * filename) {
         fprintf(stderr, "WARNING: Failed to open log file with error code %d."
                 "No log will be written.\n", errno);
     } else {
-        printf("Opened trace file %s.\n", trace.filename); // FIXME
+        LF_PRINT_DEBUG("Opened trace file %s.", trace.filename);
     }
 }
 
@@ -216,7 +210,7 @@ static void stop_trace_locked(trace_t* trace) {
     }
     for (int i = 0; i < trace->_lf_number_of_trace_buffers; i++) {
         // Flush the buffer if it has data.
-        printf("DEBUG: Trace buffer %d has %d records.\n", i, trace->_lf_trace_buffer_size[i]);
+        LF_PRINT_DEBUG("Trace buffer %d has %d records.", i, trace->_lf_trace_buffer_size[i]);
         if (trace->_lf_trace_buffer_size && trace->_lf_trace_buffer_size[i] > 0) {
             flush_trace_locked(trace, i);
         }
@@ -226,8 +220,7 @@ static void stop_trace_locked(trace_t* trace) {
         fclose(trace->_lf_trace_file);
         trace->_lf_trace_file = NULL;
     }
-    // LF_PRINT_DEBUG("Stopped tracing.");
-    printf("Stopped tracing."); // FIXME
+    LF_PRINT_DEBUG("Stopped tracing.");
 }
 
 static void stop_trace(trace_t* trace) {
@@ -250,7 +243,6 @@ void lf_tracing_register_trace_event(object_description_t description) {
 }
 
 void tracepoint(int worker, trace_record_nodeps_t* tr) {
-    printf("DEBUG: Tracepoint called with worker %d.\n", worker);
     // Worker argument determines which buffer to write to.
     int index = (worker >= 0) ? worker : 0;
 
@@ -284,7 +276,6 @@ void lf_tracing_set_start_time(int64_t time) {
     start_time = time;
 }
 void lf_tracing_global_shutdown() {
-    printf("DEBUG: Shutting down tracing at process %d.\n", process_id);
     stop_trace(&trace);
     trace_free(&trace);
     lf_platform_mutex_free(trace_mutex);
