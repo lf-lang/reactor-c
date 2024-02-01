@@ -1166,8 +1166,8 @@ void send_reject(int* socket_id, unsigned char error_code) {
  * @return The federate ID for success or -1 for failure.
  */
 static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_in* client_fd) {
-  // Buffer for message ID, federate ID, and federation ID length.
-  size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
+  // Buffer for message ID, federate ID, type (persistent or transient), and federation ID length.
+  size_t length = 1 + sizeof(uint16_t) + 1 + 1; // Message ID, federate ID, length of fedration ID, type.
   unsigned char buffer[length];
 
   // Read bytes from the socket. We need 4 bytes.
@@ -1177,11 +1177,12 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
   }
 
   uint16_t fed_id = rti_remote->base.number_of_scheduling_nodes; // Initialize to an invalid value.
+  bool is_transient = false;
 
   // First byte received is the message type.
   if (buffer[0] != MSG_TYPE_FED_IDS) {
     if (rti_remote->base.tracing_enabled) {
-      tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
+      tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
     }
     if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       // The federate is trying to connect to a peer, not to the RTI.
@@ -1200,10 +1201,15 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
   } else {
     // Received federate ID.
     fed_id = extract_uint16(buffer + 1);
-    LF_PRINT_DEBUG("RTI received federate ID: %d.", fed_id);
+    is_transient = (buffer[sizeof(uint16_t) + 1] == 1) ? true : false;
+    if (is_transient) {
+      LF_PRINT_LOG("RTI received federate ID: %d, which is transient.", fed_id);
+    } else {
+      LF_PRINT_LOG("RTI received federate ID: %d, which is persistent.", fed_id);
+    }
 
     // Read the federation ID.  First read the length, which is one byte.
-    size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
+    size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 2];
     char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
     // Next read the actual federation ID.
     if (read_from_socket_close_on_error(socket_id, federation_id_length, (unsigned char*)federation_id_received)) {

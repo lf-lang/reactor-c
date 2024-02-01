@@ -76,6 +76,7 @@ int max_level_allowed_to_advance;
  * The state of this federate instance. Each executable has exactly one federate instance,
  * and the _fed global variable refers to that instance.
  */
+<<<<<<< HEAD
 federate_instance_t _fed = {.socket_TCP_RTI = -1,
                             .number_of_inbound_p2p_connections = 0,
                             .inbound_socket_listeners = NULL,
@@ -91,6 +92,24 @@ federate_instance_t _fed = {.socket_TCP_RTI = -1,
                             .last_sent_LTC = (tag_t){.time = NEVER, .microstep = 0u},
                             .last_sent_NET = (tag_t){.time = NEVER, .microstep = 0u},
                             .min_delay_from_physical_action_to_federate_output = NEVER};
+=======
+federate_instance_t _fed = {.socket_TCP_RTI = -1,
+                            .number_of_inbound_p2p_connections = 0,
+                            .inbound_socket_listeners = NULL,
+                            .number_of_outbound_p2p_connections = 0,
+                            .inbound_p2p_handling_thread_id = 0,
+                            .server_socket = -1,
+                            .server_port = -1,
+                            .last_TAG = {.time = NEVER, .microstep = 0u},
+                            .is_last_TAG_provisional = false,
+                            .has_upstream = false,
+                            .has_downstream = false,
+                            .received_stop_request_from_rti = false,
+                            .last_sent_LTC = (tag_t){.time = NEVER, .microstep = 0u},
+                            .last_sent_NET = (tag_t){.time = NEVER, .microstep = 0u},
+                            .min_delay_from_physical_action_to_federate_output = NEVER,
+                            .is_transient = false};
+>>>>>>> 6fbf4094 (Start on adding federate type (transient or not))
 
 federation_metadata_t federation_metadata = {
     .federation_id = "Unidentified Federation", .rti_host = NULL, .rti_port = -1, .rti_user = NULL};
