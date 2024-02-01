@@ -436,6 +436,44 @@ static int net_read_from_socket(int socket, size_t num_bytes, unsigned char* buf
     return 0;
 }
 
+static int net_read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
+    assert(socket);
+    int read_failed = read_from_socket(*socket, num_bytes, buffer);
+    if (read_failed) {
+        // Read failed.
+        // Socket has probably been closed from the other side.
+        // Shut down and close the socket from this side.
+        shutdown(*socket, SHUT_RDWR);
+        close(*socket);
+        // Mark the socket closed.
+        *socket = -1;
+        return -1;
+    }
+    return 0;
+}
+
+static void net_read_from_socket_fail_on_error(
+		int* socket,
+		size_t num_bytes,
+		unsigned char* buffer,
+		lf_mutex_t* mutex,
+		char* format, ...) {
+    va_list args;
+    assert(socket);
+    int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);
+    if (read_failed) {
+        // Read failed.
+        if (mutex != NULL) {
+            lf_mutex_unlock(mutex);
+        }
+        if (format != NULL) {
+            lf_print_error_system_failure(format, args);
+        } else {
+            lf_print_error_system_failure("Failed to read from socket.");
+        }
+    }
+}
+
 int read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer) {
     socket_priv_t *priv = get_priv(drv);
     assert(&priv->socket_descriptor);
@@ -539,7 +577,8 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
             return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
             break;
         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
-            return net_read_from_socket(priv->socket_descriptor, sizeof(int32_t), buffer);
+            net_read_from_socket_fail_on_error(priv->socket_descriptor, sizeof(int32_t), (unsigned char *)buffer, NULL,
+                "Error reading port data.");            
             break;
 
         // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
