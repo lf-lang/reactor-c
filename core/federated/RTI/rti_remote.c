@@ -230,7 +230,7 @@ void notify_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
     // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
-    if (write_to_socket(((federate_info_t *)e)->socket, message_length, buffer)) {
+    if (write_to_netdrv(((federate_info_t *)e)->fed_netdrv, message_length, buffer)) {
         lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         e->state = NOT_CONNECTED;
     } else {
@@ -264,7 +264,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
     // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
-    if (write_to_socket(((federate_info_t *)e)->socket, message_length, buffer)) {
+    if (write_to_netdrv(((federate_info_t *)e)->fed_netdrv, message_length, buffer)) {
         lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         e->state = NOT_CONNECTED;
     } else {
