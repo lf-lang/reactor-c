@@ -1135,6 +1135,7 @@ static void handle_federate_failed(federate_info_t *my_fed) {
  *
  * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
  */
+//TODO: NEEDS TO BE CHANGED.
 static void handle_federate_resign(federate_info_t *my_fed) {
     // Nothing more to do. Close the socket and exit.
     LF_MUTEX_LOCK(rti_mutex);
