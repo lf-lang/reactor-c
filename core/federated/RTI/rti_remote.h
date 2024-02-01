@@ -398,7 +398,7 @@ void send_reject(int* socket_id, unsigned char error_code);
  * Return when all persistent federates have connected.
  * @param socket_descriptor The socket on which to accept connections.
  */
-void lf_connect_to_persistent_federates(int socket_descriptor);
+void* lf_connect_to_persistent_transient_federates_thread(int socket_descriptor);
 
 /**
  * Thread to wait for incoming connection request from transient federates.
