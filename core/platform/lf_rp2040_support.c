@@ -31,10 +31,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
  */
 
-#if !defined(LF_SINGLE_THREADED)
-#error "Only the single-threaded runtime has support for RP2040"
-#endif
-
 #include "lf_rp2040_support.h"
 #include "platform.h"
 #include "utils/util.h"
@@ -52,6 +48,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static critical_section_t _lf_crit_sec;
 
 /**
+ * critical section struct for atomics implementation
+ */
+static critical_section_t _lf_atomics_crit_sec;
+
+/**
  * binary semaphore for lf event notification 
  * used by external isr or second core thread.
  * used to interact with the lf runtime thread
@@ -63,13 +64,14 @@ static uint32_t _lf_num_nested_crit_sec = 0;
 
 /**
  * Initialize basic runtime infrastructure and 
- * synchronization structs for an single-threaded runtime.
+ * synchronization structs for a single-threaded runtime.
  */
 void _lf_initialize_clock(void) {
     // init stdio lib
     stdio_init_all();
     // init sync structs
     critical_section_init(&_lf_crit_sec);
+    critical_section_init(&_lf_atomics_crit_sec);
     sem_init(&_lf_sem_irq_event, 0, 1);
 }
 
@@ -206,6 +208,170 @@ int _lf_single_threaded_notify_of_event() {
     sem_release(&_lf_sem_irq_event);
     return 0;
 }
+
+#else // LF_SINGLE_THREADED
+
+#warning "Threaded runtime on RP2040 is still experimental"
+
+/**
+ * @brief Get the number of cores on the host machine.
+ */
+int lf_available_cores() {
+    // Right now, runtime creates 1 main thread and 1 worker thread
+    // In the future, this may be changed to 2 (if main thread also functions
+    // as a worker thread)
+    return 1;
+}
+
+static void *(*thread_1) (void *);
+static void* thread_1_args;
+static int num_create_threads_called = 0;
+static semaphore_t thread_1_done;
+static void* thread_1_return;
+
+#define MAGIC_THREAD1_ID 314159
+
+void core1_entry() {
+    thread_1_return = thread_1(thread_1_args);
+    sem_release(&thread_1_done);
+
+    // infinite loop; core1 should never exit
+    while (1){
+        tight_loop_contents();
+    }
+}
+
+int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+    // make sure this fn is only called once
+    if (num_create_threads_called != 0) {
+        return 1;
+    }
+    thread_1 = lf_thread;
+    thread_1_args = arguments;
+    num_create_threads_called += 1;
+    sem_init(&thread_1_done, 0, 1);
+    multicore_launch_core1(core1_entry);
+    *thread = MAGIC_THREAD1_ID;
+    return 0;
+}
+
+int lf_thread_join(lf_thread_t thread, void** thread_return) {
+    if (thread != MAGIC_THREAD1_ID) {
+        return 1;
+    }
+    sem_acquire_blocking(&thread_1_done);
+    sem_release(&thread_1_done); // in case join is called again
+    if (thread_return) {
+        *thread_return = thread_1_return;
+    }
+    return 0;
+}
+
+int lf_mutex_init(lf_mutex_t* mutex) {
+    mutex_init(mutex);
+    return 0;
+}
+
+int lf_mutex_lock(lf_mutex_t* mutex) {
+    mutex_enter_blocking(mutex);
+    return 0;
+}
+
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+    mutex_exit(mutex);
+    return 0;
+}
+
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+    sem_init(&(cond->sema), 0, 1);
+    cond->mutex = mutex;
+    return 0;
+}
+
+int lf_cond_broadcast(lf_cond_t* cond) {
+    sem_reset(&(cond->sema), 1);
+    return 0;
+}
+
+int lf_cond_signal(lf_cond_t* cond) {
+    sem_reset(&(cond->sema), 1);
+    return 0;
+}
+
+int lf_cond_wait(lf_cond_t* cond) {
+    mutex_exit(cond->mutex);
+    sem_acquire_blocking(&(cond->sema));
+    mutex_enter_blocking(cond->mutex);
+    return 0;
+}
+
+int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+    absolute_time_t a = from_us_since_boot(absolute_time_ns / 1000);
+    bool acquired_permit = sem_acquire_block_until(&(cond->sema), a);
+    return acquired_permit ? 0 : LF_TIMEOUT;
+}
+
+
+// Atomics
+//  Implemented by just entering a critical section and doing the arithmetic.
+//  This is somewhat inefficient considering enclaves. Since we get a critical
+//  section in between different enclaves
+
+
+/**
+ * @brief Add `value` to `*ptr` and return original value of `*ptr`
+ */
+int _rp2040_atomic_fetch_add(int *ptr, int value) {
+    critical_section_enter_blocking(&_lf_atomics_crit_sec);
+    int res = *ptr;
+    *ptr += value;
+    critical_section_exit(&_lf_atomics_crit_sec);
+    return res;
+}
+/**
+ * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
+ */
+int _rp2040_atomic_add_fetch(int *ptr, int value) {
+    critical_section_enter_blocking(&_lf_atomics_crit_sec);
+    int res = *ptr + value;
+    *ptr = res;
+    critical_section_exit(&_lf_atomics_crit_sec);
+    return res;
+}
+
+/**
+ * @brief Compare and swap for boolaen value.
+ * If `*ptr` is equal to `value` then overwrite it
+ * with `newval`. If not do nothing. Retruns true on overwrite.
+ */
+bool _rp2040_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
+    critical_section_enter_blocking(&_lf_atomics_crit_sec);
+    bool res = false;
+    if (*ptr == value) {
+        *ptr = newval;
+        res = true;
+    }
+    critical_section_exit(&_lf_atomics_crit_sec);
+    return res;
+}
+
+/**
+ * @brief Compare and swap for integers. If `*ptr` is equal
+ * to `value`, it is updated to `newval`. The function returns
+ * the original value of `*ptr`.
+ */
+int  _rp2040_val_compare_and_swap(int *ptr, int value, int newval) {
+    critical_section_enter_blocking(&_lf_atomics_crit_sec);
+    int res = *ptr;
+    if (*ptr == value) {
+        *ptr = newval;
+    }
+    critical_section_exit(&_lf_atomics_crit_sec);
+    return res;
+}
+
+
+
 #endif // LF_SINGLE_THREADED
 
 
