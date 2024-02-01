@@ -77,7 +77,7 @@ add_executable(
 )
 target_link_libraries(RTI ${CMAKE_CURRENT_LIST_DIR}/../../../plugin-defaults/trace/lib/defaulttracing.a)
 include(${CMAKE_CURRENT_LIST_DIR}/../../platform/CMakeLists.txt)
-target_link_libraries(RTI Platform)
+target_link_libraries(RTI LfPlatform)
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages
