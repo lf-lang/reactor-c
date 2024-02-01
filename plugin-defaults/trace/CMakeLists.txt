@@ -7,6 +7,9 @@ target_include_directories(DefaultTracing PRIVATE ../../include/plugin-apis)
 target_include_directories(DefaultTracing PRIVATE ./include)
 
 # handle compile-time parameters
+if(NOT DEFINED LOG_LEVEL)
+    message(FATAL_ERROR "You must set LOG_LEVEL cmake argument")
+endif()
 target_compile_definitions(DefaultTracing PRIVATE LOG_LEVEL=${LOG_LEVEL})
 # build type parameter (release, debug, etc) is implicitly handled by CMake
 
