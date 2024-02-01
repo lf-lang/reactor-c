@@ -6,12 +6,7 @@
 
 #include "trace-abi.h"
 #include "platform-abi.h"
-
-// FIXME: Target property should specify the capacity of the trace buffer.
-#define TRACE_BUFFER_CAPACITY 2048
-
-/** Size of the table of trace objects. */
-#define TRACE_OBJECT_TABLE_SIZE 1024
+#include "default-trace.h"
 
 /** Macro to use when access to trace file fails. */
 #define _LF_TRACE_FAILURE(trace) \
@@ -21,45 +16,6 @@
         trace->_lf_trace_file = NULL; \
         return -1; \
     } while(0)
-
-// TYPE DEFINITIONS **********************************************************
-
-/**
- * @brief This struct holds all the state associated with tracing in a single environment.
- * Each environment which has tracing enabled will have such a struct on its environment struct.
- *
- */
-typedef struct trace_t {
-    /**
-     * Array of buffers into which traces are written.
-     * When a buffer becomes full, the contents is flushed to the file,
-     * which will create a significant pause in the calling thread.
-     */
-    trace_record_nodeps_t** _lf_trace_buffer;
-    int* _lf_trace_buffer_size;
-
-    /** The number of trace buffers allocated when tracing starts. */
-    int _lf_number_of_trace_buffers;
-
-    /** Marker that tracing is stopping or has stopped. */
-    int _lf_trace_stop;
-
-    /** The file into which traces are written. */
-    FILE* _lf_trace_file;
-
-    /** The file name where the traces are written*/
-    char *filename;
-
-    /** Table of pointers to a description of the object. */
-    object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
-    int _lf_trace_object_descriptions_size;
-
-    /** Indicator that the trace header information has been written to the file. */
-    bool _lf_trace_header_written;
-
-    // /** Pointer back to the environment which we are tracing within*/
-    // environment_t* env;
-} trace_t;
 
 // PRIVATE DATA STRUCTURES ***************************************************
 
@@ -76,6 +32,7 @@ static int64_t start_time;
  * @return The number of items written to the object table or -1 for failure.
  */
 static int write_trace_header(trace_t* trace) {
+    printf("DEBUG: Writing trace header.\n"); // FIXME
     if (trace->_lf_trace_file != NULL) {
         size_t items_written = fwrite(
                 &start_time,
@@ -144,6 +101,7 @@ static int write_trace_header(trace_t* trace) {
  * @param worker Index specifying the trace to flush.
  */
 static void flush_trace_locked(trace_t* trace, int worker) {
+    printf("DEBUG: _lf_trace_stop = %d, _lf_trace_file = %p, _lf_trace_buffer_size = %d\n", trace->_lf_trace_stop, trace->_lf_trace_file, trace->_lf_trace_buffer_size[worker]); // FIXME
     if (trace->_lf_trace_stop == 0
         && trace->_lf_trace_file != NULL
         && trace->_lf_trace_buffer_size[worker] > 0
@@ -202,8 +160,6 @@ static void flush_trace(trace_t* trace, int worker) {
 }
 
 static void start_trace(trace_t* trace, int max_num_local_threads) {
-    // FIXME: location of trace file should be customizable.
-    trace->_lf_trace_file = NULL;
     // Do not write the trace header information to the file yet
     // so that startup reactions can register user-defined trace objects.
     // write_trace_header();
@@ -239,6 +195,7 @@ static void trace_new(char * filename) {
 
     // Copy it to the struct
     strncpy(trace.filename, filename, len);
+    // FIXME: location of trace file should be customizable.
     trace._lf_trace_file = fopen(trace.filename, "w");
     if (trace._lf_trace_file == NULL) {
         fprintf(stderr, "WARNING: Failed to open log file with error code %d."
@@ -257,18 +214,12 @@ static void stop_trace_locked(trace_t* trace) {
         // Trace was already stopped. Nothing to do.
         return;
     }
-    // In multithreaded execution, thread 0 invokes wrapup reactions, so we
-    // put that trace last. However, it could also include some startup events.
-    // In any case, the trace file does not guarantee any ordering.
-    for (int i = 1; i < trace->_lf_number_of_trace_buffers; i++) {
+    for (int i = 0; i < trace->_lf_number_of_trace_buffers; i++) {
         // Flush the buffer if it has data.
         printf("DEBUG: Trace buffer %d has %d records.\n", i, trace->_lf_trace_buffer_size[i]);
         if (trace->_lf_trace_buffer_size && trace->_lf_trace_buffer_size[i] > 0) {
             flush_trace_locked(trace, i);
         }
-    }
-    if (trace->_lf_trace_buffer_size && trace->_lf_trace_buffer_size[0] > 0) {
-        flush_trace_locked(trace, 0);
     }
     trace->_lf_trace_stop = 1;
     if (trace->_lf_trace_file != NULL) {
@@ -299,6 +250,7 @@ void lf_tracing_register_trace_event(object_description_t description) {
 }
 
 void tracepoint(int worker, trace_record_nodeps_t* tr) {
+    printf("DEBUG: Tracepoint called with worker %d.\n", worker);
     // Worker argument determines which buffer to write to.
     int index = (worker >= 0) ? worker : 0;
 

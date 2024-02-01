@@ -8,6 +8,9 @@ CFLAGS=	-I$(REACTOR_C)/include/core/ \
 		-I$(REACTOR_C)/include/core/modal_models \
 		-I$(REACTOR_C)/include/core/platform \
 		-I$(REACTOR_C)/include/core/utils \
+		-I$(REACTOR_C)/include \
+		-I$(REACTOR_C)/include/plugin-apis \
+		-I$(REACTOR_C)/plugin-defaults/trace/include \
 		-DLF_SINGLE_THREADED=1 \
 		-Wall
 DEPS=

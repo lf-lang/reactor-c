@@ -1,3 +1,6 @@
+#ifndef TRACE_ABI_H
+#define TRACE_ABI_H
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -60,3 +63,5 @@ void tracepoint(
     trace_record_nodeps_t* tr
 );
 void lf_tracing_global_shutdown();
+
+#endif // TRACE_ABI_H
