@@ -1851,7 +1851,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
             lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
         } else {
             // Connect was successful.
-            size_t buffer_length = 1 + sizeof(uint16_t) + 1;
+            size_t buffer_length = 1 + sizeof(uint16_t) + 1 + 1;
             unsigned char buffer[buffer_length];
             buffer[0] = MSG_TYPE_P2P_SENDING_FED_ID;
             if (_lf_my_fed_id > UINT16_MAX) {
@@ -1859,8 +1859,9 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                 lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX);
             }
             encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(buffer[1]));
+            buffer[1 + sizeof(uint16_t)] = _fed.is_transient ? 1 : 0;
             unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
-            buffer[sizeof(uint16_t) + 1] = federation_id_length;
+            buffer[sizeof(uint16_t) + 2] = federation_id_length;
             // Trace the event when tracing is enabled
             tracepoint_federate_to_federate(_fed.trace, send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
             
@@ -1975,23 +1976,25 @@ void lf_connect_to_rti(const char* hostname, int port) {
 #endif
 
         // Send the message type first.
-        unsigned char buffer[4];
+        unsigned char buffer[5];
         buffer[0] = MSG_TYPE_FED_IDS;
         // Next send the federate ID.
         if (_lf_my_fed_id > UINT16_MAX) {
             lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX);
         }
         encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
+        // Next send the federate type (persistent or transient)
+        buffer[1 + sizeof(uint16_t)] = _fed.is_transient? 1 : 0;
         // Next send the federation ID length.
         // The federation ID is limited to 255 bytes.
         size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
-        buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
+        buffer[2 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
 
         // Trace the event when tracing is enabled
         tracepoint_federate_to_rti(_fed.trace, send_FED_ID, _lf_my_fed_id, NULL);
 
         // No need for a mutex here because no other threads are writing to this socket.
-        if (write_to_socket(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t), buffer)) {
+        if (write_to_socket(_fed.socket_TCP_RTI, 3+ sizeof(uint16_t), buffer)) {
             continue; // Try again, possibly on a new port.
         }
 
@@ -2182,7 +2185,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         }
         LF_PRINT_LOG("Accepted new connection from remote federate.");
 
-        size_t header_length = 1 + sizeof(uint16_t) + 1;
+        size_t header_length = 1 + sizeof(uint16_t) + 1 + 1;
         unsigned char buffer[header_length];
         int read_failed = read_from_socket(socket_id, header_length, (unsigned char*)&buffer);
         if (read_failed || buffer[0] != MSG_TYPE_P2P_SENDING_FED_ID) {
@@ -2222,6 +2225,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 
         // Extract the ID of the sending federate.
         uint16_t remote_fed_id = extract_uint16((unsigned char*)&(buffer[1]));
+        bool remote_fed_is_transient = buffer[1 + sizeof(uint16_t)];
         LF_PRINT_DEBUG("Received sending federate ID %d.", remote_fed_id);
 
         // Trace the event when tracing is enabled
