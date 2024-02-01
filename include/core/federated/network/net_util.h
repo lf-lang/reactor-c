@@ -77,20 +77,6 @@ typedef struct netdrv_t {
     int ( *read)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
     int (*write)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
 } netdrv_t;
-    // void * (*get_priv)(struct netdrv_t *drv);
-
-
-// typedef struct netdrv_t {
-//     ...
-//     int ( *read)(size_t num_bytes, unsigned char* buffer);
-//     int ( *read_close_on_error)(size_t num_bytes, unsigned char* buffer);
-//     int ( *read_fail_on_error)(size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex, char* format, ...);
-//     ...
-// } netdrv_t;
-
-// netdrv.read(num_bytes, read_buffer);
-// netdrv.read_close_on_error(num_bytes, write_buffer);
-// netdrv.read_fail_on_error(num_bytes, write_buffer, mutex, format, ...);
 
 int netdrv_open(netdrv_t *drv);
 void netdrv_close(netdrv_t *drv);
