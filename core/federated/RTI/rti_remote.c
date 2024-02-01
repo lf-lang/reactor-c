@@ -1865,7 +1865,7 @@ void wait_for_federates(int socket_descriptor) {
     if (rti_remote.number_of_transient_federates == 0) {
         lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
     } else if (rti_remote.number_of_transient_federates > 0) {
-        lf_thread_create(&transient_thread, connect_to_transient_federates_thread, NULL);
+        lf_thread_create(&transient_thread, lf_connect_to_transient_federates_thread, NULL);
     }
 
     // Wait for persistent federate threads to exit.
