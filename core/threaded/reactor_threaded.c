@@ -647,7 +647,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     }
 
     // The start time will likely have changed. Adjust the current tag and stop tag.
-    env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+    env->current_tag = effective_start_tag;
     if (duration >= 0LL) {
         // A duration has been specified. Recalculate the stop time.
        env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
@@ -678,7 +678,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     // Here we wait until the start time and also release the environment mutex.
     // this means that the other worker threads will be allowed to start. We need
     // this to avoid potential deadlock in federated startup.
-    while(!wait_until(env, start_time + _lf_fed_STA_offset, &env->event_q_changed)) {};
+    while(!wait_until(env, effective_start_tag.time  + _lf_fed_STA_offset, &env->event_q_changed)) {};
     LF_PRINT_DEBUG("Done waiting for start time + STA offset " PRINTF_TIME ".", start_time + _lf_fed_STA_offset);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME 
             ". This should be close to the STA offset.",
