@@ -368,7 +368,8 @@ void* federate_info_thread_TCP(void* fed);
  * @param socket_id Pointer to the socket ID.
  * @param error_code An error code.
  */
-void send_reject(int* socket_id, unsigned char error_code);
+//TODO: Update comments.
+void send_reject(netdrv_t *netdrv, unsigned char error_code);
 
 /**
  * Wait for one incoming connection request from each federate,

@@ -1063,7 +1063,7 @@ void *federate_info_thread_TCP(void *fed) {
     return NULL;
 }
 
-void net_send_reject(netdrv_t *netdrv, unsigned char error_code) {
+void send_reject(netdrv_t *netdrv, unsigned char error_code) {
     LF_PRINT_DEBUG("RTI sending MSG_TYPE_REJECT.");
     unsigned char response[2];
     response[0] = MSG_TYPE_REJECT;
@@ -1075,23 +1075,6 @@ void net_send_reject(netdrv_t *netdrv, unsigned char error_code) {
     }
     // Shutdown and close the netdrv.
     netdrv->close(netdrv);
-    LF_MUTEX_UNLOCK(rti_mutex);
-}
-
-void send_reject(int *socket_id, unsigned char error_code) {
-    LF_PRINT_DEBUG("RTI sending MSG_TYPE_REJECT.");
-    unsigned char response[2];
-    response[0] = MSG_TYPE_REJECT;
-    response[1] = error_code;
-    LF_MUTEX_LOCK(rti_mutex);
-    // NOTE: Ignore errors on this response.
-    if (write_to_socket(*socket_id, 2, response)) {
-        lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
-    }
-    // Close the socket.
-    shutdown(*socket_id, SHUT_RDWR);
-    close(*socket_id);
-    *socket_id = -1;
     LF_MUTEX_UNLOCK(rti_mutex);
 }
 
@@ -1127,9 +1110,9 @@ static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
             // of the peer they want to connect to from the RTI.
             // If the connection is a peer-to-peer connection between two
             // federates, reject the connection with the WRONG_SERVER error.
-            net_send_reject(netdrv, WRONG_SERVER);
+            send_reject(netdrv, WRONG_SERVER);
         } else {
-            net_send_reject(netdrv, UNEXPECTED_MESSAGE);
+            send_reject(netdrv, UNEXPECTED_MESSAGE);
         }
         if (rti_remote->base.tracing_enabled) {
             tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
@@ -1161,7 +1144,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
             if (rti_remote->base.tracing_enabled) {
                 tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
             }
-            net_send_reject(netdrv, FEDERATION_ID_DOES_NOT_MATCH);
+            send_reject(netdrv, FEDERATION_ID_DOES_NOT_MATCH);
             return -1;
         } else {
             if (fed_id >= rti_remote->base.number_of_scheduling_nodes) {
@@ -1170,7 +1153,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
                 if (rti_remote->base.tracing_enabled) {
                     tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
                 }
-                net_send_reject(netdrv, FEDERATE_ID_OUT_OF_RANGE);
+                send_reject(netdrv, FEDERATE_ID_OUT_OF_RANGE);
                 return -1;
             } else {
                 if ((rti_remote->base.scheduling_nodes[fed_id])->state != NOT_CONNECTED) {
@@ -1178,7 +1161,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
                     if (rti_remote->base.tracing_enabled) {
                         tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
                     }
-                    net_send_reject(netdrv, FEDERATE_ID_IN_USE);
+                    send_reject(netdrv, FEDERATE_ID_IN_USE);
                     return -1;
                 }
             }
@@ -1243,7 +1226,7 @@ static int receive_connection_information(netdrv_t *netdrv, uint16_t fed_id) {
                 "RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
                 "Rejecting federate.",
                 fed_id, connection_info_buffer[0]);
-        net_send_reject(netdrv, UNEXPECTED_MESSAGE);
+        send_reject(netdrv, UNEXPECTED_MESSAGE);
         return 0;
     } else {
         federate_info_t *fed = GET_FED_INFO(fed_id);
@@ -1323,7 +1306,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t 
                 "RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
                 "Rejecting federate.",
                 fed_id, response[0]);
-        net_send_reject(netdrv, UNEXPECTED_MESSAGE);
+        send_reject(netdrv, UNEXPECTED_MESSAGE);
         return 0;
     } else {
         federate_info_t *fed = GET_FED_INFO(fed_id);
@@ -1354,7 +1337,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t 
                         net_handle_physical_clock_sync_message(fed, TCP);
                     } else {
                         lf_print_error("Unexpected message %u from federate %d.", buffer[0], fed_id);
-                        net_send_reject(netdrv, UNEXPECTED_MESSAGE);
+                        send_reject(netdrv, UNEXPECTED_MESSAGE);
                         return 0;
                     }
                 }
@@ -1452,7 +1435,7 @@ static bool authenticate_federate(netdrv_t *rti_netdrv) {
     if (memcmp(&received[1], rti_tag, hmac_length) != 0) {
         // Federation IDs do not match. Send back a HMAC_DOES_NOT_MATCH message.
         lf_print_warning("HMAC authentication failed. Rejecting the federate.");
-        net_send_reject(rti_netdrv, HMAC_DOES_NOT_MATCH);
+        send_reject(rti_netdrv, HMAC_DOES_NOT_MATCH);
         return false;
     } else {
         LF_PRINT_LOG("Federate's HMAC verified.");
