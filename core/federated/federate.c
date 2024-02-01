@@ -224,9 +224,9 @@ static void update_last_known_status_on_input_ports(tag_t tag) {
             lf_print(
                 "Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
                 i,
-                input_port_action->trigger->last_known_status_tag.time,
+                input_port_action->trigger->last_known_status_tag.time - lf_time_start(),
                 input_port_action->trigger->last_known_status_tag.microstep,
-                tag.time,
+                tag.time - lf_time_start(),
                 tag.microstep
             );
             input_port_action->trigger->last_known_status_tag = tag;
@@ -1164,15 +1164,6 @@ static void* update_ports_from_staa_offsets(void* args) {
                             lf_cond_broadcast(&lf_port_status_changed);
                         }
                     }
-                    // lf_mutex_unlock(&env->mutex);
-                } else if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
-                    // We have committed to a new tag before we finish processing the list. Start over.
-                    lf_mutex_unlock(&env->mutex);
-                    goto outer;
-                } else {
-                    // lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
-                    // lf_cond_broadcast(&lf_port_status_changed);
-                    // lf_mutex_unlock(&env->mutex);
                 }
                 // If the tag has advanced, start over.
                 if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) break;
