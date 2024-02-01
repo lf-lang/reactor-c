@@ -56,156 +56,6 @@ extern int lf_critical_section_exit(environment_t *env) {
     return lf_mutex_unlock(&rti_mutex);
 }
 
-/**
- * Create a server and enable listening for socket connections.
- * If the specified port if it is non-zero, it will attempt to acquire that port.
- * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
- * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
- * zero, then it will attempt to acquire DEFAULT_PORT first. If this fails, then it
- * will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times, incrementing the port
- * number between attempts, with no delay between attempts.  Once it has incremented
- * the port number MAX_NUM_PORT_ADDRESSES times, it will cycle around and begin again
- * with DEFAULT_PORT.
- *
- * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
- * @param socket_type The type of the socket for the server (TCP or UDP).
- * @return The socket descriptor on which to accept connections.
- */
-static int create_rti_server(uint16_t port, socket_type_t socket_type) {
-    // Timeout time for the communications of the server
-    struct timeval timeout_time = {
-            .tv_sec = TCP_TIMEOUT_TIME / BILLION,
-            .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000
-    };
-    // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-    int socket_descriptor = -1;
-    if (socket_type == TCP) {
-        socket_descriptor = create_real_time_tcp_socket_errexit();
-    } else if (socket_type == UDP) {
-        socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-        // Set the appropriate timeout time
-        timeout_time = (struct timeval){
-                .tv_sec = UDP_TIMEOUT_TIME / BILLION,
-                .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000
-        };
-    }
-    if (socket_descriptor < 0) {
-        lf_print_error_system_failure("Failed to create RTI socket.");
-    }
-
-    // Set the option for this socket to reuse the same address
-    int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
-    if (setsockopt(
-            socket_descriptor,
-            SOL_SOCKET,
-            SO_REUSEADDR,
-            &true_variable,
-            sizeof(int32_t)) < 0) {
-        lf_print_error("RTI failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
-    }
-    // Set the timeout on the socket so that read and write operations don't block for too long
-    if (setsockopt(
-            socket_descriptor,
-            SOL_SOCKET,
-            SO_RCVTIMEO,
-            (const char *)&timeout_time,
-            sizeof(timeout_time)) < 0) {
-        lf_print_error("RTI failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
-    }
-    if (setsockopt(
-            socket_descriptor,
-            SOL_SOCKET,
-            SO_SNDTIMEO,
-            (const char *)&timeout_time,
-            sizeof(timeout_time)) < 0) {
-        lf_print_error("RTI failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
-    }
-
-    /*
-     * The following used to permit reuse of a port that an RTI has previously
-     * used that has not been released. We no longer do this, and instead retry
-     * some number of times after waiting.
-
-    // SO_REUSEPORT (since Linux 3.9)
-    //       Permits multiple AF_INET or AF_INET6 sockets to be bound to an
-    //       identical socket address.  This option must be set on each
-    //       socket (including the first socket) prior to calling bind(2)
-    //       on the socket.  To prevent port hijacking, all of the
-    //       processes binding to the same address must have the same
-    //       effective UID.  This option can be employed with both TCP and
-    //       UDP sockets.
-
-    int reuse = 1;
-    #ifdef SO_REUSEPORT
-    if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEPORT,
-            (const char*)&reuse, sizeof(reuse)) < 0)  {
-        perror("setsockopt(SO_REUSEPORT) failed");
-    }
-    #endif
-    */
-
-    // Server file descriptor.
-    struct sockaddr_in server_fd;
-    // Zero out the server address structure.
-    bzero((char *)&server_fd, sizeof(server_fd));
-
-    uint16_t specified_port = port;
-    if (specified_port == 0) port = DEFAULT_PORT;
-
-    server_fd.sin_family = AF_INET;         // IPv4
-    server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
-    // Convert the port number from host byte order to network byte order.
-    server_fd.sin_port = htons(port);
-
-    int result = bind(
-            socket_descriptor,
-            (struct sockaddr *)&server_fd,
-            sizeof(server_fd));
-
-    // Try repeatedly to bind to a port. If no specific port is specified, then
-    // increment the port number each time.
-
-    int count = 1;
-    while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-        if (specified_port == 0) {
-            lf_print_warning("RTI failed to get port %d.", port);
-            port++;
-            if (port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) port = DEFAULT_PORT;
-            lf_print_warning("RTI will try again with port %d.", port);
-            server_fd.sin_port = htons(port);
-            // Do not sleep.
-        } else {
-            lf_print("RTI failed to get port %d. Will try again.", port);
-            lf_sleep(PORT_BIND_RETRY_INTERVAL);
-        }
-        result = bind(
-            socket_descriptor,
-            (struct sockaddr *)&server_fd,
-            sizeof(server_fd));
-    }
-    if (result != 0) {
-        lf_print_error_and_exit("Failed to bind the RTI socket. Port %d is not available. ", port);
-    }
-    char *type = "TCP";
-    if (socket_type == UDP) {
-        type = "UDP";
-    }
-    lf_print("RTI using %s port %d for federation %s.", type, port, rti_remote->federation_id);
-
-    if (socket_type == TCP) {
-        rti_remote->final_port_TCP = port;
-        // Enable listening for socket connections.
-        // The second argument is the maximum number of queued socket requests,
-        // which according to the Mac man page is limited to 128.
-        listen(socket_descriptor, 128);
-    } else if (socket_type == UDP) {
-        rti_remote->final_port_UDP = port;
-        // No need to listen on the UDP socket
-    }
-
-    return socket_descriptor;
-}
-
 void notify_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
     if (e->state == NOT_CONNECTED
             || lf_tag_compare(tag, e->last_granted) <= 0
@@ -1254,7 +1104,8 @@ void send_reject(int *socket_id, unsigned char error_code) {
  * @param client_fd The socket address.
  * @return The federate ID for success or -1 for failure.
  */
-static int32_t net_receive_and_check_fed_id_message(netdrv_t *netdrv) {
+//TODO: UPDATE comments.
+static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
     // Buffer for message ID, federate ID, federation ID length, and federation ID.
     unsigned char buffer[256]; //TODO: NEED TO CHECK.
     // Read bytes from the socket. We need 4 bytes.
@@ -1373,152 +1224,11 @@ static int32_t net_receive_and_check_fed_id_message(netdrv_t *netdrv) {
 }
 
 /**
- * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
- * a federate ID and a federation ID. If the federation ID
- * matches this federation, send an MSG_TYPE_ACK and otherwise send
- * a MSG_TYPE_REJECT message.
- * @param socket_id Pointer to the socket on which to listen.
- * @param client_fd The socket address.
- * @return The federate ID for success or -1 for failure.
- */
-static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_in *client_fd) {
-    // Buffer for message ID, federate ID, and federation ID length.
-    size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
-    unsigned char buffer[length];
-
-    // Read bytes from the socket. We need 4 bytes.
-    if (read_from_socket_close_on_error(socket_id, length, buffer)) {
-        lf_print_error("RTI failed to read from accepted socket.");
-        return -1;
-    }
-
-    uint16_t fed_id = rti_remote->base.number_of_scheduling_nodes; // Initialize to an invalid value.
-
-    // First byte received is the message type.
-    if (buffer[0] != MSG_TYPE_FED_IDS) {
-        if (rti_remote->base.tracing_enabled) {
-            tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
-        }
-        if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
-            // The federate is trying to connect to a peer, not to the RTI.
-            // It has connected to the RTI instead.
-            // FIXME: This should not happen, but apparently has been observed.
-            // It should not happen because the peers get the port and IP address
-            // of the peer they want to connect to from the RTI.
-            // If the connection is a peer-to-peer connection between two
-            // federates, reject the connection with the WRONG_SERVER error.
-            send_reject(socket_id, WRONG_SERVER);
-        } else {
-            send_reject(socket_id, UNEXPECTED_MESSAGE);
-        }
-        lf_print_error("RTI expected a MSG_TYPE_FED_IDS message. Got %u (see net_common.h).", buffer[0]);
-        return -1;
-    } else {
-        // Received federate ID.
-        fed_id = extract_uint16(buffer + 1);
-        LF_PRINT_DEBUG("RTI received federate ID: %d.", fed_id);
-
-        // Read the federation ID.  First read the length, which is one byte.
-        size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
-        char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
-        // Next read the actual federation ID.
-        if (read_from_socket_close_on_error(socket_id, federation_id_length,
-                (unsigned char *)federation_id_received)) {
-            lf_print_error("RTI failed to read federation id from federate %d.", fed_id);
-            return -1;
-        }
-
-        // Terminate the string with a null.
-        federation_id_received[federation_id_length] = 0;
-
-        LF_PRINT_DEBUG("RTI received federation ID: %s.", federation_id_received);
-
-        if (rti_remote->base.tracing_enabled) {
-            tracepoint_rti_from_federate(rti_remote->base.trace, receive_FED_ID, fed_id, NULL);
-        }
-        // Compare the received federation ID to mine.
-        if (strncmp(rti_remote->federation_id, federation_id_received, federation_id_length) != 0) {
-            // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
-            lf_print_warning("Federate from another federation %s attempted to connect to RTI in federation %s.",
-                    federation_id_received,
-                    rti_remote->federation_id);
-            if (rti_remote->base.tracing_enabled) {
-                tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
-            }
-            send_reject(socket_id, FEDERATION_ID_DOES_NOT_MATCH);
-            return -1;
-        } else {
-            if (fed_id >= rti_remote->base.number_of_scheduling_nodes) {
-                // Federate ID is out of range.
-                lf_print_error("RTI received federate ID %d, which is out of range.", fed_id);
-                if (rti_remote->base.tracing_enabled) {
-                    tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
-                }
-                send_reject(socket_id, FEDERATE_ID_OUT_OF_RANGE);
-                return -1;
-            } else {
-                if ((rti_remote->base.scheduling_nodes[fed_id])->state != NOT_CONNECTED) {
-                    lf_print_error("RTI received duplicate federate ID: %d.", fed_id);
-                    if (rti_remote->base.tracing_enabled) {
-                        tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
-                    }
-                    send_reject(socket_id, FEDERATE_ID_IN_USE);
-                    return -1;
-                }
-            }
-        }
-    }
-    federate_info_t *fed = GET_FED_INFO(fed_id);
-    // The MSG_TYPE_FED_IDS message has the right federation ID.
-    // Assign the address information for federate.
-    // The IP address is stored here as an in_addr struct (in .server_ip_addr) that can be useful
-    // to create sockets and can be efficiently sent over the network.
-    // First, convert the sockaddr structure into a sockaddr_in that contains an internet address.
-    struct sockaddr_in *pV4_addr = client_fd;
-    // Then extract the internet address (which is in IPv4 format) and assign it as the federate's socket server
-    fed->server_ip_addr = pV4_addr->sin_addr;
-
-#if LOG_LEVEL >= LOG_LEVEL_DEBUG
-    // Create the human readable format and copy that into
-    // the .server_hostname field of the federate.
-    char str[INET_ADDRSTRLEN + 1];
-    inet_ntop(AF_INET, &fed->server_ip_addr, str, INET_ADDRSTRLEN);
-    strncpy(fed->server_hostname, str, INET_ADDRSTRLEN);
-
-    LF_PRINT_DEBUG("RTI got address %s from federate %d.", fed->server_hostname, fed_id);
-#endif
-    fed->socket = *socket_id;
-
-    // Set the federate's state as pending
-    // because it is waiting for the start time to be
-    // sent by the RTI before beginning its execution.
-    fed->enclave.state = PENDING;
-
-    LF_PRINT_DEBUG("RTI responding with MSG_TYPE_ACK to federate %d.", fed_id);
-    // Send an MSG_TYPE_ACK message.
-    unsigned char ack_message = MSG_TYPE_ACK;
-    if (rti_remote->base.tracing_enabled) {
-        tracepoint_rti_to_federate(rti_remote->base.trace, send_ACK, fed_id, NULL);
-    }
-    LF_MUTEX_LOCK(rti_mutex);
-    if (write_to_socket_close_on_error(&fed->socket, 1, &ack_message)) {
-        LF_MUTEX_UNLOCK(rti_mutex);
-        lf_print_error("RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
-        return -1;
-    }
-    LF_MUTEX_UNLOCK(rti_mutex);
-
-    LF_PRINT_DEBUG("RTI sent MSG_TYPE_ACK to federate %d.", fed_id);
-
-    return (int32_t)fed_id;
-}
-
-/**
  * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
  * out the relevant information in the federate's struct.
  * @return 1 on success and 0 on failure.
  */
-static int net_receive_connection_information(netdrv_t *netdrv, uint16_t fed_id) {
+static int receive_connection_information(netdrv_t *netdrv, uint16_t fed_id) {
     unsigned char connection_info_buffer[1024];
     LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
     read_from_netdrv_fail_on_error(
@@ -1587,92 +1297,6 @@ static int net_receive_connection_information(netdrv_t *netdrv, uint16_t fed_id)
     return 1;
 }
 
-/**
- * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
- * out the relevant information in the federate's struct.
- * @return 1 on success and 0 on failure.
- */
-static int receive_connection_information(int *socket_id, uint16_t fed_id) {
-    LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
-    unsigned char connection_info_header[MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE];
-    read_from_socket_fail_on_error(
-            socket_id,
-            MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE,
-            connection_info_header,
-            NULL,
-            "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message header from federate %d.",
-            fed_id);
-
-    if (connection_info_header[0] != MSG_TYPE_NEIGHBOR_STRUCTURE) {
-        lf_print_error(
-                "RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
-                "Rejecting federate.",
-                fed_id, connection_info_header[0]);
-        send_reject(socket_id, UNEXPECTED_MESSAGE);
-        return 0;
-    } else {
-        federate_info_t *fed = GET_FED_INFO(fed_id);
-        // Read the number of upstream and downstream connections
-        fed->enclave.num_upstream = extract_int32(&(connection_info_header[1]));
-        fed->enclave.num_downstream = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
-        LF_PRINT_DEBUG(
-                "RTI got %d upstreams and %d downstreams from federate %d.",
-                fed->enclave.num_upstream,
-                fed->enclave.num_downstream,
-                fed_id);
-
-        // Allocate memory for the upstream and downstream pointers
-        if (fed->enclave.num_upstream > 0) {
-            fed->enclave.upstream = (int *)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
-            // Allocate memory for the upstream delay pointers
-            fed->enclave.upstream_delay = (interval_t *)malloc(
-                    sizeof(interval_t) * fed->enclave.num_upstream);
-        } else {
-            fed->enclave.upstream = (int *)NULL;
-            fed->enclave.upstream_delay = (interval_t *)NULL;
-        }
-        if (fed->enclave.num_downstream > 0) {
-            fed->enclave.downstream = (int *)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
-        } else {
-            fed->enclave.downstream = (int *)NULL;
-        }
-
-        size_t connections_info_body_size = (
-                (sizeof(uint16_t) + sizeof(int64_t)) * fed->enclave.num_upstream)
-                + (sizeof(uint16_t) * fed->enclave.num_downstream);
-        unsigned char *connections_info_body = NULL;
-        if (connections_info_body_size > 0) {
-            connections_info_body = (unsigned char *)malloc(connections_info_body_size);
-            read_from_socket_fail_on_error(
-                    socket_id,
-                    connections_info_body_size,
-                    connections_info_body,
-                    NULL,
-                    "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
-                    fed_id);
-            // Keep track of where we are in the buffer
-            size_t message_head = 0;
-            // First, read the info about upstream federates
-            for (int i = 0; i < fed->enclave.num_upstream; i++) {
-                fed->enclave.upstream[i] = extract_uint16(&(connections_info_body[message_head]));
-                message_head += sizeof(uint16_t);
-                fed->enclave.upstream_delay[i] = extract_int64(&(connections_info_body[message_head]));
-                message_head += sizeof(int64_t);
-            }
-
-            // Next, read the info about downstream federates
-            for (int i = 0; i < fed->enclave.num_downstream; i++) {
-                fed->enclave.downstream[i] = extract_uint16(&(connections_info_body[message_head]));
-                message_head += sizeof(uint16_t);
-            }
-
-            free(connections_info_body);
-        }
-    }
-    LF_PRINT_DEBUG("RTI received neighbor structure from federate %d.", fed_id);
-    return 1;
-}
-
 //TODO: NEEDS TO BE FIXED!!
 /**
  * Listen for a MSG_TYPE_UDP_PORT message, and upon receiving it, set up
@@ -1686,7 +1310,7 @@ static int receive_connection_information(int *socket_id, uint16_t fed_id) {
  * @param fed_id The federate ID.
  * @return 1 for success, 0 for failure.
  */
-static int net_receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t fed_id) {
+static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t fed_id) {
     // Read the MSG_TYPE_UDP_PORT message from the federate regardless of the status of
     // clock synchronization. This message will tell the RTI whether the federate
     // is doing clock synchronization, and if it is, what port to use for UDP.
@@ -1731,93 +1355,6 @@ static int net_receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint1
                     } else {
                         lf_print_error("Unexpected message %u from federate %d.", buffer[0], fed_id);
                         net_send_reject(netdrv, UNEXPECTED_MESSAGE);
-                        return 0;
-                    }
-                }
-                LF_PRINT_DEBUG("RTI finished initial clock synchronization with federate %d.", fed_id);
-            }
-            if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-                // If no runtime clock sync, no need to set up the UDP port.
-                if (federate_UDP_port_number > 0) {
-                    // Initialize the UDP_addr field of the federate struct
-                    fed->UDP_addr.sin_family = AF_INET;
-                    fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
-                    fed->UDP_addr.sin_addr = fed->server_ip_addr;
-                }
-            } else {
-                // Disable clock sync after initial round.
-                fed->clock_synchronization_enabled = false;
-            }
-        } else {
-            // No clock synchronization at all.
-            LF_PRINT_DEBUG("RTI: No clock synchronization for federate %d.", fed_id);
-            // Clock synchronization is universally disabled via the clock-sync command-line parameter
-            // (-c off was passed to the RTI).
-            // Note that the federates are still going to send a
-            // MSG_TYPE_UDP_PORT message but with a payload (port) of -1.
-            fed->clock_synchronization_enabled = false;
-        }
-    }
-    return 1;
-}
-
-/**
- * Listen for a MSG_TYPE_UDP_PORT message, and upon receiving it, set up
- * clock synchronization and perform the initial clock synchronization.
- * Initial clock synchronization is performed only if the MSG_TYPE_UDP_PORT message
- * payload is not UINT16_MAX. If it is also not 0, then this function sets
- * up to perform runtime clock synchronization using the UDP port number
- * specified in the payload to communicate with the federate's clock
- * synchronization logic.
- * @param socket_id The socket on which to listen.
- * @param fed_id The federate ID.
- * @return 1 for success, 0 for failure.
- */
-static int receive_udp_message_and_set_up_clock_sync(int *socket_id, uint16_t fed_id) {
-    // Read the MSG_TYPE_UDP_PORT message from the federate regardless of the status of
-    // clock synchronization. This message will tell the RTI whether the federate
-    // is doing clock synchronization, and if it is, what port to use for UDP.
-    LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_UDP_PORT from federate %d.", fed_id);
-    unsigned char response[1 + sizeof(uint16_t)];
-    read_from_socket_fail_on_error(socket_id, 1 + sizeof(uint16_t), response, NULL,
-            "RTI failed to read MSG_TYPE_UDP_PORT message from federate %d.", fed_id);
-    if (response[0] != MSG_TYPE_UDP_PORT) {
-        lf_print_error(
-                "RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
-                "Rejecting federate.",
-                fed_id, response[0]);
-        send_reject(socket_id, UNEXPECTED_MESSAGE);
-        return 0;
-    } else {
-        federate_info_t *fed = GET_FED_INFO(fed_id);
-        if (rti_remote->clock_sync_global_status >= clock_sync_init) {
-            // If no initial clock sync, no need perform initial clock sync.
-            uint16_t federate_UDP_port_number = extract_uint16(&(response[1]));
-
-            LF_PRINT_DEBUG("RTI got MSG_TYPE_UDP_PORT %u from federate %d.", federate_UDP_port_number, fed_id);
-
-            // A port number of UINT16_MAX means initial clock sync should not be performed.
-            if (federate_UDP_port_number != UINT16_MAX) {
-                // Perform the initialization clock synchronization with the federate.
-                // Send the required number of messages for clock synchronization
-                for (int i = 0; i < rti_remote->clock_sync_exchanges_per_interval; i++) {
-                    // Send the RTI's current physical time T1 to the federate.
-                    send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
-
-                    // Listen for reply message, which should be T3.
-                    size_t message_size = 1 + sizeof(int32_t);
-                    unsigned char buffer[message_size];
-                    read_from_socket_fail_on_error(socket_id, message_size, buffer, NULL,
-                            "Socket to federate %d unexpectedly closed.", fed_id);
-                    if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
-                        int32_t fed_id = extract_int32(&(buffer[1]));
-                        assert(fed_id > -1);
-                        assert(fed_id < 65536);
-                        LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
-                        handle_physical_clock_sync_message(fed, TCP);
-                    } else {
-                        lf_print_error("Unexpected message %u from federate %d.", buffer[0], fed_id);
-                        send_reject(socket_id, UNEXPECTED_MESSAGE);
                         return 0;
                     }
                 }
@@ -1925,7 +1462,7 @@ static bool authenticate_federate(netdrv_t *rti_netdrv) {
 #endif
 
 
-void net_lf_connect_to_federates(netdrv_t *rti_netdrv) {
+void lf_connect_to_federates(netdrv_t *rti_netdrv) {
     for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
 
         netdrv_t *fed_netdrv = accept_connection(rti_netdrv);
@@ -1946,85 +1483,10 @@ void net_lf_connect_to_federates(netdrv_t *rti_netdrv) {
 #endif
 
         // The first message from the federate should contain its ID and the federation ID.
-        int32_t fed_id = net_receive_and_check_fed_id_message(fed_netdrv);
+        int32_t fed_id = receive_and_check_fed_id_message(fed_netdrv);
         if (fed_id >= 0
-                && net_receive_connection_information(fed_netdrv, (uint16_t)fed_id)
-                && net_receive_udp_message_and_set_up_clock_sync(fed_netdrv, (uint16_t)fed_id)) {
-
-            // Create a thread to communicate with the federate.
-            // This has to be done after clock synchronization is finished
-            // or that thread may end up attempting to handle incoming clock
-            // synchronization messages.
-            federate_info_t *fed = GET_FED_INFO(fed_id);
-            lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
-        } else {
-            // Received message was rejected. Try again.
-            i--;
-        }
-    }
-    // All federates have connected.
-    LF_PRINT_DEBUG("All federates have connected to RTI.");
-
-    if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-        // Create the thread that performs periodic PTP clock synchronization sessions
-        // over the UDP channel, but only if the UDP channel is open and at least one
-        // federate is performing runtime clock synchronization.
-        bool clock_sync_enabled = false;
-        for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-            federate_info_t *fed_info = GET_FED_INFO(i);
-            if (fed_info->clock_synchronization_enabled) {
-                clock_sync_enabled = true;
-                break;
-            }
-        }
-        if (rti_remote->final_port_UDP != UINT16_MAX && clock_sync_enabled) {
-            lf_thread_create(&rti_remote->clock_thread, clock_synchronization_thread, NULL);
-        }
-    }
-}
-
-void lf_connect_to_federates(int socket_descriptor) {
-    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-        // Wait for an incoming connection request.
-        struct sockaddr client_fd;
-        uint32_t client_length = sizeof(client_fd);
-        // The following blocks until a federate connects.
-        int socket_id = -1;
-        while (1) {
-            socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
-            if (socket_id >= 0) {
-                // Got a socket
-                break;
-            } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-                lf_print_error_system_failure("RTI failed to accept the socket.");
-            } else {
-                // Try again
-                lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
-                continue;
-            }
-        }
-
-// Wait for the first message from the federate when RTI -a option is on.
-#ifdef __RTI_AUTH__
-        if (rti_remote->authentication_enabled) {
-            if (!authenticate_federate(&socket_id)) {
-                lf_print_warning("RTI failed to authenticate the incoming federate.");
-                // Close the socket.
-                shutdown(socket_id, SHUT_RDWR);
-                close(socket_id);
-                socket_id = -1;
-                // Ignore the federate that failed authentication.
-                i--;
-                continue;
-            }
-        }
-#endif
-
-        // The first message from the federate should contain its ID and the federation ID.
-        int32_t fed_id = receive_and_check_fed_id_message(&socket_id, (struct sockaddr_in *)&client_fd);
-        if (fed_id >= 0 && socket_id >= 0
-                && receive_connection_information(&socket_id, (uint16_t)fed_id)
-                && receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
+                && receive_connection_information(fed_netdrv, (uint16_t)fed_id)
+                && receive_udp_message_and_set_up_clock_sync(fed_netdrv, (uint16_t)fed_id)) {
 
             // Create a thread to communicate with the federate.
             // This has to be done after clock synchronization is finished
@@ -2114,7 +1576,7 @@ int32_t start_rti_server() {
 
 void wait_for_federates(netdrv_t *netdrv) {
     // Wait for connections from federates and create a thread for each.
-    net_lf_connect_to_federates(netdrv);
+    lf_connect_to_federates(netdrv);
 
     // All federates have connected.
     lf_print("RTI: All expected federates have connected. Starting execution.");

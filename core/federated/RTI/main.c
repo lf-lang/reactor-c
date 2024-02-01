@@ -333,7 +333,7 @@ int main(int argc, const char* argv[]) {
         rti.base.scheduling_nodes[i] = (scheduling_node_t *) fed_info;
     }
     // TODO: Need to add user_specified_port
-    if (start_net_rti_server()){
+    if (start_rti_server()){
         wait_for_federates(rti.rti_netdrv);
         normal_termination = true;
         if (rti.base.tracing_enabled) {

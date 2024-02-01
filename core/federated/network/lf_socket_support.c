@@ -140,7 +140,23 @@ static int net_create_real_time_tcp_socket_errexit() {
     return sock;
 }
 
-void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
+/**
+ * Create a server and enable listening for socket connections.
+ * If the specified port if it is non-zero, it will attempt to acquire that port.
+ * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
+ * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
+ * zero, then it will attempt to acquire DEFAULT_PORT first. If this fails, then it
+ * will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times, incrementing the port
+ * number between attempts, with no delay between attempts.  Once it has incremented
+ * the port number MAX_NUM_PORT_ADDRESSES times, it will cycle around and begin again
+ * with DEFAULT_PORT.
+ *
+ * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
+ * @param socket_type The type of the socket for the server (TCP or UDP).
+ * @return The socket descriptor on which to accept connections.
+ */
+//TODO: Fix comments.
+int create_rti_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
     socket_priv_t *priv = get_priv(drv);
 
     // Timeout time for the communications of the server
@@ -280,6 +296,7 @@ void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
         priv->port = port;
         // No need to listen on the UDP socket
     }
+    return priv->socket_descriptor;
 }
 
 void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {

@@ -376,7 +376,8 @@ void send_reject(int* socket_id, unsigned char error_code);
  * that federate. Return when all federates have connected.
  * @param socket_descriptor The socket on which to accept connections.
  */
-void lf_connect_to_federates(int socket_descriptor);
+//TODO: Update comments.
+void lf_connect_to_federates(netdrv_t *rti_netdrv);
 
 /**
  * Thread to respond to new connections, which could be federates of other
@@ -391,9 +392,6 @@ void* respond_to_erroneous_connections(void* nothing);
  */
 void initialize_federate(federate_info_t* fed, uint16_t id);
 
-//TODO: Need to add descriptions.
-int32_t start_net_rti_server();
-
 // /**
 //  * Start the socket server for the runtime infrastructure (RTI) and
 //  * return the socket descriptor.
@@ -401,7 +399,8 @@ int32_t start_net_rti_server();
 //  * @param port The port on which to listen for socket connections, or
 //  *  0 to use the default port range.
 //  */
-// int32_t start_rti_server(uint16_t port);
+//TODO: Need to add descriptions.
+int32_t start_rti_server();
 
 //TODO: Add documentation.
 void wait_for_federates(netdrv_t *netdrv);

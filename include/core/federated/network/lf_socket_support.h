@@ -81,7 +81,8 @@ netdrv_t * netdrv_init();
  * @param socket_type The type of the socket for the server (TCP or UDP).
  * @return The socket descriptor on which to accept connections.
  */
-void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type);
+//TODO: Update descriptions.
+int create_rti_server(netdrv_t *drv, netdrv_type_t netdrv_type);
 
 
 // int create_real_time_tcp_socket_errexit();
