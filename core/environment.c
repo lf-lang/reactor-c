@@ -116,7 +116,8 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
         LF_ASSERT(env->_lf_intended_tag_fields, "Out of memory");
         env->_lf_intended_tag_fields_size = num_is_present_fields;
     } else {
-        env->_lf_intended_tag_fields_size = NULL;
+        env->_lf_intended_tag_fields = NULL;
+        env->_lf_intended_tag_fields_size = 0;
     }
 #endif
 }
