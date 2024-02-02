@@ -265,5 +265,5 @@ int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
     return res;
 }
 
-#endif // NUMBER_OF_WORKERS
+#endif // !LF_SINGLE_THREADED
 #endif
