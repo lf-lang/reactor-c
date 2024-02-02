@@ -1,4 +1,4 @@
-#include "trace-abi.h"
+#include "impl-in-plugin/trace-abi.h"
 
 // FIXME: Target property should specify the capacity of the trace buffer.
 #define TRACE_BUFFER_CAPACITY 2048

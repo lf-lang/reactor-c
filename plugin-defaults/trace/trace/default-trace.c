@@ -4,9 +4,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "trace-abi.h"
-#include "platform-abi.h"
-#include "logging-abi.h"
+#include "impl-in-plugin/trace-abi.h"
+#include "impl-in-core/platform-abi.h"
+#include "impl-in-core/logging-abi.h"
 #include "default-trace.h"
 
 /** Macro to use when access to trace file fails. */

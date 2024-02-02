@@ -104,7 +104,7 @@ typedef enum {
 
 #ifdef LF_TRACE
 
-#include "plugin-apis/trace-abi.h"
+#include "plugin-apis/impl-in-plugin/trace-abi.h"
 
 /**
  * String description of event types.

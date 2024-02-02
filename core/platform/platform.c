@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 #include "core/platform.h"
-#include "plugin-apis/platform-abi.h"
+#include "plugin-apis/impl-in-core/platform-abi.h"
 
 // MUTEXES *********************************************************************
 
