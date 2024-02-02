@@ -805,7 +805,7 @@ void *clock_synchronization_thread(void *noargs) {
             int remaining_attempts = 5;
             while (remaining_attempts > 0) {
                 remaining_attempts--;
-                int read_failed = read_from_socket(rti_remote->socket_descriptor_UDP, message_size, buffer);
+                int read_failed = read_from_netdrv(rti_remote->clock_netdrv, buffer);
                 // If any errors occur, either discard the message or the clock sync round.
                 if (!read_failed) {
                     if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
