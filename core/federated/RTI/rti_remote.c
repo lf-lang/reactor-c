@@ -223,40 +223,33 @@ void handle_port_absent_message(federate_info_t *sending_federate, unsigned char
 void handle_timed_message(federate_info_t *sending_federate, unsigned char *buffer) {
     size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
             + sizeof(int64_t) + sizeof(uint32_t);
-    // Read the header, minus the first byte which has already been read.
-    read_from_socket_fail_on_error(
-            &sending_federate->socket, header_size - 1, &(buffer[1]), NULL,
-            "RTI failed to read the timed message header from remote federate.");
     // Extract the header information. of the sender
     uint16_t reactor_port_id;
     uint16_t federate_id;
     size_t length;
     tag_t intended_tag;
     // Extract information from the header.
-    extract_timed_header(&(buffer[1]), &reactor_port_id, &federate_id, &length, &intended_tag);
+    extract_timed_header(buffer + 1, &reactor_port_id, &federate_id, &length, &intended_tag);
 
-    size_t total_bytes_to_read = length + header_size;
-    size_t bytes_to_read = length;
+    // size_t total_bytes_to_read = length + header_size;
+    // size_t bytes_to_read = length;
 
-    if (FED_COM_BUFFER_SIZE < header_size + 1) {
-        lf_print_error_and_exit("Buffer size (%d) is not large enough to "
-                                "read the header plus one byte.",
-                                FED_COM_BUFFER_SIZE);
-    }
+    // if (FED_COM_BUFFER_SIZE < header_size + 1) {
+    //     lf_print_error_and_exit("Buffer size (%d) is not large enough to "
+    //                             "read the header plus one byte.",
+    //                             FED_COM_BUFFER_SIZE);
+    // }
 
-    // Cut up the payload in chunks.
-    if (bytes_to_read > FED_COM_BUFFER_SIZE - header_size) {
-        bytes_to_read = FED_COM_BUFFER_SIZE - header_size;
-    }
+    // // Cut up the payload in chunks.
+    // if (bytes_to_read > FED_COM_BUFFER_SIZE - header_size) {
+    //     bytes_to_read = FED_COM_BUFFER_SIZE - header_size;
+    // }
 
     LF_PRINT_LOG("RTI received message from federate %d for federate %u port %u with intended tag " PRINTF_TAG ". Forwarding.",
                  sending_federate->enclave.id, federate_id, reactor_port_id,
                  intended_tag.time - lf_time_start(), intended_tag.microstep);
 
-    read_from_socket_fail_on_error(
-            &sending_federate->socket, bytes_to_read, &(buffer[header_size]), NULL,
-            "RTI failed to read timed message from federate %d.", federate_id);
-    size_t bytes_read = bytes_to_read + header_size;
+    // size_t bytes_read = bytes_to_read + header_size;
     // Following only works for string messages.
     // LF_PRINT_DEBUG("Message received by RTI: %s.", buffer + header_size);
 
@@ -308,29 +301,29 @@ void handle_timed_message(federate_info_t *sending_federate, unsigned char *buff
         tracepoint_rti_to_federate(rti_remote->base.trace, send_TAGGED_MSG, federate_id, &intended_tag);
     }
 
-    write_to_socket_fail_on_error(&fed->socket, bytes_read, buffer, &rti_mutex,
+    write_to_netdrv_fail_on_error(fed->fed_netdrv, length + header_size, buffer, &rti_mutex,
             "RTI failed to forward message to federate %d.", federate_id);
 
-    // The message length may be longer than the buffer,
-    // in which case we have to handle it in chunks.
-    size_t total_bytes_read = bytes_read;
-    while (total_bytes_read < total_bytes_to_read) {
-        LF_PRINT_DEBUG("Forwarding message in chunks.");
-        bytes_to_read = total_bytes_to_read - total_bytes_read;
-        if (bytes_to_read > FED_COM_BUFFER_SIZE) {
-            bytes_to_read = FED_COM_BUFFER_SIZE;
-        }
-        read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, buffer, NULL,
-                "RTI failed to read message chunks.");
-        total_bytes_read += bytes_to_read;
+    // // The message length may be longer than the buffer,
+    // // in which case we have to handle it in chunks.
+    // size_t total_bytes_read = bytes_read;
+    // while (total_bytes_read < total_bytes_to_read) {
+    //     LF_PRINT_DEBUG("Forwarding message in chunks.");
+    //     bytes_to_read = total_bytes_to_read - total_bytes_read;
+    //     if (bytes_to_read > FED_COM_BUFFER_SIZE) {
+    //         bytes_to_read = FED_COM_BUFFER_SIZE;
+    //     }
+    //     read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, buffer, NULL,
+    //             "RTI failed to read message chunks.");
+    //     total_bytes_read += bytes_to_read;
 
-        // FIXME: a mutex needs to be held for this so that other threads
-        // do not write to destination_socket and cause interleaving. However,
-        // holding the rti_mutex might be very expensive. Instead, each outgoing
-        // socket should probably have its own mutex.
-        write_to_socket_fail_on_error(&fed->socket, bytes_to_read, buffer, &rti_mutex,
-                                      "RTI failed to send message chunks.");
-    }
+    //     // FIXME: a mutex needs to be held for this so that other threads
+    //     // do not write to destination_socket and cause interleaving. However,
+    //     // holding the rti_mutex might be very expensive. Instead, each outgoing
+    //     // socket should probably have its own mutex.
+    //     write_to_socket_fail_on_error(&fed->socket, bytes_to_read, buffer, &rti_mutex,
+    //                                   "RTI failed to send message chunks.");
+    // }
 
     // Record this in-transit message in federate's in-transit message queue.
     if (lf_tag_compare(fed->enclave.completed, intended_tag) < 0) {

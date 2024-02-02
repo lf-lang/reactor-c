@@ -571,17 +571,13 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         // case MSG_TYPE_RESIGN:
         //     handle_federate_resign(my_fed);
         //     return NULL;            
-        case MSG_TYPE_TAGGED_MESSAGE:
-            size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
-                + sizeof(int64_t) + sizeof(uint32_t);
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-                    "RTI failed to read the content of the next event tag.");
+        case MSG_TYPE_TAGGED_MESSAGE: ;
+            size_t header_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, header_size, buffer, NULL,
+                    "RTI failed to read the timed message header from remote federate.");
             size_t length = (size_t) extract_int32(buffer + sizeof(uint16_t) + sizeof(uint16_t));
-            size_t total_bytes_to_read = length + header_size;
-            size_t bytes_to_read = length;
-            if (bytes_to_read > FED_COM_BUFFER_SIZE - header_size) {
-                bytes_to_read = FED_COM_BUFFER_SIZE - header_size;
-            }
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, length, buffer + header_size, NULL,
+                    "RTI failed to read timed message.");
             break;
 
 
