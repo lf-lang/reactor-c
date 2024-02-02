@@ -88,6 +88,15 @@ int netdrv_write(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
  */
 extern lf_mutex_t socket_mutex;
 
+/**
+ * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
+ * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
+ * on any error.
+ *
+ * @return The socket ID (a file descriptor).
+ */
+int create_real_time_tcp_socket_errexit();
+
 //TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Read the specified number of bytes from the specified socket into the specified buffer.
