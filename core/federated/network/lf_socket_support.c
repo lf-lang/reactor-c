@@ -112,7 +112,7 @@ netdrv_t *netdrv_init() {
  *
  * @return The socket ID (a file descriptor).
  */
-static int create_real_time_tcp_socket_errexit() {
+static int net_create_real_time_tcp_socket_errexit() {
     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock < 0) {
         lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
@@ -167,7 +167,7 @@ int create_rti_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
     priv->socket_descriptor = -1;
     if (netdrv_type == RTI) {
-        priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+        priv->socket_descriptor = net_create_real_time_tcp_socket_errexit();
     } else if (netdrv_type == CLOCKSYNC) {
         priv->socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         // Set the appropriate timeout time
@@ -571,9 +571,18 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         // case MSG_TYPE_RESIGN:
         //     handle_federate_resign(my_fed);
         //     return NULL;            
-        // case MSG_TYPE_TAGGED_MESSAGE:
-        //     handle_timed_message(my_fed, buffer);
-        //     break;
+        case MSG_TYPE_TAGGED_MESSAGE:
+            size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
+                + sizeof(int64_t) + sizeof(uint32_t);
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
+                    "RTI failed to read the content of the next event tag.");
+            size_t length = (size_t) extract_int32(buffer + sizeof(uint16_t) + sizeof(uint16_t));
+            size_t total_bytes_to_read = length + header_size;
+            size_t bytes_to_read = length;
+            if (bytes_to_read > FED_COM_BUFFER_SIZE - header_size) {
+                bytes_to_read = FED_COM_BUFFER_SIZE - header_size;
+            }
+            break;
 
 
 
@@ -582,6 +591,7 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         case MSG_TYPE_NEXT_EVENT_TAG:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
                     "RTI failed to read the content of the next event tag.");
+            break;
         //     case MSG_TYPE_TAG_ADVANCE_GRANT:
         //         handle_tag_advance_grant();
         //         break;
@@ -592,19 +602,21 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         case MSG_TYPE_LATEST_TAG_COMPLETE:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
                     "RTI failed to read the content of the logical tag complete.");
+            break;
         case MSG_TYPE_STOP_REQUEST:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, MSG_TYPE_STOP_REQUEST_LENGTH - 1, buffer, NULL,
                     "RTI failed to read the MSG_TYPE_STOP_REQUEST payload.");
+            break;
         case MSG_TYPE_STOP_REQUEST_REPLY:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1, buffer, NULL,
                     "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message.");
+            break;
         //     case MSG_TYPE_STOP_GRANTED:
         //         handle_stop_granted_message();
         //         break;
 
         case MSG_TYPE_ADDRESS_QUERY:
             return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
-            break;
         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int32_t), buffer, NULL,
                     "Error reading port data.");            
@@ -643,6 +655,7 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         case MSG_TYPE_PORT_ABSENT:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
                     "RTI failed to read port absent message.");
+            break;
 
         case MSG_TYPE_NEIGHBOR_STRUCTURE:
             net_read_from_socket(priv->socket_descriptor, MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1, buffer);
