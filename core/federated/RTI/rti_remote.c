@@ -1211,7 +1211,12 @@ void *federate_info_thread_TCP(void *fed) {
     return NULL;
 }
 
-void send_reject(int *socket_id, unsigned char error_code) {
+/**
+ * Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
+ * @param socket_id Pointer to the socket ID.
+ * @param error_code An error code.
+ */
+static void send_reject(int *socket_id, unsigned char error_code) {
     LF_PRINT_DEBUG("RTI sending MSG_TYPE_REJECT.");
     unsigned char response[2];
     response[0] = MSG_TYPE_REJECT;
@@ -1239,11 +1244,11 @@ void send_reject(int *socket_id, unsigned char error_code) {
  */
 static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_in *client_fd) {
     // Buffer for message ID, federate ID, and federation ID length.
-    size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
+    size_t length = 4 + sizeof(uint16_t) + 1; // Message ID, version, federate ID, length of federation ID.
     unsigned char buffer[length];
 
-    // Read bytes from the socket. We need 4 bytes.
-    if (read_from_socket_close_on_error(socket_id, length, buffer)) {
+    // Read the first byte from the socket.
+    if (read_from_socket_close_on_error(socket_id, 1, buffer)) {
         lf_print_error("RTI failed to read from accepted socket.");
         return -1;
     }
@@ -1251,15 +1256,14 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
     uint16_t fed_id = rti_remote->base.number_of_scheduling_nodes; // Initialize to an invalid value.
 
     // First byte received is the message type.
-    if (buffer[0] != MSG_TYPE_FED_IDS) {
+    if (buffer[0] != MSG_TYPE_FED_IDS && buffer[0] != MSG_TYPE_FED_VERSION) {
         if (rti_remote->base.tracing_enabled) {
             tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
         }
         if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
             // The federate is trying to connect to a peer, not to the RTI.
             // It has connected to the RTI instead.
-            // FIXME: This should not happen, but apparently has been observed.
-            // It should not happen because the peers get the port and IP address
+            // NOTE: This should not happen because the peers get the port and IP address
             // of the peer they want to connect to from the RTI.
             // If the connection is a peer-to-peer connection between two
             // federates, reject the connection with the WRONG_SERVER error.
@@ -1270,12 +1274,30 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
         lf_print_error("RTI expected a MSG_TYPE_FED_IDS message. Got %u (see net_common.h).", buffer[0]);
         return -1;
     } else {
-        // Received federate ID.
-        fed_id = extract_uint16(buffer + 1);
+        // Signal type is either MSG_TYPE_FED_IDS or MSG_TYPE_FED_VERSION.
+        size_t offset = 1; // Offset into the buffer of the federate ID if it's MSG_TYPE_FED_IDS.
+        if (buffer[0] != MSG_TYPE_FED_IDS) {
+            offset = 4; // Offset of the federate ID if it's MSG_TYPE_FED_VERSION.
+            // Read 6 bytes for the protocol version (3), federate ID (2), and federation ID length (1)
+            // into the buffer.
+            if (read_from_socket_close_on_error(socket_id, 6, &buffer[1])) {
+                lf_print_error("RTI failed to read federate ID from socket.");
+                return -1;
+            }
+        } else {
+            // Read 3 bytes for the federate ID (2) and federation ID length (1) into the buffer.
+            if (read_from_socket_close_on_error(socket_id, 3, &buffer[1])) {
+                lf_print_error("RTI failed to read protocol version & federate ID from socket.");
+                return -1;
+            }
+        }
+        // Extract federate ID.
+        fed_id = extract_uint16(buffer + offset);
         LF_PRINT_DEBUG("RTI received federate ID: %d.", fed_id);
 
         // Read the federation ID.  First read the length, which is one byte.
-        size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
+        size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + offset];
+
         char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
         // Next read the actual federation ID.
         if (read_from_socket_close_on_error(socket_id, federation_id_length,
@@ -1287,7 +1309,36 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
         // Terminate the string with a null.
         federation_id_received[federation_id_length] = 0;
 
-        LF_PRINT_DEBUG("RTI received federation ID: %s.", federation_id_received);
+        if (buffer[0] == MSG_TYPE_FED_IDS) {
+            // Legacy federate, pre-versioning. Set the protocol version to 0 unless it
+            // has been previously set.
+            if (rti_remote->protocol_version > 0) {
+                // The protocol version has already been set to an incompatible version.
+                LF_PRINT_DEBUG("Federate using protocol version 0 rejected.");
+                send_reject(socket_id, LF_FED_VERSION_DOES_NOT_MATCH);
+                return -1;
+            }
+            rti_remote->protocol_version = 0;
+            LF_PRINT_DEBUG("RTI: Legacy protocol version 0 will be used.");
+        } else {
+            // Extract the proposed protocol version.
+            int32_t proposed_version = 
+                    ((int32_t)buffer[1]) << 16 
+                    | ((int32_t)buffer[2]) << 8 
+                    | ((int32_t)buffer[3]);
+            if (rti_remote->protocol_version > 0 && proposed_version != rti_remote->protocol_version) {
+                // The protocol version has already been set to an incompatible version.
+                LF_PRINT_DEBUG("Federate using protocol version %u.%u.%u rejected.",
+                    buffer[1], buffer[2], buffer[3]
+                );
+                send_reject(socket_id, LF_FED_VERSION_DOES_NOT_MATCH);
+                return -1;
+            }
+            LF_PRINT_LOG("RTI: Protocol version %u.%u.%u will be used.",
+                buffer[1], buffer[2], buffer[3]
+            );
+            rti_remote->protocol_version = proposed_version;
+        }
 
         if (rti_remote->base.tracing_enabled) {
             tracepoint_rti_from_federate(rti_remote->base.trace, receive_FED_ID, fed_id, NULL);
@@ -1795,6 +1846,9 @@ void wait_for_federates(int socket_descriptor) {
 
 void initialize_RTI(rti_remote_t *rti) {
     rti_remote = rti;
+
+    // Unknown protocol version initially.
+    rti->protocol_version = -1;
 
     // Initialize thread synchronization primitives
     LF_MUTEX_INIT(rti_mutex);

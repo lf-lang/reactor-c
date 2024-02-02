@@ -1956,7 +1956,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
         if (result < 0) continue; // Connect failed.
 
         // Have connected to an RTI, but not sure it's the right RTI.
-        // Send a MSG_TYPE_FED_IDS message and wait for a reply.
+        // First, if appropriate, authenticate with the RTI and then
+        // send a MSG_TYPE_FED_VERSION message and wait for a reply.
         // Notify the RTI of the ID of this federate and its federation.
 
 #ifdef FEDERATED_AUTHENTICATED
@@ -1975,23 +1976,28 @@ void lf_connect_to_rti(const char* hostname, int port) {
 #endif
 
         // Send the message type first.
-        unsigned char buffer[4];
-        buffer[0] = MSG_TYPE_FED_IDS;
+        unsigned char buffer[7];
+        buffer[0] = MSG_TYPE_FED_VERSION;
+        // Next three bytes are the version number. Careful about endianness.
+        buffer[1] = (unsigned char)((LF_FED_VERSION & 0xff0000) >> 16);
+        buffer[2] = (unsigned char)((LF_FED_VERSION & 0xff00) >> 8);
+        buffer[3] = (unsigned char)((LF_FED_VERSION & 0xff));
+        
         // Next send the federate ID.
         if (_lf_my_fed_id > UINT16_MAX) {
             lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX);
         }
-        encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
+        encode_uint16((uint16_t)_lf_my_fed_id, &buffer[4]);
         // Next send the federation ID length.
         // The federation ID is limited to 255 bytes.
         size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
-        buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
+        buffer[4 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
 
         // Trace the event when tracing is enabled
         tracepoint_federate_to_rti(_fed.trace, send_FED_ID, _lf_my_fed_id, NULL);
 
         // No need for a mutex here because no other threads are writing to this socket.
-        if (write_to_socket(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t), buffer)) {
+        if (write_to_socket(_fed.socket_TCP_RTI, 5 + sizeof(uint16_t), buffer)) {
             continue; // Try again, possibly on a new port.
         }
 
@@ -2024,6 +2030,22 @@ void lf_connect_to_rti(const char* hostname, int port) {
             if (cause == FEDERATION_ID_DOES_NOT_MATCH || cause == WRONG_SERVER) {
                 lf_print_warning("Connected to the wrong RTI on port %d. Will try again", uport);
                 continue;
+            } else if (cause == LF_FED_VERSION_DOES_NOT_MATCH) {
+                lf_print_error_and_exit(
+                    "Found RTI with a matching federation ID but incompatible protocol version.\n"
+                    "To install an updated RTI, see: "
+                    "https://www.lf-lang.org/docs/writing-reactors/distributed-execution#installation-of-the-rti"
+                );
+            } else if (cause == UNEXPECTED_MESSAGE) {
+                lf_print_error(
+                    "Found an RTI that is too old. Will try again.\n"
+                    "To install an updated RTI, see: "
+                    "https://www.lf-lang.org/docs/writing-reactors/distributed-execution#installation-of-the-rti"
+                );
+                continue;
+            } else {
+                lf_print_error_and_exit("RTI on port %d rejected federation ID with cause %u. Will try again",
+                        uport, cause);
             }
         } else if (response == MSG_TYPE_ACK) {
             // Trace the event when tracing is enabled

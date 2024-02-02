@@ -99,10 +99,14 @@ typedef enum clock_sync_stat {
  */
 typedef struct rti_remote_t {
     rti_common_t base;
-    // Maximum start time seen so far from the federates.
+
+    /** Protocol version or -1 if not set. */
+    int32_t protocol_version;
+
+    /** Maximum start time seen so far from the federates. */
     int64_t max_start_time;
 
-    // Number of federates that have proposed start times.
+    /** Number of federates that have proposed start times. */
     int num_feds_proposed_start;
 
     /**
@@ -348,13 +352,6 @@ void* clock_synchronization_thread(void* noargs);
  *  socket descriptor for the federate.
  */
 void* federate_info_thread_TCP(void* fed);
-
-/**
- * Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
- * @param socket_id Pointer to the socket ID.
- * @param error_code An error code.
- */
-void send_reject(int* socket_id, unsigned char error_code);
 
 /**
  * Wait for one incoming connection request from each federate,

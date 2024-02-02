@@ -2,33 +2,9 @@
  * @file
  * @author Edward A. Lee (eal@berkeley.edu)
  * @author Soroush Bateni (soroush@utdallas.edu)
- *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-/**
- * @section DESCRIPTION
- * Header file for common message types and definitions for federated Lingua Franca programs.
+ * @copyright (c) 2020-2023, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Header file for common message types and definitions for federated Lingua Franca programs.
  *
  * This file defines the message types for the federate to communicate with the RTI.
  * Each message type has a unique one-byte ID.
@@ -180,6 +156,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NET_COMMON_H
 
 /**
+ * @brief The version of the federate protocol, encoded as three bytes.
+ * 
+ * The first byte is the major version, the next byte is the minor version
+ * and the third byte is the patch version. The first numbered version is 0.1.0 (0x000100).
+ * Earlier versions (implememented in version 0.6.0 of Lingua Franca) are designated version 0.
+ * 
+ * An implementation of the RTI may support multiple versions of the protocol, but
+ * all federates that join the federation will have to use the same version.
+ * The first federate to join may either not propose a version number (in which case
+ * the RTI will use version 0). If the RTI does not support the version proposed by the
+ * first federate, then it will send MSG_TYPE_REJECT. Otherwise, it sends MSG_TYPE_ACK.
+ * Subsequent federates will have to propose matching versions or else they too will be
+ * rejected.  If the federate itself supports multiple versions, then it can attempt to
+ * join again with a lower proposed version number.  A federate uses the MSG_TYPE_FED_VERSION
+ * to propose a protocol version (this message will also carry the federation ID).
+ * A legacy federate using version 0 attempts to join with MSG_TYPE_FED_IDS instead.
+ */
+#define LF_FED_VERSION 0x000100
+
+/**
  * The timeout time in ns for TCP operations.
  * Default value is 10 secs.
  */
@@ -275,8 +271,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_REJECT 0
 
 /**
- * Byte identifying an acknowledgment of the previously received message.
- * This message carries no payload.
+ * Byte identifying an acknowledgment of the previously received message
+ * (MSG_TYPE_FED_IDS or MSG_TYPE_P2P_SENDING_FED_ID).
+ * This message carries a 32-bit payload identifying the proposed protocol version,
+ * which is assured of being no greater than the version provided by the previously
+ * received message.
  */
 #define MSG_TYPE_ACK 255
 
@@ -290,21 +289,23 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_UDP_PORT 254
 
-/** Byte identifying a message from a federate to an RTI containing
- *  the federation ID and the federate ID. The message contains, in
- *  this order:
+/** 
+ * Byte identifying a message from a federate to an RTI containing
+ * the federation ID and the federate ID. The message contains, in
+ * this order:
  *  * One byte equal to MSG_TYPE_FED_IDS.
  *  * Two bytes (ushort) giving the federate ID.
  *  * One byte (uchar) giving the length N of the federation ID.
  *  * N bytes containing the federation ID.
- *  Each federate needs to have a unique ID between 0 and
- *  NUMBER_OF_FEDERATES-1.
- *  Each federate, when starting up, should send this message
- *  to the RTI. This is its first message to the RTI.
- *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
- *  If the federate is a C target LF program, the generated federate
- *  code does this by calling lf_synchronize_with_other_federates(),
- *  passing to it its federate ID.
+ * Each federate needs to have a unique ID between 0 and
+ * NUMBER_OF_FEDERATES-1.
+ * Each federate, when starting up, should send this message
+ * to the RTI. This is its first message to the RTI.
+ * The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
+ * If the federate is a C target LF program, the generated federate
+ * code does this by calling lf_synchronize_with_other_federates(),
+ * passing to it its federate ID.
+ * @deprecated Use MSG_TYPE_FED_VERSION instead.
  */
 #define MSG_TYPE_FED_IDS 1
 
@@ -312,8 +313,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Byte identifying a message from a federate to an RTI containing
  * federate's 8-byte random nonce for HMAC-based authentication. The federate sends this
- * message to an incoming RTI when TCP connection is established
- * between the RTI and the federate.
+ * message to the RTI when TCP connection is established.
  * The message contains, in this order:
  * * One byte equal to MSG_TYPE_FED_NONCE.
  * * Two bytes (ushort) giving the federate ID.
@@ -616,7 +616,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_CLOCK_SYNC_CODED_PROBE 22
 
-
 /**
  * A port absent message, informing the receiver that a given port
  * will not have event for the current logical time.
@@ -629,8 +628,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The next 4 bytes are the intended microstep of the absent message
  */
 #define MSG_TYPE_PORT_ABSENT 23
-
-
 
 /**
  * A message that informs the RTI about connections between this federate and
@@ -666,6 +663,29 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_FAILED 25
 
 /////////////////////////////////////////////
+//// Messages used in protocol versions 0.1.0 and higher.
+
+/** 
+ * Byte identifying a message from a federate to an RTI containing
+ * the proposed protocol version, the federation ID, and the federate ID.
+ * The message contains, in this order:
+ *  * One byte equal to MSG_TYPE_FED_VERSION.
+ *  * Three bytes containing the proposed protocol version.
+ *  * Two bytes (ushort) giving the federate ID.
+ *  * One byte (uchar) giving the length N of the federation ID.
+ *  * N bytes containing the federation ID.
+ *  Each federate needs to have a unique ID between 0 and
+ *  NUMBER_OF_FEDERATES-1.
+ *  Each federate, when starting up, should send this message
+ *  to the RTI. This is its first message to the RTI.
+ *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
+ *  If the federate is a C target LF program, the generated federate
+ *  code does this by calling lf_synchronize_with_other_federates(),
+ *  passing to it its federate ID.
+ */
+#define MSG_TYPE_FED_VERSION 26
+
+/////////////////////////////////////////////
 //// Rejection codes
 
 /**
@@ -690,5 +710,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** HMAC authentication failed. */
 #define HMAC_DOES_NOT_MATCH 6
+
+/** Protocol version does not match. */
+#define LF_FED_VERSION_DOES_NOT_MATCH 7
 
 #endif /* NET_COMMON_H */
