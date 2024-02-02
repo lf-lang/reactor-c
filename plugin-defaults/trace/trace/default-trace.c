@@ -233,11 +233,11 @@ static void stop_trace(trace_t* trace) {
 
 version_t lf_version_tracing() {
     return (version_t) {
-        .single_threaded = DOES_NOT_MATTER,
+        .single_threaded = TRIBOOL_DOES_NOT_MATTER,
 #ifdef NDEBUG
-        .build_type_is_debug = FALSE,
+        .build_type_is_debug = TRIBOOL_FALSE,
 #else
-        .build_type_is_debug = TRUE,
+        .build_type_is_debug = TRIBOOL_TRUE,
 #endif
         .log_level = LOG_LEVEL,
         .core_sha = NULL,

@@ -12,9 +12,9 @@
 #define VERSION_ABI_H
 
 typedef enum {
-  FALSE = 0,
-  TRUE = 1,
-  DOES_NOT_MATTER = 2,
+  TRIBOOL_FALSE = 0,
+  TRIBOOL_TRUE = 1,
+  TRIBOOL_DOES_NOT_MATTER = 2,
 } tribool_t;
 
 typedef struct {
