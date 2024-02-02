@@ -151,6 +151,17 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
     return k_thread_join(thread, K_FOREVER);
 }
 
+void initialize_lf_thread_id() {
+    static volatile int _lf_worker_thread_count = 0;
+    int *thread_id = (int*) malloc(sizeof(int));
+    *thread_id = lf_atomic_fetch_add(&_lf_worker_thread_count, 1);
+    k_thread_custom_data_set(thread_id);
+}
+
+int lf_thread_id() {
+    return *((int*)k_thread_custom_data_get());
+}
+
 int lf_mutex_init(lf_mutex_t* mutex) {
     return k_mutex_init(mutex);    
 }

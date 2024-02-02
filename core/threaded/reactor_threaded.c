@@ -70,33 +70,6 @@ extern instant_t start_time;
 */
 lf_mutex_t global_mutex;
 
-static volatile int _lf_worker_thread_count = 0;
-
-#ifdef PLATFORM_ZEPHYR
-
-void initialize_lf_thread_id() {
-    int *thread_id = (int*) malloc(sizeof(int));
-    *thread_id = lf_atomic_fetch_add(&_lf_worker_thread_count, 1);
-    k_thread_custom_data_set(thread_id);
-}
-
-int lf_thread_id() {
-    return *((int*)k_thread_custom_data_get());
-}
-
-#else
-
-static thread_local int lf_thread_id_var = -1;
-
-int lf_thread_id() {
-    return lf_thread_id_var;
-}
-
-void initialize_lf_thread_id() {
-    lf_thread_id_var = lf_atomic_fetch_add(&_lf_worker_thread_count, 1);
-}
-#endif
-
 void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
     assert(env != GLOBAL_ENVIRONMENT);
 
