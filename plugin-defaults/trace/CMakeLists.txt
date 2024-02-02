@@ -4,6 +4,7 @@ project(DefaultTracing LANGUAGES C)
 
 add_library(DefaultTracing STATIC trace/default-trace.c)
 target_include_directories(DefaultTracing PRIVATE ../../include/plugin-apis)
+target_include_directories(DefaultTracing PRIVATE ../../include)
 target_include_directories(DefaultTracing PRIVATE ./include)
 
 # handle compile-time parameters

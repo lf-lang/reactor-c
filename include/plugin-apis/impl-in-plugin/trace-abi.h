@@ -4,6 +4,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "plugin-apis/version-abi.h"
+
+/**
+ * @brief Return a description of the compile-time properties of the current
+ * plugin.
+ */
+version_t lf_version_tracing();
+
 /**
  * Identifier for what is in the object table.
  */

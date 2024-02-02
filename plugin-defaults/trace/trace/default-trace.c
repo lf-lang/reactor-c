@@ -229,6 +229,21 @@ static void stop_trace(trace_t* trace) {
     lf_platform_mutex_unlock(trace_mutex);
 }
 
+// IMPLEMENTATION OF VERSION API *********************************************
+
+version_t lf_version_tracing() {
+    return (version_t) {
+        .single_threaded = DOES_NOT_MATTER,
+#ifdef NDEBUG
+        .build_type_is_debug = FALSE,
+#else
+        .build_type_is_debug = TRUE,
+#endif
+        .log_level = LOG_LEVEL,
+        .core_sha = NULL,
+    };
+}
+
 // IMPLEMENTATION OF TRACE API ***********************************************
 
 void lf_tracing_register_trace_event(object_description_t description) {

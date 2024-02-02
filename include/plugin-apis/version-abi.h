@@ -1,5 +1,5 @@
 /**
- * @file version.h
+ * @file version-abi.h
  * @author Peter Donovan (peter@xronos.com)
  * @brief API for runtime plugins to use to sanity-check compatibility with the
  * core.
@@ -8,6 +8,8 @@
  *
  * @copyright Copyright (c) 2024
  */
+#ifndef VERSION_ABI_H
+#define VERSION_ABI_H
 
 typedef enum {
   FALSE = 0,
@@ -15,13 +17,11 @@ typedef enum {
   DOES_NOT_MATTER = 2,
 } tribool_t;
 
-#define NAMESPACE_BY_PLUGIN(NAME) NAME ## LF_CURRENT_PLUGIN_NAME
+typedef struct {
+  tribool_t single_threaded;
+  tribool_t build_type_is_debug;
+  int log_level;
+  char* core_sha;
+} version_t;
 
-/**
- * @brief Return whether a threading library is required.
- */
-tribool_t NAMESPACE_BY_PLUGIN(lf_version_single_threaded)();
-tribool_t NAMESPACE_BY_PLUGIN(lf_version_build_type_is_debug)();
-tribool_t NAMESPACE_BY_PLUGIN(lf_version_tracing_enabled)();
-char* NAMESPACE_BY_PLUGIN(lf_version_log_level)();
-char* NAMESPACE_BY_PLUGIN(lf_version_core_sha)();
+#endif // VERSION_ABI_H

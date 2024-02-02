@@ -57,6 +57,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "util.h"
 #include "vector.h"
+#include "plugin-apis/version-abi.h"
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
 #include "environment.h"
@@ -1721,10 +1722,32 @@ int process_args(int argc, const char* argv[]) {
 }
 
 /**
+ * @brief Check that the provided version information is consistent with the
+ * core runtime.
+ */
+static void check_version(version_t version) {
+    #ifdef LF_SINGLE_THREADED
+    LF_ASSERT(version.single_threaded || version.single_threaded == DOES_NOT_MATTER, "expected single-threaded version");
+    #else
+    LF_ASSERT(!version.single_threaded || version.single_threaded == DOES_NOT_MATTER, "expected multi-threaded version");
+    #endif
+    #ifdef NDEBUG
+    LF_ASSERT(!version.build_type_is_debug || version.build_type_is_debug == DOES_NOT_MATTER, "expected release version");
+    #else
+    LF_ASSERT(version.build_type_is_debug || version.build_type_is_debug == DOES_NOT_MATTER, "expected debug version");
+    #endif
+    LF_ASSERT(version.log_level == LOG_LEVEL, "expected log level %d", LOG_LEVEL);
+    // assert(!version.core_sha || strcmp(version.core_sha, CORE_SHA) == 0); // TODO: provide CORE_SHA
+}
+
+/**
  * Initialize global variables and start tracing before calling the
  * `_lf_initialize_trigger_objects` function
  */
 void initialize_global(void) {
+#ifdef LF_TRACE
+    check_version(lf_version_tracing());
+#endif
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
     

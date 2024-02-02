@@ -336,6 +336,12 @@ void tracepoint_user_value(void* self, char* description, long long value);
 #define tracepoint_reaction_deadline_missed(env, reaction, worker) \
     call_tracepoint(reaction_deadline_missed, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0, false)
 
+/**
+ * @brief Check if the tracing library is compatible with the current version
+ * of the runtime.
+ */
+void lf_tracing_check_version();
+
 // /**
 //  * Flush any buffered trace records to the trace file and close the files.
 //  * @param trace The trace object.
