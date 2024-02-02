@@ -429,8 +429,8 @@ void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* t
 typedef struct trace_t trace_t;
 
 // empty definition in case we compile without tracing
-#define _lf_register_trace_event(...)
-#define register_user_trace_event(...)
+#define _lf_register_trace_event(...) 1
+#define register_user_trace_event(...) 1
 #define tracepoint_reaction_starts(...)
 #define tracepoint_reaction_ends(...)
 #define tracepoint_schedule(...)
