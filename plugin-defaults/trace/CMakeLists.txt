@@ -1,11 +1,7 @@
-cmake_minimum_required(VERSION 3.13..3.22)
-
-project(DefaultTracing LANGUAGES C)
-
-add_library(DefaultTracing STATIC trace/default-trace.c)
-target_include_directories(DefaultTracing PRIVATE ../../include/plugin-apis)
-target_include_directories(DefaultTracing PRIVATE ../../include)
-target_include_directories(DefaultTracing PRIVATE ./include)
+add_library(DefaultTracing STATIC ${CMAKE_CURRENT_LIST_DIR}/trace/default-trace.c)
+target_include_directories(DefaultTracing PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../include/plugin-apis)
+target_include_directories(DefaultTracing PRIVATE ${CMAKE_CURRENT_LIST_DIR}/../../include)
+target_include_directories(DefaultTracing PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 # handle compile-time parameters
 if(NOT DEFINED LOG_LEVEL)

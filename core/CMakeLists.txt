@@ -66,9 +66,10 @@ else()
     add_library(reactor-c ${REACTORC_SOURCES})
 endif()
 
-if (DEFINED LF_TRACE_PLUGIN)
+if (DEFINED LF_TRACE)
     message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
-    target_link_libraries(reactor-c PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${LF_TRACE_PLUGIN})
+    include(../plugin-defaults/trace/CMakeLists.txt)
+    target_link_libraries(reactor-c PRIVATE DefaultTracing)
 endif()
 
 include(platform/CMakeLists.txt)
