@@ -234,11 +234,6 @@ static void* thread_1_return;
 void core1_entry() {
     thread_1_return = thread_1(thread_1_args);
     sem_release(&thread_1_done);
-
-    // infinite loop; core1 should never exit
-    while (1){
-        tight_loop_contents();
-    }
 }
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
