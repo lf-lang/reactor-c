@@ -75,15 +75,21 @@ add_executable(
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
 )
-target_link_libraries(RTI ${CMAKE_CURRENT_LIST_DIR}/../../../plugin-defaults/trace/lib/defaulttracing.a)
-include(${CMAKE_CURRENT_LIST_DIR}/../../platform/CMakeLists.txt)
-target_link_libraries(RTI LfPlatform)
+
+set(LOG_LEVEL 0)
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages
     message("-- Building RTI with DEBUG messages enabled")
-    target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
+    set(LOG_LEVEL 4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+target_compile_definitions(RTI PUBLIC LOG_LEVEL=${LOG_LEVEL})
+
+include(${CMAKE_CURRENT_LIST_DIR}/../../../plugin-defaults/trace/CMakeLists.txt)
+target_link_libraries(RTI DefaultTracing)
+
+include(${CMAKE_CURRENT_LIST_DIR}/../../platform/CMakeLists.txt)
+target_link_libraries(RTI LfPlatform)
 
 # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
 target_compile_definitions(RTI PUBLIC STANDALONE_RTI=1)
