@@ -92,7 +92,6 @@ int lf_sleep(interval_t sleep_duration) {
     instant_t now;
     _lf_clock_now(&now);
     instant_t wakeup = now + sleep_duration;
-    clock_sync_apply_offset(&wakeup);
 
     // Do busy sleep
     do {

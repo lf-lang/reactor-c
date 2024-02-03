@@ -175,7 +175,6 @@ int lf_sleep(interval_t sleep_duration) {
     instant_t current_time;
     _lf_clock_now(&current_time);
     target_time = current_time + sleep_duration;
-    clock_sync_remove_offset(&target_time);
     
     while (current_time <= target_time) {
         _lf_clock_now(&current_time);

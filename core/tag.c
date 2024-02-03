@@ -112,10 +112,10 @@ interval_t lf_time_logical_elapsed(void *env) {
     return lf_time_logical(env) - start_time;
 }
 
-// FIXME: How can we make this thread safe?
+// FIXME: How can we make this thread-safe and 32bit-safe?
 instant_t lf_time_physical() {
     // Get the current clock value
-    instant_t now, local_last_read;
+    instant_t now;
     
     LF_ASSERTN(_lf_clock_now(&now), "Failed to read physical clock.");
 
