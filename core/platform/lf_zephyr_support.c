@@ -40,6 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "utils/util.h"
 #include "tag.h"
 
+
 #include <zephyr/kernel.h>
 
 // Keep track of nested critical sections
@@ -183,10 +184,11 @@ int lf_cond_wait(lf_cond_t* cond) {
     return k_condvar_wait(&cond->condition, cond->mutex, K_FOREVER);
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+    clock_sync_remove_offset(&wakeup_time);
     instant_t now;
     _lf_clock_now(&now);
-    interval_t sleep_duration_ns = absolute_time_ns - now;
+    interval_t sleep_duration_ns = wakeup_time - now;
     k_timeout_t timeout = K_NSEC(sleep_duration_ns);
     int res = k_condvar_wait(&cond->condition, cond->mutex, timeout);
     if (res == 0) {

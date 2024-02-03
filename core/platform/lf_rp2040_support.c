@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "utils/util.h"
 #include "tag.h"
+#include "clock_sync.h"
 
 #include <pico/stdlib.h>
 #include <pico/multicore.h>
@@ -92,6 +93,7 @@ int _lf_clock_now(instant_t* t) {
     now = get_absolute_time();
     ns_from_boot = to_us_since_boot(now) * 1000;
     *t = (instant_t) ns_from_boot;
+    clock_sync_apply_offset(t);
     return 0; 
 }
 

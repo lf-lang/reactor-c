@@ -1,7 +1,6 @@
 #if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
 #include "platform.h"
 #include "lf_C11_threads_support.h"
-
 #include <threads.h>
 #include <stdlib.h>
 #include <stdint.h> // For fixed-width integral types
@@ -45,17 +44,19 @@ int lf_cond_wait(lf_cond_t* cond) {
     return cnd_wait((cnd_t*)&cond->condition, (mtx_t*)cond->mutex);
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, int64_t absolute_time_ns) {
-    // Convert the absolute time to a timespec.
-    // timespec is seconds and nanoseconds.
-    struct timespec timespec_absolute_time
-            = {(time_t)absolute_time_ns / 1000000000LL, (long)absolute_time_ns % 1000000000LL};
-    int return_value = 0;
-    return_value = cnd_timedwait(
+int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+    clock_sync_remove_offset(&wakeup_time);
+    struct timespec timespec_absolute_time = {
+        .tv_sec = wakeup_time / BILLION,
+        .tv_nsec = wakeup_time % BILLION
+    };
+    
+    int return_value = cnd_timedwait(
         (cnd_t*)&cond->condition,
         (mtx_t*)cond->mutex,
         &timespec_absolute_time
     );
+
     switch (return_value) {
         case thrd_timedout:
             return_value = LF_TIMEOUT;

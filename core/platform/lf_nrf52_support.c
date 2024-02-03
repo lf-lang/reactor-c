@@ -42,6 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 #include "../utils/util.h"
 #include "../tag.h"
+#include "clock_sync.h"
 
 #include "nrf.h"
 #include "nrfx_timer.h"
@@ -156,6 +157,8 @@ int _lf_clock_now(instant_t* t) {
 
     *t = ((instant_t)now_us) * 1000;
 
+    clock_sync_apply_offset(t);
+
     return 0;
 }
 
@@ -173,6 +176,8 @@ int lf_sleep(interval_t sleep_duration) {
     instant_t current_time;
     _lf_clock_now(&current_time);
     target_time = current_time + sleep_duration;
+    clock_sync_remove_offset(&target_time);
+    
     while (current_time <= target_time) {
         _lf_clock_now(&current_time);
     }
@@ -186,6 +191,7 @@ int lf_sleep(interval_t sleep_duration) {
  */
 
 static void lf_busy_wait_until(instant_t wakeup_time) {
+    clock_sync_remove_offset(&wakeup_time);
     instant_t now;
     do {
         _lf_clock_now(&now);
@@ -202,6 +208,7 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
+    clock_sync_remove_offset(&wakeup_time);
     instant_t now;
     _lf_clock_now(&now);
     interval_t duration = wakeup_time - now;

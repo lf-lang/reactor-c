@@ -202,13 +202,12 @@ int lf_cond_wait(lf_cond_t* cond);
 
 /**
  * Block current thread on the condition variable until condition variable
- * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
- * nanoseconds is reached.
+ * pointed by "cond" is signaled or time pointed by wakeup_time is reached.
  *
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
+int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time);
 
 /*
  * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.
@@ -293,7 +292,7 @@ void _lf_initialize_clock(void);
  * store it in `t`.
  *
  * Ideally, the underlying platform clock should be monotonic. However, the
- * core lib tries to enforce monotonicity at higher level APIs (see tag.h).
+ * core lib enforces monotonicity at higher level APIs (see tag.h).
  *
  * @return 0 for success, or -1 for failure
  */

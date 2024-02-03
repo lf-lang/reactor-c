@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_arduino_support.h"
 #include "../platform.h"
+#include "clock_sync.h"
 #include "Arduino.h"
 
 // Combine 2 32bit values into a 64bit
@@ -68,6 +69,8 @@ static volatile uint32_t _lf_time_us_low_last = 0;
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     instant_t now;
+    clock_sync_remove_offset(&wakeup);
+
     _lf_async_event = false;
     lf_disable_interrupts_nested();
 
@@ -90,6 +93,7 @@ int lf_sleep(interval_t sleep_duration) {
     instant_t now;
     _lf_clock_now(&now);
     instant_t wakeup = now + sleep_duration;
+    clock_sync_apply_offset(&wakeup);
 
     // Do busy sleep
     do {
@@ -122,6 +126,7 @@ int _lf_clock_now(instant_t* t) {
     }
 
     *t = COMBINE_HI_LO(_lf_time_us_high, now_us_low) * 1000ULL;
+    clock_sync_apply_offset(t);
     return 0;
 }
 
@@ -219,10 +224,11 @@ int lf_cond_wait(lf_cond_t* cond) {
     return 0;
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     instant_t now;
+    clock_sync_remove_offset(&wakeup_time);
     _lf_clock_now(&now);
-    interval_t sleep_duration_ns = absolute_time_ns - now;
+    interval_t sleep_duration_ns = wakeup_time - now;
     bool res = condition_wait_for(*cond, sleep_duration_ns);
     if (!res) {
         return 0;

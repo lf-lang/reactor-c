@@ -34,7 +34,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_tag_64_32.h"
 
 #include <stdint.h> // For fixed-width integral types
-#include <time.h>   // For CLOCK_MONOTONIC
 #include <stdbool.h>
 #include <stdlib.h> //malloc, calloc, free, realloc
 

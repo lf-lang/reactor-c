@@ -40,6 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_zephyr_support.h"
 #include "platform.h"
 #include "util.h"
+#include "clock_sync.h"
 
 static int64_t epoch_duration_nsec;
 static volatile int64_t last_epoch_nsec = 0;
@@ -65,6 +66,7 @@ int _lf_clock_now(instant_t* t) {
         last_epoch_nsec += epoch_duration_nsec;
     }
     *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles + last_epoch_nsec;
+    clock_sync_apply_offset(t);
     last_read_cycles = now_cycles;
     return 0;
 }
@@ -73,6 +75,7 @@ int _lf_clock_now(instant_t* t) {
  * Interruptable sleep is implemented using busy-waiting.
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
+    clock_sync_remove_offset(&wakeup);
     async_event=false;    
 
     lf_critical_section_exit(env);

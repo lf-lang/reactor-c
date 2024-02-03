@@ -45,6 +45,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "util.h"
 
+
 #define LF_MIN_SLEEP_NS USEC(10)
 
 /**
@@ -72,7 +73,6 @@ void _lf_initialize_clock() {
         _lf_frequency_to_ns = 0.01;
     }
 }
-
 
 /**
  * Fetch the value of the physical clock (see lf_windows_support.h) and store it in t.
@@ -107,6 +107,7 @@ int _lf_clock_now(instant_t* t) {
         windows_time.QuadPart |= f.dwLowDateTime;
     }
     *t = (instant_t)((double)windows_time.QuadPart / _lf_frequency_to_ns);
+    clock_sync_apply_offset(t);
     return (0);
 }
 
@@ -145,6 +146,7 @@ int lf_sleep(interval_t sleep_duration) {
 }
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
+    clock_sync_remove_offset(&wakeup_time);
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
     if (sleep_duration < LF_MIN_SLEEP_NS) {
@@ -272,24 +274,23 @@ int lf_cond_wait(lf_cond_t* cond) {
      }
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
-    // Convert the absolute time to a relative time
-    instant_t current_time_ns;
-    _lf_clock_now(&current_time_ns);
-    interval_t relative_time_ns = (absolute_time_ns - current_time_ns);
-    if (relative_time_ns <= 0) {
+int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+    // Convert the absolute time to a relative time and adjust for clock sync offset.
+    clock_sync_remove_offset(&wakeup_time);
+    interval_t wait_duration = wakeup_time - lf_time_physical();
+    if (wait_duration<= 0) {
       // physical time has already caught up sufficiently and we do not need to wait anymore
       return 0;
     }
 
     // convert ns to ms and round up to closest full integer
-    DWORD relative_time_ms = (relative_time_ns + 999999LL) / 1000000LL;
+    DWORD wait_duration_ms = (wait_duration + 999999LL) / 1000000LL;
 
     int return_value =
      (int)SleepConditionVariableCS(
          (PCONDITION_VARIABLE)&cond->condition,
          (PCRITICAL_SECTION)cond->critical_section,
-         relative_time_ms
+         wait_duration_ms
      );
     if (return_value == 0) {
       // Error

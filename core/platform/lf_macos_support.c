@@ -33,6 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_macos_support.h"
 #include "platform.h"
 #include "tag.h"
+#include "clock_sync.h"
 #define LF_MIN_SLEEP_NS USEC(10)
 
 #if defined LF_SINGLE_THREADED
@@ -60,6 +61,7 @@ int lf_sleep(interval_t sleep_duration) {
 }
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
+    clock_sync_remove_offset(&wakeup_time);
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
     if (sleep_duration < LF_MIN_SLEEP_NS) {

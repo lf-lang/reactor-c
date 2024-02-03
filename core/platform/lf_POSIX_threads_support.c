@@ -1,10 +1,14 @@
 #if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
+#define GNU_SOURCE /* To get pthread_getattr_np() declaration */
 #include "platform.h"
 #include "lf_POSIX_threads_support.h"
+#include "clock_sync.h"
 
 #include <pthread.h>
 #include <errno.h>
 #include <stdint.h> // For fixed-width integral types
+
+extern interval_t _lf_clock_sync_offset;
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
@@ -62,13 +66,11 @@ int lf_cond_wait(lf_cond_t* cond) {
     return pthread_cond_wait((pthread_cond_t*)&cond->condition, (pthread_mutex_t*)cond->mutex);
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, int64_t absolute_time_ns) {
-    // Convert the absolute time to a timespec.
-    // timespec is seconds and nanoseconds.
-    struct timespec timespec_absolute_time
-            = {(time_t)absolute_time_ns / 1000000000LL, (long)absolute_time_ns % 1000000000LL};
-    int return_value = 0;
-    return_value = pthread_cond_timedwait(
+int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+    // Remove the clock synchronization offset.
+    clock_sync_remove_offset(&wakeup_time);
+    struct timespec timespec_absolute_time = convert_ns_to_timespec(wakeup_time);
+    int return_value = pthread_cond_timedwait(
         (pthread_cond_t*)&cond->condition,
         (pthread_mutex_t*)cond->mutex,
         &timespec_absolute_time
