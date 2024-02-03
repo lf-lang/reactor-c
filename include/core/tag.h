@@ -45,6 +45,14 @@
 // Convenience for converting times
 #define BILLION 1000000000LL
 
+// Bring clock synchronization adjustment into scope
+#if defined(_LF_CLOCK_SYNC)
+#include "clock-sync.h"
+#else
+#define clock_sync_apply_offset(x)
+#define clock_sync_remove_offset(x)
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
 #include <limits.h>
