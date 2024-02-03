@@ -198,4 +198,23 @@ void* listen_to_rti_UDP_thread(void* args);
  */
 int create_clock_sync_thread(lf_thread_t* thread_id);
 
+
+// If clock sync is enabled. Then expose an API for applying and remove the
+// offset in a thread safe manner.
+#if defined(_LF_CLOCK_SYNC_ON)
+/**
+ * @brief Applies the clock synchronization offset to a timestamp.
+ * 
+ * @param t 
+ */
+void clock_sync_apply_offset(instant_t *t);
+
+/**
+ * @brief Remove the clock synchronization offset from a timestamp.
+ * 
+ * @param t 
+ */
+void clock_sync_remove_offset(instan_t *t);
+#endif
+
 #endif // CLOCK_SYNC_H

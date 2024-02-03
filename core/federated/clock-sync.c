@@ -44,9 +44,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.h"
 #include "util.h"
 
-// Global variables defined in tag.c:
-extern interval_t _lf_time_physical_clock_offset;
-extern interval_t _lf_time_test_physical_clock_offset;
+static interval_t clock_sync_offset = NSEC(0);
+
+static lf_mutex_t mutex;
 
 /**
  * Keep a record of connection statistics
@@ -76,6 +76,12 @@ instant_t _lf_last_clock_sync_instant = 0LL;
  * functions that communicate with the rti are called.
  */
 int _lf_rti_socket_UDP = -1;
+
+static void adjust_clock_sync_offset(interval_t adjustment) {
+    LF_ASSERTN(lf_mutex_lock(&mutex), "lf_mutex_lock failed");
+    clock_sync_offset += adjustment;
+    LF_ASSERTN(lf_mutex_unlock(&mutex), "lf_mutex_unlock failed");
+}
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
 /**
@@ -380,7 +386,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // Apply a jitter attenuator to the estimated clock error to prevent
         // large jumps in the underlying clock.
         // Note that estimated_clock_error is calculated using lf_time_physical() which includes
-        // the _lf_time_physical_clock_offset adjustment.
+        // the clock sync adjustment.
         adjustment = estimated_clock_error / _LF_CLOCK_SYNC_ATTENUATION;
     } else {
         // Use of TCP socket means we are in the startup phase, so
@@ -420,21 +426,19 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // which means we can now adjust the clock offset.
         // For the AVG algorithm, history is a running average and can be directly
         // applied
-        _lf_time_physical_clock_offset += _lf_rti_socket_stat.history;
+        adjust_clock_sync_offset(_lf_rti_socket_stat.history);
         // @note AVG and SD will be zero if collect-stats is set to false
         LF_PRINT_LOG("Clock sync:"
                     " New offset: " PRINTF_TIME "."
                     " Round trip delay to RTI (now): " PRINTF_TIME "."
                     " (AVG): " PRINTF_TIME "."
                     " (SD): " PRINTF_TIME "."
-                    " Local round trip delay: " PRINTF_TIME "."
-                    " Test offset: " PRINTF_TIME ".",
-                    _lf_time_physical_clock_offset,
+                    " Local round trip delay: " PRINTF_TIME ".",
+                    clock_sync_offset,
                     network_round_trip_delay,
                     stats.average,
                     stats.standard_deviation,
-                    _lf_rti_socket_stat.local_delay,
-                    _lf_time_test_physical_clock_offset);
+                    _lf_rti_socket_stat.local_delay);
         // Reset the stats
         reset_socket_stat(&_lf_rti_socket_stat);
         // Set the last instant at which the clocks were synchronized
@@ -549,9 +553,25 @@ void* listen_to_rti_UDP_thread(void* args) {
  */
 int create_clock_sync_thread(lf_thread_t* thread_id) {
 #ifdef _LF_CLOCK_SYNC_ON
+    LF_ASSERTN(lf_mutex_init(&mutex), "lf_mutex_init failed");
     // One for UDP messages if clock synchronization is enabled for this federate
     return lf_thread_create(thread_id, listen_to_rti_UDP_thread, NULL);
 #endif // _LF_CLOCK_SYNC_ON
     return 0;
 }
+
+#if defined (_LF_CLOCK_SYNC_ON)
+void clock_sync_apply_offset(instant_t *t) {
+    LF_ASSERTN(lf_mutex_lock(&mutex), "lf_mutex_lock failed");
+    *t += clock_sync_offset;
+    LF_ASSERTN(lf_mutex_unlock(&mutex), "lf_mutex_unlock failed");
+}
+
+void clock_sync_remove_offset(instan_t *t) {
+    LF_ASSERTN(lf_mutex_lock(&mutex), "lf_mutex_lock failed");
+    *t -= clock_sync_offset;
+    LF_ASSERTN(lf_mutex_unlock(&mutex), "lf_mutex_unlock failed");
+}
+#endif
+
 #endif
