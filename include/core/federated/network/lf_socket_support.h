@@ -64,6 +64,10 @@ typedef struct socket_priv_t {
                                 // server of the federate.
 } socket_priv_t;
 
+char *get_host_name(netdrv_t *drv);
+int32_t *get_port(netdrv_t *drv);
+struct in_addr *get_ip_addr(netdrv_t *drv);
+
 netdrv_t * netdrv_init();
 
 /**

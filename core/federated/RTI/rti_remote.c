@@ -598,25 +598,28 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
 
     // NOTE: server_port initializes to -1, which means the RTI does not know
     // the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message
-    // from this federate. In that case, it will respond by sending -1.
+    // from this federate. In that case, it will respond by sending -1. 
     
     federate_info_t *remote_fed = GET_FED_INFO(remote_fed_id);
-    unsigned char buf[1 + sizeof(int32_t) + sizeof(remote_fed->server_ip_addr)];
+    struct in_addr a = *get_ip_addr(remote_fed->fed_netdrv);
+    size_t size = sizeof(*get_ip_addr(remote_fed->fed_netdrv));
+    int32_t port = *get_port(remote_fed->fed_netdrv);
+    unsigned char buf[1 + sizeof(int32_t) + sizeof(*get_ip_addr(remote_fed->fed_netdrv))];
     // Response message is also of type MSG_TYPE_ADDRESS_QUERY.
     buf[0] = MSG_TYPE_ADDRESS_QUERY;
 
     // Send the port number (which could be -1) and server IP address to federate.
     LF_MUTEX_LOCK(rti_mutex);
-    encode_int32(remote_fed->server_port, (unsigned char *)&buf[1]);
-    memcpy(buf + 1 + sizeof(int32_t), (unsigned char *)&remote_fed->server_ip_addr, sizeof(remote_fed->server_ip_addr));
+    encode_int32(*get_port(remote_fed->fed_netdrv), (unsigned char *)&buf[1]);
+    memcpy(buf + 1 + sizeof(int32_t), (unsigned char *)get_ip_addr(remote_fed->fed_netdrv), sizeof(*get_ip_addr(remote_fed->fed_netdrv)));
     write_to_netdrv_fail_on_error(
-            fed->fed_netdrv, sizeof(int32_t) + 1, (unsigned char *)buf, &rti_mutex,
+            fed->fed_netdrv, sizeof(int32_t) + 1 + sizeof(*get_ip_addr(remote_fed->fed_netdrv)), (unsigned char *)buf, &rti_mutex,
             "Failed to write port number to socket of federate %d.", fed_id);
 
     LF_MUTEX_UNLOCK(rti_mutex);
 
     LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.",
-            fed_id, remote_fed->server_hostname, remote_fed->server_port);
+            fed_id, get_host_name(remote_fed->fed_netdrv), *get_port(remote_fed->fed_netdrv));
 }
 
 //TODO: NEED to be fixed.
@@ -631,7 +634,7 @@ void handle_address_ad(uint16_t federate_id, unsigned char *buffer) {
     assert(server_port < 65536);
 
     LF_MUTEX_LOCK(rti_mutex);
-    fed->server_port = server_port; //TODO: NEED to be fixed.
+    *get_port(fed->fed_netdrv) = server_port;
     LF_MUTEX_UNLOCK(rti_mutex);
 
     LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);
@@ -1111,16 +1114,17 @@ static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
     federate_info_t *fed = GET_FED_INFO(fed_id);
     fed->fed_netdrv = netdrv;
 
+// TODO: Make this work for only TCP.
 #if LOG_LEVEL >= LOG_LEVEL_DEBUG
     // Create the human readable format and copy that into
     // the .server_hostname field of the federate.
     char str[INET_ADDRSTRLEN + 1];
 
     //TODO: NEED TO FIX HERE!
-    // inet_ntop(AF_INET, &fed->server_ip_addr, str, INET_ADDRSTRLEN);
-    // strncpy(fed->server_hostname, str, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, get_ip_addr(fed->fed_netdrv), str, INET_ADDRSTRLEN);
+    strncpy(get_host_name(fed->fed_netdrv), str, INET_ADDRSTRLEN);
 
-    // LF_PRINT_DEBUG("RTI got address %s from federate %d.", fed->server_hostname, fed_id);
+    LF_PRINT_DEBUG("RTI got address %s from federate %d.", fed->server_hostname, fed_id);
 #endif
 
     // Set the federate's state as pending
@@ -1472,9 +1476,10 @@ void initialize_federate(federate_info_t *fed, uint16_t id) {
     fed->socket = -1; // No socket.
     fed->clock_synchronization_enabled = true;
     fed->in_transit_message_tags = pqueue_tag_init(10);
-    strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
-    fed->server_ip_addr.s_addr = 0;
-    fed->server_port = -1;
+    //TODO: Need to fix. This point, the fed_netdrv is not initialized. 
+    // strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
+    // fed->server_ip_addr.s_addr = 0;
+    // fed->server_port = -1;
     // fed->fed_netdrv = netdrv_init();
     fed->clock_netdrv = netdrv_init();
 }

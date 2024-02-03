@@ -1756,6 +1756,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
         LF_MUTEX_UNLOCK(lf_outbound_socket_mutex);
 
         // Read RTI's response.
+        //TODO: Fix two reads.
         read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(int32_t) + 1, buffer, NULL,
                 "Failed to read the requested port number for federate %d from RTI.",
                 remote_federate_id);

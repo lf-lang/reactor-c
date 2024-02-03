@@ -24,6 +24,18 @@ static socket_priv_t *get_priv(netdrv_t *drv) {
     return (socket_priv_t *)(drv + 1);
 }
 
+char *get_host_name(netdrv_t *drv) {
+    socket_priv_t *priv = get_priv(drv);
+    return priv->server_hostname;
+}
+int32_t *get_port(netdrv_t *drv) {
+    socket_priv_t *priv = get_priv(drv);
+    return &priv->server_port;
+}
+struct in_addr *get_ip_addr(netdrv_t *drv) {
+    socket_priv_t *priv = get_priv(drv);
+    return &priv->server_ip_addr;
+}
 static int socket_open(netdrv_t *drv) {
     // socket_priv_t *priv = get_priv(drv);
     // priv->sock = socket(AF_PACKET, SOCK_RAW, htons(priv->proto));
@@ -96,6 +108,11 @@ netdrv_t *netdrv_init() {
     priv->port = 0;
     priv->socket_descriptor = 0;
     priv->user_specified_port = 0;
+
+    //federate initialization
+    strncpy(priv->server_hostname, "localhost", INET_ADDRSTRLEN);
+    priv->server_port = -1;
+    priv->server_ip_addr.s_addr = 0;
 
     // drv->open = socket_open;
     drv->close = socket_close;
@@ -612,7 +629,9 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         //         break;
 
         case MSG_TYPE_ADDRESS_QUERY:
-            return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(uint16_t), buffer, NULL,
+                    "Failed to read address query.");    
+            break;
         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int32_t), buffer, NULL,
                     "Error reading port data.");            
