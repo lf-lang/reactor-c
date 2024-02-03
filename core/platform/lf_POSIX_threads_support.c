@@ -1,13 +1,11 @@
 #if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
-#define GNU_SOURCE /* To get pthread_getattr_np() declaration */
 #include "platform.h"
 #include "lf_POSIX_threads_support.h"
+#include "lf_unix_clock_support.h"
 
 #include <pthread.h>
 #include <errno.h>
 #include <stdint.h> // For fixed-width integral types
-
-extern interval_t _lf_clock_sync_offset;
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
