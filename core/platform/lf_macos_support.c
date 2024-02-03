@@ -33,7 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_macos_support.h"
 #include "platform.h"
 #include "tag.h"
-#include "clock_sync.h"
+"
 #define LF_MIN_SLEEP_NS USEC(10)
 
 #if defined LF_SINGLE_THREADED

@@ -34,7 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_arduino_support.h"
 #include "../platform.h"
-#include "clock_sync.h"
+"
 #include "Arduino.h"
 
 // Combine 2 32bit values into a 64bit
