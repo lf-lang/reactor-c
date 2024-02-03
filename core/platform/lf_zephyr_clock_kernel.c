@@ -40,7 +40,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_zephyr_support.h"
 #include "platform.h"
 #include "util.h"
-"
 
 static int64_t epoch_duration_nsec;
 static volatile int64_t last_epoch_nsec = 0;

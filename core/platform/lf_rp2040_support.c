@@ -39,7 +39,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "utils/util.h"
 #include "tag.h"
-"
 
 #include <pico/stdlib.h>
 #include <pico/multicore.h>

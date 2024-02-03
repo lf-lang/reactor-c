@@ -2,7 +2,6 @@
 #define GNU_SOURCE /* To get pthread_getattr_np() declaration */
 #include "platform.h"
 #include "lf_POSIX_threads_support.h"
-"
 
 #include <pthread.h>
 #include <errno.h>
