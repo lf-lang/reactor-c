@@ -228,7 +228,7 @@ static void worker_assignments_free(lf_scheduler_t* scheduler) {
 static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
     worker_assignments_t * worker_assignments = scheduler->custom_data->worker_assignments;
 #ifndef FEDERATED
-    int index = lf_atomic_add_fetch32(worker_assignments->num_reactions_by_worker + worker, -1);
+    int index = lf_atomic_add_fetch32((int32_t *) (worker_assignments->num_reactions_by_worker + worker), -1);
     if (index >= 0) {
         return worker_assignments->reactions_by_worker[worker][index];
     }
@@ -245,7 +245,7 @@ static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
         if (old_num_reactions <= 0) return NULL;
     } while (
         (current_num_reactions = lf_atomic_val_compare_and_swap32(
-            worker_assignments->num_reactions_by_worker + worker,
+            ((int32_t *) worker_assignments->num_reactions_by_worker + worker),
             old_num_reactions,
             (index = old_num_reactions - 1)
         )) != old_num_reactions
@@ -307,7 +307,7 @@ static void worker_assignments_put(lf_scheduler_t* scheduler, reaction_t* reacti
     hash = hash ^ (hash >> 31);
     size_t worker = hash % worker_assignments->num_workers_by_level[level];
     size_t num_preceding_reactions = lf_atomic_fetch_add32(
-        &worker_assignments->num_reactions_by_worker_by_level[level][worker],
+        (int32_t *) &worker_assignments->num_reactions_by_worker_by_level[level][worker],
         1
     );
     worker_assignments->reactions_by_worker_by_level[level][worker][num_preceding_reactions] = reaction;
@@ -412,7 +412,7 @@ static bool worker_states_finished_with_level_locked(lf_scheduler_t* scheduler, 
     assert(((int64_t) worker_assignments->num_reactions_by_worker[worker]) <= 0);
     // Why use an atomic operation when we are supposed to be "as good as locked"? Because I took a
     // shortcut, and the shortcut was imperfect.
-    size_t ret = lf_atomic_add_fetch32(&worker_states->num_loose_threads, -1);
+    size_t ret = lf_atomic_add_fetch32((int32_t *) &worker_states->num_loose_threads, -1);
     assert(ret <= worker_assignments->max_num_workers);  // Check for underflow
     return !ret;
 }
@@ -767,7 +767,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
     assert(worker_number >= -1);
-    if (!lf_atomic_bool_compare_and_swap32(&reaction->status, inactive, queued)) return;
+    if (!lf_atomic_bool_compare_and_swap32((int32_t *) &reaction->status, inactive, queued)) return;
     worker_assignments_put(scheduler, reaction);
 }
 #endif // defined SCHEDULER && SCHEDULER == SCHED_ADAPTIVE
