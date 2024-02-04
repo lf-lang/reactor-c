@@ -84,9 +84,9 @@ void trace_free(trace_t *trace) {
 
 
 int _lf_register_trace_event(trace_t* trace, void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
-    lf_critical_section_enter(trace->env);
+    LF_CRITICAL_SECTION_ENTER(trace->env);
     if (trace->_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
-        lf_critical_section_exit(trace->env);
+        LF_CRITICAL_SECTION_EXIT(trace->env);
         fprintf(stderr, "WARNING: Exceeded trace object table size. Trace file will be incomplete.\n");
         return 0;
     }
@@ -95,7 +95,7 @@ int _lf_register_trace_event(trace_t* trace, void* pointer1, void* pointer2, _lf
     trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].type = type;
     trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].description = description;
     trace->_lf_trace_object_descriptions_size++;
-    lf_critical_section_exit(trace->env);
+    LF_CRITICAL_SECTION_EXIT(trace->env);
     return 1;
 }
 
@@ -238,9 +238,9 @@ void flush_trace_locked(trace_t* trace, int worker) {
 void flush_trace(trace_t* trace, int worker) {
     // To avoid having more than one worker writing to the file at the same time,
     // enter a critical section.
-    lf_critical_section_enter(GLOBAL_ENVIRONMENT);
+    LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
     flush_trace_locked(trace, worker);
-    lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
 }
 
 void start_trace(trace_t* trace) {
@@ -385,9 +385,9 @@ void tracepoint_user_event(void* self, char* description) {
     LF_ASSERT(self, "A pointer to the self struct is needed to trace an event");
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
-    lf_critical_section_enter(env);
+    LF_CRITICAL_SECTION_ENTER(env);
     tracepoint(trace, user_event, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
-    lf_critical_section_exit(env);
+    LF_CRITICAL_SECTION_EXIT(env);
 }
 
 /**
@@ -413,9 +413,9 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     // There will be a performance hit for this.
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
-    lf_critical_section_enter(env);
+    LF_CRITICAL_SECTION_ENTER(env);
     tracepoint(trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
-    lf_critical_section_exit(env);
+    LF_CRITICAL_SECTION_EXIT(env);
 }
 
 /**
@@ -460,9 +460,9 @@ void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, i
 }
 
 void stop_trace(trace_t* trace) {
-    lf_critical_section_enter(trace->env);
+    LF_CRITICAL_SECTION_ENTER(trace->env);
     stop_trace_locked(trace);
-    lf_critical_section_exit(trace->env);
+    LF_CRITICAL_SECTION_EXIT(trace->env);
 }
 
 void stop_trace_locked(trace_t* trace) {

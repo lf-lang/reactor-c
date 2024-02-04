@@ -75,12 +75,12 @@ int _lf_clock_now(instant_t* t) {
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     async_event=false;    
 
-    lf_critical_section_exit(env);
+    LF_CRITICAL_SECTION_EXIT(env);
     instant_t now;
     do {
     _lf_clock_now(&now);
     } while ( (now<wakeup) && !async_event);
-    lf_critical_section_enter(env);
+    LF_CRITICAL_SECTION_ENTER(env);
 
     if (async_event) {
         async_event=false;
