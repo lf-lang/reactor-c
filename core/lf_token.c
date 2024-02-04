@@ -85,11 +85,14 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len) {
 }
 
 lf_token_t* lf_writable_copy(lf_port_base_t* port) {
-    lf_critical_section_enter(port->source_reactor->environment);
+    LF_CRITICAL_SECTION_ENTER(port->source_reactor->environment);
     lf_token_t* token = _lf_writable_copy_locked(port);
-    lf_critical_section_exit(port->source_reactor->environment);
+    LF_CRITICAL_SECTION_EXIT(port->source_reactor->environment);
     return token;
 }
+
+////////////////////////////////////////////////////////////////////
+//// Internal functions.
 
 static lf_token_t* _lf_writable_copy_locked(lf_port_base_t* port) {
     assert(port != NULL);
@@ -128,9 +131,9 @@ static lf_token_t* _lf_writable_copy_locked(lf_port_base_t* port) {
 
     // Count allocations to issue a warning if this is never freed.
     #if !defined NDEBUG
-    LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
+    LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
     _lf_count_payload_allocations++;
-    LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
     #endif
 
     // Create a new, dynamically allocated token.
@@ -144,15 +147,13 @@ static lf_token_t* _lf_writable_copy_locked(lf_port_base_t* port) {
     return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//// Internal functions.
-void _lf_free_token_value(lf_token_t* token) {
+static void _lf_free_token_value(lf_token_t* token) {
     if (token->value != NULL) {
         // Count frees to issue a warning if this is never freed.
         #if !defined NDEBUG
-        LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
+        LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
         _lf_count_payload_allocations--;
-        LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
+        LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
         #endif
         // Free the value field (the payload).
         LF_PRINT_DEBUG("_lf_free_token_value: Freeing allocated memory for payload (token value): %p",
@@ -181,11 +182,11 @@ token_freed _lf_free_token(lf_token_t* token) {
     // Tokens that are created at the start of execution and associated with
     // output ports or actions persist until they are overwritten.
     // Need to acquire a mutex to access the recycle bin.
-    LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
+    LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
     if (_lf_token_recycling_bin == NULL) {
         _lf_token_recycling_bin = hashset_create(4); // Initial size is 16.
         if (_lf_token_recycling_bin == NULL) {
-            lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+            LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
             lf_print_error_and_exit("Out of memory: failed to setup _lf_token_recycling_bin");
         }
     }
@@ -203,7 +204,7 @@ token_freed _lf_free_token(lf_token_t* token) {
     #if !defined NDEBUG
     _lf_count_token_allocations--;
     #endif
-    LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
     result &= TOKEN_FREED;
 
     return result;
@@ -212,9 +213,7 @@ token_freed _lf_free_token(lf_token_t* token) {
 lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
     lf_token_t* result = NULL;
     // Check the recycling bin.
-    if (lf_critical_section_enter(GLOBAL_ENVIRONMENT) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
+    LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
     if (_lf_token_recycling_bin != NULL) {
         hashset_itr_t iterator = hashset_iterator(_lf_token_recycling_bin);
         if (hashset_iterator_next(iterator) >= 0) {
@@ -230,9 +229,8 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
     _lf_count_token_allocations++;
     #endif
 
-    if(lf_critical_section_exit(GLOBAL_ENVIRONMENT) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
+
     if (result == NULL) {
         // Nothing found on the recycle bin.
         result = (lf_token_t*)calloc(1, sizeof(lf_token_t));
@@ -266,16 +264,12 @@ lf_token_t* _lf_get_token(token_template_t* tmplt) {
 
 void _lf_initialize_template(token_template_t* tmplt, size_t element_size) {
     assert(tmplt != NULL);
-    if (lf_critical_section_enter(GLOBAL_ENVIRONMENT) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
+    LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
     if (_lf_token_templates == NULL) {
         _lf_token_templates = hashset_create(4); // Initial size is 16.
     }
     hashset_add(_lf_token_templates, tmplt);
-    if(lf_critical_section_exit(GLOBAL_ENVIRONMENT) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
     if (tmplt->token != NULL) {
         if (tmplt->token->ref_count == 1 && tmplt->token->type->element_size == element_size) {
             // Template token is already set.
@@ -301,9 +295,9 @@ lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value
     result->value = value;
     // Count allocations to issue a warning if this is never freed.
     #if !defined NDEBUG
-    LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
+    LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
     _lf_count_payload_allocations++;
-    LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
     #endif
     result->length = length;
     return result;
@@ -319,9 +313,7 @@ lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length) {
 
 void _lf_free_all_tokens() {
     // Free template tokens.
-    if (lf_critical_section_enter(GLOBAL_ENVIRONMENT) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
+    LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
     // It is possible for a token to be a template token for more than one port
     // or action because the same token may be sent to multiple output ports.
     if (_lf_token_templates != NULL) {
@@ -347,9 +339,7 @@ void _lf_free_all_tokens() {
         hashset_destroy(_lf_token_recycling_bin);
         _lf_token_recycling_bin = NULL;
     }
-    if(lf_critical_section_exit(GLOBAL_ENVIRONMENT) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
 }
 
 void _lf_replace_template_token(token_template_t* tmplt, lf_token_t* newtoken) {

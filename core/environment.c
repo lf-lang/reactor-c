@@ -50,16 +50,9 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
     env->barrier.horizon = FOREVER_TAG;
     
     // Initialize synchronization objects.
-    if (lf_mutex_init(&env->mutex) != 0) {
-        lf_print_error_and_exit("Could not initialize environment mutex");
-    }
-    if (lf_cond_init(&env->event_q_changed, &env->mutex) != 0) {
-        lf_print_error_and_exit("Could not initialize environment event queue condition variable");
-    }
-    if (lf_cond_init(&env->global_tag_barrier_requestors_reached_zero, &env->mutex)) {
-        lf_print_error_and_exit("Could not initialize environment tag barrier condition variable");
-    }
-
+    LF_MUTEX_INIT(&env->mutex);
+    LF_COND_INIT(&env->event_q_changed, &env->mutex);
+    LF_COND_INIT(&env->global_tag_barrier_requestors_reached_zero, &env->mutex);
 
 #endif
 }
