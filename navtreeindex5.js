@@ -1,5 +1,7 @@
 var NAVTREEINDEX5 =
 {
+"d9/dad/structlf__wav__t.html":[11,0,31],
+"d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9":[11,0,31,2],
 "d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c":[11,0,31,0],
 "d9/dad/structlf__wav__t.html#ade6c01f216604eef5d88c937972ab052":[11,0,31,1],
 "d9/daf/lf__zephyr__clock__counter_8c.html":[12,0,0,2,12],
@@ -247,7 +249,5 @@ var NAVTREEINDEX5 =
 "db/dc8/pythontarget_8h.html#a9063e80f8777300c93afde6e6f4c9cea":[12,0,3,0,6,4],
 "db/dc8/pythontarget_8h.html#a9de058b2babd69a4ed9046fccc6e4f47":[12,0,3,0,6,16],
 "db/dc8/pythontarget_8h.html#a9e1b0c9440f6e68b2d223b8fdb77fdca":[12,0,3,0,6,13],
-"db/dc8/pythontarget_8h.html#aa31dfccd134fe1fd4890c76b361f4a12":[12,0,3,0,6,12],
-"db/dc8/pythontarget_8h.html#aac49a7141b078d4cc789090b068d3760":[12,0,3,0,6,6],
-"db/dc8/pythontarget_8h.html#aad4157279f7160ddf49504923ab04ec8":[12,0,3,0,6,14]
+"db/dc8/pythontarget_8h.html#aa31dfccd134fe1fd4890c76b361f4a12":[12,0,3,0,6,12]
 };

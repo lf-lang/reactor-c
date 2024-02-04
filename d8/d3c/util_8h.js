@@ -4,8 +4,11 @@ var util_8h =
     [ "ATTRIBUTE_FORMAT_PRINTF", "d8/d3c/util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867", null ],
     [ "CONCATENATE_THREE_STRINGS", "d8/d3c/util_8h.html#a8d8698026252ae104cc2405d8bb13f0e", null ],
     [ "LF_ASSERT", "d8/d3c/util_8h.html#a26ab6a0fd21cdcff11a5557406536bf1", null ],
+    [ "LF_ASSERT_NON_NULL", "d8/d3c/util_8h.html#a832d0deaa853b7777e1f54283e7bcc20", null ],
     [ "LF_ASSERTN", "d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1", null ],
     [ "LF_COND_INIT", "d8/d3c/util_8h.html#a47d73a5ec6fa7ebc7838312cb93c2bb8", null ],
+    [ "LF_CRITICAL_SECTION_ENTER", "d8/d3c/util_8h.html#a912847660fb8b04317fc270125d6b1f3", null ],
+    [ "LF_CRITICAL_SECTION_EXIT", "d8/d3c/util_8h.html#a687e881099481d8efe446ad8a17d72e5", null ],
     [ "LF_LEVEL", "d8/d3c/util_8h.html#ad5a08658dc3e13eab4cddafd94734794", null ],
     [ "LF_MAX", "d8/d3c/util_8h.html#aac9240f79bd758e00ed7bbf75dafc4fa", null ],
     [ "LF_MIN", "d8/d3c/util_8h.html#a4359466e7fdb68dcf8116c469946cd92", null ],
@@ -38,6 +41,6 @@ var util_8h =
     [ "lf_vprint_error_and_exit", "d8/d3c/util_8h.html#af7d17d1c521edc81e08aa92ea4de1d22", null ],
     [ "lf_vprint_log", "d8/d3c/util_8h.html#a98d6cf309d0ec4cd0b71a32e1e1f398d", null ],
     [ "lf_vprint_warning", "d8/d3c/util_8h.html#abce9ddab1394675a9305be42fae67ebc", null ],
-    [ "print_message_function_t", "d8/d3c/util_8h.html#a88a0d1c170c7a701e96ab7b51c55dee1", null ],
+    [ "print_message_function_t", "d8/d3c/util_8h.html#a80fbbd25930ec00b5e52814e82a439b7", null ],
     [ "_lf_my_fed_id", "d8/d3c/util_8h.html#a2c4180118c19ff02a0d42f4c6758bdd3", null ]
 ];
