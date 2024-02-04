@@ -59,7 +59,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 trace_t* trace_new(environment_t* env, const char * filename) {
     trace_t * trace = (trace_t *) calloc(1, sizeof(trace_t));
-    LF_ASSERT(trace, "Out of memory");
+    LF_ASSERT_NON_NULL(trace);
 
     trace->_lf_trace_stop=1;
     trace->env = env;
@@ -69,7 +69,7 @@ trace_t* trace_new(environment_t* env, const char * filename) {
 
     // Allocate memory for the filename on the trace struct
     trace->filename = (char*) malloc(len * sizeof(char));
-    LF_ASSERT(trace->filename, "Out of memory");
+    LF_ASSERT_NON_NULL(trace->filename);
 
     // Copy it to the struct
     strncpy(trace->filename, filename, len);
