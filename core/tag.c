@@ -112,19 +112,26 @@ interval_t lf_time_logical_elapsed(void *env) {
     return lf_time_logical(env) - start_time;
 }
 
-// FIXME: How can we make this thread-safe and 32bit-safe?
 instant_t lf_time_physical() {
+    instant_t now, last_read_local;
     // Get the current clock value
-    instant_t now;
-    
     LF_ASSERTN(_lf_clock_now(&now), "Failed to read physical clock.");
 
-    // Ensure monotonicity
-    if (now < last_read_physical_time) {
-        now = last_read_physical_time + 1;
-    }
+    do {
+        // Atomically fetch the last read value. This is done with
+        // atomics to guarantee that it works on 32bit platforms as well.
+        last_read_local = lf_atomic_fetch_add64(&last_read_physical_time, 0);
+    
 
-    last_read_physical_time = now;
+        // Ensure monotonicity. Remeber that last_read_local is actually the 
+        if (now <= last_read_local) {
+            now = last_read_local+1;
+        }
+        // Update the last read value, atomically and also make sure that another
+        // thread has not been here in between and changed it. If so. We must redo
+        // the monotonicity calculation.
+    } while(!lf_atomic_bool_compare_and_swap64(&last_read_physical_time, last_read_local, now));
+
     return now;
 }
 
