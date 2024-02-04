@@ -244,7 +244,7 @@ static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
         old_num_reactions = current_num_reactions;
         if (old_num_reactions <= 0) return NULL;
     } while (
-        (current_num_reactions = lf_val_compare_and_swap32(
+        (current_num_reactions = lf_atomic_val_compare_and_swap32(
             worker_assignments->num_reactions_by_worker + worker,
             old_num_reactions,
             (index = old_num_reactions - 1)
@@ -767,7 +767,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
     assert(worker_number >= -1);
-    if (!lf_bool_compare_and_swap32(&reaction->status, inactive, queued)) return;
+    if (!lf_atomic_bool_compare_and_swap32(&reaction->status, inactive, queued)) return;
     worker_assignments_put(scheduler, reaction);
 }
 #endif // defined SCHEDULER && SCHEDULER == SCHED_ADAPTIVE
