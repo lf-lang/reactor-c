@@ -170,7 +170,7 @@ void _lf_start_print_window(int above, int right) {
  * @param body The message, or NULL for exit type.
  */
 void _lf_sensor_post_message(enum _lf_sensor_message_type type, char* body) {
-    lf_mutex_lock(&_lf_sensor_mutex);
+    LF_MUTEX_LOCK(&_lf_sensor_mutex);
     _lf_sensor_message_t* message = _lf_sensor.message_recycle_q;
     if (message == NULL) {
     	// Create a new message struct.
@@ -198,7 +198,7 @@ void _lf_sensor_post_message(enum _lf_sensor_message_type type, char* body) {
 		}
 	}
 	lf_cond_signal(&_lf_sensor_simulator_cond_var);
-    lf_mutex_unlock(&_lf_sensor_mutex);
+    LF_MUTEX_UNLOCK(&_lf_sensor_mutex);
 }
 
 /**
@@ -256,7 +256,7 @@ void* _lf_sensor_read_input(void* ignored) {
  * message window.
  */
 void* _lf_sensor_simulator_thread(void* ignored) {
-    lf_mutex_lock(&_lf_sensor_mutex);
+    LF_MUTEX_LOCK(&_lf_sensor_mutex);
     _lf_sensor.thread_created = 1;
     // Clean up any previous curses state.
     if (!isendwin()) {
@@ -301,7 +301,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
 			if (_lf_sensor.message_q->type == _lf_sensor_close_windows) {
 			    lf_register_print_function(NULL, -1);
 			    endwin();
-			    lf_mutex_unlock(&_lf_sensor_mutex);
+			    LF_MUTEX_UNLOCK(&_lf_sensor_mutex);
 				return NULL;
 			} else if (_lf_sensor.message_q->type == _lf_sensor_tick) {
 			    wmove(_lf_sensor.tick_window, _lf_sensor.tick_cursor_y, _lf_sensor.tick_cursor_x);
@@ -341,7 +341,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
 			_lf_sensor.message_recycle_q->next = tmp_recycle;
 		}
     }
-    lf_mutex_unlock(&_lf_sensor_mutex);
+    LF_MUTEX_UNLOCK(&_lf_sensor_mutex);
     return NULL;
 }
 
@@ -375,7 +375,7 @@ int start_sensor_simulator(
     _lf_sensor.message_q = NULL;
     _lf_sensor.message_recycle_q = NULL;
     _lf_sensor.thread_created = 0;
-    lf_cond_init(&_lf_sensor_simulator_cond_var, &_lf_sensor_mutex);
+    LF_COND_INIT(&_lf_sensor_simulator_cond_var, &_lf_sensor_mutex);
     if (_lf_sensor.thread_created == 0) {
         // Thread has not been created.
         // Zero out the trigger table.
@@ -427,7 +427,7 @@ int register_sensor_key(char key, void* action) {
         return 2;
     }
     int result = 0;
-    lf_mutex_lock(&_lf_sensor_mutex);
+    LF_MUTEX_LOCK(&_lf_sensor_mutex);
     if (key == '\n') {
         if (_lf_sensor_sensor_newline_trigger != NULL) {
             result = 1;
@@ -446,6 +446,6 @@ int register_sensor_key(char key, void* action) {
     } else {
         _lf_sensor_trigger_table[index] = action;
     }
-    lf_mutex_unlock(&_lf_sensor_mutex);
+    LF_MUTEX_UNLOCK(&_lf_sensor_mutex);
     return result;
 }

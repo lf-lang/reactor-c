@@ -60,7 +60,7 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
 void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
     // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
     // Careful with handling startup and shutdown.
-    lf_mutex_lock(rti_common->mutex);
+    LF_MUTEX_LOCK(rti_common->mutex);
 
     enclave->completed = completed;
 
@@ -78,7 +78,7 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
         free(visited);
     }
 
-    lf_mutex_unlock(rti_common->mutex);
+    LF_MUTEX_UNLOCK(rti_common->mutex);
 }
 
 tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
