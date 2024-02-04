@@ -70,7 +70,7 @@ bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval);
  * to `value`, it is updated to `newval`. The function returns
  * the original value of `*ptr`.
  */
-int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval);
+int  _zephyr_val32_compare_and_swap(uint32_t *ptr, int value, int newval);
 
 #endif // !LF_SINGLE_THREADED
 

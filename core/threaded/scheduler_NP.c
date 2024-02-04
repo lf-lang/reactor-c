@@ -91,7 +91,7 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t * scheduler, reactio
     }
 #endif
     int reaction_q_level_index =
-        lf_atomic_fetch_add(&scheduler->indexes[reaction_level], 1);
+        lf_atomic_fetch_add32((int32_t *) &scheduler->indexes[reaction_level], 1);
     assert(reaction_q_level_index >= 0);
     LF_PRINT_DEBUG(
         "Scheduler: Accessing triggered reactions at the level %zu with index %d.",
@@ -232,7 +232,7 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
 void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
     // Increment the number of idle workers by 1 and check if this is the last
     // worker thread to become idle.
-    if (lf_atomic_add_fetch(&scheduler->number_of_idle_workers,
+    if (lf_atomic_add_fetch32((int32_t *) &scheduler->number_of_idle_workers,
                             1) ==
         scheduler->number_of_workers) {
         // Last thread to go idle
@@ -367,8 +367,8 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         lf_mutex_lock(
             &scheduler->array_of_mutexes[current_level]);
 #endif
-        int current_level_q_index = lf_atomic_add_fetch(
-            &scheduler->indexes[current_level], -1);
+        int current_level_q_index = lf_atomic_add_fetch32(
+            (int32_t *) &scheduler->indexes[current_level], -1);
         if (current_level_q_index >= 0) {
             LF_PRINT_DEBUG(
                 "Scheduler: Worker %d popping reaction with level %zu, index "

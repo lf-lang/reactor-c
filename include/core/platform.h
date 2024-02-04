@@ -42,6 +42,7 @@ extern "C" {
 
 #include "tag.h"
 #include <assert.h>
+#include "lf_atomic.h"
 
 // Forward declarations
 typedef struct environment_t environment_t;
@@ -123,7 +124,6 @@ int lf_critical_section_exit(environment_t* env);
 #else 
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
-
 
 /**
  * @brief Get the number of cores on the host machine.
@@ -208,78 +208,6 @@ int lf_cond_wait(lf_cond_t* cond);
  *  number otherwise.
  */
 int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time);
-
-/*
- * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.
- * @param ptr A pointer to a variable. The value of this variable will be replaced with the result of the operation.
- * @param value The value to be added to the variable pointed to by the ptr parameter.
- * @return The original value of the variable that ptr points to (i.e., from before the application of this operation).
- */
-#if defined(PLATFORM_ZEPHYR)
-#define lf_atomic_fetch_add(ptr, value) _zephyr_atomic_fetch_add((int*) ptr, value)
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-// Assume that an integer is 32 bits.
-#define lf_atomic_fetch_add(ptr, value) InterlockedExchangeAdd(ptr, value)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_atomic_fetch_add(ptr, value) __sync_fetch_and_add(ptr, value)
-#else
-#error "Compiler not supported"
-#endif
-
-/*
- * Atomically increment the variable that ptr points to by the given value, and return the new value of the variable.
- * @param ptr A pointer to a variable. The value of this variable will be replaced with the result of the operation.
- * @param value The value to be added to the variable pointed to by the ptr parameter.
- * @return The new value of the variable that ptr points to (i.e., from before the application of this operation).
- */
-#if defined(PLATFORM_ZEPHYR)
-#define lf_atomic_add_fetch(ptr, value) _zephyr_atomic_add_fetch((int*) ptr, value)
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-// Assume that an integer is 32 bits.
-#define lf_atomic_add_fetch(ptr, value) InterlockedAdd(ptr, value)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_atomic_add_fetch(ptr, value) __sync_add_and_fetch(ptr, value)
-#else
-#error "Compiler not supported"
-#endif
-
-/*
- * Atomically compare the variable that ptr points to against oldval. If the
- * current value is oldval, then write newval into *ptr.
- * @param ptr A pointer to a variable.
- * @param oldval The value to compare against.
- * @param newval The value to assign to *ptr if comparison is successful.
- * @return True if comparison was successful. False otherwise.
- */
-#if defined(PLATFORM_ZEPHYR)
-#define lf_bool_compare_and_swap(ptr, value, newval) _zephyr_bool_compare_and_swap((bool*) ptr, value, newval)
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-// Assume that a boolean is represented with a 32-bit integer.
-#define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_bool_compare_and_swap(ptr, oldval, newval) __sync_bool_compare_and_swap(ptr, oldval, newval)
-#else
-#error "Compiler not supported"
-#endif
-
-/*
- * Atomically compare the 32-bit value that ptr points to against oldval. If the
- * current value is oldval, then write newval into *ptr.
- * @param ptr A pointer to a variable.
- * @param oldval The value to compare against.
- * @param newval The value to assign to *ptr if comparison is successful.
- * @return The initial value of *ptr.
- */
-#if defined(PLATFORM_ZEPHYR)
-#define lf_val_compare_and_swap(ptr, value, newval) _zephyr_val_compare_and_swap((int*) ptr, value, newval)
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#define lf_val_compare_and_swap(ptr, oldval, newval) InterlockedCompareExchange(ptr, newval, oldval)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_val_compare_and_swap(ptr, oldval, newval) __sync_val_compare_and_swap(ptr, oldval, newval)
-#else
-#error "Compiler not supported"
-#endif
-
 #endif
 
 /**

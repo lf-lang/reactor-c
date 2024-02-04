@@ -209,7 +209,7 @@ void _lf_set_present(lf_port_base_t* port) {
   if (!port->source_reactor) return;
   environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;
-    int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+    int ipfas = lf_atomic_fetch_add32(&env->is_present_fields_abbreviated_size, 1);
     if (ipfas < env->is_present_fields_size) {
         env->is_present_fields_abbreviated[ipfas] = is_present_field;
     }
@@ -219,7 +219,7 @@ void _lf_set_present(lf_port_base_t* port) {
     if(port->sparse_record
     		&& port->destination_channel >= 0
 			&& port->sparse_record->size >= 0) {
-    	int next = lf_atomic_fetch_add(&port->sparse_record->size, 1);
+    	int next = lf_atomic_fetch_add32(&port->sparse_record->size, 1);
     	if (next >= port->sparse_record->capacity) {
     		// Buffer is full. Have to revert to the classic iteration.
     		port->sparse_record->size = -1;

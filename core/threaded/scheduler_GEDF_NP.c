@@ -190,7 +190,7 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
 void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
     // Increment the number of idle workers by 1 and check if this is the last
     // worker thread to become idle.
-    if (lf_atomic_add_fetch(&scheduler->number_of_idle_workers,
+    if (lf_atomic_add_fetch32(&scheduler->number_of_idle_workers,
                             1) ==
         scheduler->number_of_workers) {
         // Last thread to go idle
