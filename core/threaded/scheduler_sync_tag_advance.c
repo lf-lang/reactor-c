@@ -52,7 +52,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * @brief Indicator that execution of at least one tag has completed.
  */
-static bool _lf_logical_tag_completed = false;
+static bool _latest_tag_completed = false;
 
 /**
  * Return true if the worker should stop now; false otherwise.
@@ -60,7 +60,7 @@ static bool _lf_logical_tag_completed = false;
  */
 bool should_stop_locked(lf_scheduler_t * sched) {
     // If this is not the very first step, check against the stop tag to see whether this is the last step.
-    if (_lf_logical_tag_completed) {
+    if (_latest_tag_completed) {
         // If we are at the stop tag, do not call _lf_next_locked()
         // to prevent advancing the logical time.
         if (lf_tag_compare(sched->env->current_tag, sched->env->stop_tag) >= 0) {
@@ -92,7 +92,7 @@ bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched) {
         return true;
     }
 
-    _lf_logical_tag_completed = true;
+    _latest_tag_completed = true;
 
     // Advance time.
     // _lf_next_locked() may block waiting for real time to pass or events to appear.

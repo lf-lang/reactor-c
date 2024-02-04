@@ -49,7 +49,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
-#include "semaphore.h"
+#include "lf_semaphore.h"
 #include "trace.h"
 #include "util.h"
 #include "reactor_threaded.h"
@@ -128,7 +128,7 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
                 scheduler->next_reaction_level - 1
             ];
 
-        LF_PRINT_DEBUG("DEBUG: start of rxn queue at %lu is %p", scheduler->next_reaction_level - 1, ((reaction_t**)scheduler->executing_reactions)[0]);
+        LF_PRINT_DEBUG("Start of rxn queue at %lu is %p", scheduler->next_reaction_level - 1, ((reaction_t**)scheduler->executing_reactions)[0]);
         if (((reaction_t**)scheduler->executing_reactions)[0] != NULL) {
             // There is at least one reaction to execute
             return 1;

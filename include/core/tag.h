@@ -40,6 +40,7 @@
 #define FOREVER_TAG (tag_t) { .time = FOREVER, .microstep = FOREVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
 #define FOREVER_TAG_INITIALIZER { FOREVER,  FOREVER_MICROSTEP }
+#define ZERO_TAG (tag_t) { .time = 0LL, .microstep = 0u }
 
 // Convenience for converting times
 #define BILLION 1000000000LL
@@ -81,6 +82,19 @@ typedef struct {
  * @param env A pointer to the environment from which we want the current tag.
  */
 tag_t lf_tag(void* env);
+
+/**
+ * Add two tags.  If either tag has has NEVER or FOREVER in its time field, then
+ * return NEVER_TAG or FOREVER_TAG, respectively. Also return NEVER_TAG or FOREVER_TAG
+ * if the result underflows or overflows when adding the times.
+ * If the microstep overflows, also return FOREVER_TAG.
+ * If the time field of the second tag is greater than 0, then the microstep of the first tag
+ * is reset to 0 before adding. This models the delay semantics in LF and makes this
+ * addition operation non-commutative.
+ * @param a The first tag.
+ * @param b The second tag.
+ */
+tag_t lf_tag_add(tag_t a, tag_t b);
 
 /**
  * Compare two tags. Return -1 if the first is less than

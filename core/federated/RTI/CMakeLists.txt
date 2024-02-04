@@ -52,6 +52,7 @@ endif()
 set(IncludeDir ../../../include/core)
 include_directories(${IncludeDir})
 include_directories(${IncludeDir}/federated)
+include_directories(${IncludeDir}/federated/network)
 include_directories(${IncludeDir}/modal_models)
 include_directories(${IncludeDir}/platform)
 include_directories(${IncludeDir}/utils)
@@ -68,11 +69,10 @@ add_executable(
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
-    ${CoreLib}/federated/net_util.c
+    ${CoreLib}/federated/network/net_util.c
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
-    message_record/message_record.c
 )
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
