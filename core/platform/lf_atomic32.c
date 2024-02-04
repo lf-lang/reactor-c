@@ -36,7 +36,7 @@ int64_t lf_atomic_add_fetch64(int64_t *ptr, int64_t value) {
     return res;
 }
 
-bool lf_atomic_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
+bool lf_atomic_bool_compare_and_swap32(int32_t *ptr, int32_t value, int32_t newval) {
     lf_disable_interrupts_nested();
     bool res = false;
     if (*ptr == value) {
@@ -47,7 +47,18 @@ bool lf_atomic_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
     return res;
 }
 
-int32_t  lf_atomic_val32_compare_and_swap(int32_t *ptr, int32_t value, int32_t newval) {
+bool lf_atomic_bool_compare_and_swap64(int64_t *ptr, int64_t value, int64_t newval) {
+    lf_disable_interrupts_nested();
+    bool res = false;
+    if (*ptr == value) {
+        *ptr = newval;
+        res = true;
+    }
+    lf_enable_interrupts_nested();
+    return res;
+}
+
+int32_t  lf_atomic_val_compare_and_swap32(int32_t *ptr, int32_t value, int32_t newval) {
     lf_disable_interrupts_nested();
     int res = *ptr;
     if (*ptr == value) {
@@ -57,7 +68,7 @@ int32_t  lf_atomic_val32_compare_and_swap(int32_t *ptr, int32_t value, int32_t n
     return res;
 }
 
-int64_t  lf_atomic_val64_compare_and_swap(int64_t *ptr, int64_t value, int64_t newval) {
+int64_t  lf_atomic_val_compare_and_swap64(int64_t *ptr, int64_t value, int64_t newval) {
     lf_disable_interrupts_nested();
     int64_t res = *ptr;
     if (*ptr == value) {
