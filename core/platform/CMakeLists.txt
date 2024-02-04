@@ -14,21 +14,30 @@ set(LF_PLATFORM_FILES
     lf_rp2040_support.c
 )
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(LF_ATOMIC_FILE lf_atomic64.c)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    set(LF_ATOMIC_FILE lf_atomic64.c)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(CMAKE_SYSTEM_VERSION 10.0)
     message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
-    list(APPEND LF_PLATFORM_FILES lf_atomic64.c)
+    set(LF_ATOMIC_FILE lf_atomic64.c)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
     list(APPEND REACTORC_COMPILE_DEFS PLATFORM_NRF52)
-    list(APPEND LF_PLATFORM_FILES lf_atomic32.c)
+    set(LF_ATOMIC_FILE lf_atomic32.c)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     list(APPEND REACTORC_COMPILE_DEFS PLATFORM_ZEPHYR)
-    list(APPEND LF_PLATFORM_FILES lf_atomic32.c)
+    set(LF_ATOMIC_FILE lf_atomic32.c)
     set(PLATFORM_ZEPHYR true)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
-    list(APPEND LF_PLATFORM_FILES lf_atomic32.c)
+    set(LF_ATOMIC_FILE lf_atomic32.c)
     list(APPEND REACTORC_COMPILE_DEFS PLATFORM_RP2040)
+else()
+    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS and Windows.")
 endif()
+
+# Add the atomics implementation
+list(APPEND LF_PLATFORM_FILES ${LF_ATOMIC_FILE})
 
 # Prepend all sources with platform
 list(TRANSFORM LF_PLATFORM_FILES PREPEND platform/)
