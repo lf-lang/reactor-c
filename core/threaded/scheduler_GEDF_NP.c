@@ -359,7 +359,7 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
-    if (reaction == NULL || !(lf_atomic_bool_compare_and_swap32(&reaction->status, inactive, queued)) {
+    if (reaction == NULL || !lf_atomic_bool_compare_and_swap32(&reaction->status, inactive, queued) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.",
