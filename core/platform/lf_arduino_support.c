@@ -128,8 +128,6 @@ int _lf_clock_now(instant_t* t) {
     return 0;
 }
 
-#if defined(LF_SINGLE_THREADED)
-
 int lf_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
         // First nested entry into a critical section.
@@ -150,6 +148,9 @@ int lf_disable_interrupts_nested() {
     }
     return 0;
 }
+
+#if defined(LF_SINGLE_THREADED)
+
 
 /**
  * Handle notifications from the runtime of changes to the event queue.
