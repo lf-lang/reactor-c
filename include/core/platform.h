@@ -54,16 +54,31 @@ typedef struct environment_t environment_t;
 int lf_notify_of_event(environment_t* env);
 
 /**
- * @brief Enter critical section by disabling interrupts
+ * @brief Enter critical section within an environment.
  * @param env Environment in which we are executing.
  */
 int lf_critical_section_enter(environment_t* env);
 
 /**
- * @brief Leave a critical section by enabling interrupts
+ * @brief Leave a critical section within an environment.
  * @param env Environment in which we are executing.
  */
 int lf_critical_section_exit(environment_t* env);
+
+
+// FIXMEL: Provide implementation of this for   UNIX and Windows. Is it possible? 
+/**
+ * @brief Disable interrupts with support for nested calls
+ * 
+ * @return int 
+ */
+int lf_disable_interrupts_nested();
+/**
+ * @brief  Enable interrupts after potentially multiple callse to `lf_disable_interrupts_nested`
+ * 
+ * @return int 
+ */
+int lf_enable_interrupts_nested();
 
 #if defined(PLATFORM_ARDUINO)
     #include "platform/lf_arduino_support.h"
@@ -102,18 +117,6 @@ int lf_critical_section_exit(environment_t* env);
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
 #if defined (LF_SINGLE_THREADED)
     typedef void lf_mutex_t;
-    /**
-     * @brief Disable interrupts with support for nested calls
-     * 
-     * @return int 
-     */
-    int lf_disable_interrupts_nested();
-    /**
-     * @brief  Enable interrupts after potentially multiple callse to `lf_disable_interrupts_nested`
-     * 
-     * @return int 
-     */
-    int lf_enable_interrupts_nested();
 
     /**
      * @brief Notify sleeping single-threaded context of new event

@@ -4,6 +4,9 @@
  * Implements atomics for 32 bit platforms by disabling interrupts.
  */
 
+// FIXME: Can I use "disable interrupts here? It is not part of the platform API necessarily...."
+// but grabbing a mutex is not really enough...
+// solution. Move disable interrupts to the platform API..
 int32_t lf_atomic_fetch_add32(int32_t *ptr, int32_t value) {
     lf_disable_interrupts_nested(); 
     int32_t res = *ptr; 
