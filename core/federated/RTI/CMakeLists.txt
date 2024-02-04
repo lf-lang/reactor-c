@@ -43,8 +43,10 @@ set(CoreLib ../../../core)
 # file and assign the file's path to LF_PLATFORM_FILE
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_linux_support.c)
+  set(LF_ATOMIC_FILE ${CoreLib}/platform/lf_atomic64.c)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
   set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_macos_support.c)
+  set(LF_ATOMIC_FILE ${CoreLib}/platform/lf_atomic64.c)
 else()
   message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
 endif()
@@ -66,6 +68,7 @@ add_executable(
     rti_remote.c
     ${CoreLib}/trace.c
     ${LF_PLATFORM_FILE}
+    ${LF_ATOMIC_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
