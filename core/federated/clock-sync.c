@@ -46,8 +46,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static interval_t clock_sync_offset = NSEC(0);
 
-static lf_mutex_t mutex;
-
 /**
  * Keep a record of connection statistics
  * and the remote physical clock of the RTI.
@@ -78,9 +76,7 @@ instant_t _lf_last_clock_sync_instant = 0LL;
 int _lf_rti_socket_UDP = -1;
 
 static void adjust_clock_sync_offset(interval_t adjustment) {
-    LF_ASSERTN(lf_mutex_lock(&mutex), "lf_mutex_lock failed");
     clock_sync_offset += adjustment;
-    LF_ASSERTN(lf_mutex_unlock(&mutex), "lf_mutex_unlock failed");
 }
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
@@ -553,7 +549,6 @@ void* listen_to_rti_UDP_thread(void* args) {
  */
 int create_clock_sync_thread(lf_thread_t* thread_id) {
 #ifdef _LF_CLOCK_SYNC_ON
-    LF_ASSERTN(lf_mutex_init(&mutex), "lf_mutex_init failed");
     // One for UDP messages if clock synchronization is enabled for this federate
     return lf_thread_create(thread_id, listen_to_rti_UDP_thread, NULL);
 #endif // _LF_CLOCK_SYNC_ON
@@ -562,15 +557,17 @@ int create_clock_sync_thread(lf_thread_t* thread_id) {
 
 #if defined (_LF_CLOCK_SYNC_ON)
 void clock_sync_apply_offset(instant_t *t) {
-    LF_ASSERTN(lf_mutex_lock(&mutex), "lf_mutex_lock failed");
-    *t += clock_sync_offset;
-    LF_ASSERTN(lf_mutex_unlock(&mutex), "lf_mutex_unlock failed");
+    // Read out the current clock sync offset. USe atomics to ensure thread-safety
+    // also on 32bit platforms.
+    instant_t clock_sync_offset_local = lf_atomic_add_fetch64(&clock_sync_offset,0)
+    *t += clock_sync_offset_local;
 }
 
 void clock_sync_remove_offset(instan_t *t) {
-    LF_ASSERTN(lf_mutex_lock(&mutex), "lf_mutex_lock failed");
-    *t -= clock_sync_offset;
-    LF_ASSERTN(lf_mutex_unlock(&mutex), "lf_mutex_unlock failed");
+    // Read out the current clock sync offset. USe atomics to ensure thread-safety
+    // also on 32bit platforms.
+    instant_t clock_sync_offset_local = lf_atomic_add_fetch64(&clock_sync_offset,0)
+    *t -= clock_sync_offset_local;
 }
 #endif
 
