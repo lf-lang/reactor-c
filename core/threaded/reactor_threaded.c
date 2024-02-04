@@ -274,7 +274,7 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
         // Check whether we actually need to wait, or if we have already passed the timepoint.
         interval_t wait_duration = wait_until_time - lf_time_physical();
         if (wait_duration < MIN_SLEEP_DURATION) {
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION " PRINTF_TIME ". Skipping wait.",
                 wait_duration, MIN_SLEEP_DURATION);
             return true;
         }
