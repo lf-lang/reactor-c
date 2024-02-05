@@ -45,15 +45,6 @@
 // Convenience for converting times
 #define BILLION 1000000000LL
 
-// Bring clock synchronization adjustment into scope
-#if defined(_LF_CLOCK_SYNC_ON)
-#include "clock-sync.h"
-#else
-// Without clock synchronization enabled we can just optimize these away.
-#define clock_sync_apply_offset(x)
-#define clock_sync_remove_offset(x)
-#endif
-
 #include <stdint.h>
 #include <stddef.h>
 #include <limits.h>
@@ -83,6 +74,21 @@ typedef struct {
     instant_t time;
     microstep_t microstep;
 } tag_t;
+
+////////////////  External Functions
+
+// Bring clock synchronization adjustment into scope. These functions are
+// defined in clock-sync.c
+#if defined(_LF_CLOCK_SYNC_ON)
+extern void clock_sync_apply_offset(instant_t *t);
+extern void clock_sync_remove_offset(instant_t *t);
+extern void clock_sync_set_constant_bias(interval_t offset);
+#else
+// Without clock synchronization enabled we can just optimize these away.
+#define clock_sync_apply_offset(x)
+#define clock_sync_remove_offset(x)
+#define clock_sync_set_constant_bias(x)
+#endif
 
 ////////////////  Functions
 
@@ -196,13 +202,6 @@ instant_t lf_time_physical_elapsed(void);
  */
 instant_t lf_time_start(void);
 
-/**
- * Set a fixed offset to the physical clock.
- * After calling this, the value returned by lf_time_physical(void)
- * and get_elpased_physical_time(void) will have this specified offset
- * added to what it would have returned before the call.
- */
-void lf_set_physical_clock_offset(interval_t offset);
 
 /**
  * For user-friendly reporting of time values, the buffer length required.

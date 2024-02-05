@@ -38,8 +38,9 @@ int _lf_clock_now(instant_t* t) {
     if (clock_gettime(CLOCK_REALTIME, (struct timespec*) &tp) != 0) {
         return -1;
     }
-    // Apply the clock_sync_offset
     *t = convert_timespec_to_ns(tp);
+    
+    // Apply any clock sync offset
     clock_sync_apply_offset(t);
     return 0;
 }

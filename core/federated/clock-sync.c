@@ -44,7 +44,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.h"
 #include "util.h"
 
-static interval_t clock_sync_offset = NSEC(0);
+interval_t _lf_clock_sync_offset = NSEC(0);
+interval_t _lf_clock_sync_constant_bias = NSEC(0);
 
 /**
  * Keep a record of connection statistics
@@ -75,8 +76,8 @@ instant_t _lf_last_clock_sync_instant = 0LL;
  */
 int _lf_rti_socket_UDP = -1;
 
-static void adjust_clock_sync_offset(interval_t adjustment) {
-    clock_sync_offset += adjustment;
+static void adjust__lf_clock_sync_offset(interval_t adjustment) {
+    _lf_clock_sync_offset += adjustment;
 }
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
@@ -422,7 +423,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // which means we can now adjust the clock offset.
         // For the AVG algorithm, history is a running average and can be directly
         // applied
-        adjust_clock_sync_offset(_lf_rti_socket_stat.history);
+        adjust__lf_clock_sync_offset(_lf_rti_socket_stat.history);
         // @note AVG and SD will be zero if collect-stats is set to false
         LF_PRINT_LOG("Clock sync:"
                     " New offset: " PRINTF_TIME "."
@@ -430,7 +431,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
                     " (AVG): " PRINTF_TIME "."
                     " (SD): " PRINTF_TIME "."
                     " Local round trip delay: " PRINTF_TIME ".",
-                    clock_sync_offset,
+                    _lf_clock_sync_offset,
                     network_round_trip_delay,
                     stats.average,
                     stats.standard_deviation,
@@ -559,15 +560,19 @@ int create_clock_sync_thread(lf_thread_t* thread_id) {
 void clock_sync_apply_offset(instant_t *t) {
     // Read out the current clock sync offset. Use atomics to ensure thread-safety
     // also on 32bit platforms.
-    instant_t clock_sync_offset_local = lf_atomic_add_fetch64(&clock_sync_offset,0)
-    *t += clock_sync_offset_local;
+    instant_t _lf_clock_sync_offset_local = lf_atomic_add_fetch64(&_lf_clock_sync_offset,0);
+    *t += (_lf_clock_sync_offset_local + _lf_clock_sync_constant_bias);
 }
 
 void clock_sync_remove_offset(instant_t *t) {
     // Read out the current clock sync offset. USe atomics to ensure thread-safety
     // also on 32bit platforms.
-    instant_t clock_sync_offset_local = lf_atomic_add_fetch64(&clock_sync_offset,0);
-    *t -= clock_sync_offset_local;
+    instant_t _lf_clock_sync_offset_local = lf_atomic_add_fetch64(&_lf_clock_sync_offset,0);
+    *t -= (_lf_clock_sync_offset_local + _lf_clock_sync_constant_bias);
+}
+
+void clock_sync_set_constant_bias(interval_t offset) {
+    _lf_clock_sync_constant_bias = offset;
 }
 #endif
 

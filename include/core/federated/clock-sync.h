@@ -214,7 +214,17 @@ void clock_sync_apply_offset(instant_t *t);
  * 
  * @param t 
  */
-void clock_sync_remove_offset(instan_t *t);
+void clock_sync_remove_offset(instant_t *t);
+
+/**
+ * Set a fixed offset to the physical clock.
+ * After calling this, the value returned by lf_time_physical(void)
+ * and get_elpased_physical_time(void) will have this specified offset
+ * added to what it would have returned before the call.
+ */
+void clock_sync_set_constant_bias(interval_t offset);
 #endif
+
+
 
 #endif // CLOCK_SYNC_H
