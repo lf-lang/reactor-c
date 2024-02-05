@@ -563,7 +563,7 @@ void clock_sync_apply_offset(instant_t *t) {
     *t += clock_sync_offset_local;
 }
 
-void clock_sync_remove_offset(instan_t *t) {
+void clock_sync_remove_offset(instant_t *t) {
     // Read out the current clock sync offset. USe atomics to ensure thread-safety
     // also on 32bit platforms.
     instant_t clock_sync_offset_local = lf_atomic_add_fetch64(&clock_sync_offset,0)
