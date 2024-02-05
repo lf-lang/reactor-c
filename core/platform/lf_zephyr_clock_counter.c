@@ -184,9 +184,9 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
             lf_print_error_and_exit("Could not setup alarm for sleeping. Errno %i", err);
         }
         
-        lf_critical_section_exit(env);
+        LF_CRITICAL_SECTION_EXIT(env);
         k_sem_take(&semaphore, K_FOREVER);
-        lf_critical_section_enter(env);
+        LF_CRITICAL_SECTION_ENTER(env);
 
         // Then calculating remaining sleep, unless we got woken up by an event
         if (!async_event) {

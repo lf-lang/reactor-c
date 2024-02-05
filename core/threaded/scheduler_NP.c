@@ -79,8 +79,7 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t * scheduler, reactio
     if (reaction_level == current_level) {
         LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %zu.",
                     reaction_level);
-        lf_mutex_lock(
-            &scheduler->array_of_mutexes[reaction_level]);
+        LF_MUTEX_LOCK(&scheduler->array_of_mutexes[reaction_level]);
         LF_PRINT_DEBUG("Scheduler: Locked the mutex for level %zu.", reaction_level);
     }
     // The level index for the current level can sometimes become negative. Set
@@ -103,8 +102,7 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t * scheduler, reactio
                 reaction_q_level_index);
 #ifdef FEDERATED
     if (reaction_level == current_level) {
-        lf_mutex_unlock(
-            &scheduler->array_of_mutexes[reaction_level]);
+        LF_MUTEX_UNLOCK(&scheduler->array_of_mutexes[reaction_level]);
     }
 #endif
 }
@@ -199,17 +197,17 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
         if (scheduler->next_reaction_level ==
             (scheduler->max_reaction_level + 1)) {
             scheduler->next_reaction_level = 0;
-            lf_mutex_lock(&env->mutex);
+            LF_MUTEX_LOCK(&env->mutex);
             // Nothing more happening at this tag.
             LF_PRINT_DEBUG("Scheduler: Advancing tag.");
             // This worker thread will take charge of advancing tag.
             if (_lf_sched_advance_tag_locked(scheduler)) {
                 LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
                 _lf_sched_signal_stop(scheduler);
-                lf_mutex_unlock(&env->mutex);
+                LF_MUTEX_UNLOCK(&env->mutex);
                 break;
             }
-            lf_mutex_unlock(&env->mutex);
+            LF_MUTEX_UNLOCK(&env->mutex);
         }
 
         if (_lf_sched_distribute_ready_reactions(scheduler) > 0) {
@@ -316,7 +314,7 @@ void lf_sched_init(
         );
 
         // Initialize the mutexes for the reaction vectors
-        lf_mutex_init(&env->scheduler->array_of_mutexes[i]);
+        LF_MUTEX_INIT(&env->scheduler->array_of_mutexes[i]);
 
     }
 
@@ -364,8 +362,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
 #ifdef FEDERATED
         // Need to lock the mutex because federate.c could trigger reactions at
         // the current level (if there is a causality loop)
-        lf_mutex_lock(
-            &scheduler->array_of_mutexes[current_level]);
+        LF_MUTEX_LOCK(&scheduler->array_of_mutexes[current_level]);
 #endif
         int current_level_q_index = lf_atomic_add_fetch32(
             (int32_t *) &scheduler->indexes[current_level], -1);

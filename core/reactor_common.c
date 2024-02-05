@@ -72,8 +72,10 @@ extern watchdog_t* _lf_watchdogs;
 // Global variable defined in tag.c:
 extern instant_t start_time;
 
+#if !defined NDEBUG
 // Global variable defined in lf_token.c:
 extern int _lf_count_payload_allocations;
+#endif
 
 /**
  * Indicator of whether to wait for physical time to match logical time.
@@ -1224,15 +1226,11 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
 trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token) {
     environment_t* env = action->parent->environment;
     
-    if (lf_critical_section_enter(env) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
+    LF_CRITICAL_SECTION_ENTER(env);
     int return_value = _lf_schedule(env, action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
-    if(lf_critical_section_exit(env) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
+    LF_CRITICAL_SECTION_EXIT(env);
     return return_value;
 }
 
@@ -1251,9 +1249,7 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
         lf_print_error("schedule: Invalid element size.");
         return -1;
     }
-    if (lf_critical_section_enter(env) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
+    LF_CRITICAL_SECTION_ENTER(env);
     // Initialize token with an array size of length and a reference count of 0.
     lf_token_t* token = _lf_initialize_token(template, length);
     // Copy the value into the newly allocated memory.
@@ -1262,9 +1258,7 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
     trigger_handle_t result = _lf_schedule(env, action->trigger, offset, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
-    if(lf_critical_section_exit(env) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
+    LF_CRITICAL_SECTION_EXIT(env);
     return result;
 }
 
@@ -1276,16 +1270,12 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
 trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length) {
     token_template_t* template = (token_template_t*)action;
     environment_t* env = action->parent->environment;
-    if (lf_critical_section_enter(env) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
+    LF_CRITICAL_SECTION_ENTER(env);
     lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
     int return_value = _lf_schedule(env, action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
-    if(lf_critical_section_exit(env) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
+    LF_CRITICAL_SECTION_EXIT(env);
     return return_value;
 }
 
@@ -1355,7 +1345,7 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
 
 #if !defined(LF_SINGLE_THREADED)
     if (((self_base_t*) reaction->self)->reactor_mutex != NULL) {
-        lf_mutex_lock((lf_mutex_t*)((self_base_t*)reaction->self)->reactor_mutex);
+        LF_MUTEX_LOCK((lf_mutex_t*)((self_base_t*)reaction->self)->reactor_mutex);
     }
 #endif
 
@@ -1368,7 +1358,7 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
 
 #if !defined(LF_SINGLE_THREADED)
     if (((self_base_t*) reaction->self)->reactor_mutex != NULL) {
-        lf_mutex_unlock((lf_mutex_t*)((self_base_t*)reaction->self)->reactor_mutex);
+        LF_MUTEX_UNLOCK((lf_mutex_t*)((self_base_t*)reaction->self)->reactor_mutex);
     }
 #endif
 }
@@ -1725,8 +1715,10 @@ int process_args(int argc, const char* argv[]) {
  * `_lf_initialize_trigger_objects` function
  */
 void initialize_global(void) {
+    #if !defined NDEBUG
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
+    #endif
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
@@ -1816,6 +1808,7 @@ void termination(void) {
     // Skip most cleanup on abnormal termination.
     if (_lf_normal_termination) {
         _lf_free_all_tokens(); // Must be done before freeing reactors.
+#if !defined NDEBUG
         // Issue a warning if a memory leak has been detected.
         if (_lf_count_payload_allocations > 0) {
             lf_print_warning("Memory allocated for messages has not been freed.");
@@ -1825,6 +1818,7 @@ void termination(void) {
             lf_print_warning("Memory allocated for tokens has not been freed!");
             lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
         }
+#endif
 #if !defined(LF_SINGLE_THREADED)
         for (int i = 0; i < _lf_watchdog_count; i++) {
             if (_lf_watchdogs[i].base->reactor_mutex != NULL) {

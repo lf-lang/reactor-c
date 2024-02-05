@@ -279,11 +279,18 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
  * The LF_ASSERT version requires that the condition evaluate to true
  * (non-zero), whereas the LF_ASSERTN version requires that the condition
  * evaluate to false (zero).
- * These are optimized away if the NDEBUG flag is defined.
+ * These are optimized to execute the condition argument but not
+ * check the result if the NDEBUG flag is defined.
+ * The NDEBUG flag will be defined if the user specifies `build-type: Release`
+ * in the target properties of the LF program.
+ * 
+ * LF_ASSERT_NON_NULL can be used to verify that a pointer is not NULL.
+ * It differs from LF_ASSERT in that it does nothing at all if the NDEBUG flag is defined.
  */
 #if defined(NDEBUG)
 #define LF_ASSERT(condition, format, ...) (void)(condition)
 #define LF_ASSERTN(condition, format, ...) (void)(condition)
+#define LF_ASSERT_NON_NULL(pointer)
 #else
 #define LF_ASSERT(condition, format, ...) \
 	do { \
@@ -297,18 +304,55 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
 				lf_print_error_and_exit(format, ##__VA_ARGS__); \
 		} \
 	} while(0)
+#define LF_ASSERT_NON_NULL(pointer) \
+    do { \
+        if (!(pointer)) { \
+            lf_print_error_and_exit("Assertion failed: pointer is NULL Out of memory?."); \
+        } \
+    } while(0)
 #endif // NDEBUG
 
 /**
- * Checking mutex locking and unlocking.
+ * Initialize mutex with error checking.
  * This is optimized away if the NDEBUG flag is defined.
+ * @param mutex Pointer to the mutex to initialize.
  */
-#define LF_MUTEX_INIT(mutex) LF_ASSERTN(lf_mutex_init(&mutex), "Mutex init failed.")
+#define LF_MUTEX_INIT(mutex) LF_ASSERTN(lf_mutex_init(mutex), "Mutex init failed.")
 
-#define LF_MUTEX_LOCK(mutex) LF_ASSERTN(lf_mutex_lock(&mutex), "Mutex lock failed.")
+/**
+ * Lock mutex with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param mutex Pointer to the mutex to lock.
+ */
+#define LF_MUTEX_LOCK(mutex) LF_ASSERTN(lf_mutex_lock(mutex), "Mutex lock failed.")
 
-#define LF_MUTEX_UNLOCK(mutex) LF_ASSERTN(lf_mutex_unlock(&mutex), "Mutex unlock failed.")
+/**
+ * Unlock mutex with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param mutex Pointer to the mutex to unlock.
+ */
+#define LF_MUTEX_UNLOCK(mutex) LF_ASSERTN(lf_mutex_unlock(mutex), "Mutex unlock failed.")
 
-#define LF_COND_INIT(cond, mutex) LF_ASSERTN(lf_cond_init(&cond, &mutex), "Condition variable init failed.")
+/**
+ * Initialize condition variable with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param mutex Pointer to the condition variable to initialize.
+ * @param mutex Pointer to the mutex to associate with the condition variable.
+ */
+#define LF_COND_INIT(cond, mutex) LF_ASSERTN(lf_cond_init(cond, mutex), "Condition variable init failed.")
+
+/**
+ * Enter critical section with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param env Pointer to the environment.
+ */
+#define LF_CRITICAL_SECTION_ENTER(env) LF_ASSERT(!lf_critical_section_enter(env), "Could not enter critical section")
+
+/**
+ * Exit critical section with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param env Pointer to the environment.
+ */
+#define LF_CRITICAL_SECTION_EXIT(env) LF_ASSERT(!lf_critical_section_exit(env), "Could not exit critical section")
 
 #endif /* UTIL_H */
