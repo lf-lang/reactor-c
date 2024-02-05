@@ -65,6 +65,8 @@ int lf_critical_section_enter(environment_t* env);
  */
 int lf_critical_section_exit(environment_t* env);
 
+
+
 #if defined(PLATFORM_ARDUINO)
     #include "platform/lf_arduino_support.h"
 #elif defined(PLATFORM_ZEPHYR)
@@ -102,11 +104,20 @@ int lf_critical_section_exit(environment_t* env);
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
 #if defined (LF_SINGLE_THREADED)
     typedef void lf_mutex_t;
+    /** 
+     * @brief Disable interrupts with support for nested calls
+     * @return 0 on success
+     */
+    int lf_disable_interrupts_nested();
+    /**
+     * @brief  Enable interrupts after potentially multiple callse to `lf_disable_interrupts_nested`
+     * @return 0 on success
+     */
+    int lf_enable_interrupts_nested();
 
     /**
      * @brief Notify sleeping single-threaded context of new event
-     * 
-     * @return int 
+     * @return 0 on success
      */
     int _lf_single_threaded_notify_of_event();
 #else 
