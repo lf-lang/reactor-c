@@ -86,17 +86,17 @@ typedef enum clock_sync_stat {
 } clock_sync_stat;
 
 /**
+ * The federation life cycle phases. 
+ */
+typedef enum federation_life_cycle_phase {
+    startup_phase,
+    execution_phase,
+    shutdown_phase
+} federation_life_cycle_phase;
+
+/**
  * Structure that an RTI instance uses to keep track of its own and its
  * corresponding federates' state.
- * It is a special case of `rti_common_t` (declared in enclave.h). Inheritence
- * is mimicked by having the first attributes to be the same as of rti_common_t,
- * except that scheduling_nodes attribute here is of type `federate_info_t**`, while it
- * is of type `scheduling_node_t**` in `rti_common_t`.
- *     // **************** IMPORTANT!!! ********************
- *     // **   If you make any change to this struct,     **
- *     // **   you MUST also change  rti_common_t in     **
- *     // ** (enclave.h)! The change must exactly match.  **
- *     // **************************************************
  */
 typedef struct rti_remote_t {
     rti_common_t base;
@@ -188,6 +188,11 @@ typedef struct rti_remote_t {
      * Number of connected transient federates  
      */
     int32_t number_of_connected_transient_federates;
+
+    /**
+     * 
+     */
+    federation_life_cycle_phase phase;
 } rti_remote_t;
 
 /**
