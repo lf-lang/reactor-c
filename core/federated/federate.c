@@ -1840,7 +1840,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                             remote_federate_id, CONNECT_MAX_RETRIES);
                 return;
             }
-            lf_print_warning("Could not connect to federate %d. Will try again every %lld nanoseconds.\n",
+            lf_print_warning("Could not connect to federate %d. Will try again every" PRINTF_TIME "nanoseconds.\n",
                    remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
             
             // Check whether the RTI is still there.
@@ -2143,7 +2143,7 @@ void lf_enqueue_port_absent_reactions(environment_t* env){
         return;
     }
 #endif
-    LF_PRINT_DEBUG("Enqueueing port absent reactions at time %lld.", (long long) (env->current_tag.time - start_time));
+    LF_PRINT_DEBUG("Enqueueing port absent reactions at time " PRINTF_TIME ".", (env->current_tag.time - start_time));
     if (num_port_absent_reactions == 0) {
         LF_PRINT_DEBUG("No port absent reactions.");
         return;
