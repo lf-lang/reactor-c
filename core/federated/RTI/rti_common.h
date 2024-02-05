@@ -50,23 +50,23 @@ typedef struct minimum_delay_t {
  * any scheduling constraints.
  */
 typedef struct scheduling_node_t {
-    uint16_t id;                        // ID of this scheduling node.
-    tag_t completed;                    // The largest logical tag completed by the scheduling node 
-                                        // (or NEVER if no LTC has been received).
-    tag_t last_granted;                 // The maximum TAG that has been granted so far (or NEVER if none granted)
-    tag_t last_provisionally_granted;   // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
-    tag_t next_event;                   // Most recent NET received from the scheduling node (or NEVER if none received).
-    scheduling_node_state_t state;      // State of the scheduling node.
-    int* upstream;                      // Array of upstream scheduling node ids.
-    interval_t* upstream_delay;         // Minimum delay on connections from upstream scheduling nodes.
-    			                        // Here, NEVER encodes no delay. 0LL is a microstep delay.
-    int num_upstream;                   // Size of the array of upstream scheduling nodes and delays.
-    int* downstream;                    // Array of downstream scheduling node ids.
-    int num_downstream;                 // Size of the array of downstream scheduling nodes.
-    execution_mode_t mode;              // FAST or REALTIME.
-    minimum_delay_t* min_delays;        // Array of minimum delays from upstream nodes, not including this node.
-    size_t num_min_delays;              // Size of min_delays array.
-    int flags;                          // Or of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
+    uint16_t id;                            // ID of this scheduling node.
+    tag_t completed;                        // The largest logical tag completed by the scheduling node 
+                                            // (or NEVER if no LTC has been received).
+    tag_t last_granted;                     // The maximum TAG that has been granted so far (or NEVER if none granted)
+    tag_t last_provisionally_granted;       // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
+    tag_t next_event;                       // Most recent NET received from the scheduling node (or NEVER if none received).
+    scheduling_node_state_t state;          // State of the scheduling node.
+    int* immediate_upstreams;               // Array of immediate upstream scheduling node ids.
+    interval_t* immediate_upstream_delays;  // Minimum delay on connections from immdediate upstream scheduling nodes.
+    			                            // Here, NEVER encodes no delay. 0LL is a microstep delay.
+    int num_immediate_upstreams;                       // Size of the array of immediate upstream scheduling nodes and delays.
+    int* immediate_downstreams;             // Array of immediate downstream scheduling node ids.
+    int num_immediate_downstreams;                     // Size of the array of immediate downstream scheduling nodes.
+    execution_mode_t mode;                  // FAST or REALTIME.
+    minimum_delay_t* min_delays;            // Array of minimum delays from upstream nodes, not including this node.
+    size_t num_min_delays;                  // Size of min_delays array.
+    int flags;                              // Or of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
 } scheduling_node_t;
 
 /**
