@@ -65,21 +65,6 @@ int lf_critical_section_enter(environment_t* env);
  */
 int lf_critical_section_exit(environment_t* env);
 
-
-// FIXMEL: Provide implementation of this for   UNIX and Windows. Is it possible? 
-/**
- * @brief Disable interrupts with support for nested calls
- * 
- * @return int 
- */
-int lf_disable_interrupts_nested();
-/**
- * @brief  Enable interrupts after potentially multiple callse to `lf_disable_interrupts_nested`
- * 
- * @return int 
- */
-int lf_enable_interrupts_nested();
-
 #if defined(PLATFORM_ARDUINO)
     #include "platform/lf_arduino_support.h"
 #elif defined(PLATFORM_ZEPHYR)
