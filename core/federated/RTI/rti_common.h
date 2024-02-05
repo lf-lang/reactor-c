@@ -57,15 +57,17 @@ typedef struct scheduling_node_t {
     tag_t last_provisionally_granted;       // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
     tag_t next_event;                       // Most recent NET received from the scheduling node (or NEVER if none received).
     scheduling_node_state_t state;          // State of the scheduling node.
-    int* immediate_upstreams;               // Array of immediate upstream scheduling node ids.
+    uint16_t* immediate_upstreams;          // Array of immediate upstream scheduling node ids.
     interval_t* immediate_upstream_delays;  // Minimum delay on connections from immdediate upstream scheduling nodes.
     			                            // Here, NEVER encodes no delay. 0LL is a microstep delay.
-    int num_immediate_upstreams;                       // Size of the array of immediate upstream scheduling nodes and delays.
-    int* immediate_downstreams;             // Array of immediate downstream scheduling node ids.
-    int num_immediate_downstreams;                     // Size of the array of immediate downstream scheduling nodes.
+    uint16_t num_immediate_upstreams;       // Size of the array of immediate upstream scheduling nodes and delays.
+    uint16_t* immediate_downstreams;        // Array of immediate downstream scheduling node ids.
+    uint16_t num_immediate_downstreams;     // Size of the array of immediate downstream scheduling nodes.
     execution_mode_t mode;                  // FAST or REALTIME.
-    minimum_delay_t* min_delays;            // Array of minimum delays from upstream nodes, not including this node.
-    size_t num_min_delays;                  // Size of min_delays array.
+    uint16_t* all_upstreams;                // Array of all upstream scheduling node ids.
+    uint16_t num_all_upstreams;             // Size of the array of all upstream scheduling nodes and delays.
+    uint16_t* all_downstreams;              // Array of all downstream scheduling node ids.
+    uint16_t num_all_downstreams;           // Size of the array of all downstream scheduling nodes.
     int flags;                              // Or of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
 } scheduling_node_t;
 
@@ -79,7 +81,12 @@ typedef struct rti_common_t {
     scheduling_node_t **scheduling_nodes;
 
     // Number of scheduling nodes
-    int32_t number_of_scheduling_nodes;
+    uint16_t number_of_scheduling_nodes;
+
+    // Matrix of minimum delays between each nodes
+    // Rows represent upstreams and Columns represent downstreams.
+    // FOREVER_TAG means there is no path, ZERO_TAG means there is no delay. 
+    tag_t* min_delays;
 
     // RTI's decided stop tag for the scheduling nodes
     tag_t max_stop_tag;
@@ -264,7 +271,7 @@ bool is_in_cycle(scheduling_node_t* node);
 
 /**
  * For the given scheduling node (enclave or federate), if necessary, update the `min_delays`,
- * `num_min_delays`, and the fields that indicate cycles.  These fields will be
+ * `num_all_upstreams`, and the fields that indicate cycles.  These fields will be
  * updated only if they have not been previously updated or if invalidate_min_delays_upstream
  * has been called since they were last updated.
  * @param node The node.

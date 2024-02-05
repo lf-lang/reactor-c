@@ -35,9 +35,12 @@ void initialize_rti_common(rti_common_t * _rti_common) {
 #define IS_IN_CYCLE 2
 
 void invalidate_min_delays_upstream(scheduling_node_t* node) {
-    if(node->min_delays != NULL) free(node->min_delays);
-    node->min_delays = NULL;
-    node->num_min_delays = 0;
+    if(node->all_upstreams != NULL) free(node->all_upstreams);
+    if(node->all_downstreams != NULL) free(node->all_downstreams);
+    node->all_upstreams = NULL;
+    node->num_all_upstreams = 0;
+    node->all_downstreams = NULL;
+    node->num_all_downstreams = 0;
     node->flags = 0; // All flags cleared because they get set lazily.
 }
 
@@ -91,9 +94,11 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
     // federates, which will be the smallest upstream NET plus the least delay.
     // This could be NEVER_TAG if the RTI has not seen a NET from some upstream node.
     tag_t t_d = FOREVER_TAG;
-    for (int i = 0; i < e->num_min_delays; i++) {
-        // Node e->min_delays[i].id is upstream of e with min delay e->min_delays[i].min_delay.
-        scheduling_node_t* upstream = rti_common->scheduling_nodes[e->min_delays[i].id];
+    int n = rti_common->number_of_scheduling_nodes;
+    for (int i = 0; i < e->num_all_upstreams; i++) {
+        // Node e->all_upstreams[i] is upstream of e with
+        // min delay rti_common->min_delays[e->all_upstreams[i]*n + e->id]
+        scheduling_node_t* upstream = rti_common->scheduling_nodes[e->all_upstreams[i]];
         // If we haven't heard from the upstream node, then assume it can send an event at the start time.
         if (lf_tag_compare(upstream->next_event, NEVER_TAG) == 0) {
             tag_t start_tag = {.time = start_time, .microstep = 0};
@@ -104,7 +109,7 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
         // by (0,1). If the time part of the delay is greater than 0, then we want to ignore
         // the microstep in upstream->next_event because that microstep will have been lost.
         // Otherwise, we want preserve it and add to it. This is handled by lf_tag_add().
-        tag_t earliest_tag_from_upstream = lf_tag_add(upstream->next_event, e->min_delays[i].min_delay);
+        tag_t earliest_tag_from_upstream = lf_tag_add(upstream->next_event, rti_common->min_delays[e->all_upstreams[i]*n + e->id]);
 
         /* Following debug message is too verbose for normal use:
         LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
@@ -347,7 +352,7 @@ static void _update_min_delays_upstream(
 
 void update_min_delays_upstream(scheduling_node_t* node) {
     // Check whether cached result is valid.
-    if (node->min_delays == NULL) {
+    if (node->all_upstreams == NULL) {
 
         // This is not Dijkstra's algorithm, but rather one optimized for sparse upstream nodes.
         // There must be a name for this algorithm.
@@ -362,9 +367,9 @@ void update_min_delays_upstream(scheduling_node_t* node) {
         }
         _update_min_delays_upstream(node, NULL, path_delays, &count);
 
-        // Put the results onto the node's struct.
-        node->num_min_delays = count;
-        node->min_delays = (minimum_delay_t*)calloc(count, sizeof(minimum_delay_t));
+        // Put the results onto the matrix.
+        node->num_all_upstreams = count;
+        node->all_upstreams = (uint16_t*)calloc(count, sizeof(uint16_t));
         LF_PRINT_DEBUG("++++ Node %hu is in ZDC: %d", node->id, is_in_zero_delay_cycle(node));
         int k = 0;
         for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
@@ -373,8 +378,8 @@ void update_min_delays_upstream(scheduling_node_t* node) {
                 if (k >= count) {
                     lf_print_error_and_exit("Internal error! Count of upstream nodes %zu for node %d is wrong!", count, i);
                 }
-                minimum_delay_t min_delay = {.id = i, .min_delay = path_delays[i]};
-                node->min_delays[k++] = min_delay;
+                rti_common->min_delays[node->id + i*rti_common->number_of_scheduling_nodes] = path_delays[i];
+                node->all_upstreams[k++] = i;
                 // N^2 debug statement could be a problem with large benchmarks.
                 // LF_PRINT_DEBUG("++++    Node %hu is upstream with delay" PRINTF_TAG "\n", i, path_delays[i].time, path_delays[i].microstep);
             }
