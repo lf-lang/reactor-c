@@ -33,5 +33,17 @@ If you would like to go back to non-AUTH mode, you would have to remove all cont
 
 To build a docker image for the RTI, do 
 ```bash
-docker build -t rti:rti -f rti.Dockerfile ../../../core/
+docker build -t lflang/rti:latest -f rti.Dockerfile ../../../
 ```
+
+To push it to DockerHub, run:
+```bash
+docker push lflang/rti:latest
+```
+
+You may need to login first:
+```bash
+docker login -u [username]
+```
+
+To authenticate, request a PAT on [DockerHub](https://hub.docker.com/settings/security).

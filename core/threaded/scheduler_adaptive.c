@@ -330,7 +330,7 @@ static void worker_states_init(lf_scheduler_t* scheduler, size_t number_of_worke
         worker_states->cumsum_of_worker_group_sizes[i] += worker_states->cumsum_of_worker_group_sizes[i - 1];
     }
     for (int i = 0; i < num_conds; i++) {
-        lf_cond_init(worker_states->worker_conds + i, &scheduler->env->mutex);
+        LF_COND_INIT(worker_states->worker_conds + i, &scheduler->env->mutex);
     }
     worker_states->num_loose_threads = scheduler->number_of_workers;
 }
@@ -361,7 +361,7 @@ static void worker_states_awaken_locked(lf_scheduler_t* scheduler, size_t worker
     size_t max_cond = cond_of(greatest_worker_number_to_awaken);
     if (!worker_states->mutex_held[worker]) {
         worker_states->mutex_held[worker] = true;
-        lf_mutex_lock(&scheduler->env->mutex);
+        LF_MUTEX_LOCK(&scheduler->env->mutex);
     }
     // The predicate of the condition variable depends on num_awakened and level_counter, so
     // this is a critical section.
@@ -382,7 +382,7 @@ static void worker_states_lock(lf_scheduler_t* scheduler, size_t worker) {
     assert(worker_states->num_loose_threads <= worker_assignments->max_num_workers);
     size_t lt = worker_states->num_loose_threads;
     if (lt > 1 || !fast) {  // FIXME: Lock should be partially optimized out even when !fast
-        lf_mutex_lock(&scheduler->env->mutex);
+        LF_MUTEX_LOCK(&scheduler->env->mutex);
         assert(!worker_states->mutex_held[worker]);
         worker_states->mutex_held[worker] = true;
     }
@@ -393,7 +393,7 @@ static void worker_states_unlock(lf_scheduler_t* scheduler, size_t worker) {
     worker_states_t* worker_states = scheduler->custom_data->worker_states;
     if (!worker_states->mutex_held[worker]) return;
     worker_states->mutex_held[worker] = false;
-    lf_mutex_unlock(&scheduler->env->mutex);
+    LF_MUTEX_UNLOCK(&scheduler->env->mutex);
 }
 
 /**
@@ -433,7 +433,7 @@ static void worker_states_sleep_and_unlock(lf_scheduler_t* scheduler, size_t wor
     assert(worker < worker_assignments->max_num_workers);
     assert(worker_states->num_loose_threads <= worker_assignments->max_num_workers);
     if (!worker_states->mutex_held[worker]) {
-        lf_mutex_lock(&scheduler->env->mutex);
+        LF_MUTEX_LOCK(&scheduler->env->mutex);
     }
     worker_states->mutex_held[worker] = false;  // This will be true soon, upon call to lf_cond_wait.
     size_t cond = cond_of(worker);
@@ -445,7 +445,7 @@ static void worker_states_sleep_and_unlock(lf_scheduler_t* scheduler, size_t wor
         } while (level_counter_snapshot == scheduler->custom_data->level_counter || worker >= worker_states->num_awakened);
     }
     assert(!worker_states->mutex_held[worker]);  // This thread holds the mutex, but it did not report that.
-    lf_mutex_unlock(&scheduler->env->mutex);
+    LF_MUTEX_UNLOCK(&scheduler->env->mutex);
 }
 
 /**
@@ -716,13 +716,13 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
     
     lf_scheduler_t* scheduler = env->scheduler;
     scheduler->custom_data = (custom_scheduler_data_t *) calloc(1, sizeof(custom_scheduler_data_t));
-    LF_ASSERT(scheduler->custom_data, "Out of memory");
+    LF_ASSERT_NON_NULL(scheduler->custom_data);
     scheduler->custom_data->worker_states = (worker_states_t *) calloc(1, sizeof(worker_states_t));
-    LF_ASSERT(scheduler->custom_data->worker_states, "Out of memory");
+    LF_ASSERT_NON_NULL(scheduler->custom_data->worker_states);
     scheduler->custom_data->worker_assignments = (worker_assignments_t *) calloc(1, sizeof(worker_assignments_t));
-    LF_ASSERT(scheduler->custom_data->worker_assignments, "Out of memory");
+    LF_ASSERT_NON_NULL(scheduler->custom_data->worker_assignments);
     scheduler->custom_data->data_collection = (data_collection_t *) calloc(1, sizeof(data_collection_t));
-    LF_ASSERT(scheduler->custom_data->data_collection, "Out of memory");
+    LF_ASSERT_NON_NULL(scheduler->custom_data->data_collection);
 
     worker_states_init(scheduler, number_of_workers);
     worker_assignments_init(scheduler, number_of_workers, params);

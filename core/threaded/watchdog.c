@@ -9,6 +9,7 @@
 
 #include <assert.h>
 #include "watchdog.h"
+#include "util.h"  // Defines macros LF_MUTEX_LOCK, etc.
 
 extern int _lf_watchdog_count;
 extern watchdog_t* _lf_watchdogs;
@@ -23,7 +24,7 @@ void _lf_initialize_watchdog_mutexes() {
     for (int i = 0; i < _lf_watchdog_count; i++) {
         self_base_t* current_base = _lf_watchdogs[i].base;
         if (current_base->reactor_mutex != NULL) {
-            lf_mutex_init((lf_mutex_t*)(current_base->reactor_mutex));
+            LF_MUTEX_INIT((lf_mutex_t*)(current_base->reactor_mutex));
         }
     }
 }
@@ -45,13 +46,13 @@ void* _lf_run_watchdog(void* arg) {
 
     self_base_t* base = watchdog->base;
     assert(base->reactor_mutex != NULL);
-    lf_mutex_lock((lf_mutex_t*)(base->reactor_mutex));
+    LF_MUTEX_LOCK((lf_mutex_t*)(base->reactor_mutex));
     instant_t physical_time = lf_time_physical();
     while (physical_time < watchdog->expiration) {
         interval_t T = watchdog->expiration - physical_time;
-        lf_mutex_unlock((lf_mutex_t*)base->reactor_mutex);
+        LF_MUTEX_UNLOCK((lf_mutex_t*)base->reactor_mutex);
         lf_sleep(T);
-        lf_mutex_lock((lf_mutex_t*)(base->reactor_mutex));
+        LF_MUTEX_LOCK((lf_mutex_t*)(base->reactor_mutex));
         physical_time = lf_time_physical();
     }
 
@@ -61,7 +62,7 @@ void* _lf_run_watchdog(void* arg) {
     }
     watchdog->thread_active = false;
 
-    lf_mutex_unlock((lf_mutex_t*)(base->reactor_mutex));
+    LF_MUTEX_UNLOCK((lf_mutex_t*)(base->reactor_mutex));
     return NULL;
 }
 
