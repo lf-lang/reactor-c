@@ -1124,7 +1124,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
     inet_ntop(AF_INET, get_ip_addr(fed->fed_netdrv), str, INET_ADDRSTRLEN);
     strncpy(get_host_name(fed->fed_netdrv), str, INET_ADDRSTRLEN);
 
-    LF_PRINT_DEBUG("RTI got address %s from federate %d.", fed->server_hostname, fed_id);
+    LF_PRINT_DEBUG("RTI got address %s from federate %d.", get_host_name(fed->fed_netdrv), fed_id);
 #endif
 
     // Set the federate's state as pending
