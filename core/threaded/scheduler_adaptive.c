@@ -716,13 +716,13 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
     
     lf_scheduler_t* scheduler = env->scheduler;
     scheduler->custom_data = (custom_scheduler_data_t *) calloc(1, sizeof(custom_scheduler_data_t));
-    LF_ASSERT(scheduler->custom_data, "Out of memory");
+    LF_ASSERT_NON_NULL(scheduler->custom_data);
     scheduler->custom_data->worker_states = (worker_states_t *) calloc(1, sizeof(worker_states_t));
-    LF_ASSERT(scheduler->custom_data->worker_states, "Out of memory");
+    LF_ASSERT_NON_NULL(scheduler->custom_data->worker_states);
     scheduler->custom_data->worker_assignments = (worker_assignments_t *) calloc(1, sizeof(worker_assignments_t));
-    LF_ASSERT(scheduler->custom_data->worker_assignments, "Out of memory");
+    LF_ASSERT_NON_NULL(scheduler->custom_data->worker_assignments);
     scheduler->custom_data->data_collection = (data_collection_t *) calloc(1, sizeof(data_collection_t));
-    LF_ASSERT(scheduler->custom_data->data_collection, "Out of memory");
+    LF_ASSERT_NON_NULL(scheduler->custom_data->data_collection);
 
     worker_states_init(scheduler, number_of_workers);
     worker_assignments_init(scheduler, number_of_workers, params);
