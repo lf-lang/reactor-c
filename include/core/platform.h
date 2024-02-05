@@ -205,7 +205,7 @@ int lf_cond_wait(lf_cond_t* cond);
 
 /**
  * Block current thread on the condition variable until condition variable
- * pointed by "cond" is signaled or time pointed by wakeup_time is reached.
+ * pointed by "cond" is signaled or time given by wakeup_time is reached.
  *
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.

@@ -202,10 +202,10 @@ int create_clock_sync_thread(lf_thread_t* thread_id);
 // If clock sync is enabled. Then expose an API for applying and remove the
 // offset in a thread safe manner.
 #if defined(_LF_CLOCK_SYNC_ON)
+
 /**
- * @brief Applies the clock synchronization offset to a timestamp.
- * 
- * @param t 
+ * @brief Apply the current clock synchronization offset to a specified timestamp.
+ * @param t Pointer to the timestamp to which to apply the offset.
  */
 void clock_sync_apply_offset(instant_t *t);
 
