@@ -281,6 +281,8 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
  * evaluate to false (zero).
  * These are optimized to execute the condition argument but not
  * check the result if the NDEBUG flag is defined.
+ * The NDEBUG flag will be defined if the user specifies `build-type: Release`
+ * in the target properties of the LF program.
  * 
  * LF_ASSERT_NON_NULL can be used to verify that a pointer is not NULL.
  * It differs from LF_ASSERT in that it does nothing at all if the NDEBUG flag is defined.
