@@ -51,17 +51,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Global variable defined in tag.c:
 extern instant_t start_time;
 
-/**
- * Mark the given port's is_present field as true. This is_present field
- * will later be cleaned up by _lf_start_time_step. If the port is unconnected,
- * do nothing.
- * @param env Environment in which we are executing
- * @param port A pointer to the port struct.
- */
 void _lf_set_present(lf_port_base_t* port) {
-  if (!port->source_reactor) return;
-  environment_t *env = port->source_reactor->environment;
-	bool* is_present_field = &port->is_present;
+    if (!port->source_reactor) return;
+    environment_t *env = port->source_reactor->environment;
+    bool* is_present_field = &port->is_present;
     if (env->is_present_fields_abbreviated_size < env->is_present_fields_size) {
         env->is_present_fields_abbreviated[env->is_present_fields_abbreviated_size]
             = is_present_field;
