@@ -1,9 +1,9 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Marten Lohstroh (marten@berkeley.edu)
- * @author Chris Gill (cdgill@wustl.edu)
- * @author Mehrdad Niknami (mniknami@berkeley.edu)
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @author Chris Gill
+ * @author Mehrdad Niknami
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.
@@ -38,9 +38,9 @@
  * This is given as three bytes, where the first byte is the major version,
  * the second byte is the minor version, and the third byte is the patch version.
  */
-#define LF_REACTOR_C_VERSION 0x000601
+#define LF_REACTOR_C_VERSION 0x000700
 
-/*
+/**
  * @brief Macro giving the minimum amount of time to sleep to wait for physical time to reach a logical time.
  * 
  * Unless the "fast" option is given, an LF program will wait until
@@ -52,17 +52,7 @@
  */
 #define MIN_SLEEP_DURATION USEC(10)
 
-//////////////////////  Convenience Macros  //////////////////////
-
-/**
- * Macro giving the convention for naming the constructor function for reactors.
- */
-#define CONSTRUCTOR(classname) (new_ ## classname)
-
-/**
- * Macro giving the convention for naming the self struct for reactors.
- */
-#define SELF_STRUCT_T(classname) (classname ## _self_t)
+/// \cond INTERNAL
 
 /**
  * @brief Mark the given port's is_present field as true.
@@ -77,39 +67,13 @@ void _lf_set_present(lf_port_base_t* port);
  */
 void _lf_executable_preamble(environment_t* env);
 
+/// \endcond // INTERNAL
+
 //////////////////////  Macros for reading and writing ports  //////////////////////
 // NOTE: Ports passed to these macros can be cast to:
 // lf_port_base_t: which has the field bool is_present (and more);
 // token_template_t: which has a lf_token_t* token field; or
 // token_type_t: Which has element_size, destructor, and copy_constructor fields.
-
-
-/**
- * Set the specified output (or input of a contained reactor)
- * to the specified value.
- *
- * This version is used for primitive types such as int,
- * double, etc. as well as the built-in types bool and string.
- * The value is copied and therefore the variable carrying the
- * value can be subsequently modified without changing the output.
- * This can also be used for structs with a type defined by a typedef
- * so that the type designating string does not end in '*'.
- * @param out The output port (by name) or input of a contained
- *  reactor in form input_name.port_name.
- * @param value The value to insert into the self struct.
- */
-#define _LF_SET(out, val) \
-do { \
-    /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
-    /* even if it is a literal */ \
-    out->value = val; \
-   _lf_set_present((lf_port_base_t*)out); \
-    if (((token_template_t*)out)->token != NULL) { \
-        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
-        /* compile with non-token types where value is not a pointer. */ \
-        lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
-    } \
-} while(0)
 
 /**
  * Version of set for output types given as 'type[]' where you

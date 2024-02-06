@@ -1,47 +1,20 @@
 /**
  * @file
  * @author Edward A. Lee (eal@berkeley.edu)
- *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Target-specific runtime functions for the C target language.
- * This API layer can be used in conjunction with:
- *     target C;
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Macros providing an API for use in inline reaction bodies.
+ * 
+ * This set of macros is defined prior to each reaction body and undefined after the reaction body
+ * using the set_undef.h header file.
  * 
  * Note for target language developers. This is one way of developing a target language where 
  * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca 
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a 
- * template for future runtime developement for target languages.
- * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
+ * APIs which interact with the internal APIs.
  */
 
 #ifndef CTARGET_SET
 #define CTARGET_SET
-
-//////////////////////////////////////////////////////////////
-/////////////  SET Functions (to produce an output)
 
 // NOTE: According to the "Swallowing the Semicolon" section on this page:
 //    https://gcc.gnu.org/onlinedocs/gcc-3.0.1/cpp_3.html
@@ -50,8 +23,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // two branches.
 
 /**
- * Set the specified output (or input of a contained reactor)
- * to the specified value.
+ * @brief Set the specified output (or input of a contained reactor) to the specified value.
  *
  * If the value argument is a primitive type such as int,
  * double, etc. as well as the built-in types bool and string, 
@@ -72,12 +44,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
  */
-#define lf_set(out, val) _LF_SET(out, val)
-#define SET(out, val) \
+#define lf_set(out, val) \
 do { \
-        _Pragma ("Warning \"'SET' is deprecated. Use 'lf_set' instead.\""); \
-        _LF_SET(out, val); \
-} while (0)
+    out->value = val; \
+   _lf_set_present((lf_port_base_t*)out); \
+    if (((token_template_t*)out)->token != NULL) { \
+        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
+        /* compile with non-token types where value is not a pointer. */ \
+        lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
+    } \
+} while(0)
 
 /**
  * Version of lf_set for output types given as `type[]` or `type*` where you
