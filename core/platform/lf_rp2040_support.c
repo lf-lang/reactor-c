@@ -68,6 +68,8 @@ static uint32_t _lf_num_nested_crit_sec = 0;
  */
 void _lf_initialize_clock(void) {
     // init stdio lib
+    // may fail, but failure may be ok/expected if printing is not needed
+    // (i.e. if neither USB nor UART are enabled)
     stdio_init_all();
     // init sync structs
     critical_section_init(&_lf_crit_sec);
@@ -205,8 +207,10 @@ int lf_enable_interrupts_nested() {
  */
 int _lf_single_threaded_notify_of_event() {
     // notify main sleep loop of event
-    sem_release(&_lf_sem_irq_event);
-    return 0;
+    if (sem_release(&_lf_sem_irq_event)) {
+        return 0;
+    }
+    return 1;
 }
 
 #else // LF_SINGLE_THREADED
@@ -233,7 +237,7 @@ static void* thread_1_return;
 
 void core1_entry() {
     thread_1_return = thread_1(thread_1_args);
-    sem_release(&thread_1_done);
+    sem_reset(&thread_1_done, 1);
 }
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
@@ -255,7 +259,11 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
         return 1;
     }
     sem_acquire_blocking(&thread_1_done);
-    sem_release(&thread_1_done); // in case join is called again
+    // release in case join is called again
+    if (!sem_release(&thread_1_done)) {
+        // shouldn't be possible; lf_thread_join is only called from main thread
+        return 1;
+    }
     if (thread_return) {
         *thread_return = thread_1_return;
     }
@@ -263,17 +271,17 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
 }
 
 int lf_mutex_init(lf_mutex_t* mutex) {
-    mutex_init(mutex);
+    recursive_mutex_init(mutex);
     return 0;
 }
 
 int lf_mutex_lock(lf_mutex_t* mutex) {
-    mutex_enter_blocking(mutex);
+    recursive_mutex_enter_blocking(mutex);
     return 0;
 }
 
 int lf_mutex_unlock(lf_mutex_t* mutex) {
-    mutex_exit(mutex);
+    recursive_mutex_exit(mutex);
     return 0;
 }
 
