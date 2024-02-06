@@ -105,24 +105,6 @@ instant_t duration = -1LL;
 bool keepalive_specified = false;
 
 /**
- * Global STP offset uniformly applied to advancement of each
- * time step in federated execution. This can be retrieved in
- * user code by calling lf_get_stp_offset() and adjusted by
- * calling lf_set_stp_offset(interval_t offset).
- */
-interval_t _lf_fed_STA_offset = 0LL;
-
-void _lf_print_event(void* event) {
-    if (event == NULL) {
-        printf("NULL");
-    } else {
-        event_t* ev = (event_t*)event;
-        lf_print("Event: Time=" PRINTF_TIME ", dummy=%d, timer=%d",
-                ev->time - start_time, ev->is_dummy, ev->trigger->is_timer);
-    }
-}
-
-/**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
  * and record the allocated memory on the specified self struct so that
  * it will be freed when calling {@link free_reactor(self_base_t)}.
