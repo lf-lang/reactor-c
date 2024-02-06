@@ -199,13 +199,6 @@ int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
     return result;
 }
 
-/**
- * Mark the given port's is_present field as true. This is_present field
- * will later be cleaned up by _lf_start_time_step. If the port is unconnected,
- * do nothing.
- * This assumes that the mutex is not held.
- * @param port A pointer to the port struct.
- */
 void _lf_set_present(lf_port_base_t* port) {
   if (!port->source_reactor) return;
   environment_t *env = port->source_reactor->environment;
