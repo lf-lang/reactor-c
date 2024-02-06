@@ -4,36 +4,10 @@
  * @author Marten Lohstroh (marten@berkeley.edu)
  * @author Chris Gill (cdgill@wustl.edu)
  * @author Mehrdad Niknami (mniknami@berkeley.edu)
- *
- * @section LICENSE
- * Copyright (c) 2019, The University of California at Berkeley.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * @section DESCRIPTION
- *
- * Header file for the infrastructure for the C target of Lingua Franca.
- * This file contains header information used by both the threaded and
- * non-threaded versions of the C runtime.
- *
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.
+ * 
  * This header file defines the functions and macros that programmers use
  * in the body of reactions for reading and writing inputs and outputs and
  * scheduling future events. The LF compiler does not parse that C code.
@@ -56,11 +30,19 @@
 #include "trace.h"
 #include "util.h"
 
-//  ======== Macros ========  //
-#define CONSTRUCTOR(classname) (new_ ## classname)
-#define SELF_STRUCT_T(classname) (classname ## _self_t)
+//////////////////////  Constants  //////////////////////
 
 /**
+ * @brief Version of the reactor-c runtime system.
+ * 
+ * This is given as three bytes, where the first byte is the major version,
+ * the second byte is the minor version, and the third byte is the patch version.
+ */
+#define LF_REACTOR_C_VERSION 0x000601
+
+/*
+ * @brief Macro giving the minimum amount of time to sleep to wait for physical time to reach a logical time.
+ * 
  * Unless the "fast" option is given, an LF program will wait until
  * physical time matches logical time before handling an event with
  * a given logical time. The amount of time is less than this given
@@ -70,23 +52,23 @@
  */
 #define MIN_SLEEP_DURATION USEC(10)
 
+//////////////////////  Convenience Macros  //////////////////////
+
 /**
- * Print an event from the event queue.
- * This is a function of type pqueue_print_entry_f.
+ * Macro giving the convention for naming the constructor function for reactors.
  */
-void _lf_print_event(void* event);
+#define CONSTRUCTOR(classname) (new_ ## classname)
+
 /**
- * Mark the given port's is_present field as true. This is_present field
- * will later be cleaned up by _lf_start_time_step.
- * This assumes that the mutex is not held.
+ * Macro giving the convention for naming the self struct for reactors.
+ */
+#define SELF_STRUCT_T(classname) (classname ## _self_t)
+
+/**
+ * @brief Mark the given port's is_present field as true.
  * @param port A pointer to the port struct.
  */
 void _lf_set_present(lf_port_base_t* port);
-
-// NOTE: Ports passed to these macros can be cast to:
-// lf_port_base_t: which has the field bool is_present (and more);
-// token_template_t: which has a lf_token_t* token field; or
-// token_type_t: Which has element_size, destructor, and copy_constructor fields.
 
 /**
  * @brief Forward declaration for the executable preamble;
@@ -94,6 +76,13 @@ void _lf_set_present(lf_port_base_t* port);
  * 
  */
 void _lf_executable_preamble(environment_t* env);
+
+//////////////////////  Macros for reading and writing ports  //////////////////////
+// NOTE: Ports passed to these macros can be cast to:
+// lf_port_base_t: which has the field bool is_present (and more);
+// token_template_t: which has a lf_token_t* token field; or
+// token_type_t: Which has element_size, destructor, and copy_constructor fields.
+
 
 /**
  * Set the specified output (or input of a contained reactor)
