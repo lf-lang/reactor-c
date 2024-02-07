@@ -1,12 +1,15 @@
-#include "lf_atomic.h"
-#include "platform.h"
+#if defined(PLATFORM_ARDUINO) || defined(PLATFORM_NRF52) || defined(PLATFORM_ZEPHYR) || defined(PLATFORM_RP2040)
 /**
- * Implements atomics for 32 bit platforms by disabling interrupts.
+ * @author Erling Rennemo Jellum
+ * @copyright (c) 2023
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Implements the atomics API by disabling interrupts. Typically used for platforms that
+ * do not support atomic operations. The platforms need to implement `lf_enable_interrupts_nested`
+ * and `lf_disable_interrupts_nested`. 
  */
 
-// FIXME: Can I use "disable interrupts here? It is not part of the platform API necessarily...."
-// but grabbing a mutex is not really enough...
-// solution. Move disable interrupts to the platform API..
+#include "lf_atomic.h"
+#include "platform.h"
 int32_t lf_atomic_fetch_add32(int32_t *ptr, int32_t value) {
     lf_disable_interrupts_nested(); 
     int32_t res = *ptr; 
@@ -80,3 +83,5 @@ int64_t  lf_atomic_val_compare_and_swap64(int64_t *ptr, int64_t value, int64_t n
     lf_enable_interrupts_nested();
     return res;
 }
+
+#endif

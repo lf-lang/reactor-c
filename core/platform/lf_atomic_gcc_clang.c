@@ -1,21 +1,15 @@
 #if defined(PLATFORM_Linux) || defined(PLATFORM_Darwin)
+#if defined(__GNUC__) || defined(__clang__)
 /**
- * @file lf_unix_syscall_support.c
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @brief Platform support for syscalls in Unix-like systems.
- * @version 0.1
- * @date 2022-03-09
- * 
- * @copyright Copyright (c) 2022 The University of Texas at Dallas
- * 
+ * @author Soroush Bateni
+ * @author Erling Rennemo Jellum
+ * @copyright (c) 2023
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Implements the atomics API using GCC/Clang APIs.
  */
 
-#include <unistd.h>
 #include "lf_atomic.h"
-
-int lf_available_cores() {
-    return (int)sysconf(_SC_NPROCESSORS_ONLN);
-}
+#include "platform.h"
 
 int32_t lf_atomic_fetch_add32(int32_t *ptr, int32_t value) { 
     return __sync_fetch_and_add(ptr, value);
@@ -41,4 +35,6 @@ int  lf_atomic_val_compare_and_swap32(int32_t *ptr, int32_t oldval, int32_t newv
 int64_t  lf_atomic_val_compare_and_swap64(int64_t *ptr, int64_t oldval, int64_t newval) {
     return __sync_val_compare_and_swap(ptr, oldval, newval);
 }
+
+#endif
 #endif
