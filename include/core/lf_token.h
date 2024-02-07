@@ -230,7 +230,8 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
  * be decremented at the start of the next tag.
  * If the template has no token (it has a primitive type), then there
  * is no need for a writable copy. Return NULL.
- * @param port An input port.
+ * @param port An input port, cast to (lf_port_base_t*).
+ * @return A pointer to a writable copy of the token, or NULL if the type is primitive.
  */
 lf_token_t* lf_writable_copy(lf_port_base_t* port);
 

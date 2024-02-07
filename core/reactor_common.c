@@ -1737,8 +1737,7 @@ bool _lf_normal_termination = false;
 
 /**
  * Report elapsed logical and physical times and report if any
- * memory allocated by set_new, set_new_array, or lf_writable_copy
- * has not been freed.
+ * memory allocated for tokens has not been freed.
  */
 void termination(void) {
     if (_lf_termination_executed) return;
