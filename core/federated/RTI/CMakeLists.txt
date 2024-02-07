@@ -66,7 +66,7 @@ add_executable(
     rti_remote.c
     ${CoreLib}/trace.c
     ${LF_PLATFORM_FILE}
-    ${CoreLib}/platform/lf_atomic64.c
+    ${CoreLib}/platform/lf_atomic_gcc_clang.c
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
