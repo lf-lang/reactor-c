@@ -271,12 +271,20 @@ bool is_in_cycle(scheduling_node_t* node);
 
 /**
  * For the given scheduling node (enclave or federate), if necessary, update the `min_delays`,
- * `num_all_upstreams`, and the fields that indicate cycles.  These fields will be
+ * `all_upstremas`, `num_all_upstreams`, and the fields that indicate cycles.  These fields will be
  * updated only if they have not been previously updated or if invalidate_min_delays_upstream
  * has been called since they were last updated.
  * @param node The node.
  */
 void update_min_delays_upstream(scheduling_node_t* node);
+
+/**
+ * For the given scheduling node (enclave or federate), if necessary, update the `all_downstreams`,
+ * `num_all_downstreams`.  These fields will be updated only if they have not been previously updated
+ * or if invalidate_min_delays_upstream has been called since they were last updated.
+ * @param node The node.
+*/
+void update_all_downstreams(scheduling_node_t* node);
 
 /**
  * For the given scheduling node (enclave or federate), invalidate the `min_delays`,

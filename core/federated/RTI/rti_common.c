@@ -35,7 +35,12 @@ void initialize_rti_common(rti_common_t * _rti_common) {
 #define IS_IN_CYCLE 2
 
 void invalidate_min_delays_upstream(scheduling_node_t* node) {
-    if(node->all_upstreams != NULL) free(node->all_upstreams);
+    if(node->all_upstreams != NULL) {
+        free(node->all_upstreams);
+        for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
+            rti_common->min_delays[i*rti_common->number_of_scheduling_nodes + node->id] = FOREVER_TAG;
+        }
+    }
     if(node->all_downstreams != NULL) free(node->all_downstreams);
     node->all_upstreams = NULL;
     node->num_all_upstreams = 0;
@@ -89,6 +94,7 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
     // and then find the minimum of the node's recorded NET plus the minimum path delay.
     // Update the shortest paths, if necessary.
     update_min_delays_upstream(e);
+    update_all_downstreams(e);
 
     // Next, find the tag of the earliest possible incoming message from upstream enclaves or
     // federates, which will be the smallest upstream NET plus the least delay.
@@ -382,6 +388,47 @@ void update_min_delays_upstream(scheduling_node_t* node) {
                 node->all_upstreams[k++] = i;
                 // N^2 debug statement could be a problem with large benchmarks.
                 // LF_PRINT_DEBUG("++++    Node %hu is upstream with delay" PRINTF_TAG "\n", i, path_delays[i].time, path_delays[i].microstep);
+            }
+        }
+    }
+}
+
+void update_all_downstreams(scheduling_node_t* node) {
+    if (node->all_downstreams == NULL) {
+        bool visited[rti_common->number_of_scheduling_nodes];
+        for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
+            visited[i] = false;
+        }
+
+        int queue[rti_common->number_of_scheduling_nodes];
+        int front = 0, rear = 0;
+
+        visited[node->id] = true;
+        queue[rear++] = node->id;
+
+        int count = 0;
+        while (front != rear) {
+            int current_id = queue[front++];
+            scheduling_node_t* current_node = rti_common->scheduling_nodes[current_id];
+            for (int i = 0; i < current_node->num_immediate_downstreams; i++) {
+                int downstream_id = current_node->immediate_downstreams[i];
+                if (visited[downstream_id] == false) {
+                    visited[downstream_id] = true;
+                    queue[rear++] = downstream_id;
+                    count++;
+                }
+            }
+        }
+
+        int k = 0;
+        node->all_downstreams = (uint16_t*)calloc(count, sizeof(uint16_t));
+        node->num_all_downstreams = count;
+        for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
+            if (node->num_all_downstreams <= k) {
+                // Error
+            }
+            if (visited[i] == true && i != node->id) {
+                node->all_downstreams[k++] = i;
             }
         }
     }
