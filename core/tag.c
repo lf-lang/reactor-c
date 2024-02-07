@@ -120,12 +120,12 @@ instant_t lf_time_physical() {
     do {
         // Atomically fetch the last read value. This is done with
         // atomics to guarantee that it works on 32bit platforms as well.
-        last_read_local = lf_atomic_fetch_add64(&last_read_physical_time, 0);
+        last_read_local = lf_atomic_fetch_add64(&last_read_physical_time, 1);
     
 
         // Ensure monotonicity. Remeber that last_read_local is actually the 
-        if (now <= last_read_local) {
-            now = last_read_local+1;
+        if (now < last_read_local) {
+            now = last_read_local;
         }
         // Update the last read value, atomically and also make sure that another
         // thread has not been here in between and changed it. If so. We must redo
