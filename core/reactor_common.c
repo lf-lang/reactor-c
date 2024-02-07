@@ -551,8 +551,8 @@ void _lf_initialize_timers(environment_t* env) {
     }
     
     // Create an extra event and put it on the recycle queue. 
-    // An LF program with n timers require n+1 events and the last event 
-    // needs to be initialized to the event recycle queue.
+    // An LF program with n timers require n+1 events. By putting the
+    // last event on the recycle queue we avoid allocating it at runtime.
     if (env->timer_triggers_size > 0) {
         event_t *e = _lf_get_new_event(env);
         _lf_recycle_event(env, e);
