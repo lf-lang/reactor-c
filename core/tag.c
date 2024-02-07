@@ -128,6 +128,35 @@ tag_t lf_tag_add(tag_t a, tag_t b) {
     return result;
 }
 
+tag_t lf_tag_subtract(tag_t a, tag_t b) {
+    // FIXME: Overflow is not handled.
+    // (a.t, a.m) - (b.t - b.m)
+    // 1) a.t = NEVER
+    // b.t can be NEVER, FOREVER, normal and the result will be 0, NEVER, NEVER, respectively.
+    // 2) a.t = FOREVER
+    // b.t can be NEVER, FOREVER, normal and the result will be FOREVER, 0, FOREVER.
+    // 3) a.t is not NEVER neither FOREVER
+    //   a) a.t < b.t
+    //     the result will be NEVER
+    //   b) a.t >= b.t
+    //     i) a.m <= b.m
+    //        the result should be (a.t - b.t, 0)
+    //     ii) a.m > b.m
+    //         if b is ZERO, the result is a itself else, the result is (a.t - b.t + 1, 0)
+    if (a.time == NEVER && b.time != NEVER) return NEVER_TAG;
+    if (a.time == FOREVER && b.time != FOREVER) return FOREVER_TAG;
+    if (b.time == 0 && b.microstep == 0) return a;
+    tag_t result = {.time = a.time - b.time, .microstep = a.microstep - b.microstep};
+    if (result.time < 0) {
+        return NEVER_TAG;
+    } else {
+        if (result.microstep > 0) {
+            result.time++;
+        }
+        result.microstep = 0;
+    }
+}
+
 int lf_tag_compare(tag_t tag1, tag_t tag2) {
     if (tag1.time < tag2.time) {
         return -1;
