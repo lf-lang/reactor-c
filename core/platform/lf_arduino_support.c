@@ -150,8 +150,6 @@ int lf_disable_interrupts_nested() {
 }
 
 #if defined(LF_SINGLE_THREADED)
-
-
 /**
  * Handle notifications from the runtime of changes to the event queue.
  * If a sleep is in progress, it should be interrupted.
