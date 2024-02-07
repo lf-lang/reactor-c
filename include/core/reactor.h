@@ -89,18 +89,20 @@ void _lf_executable_preamble(environment_t* env);
  * @see lf_token_t
  */
 #ifndef __cplusplus
-#define lf_set_array(out, val, length) \
+#define lf_set_array(out, val, len) \
 do { \
    _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len); \
     out->value = token->value; \
+    out->length = len; \
 } while(0)
 #else
-#define lf_set_array(out, val, length) \
+#define lf_set_array(out, val, len) \
 do { \
    _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
+    out->length = len; \
 } while(0)
 #endif
 
