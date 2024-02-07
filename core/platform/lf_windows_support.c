@@ -45,9 +45,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "util.h"
 
-
-#define LF_MIN_SLEEP_NS USEC(10)
-
 /**
  * Indicate whether or not the underlying hardware
  * supports Windows' high-resolution counter. It should
@@ -149,7 +146,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
     clock_sync_remove_offset(&wakeup_time);
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
-    if (sleep_duration < LF_MIN_SLEEP_NS) {
+    if (sleep_duration < 0) {
         return 0;
     } else {
         return lf_sleep(sleep_duration);
