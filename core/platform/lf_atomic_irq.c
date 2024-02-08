@@ -11,6 +11,11 @@
 #include "lf_atomic.h"
 #include "platform.h"
 
+// Forward declare the functions for enabling/disabling interrupts. Must be
+// implemented in the platform support file of the target.
+int lf_disable_interrupts_nested();
+int lf_enable_interrupts_nested();
+
 int32_t lf_atomic_fetch_add32(int32_t *ptr, int32_t value) {
     lf_disable_interrupts_nested(); 
     int32_t res = *ptr; 
@@ -43,10 +48,10 @@ int64_t lf_atomic_add_fetch64(int64_t *ptr, int64_t value) {
     return res;
 }
 
-bool lf_atomic_bool_compare_and_swap32(int32_t *ptr, int32_t value, int32_t newval) {
+bool lf_atomic_bool_compare_and_swap32(int32_t *ptr, int32_t oldval, int32_t newval) {
     lf_disable_interrupts_nested();
     bool res = false;
-    if (*ptr == value) {
+    if ((*ptr) == oldval) {
         *ptr = newval;
         res = true;
     }
@@ -54,10 +59,10 @@ bool lf_atomic_bool_compare_and_swap32(int32_t *ptr, int32_t value, int32_t newv
     return res;
 }
 
-bool lf_atomic_bool_compare_and_swap64(int64_t *ptr, int64_t value, int64_t newval) {
+bool lf_atomic_bool_compare_and_swap64(int64_t *ptr, int64_t oldval, int64_t newval) {
     lf_disable_interrupts_nested();
     bool res = false;
-    if (*ptr == value) {
+    if ((*ptr) == oldval) {
         *ptr = newval;
         res = true;
     }
@@ -65,20 +70,20 @@ bool lf_atomic_bool_compare_and_swap64(int64_t *ptr, int64_t value, int64_t newv
     return res;
 }
 
-int32_t  lf_atomic_val_compare_and_swap32(int32_t *ptr, int32_t value, int32_t newval) {
+int32_t  lf_atomic_val_compare_and_swap32(int32_t *ptr, int32_t oldval, int32_t newval) {
     lf_disable_interrupts_nested();
     int res = *ptr;
-    if (*ptr == value) {
+    if ((*ptr) == oldval) {
         *ptr = newval;
     }
     lf_enable_interrupts_nested();
     return res;
 }
 
-int64_t  lf_atomic_val_compare_and_swap64(int64_t *ptr, int64_t value, int64_t newval) {
+int64_t  lf_atomic_val_compare_and_swap64(int64_t *ptr, int64_t oldval, int64_t newval) {
     lf_disable_interrupts_nested();
     int64_t res = *ptr;
-    if (*ptr == value) {
+    if ((*ptr) == oldval) {
         *ptr = newval;
     }
     lf_enable_interrupts_nested();

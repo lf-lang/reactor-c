@@ -80,7 +80,7 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
         lf_print_warning("Attempting to raise a barrier after the stop tag.");
         future_tag = env->stop_tag;
     }
-    tag_t current_tag = env->current_tag;
+    
     // Check to see if future_tag is actually in the future.
     if (lf_tag_compare(future_tag, env->current_tag) > 0) {
         // Future tag is actually in the future.
