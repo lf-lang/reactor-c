@@ -70,6 +70,7 @@ add_executable(
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
+    ${CoreLib}/clock.c
     ${CoreLib}/federated/network/net_util.c
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
