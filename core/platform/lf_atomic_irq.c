@@ -10,6 +10,7 @@
 
 #include "lf_atomic.h"
 #include "platform.h"
+
 int32_t lf_atomic_fetch_add32(int32_t *ptr, int32_t value) {
     lf_disable_interrupts_nested(); 
     int32_t res = *ptr; 

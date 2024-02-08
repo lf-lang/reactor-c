@@ -8,6 +8,7 @@
  */
 
 #include "lf_atomic.h"
+#include <windows.h>
 
 int32_t lf_atomic_fetch_add32(int32_t *ptr, int32_t value) { 
     return InterlockedExchangeAdd(ptr, value);
