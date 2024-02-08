@@ -6,7 +6,17 @@
  * @brief Macros providing an API for use in inline reaction bodies.
  * 
  * This set of macros is defined prior to each reaction body and undefined after the reaction body
- * using the set_undef.h header file.
+ * using the set_undef.h header file.  If you wish to use these macros in external code, such as
+ * that implementing a bodiless reaction, then you can include this header file (and at least
+ * reactor.h, plus possibly a few other header files) in your code.
+ * 
+ * The purpose for these macros is to provide a semblance of polymorphism even though C does not support
+ * polymorphism. For example, `lf_set(port, value)` is a macro where the first argument is a specific
+ * port struct and the second type is a value with a type corresponding to the port's type. It is not
+ * possible in C to provide a function that can be called with a port struct and a value of any type.
+ * Some of the macros are provided for convenience. For example, the macro can automatically provide
+ * common arguments such as the environment and can cast arguments to required base types to suppress
+ * warning.
  * 
  * Note for target language developers. This is one way of developing a target language where 
  * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca 
@@ -18,9 +28,22 @@
 
 // NOTE: According to the "Swallowing the Semicolon" section on this page:
 //    https://gcc.gnu.org/onlinedocs/gcc-3.0.1/cpp_3.html
-// the following macros should use an odd do-while construct to avoid
+// some of the following macros should use an odd do-while construct to avoid
 // problems with if ... else statements that do not use braces around the
-// two branches.
+// two branches. Specifically, if the macro expands to more than one statement,
+// then the odd construct is needed.
+
+/**
+ * @brief Mark a port present.
+ *
+ * This sets the is_present field of the specified output to true.
+ * 
+ * This macro is a thin wrapper around the lf_set_present() function.
+ * It simply casts the argument to `lf_port_base_t*` to suppress warnings.
+ * 
+ * @param out The output port (by name).
+ */
+#define lf_set_present(out) lf_set_present((lf_port_base_t*)out)
 
 /**
  * @brief Set the specified output (or input of a contained reactor) to the specified value.
@@ -47,7 +70,7 @@
 #define lf_set(out, val) \
 do { \
     out->value = val; \
-   _lf_set_present((lf_port_base_t*)out); \
+    lf_set_present(out); \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where value is not a pointer. */ \
@@ -56,119 +79,86 @@ do { \
 } while(0)
 
 /**
- * Version of lf_set for output types given as `type[]` or `type*` where you
- * want to send a previously dynamically allocated array.
+ * @brief Set the specified output (or input of a contained reactor)
+ * to the specified array with the given length.
  *
+ * The array is assumed to be in dynamically allocated memory.
  * The deallocation is delegated to downstream reactors, which
  * automatically deallocate when the reference count drops to zero.
- * It also sets the corresponding _is_present variable in the self
- * struct to true (which causes the object message to be sent).
+ *
  * @param out The output port (by name).
  * @param val The array to send (a pointer to the first element).
  * @param length The length of the array to send.
- * @see lf_token_t
  */
-#define SET_ARRAY(out, val, elem_size, length) \
+#ifndef __cplusplus
+#define lf_set_array(out, val, len) \
 do { \
-        _Pragma ("Warning \"'SET_ARRAY' is deprecated.\""); \
-        lf_set_array(out, val, length); \
-} while (0)
+    lf_set_present(out); \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len); \
+    out->value = token->value; \
+    out->length = len; \
+} while(0)
+#else
+#define lf_set_array(out, val, len) \
+do { \
+    lf_set_present(out); \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len); \
+    out->value = static_cast<decltype(out->value)>(token->value); \
+    out->length = len; \
+} while(0)
+#endif
 
 /**
- * Version of lf_set() for output types given as 'type*' that
- * allocates a new object of the type of the specified output port.
- *
- * This macro dynamically allocates enough memory to contain one
- * instance of the output datatype and sets the variable named
- * by the argument to point to the newly allocated memory.
- * The user code can then populate it with whatever value it
- * wishes to send.
- *
- * This macro also sets the corresponding _is_present variable in the self
- * struct to true (which causes the object message to be sent),
- * @param out The output port (by name).
- */
-#define SET_NEW(out) \
-do { \
-        _Pragma ("Warning \"'SET_NEW' is deprecated.\""); \
-        _LF_SET_NEW(out); \
-} while (0)
-
-/**
- * Version of lf_set() for output types given as 'type[]'.
- *
- * This allocates a new array of the specified length,
- * sets the corresponding _is_present variable in the self struct to true
- * (which causes the array message to be sent), and sets the variable
- * given by the first argument to point to the new array so that the
- * user code can populate the array. The freeing of the dynamically
- * allocated array will be handled automatically
- * when the last downstream reader of the message has finished.
- * @param out The output port (by name).
- * @param len The length of the array to be sent.
- */
-#define SET_NEW_ARRAY(out, len) \
-do { \
-        _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated.\""); \
-        _LF_SET_NEW_ARRAY(out, len); \
-} while (0)
-
-/**
- * Version of lf_set() for output types given as 'type[number]'.
- *
- * This sets the _is_present variable corresponding to the specified output
- * to true (which causes the array message to be sent). The values in the
- * output are normally written directly to the array or struct before or
- * after this is called.
- * @param out The output port (by name).
- */
-#define SET_PRESENT(out) \
-do { \
-	_Pragma ("Warning \"'SET_PRESENT' is deprecated.\""); \
-        _lf_set_present((lf_port_base_t*)out); \
-} while (0)
-
-/**
- * Version of lf_set() for output types given as 'type*' or 'type[]' where you want
- * to forward an input or action without copying it.
- *
- * The deallocation of memory is delegated to downstream reactors, which
- * automatically deallocate when the reference count drops to zero.
- * @param out The output port (by name).
- * @param token A pointer to token obtained from an input or action.
- */
-#define lf_set_token(out, newtoken) _LF_SET_TOKEN(out, newtoken)
-#define SET_TOKEN(out, newtoken) \
-do { \
-        _Pragma ("Warning \"'SET_TOKEN' is deprecated. Use 'lf_set_token' instead.\""); \
-        _LF_SET_TOKEN(out, newtoken); \
-} while (0)
-
-/**
- * Set the destructor used to free "token->value" set on "out".
- * That memory will be automatically freed once all downstream
- * reactions no longer need the value.
+ * @brief Set the specified output (or input of a contained reactor)
+ * to the specified token value.
  * 
- * @param out The output port (by name) or input of a contained
- *            reactor in form input_name.port_name.
+ * Tokens in the C runtime wrap messages that are in dynamically allocated memory and
+ * perform reference counting to ensure that memory is not freed prematurely.
+ * 
+ * @param out The output port (by name).
+ * @param token A pointer to token obtained from an input, an action, or from `lf_new_token()`.
+ */
+#ifndef __cplusplus
+#define lf_set_token(out, token) \
+do { \
+    lf_set_present(out); \
+    _lf_replace_template_token((token_template_t*)out, newtoken); \
+    out->value = newtoken->value; \
+    out->length = newtoken->length; \
+} while(0)
+#else
+#define _LF_SET_TOKEN(out, newtoken) \
+do { \
+    lf_set_present(out); \
+    _lf_replace_template_token((token_template_t*)out, newtoken); \
+    out->value = static_cast<decltype(out->value)>(newtoken->value); \
+    out->length = newtoken->length; \
+} while(0)
+#endif
+
+/**
+ * @brief Set the destructor associated with the specified port.
+ * 
+ * The destructor will be used to free any value sent through the specified port when all
+ * downstream users of the value are finished with it.
+ * 
+ * @param out The output port (by name) or input of a contained reactor in form reactor.port_name.
  * @param dtor A pointer to a void function that takes a pointer argument
- *             or NULL to use the default void free(void*) function. 
+ * (or NULL to use the default void free(void*) function. 
  */
-#define lf_set_destructor(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)
+#define lf_set_destructor(out, dtor) ((token_type_t*)out)->destructor = dtor
 
 /**
- * Set the destructor used to copy construct "token->value" received
- * by "in" if "in" is mutable.
+ * @brief Set the copy constructor associated with the specified port.
  * 
- * @param out The output port (by name) or input of a contained
- *            reactor in form input_name.port_name.
- * @param cpy_ctor A pointer to a void* function that takes a pointer argument
- *                 or NULL to use the memcpy operator.
+ * The copy constructor will be used to copy any value sent through the specified port whenever
+ * a downstream user of the value declares a mutable input port or calls `lf_writable_copy()`.
+ * 
+ * @param out The output port (by name) or input of a contained reactor in form reactor.port_name.
+ * @param dtor A pointer to a void function that takes a pointer argument
+ * (or NULL to use the default void `memcpy()` function. 
  */
-#define lf_set_copy_constructor(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
-
-//////////////////////////////////////////////////////////////
-/////////////  SET_MODE Function (to switch a mode)
+#define lf_set_copy_constructor(out, cpy_ctor) ((token_type_t*)out)->copy_constructor = cpy_ctor
 
 /**
  * Sets the next mode of a modal reactor. Same as SET for outputs, only

@@ -199,7 +199,7 @@ int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
     return result;
 }
 
-void _lf_set_present(lf_port_base_t* port) {
+void lf_set_present(lf_port_base_t* port) {
   if (!port->source_reactor) return;
   environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;

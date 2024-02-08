@@ -33,14 +33,6 @@
 //////////////////////  Constants  //////////////////////
 
 /**
- * @brief Version of the reactor-c runtime system.
- * 
- * This is given as three bytes, where the first byte is the major version,
- * the second byte is the minor version, and the third byte is the patch version.
- */
-#define LF_REACTOR_C_VERSION 0x000700
-
-/**
  * @brief Macro giving the minimum amount of time to sleep to wait for physical time to reach a logical time.
  * 
  * Unless the "fast" option is given, an LF program will wait until
@@ -52,13 +44,13 @@
  */
 #define MIN_SLEEP_DURATION USEC(10)
 
-/// \cond INTERNAL
+/// \cond INTERNAL  // Doxygen conditional.
 
 /**
  * @brief Mark the given port's is_present field as true.
- * @param port A pointer to the port struct.
+ * @param port A pointer to the port struct as an `lf_port_base_t*`.
  */
-void _lf_set_present(lf_port_base_t* port);
+void lf_set_present(lf_port_base_t* port);
 
 /**
  * @brief Forward declaration for the executable preamble;
@@ -74,167 +66,6 @@ void _lf_executable_preamble(environment_t* env);
 // lf_port_base_t: which has the field bool is_present (and more);
 // token_template_t: which has a lf_token_t* token field; or
 // token_type_t: Which has element_size, destructor, and copy_constructor fields.
-
-/**
- * Version of set for output types given as 'type[]' where you
- * want to send a previously dynamically allocated array.
- *
- * The deallocation is delegated to downstream reactors, which
- * automatically deallocate when the reference count drops to zero.
- * It also sets the corresponding _is_present variable in the self
- * struct to true (which causes the object message to be sent).
- * @param out The output port (by name).
- * @param val The array to send (a pointer to the first element).
- * @param length The length of the array to send.
- * @see lf_token_t
- */
-#ifndef __cplusplus
-#define lf_set_array(out, val, len) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len); \
-    out->value = token->value; \
-    out->length = len; \
-} while(0)
-#else
-#define lf_set_array(out, val, len) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len); \
-    out->value = static_cast<decltype(out->value)>(token->value); \
-    out->length = len; \
-} while(0)
-#endif
-
-/**
- * Version of set() for output types given as 'type*' that
- * allocates a new object of the type of the specified output port.
- *
- * This macro dynamically allocates enough memory to contain one
- * instance of the output datatype and sets the variable named
- * by the argument to point to the newly allocated memory.
- * The user code can then populate it with whatever value it
- * wishes to send.
- *
- * This macro also sets the corresponding _is_present variable in the self
- * struct to true (which causes the object message to be sent),
- * @param out The output port (by name).
- */
-#ifndef __cplusplus
-#define _LF_SET_NEW(out) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
-    out->value = token->value; \
-} while(0)
-#else
-#define _LF_SET_NEW(out) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
-    out->value = static_cast<decltype(out->value)>(token->value); \
-} while(0)
-#endif // __cplusplus
-
-/**
- * Version of set() for output types given as 'type[]'.
- *
- * This allocates a new array of the specified length,
- * sets the corresponding _is_present variable in the self struct to true
- * (which causes the array message to be sent), and sets the variable
- * given by the first argument to point to the new array so that the
- * user code can populate the array. The freeing of the dynamically
- * allocated array will be handled automatically
- * when the last downstream reader of the message has finished.
- * @param out The output port (by name).
- * @param length The length of the array to be sent.
- */
-#ifndef __cplusplus
-#define _LF_SET_NEW_ARRAY(out, len) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
-    out->value = token->value; \
-    out->length = len; \
-} while(0)
-#else
-#define _LF_SET_NEW_ARRAY(out, len) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
-    out->value = static_cast<decltype(out->value)>(token->value); \
-    out->length = len; \
-} while(0)
-#endif
-/**
- * Version of set() for output types given as 'type[number]'.
- *
- * This sets the _is_present variable corresponding to the specified output
- * to true (which causes the array message to be sent). The values in the
- * output are normally written directly to the array or struct before or
- * after this is called.
- * @param out The output port (by name).
- */
-#define lf_set_present(out) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-} while(0)
-
-/**
- * Version of set() for output types given as 'type*' or 'type[]' where you want
- * to forward an input or action without copying it.
- *
- * The deallocation of memory is delegated to downstream reactors, which
- * automatically deallocate when the reference count drops to zero.
- * @param out The output port (by name).
- * @param token A pointer to token obtained from an input or action.
- */
-#ifndef __cplusplus
-#define _LF_SET_TOKEN(out, newtoken) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    _lf_replace_template_token((token_template_t*)out, newtoken); \
-    out->value = newtoken->value; \
-    out->length = newtoken->length; \
-} while(0)
-#else
-#define _LF_SET_TOKEN(out, newtoken) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    _lf_replace_template_token((token_template_t*)out, newtoken); \
-    out->value = static_cast<decltype(out->value)>(newtoken->value); \
-    out->length = newtoken->length; \
-} while(0)
-#endif
-
-/**
- * Set the destructor used to free "token->value" set on "out".
- * That memory will be automatically freed once all downstream
- * reactions no longer need the value.
- *
- * @param out The output port (by name) or input of a contained
- *            reactor in form input_name.port_name.
- * @param destruct A pointer to a void function that takes a pointer argument
- *             or NULL to use the default void free(void*) function.
- */
-#define _LF_SET_DESTRUCTOR(out, destruct) \
-do { \
-    ((token_type_t*)out)->destructor = destruct; \
-} while(0)
-
-/**
- * Set the constructor used to copy construct "token->value" received
- * by a downstream mutable input.
- *
- * @param out The output port (by name) or input of a contained
- *            reactor in form input_name.port_name.
- * @param constructor A pointer to a void* function that takes a pointer argument
- *                 or NULL to use the memcpy operator.
- */
-#define _LF_SET_COPY_CONSTRUCTOR(out, constructor) \
-do { \
-    ((token_type_t*)out)->copy_constructor = constructor; \
-} while(0)
 
 /**
  * Macro for extracting the deadline from the index of a reaction.

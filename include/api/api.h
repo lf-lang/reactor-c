@@ -170,24 +170,4 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler);
 
-/**
- * Compare two tags. Return -1 if the first is less than
- * the second, 0 if they are equal, and +1 if the first is
- * greater than the second. A tag is greater than another if
- * its time is greater or if its time is equal and its microstep
- * is greater.
- * @param tag1
- * @param tag2
- * @return -1, 0, or 1 depending on the relation.
- */
-int lf_tag_compare(tag_t tag1, tag_t tag2);
-
-/**
- * Return the current tag of a reactor. If NULL is passed to this function it
- * will return the "global tag" of the runtime.  
- * @param self A pointer to the environment of which you want the current tag
- * @return the current tag 
- */
-tag_t lf_tag(void* env);
-
 #endif // API_H

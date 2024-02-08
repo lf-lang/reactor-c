@@ -51,7 +51,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Global variable defined in tag.c:
 extern instant_t start_time;
 
-void _lf_set_present(lf_port_base_t* port) {
+void lf_set_present(lf_port_base_t* port) {
     if (!port->source_reactor) return;
     environment_t *env = port->source_reactor->environment;
     bool* is_present_field = &port->is_present;
