@@ -126,7 +126,7 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
                 scheduler->next_reaction_level - 1
             ];
 
-        LF_PRINT_DEBUG("Start of rxn queue at %lu is %p", scheduler->next_reaction_level - 1, ((reaction_t**)scheduler->executing_reactions)[0]);
+        LF_PRINT_DEBUG("Start of rxn queue at %zu is %p", scheduler->next_reaction_level - 1, ((reaction_t**)scheduler->executing_reactions)[0]);
         if (((reaction_t**)scheduler->executing_reactions)[0] != NULL) {
             // There is at least one reaction to execute
             return 1;
@@ -352,7 +352,6 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
  * worker thread should exit.
  */
 reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number) {
-    environment_t *env = scheduler->env;
     // Iterate until the stop tag is reached or reaction vectors are empty
     while (!scheduler->should_stop) {
         // Calculate the current level of reactions to execute
@@ -391,9 +390,9 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
-        tracepoint_worker_wait_starts(env->trace, worker_number);
+        tracepoint_worker_wait_starts(scheduler->env->trace, worker_number);
         _lf_sched_wait_for_work(scheduler, worker_number);
-        tracepoint_worker_wait_ends(env->trace, worker_number);
+        tracepoint_worker_wait_ends(scheduler->env->trace, worker_number);
     }
 
     // It's time for the worker thread to stop and exit.
