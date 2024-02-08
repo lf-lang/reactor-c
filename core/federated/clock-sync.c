@@ -77,7 +77,9 @@ instant_t _lf_last_clock_sync_instant = 0LL;
 int _lf_rti_socket_UDP = -1;
 
 static void adjust__lf_clock_sync_offset(interval_t adjustment) {
-    _lf_clock_sync_offset += adjustment;
+    // Do an atomic adjustment of the clock sync offset. This is needed
+    // to ensure thread-safety on 32bit platforms.
+    lf_atomic_fetch_add64(&_lf_clock_sync_offset, adjustment);
 }
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
@@ -558,17 +560,11 @@ int create_clock_sync_thread(lf_thread_t* thread_id) {
 
 #if defined (_LF_CLOCK_SYNC_ON)
 void clock_sync_apply_offset(instant_t *t) {
-    // Read out the current clock sync offset. Use atomics to ensure thread-safety
-    // also on 32bit platforms.
-    instant_t _lf_clock_sync_offset_local = lf_atomic_add_fetch64(&_lf_clock_sync_offset,0);
-    *t += (_lf_clock_sync_offset_local + _lf_clock_sync_constant_bias);
+    *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias);
 }
 
 void clock_sync_remove_offset(instant_t *t) {
-    // Read out the current clock sync offset. USe atomics to ensure thread-safety
-    // also on 32bit platforms.
-    instant_t _lf_clock_sync_offset_local = lf_atomic_add_fetch64(&_lf_clock_sync_offset,0);
-    *t -= (_lf_clock_sync_offset_local + _lf_clock_sync_constant_bias);
+    *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias);
 }
 
 void clock_sync_set_constant_bias(interval_t offset) {
