@@ -55,6 +55,7 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
     e->last_granted = NEVER_TAG;
     e->last_provisionally_granted = NEVER_TAG;
     e->next_event = NEVER_TAG;
+    e->last_DNET = NEVER_TAG;
     e->state = NOT_CONNECTED;
     e->immediate_upstreams = NULL;
     e->immediate_upstream_delays = NULL;
@@ -286,9 +287,17 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     // Check downstream scheduling_nodes to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which downstream scheduling_nodes have been visited.
+    // FIXME: As we have all_downstreams field now, we don't need the function notify_downstream_davnace_grnat_if_safe.
+    update_all_downstreams(e);
     bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
     notify_downstream_advance_grant_if_safe(e, visited);
     free(visited);
+
+    // Send DNET to the node's upstreams if needed
+    for (int i = 0; i < e->num_all_upstreams; i++) {
+        int target_upstream_id = e->all_upstreams[i];
+        send_downstream_next_event_tag_if_needed(rti_common->scheduling_nodes[target_upstream_id], next_event_tag);
+    }
 }
 
 void notify_advance_grant_if_safe(scheduling_node_t* e) {
@@ -400,18 +409,18 @@ void update_all_downstreams(scheduling_node_t* node) {
             visited[i] = false;
         }
 
-        int queue[rti_common->number_of_scheduling_nodes];
+        uint16_t queue[rti_common->number_of_scheduling_nodes];
         int front = 0, rear = 0;
 
         visited[node->id] = true;
         queue[rear++] = node->id;
 
-        int count = 0;
+        size_t count = 0;
         while (front != rear) {
             int current_id = queue[front++];
             scheduling_node_t* current_node = rti_common->scheduling_nodes[current_id];
-            for (int i = 0; i < current_node->num_immediate_downstreams; i++) {
-                int downstream_id = current_node->immediate_downstreams[i];
+            for (uint16_t i = 0; i < current_node->num_immediate_downstreams; i++) {
+                uint16_t downstream_id = current_node->immediate_downstreams[i];
                 if (visited[downstream_id] == false) {
                     visited[downstream_id] = true;
                     queue[rear++] = downstream_id;
@@ -423,14 +432,34 @@ void update_all_downstreams(scheduling_node_t* node) {
         int k = 0;
         node->all_downstreams = (uint16_t*)calloc(count, sizeof(uint16_t));
         node->num_all_downstreams = count;
-        for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-            if (node->num_all_downstreams <= k) {
-                // Error
-            }
+        for (uint16_t i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
             if (visited[i] == true && i != node->id) {
+                if (k >= count) {
+                    lf_print_error_and_exit("Internal error! Count of downstream nodes %zu for node %d is wrong!", count, i);
+                }
                 node->all_downstreams[k++] = i;
             }
         }
+    }
+}
+
+void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, tag_t new_NET) {
+    tag_t DNET = FOREVER_TAG;
+    if (lf_tag_compare(node->last_DNET, new_NET) >= 0) {
+        DNET = new_NET;
+    } else {
+        for (int i = 0; i < node->num_all_downstreams; i++) {
+            uint16_t target_downstream_id = node->all_downstreams[i];
+            scheduling_node_t* target_dowstream = rti_common->scheduling_nodes[target_downstream_id];
+            int index = node->id * rti_common->number_of_scheduling_nodes + target_downstream_id;
+            tag_t DNET_candidate = lf_tag_subtract(target_dowstream->next_event, rti_common->min_delays[index]);
+            if (lf_tag_compare(DNET, DNET_candidate) > 0) {
+                DNET = DNET_candidate;
+            }
+        }
+    }
+    if (lf_tag_compare(node->last_DNET, DNET) != 0) {
+        send_downstream_next_event_tag(node, DNET);
     }
 }
 

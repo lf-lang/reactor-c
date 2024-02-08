@@ -88,6 +88,7 @@ federate_instance_t _fed = {
         .is_last_TAG_provisional = false,
         .has_upstream = false,
         .has_downstream = false,
+        .last_DNET = (tag_t) {.time = NEVER, .microstep = 0u},
         .received_stop_request_from_rti = false,
         .last_sent_LTC = (tag_t) {.time = NEVER, .microstep = 0u},
         .last_sent_NET = (tag_t) {.time = NEVER, .microstep = 0u},
@@ -1465,6 +1466,26 @@ static void handle_stop_request_message() {
 }
 
 /**
+ * Handle a downstream next event tag (DNET) message from the RTI.
+ * FIXME: Use this tag to eliminate unncessary LTC or NET messages.
+*/
+static void handle_downstream_next_event_tag() {
+    size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
+    unsigned char buffer[bytes_to_read];
+    read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+            "Failed to read downstream next event tag from RTI.");
+    tag_t DNET = extract_tag(buffer);
+
+    // Trace the event when tracing is enabled
+    tracepoint_federate_from_rti(_fed.trace, receive_DNET, _lf_my_fed_id, &DNET);
+
+    LF_PRINT_LOG("Received Downstream Next Event Tag (DNET): " PRINTF_TAG ".",
+            _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
+
+    _fed.last_DNET = DNET;
+}
+
+/**
  * Send a resign signal to the RTI.
  */
 static void send_resign_signal(environment_t* env) {
@@ -1582,6 +1603,9 @@ static void* listen_to_rti_TCP(void* args) {
                     // Failures to complete the read of absent messages from the RTI are fatal.
                     lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
                 }
+                break;
+            case MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG:
+                handle_downstream_next_event_tag();
                 break;
             case MSG_TYPE_FAILED:
                 handle_rti_failed_message();

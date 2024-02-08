@@ -56,6 +56,7 @@ typedef struct scheduling_node_t {
     tag_t last_granted;                     // The maximum TAG that has been granted so far (or NEVER if none granted)
     tag_t last_provisionally_granted;       // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
     tag_t next_event;                       // Most recent NET received from the scheduling node (or NEVER if none received).
+    tag_t last_DNET;                        // Most recent DNET.
     scheduling_node_state_t state;          // State of the scheduling node.
     uint16_t* immediate_upstreams;          // Array of immediate upstream scheduling node ids.
     interval_t* immediate_upstream_delays;  // Minimum delay on connections from immdediate upstream scheduling nodes.
@@ -285,6 +286,19 @@ void update_min_delays_upstream(scheduling_node_t* node);
  * @param node The node.
 */
 void update_all_downstreams(scheduling_node_t* node);
+
+/**
+ * FIXME: Add this function to rti_local either.
+ * @param e The target node.
+ * @param tag The downstream next event tag for e.
+*/
+void send_downstream_next_event_tag(scheduling_node_t *e, tag_t tag);
+
+/**
+ * @param node
+ * @param new_NET
+*/
+void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, tag_t new_NET);
 
 /**
  * For the given scheduling node (enclave or federate), invalidate the `min_delays`,

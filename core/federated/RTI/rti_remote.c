@@ -302,6 +302,23 @@ void notify_provisional_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
     }
 }
 
+void send_downstream_next_event_tag(scheduling_node_t *e, tag_t tag) {
+    size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
+    unsigned char buffer[message_length];
+    buffer[0] = MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG;
+    encode_int64(tag.time, &(buffer[1]));
+    encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
+
+    if (write_to_socket(((federate_info_t *)e)->socket, message_length, buffer)) {
+        lf_print_error("RTI failed to send downstream next event tag to federate %d.", e->id);
+        e->state = NOT_CONNECTED;
+    } else {
+        e->last_DNET = tag;
+        LF_PRINT_LOG("RTI sent to federate %d the Downstream Next Event Tag (DNET) " PRINTF_TAG ".",
+                     e->id, tag.time - start_time, tag.microstep);
+    }
+}
+
 void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_event_tag) {
     federate_info_t *fed = GET_FED_INFO(federate_id);
     tag_t min_in_transit_tag = pqueue_tag_peek_tag(fed->in_transit_message_tags);

@@ -143,6 +143,11 @@ typedef struct federate_instance_t {
     bool has_downstream;
 
     /**
+     * 
+    */
+    tag_t last_DNET;
+
+    /**
      * Used to prevent the federate from sending a REQUEST_STOP
      * message if it has already received a stop request from the RTI.
      * This variable should only be accessed while holding a mutex lock.
