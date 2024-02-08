@@ -114,6 +114,8 @@ netdrv_t *netdrv_init() {
     priv->server_port = -1;
     priv->server_ip_addr.s_addr = 0;
 
+    drv->read_remaining_bytes = 0;
+
     // drv->open = socket_open;
     drv->close = socket_close;
     // drv->read = socket_read;
@@ -714,7 +716,7 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_leng
                     //     return NULL;            
                     case MSG_TYPE_TAGGED_MESSAGE: ;
                         bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
-                        state = READ_MSG_TYPE_TAGGED_MESSAGE;  ;
+                        state = READ_MSG_TYPE_TAGGED_MESSAGE;
                         break;
                     case MSG_TYPE_NEXT_EVENT_TAG:
                         bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
@@ -811,7 +813,7 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_leng
                 state = FINISH_READ;
                 break;
             case READ_MSG_TYPE_TAGGED_MESSAGE: ;
-                size_t length = (size_t) extract_int32(buffer + sizeof(uint16_t) + sizeof(uint16_t));
+                size_t length = (size_t) extract_int32(buffer + 1+ sizeof(uint16_t) + sizeof(uint16_t));
                 if(length > buffer_length - total_bytes_read) {
                     bytes_to_read = buffer_length - total_bytes_read;
                     netdrv->read_remaining_bytes = length - bytes_to_read;      
