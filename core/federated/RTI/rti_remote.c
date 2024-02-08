@@ -614,7 +614,7 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
     memcpy(buf + 1 + sizeof(int32_t), (unsigned char *)get_ip_addr(remote_fed->fed_netdrv), sizeof(*get_ip_addr(remote_fed->fed_netdrv)));
     write_to_netdrv_fail_on_error(
             fed->fed_netdrv, sizeof(int32_t) + 1 + sizeof(*get_ip_addr(remote_fed->fed_netdrv)), (unsigned char *)buf, &rti_mutex,
-            "Failed to write port number to socket of federate %d.", fed_id);
+            "Failed to write port number to netdrv of federate %d.", fed_id);
 
     LF_MUTEX_UNLOCK(&rti_mutex);
 
@@ -697,7 +697,7 @@ void handle_timestamp(federate_info_t *my_fed, unsigned char *buffer) {
 }
 void send_physical_clock(unsigned char message_type, federate_info_t *fed, socket_type_t socket_type) {
     if (fed->enclave.state == NOT_CONNECTED) {
-        lf_print_warning("Clock sync: RTI failed to send physical time to federate %d. Socket not connected.\n",
+        lf_print_warning("Clock sync: RTI failed to send physical time to federate %d. Netdrv not connected.\n",
                          fed->enclave.id);
         return;
     }
@@ -855,7 +855,7 @@ void *clock_synchronization_thread(void *noargs) {
  * @param my_fed The federate sending a MSG_TYPE_FAILED message.
  */
 static void handle_federate_failed(federate_info_t *my_fed) {
-    // Nothing more to do. Close the socket and exit.
+    // Nothing more to do. Close the netdrv and exit.
     LF_MUTEX_LOCK(&rti_mutex);
 
     if (rti_remote->base.tracing_enabled) {
@@ -912,20 +912,23 @@ static void handle_federate_resign(federate_info_t *my_fed) {
     // Indicate that there will no further events from this federate.
     my_fed->enclave.next_event = FOREVER_TAG;
 
-    // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-    // the close should happen when receiving a 0 length message from the other end.
-    // Here, we just signal the other side that no further writes to the socket are
-    // forthcoming, which should result in the other end getting a zero-length reception.
-    shutdown(my_fed->socket, SHUT_WR);
+    // TODO: Needs discussion.
+    // // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
+    // // the close should happen when receiving a 0 length message from the other end.
+    // // Here, we just signal the other side that no further writes to the socket are
+    // // forthcoming, which should result in the other end getting a zero-length reception.
+    // shutdown(my_fed->socket, SHUT_WR);
 
-    // Wait for the federate to send an EOF or a socket error to occur.
-    // Discard any incoming bytes. Normally, this read should return 0 because
-    // the federate is resigning and should itself invoke shutdown.
-    unsigned char buffer[10];
-    while (read(my_fed->socket, buffer, 10) > 0);
+    // // Wait for the federate to send an EOF or a socket error to occur.
+    // // Discard any incoming bytes. Normally, this read should return 0 because
+    // // the federate is resigning and should itself invoke shutdown.
+    // unsigned char buffer[10];
+    // while (read(my_fed->socket, buffer, 10) > 0);
 
-    // We can now safely close the socket.
-    close(my_fed->socket); //  from unistd.h
+    // // We can now safely close the socket.
+    // close(my_fed->socket); //  from unistd.h
+
+    my_fed->fed_netdrv->close(my_fed->fed_netdrv);
 
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
@@ -943,7 +946,7 @@ void *federate_info_thread_TCP(void *fed) {
     // Buffer for incoming messages.
     // This does not constrain the message size because messages
     // are forwarded piece by piece.
-    unsigned char buffer[FED_COM_BUFFER_SIZE]; //TODO: NEED TO CHECK SIZE.
+    unsigned char buffer[FED_COM_BUFFER_SIZE];
 
     // Listen for messages from the federate.
     while (my_fed->enclave.state != NOT_CONNECTED) {
@@ -1002,7 +1005,7 @@ void *federate_info_thread_TCP(void *fed) {
     // Nothing more to do. Close the socket and exit.
     // Prevent multiple threads from closing the same socket at the same time.
     LF_MUTEX_LOCK(&rti_mutex);
-    close(my_fed->socket); //  from unistd.h
+    my_fed->fed_netdrv->close(my_fed->fed_netdrv);
     LF_MUTEX_UNLOCK(&rti_mutex);
     return NULL;
 }
