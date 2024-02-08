@@ -179,7 +179,7 @@ void read_from_socket_fail_on_error(
     if (read_failed) {
         // Read failed.
         if (mutex != NULL) {
-            lf_mutex_unlock(mutex);
+            LF_MUTEX_UNLOCK(mutex);
         }
         if (format != NULL) {
             lf_print_error_system_failure(format, args);
@@ -248,7 +248,7 @@ void write_to_socket_fail_on_error(
     if (result) {
         // Write failed.
         if (mutex != NULL) {
-            lf_mutex_unlock(mutex);
+            LF_MUTEX_UNLOCK(mutex);
         }
         if (format != NULL) {
             lf_print_error_system_failure(format, args);

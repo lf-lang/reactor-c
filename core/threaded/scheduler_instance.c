@@ -16,16 +16,16 @@ bool init_sched_instance(
     LF_ASSERT(env, "`init_sched_instance` called without env pointer being set");
 
     // Check if the instance is already initialized
-    lf_critical_section_enter(env);
+    LF_CRITICAL_SECTION_ENTER(env);
     if (*instance != NULL) {
         // Already initialized
-        lf_critical_section_exit(env);
+        LF_CRITICAL_SECTION_EXIT(env);
         return false;
     } else {
         *instance =
             (lf_scheduler_t*)calloc(1, sizeof(lf_scheduler_t));
     }
-    lf_mutex_unlock(&env->mutex);
+    LF_MUTEX_UNLOCK(&env->mutex);
 
     if (params == NULL || params->num_reactions_per_level_size == 0) {
         (*instance)->max_reaction_level = DEFAULT_MAX_REACTION_LEVEL;

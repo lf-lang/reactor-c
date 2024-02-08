@@ -117,9 +117,9 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
 
 void _lf_increment_tag_barrier(environment_t *env, tag_t future_tag) {
     assert(env != GLOBAL_ENVIRONMENT);
-    lf_mutex_lock(&env->mutex);
+    LF_MUTEX_LOCK(&env->mutex);
     _lf_increment_tag_barrier_locked(env, future_tag);
-    lf_mutex_unlock(&env->mutex);
+    LF_MUTEX_UNLOCK(&env->mutex);
 }
 
 void _lf_decrement_tag_barrier_locked(environment_t* env) {
@@ -580,14 +580,14 @@ bool lf_stop_requested = false;
 void lf_request_stop() {
     // If a requested stop is pending, return without doing anything.
     LF_PRINT_LOG("lf_request_stop() has been called.");
-    lf_mutex_lock(&global_mutex);
+    LF_MUTEX_LOCK(&global_mutex);
     if (lf_stop_requested) {
-        lf_mutex_unlock(&global_mutex);
+        LF_MUTEX_UNLOCK(&global_mutex);
         LF_PRINT_LOG("Ignoring redundant lf_request_stop() call.");
         return;
     }
     lf_stop_requested = true;
-    lf_mutex_unlock(&global_mutex);
+    LF_MUTEX_UNLOCK(&global_mutex);
 
     // Iterate over scheduling enclaves to find their maximum current tag
     // and set a barrier for tag advancement for each enclave.
@@ -595,13 +595,13 @@ void lf_request_stop() {
     environment_t* env;
     int num_environments = _lf_get_environments(&env);
     for (int i = 0; i < num_environments; i++) {
-        lf_mutex_lock(&env[i].mutex);
+        LF_MUTEX_LOCK(&env[i].mutex);
         if (lf_tag_compare(env[i].current_tag, max_current_tag) > 0) {
             max_current_tag = env[i].current_tag;
         }
         // Set a barrier to prevent the enclave from advancing past the so-far maximum current tag.
         _lf_increment_tag_barrier_locked(&env[i], max_current_tag);
-        lf_mutex_unlock(&env[i].mutex);
+        LF_MUTEX_UNLOCK(&env[i].mutex);
     }
 
 #ifdef FEDERATED
@@ -612,16 +612,16 @@ void lf_request_stop() {
         // Message was not sent to the RTI.
         // Decrement the barriers to reverse our previous increment.
         for (int i = 0; i < num_environments; i++) {
-            lf_mutex_lock(&env[i].mutex);
+            LF_MUTEX_LOCK(&env[i].mutex);
             _lf_decrement_tag_barrier_locked(&env[i]);
-            lf_mutex_unlock(&env[i].mutex);
+            LF_MUTEX_UNLOCK(&env[i].mutex);
         }
     }
 #else
     // In a non-federated program, the stop_tag will be the next microstep after max_current_tag.
     // Iterate over environments to set their stop tag and release their barrier.
     for (int i = 0; i < num_environments; i++) {
-        lf_mutex_lock(&env[i].mutex);
+        LF_MUTEX_LOCK(&env[i].mutex);
         _lf_set_stop_tag(&env[i], (tag_t) {.time = max_current_tag.time, .microstep = max_current_tag.microstep+1});
         // Release the barrier on tag advancement.
         _lf_decrement_tag_barrier_locked(&env[i]);
@@ -630,7 +630,7 @@ void lf_request_stop() {
         // one worker thread can call wait_until at a given time because
         // the call to wait_until is protected by a mutex lock
         lf_cond_signal(&env->event_q_changed);
-        lf_mutex_unlock(&env[i].mutex);
+        LF_MUTEX_UNLOCK(&env[i].mutex);
     }
 #endif
 }
@@ -999,7 +999,7 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
  */
 void* worker(void* arg) {
     environment_t *env = (environment_t* ) arg;
-    lf_mutex_lock(&env->mutex);
+    LF_MUTEX_LOCK(&env->mutex);
 
     int worker_number = env->worker_thread_count++;
     LF_PRINT_LOG("Environment %u: Worker thread %d started.",env->id, worker_number);
@@ -1020,9 +1020,9 @@ void* worker(void* arg) {
     #endif 
 
     // Release mutex and start working.
-    lf_mutex_unlock(&env->mutex); 
+    LF_MUTEX_UNLOCK(&env->mutex); 
     _lf_worker_do_work(env, worker_number);
-    lf_mutex_lock(&env->mutex);
+    LF_MUTEX_LOCK(&env->mutex);
 
     // This thread is exiting, so don't count it anymore.
     env->worker_thread_count--;
@@ -1045,7 +1045,7 @@ void* worker(void* arg) {
     lf_cond_signal(&env->event_q_changed);
 
     LF_PRINT_DEBUG("Worker %d: Stop requested. Exiting.", worker_number);
-    lf_mutex_unlock(&env->mutex);
+    LF_MUTEX_UNLOCK(&env->mutex);
     // timeout has been requested.
     return NULL;
 }
@@ -1164,9 +1164,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     _lf_create_environments();
 
     // Initialize the one global mutex
-    if (lf_mutex_init(&global_mutex) != 0) {
-        lf_print_error_and_exit("Could not initialize global mutex");
-    }
+    LF_MUTEX_INIT(&global_mutex);
 
     // Initialize the global payload and token allocation counts and the trigger table
     // as well as starting tracing subsystem
@@ -1199,9 +1197,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         
         // Lock mutex and spawn threads. This must be done before `_lf_initialize_start_tag` since it is using 
         //  a cond var
-        if (lf_mutex_lock(&env->mutex) != 0) {
-            lf_print_error_and_exit("Could not lock environment mutex");
-        }
+        LF_MUTEX_LOCK(&env->mutex);
 
         // Initialize start tag
         lf_print("Environment %u: ---- Intializing start tag", env->id);
@@ -1210,7 +1206,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
         start_threads(env);
         // Unlock mutex and allow threads proceed
-        lf_mutex_unlock(&env->mutex);
+        LF_MUTEX_UNLOCK(&env->mutex);
     }
     
     for (int i = 0; i<num_envs; i++) {
