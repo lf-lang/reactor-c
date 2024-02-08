@@ -25,9 +25,10 @@
  */
 int lf_clock_interruptable_sleep_until_locked(environment_t *env, instant_t wakeup_time);
 
+
 /**
- * Retrives the current physical time. Adjusted for clock synchronization and
- * guaranteed monotonic.
+ * Retrives the current physical time from the platform API. It adjusts for
+ * clock synchronization and guaranteed monotonicity.
  * @param now 
  * @return 0 on success. 
  */

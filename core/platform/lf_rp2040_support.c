@@ -196,15 +196,6 @@ int lf_enable_interrupts_nested() {
 
 #if defined(LF_SINGLE_THREADED)
 /**
- * The single thread RP2040 platform support treats second core
- * routines similar to external interrupt routine threads.
- * 
- * Second core activity is disabled at the same times as
- * when interrupts are disabled. 
- */
-
-
-/**
  * Release the binary event semaphore to notify
  * the runtime of a physical action being scheduled.
  *

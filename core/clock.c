@@ -7,12 +7,6 @@
 
 static instant_t last_read_physical_time = NEVER;
 
-/**
- * Retrives the current physical time. Adjusted for clock synchronization and
- * guaranteed monotonic.
- * @param now 
- * @return 0 on success. 
- */
 int lf_clock_gettime(instant_t *now) {
     instant_t last_read_local;
     int res = _lf_clock_gettime(now);
