@@ -126,6 +126,9 @@ int lf_sleep(interval_t sleep_duration) {
  * @return -1 when interrupted or 0 on successful timeout
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
+    // Here we must remove any applied clock sync offset since we want to 
+    // calculate the absolute wakeup time wrt the underlying clock.
+    clock_sync_remove_offset(&wakeup_time);
     int ret_code = 0;
     // return immediately
     if (wakeup_time < 0) {
@@ -150,8 +153,6 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
     return ret_code;
 }
 
-// FIXME: Can we support this in threaded mode? We need it for implementing
-//  atomics...
 /**
  * Enter a critical section where the second core is disabled
  * and interrupts are disabled. Enter only if the critical section

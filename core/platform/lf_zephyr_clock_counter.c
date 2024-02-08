@@ -41,7 +41,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "util.h"
 
-
 static int64_t epoch_duration_nsec;
 static int64_t epoch_duration_usec;
 static uint32_t counter_max_ticks;
@@ -155,7 +154,6 @@ int _lf_clock_now(instant_t* t) {
  * of the Counter.
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
-    clock_sync_remove_offset(&wakeup);
     // Reset flags
     alarm_fired = false;
     async_event = false;

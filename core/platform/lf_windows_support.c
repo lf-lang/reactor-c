@@ -143,7 +143,6 @@ int lf_sleep(interval_t sleep_duration) {
 }
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
-    clock_sync_remove_offset(&wakeup_time);
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
     if (sleep_duration < 0) {
@@ -272,8 +271,7 @@ int lf_cond_wait(lf_cond_t* cond) {
 }
 
 int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
-    // Convert the absolute time to a relative time and adjust for clock sync offset.
-    clock_sync_remove_offset(&wakeup_time);
+    // Convert the absolute time to a relative time.
     interval_t wait_duration = wakeup_time - lf_time_physical();
     if (wait_duration<= 0) {
       // physical time has already caught up sufficiently and we do not need to wait anymore

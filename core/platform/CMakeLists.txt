@@ -26,9 +26,6 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
     list(APPEND REACTORC_COMPILE_DEFS PLATFORM_RP2040)
 endif()
 
-# Add the atomics implementation
-list(APPEND LF_PLATFORM_FILES ${LF_ATOMIC_FILE})
-
 # Prepend all sources with platform
 list(TRANSFORM LF_PLATFORM_FILES PREPEND platform/)
 

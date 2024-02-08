@@ -74,7 +74,6 @@ int _lf_clock_now(instant_t* t) {
  * Interruptable sleep is implemented using busy-waiting.
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
-    clock_sync_remove_offset(&wakeup);
     async_event=false;    
 
     LF_CRITICAL_SECTION_EXIT(env);

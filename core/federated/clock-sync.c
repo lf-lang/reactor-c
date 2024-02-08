@@ -76,7 +76,7 @@ instant_t _lf_last_clock_sync_instant = 0LL;
  */
 int _lf_rti_socket_UDP = -1;
 
-static void adjust__lf_clock_sync_offset(interval_t adjustment) {
+static void adjust_lf_clock_sync_offset(interval_t adjustment) {
     // Do an atomic adjustment of the clock sync offset. This is needed
     // to ensure thread-safety on 32bit platforms.
     lf_atomic_fetch_add64(&_lf_clock_sync_offset, adjustment);
@@ -425,7 +425,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // which means we can now adjust the clock offset.
         // For the AVG algorithm, history is a running average and can be directly
         // applied
-        adjust__lf_clock_sync_offset(_lf_rti_socket_stat.history);
+        adjust_lf_clock_sync_offset(_lf_rti_socket_stat.history);
         // @note AVG and SD will be zero if collect-stats is set to false
         LF_PRINT_LOG("Clock sync:"
                     " New offset: " PRINTF_TIME "."

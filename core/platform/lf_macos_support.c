@@ -59,7 +59,6 @@ int lf_sleep(interval_t sleep_duration) {
 }
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
-    clock_sync_remove_offset(&wakeup_time);
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
     if (sleep_duration < 0) {

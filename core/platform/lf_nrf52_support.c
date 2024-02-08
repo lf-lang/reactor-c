@@ -189,7 +189,6 @@ int lf_sleep(interval_t sleep_duration) {
  */
 
 static void lf_busy_wait_until(instant_t wakeup_time) {
-    clock_sync_remove_offset(&wakeup_time);
     instant_t now;
     do {
         _lf_clock_now(&now);
@@ -206,7 +205,6 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
-    clock_sync_remove_offset(&wakeup_time);
     instant_t now;
     _lf_clock_now(&now);
     interval_t duration = wakeup_time - now;

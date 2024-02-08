@@ -68,7 +68,6 @@ static volatile uint32_t _lf_time_us_low_last = 0;
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     instant_t now;
-    clock_sync_remove_offset(&wakeup);
 
     _lf_async_event = false;
     lf_disable_interrupts_nested();
@@ -223,7 +222,6 @@ int lf_cond_wait(lf_cond_t* cond) {
 
 int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     instant_t now;
-    clock_sync_remove_offset(&wakeup_time);
     _lf_clock_now(&now);
     interval_t sleep_duration_ns = wakeup_time - now;
     bool res = condition_wait_for(*cond, sleep_duration_ns);

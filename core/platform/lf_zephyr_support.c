@@ -185,7 +185,6 @@ int lf_cond_wait(lf_cond_t* cond) {
 }
 
 int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
-    clock_sync_remove_offset(&wakeup_time);
     instant_t now;
     _lf_clock_now(&now);
     interval_t sleep_duration_ns = wakeup_time - now;
