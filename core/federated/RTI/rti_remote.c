@@ -801,7 +801,7 @@ void *clock_synchronization_thread(void *noargs) {
             int remaining_attempts = 5;
             while (remaining_attempts > 0) {
                 remaining_attempts--;
-                int read_failed = read_from_netdrv(rti_remote->clock_netdrv, buffer);
+                int read_failed = read_from_netdrv(rti_remote->clock_netdrv, buffer, message_size);
                 // If any errors occur, either discard the message or the clock sync round.
                 if (!read_failed) {
                     if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
@@ -948,7 +948,7 @@ void *federate_info_thread_TCP(void *fed) {
     // Listen for messages from the federate.
     while (my_fed->enclave.state != NOT_CONNECTED) {
         // Read no more than one byte to get the message type.
-        int read_failed = read_from_netdrv(my_fed->fed_netdrv, buffer);
+        int read_failed = read_from_netdrv(my_fed->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
         if (read_failed) {
             // Socket is closed
             lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
@@ -1037,7 +1037,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
     unsigned char buffer[256]; //TODO: NEED TO CHECK.
     // Read bytes from the socket. We need 4 bytes.
 
-    if (read_from_netdrv_close_on_error(netdrv, buffer)) {
+    if (read_from_netdrv_close_on_error(netdrv, buffer, 256)) { //TODO: check length.
         lf_print_error("RTI failed to read from accepted socket.");
         return -1;
     }
@@ -1162,6 +1162,7 @@ static int receive_connection_information(netdrv_t *netdrv, uint16_t fed_id) {
     read_from_netdrv_fail_on_error(
             netdrv,
             connection_info_buffer,
+            1024,
             NULL,
             "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message header from federate %d.",
             fed_id);
@@ -1244,7 +1245,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t 
     // is doing clock synchronization, and if it is, what port to use for UDP.
     LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_UDP_PORT from federate %d.", fed_id);
     unsigned char response[1 + sizeof(uint16_t)];
-    read_from_netdrv_fail_on_error(netdrv, response, NULL,
+    read_from_netdrv_fail_on_error(netdrv, response, 1 + sizeof(uint16_t), NULL,
             "RTI failed to read MSG_TYPE_UDP_PORT message from federate %d.", fed_id);
     if (response[0] != MSG_TYPE_UDP_PORT) {
         lf_print_error(
@@ -1272,7 +1273,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t 
                     // Listen for reply message, which should be T3.
                     size_t message_size = 1 + sizeof(int32_t);
                     unsigned char buffer[message_size];
-                    read_from_netdrv_fail_on_error(netdrv, buffer, NULL,
+                    read_from_netdrv_fail_on_error(netdrv, buffer, message_size, NULL,
                             "Socket to federate %d unexpectedly closed.", fed_id);
                     if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
                         int32_t fed_id = extract_int32(&(buffer[1]));
@@ -1324,7 +1325,7 @@ static bool authenticate_federate(netdrv_t *rti_netdrv) {
     // Wait for MSG_TYPE_FED_NONCE from federate.
     size_t fed_id_length = sizeof(uint16_t);
     unsigned char buffer[1 + fed_id_length + NONCE_LENGTH];
-    read_from_netdrv_fail_on_error(rti_netdrv, buffer, NULL,
+    read_from_netdrv_fail_on_error(rti_netdrv, buffer, 1 + fed_id_length + NONCE_LENGTH, NULL,
             "Failed to read MSG_TYPE_FED_NONCE.");
     if (buffer[0] != MSG_TYPE_FED_NONCE) {
         lf_print_error_and_exit(
@@ -1358,7 +1359,7 @@ static bool authenticate_federate(netdrv_t *rti_netdrv) {
 
     // Wait for MSG_TYPE_FED_RESPONSE
     unsigned char received[1 + hmac_length];
-    read_from_netdrv_fail_on_error(rti_netdrv, 1 + hmac_length, received, NULL,
+    read_from_netdrv_fail_on_error(rti_netdrv, received, 1 + hmac_length, NULL,
             "Failed to read federate response.");
     if (received[0] != MSG_TYPE_FED_RESPONSE) {
         lf_print_error_and_exit(

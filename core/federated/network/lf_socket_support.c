@@ -451,78 +451,9 @@ void write_to_netdrv_fail_on_error(
         }
     }
 }
-
-static int net_read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
-    if (socket < 0) {
-        // Socket is not open.
-        errno = EBADF;
-        return -1;
-    }
-    ssize_t bytes_read = 0;
-    int retry_count = 0;
-    while (bytes_read < (ssize_t)num_bytes) {
-        ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-        if(more < 0 && retry_count++ < NUM_SOCKET_RETRIES 
-                && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
-            // Those error codes set by the socket indicates
-            // that we should try again (@see man errno).
-            lf_print_warning("Reading from socket failed. Will try again.");
-            lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
-            continue;
-        } else if (more < 0) {
-            // A more serious error occurred.
-            return -1;
-        } else if (more == 0) {
-            // EOF received.
-            return 1;
-        }
-        bytes_read += more;
-    }
-    return 0;
-}
-
-static int net_read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
-    assert(socket);
-    int read_failed = read_from_socket(*socket, num_bytes, buffer);
-    if (read_failed) {
-        // Read failed.
-        // Socket has probably been closed from the other side.
-        // Shut down and close the socket from this side.
-        shutdown(*socket, SHUT_RDWR);
-        close(*socket);
-        // Mark the socket closed.
-        *socket = -1;
-        return -1;
-    }
-    return 0;
-}
-
-static void net_read_from_socket_fail_on_error(
-		int* socket,
-		size_t num_bytes,
-		unsigned char* buffer,
-		lf_mutex_t* mutex,
-		char* format, ...) {
-    va_list args;
-    assert(socket);
-    int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);
-    if (read_failed) {
-        // Read failed.
-        if (mutex != NULL) {
-            lf_mutex_unlock(mutex);
-        }
-        if (format != NULL) {
-            lf_print_error_system_failure(format, args);
-        } else {
-            lf_print_error_system_failure("Failed to read from socket.");
-        }
-    }
-}
-
-int read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer) {
-    socket_priv_t *priv = get_priv(drv);
-    assert(&priv->socket_descriptor);
-    int read_failed = read_from_netdrv(drv, buffer);
+// TODO: Fix return.
+int read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer, size_t buffer_length) {
+    int read_failed = read_from_netdrv(drv, buffer, buffer_length);
     if (read_failed) {
         drv->close(drv);
         return -1;
@@ -530,15 +461,15 @@ int read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer) {
     return 0;
 }
 
+//TODO: FIX return
 void read_from_netdrv_fail_on_error(
 		netdrv_t *drv,
 		unsigned char* buffer,
+        size_t buffer_length,
 		lf_mutex_t* mutex,
 		char* format, ...) {
     va_list args;
-    socket_priv_t *priv = get_priv(drv);
-    assert(&priv->socket_descriptor);
-    int read_failed = read_from_netdrv_close_on_error(drv, buffer);
+    int read_failed = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
     if (read_failed) {
         // Read failed.
         if (mutex != NULL) {
@@ -554,139 +485,348 @@ void read_from_netdrv_fail_on_error(
 
 
 
-int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
+// int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
+//     socket_priv_t *priv = get_priv(netdrv);
+//     net_read_from_socket(priv->socket_descriptor, 1, buffer);
+//     int msg_type = buffer[0];
+//     buffer += 1;
+//     switch (msg_type) {
+
+//         // case MSG_TYPE_REJECT: // 1 +1
+//         //     break;
+//         // case MSG_TYPE_ACK: // 1
+//         //     break;
+//         case MSG_TYPE_UDP_PORT: // 1 + sizeof(uint16_t) = 3
+//             return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
+//         case MSG_TYPE_FED_IDS: // 1 + sizeof(uint16_t) + 1 + federation_id
+//             net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t) + 1, buffer);
+//             size_t federation_id_length = (size_t)buffer[sizeof(uint16_t)];
+//             return net_read_from_socket(priv->socket_descriptor, federation_id_length, buffer + 1 + sizeof(uint16_t));
+
+//         case MSG_TYPE_FED_NONCE: //1 + sizeof(uint16_t) + NONCE_LENGTH(8)
+//             return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t) + NONCE_LENGTH, buffer);
+            
+
+//         // case MSG_TYPE_RTI_RESPONSE: //1 + sizeof(uint16_t) + NONCE_LENGTH(8)
+//         //     break;
+
+//         // case MSG_TYPE_FED_RESPONSE: //1 + NONCE_LENGTH(8)
+//         //     break;
+
+//         case MSG_TYPE_TIMESTAMP: // 1+sizeof(int64_t)
+//             return net_read_from_socket(priv->socket_descriptor, sizeof(int64_t), buffer);
+
+//         // case MSG_TYPE_RESIGN:
+//         //     handle_federate_resign(my_fed);
+//         //     return NULL;            
+//         case MSG_TYPE_TAGGED_MESSAGE: ;
+//             size_t header_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
+//             net_read_from_socket_fail_on_error(&priv->socket_descriptor, header_size, buffer, NULL,
+//                     "RTI failed to read the timed message header from remote federate.");
+//             size_t length = (size_t) extract_int32(buffer + sizeof(uint16_t) + sizeof(uint16_t));
+//             net_read_from_socket_fail_on_error(&priv->socket_descriptor, length, buffer + header_size, NULL,
+//                     "RTI failed to read timed message.");
+//             break;
+
+
+
+
+
+//         case MSG_TYPE_NEXT_EVENT_TAG:
+//             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
+//                     "RTI failed to read the content of the next event tag.");
+//             break;
+//         //     case MSG_TYPE_TAG_ADVANCE_GRANT:
+//         //         handle_tag_advance_grant();
+//         //         break;
+//         //     case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
+//         //         handle_provisional_tag_advance_grant();
+//         //         break;
+
+//         case MSG_TYPE_LATEST_TAG_COMPLETE:
+//             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
+//                     "RTI failed to read the content of the logical tag complete.");
+//             break;
+//         case MSG_TYPE_STOP_REQUEST:
+//             net_read_from_socket_fail_on_error(&priv->socket_descriptor, MSG_TYPE_STOP_REQUEST_LENGTH - 1, buffer, NULL,
+//                     "RTI failed to read the MSG_TYPE_STOP_REQUEST payload.");
+//             break;
+//         case MSG_TYPE_STOP_REQUEST_REPLY:
+//             net_read_from_socket_fail_on_error(&priv->socket_descriptor, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1, buffer, NULL,
+//                     "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message.");
+//             break;
+//         //     case MSG_TYPE_STOP_GRANTED:
+//         //         handle_stop_granted_message();
+//         //         break;
+
+//         case MSG_TYPE_ADDRESS_QUERY:
+//             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(uint16_t), buffer, NULL,
+//                     "Failed to read address query.");    
+//             break;
+//         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
+//             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int32_t), buffer, NULL,
+//                     "Error reading port data.");            
+//             break;
+
+//         // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
+//         //     break;
+
+//         //     case MSG_TYPE_P2P_MESSAGE:
+//         //         LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
+//         //         if (handle_message(socket_id, fed_id)) {
+//         //             // Failed to complete the reading of a message on a physical connection.
+//         //             lf_print_warning("Failed to complete reading of message on physical connection.");
+//         //             socket_closed = true;
+//         //         }
+//         //         break;
+//         //     case MSG_TYPE_P2P_TAGGED_MESSAGE:
+//         //         LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
+//         //         if (handle_tagged_message(socket_id, fed_id)) {
+//         //             // P2P tagged messages are only used in decentralized coordination, and
+//         //             // it is not a fatal error if the socket is closed before the whole message is read.
+//         //             // But this thread should exit.
+//         //             lf_print_warning("Failed to complete reading of tagged message.");
+//         //             socket_closed = true;
+//         //         }
+//         //         break;
+//         // case MSG_TYPE_CLOCK_SYNC_T1:
+//         //     break;
+
+//         case MSG_TYPE_CLOCK_SYNC_T3:
+//             return net_read_from_socket(priv->socket_descriptor, sizeof(int32_t), buffer);
+//         // case MSG_TYPE_CLOCK_SYNC_T4:
+//         //     break;
+//         // case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
+//         //     break;
+//         case MSG_TYPE_PORT_ABSENT:
+//             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
+//                     "RTI failed to read port absent message.");
+//             break;
+
+//         case MSG_TYPE_NEIGHBOR_STRUCTURE:
+//             net_read_from_socket(priv->socket_descriptor, MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1, buffer);
+//             int num_upstream = extract_int32(buffer);
+//             int num_downstream = extract_int32(buffer+sizeof(int32_t));
+//             size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) * num_upstream)+ (sizeof(uint16_t) * num_downstream);
+//             return net_read_from_socket(priv->socket_descriptor, connections_info_body_size, buffer + MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1);
+
+
+
+
+//         // case MSG_TYPE_FAILED:
+//         //     handle_federate_failed(my_fed);
+//         //     return NULL;
+//         default:
+//             return -1;
+            
+//     }
+// }
+typedef enum {
+    HEADER_READ,
+    READ_MSG_TYPE_FED_IDS,
+    READ_MSG_TYPE_NEIGHBOR_STRUCTURE,
+    READ_MSG_TYPE_TAGGED_MESSAGE,
+    KEEP_READING,
+    FINISH_READ
+} read_state_t;
+
+// Returns the total bytes read.
+int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length) {
     socket_priv_t *priv = get_priv(netdrv);
-    net_read_from_socket(priv->socket_descriptor, 1, buffer);
-    int msg_type = buffer[0];
-    buffer += 1;
-    switch (msg_type) {
+    size_t bytes_to_read; // The bytes to read in future.
+    size_t bytes_read = 0; // The bytes that was read by a single read() function.
+    size_t total_bytes_read = 0; // The total bytes that have been read, and will be the return of the read_from netdrv.
+    int retry_count;
+    int state;
+    // Check if socket_descriptor is open.
+    if (priv->socket_descriptor < 0) {
+        // Socket is not open.
+        errno = EBADF;
+        return -1;
+    }
+    // First, check if there are remaining bytes. 
+    // If there are remaining bytes, it reads as long as it can (buffer_length).
+    // Then it becomes KEEP_READING state.
+    if (netdrv->read_remaining_bytes > 0) {
+        bytes_to_read = (netdrv->read_remaining_bytes > buffer_length) ? buffer_length : netdrv->read_remaining_bytes;
+        state = KEEP_READING;
+    } else {
+        // If there are no left bytes to read, it reads the header byte.
+        bytes_to_read = 1; // read header
+        state = HEADER_READ;
+    }
 
-        // case MSG_TYPE_REJECT: // 1 +1
-        //     break;
-        // case MSG_TYPE_ACK: // 1
-        //     break;
-        case MSG_TYPE_UDP_PORT: // 1 + sizeof(uint16_t) = 3
-            return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
-        case MSG_TYPE_FED_IDS: // 1 + sizeof(uint16_t) + 1 + federation_id
-            net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t) + 1, buffer);
-            size_t federation_id_length = (size_t)buffer[sizeof(uint16_t)];
-            return net_read_from_socket(priv->socket_descriptor, federation_id_length, buffer + 1 + sizeof(uint16_t));
+    for (;;) {
+        retry_count = 0;
+        while (bytes_to_read > 0) {
+            bytes_read = read(priv->socket_descriptor, buffer + total_bytes_read, bytes_to_read);
+            if (bytes_read < 0 &&  // If)  Error has occurred,
+                retry_count++ < NUM_SOCKET_RETRIES && // there are left retry counts,
+                (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) { // and the error code was these three,
+                // Print warning, sleep for a short time, and retry.
+                lf_print_warning("Reading from socket failed. Will try again.");
+                lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
+                continue;
+            } else if (bytes_read <= 0) {
+                // An error occurred without those three error codes.
+                // https://stackoverflow.com/questions/42188128/does-reading-from-a-socket-wait-or-get-eof
+                // bytes_read == 0 means disconnected.
+                return -1;
+            }
+            bytes_to_read -= bytes_read;
+            total_bytes_read += bytes_read;
+        }
 
-        case MSG_TYPE_FED_NONCE: //1 + sizeof(uint16_t) + NONCE_LENGTH(8)
-            return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t) + NONCE_LENGTH, buffer);
-            
+        switch(state) {
+            case HEADER_READ:
+                switch(buffer[0]) {
+                    // case MSG_TYPE_REJECT: // 1 +1
+                    //     break;
+                    // case MSG_TYPE_ACK: // 1
+                    //     break;
+                    case MSG_TYPE_UDP_PORT: // 1 + sizeof(uint16_t) = 3
+                        bytes_to_read = sizeof(uint16_t);
+                        state = FINISH_READ;
+                        break;
+                    case MSG_TYPE_FED_IDS: // 1 + sizeof(uint16_t) + 1 + federation_id
+                        bytes_to_read = sizeof(uint16_t) + 1;
+                        state = READ_MSG_TYPE_FED_IDS;
+                        break;
 
-        // case MSG_TYPE_RTI_RESPONSE: //1 + sizeof(uint16_t) + NONCE_LENGTH(8)
-        //     break;
+                    case MSG_TYPE_FED_NONCE: //1 + sizeof(uint16_t) + NONCE_LENGTH(8)
+                        bytes_to_read = sizeof(uint16_t) + NONCE_LENGTH;
+                        state = FINISH_READ;
+                        break;
 
-        // case MSG_TYPE_FED_RESPONSE: //1 + NONCE_LENGTH(8)
-        //     break;
+                    // case MSG_TYPE_RTI_RESPONSE: //1 + sizeof(uint16_t) + NONCE_LENGTH(8)
+                    //     break;
 
-        case MSG_TYPE_TIMESTAMP: // 1+sizeof(int64_t)
-            return net_read_from_socket(priv->socket_descriptor, sizeof(int64_t), buffer);
+                    // case MSG_TYPE_FED_RESPONSE: //1 + NONCE_LENGTH(8)
+                    //     break;
 
-        // case MSG_TYPE_RESIGN:
-        //     handle_federate_resign(my_fed);
-        //     return NULL;            
-        case MSG_TYPE_TAGGED_MESSAGE: ;
-            size_t header_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, header_size, buffer, NULL,
-                    "RTI failed to read the timed message header from remote federate.");
-            size_t length = (size_t) extract_int32(buffer + sizeof(uint16_t) + sizeof(uint16_t));
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, length, buffer + header_size, NULL,
-                    "RTI failed to read timed message.");
-            break;
+                    case MSG_TYPE_TIMESTAMP: // 1+sizeof(int64_t)
+                        bytes_to_read = sizeof(int64_t);
+                        state = FINISH_READ;
+                        break;
 
+                    // case MSG_TYPE_RESIGN:
+                    //     handle_federate_resign(my_fed);
+                    //     return NULL;            
+                    case MSG_TYPE_TAGGED_MESSAGE: ;
+                        bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
+                        state = READ_MSG_TYPE_TAGGED_MESSAGE;  ;
+                        break;
+                    case MSG_TYPE_NEXT_EVENT_TAG:
+                        bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
+                        state = FINISH_READ;
+                        break;
+                    //     case MSG_TYPE_TAG_ADVANCE_GRANT:
+                    //         handle_tag_advance_grant();
+                    //         break;
+                    //     case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
+                    //         handle_provisional_tag_advance_grant();
+                    //         break;
 
+                    case MSG_TYPE_LATEST_TAG_COMPLETE:
+                        bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
+                        state = FINISH_READ;
+                        break;
+                    case MSG_TYPE_STOP_REQUEST:
+                        bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
+                        state = FINISH_READ;
+                        break;
 
+                    case MSG_TYPE_STOP_REQUEST_REPLY:
+                        bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
+                        state = FINISH_READ;
+                        break;
+                    //     case MSG_TYPE_STOP_GRANTED:
+                    //         handle_stop_granted_message();
+                    //         break;
 
+                    case MSG_TYPE_ADDRESS_QUERY:
+                        bytes_to_read = sizeof(uint16_t);
+                        state = FINISH_READ;
+                        break;
+                    case MSG_TYPE_ADDRESS_ADVERTISEMENT:
+                        bytes_to_read = sizeof(int32_t);
+                        state = FINISH_READ;
+                        break;
+                    // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
+                    //     break;
 
-        case MSG_TYPE_NEXT_EVENT_TAG:
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-                    "RTI failed to read the content of the next event tag.");
-            break;
-        //     case MSG_TYPE_TAG_ADVANCE_GRANT:
-        //         handle_tag_advance_grant();
-        //         break;
-        //     case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
-        //         handle_provisional_tag_advance_grant();
-        //         break;
+                    //     case MSG_TYPE_P2P_MESSAGE:
+                    //         LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
+                    //         if (handle_message(socket_id, fed_id)) {
+                    //             // Failed to complete the reading of a message on a physical connection.
+                    //             lf_print_warning("Failed to complete reading of message on physical connection.");
+                    //             socket_closed = true;
+                    //         }
+                    //         break;
+                    //     case MSG_TYPE_P2P_TAGGED_MESSAGE:
+                    //         LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
+                    //         if (handle_tagged_message(socket_id, fed_id)) {
+                    //             // P2P tagged messages are only used in decentralized coordination, and
+                    //             // it is not a fatal error if the socket is closed before the whole message is read.
+                    //             // But this thread should exit.
+                    //             lf_print_warning("Failed to complete reading of tagged message.");
+                    //             socket_closed = true;
+                    //         }
+                    //         break;
+                    // case MSG_TYPE_CLOCK_SYNC_T1:
+                    //     break;
 
-        case MSG_TYPE_LATEST_TAG_COMPLETE:
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-                    "RTI failed to read the content of the logical tag complete.");
-            break;
-        case MSG_TYPE_STOP_REQUEST:
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, MSG_TYPE_STOP_REQUEST_LENGTH - 1, buffer, NULL,
-                    "RTI failed to read the MSG_TYPE_STOP_REQUEST payload.");
-            break;
-        case MSG_TYPE_STOP_REQUEST_REPLY:
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1, buffer, NULL,
-                    "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message.");
-            break;
-        //     case MSG_TYPE_STOP_GRANTED:
-        //         handle_stop_granted_message();
-        //         break;
-
-        case MSG_TYPE_ADDRESS_QUERY:
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(uint16_t), buffer, NULL,
-                    "Failed to read address query.");    
-            break;
-        case MSG_TYPE_ADDRESS_ADVERTISEMENT:
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int32_t), buffer, NULL,
-                    "Error reading port data.");            
-            break;
-
-        // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
-        //     break;
-
-        //     case MSG_TYPE_P2P_MESSAGE:
-        //         LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
-        //         if (handle_message(socket_id, fed_id)) {
-        //             // Failed to complete the reading of a message on a physical connection.
-        //             lf_print_warning("Failed to complete reading of message on physical connection.");
-        //             socket_closed = true;
-        //         }
-        //         break;
-        //     case MSG_TYPE_P2P_TAGGED_MESSAGE:
-        //         LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
-        //         if (handle_tagged_message(socket_id, fed_id)) {
-        //             // P2P tagged messages are only used in decentralized coordination, and
-        //             // it is not a fatal error if the socket is closed before the whole message is read.
-        //             // But this thread should exit.
-        //             lf_print_warning("Failed to complete reading of tagged message.");
-        //             socket_closed = true;
-        //         }
-        //         break;
-        // case MSG_TYPE_CLOCK_SYNC_T1:
-        //     break;
-
-        case MSG_TYPE_CLOCK_SYNC_T3:
-            return net_read_from_socket(priv->socket_descriptor, sizeof(int32_t), buffer);
-        // case MSG_TYPE_CLOCK_SYNC_T4:
-        //     break;
-        // case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
-        //     break;
-        case MSG_TYPE_PORT_ABSENT:
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-                    "RTI failed to read port absent message.");
-            break;
-
-        case MSG_TYPE_NEIGHBOR_STRUCTURE:
-            net_read_from_socket(priv->socket_descriptor, MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1, buffer);
-            int num_upstream = extract_int32(buffer);
-            int num_downstream = extract_int32(buffer+sizeof(int32_t));
-            size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) * num_upstream)+ (sizeof(uint16_t) * num_downstream);
-            return net_read_from_socket(priv->socket_descriptor, connections_info_body_size, buffer + MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1);
-
-
-
-
-        // case MSG_TYPE_FAILED:
-        //     handle_federate_failed(my_fed);
-        //     return NULL;
-        default:
-            return -1;
-            
+                    case MSG_TYPE_CLOCK_SYNC_T3:
+                        bytes_to_read = sizeof(int32_t);
+                        state = FINISH_READ;
+                        break;
+                    // case MSG_TYPE_CLOCK_SYNC_T4:
+                    //     break;
+                    // case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
+                    //     break;
+                    case MSG_TYPE_PORT_ABSENT:
+                        bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
+                        state = FINISH_READ;
+                        break;
+                    case MSG_TYPE_NEIGHBOR_STRUCTURE:
+                        bytes_to_read = MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1;
+                        state = READ_MSG_TYPE_NEIGHBOR_STRUCTURE;
+                        break;
+                    // case MSG_TYPE_FAILED:
+                    //     handle_federate_failed(my_fed);
+                    //     return NULL;
+                    default:
+                        return -1;
+                }
+                break;
+            case READ_MSG_TYPE_FED_IDS: ;
+                size_t federation_id_length = (size_t)buffer[1 + sizeof(uint16_t)];
+                bytes_to_read = federation_id_length;
+                state = FINISH_READ;
+                break;
+            case READ_MSG_TYPE_NEIGHBOR_STRUCTURE: ;
+                int num_upstream = extract_int32(buffer + 1);
+                int num_downstream = extract_int32(buffer + 1 + sizeof(int32_t));
+                bytes_to_read = ((sizeof(uint16_t) + sizeof(int64_t)) * num_upstream)+ (sizeof(uint16_t) * num_downstream);
+                state = FINISH_READ;
+                break;
+            case READ_MSG_TYPE_TAGGED_MESSAGE: ;
+                size_t length = (size_t) extract_int32(buffer + sizeof(uint16_t) + sizeof(uint16_t));
+                if(length > buffer_length - total_bytes_read) {
+                    bytes_to_read = buffer_length - total_bytes_read;
+                    netdrv->read_remaining_bytes = length - bytes_to_read;      
+                } else {
+                    bytes_to_read = length;
+                }
+                state = FINISH_READ;
+                break;
+            case KEEP_READING:
+                 netdrv->read_remaining_bytes -= total_bytes_read;
+                // return total_bytes_read;
+                return 0;
+            case FINISH_READ:
+                // return total_bytes_read;
+                return 0;
+        }
     }
 }
