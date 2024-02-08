@@ -119,7 +119,7 @@ do { \
  * @param token A pointer to token obtained from an input, an action, or from `lf_new_token()`.
  */
 #ifndef __cplusplus
-#define lf_set_token(out, token) \
+#define lf_set_token(out, newtoken) \
 do { \
     lf_set_present(out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
