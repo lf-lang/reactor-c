@@ -44,7 +44,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.h"
 #include "util.h"
 
+/** Offset calculated by the clock synchronization algorithm. */
 interval_t _lf_clock_sync_offset = NSEC(0);
+/** Offset used to test clock synchronization (clock sync should largely remove this offset). */
 interval_t _lf_clock_sync_constant_bias = NSEC(0);
 
 /**
@@ -76,9 +78,11 @@ instant_t _lf_last_clock_sync_instant = 0LL;
  */
 int _lf_rti_socket_UDP = -1;
 
+/**
+ * Atomically add an adjustment to the clock sync offset.
+ * This needs to be atomic to be thread safe, particularly on 32-bit platforms.
+ */
 static void adjust_lf_clock_sync_offset(interval_t adjustment) {
-    // Do an atomic adjustment of the clock sync offset. This is needed
-    // to ensure thread-safety on 32bit platforms.
     lf_atomic_fetch_add64(&_lf_clock_sync_offset, adjustment);
 }
 

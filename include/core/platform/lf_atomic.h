@@ -12,7 +12,7 @@
 
 /**
  * @brief Atomically fetch a 32bit integer from memory and add a value to it.
- * Returns the value that was previously in memory.
+ * Return the value that was previously in memory.
  *
  * @param ptr A pointer to the memory location.
  * @param val The value to be added.
@@ -22,7 +22,7 @@ int32_t lf_atomic_fetch_add32(int32_t * ptr, int32_t val);
 
 /**
  * @brief Atomically fetch 64-bit integer from memory and add a value to it.
- * Returns the value that was previously in memory.
+ * Return the value that was previously in memory.
  *
  * @param ptr A pointer to the memory location.
  * @param val The value to be added.
@@ -31,8 +31,8 @@ int32_t lf_atomic_fetch_add32(int32_t * ptr, int32_t val);
 int64_t lf_atomic_fetch_add64(int64_t * ptr, int64_t val);
 
 /**
- * @brief Atomically fetch 32-bit integer from memory and add a value to it.
- * Returns the new value of the memory.
+ * @brief Atomically fetch a 32-bit integer from memory and add a value to it.
+ * Return the new value of the memory.
  *
  * @param ptr A pointer to the memory location.
  * @param val The value to be added.
@@ -41,8 +41,8 @@ int64_t lf_atomic_fetch_add64(int64_t * ptr, int64_t val);
 int32_t lf_atomic_add_fetch32(int32_t * ptr, int32_t val);
 
 /**
- * @brief Atomically fetch 64-bit integer from memory and add a value to it.
- * Returns the new value of the memory.
+ * @brief Atomically fetch a 64-bit integer from memory and add a value to it.
+ * Return the new value of the memory.
  *
  * @param ptr A pointer to the memory location.
  * @param val The value to be added.

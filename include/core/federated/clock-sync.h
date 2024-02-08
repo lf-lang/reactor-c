@@ -199,15 +199,14 @@ void* listen_to_rti_UDP_thread(void* args);
 int create_clock_sync_thread(lf_thread_t* thread_id);
 
 /**
- * @brief Apply the current clock synchronization offset to a specified timestamp.
- * @param t Pointer to the timestamp to which to apply the offset.
+ * @brief Add the current clock synchronization offset to a specified timestamp.
+ * @param t Pointer to the timestamp to which to add the offset.
  */
 void clock_sync_apply_offset(instant_t *t);
 
 /**
- * @brief Remove the clock synchronization offset from a timestamp.
- * 
- * @param t 
+ * @brief Subtract the clock synchronization offset from a timestamp.
+ * @param t The timestamp from which to subtract the current clock sync offset.
  */
 void clock_sync_remove_offset(instant_t *t);
 
