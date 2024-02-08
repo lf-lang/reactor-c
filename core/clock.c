@@ -1,6 +1,9 @@
 #include "clock.h"
 #include "platform.h"
+
+#if defined(_LF_CLOCK_SYNC_ON)
 #include "clock-sync.h"
+#endif
 
 static instant_t last_read_physical_time = NEVER;
 
