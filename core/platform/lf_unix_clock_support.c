@@ -32,16 +32,13 @@ void _lf_initialize_clock() {
  * Fetch the value of CLOCK_REALTIME and store it in t. The
  * @return 0 for success, or -1 for failure.
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
     if (t == NULL) return -1;
     struct timespec tp;
     if (clock_gettime(CLOCK_REALTIME, (struct timespec*) &tp) != 0) {
         return -1;
     }
     *t = convert_timespec_to_ns(tp);
-    
-    // Apply any clock sync offset
-    clock_sync_apply_offset(t);
     return 0;
 }
 

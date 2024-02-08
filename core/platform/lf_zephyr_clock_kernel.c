@@ -55,17 +55,16 @@ void _lf_initialize_clock() {
 
 /**
  * Detect wraps by storing the previous clock readout. When a clock readout is
- * less than the previous we have had a wrap. This only works of `_lf_clock_now`
+ * less than the previous we have had a wrap. This only works of `_lf_clock_gettime`
  * is invoked at least once per epoch. 
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
     static uint32_t last_read_cycles=0;
     uint32_t now_cycles = k_cycle_get_32();
     if (now_cycles < last_read_cycles) {
         last_epoch_nsec += epoch_duration_nsec;
     }
     *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles + last_epoch_nsec;
-    clock_sync_apply_offset(t);
     last_read_cycles = now_cycles;
     return 0;
 }
@@ -79,7 +78,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     LF_CRITICAL_SECTION_EXIT(env);
     instant_t now;
     do {
-    _lf_clock_now(&now);
+    _lf_clock_gettime(&now);
     } while ( (now<wakeup) && !async_event);
     LF_CRITICAL_SECTION_ENTER(env);
 

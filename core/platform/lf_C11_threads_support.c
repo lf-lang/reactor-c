@@ -44,8 +44,7 @@ int lf_cond_wait(lf_cond_t* cond) {
     return cnd_wait((cnd_t*)&cond->condition, (mtx_t*)cond->mutex);
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
-    clock_sync_remove_offset(&wakeup_time);
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     struct timespec timespec_absolute_time = {
         .tv_sec = wakeup_time / BILLION,
         .tv_nsec = wakeup_time % BILLION

@@ -201,14 +201,14 @@ int lf_cond_wait(lf_cond_t* cond);
 
 /**
  * Block current thread on the condition variable until condition variable
- * pointed by "cond" is signaled or time given by wakeup_time is reached. The
- * wakeup time will include any clock sync offset (which is added in
- * _lf_clock_now).
+ * pointed by "cond" is signaled or time given by wakeup_time is reached. Should
+ * not be used directly as it does not account for clock synchronization offsets.
+ * Use `lf_clock_cond_timedwait` from clock.h instead.
  *
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time);
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time);
 #endif
 
 /**
@@ -217,15 +217,16 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time);
 void _lf_initialize_clock(void);
 
 /**
- * Fetch the value of an internal (and platform-specific) physical clock and
- * apply any clock synchronization offset.
- *
+ * Fetch the value of an internal (and platform-specific) physical clock.
  * Ideally, the underlying platform clock should be monotonic. However, the core
- * lib enforces monotonicity at higher level APIs (see tag.h).
+ * lib enforces monotonicity at higher level APIs (see clock.h).
+ * 
+ * Should not be used directly as it does not apply clock synchronization
+ * offsets.
  *
  * @return 0 for success, or -1 for failure
  */
-int _lf_clock_now(instant_t* t);
+int _lf_clock_gettime(instant_t* t);
 
 /**
  * Pause execution for a given duration.
@@ -235,8 +236,8 @@ int _lf_clock_now(instant_t* t);
 int lf_sleep(interval_t sleep_duration);
 
 /**
- * @brief Sleep until the given wakeup time. The wakeup time will include any
- * clock sync offsets (which are added in _lf_clocK_now).
+ * @brief Sleep until the given wakeup time. Should not be used directly as it
+ * does not account for clock synchronization offsets.
  *
  * Assumes the lock for the given environment is held
  *

@@ -184,9 +184,9 @@ int lf_cond_wait(lf_cond_t* cond) {
     return k_condvar_wait(&cond->condition, cond->mutex, K_FOREVER);
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     instant_t now;
-    _lf_clock_now(&now);
+    _lf_clock_gettime(&now);
     interval_t sleep_duration_ns = wakeup_time - now;
     k_timeout_t timeout = K_NSEC(sleep_duration_ns);
     int res = k_condvar_wait(&cond->condition, cond->mutex, timeout);

@@ -81,7 +81,7 @@ void _lf_initialize_clock(void) {
  * @param  t  pointer to the time variable to write to.
  * @return error code or 0 on success. 
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
     if (!t) {
         return -1;
     }
@@ -92,7 +92,6 @@ int _lf_clock_now(instant_t* t) {
     now = get_absolute_time();
     ns_from_boot = to_us_since_boot(now) * 1000;
     *t = (instant_t) ns_from_boot;
-    clock_sync_apply_offset(t);
     return 0; 
 }
 
@@ -126,9 +125,6 @@ int lf_sleep(interval_t sleep_duration) {
  * @return -1 when interrupted or 0 on successful timeout
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
-    // Here we must remove any applied clock sync offset since we want to 
-    // calculate the absolute wakeup time wrt the underlying clock.
-    clock_sync_remove_offset(&wakeup_time);
     int ret_code = 0;
     // return immediately
     if (wakeup_time < 0) {

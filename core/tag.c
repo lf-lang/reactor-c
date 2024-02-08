@@ -20,7 +20,7 @@
 #include "reactor.h"
 #include "util.h"
 #include "lf_types.h"
-
+#include "clock.h"
 
 /**
  * An enum for specifying the desired tag when calling "lf_time"
@@ -40,7 +40,6 @@ instant_t start_time = NEVER;
 
 //////////////// Global variables not declared in tag.h (must be declared extern if used elsewhere):
 
-static instant_t last_read_physical_time = NEVER;
 
 ////////////////  Functions not declared in tag.h (local use only)
 
@@ -115,24 +114,9 @@ interval_t lf_time_logical_elapsed(void *env) {
 instant_t lf_time_physical() {
     instant_t now, last_read_local;
     // Get the current clock value
-    LF_ASSERTN(_lf_clock_now(&now), "Failed to read physical clock.");
-
-    do {
-        // Atomically fetch the last read value. This is done with
-        // atomics to guarantee that it works on 32bit platforms as well.
-        last_read_local = lf_atomic_fetch_add64(&last_read_physical_time, 0);
-    
-        // Ensure monotonicity. 
-        if (now < last_read_local) {
-            now = last_read_local+1;
-        }
-
-        // Update the last read value, atomically and also make sure that another
-        // thread has not been here in between and changed it. If so. We must redo
-        // the monotonicity calculation.
-    } while(!lf_atomic_bool_compare_and_swap64(&last_read_physical_time, last_read_local, now));
-
+    LF_ASSERTN(lf_clock_gettime(&now), "Failed to read physical clock.");
     return now;
+
 }
 
 instant_t lf_time_physical_elapsed(void) {

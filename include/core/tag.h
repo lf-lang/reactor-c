@@ -43,7 +43,7 @@
 #define ZERO_TAG (tag_t) { .time = 0LL, .microstep = 0u }
 
 // Convenience for converting times
-#define BILLION 1000000000LL
+#define BILLION ((instant_t) 1000000000LL)
 
 #include <stdint.h>
 #include <stddef.h>
@@ -74,21 +74,6 @@ typedef struct {
     instant_t time;
     microstep_t microstep;
 } tag_t;
-
-////////////////  External Functions
-
-// Bring clock synchronization adjustment into scope. These functions are
-// defined in clock-sync.c
-#if defined(_LF_CLOCK_SYNC_ON)
-extern void clock_sync_apply_offset(instant_t *t);
-extern void clock_sync_remove_offset(instant_t *t);
-extern void clock_sync_set_constant_bias(interval_t offset);
-#else
-// Without clock synchronization enabled we can just optimize these away.
-#define clock_sync_apply_offset(x)
-#define clock_sync_remove_offset(x)
-#define clock_sync_set_constant_bias(x)
-#endif
 
 ////////////////  Functions
 

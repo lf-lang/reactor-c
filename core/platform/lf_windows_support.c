@@ -79,7 +79,7 @@ void _lf_initialize_clock() {
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
  *  set to EINVAL or EFAULT.
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
     // Adapted from gclib/GResUsage.cpp
     // (https://github.com/gpertea/gclib/blob/8aee376774ccb2f3bd3f8e3bf1c9df1528ac7c5b/GResUsage.cpp)
     // License: https://github.com/gpertea/gclib/blob/master/LICENSE.txt
@@ -93,7 +93,7 @@ int _lf_clock_now(instant_t* t) {
     if (_lf_use_performance_counter) {
         int result = QueryPerformanceCounter(&windows_time);
         if ( result == 0) {
-            lf_print_error("_lf_clock_now(): Failed to read the value of the physical clock.");
+            lf_print_error("_lf_clock_gettime(): Failed to read the value of the physical clock.");
             return result;
         }
     } else {
@@ -104,7 +104,6 @@ int _lf_clock_now(instant_t* t) {
         windows_time.QuadPart |= f.dwLowDateTime;
     }
     *t = (instant_t)((double)windows_time.QuadPart / _lf_frequency_to_ns);
-    clock_sync_apply_offset(t);
     return (0);
 }
 
@@ -270,7 +269,7 @@ int lf_cond_wait(lf_cond_t* cond) {
      }
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     // Convert the absolute time to a relative time.
     interval_t wait_duration = wakeup_time - lf_time_physical();
     if (wait_duration<= 0) {

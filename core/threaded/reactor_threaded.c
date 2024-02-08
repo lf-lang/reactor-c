@@ -284,7 +284,7 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
         // returns 0 if it is awakened before the timeout. Hence, we want to run
         // it repeatedly until either it returns non-zero or the current
         // physical time matches or exceeds the logical time.
-        if (lf_cond_timedwait(condition, wait_until_time) != LF_TIMEOUT) {
+        if (lf_clock_cond_timedwait(condition, wait_until_time) != LF_TIMEOUT) {
             LF_PRINT_DEBUG("-------- wait_until interrupted before timeout.");
 
             // Wait did not time out, which means that there

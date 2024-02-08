@@ -63,9 +63,7 @@ int lf_cond_wait(lf_cond_t* cond) {
     return pthread_cond_wait((pthread_cond_t*)&cond->condition, (pthread_mutex_t*)cond->mutex);
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
-    // Remove the clock synchronization offset.
-    clock_sync_remove_offset(&wakeup_time);
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     struct timespec timespec_absolute_time = convert_ns_to_timespec(wakeup_time);
     int return_value = pthread_cond_timedwait(
         (pthread_cond_t*)&cond->condition,
