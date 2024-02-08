@@ -155,6 +155,7 @@ tag_t lf_tag_subtract(tag_t a, tag_t b) {
         }
         result.microstep = 0;
     }
+    return result;
 }
 
 int lf_tag_compare(tag_t tag1, tag_t tag2) {

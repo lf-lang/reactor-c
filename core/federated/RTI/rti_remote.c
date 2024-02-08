@@ -307,8 +307,11 @@ void send_downstream_next_event_tag(scheduling_node_t *e, tag_t tag) {
     unsigned char buffer[message_length];
     buffer[0] = MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG;
     encode_int64(tag.time, &(buffer[1]));
-    encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
+    encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));    
 
+    if (rti_remote->base.tracing_enabled) {
+        tracepoint_rti_to_federate(rti_remote->base.trace, send_DNET, e->id, &tag);
+    }
     if (write_to_socket(((federate_info_t *)e)->socket, message_length, buffer)) {
         lf_print_error("RTI failed to send downstream next event tag to federate %d.", e->id);
         e->state = NOT_CONNECTED;

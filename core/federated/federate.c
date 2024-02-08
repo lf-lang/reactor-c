@@ -2302,8 +2302,9 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 }
 
 void lf_latest_tag_complete(tag_t tag_to_send) {
-    int compare_with_last_tag = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
-    if (compare_with_last_tag >= 0) {
+    int compare_with_last_LTC = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
+    int compare_with_last_DNET = lf_tag_compare(_fed.last_DNET, tag_to_send);
+    if (compare_with_last_LTC >= 0 || compare_with_last_DNET > 0) {
         return;
     }
     LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.",
@@ -2463,10 +2464,12 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
             // This if statement does not fall through but rather returns.
             // NET is not bounded by physical time or has no downstream federates.
             // Normal case.
-            send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
-            _fed.last_sent_NET = tag;
-            LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
-                    tag.time - start_time, tag.microstep);
+            if (lf_tag_compare(_fed.last_DNET, tag) <= 0) {
+                send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
+                _fed.last_sent_NET = tag;
+                LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
+                        tag.time - start_time, tag.microstep);
+            }
 
             if (!wait_for_reply) {
                 LF_PRINT_LOG("Not waiting for reply to NET.");
@@ -2726,6 +2729,10 @@ int lf_send_tagged_message(environment_t* env,
     } else {
         socket = &_fed.socket_TCP_RTI;
         tracepoint_federate_to_rti(_fed.trace, send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
+    }
+
+    if (lf_tag_compare(_fed.last_DNET, current_message_intended_tag) > 0) {
+        _fed.last_DNET = current_message_intended_tag;
     }
 
     int result = write_to_socket_close_on_error(socket, header_length, header_buffer);
