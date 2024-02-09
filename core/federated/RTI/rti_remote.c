@@ -304,8 +304,10 @@ void handle_timed_message(federate_info_t *sending_federate, unsigned char *buff
     write_to_netdrv_fail_on_error(fed->fed_netdrv, length + header_size, buffer, &rti_mutex,
             "RTI failed to forward message to federate %d.", federate_id);
     
-    if (sending_federate->fed_netdrv->read_remaining_bytes > 0 ) {
-        read_from_netdrv(sending_federate->fed_netdrv, );
+    while (sending_federate->fed_netdrv->read_remaining_bytes > 0) {
+        int num_bytes = read_from_netdrv(sending_federate->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
+        write_to_netdrv_fail_on_error(fed->fed_netdrv, num_bytes, buffer, &rti_mutex,
+            "RTI failed to forward message to federate %d.", federate_id);
     } 
 
     // // The message length may be longer than the buffer,
@@ -805,9 +807,9 @@ void *clock_synchronization_thread(void *noargs) {
             int remaining_attempts = 5;
             while (remaining_attempts > 0) {
                 remaining_attempts--;
-                int read_failed = read_from_netdrv(rti_remote->clock_netdrv, buffer, message_size);
+                int bytes_read = read_from_netdrv(rti_remote->clock_netdrv, buffer, message_size);
                 // If any errors occur, either discard the message or the clock sync round.
-                if (!read_failed) {
+                if (bytes_read > 0) {
                     if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
                         int32_t fed_id_2 = extract_int32(&(buffer[1]));
                         // Check that this message came from the correct federate.
@@ -955,8 +957,8 @@ void *federate_info_thread_TCP(void *fed) {
     // Listen for messages from the federate.
     while (my_fed->enclave.state != NOT_CONNECTED) {
         // Read no more than one byte to get the message type.
-        int read_failed = read_from_netdrv(my_fed->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
-        if (read_failed) {
+        int bytes_read = read_from_netdrv(my_fed->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
+        if (bytes_read <= 0) {
             // Socket is closed
             lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
             my_fed->enclave.state = NOT_CONNECTED;
@@ -1044,7 +1046,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
     unsigned char buffer[256]; //TODO: NEED TO CHECK.
     // Read bytes from the socket. We need 4 bytes.
 
-    if (read_from_netdrv_close_on_error(netdrv, buffer, 256)) { //TODO: check length.
+    if (read_from_netdrv_close_on_error(netdrv, buffer, 256) <= 0) { //TODO: check length.
         lf_print_error("RTI failed to read from accepted socket.");
         return -1;
     }

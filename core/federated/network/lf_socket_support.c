@@ -432,12 +432,12 @@ void write_to_netdrv_fail_on_error(
 }
 // TODO: Fix return.
 int read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer, size_t buffer_length) {
-    int read_failed = read_from_netdrv(drv, buffer, buffer_length);
-    if (read_failed) {
+    int bytes_read = read_from_netdrv(drv, buffer, buffer_length);
+    if (bytes_read <= 0) {
         drv->close(drv);
         return -1;
     }
-    return 0;
+    return bytes_read;
 }
 
 //TODO: FIX return
@@ -448,8 +448,8 @@ void read_from_netdrv_fail_on_error(
 		lf_mutex_t* mutex,
 		char* format, ...) {
     va_list args;
-    int read_failed = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
-    if (read_failed) {
+    int bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
+    if (bytes_read <= 0) {
         // Read failed.
         if (mutex != NULL) {
             lf_mutex_unlock(mutex);
@@ -664,11 +664,11 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_leng
                 break;
             case KEEP_READING:
                  netdrv->read_remaining_bytes -= total_bytes_read;
-                // return total_bytes_read;
-                return 0;
+                return total_bytes_read;
+                // return 0;
             case FINISH_READ:
-                // return total_bytes_read;
-                return 0;
+                return total_bytes_read;
+                // return 0;
         }
     }
 }
