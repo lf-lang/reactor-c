@@ -138,14 +138,14 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
     // create us boot wakeup time
     target = from_us_since_boot((uint64_t) (wakeup_time / 1000));
     // allow interrupts
-    lf_critical_section_exit(env);
+    LF_CRITICAL_SECTION_EXIT(env);
     // blocked sleep
     // return on timeout or on processor event
     if(sem_acquire_block_until(&_lf_sem_irq_event, target)) {
         ret_code = -1;
     }
     // remove interrupts
-    lf_critical_section_enter(env);
+    LF_CRITICAL_SECTION_ENTER(env);
     return ret_code;
 }
 

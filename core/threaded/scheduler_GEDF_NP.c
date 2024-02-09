@@ -50,7 +50,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
-#include "semaphore.h"
+#include "lf_semaphore.h"
 #include "trace.h"
 #include "util.h"
 
@@ -65,14 +65,12 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t* scheduler, reaction
     size_t reaction_level = LF_LEVEL(reaction->index);
     LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %zu.",
                 reaction_level);
-    lf_mutex_lock(
-        &scheduler->array_of_mutexes[reaction_level]);
+    LF_MUTEX_LOCK(&scheduler->array_of_mutexes[reaction_level]);
     LF_PRINT_DEBUG("Scheduler: Locked the mutex for level %zu.", reaction_level);
     pqueue_insert(((pqueue_t**)scheduler
                        ->triggered_reactions)[reaction_level],
                   (void*)reaction);
-    lf_mutex_unlock(
-        &scheduler->array_of_mutexes[reaction_level]);
+    LF_MUTEX_UNLOCK(&scheduler->array_of_mutexes[reaction_level]);
 }
 
 /**
@@ -157,17 +155,17 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
     while (true) {
         if (scheduler->next_reaction_level == (scheduler->max_reaction_level + 1)) {
             scheduler->next_reaction_level = 0;
-            lf_mutex_lock(&env->mutex);
+            LF_MUTEX_LOCK(&env->mutex);
             // Nothing more happening at this tag.
             LF_PRINT_DEBUG("Scheduler: Advancing tag.");
             // This worker thread will take charge of advancing tag.
             if (_lf_sched_advance_tag_locked(scheduler)) {
                 LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
                 _lf_sched_signal_stop(scheduler);
-                lf_mutex_unlock(&env->mutex);
+                LF_MUTEX_UNLOCK(&env->mutex);
                 break;
             }
-            lf_mutex_unlock(&env->mutex);
+            LF_MUTEX_UNLOCK(&env->mutex);
         }
 
         if (_lf_sched_distribute_ready_reactions(scheduler) > 0) {
@@ -258,7 +256,7 @@ void lf_sched_init(
                         get_reaction_position, set_reaction_position,
                         reaction_matches, print_reaction);
         // Initialize the mutexes for the reaction queues
-        lf_mutex_init(&scheduler->array_of_mutexes[i]);
+        LF_MUTEX_INIT(&scheduler->array_of_mutexes[i]);
     }
 
     scheduler->executing_reactions =
@@ -300,14 +298,12 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         LF_PRINT_DEBUG(
             "Scheduler: Worker %d trying to lock the mutex for level %zu.",
             worker_number, current_level);
-        lf_mutex_lock(
-            &scheduler->array_of_mutexes[current_level]);
+        LF_MUTEX_LOCK(&scheduler->array_of_mutexes[current_level]);
         LF_PRINT_DEBUG("Scheduler: Worker %d locked the mutex for level %zu.",
                     worker_number, current_level);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(
             (pqueue_t*)scheduler->executing_reactions);
-        lf_mutex_unlock(
-            &scheduler->array_of_mutexes[current_level]);
+        LF_MUTEX_UNLOCK(&scheduler->array_of_mutexes[current_level]);
 
         if (reaction_to_return != NULL) {
             // Got a reaction

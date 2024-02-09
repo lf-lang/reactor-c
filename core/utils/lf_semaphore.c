@@ -31,8 +31,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
-#include "semaphore.h"
+#include "lf_semaphore.h"
 #include <assert.h>
+#include "util.h"  // Defines macros LF_MUTEX_LOCK, etc.
 
 /**
  * @brief Create a new semaphore.
@@ -42,8 +43,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 lf_semaphore_t* lf_semaphore_new(int count) {
     lf_semaphore_t* semaphore = (lf_semaphore_t*)malloc(sizeof(lf_semaphore_t));
-    lf_mutex_init(&semaphore->mutex);
-    lf_cond_init(&semaphore->cond, &semaphore->mutex);
+    LF_MUTEX_INIT(&semaphore->mutex);
+    LF_COND_INIT(&semaphore->cond, &semaphore->mutex);
     semaphore->count = count;
     return semaphore;
 }
@@ -56,10 +57,10 @@ lf_semaphore_t* lf_semaphore_new(int count) {
  */
 void lf_semaphore_release(lf_semaphore_t* semaphore, int i) {
     assert(semaphore != NULL);
-    lf_mutex_lock(&semaphore->mutex);
+    LF_MUTEX_LOCK(&semaphore->mutex);
     semaphore->count += i;
     lf_cond_broadcast(&semaphore->cond);
-    lf_mutex_unlock(&semaphore->mutex);
+    LF_MUTEX_UNLOCK(&semaphore->mutex);
 }
 
 /**
@@ -69,12 +70,12 @@ void lf_semaphore_release(lf_semaphore_t* semaphore, int i) {
  */
 void lf_semaphore_acquire(lf_semaphore_t* semaphore) {
     assert(semaphore != NULL);
-    lf_mutex_lock(&semaphore->mutex);
+    LF_MUTEX_LOCK(&semaphore->mutex);
     while (semaphore->count == 0) {
         lf_cond_wait(&semaphore->cond);
     }
     semaphore->count--;
-    lf_mutex_unlock(&semaphore->mutex);
+    LF_MUTEX_UNLOCK(&semaphore->mutex);
 }
 
 /**
@@ -84,11 +85,11 @@ void lf_semaphore_acquire(lf_semaphore_t* semaphore) {
  */
 void lf_semaphore_wait(lf_semaphore_t* semaphore) {
     assert(semaphore != NULL);
-    lf_mutex_lock(&semaphore->mutex);
+    LF_MUTEX_LOCK(&semaphore->mutex);
     while (semaphore->count == 0) {
         lf_cond_wait(&semaphore->cond);
     }
-    lf_mutex_unlock(&semaphore->mutex);
+    LF_MUTEX_UNLOCK(&semaphore->mutex);
 }
 
 /**
