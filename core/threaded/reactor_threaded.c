@@ -280,7 +280,7 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
         }
 
         // We do the sleep on the cond var so we can be awakened by the
-        // asynchronous scheduling of a physical action. lf_cond_timedwait
+        // asynchronous scheduling of a physical action. lf_clock_cond_timedwait
         // returns 0 if it is awakened before the timeout. Hence, we want to run
         // it repeatedly until either it returns non-zero or the current
         // physical time matches or exceeds the logical time.

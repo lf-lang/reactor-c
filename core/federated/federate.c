@@ -2516,7 +2516,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
             wait_until_time_ns = original_tag.time;
         }
 
-        lf_cond_timedwait(&env->event_q_changed, wait_until_time_ns);
+        lf_clock_cond_timedwait(&env->event_q_changed, wait_until_time_ns);
 
         LF_PRINT_DEBUG("Wait finished or interrupted.");
 
