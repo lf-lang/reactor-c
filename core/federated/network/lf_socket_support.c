@@ -73,29 +73,6 @@ static void socket_close(netdrv_t *drv) {
     }
 }
 
-// static ssize_t socket_read(netdrv_t *drv, size_t num_bytes, unsigned char* buffer, char* format, ...) {
-//     // if (!drv) {
-//     //     return -1;
-//     // }
-//     // socket_priv_t *priv = get_priv(drv);
-//     // if (priv->timeout_us > 0) {
-//     //     int res = -1;
-//     //     do {
-//     //         res = recv(priv->sock, buffer, size, MSG_TRUNC);
-//     //     } while (res > 0);
-//     //     return res;
-//     // }
-//     // return recv(priv->sock, buffer, size, MSG_TRUNC);
-// }
-
-// static ssize_t socket_write(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
-//     if (!drv) {
-//         return -1;
-//     }
-//     socket_priv_t *priv = get_priv(drv);
-//     return send(priv->sock, buffer, size, MSG_DONTWAIT);
-// }
-
 netdrv_t *netdrv_init() {
     // TODO: Should it be malloc? To support different network stacks operate simulatneously?
     netdrv_t *drv = malloc(sizeof(*drv) + sizeof(socket_priv_t));  // Don't need to call malloc() twice.
