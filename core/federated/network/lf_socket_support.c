@@ -575,10 +575,10 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_leng
                         state = FINISH_READ;
                         break;
 
-                    // case MSG_TYPE_RESIGN:
-                    //     handle_federate_resign(my_fed);
-                    //     return NULL;            
-                    case MSG_TYPE_TAGGED_MESSAGE: ;
+                    case MSG_TYPE_RESIGN:
+                        state = FINISH_READ;
+                        break;          
+                    case MSG_TYPE_TAGGED_MESSAGE:
                         bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
                         state = READ_MSG_TYPE_TAGGED_MESSAGE;
                         break;
