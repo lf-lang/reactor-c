@@ -1324,11 +1324,11 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t 
  * @param socket Socket for the incoming federate tryting to authenticate.
  * @return True if authentication is successful and false otherwise.
  */
-static bool authenticate_federate(netdrv_t *rti_netdrv) {
+static bool authenticate_federate(netdrv_t *fed_netdrv) {
     // Wait for MSG_TYPE_FED_NONCE from federate.
     size_t fed_id_length = sizeof(uint16_t);
     unsigned char buffer[1 + fed_id_length + NONCE_LENGTH];
-    read_from_netdrv_fail_on_error(rti_netdrv, buffer, 1 + fed_id_length + NONCE_LENGTH, NULL,
+    read_from_netdrv_fail_on_error(fed_netdrv, buffer, 1 + fed_id_length + NONCE_LENGTH, NULL,
             "Failed to read MSG_TYPE_FED_NONCE.");
     if (buffer[0] != MSG_TYPE_FED_NONCE) {
         lf_print_error_and_exit(
@@ -1356,13 +1356,13 @@ static bool authenticate_federate(netdrv_t *rti_netdrv) {
     RAND_bytes(rti_nonce, NONCE_LENGTH);
     memcpy(&sender[1], rti_nonce, NONCE_LENGTH);
     memcpy(&sender[1 + NONCE_LENGTH], hmac_tag, hmac_length);
-    if (write_to_netdrv(rti_netdrv, 1 + NONCE_LENGTH + hmac_length, sender)) {
+    if (write_to_netdrv(fed_netdrv, 1 + NONCE_LENGTH + hmac_length, sender)) {
         lf_print_error("Failed to send nonce to federate.");
     }
 
     // Wait for MSG_TYPE_FED_RESPONSE
     unsigned char received[1 + hmac_length];
-    read_from_netdrv_fail_on_error(rti_netdrv, received, 1 + hmac_length, NULL,
+    read_from_netdrv_fail_on_error(fed_netdrv, received, 1 + hmac_length, NULL,
             "Failed to read federate response.");
     if (received[0] != MSG_TYPE_FED_RESPONSE) {
         lf_print_error_and_exit(
@@ -1384,7 +1384,7 @@ static bool authenticate_federate(netdrv_t *rti_netdrv) {
     if (memcmp(&received[1], rti_tag, hmac_length) != 0) {
         // Federation IDs do not match. Send back a HMAC_DOES_NOT_MATCH message.
         lf_print_warning("HMAC authentication failed. Rejecting the federate.");
-        send_reject(rti_netdrv, HMAC_DOES_NOT_MATCH);
+        send_reject(fed_netdrv, HMAC_DOES_NOT_MATCH);
         return false;
     } else {
         LF_PRINT_LOG("Federate's HMAC verified.");
@@ -1403,10 +1403,10 @@ void lf_connect_to_federates(netdrv_t *rti_netdrv) {
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
         if (rti_remote->authentication_enabled) {
-            if (!authenticate_federate(rti_netdrv)) {
+            if (!authenticate_federate(fed_netdrv)) {
                 lf_print_warning("RTI failed to authenticate the incoming federate.");
                 
-                rti_netdrv->close(rti_netdrv);
+                fed_netdrv->close(fed_netdrv);
                 // Ignore the federate that failed authentication.
                 i--;
                 continue;
