@@ -51,7 +51,7 @@ if (NOT DEFINED LF_SINGLE_THREADED)
 
     set(IncludeDir include/core)
 
-    set(RTI_DIR ${CoreLib}/federated/RTI)
+    set(RTI_DIR core/federated/RTI)
     add_executable(
       rti_common_test
       ${TEST_DIR}/RTI/rti_common_test.c
