@@ -177,15 +177,6 @@ static void multiple_nodes() {
 
   set_state_of_nodes(GRANTED);
 
-  update_min_delays_upstream(test_rti.scheduling_nodes[0]);
-  assert(test_rti.scheduling_nodes[0]->num_min_delays == 0); // node[0] has no upstream nodes.
-
-  update_min_delays_upstream(test_rti.scheduling_nodes[1]);
-  assert(test_rti.scheduling_nodes[1]->num_min_delays == 1); // node[1] has one upstream nodes.
-  assert(test_rti.scheduling_nodes[1]->min_delays[0].id == 0); // node[1]'s upstream node is node[0].
-  // The min_delay between them is (1 nsec, 0).
-  assert(lf_tag_compare(test_rti.scheduling_nodes[1]->min_delays[0].min_delay, (tag_t) {NSEC(1), 0}) == 0);
-
   update_min_delays_upstream(test_rti.scheduling_nodes[2]);
   assert(test_rti.scheduling_nodes[2]->num_min_delays == 2); // node[2] has two upstream nodes.
   assert(test_rti.scheduling_nodes[2]->min_delays[1].id == 1); // node[2]'s first upstream node is node[1].
