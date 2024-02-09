@@ -42,30 +42,30 @@ if (NOT DEFINED LF_SINGLE_THREADED)
     # Check which system we are running on to select the correct platform support
     # file and assign the file's path to LF_PLATFORM_FILE
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-      set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_linux_support.c)
+      set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_linux_support.c)
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-      set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_macos_support.c)
+      set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_macos_support.c)
     else()
       message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
     endif()
 
     set(IncludeDir include/core)
 
-    set(RTI_DIR core/federated/RTI)
+    set(RTI_DIR ${CoreLibPath}/federated/RTI)
     add_executable(
       rti_common_test
       ${TEST_DIR}/RTI/rti_common_test.c
       ${RTI_DIR}/rti_common.c
       ${RTI_DIR}/rti_remote.c
-      ${CoreLib}/trace.c
+      ${CoreLibPath}/trace.c
       ${LF_PLATFORM_FILE}
-      ${CoreLib}/platform/lf_unix_clock_support.c
-      ${CoreLib}/utils/util.c
-      ${CoreLib}/tag.c
-      ${CoreLib}/federated/network/net_util.c
-      ${CoreLib}/utils/pqueue_base.c
-      ${CoreLib}/utils/pqueue_tag.c
-      ${CoreLib}/utils/pqueue.c
+      ${CoreLibPath}/platform/lf_unix_clock_support.c
+      ${CoreLibPath}/utils/util.c
+      ${CoreLibPath}/tag.c
+      ${CoreLibPath}/federated/network/net_util.c
+      ${CoreLibPath}/utils/pqueue_base.c
+      ${CoreLibPath}/utils/pqueue_tag.c
+      ${CoreLibPath}/utils/pqueue.c
     )
     add_test(NAME rti_common_test COMMAND rti_common_test)
     target_include_directories(rti_common_test PUBLIC ${RTI_DIR})
