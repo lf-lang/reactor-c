@@ -220,7 +220,7 @@ void handle_port_absent_message(federate_info_t *sending_federate, unsigned char
     LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
-void handle_timed_message(federate_info_t *sending_federate, unsigned char *buffer) {
+void handle_timed_message(federate_info_t *sending_federate, unsigned char *buffer, size_t buffer_length) {
     size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
             + sizeof(int64_t) + sizeof(uint32_t);
     // Extract the header information. of the sender
@@ -303,6 +303,10 @@ void handle_timed_message(federate_info_t *sending_federate, unsigned char *buff
 
     write_to_netdrv_fail_on_error(fed->fed_netdrv, length + header_size, buffer, &rti_mutex,
             "RTI failed to forward message to federate %d.", federate_id);
+    
+    if (sending_federate->fed_netdrv->read_remaining_bytes > 0 ) {
+        read_from_netdrv(sending_federate->fed_netdrv, );
+    } 
 
     // // The message length may be longer than the buffer,
     // // in which case we have to handle it in chunks.
@@ -972,7 +976,7 @@ void *federate_info_thread_TCP(void *fed) {
             handle_address_ad(my_fed->enclave.id, buffer + 1);
             break;
         case MSG_TYPE_TAGGED_MESSAGE:
-            handle_timed_message(my_fed, buffer);
+            handle_timed_message(my_fed, buffer, FED_COM_BUFFER_SIZE);
             break;
         case MSG_TYPE_RESIGN:
             handle_federate_resign(my_fed);
