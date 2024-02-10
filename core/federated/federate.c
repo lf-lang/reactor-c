@@ -88,6 +88,7 @@ federate_instance_t _fed = {
         .is_last_TAG_provisional = false,
         .has_upstream = false,
         .has_downstream = false,
+        .last_skipped_LTC = (tag_t) {.time = NEVER, .microstep = 0u},
         .last_DNET = (tag_t) {.time = NEVER, .microstep = 0u},
         .received_stop_request_from_rti = false,
         .last_sent_LTC = (tag_t) {.time = NEVER, .microstep = 0u},
@@ -2304,14 +2305,21 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 void lf_latest_tag_complete(tag_t tag_to_send) {
     int compare_with_last_LTC = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
     int compare_with_last_DNET = lf_tag_compare(_fed.last_DNET, tag_to_send);
-    if (compare_with_last_LTC >= 0 || compare_with_last_DNET > 0) {
+    if (compare_with_last_LTC >= 0) {
         return;
+    }
+    if (compare_with_last_DNET > 0) {
+        LF_PRINT_LOG("Skipping Latest Tag Complete (LTC) " PRINTF_TAG " .",
+                tag_to_send.time - start_time,
+                tag_to_send.microstep);
+        _fed.last_skipped_LTC = tag_to_send;
     }
     LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.",
             tag_to_send.time - start_time,
             tag_to_send.microstep);
     send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, tag_to_send);
     _fed.last_sent_LTC = tag_to_send;
+    _fed.last_skipped_LTC = NEVER_TAG;
 }
 
 parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
@@ -2733,6 +2741,10 @@ int lf_send_tagged_message(environment_t* env,
 
     if (lf_tag_compare(_fed.last_DNET, current_message_intended_tag) > 0) {
         _fed.last_DNET = current_message_intended_tag;
+        if (lf_tag_compare(_fed.last_skipped_LTC, NEVER_TAG) != 0) {
+            send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, _fed.last_skipped_LTC);
+            _fed.last_skipped_LTC = NEVER_TAG;
+        }
     }
 
     int result = write_to_socket_close_on_error(socket, header_length, header_buffer);

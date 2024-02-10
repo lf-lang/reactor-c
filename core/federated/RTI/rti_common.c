@@ -466,7 +466,9 @@ void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, tag_t new
             }
         }
     }
-    if (lf_tag_compare(node->last_DNET, DNET) != 0) {
+    if (lf_tag_compare(node->last_DNET, DNET) != 0
+    && lf_tag_compare(node->completed, DNET) < 0
+    && lf_tag_compare(node->next_event, DNET) <= 0) {
         send_downstream_next_event_tag(node, DNET);
     }
 }

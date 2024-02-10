@@ -137,12 +137,9 @@ tag_t lf_tag_subtract(tag_t a, tag_t b) {
     // b.t can be NEVER, FOREVER, normal and the result will be FOREVER, 0, FOREVER.
     // 3) a.t is not NEVER neither FOREVER
     //   a) a.t < b.t
-    //     the result will be NEVER
+    //     The result will be NEVER
     //   b) a.t >= b.t
-    //     i) a.m <= b.m
-    //        the result should be (a.t - b.t, 0)
-    //     ii) a.m > b.m
-    //         if b is ZERO, the result is a itself else, the result is (a.t - b.t + 1, 0)
+    //     If b is ZERO, the result is a itself. Otherwise, the result is (a.t - b.t, 0)
     if (a.time == NEVER && b.time != NEVER) return NEVER_TAG;
     if (a.time == FOREVER && b.time != FOREVER) return FOREVER_TAG;
     if (b.time == 0 && b.microstep == 0) return a;
@@ -150,9 +147,6 @@ tag_t lf_tag_subtract(tag_t a, tag_t b) {
     if (result.time < 0) {
         return NEVER_TAG;
     } else {
-        if (result.microstep > 0) {
-            result.time++;
-        }
         result.microstep = 0;
     }
     return result;
