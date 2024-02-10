@@ -570,7 +570,7 @@ void _lf_next_locked(environment_t *env) {
 bool lf_stop_requested = false;
 
 // See reactor.h for docs.
-void lf_request_stop() {
+void lf_request_stop(void) {
     // If a requested stop is pending, return without doing anything.
     LF_PRINT_LOG("lf_request_stop() has been called.");
     LF_MUTEX_LOCK(&global_mutex);

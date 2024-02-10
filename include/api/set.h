@@ -179,13 +179,20 @@ do { \
 // As long as this is done from the context of a reaction, `self` is in scope and is a pointer to the self-struct
 // of the current reactor.
 
-
+/**
+ * Return the current tag of the environment invoking this reaction.
+ */
 #define lf_tag() lf_tag(self->base.environment)
-#define get_current_tag() get_current_tag(self->base.environment)
-#define get_microstep() get_microstep(self->base.environment)
+
+/**
+ * Return the current logical time in nanoseconds of the environment invoking this reaction.
+ */
 #define lf_time_logical() lf_time_logical(self->base.environment)
+
+/**
+ * Return the current logical time of the environment invoking this reaction relative to the
+ * start time in nanoseconds.
+ */
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
-#define get_elapsed_logical_time() get_elapsed_logical_time(self->base.environment)
-#define get_logical_time() get_logical_time(self->base.environment)
 
 #endif // REACTION_API_H

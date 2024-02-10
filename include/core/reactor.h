@@ -116,7 +116,7 @@ void lf_print_snapshot(environment_t* env);
  * there is more than one enclave, it will likely occur at a later tag determined
  * by the RTI so that all federates and enclaves stop at the same tag.
  */
-void lf_request_stop();
+void lf_request_stop(void);
 
 /**
  * Allocate zeroed-out memory and record the allocated memory on

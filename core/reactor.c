@@ -295,7 +295,7 @@ int next(environment_t* env) {
     return _lf_do_step(env);
 }
 
-void lf_request_stop() {
+void lf_request_stop(void) {
     // There is only one enclave, so get its environment.
     environment_t *env;
     int num_environments = _lf_get_environments(&env);

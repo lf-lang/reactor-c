@@ -21,12 +21,7 @@
 #undef lf_set_mode
 #endif
 
+#undef lf_tag
 #undef lf_time_logical 
 #undef lf_time_logical_elapsed 
-#undef get_logical_time
-#undef get_elapsed_logical_time
-#undef lf_request_stop
-#undef lf_tag
-#undef get_current_tag
-#undef get_microstep
 #endif // REACTION_API_UNDEF_H
