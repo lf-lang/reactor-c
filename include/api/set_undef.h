@@ -9,25 +9,16 @@
  */
 
 
-#ifdef CTARGET_SET
-#undef CTARGET_SET
+#ifdef REACTION_API_UNDEF_H
+#undef REACTION_API_UNDEF_H
 
 #undef lf_set
 #undef lf_set_token
 #undef lf_set_destructor
 #undef lf_set_copy_constructor
 
-//////////////////////////////////////////////////////////////
-/////////////  SET_MODE Function (to switch a mode)
-
-/**
- * Sets the next mode of a modal reactor. Same as SET for outputs, only
- * the last value will have effect if invoked multiple times.
- * Works only in reactions with the target mode declared as effect.
- */
 #ifdef MODAL_REACTORS
 #undef lf_set_mode
-#undef SET_MODE
 #endif
 
 #undef lf_time_logical 
@@ -38,4 +29,4 @@
 #undef lf_tag
 #undef get_current_tag
 #undef get_microstep
-#endif // CTARGET_SET
+#endif // REACTION_API_UNDEF_H

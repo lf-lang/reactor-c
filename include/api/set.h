@@ -14,6 +14,7 @@
  * polymorphism. For example, `lf_set(port, value)` is a macro where the first argument is a specific
  * port struct and the second type is a value with a type corresponding to the port's type. It is not
  * possible in C to provide a function that can be called with a port struct and a value of any type.
+ * 
  * Some of the macros are provided for convenience. For example, the macro can automatically provide
  * common arguments such as the environment and can cast arguments to required base types to suppress
  * warning.
@@ -23,8 +24,8 @@
  * APIs which interact with the internal APIs.
  */
 
-#ifndef CTARGET_SET
-#define CTARGET_SET
+#ifndef REACTION_API_H
+#define REACTION_API_H
 
 // NOTE: According to the "Swallowing the Semicolon" section on this page:
 //    https://gcc.gnu.org/onlinedocs/gcc-3.0.1/cpp_3.html
@@ -160,27 +161,25 @@ do { \
  */
 #define lf_set_copy_constructor(out, cpy_ctor) ((token_type_t*)out)->copy_constructor = cpy_ctor
 
+#ifdef MODAL_REACTORS
+
 /**
- * Sets the next mode of a modal reactor. Same as SET for outputs, only
- * the last value will have effect if invoked multiple times.
- * Works only in reactions with the target mode declared as effect.
+ * Sets the next mode of a modal reactor. As with `lf_set` for outputs, only
+ * the last value will have effect if invoked multiple times at any given tag.
+ * This works only in reactions with the target mode declared as effect.
  *
  * @param mode The target mode to set for activation.
  */
-#ifdef MODAL_REACTORS
-#define lf_set_mode(mode) _LF_SET_MODE(mode)
-#define SET_MODE(mode) \
-do { \
-        _Pragma ("Warning \"'SET_MODE' is deprecated. Use 'lf_set_mode' instead.\""); \
-        _LF_SET_MODE(mode); \
-} while (0)
+#define lf_set_mode(mode) _LF_SET_MODE_WITH_TYPE(mode, _lf_##mode##_change_type)
+
 #endif // MODAL_REACTORS
 
-#endif // CTARGET_SET
-
-// For simplicity and backward compatability, dont require the environment-pointer when calling the timing API.
+/////////// Convenience macros.
+// For simplicity and backward compatability, don't require the environment-pointer when calling the timing API.
 // As long as this is done from the context of a reaction, `self` is in scope and is a pointer to the self-struct
-// of the current reactor. 
+// of the current reactor.
+
+
 #define lf_tag() lf_tag(self->base.environment)
 #define get_current_tag() get_current_tag(self->base.environment)
 #define get_microstep() get_microstep(self->base.environment)
@@ -188,3 +187,5 @@ do { \
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 #define get_elapsed_logical_time() get_elapsed_logical_time(self->base.environment)
 #define get_logical_time() get_logical_time(self->base.environment)
+
+#endif // REACTION_API_H
