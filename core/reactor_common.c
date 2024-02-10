@@ -539,6 +539,13 @@ void _lf_initialize_timers(environment_t* env) {
             _lf_initialize_timer(env, env->timer_triggers[i]);
         }
     }
+    
+    // To avoid runtime memory allocations for timer-driven programs
+    // the recycle queue is initialized with a single event.
+    if (env->timer_triggers_size > 0) {
+        event_t *e = _lf_get_new_event(env);
+        _lf_recycle_event(env, e);
+    }
 }
 
 /**
