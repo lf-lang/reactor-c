@@ -6,7 +6,7 @@
  * @brief Implementation of schedule functions for Lingua Franca programs.
  */
 
-#include "api.h"
+#include "schedule.h"
 #include "reactor.h"
 
 /**
