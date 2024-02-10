@@ -14,7 +14,7 @@
 #include <string.h>
 
 #include "sensor_simulator.h"
-#include "include/api/api.h"
+#include "include/api/schedule.h"
 #include "util.h"
 #include "platform.h"
 
