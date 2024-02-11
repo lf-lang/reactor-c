@@ -24,6 +24,7 @@
  * APIs which interact with the internal APIs.
  */
 
+// Prevent inclusion twice in a row without an intervening inclusion of reaction_macros_undef.h.
 #ifndef REACTION_API_H
 #define REACTION_API_H
 

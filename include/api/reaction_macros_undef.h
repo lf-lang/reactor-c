@@ -8,9 +8,10 @@
  * This file is included at the end of each reaction body to undefine the macros used in reaction bodies.
  */
 
-
-#ifdef REACTION_MACROS_UNDEF_H
-#undef REACTION_MACROS_UNDEF_H
+// Prevent inclusion if reaction_macros.h has not been included.
+#ifdef REACTION_API_H
+// Allow subsequent inclusion of reaction_macros.h.
+#undef REACTION_API_H
 
 #undef lf_set
 #undef lf_set_token
@@ -24,4 +25,4 @@
 #undef lf_tag
 #undef lf_time_logical 
 #undef lf_time_logical_elapsed 
-#endif // REACTION_MACROS_UNDEF_H
+#endif // REACTION_API_H
