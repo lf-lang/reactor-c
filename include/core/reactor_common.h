@@ -26,7 +26,6 @@ extern const char** default_argv;
 
 extern struct allocation_record_t* _lf_reactors_to_free;
 void* _lf_new_reactor(size_t size);
-void _lf_free(struct allocation_record_t** head);
 void _lf_free_reactor(self_base_t *self);
 void _lf_free_all_reactors(void);
 void _lf_set_stop_tag(environment_t* env, tag_t tag);

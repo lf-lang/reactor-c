@@ -120,40 +120,40 @@ void lf_print_snapshot(environment_t* env);
 void lf_request_stop(void);
 
 /**
- * Allocate zeroed-out memory and record the allocated memory on
- * the specified list so that it will be freed when calling
- * {@link _lf_free(allocation_record_t**)}.
+ * Allocate memory using calloc (so the allocated memory is zeroed out)
+ * and record the allocated memory on the specified self struct so that
+ * it will be freed when calling {@link free_reactor(self_base_t)}.
  * @param count The number of items of size 'size' to accomodate.
  * @param size The size of each item.
  * @param head Pointer to the head of a list on which to record
  *  the allocation, or NULL to not record it.
+ * @return A pointer to the allocated memory.
  */
-void* _lf_allocate(
-		size_t count, size_t size, struct allocation_record_t** head);
+void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head);
 
 /**
  * Free memory allocated using
- * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}
+ * {@link lf_allocate(size_t, size_t, allocation_record_t**)}
  * and mark the list empty by setting `*head` to NULL.
  * @param head Pointer to the head of a list on which to record
  *  the allocation, or NULL to not record it.
  */
-void _lf_free(struct allocation_record_t** head);
+void lf_free(struct allocation_record_t** head);
 
 /**
  * Allocate memory for a new runtime instance of a reactor.
  * This records the reactor on the list of reactors to be freed at
  * termination of the program. If you plan to free the reactor before
  * termination of the program, use
- * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}
+ * {@link lf_allocate(size_t, size_t, allocation_record_t**)}
  * with a null last argument instead.
  * @param size The size of the self struct, obtained with sizeof().
  */
-void* _lf_new_reactor(size_t size);
+void* lf_new_reactor(size_t size);
 
 /**
  * Free all the reactors that are allocated with
- * {@link #_lf_new_reactor(size_t)}.
+ * {@link #lf_new_reactor(size_t)}.
  */
 void _lf_free_all_reactors(void);
 

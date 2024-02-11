@@ -112,18 +112,7 @@ bool keepalive_specified = false;
  */
 interval_t _lf_fed_STA_offset = 0LL;
 
-/**
- * Allocate memory using calloc (so the allocated memory is zeroed out)
- * and record the allocated memory on the specified self struct so that
- * it will be freed when calling {@link free_reactor(self_base_t)}.
- * @param count The number of items of size 'size' to accomodate.
- * @param size The size of each item.
- * @param head Pointer to the head of a list on which to record
- *  the allocation, or NULL to not record it.
- * @return A pointer to the allocated memory.
- */
-void* _lf_allocate(
-        size_t count, size_t size, struct allocation_record_t** head) {
+void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head) {
     void *mem = calloc(count, size);
     if (mem == NULL) lf_print_error_and_exit("Out of memory!");
     if (head != NULL) {
@@ -151,18 +140,18 @@ struct allocation_record_t* _lf_reactors_to_free = NULL;
  * termination of the program, use calloc instead (which this uses).
  * @param size The size of the self struct, obtained with sizeof().
  */
-void* _lf_new_reactor(size_t size) {
-    return _lf_allocate(1, size, &_lf_reactors_to_free);
+void* lf_new_reactor(size_t size) {
+    return lf_allocate(1, size, &_lf_reactors_to_free);
 }
 
 /**
  * Free memory on the specified allocation record, e.g. allocated by
- * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}.
+ * {@link lf_allocate(size_t, size_t, allocation_record_t**)}.
  * Mark the list empty by setting `*head` to NULL.
  * @param head Pointer to the head of a list on which to record
  *  the allocation, or NULL to not record it.
  */
-void _lf_free(struct allocation_record_t** head) {
+void lf_free(struct allocation_record_t** head) {
     if (head == NULL) return;
     struct allocation_record_t* record = *head;
     while (record != NULL) {
@@ -182,13 +171,13 @@ void _lf_free(struct allocation_record_t** head) {
  * @param self The self struct of the reactor.
  */
 void _lf_free_reactor(self_base_t *self) {
-    _lf_free(&self->allocations);
+    lf_free(&self->allocations);
     free(self);
 }
 
 /**
  * Free all the reactors that are allocated with
- * {@link #_lf_new_reactor(size_t)}.
+ * {@link #lf_new_reactor(size_t)}.
  */
 void _lf_free_all_reactors(void) {
     struct allocation_record_t* head = _lf_reactors_to_free;

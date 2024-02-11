@@ -284,16 +284,19 @@ typedef struct allocation_record_t {
     struct allocation_record_t *next;
 } allocation_record_t;
 
-
 typedef struct environment_t environment_t;
+
 /**
+ * @brief The base type for all reactor self structs.
+ * 
  * The first element of every self struct defined in generated code
  * will be a pointer to an allocation record, which is either NULL
  * or the head of a NULL-terminated linked list of allocation records.
- * Casting the self struct to this type enables access to this list
- * by the function {@link _lf_free_reactor(self_base_t*)}. To allocate memory
- * for the reactor that will be freed by that function, allocate the
- * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
+ * This list is used to free memory that has been dynamically allocated.
+ * This struct also provides a pointer to the currently executing reaction,
+ * to the environment in which the reaction is executing, and to the mutex
+ * that is used to protect the reactor.  If modal models are being used,
+ * it also records the current mode.
  */
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
