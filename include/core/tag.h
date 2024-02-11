@@ -11,28 +11,28 @@
 #ifndef TAG_H
 #define TAG_H
 
-#define NSEC(t) (t * 1LL)
-#define NSECS(t) (t * 1LL)
-#define USEC(t) (t * 1000LL)
-#define USECS(t) (t * 1000LL)
-#define MSEC(t) (t * 1000000LL)
-#define MSECS(t) (t * 1000000LL)
-#define SEC(t)  (t * 1000000000LL)
-#define SECS(t) (t * 1000000000LL)
-#define SECOND(t)  (t * 1000000000LL)
-#define SECONDS(t) (t * 1000000000LL)
-#define MINUTE(t)   (t * 60000000000LL)
-#define MINUTES(t)  (t * 60000000000LL)
-#define HOUR(t)  (t * 3600000000000LL)
-#define HOURS(t) (t * 3600000000000LL)
-#define DAY(t)   (t * 86400000000000LL)
-#define DAYS(t)  (t * 86400000000000LL)
-#define WEEK(t)  (t * 604800000000000LL)
-#define WEEKS(t) (t * 604800000000000LL)
+#define NSEC(t)     ((interval_t) (t * 1LL))
+#define NSECS(t)    ((interval_t) (t * 1LL))
+#define USEC(t)     ((interval_t) (t * 1000LL))
+#define USECS(t)    ((interval_t) (t * 1000LL))
+#define MSEC(t)     ((interval_t) (t * 1000000LL))
+#define MSECS(t)    ((interval_t) (t * 1000000LL))
+#define SEC(t)      ((interval_t) (t * 1000000000LL))
+#define SECS(t)     ((interval_t) (t * 1000000000LL))
+#define SECOND(t)   ((interval_t) (t * 1000000000LL))
+#define SECONDS(t)  ((interval_t) (t * 1000000000LL))
+#define MINUTE(t)   ((interval_t) (t * 60000000000LL))
+#define MINUTES(t)  ((interval_t) (t * 60000000000LL))
+#define HOUR(t)     ((interval_t) (t * 3600000000000LL))
+#define HOURS(t)    ((interval_t) (t * 3600000000000LL))
+#define DAY(t)      ((interval_t) (t * 86400000000000LL))
+#define DAYS(t)     ((interval_t) (t * 86400000000000LL))
+#define WEEK(t)     ((interval_t) (t * 604800000000000LL))
+#define WEEKS(t)    ((interval_t) (t * 604800000000000LL))
 
-#define NEVER LLONG_MIN
+#define NEVER ((interval_t) LLONG_MIN)
 #define NEVER_MICROSTEP 0u
-#define FOREVER LLONG_MAX
+#define FOREVER ((interval_t) LLONG_MAX)
 #define FOREVER_MICROSTEP UINT_MAX
 #define NEVER_TAG (tag_t) { .time = NEVER, .microstep = NEVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
@@ -43,7 +43,7 @@
 #define ZERO_TAG (tag_t) { .time = 0LL, .microstep = 0u }
 
 // Convenience for converting times
-#define BILLION 1000000000LL
+#define BILLION ((instant_t) 1000000000LL)
 
 #include <stdint.h>
 #include <stddef.h>
@@ -187,13 +187,6 @@ instant_t lf_time_physical_elapsed(void);
  */
 instant_t lf_time_start(void);
 
-/**
- * Set a fixed offset to the physical clock.
- * After calling this, the value returned by lf_time_physical(void)
- * and get_elpased_physical_time(void) will have this specified offset
- * added to what it would have returned before the call.
- */
-void lf_set_physical_clock_offset(interval_t offset);
 
 /**
  * For user-friendly reporting of time values, the buffer length required.

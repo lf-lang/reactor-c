@@ -20,7 +20,7 @@
 #include "reactor.h"
 #include "util.h"
 #include "lf_types.h"
-
+#include "clock.h"
 
 /**
  * An enum for specifying the desired tag when calling "lf_time"
@@ -40,75 +40,9 @@ instant_t start_time = NEVER;
 
 //////////////// Global variables not declared in tag.h (must be declared extern if used elsewhere):
 
-/**
- * Global physical clock offset.
- * Initially set according to the RTI's clock in federated
- * programs.
- */
-interval_t _lf_time_physical_clock_offset = 0LL;
-
-/**
- * A test offset that is applied to the clock.
- * The clock synchronization algorithm must correct for this offset.
- * This offset is especially useful to test clock synchronization on the
- * same machine.
- */
-interval_t _lf_time_test_physical_clock_offset = 0LL;
-
-/**
- * Stores the last reported absolute snapshot of the
- * physical clock.
- */
-instant_t _lf_last_reported_physical_time_ns = 0LL;
-
-/**
- * Records the most recent time reported by the physical clock
- * when accessed by lf_time_physical(). This will be an epoch time
- * (number of nanoseconds since Jan. 1, 1970), as reported when
- * you call _lf_clock_now(CLOCK_REALTIME, ...). This differs from
- * _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset
- * plus any calculated drift adjustement, which are adjustments made
- * by clock synchronization.
- */
-instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 
 ////////////////  Functions not declared in tag.h (local use only)
 
-/**
- * Return the current physical time in nanoseconds since January 1, 1970,
- * adjusted by the global physical time offset.
- */
-instant_t _lf_physical_time() {
-    // Get the current clock value
-    int result = _lf_clock_now(&_lf_last_reported_unadjusted_physical_time_ns);
-
-    if (result != 0) {
-        lf_print_error("Failed to read the physical clock.");
-    }
-
-    // Adjust the reported clock with the appropriate offsets
-    instant_t adjusted_clock_ns = _lf_last_reported_unadjusted_physical_time_ns
-            + _lf_time_physical_clock_offset;
-
-    // Apply the test offset
-    adjusted_clock_ns += _lf_time_test_physical_clock_offset;
-
-    // Check if the clock has progressed since the last reported value
-    // This ensures that the clock is monotonic
-    if (adjusted_clock_ns > _lf_last_reported_physical_time_ns) {
-        _lf_last_reported_physical_time_ns = adjusted_clock_ns;
-    }
-
-    /* Possibly useful, but usually noisy:
-    LF_PRINT_DEBUG("Physical time: " PRINTF_TIME
-    		". Elapsed: " PRINTF_TIME
-			". Offset: " PRINTF_TIME,
-            _lf_last_reported_physical_time_ns,
-            _lf_last_reported_physical_time_ns - start_time,
-            _lf_time_physical_clock_offset + _lf_time_test_physical_clock_offset);
-    */
-    return _lf_last_reported_physical_time_ns;
-}
 
 ////////////////  Functions declared in tag.h
 
@@ -178,19 +112,19 @@ interval_t lf_time_logical_elapsed(void *env) {
 }
 
 instant_t lf_time_physical(void) {
-    return _lf_physical_time();
+    instant_t now, last_read_local;
+    // Get the current clock value
+    LF_ASSERTN(lf_clock_gettime(&now), "Failed to read physical clock.");
+    return now;
+
 }
 
 instant_t lf_time_physical_elapsed(void) {
-    return _lf_physical_time() - start_time;
+    return lf_time_physical() - start_time;
 }
 
 instant_t lf_time_start(void) {
     return start_time;
-}
-
-void lf_set_physical_clock_offset(interval_t offset) {
-    _lf_time_test_physical_clock_offset += offset;
 }
 
 size_t lf_readable_time(char* buffer, instant_t time) {

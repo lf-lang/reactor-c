@@ -36,9 +36,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "tag.h"
 
-#define LF_MAX_SLEEP_NS USEC(UINT64_MAX)
-#define LF_MIN_SLEEP_NS USEC(10)
-
 #if defined LF_SINGLE_THREADED
     #include "lf_os_single_threaded_support.c"
 #endif
@@ -57,13 +54,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int lf_sleep(interval_t sleep_duration) {
     const struct timespec tp = convert_ns_to_timespec(sleep_duration);
     struct timespec remaining;
-    return clock_nanosleep(_LF_CLOCK, 0, (const struct timespec*)&tp, (struct timespec*)&remaining);
+    return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
 }
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
-    if (sleep_duration < LF_MIN_SLEEP_NS) {
+    if (sleep_duration <= 0) {
         return 0;
     } else {
         return lf_sleep(sleep_duration);

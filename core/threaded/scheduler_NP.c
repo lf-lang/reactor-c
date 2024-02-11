@@ -90,7 +90,7 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t * scheduler, reactio
     }
 #endif
     int reaction_q_level_index =
-        lf_atomic_fetch_add(&scheduler->indexes[reaction_level], 1);
+        lf_atomic_fetch_add32((int32_t *) &scheduler->indexes[reaction_level], 1);
     assert(reaction_q_level_index >= 0);
     LF_PRINT_DEBUG(
         "Scheduler: Accessing triggered reactions at the level %zu with index %d.",
@@ -126,7 +126,7 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
                 scheduler->next_reaction_level - 1
             ];
 
-        LF_PRINT_DEBUG("Start of rxn queue at %lu is %p", scheduler->next_reaction_level - 1, ((reaction_t**)scheduler->executing_reactions)[0]);
+        LF_PRINT_DEBUG("Start of rxn queue at %zu is %p", scheduler->next_reaction_level - 1, ((reaction_t**)scheduler->executing_reactions)[0]);
         if (((reaction_t**)scheduler->executing_reactions)[0] != NULL) {
             // There is at least one reaction to execute
             return 1;
@@ -230,7 +230,7 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
 void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
     // Increment the number of idle workers by 1 and check if this is the last
     // worker thread to become idle.
-    if (lf_atomic_add_fetch(&scheduler->number_of_idle_workers,
+    if (lf_atomic_add_fetch32((int32_t *) &scheduler->number_of_idle_workers,
                             1) ==
         scheduler->number_of_workers) {
         // Last thread to go idle
@@ -352,7 +352,6 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
  * worker thread should exit.
  */
 reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number) {
-    environment_t *env = scheduler->env;
     // Iterate until the stop tag is reached or reaction vectors are empty
     while (!scheduler->should_stop) {
         // Calculate the current level of reactions to execute
@@ -364,8 +363,8 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         // the current level (if there is a causality loop)
         LF_MUTEX_LOCK(&scheduler->array_of_mutexes[current_level]);
 #endif
-        int current_level_q_index = lf_atomic_add_fetch(
-            &scheduler->indexes[current_level], -1);
+        int current_level_q_index = lf_atomic_add_fetch32(
+            (int32_t *) &scheduler->indexes[current_level], -1);
         if (current_level_q_index >= 0) {
             LF_PRINT_DEBUG(
                 "Scheduler: Worker %d popping reaction with level %zu, index "
@@ -391,9 +390,9 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
-        tracepoint_worker_wait_starts(env->trace, worker_number);
+        tracepoint_worker_wait_starts(scheduler->env->trace, worker_number);
         _lf_sched_wait_for_work(scheduler, worker_number);
-        tracepoint_worker_wait_ends(env->trace, worker_number);
+        tracepoint_worker_wait_ends(scheduler->env->trace, worker_number);
     }
 
     // It's time for the worker thread to stop and exit.
@@ -410,7 +409,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
  */
 void lf_sched_done_with_reaction(size_t worker_number,
                                  reaction_t* done_reaction) {
-    if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
+    if (!lf_atomic_bool_compare_and_swap32((int32_t *) &done_reaction->status, queued, inactive)) {
         lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
                              done_reaction->status, queued);
     }
@@ -436,7 +435,7 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *
  */
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
-    if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
+    if (reaction == NULL || !lf_atomic_bool_compare_and_swap32((int32_t *) &reaction->status, inactive, queued)) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.",

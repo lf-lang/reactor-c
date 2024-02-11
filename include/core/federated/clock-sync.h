@@ -198,4 +198,25 @@ void* listen_to_rti_UDP_thread(void* args);
  */
 int create_clock_sync_thread(lf_thread_t* thread_id);
 
+/**
+ * @brief Add the current clock synchronization offset to a specified timestamp.
+ * @param t Pointer to the timestamp to which to add the offset.
+ */
+void clock_sync_apply_offset(instant_t *t);
+
+/**
+ * @brief Subtract the clock synchronization offset from a timestamp.
+ * @param t The timestamp from which to subtract the current clock sync offset.
+ */
+void clock_sync_remove_offset(instant_t *t);
+
+/**
+ * Set a fixed offset to the physical clock.
+ * After calling this, the value returned by lf_time_physical(void)
+ * and get_elpased_physical_time(void) will have this specified offset
+ * added to what it would have returned before the call.
+ */
+void clock_sync_set_constant_bias(interval_t offset);
+
+
 #endif // CLOCK_SYNC_H
