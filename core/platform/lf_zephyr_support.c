@@ -29,7 +29,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Erling Jellum <erling.r.jellum@ntnu.no>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
-
 #include <time.h>
 #include <errno.h>
 
@@ -39,7 +38,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor_common.h"
 #include "utils/util.h"
 #include "tag.h"
-
 
 #include <zephyr/kernel.h>
 
