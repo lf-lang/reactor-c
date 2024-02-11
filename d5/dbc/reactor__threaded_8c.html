@@ -183,8 +183,6 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:aa69d28e60eef684c98f95a802681c4b9" id="r_aa69d28e60eef684c98f95a802681c4b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa69d28e60eef684c98f95a802681c4b9">_lf_last_reported_unadjusted_physical_time_ns</a></td></tr>
-<tr class="separator:aa69d28e60eef684c98f95a802681c4b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20b56e8fb05c017508f1c4fa2e311a87" id="r_a20b56e8fb05c017508f1c4fa2e311a87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a></td></tr>
 <tr class="separator:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9dc6502b81ff3ed7cc8148fbcdb6749" id="r_af9dc6502b81ff3ed7cc8148fbcdb6749"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af9dc6502b81ff3ed7cc8148fbcdb6749">global_mutex</a></td></tr>
@@ -693,7 +691,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Enter critical section by locking the global mutex. </p>
-<p>Enter critical section by disabling interrupts.</p>
+<p>Enter critical section within an environment.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>
@@ -719,7 +717,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Leave a critical section by unlocking the global mutex. </p>
-<p>Leave a critical section by enabling interrupts.</p>
+<p>Leave a critical section within an environment.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>
@@ -965,29 +963,6 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="aa69d28e60eef684c98f95a802681c4b9" name="aa69d28e60eef684c98f95a802681c4b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa69d28e60eef684c98f95a802681c4b9">&#9670;&#160;</a></span>_lf_last_reported_unadjusted_physical_time_ns</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> _lf_last_reported_unadjusted_physical_time_ns</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Records the most recent time reported by the physical clock when accessed by <a class="el" href="../../d4/db3/tag_8c.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical()</a>. This will be an epoch time (number of nanoseconds since Jan. 1, 1970), as reported when you call _lf_clock_now(CLOCK_REALTIME, ...). This differs from _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset plus any calculated drift adjustement, which are adjustments made by clock synchronization. </p>
-
-</div>
-</div>
 <a id="af9dc6502b81ff3ed7cc8148fbcdb6749" name="af9dc6502b81ff3ed7cc8148fbcdb6749"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af9dc6502b81ff3ed7cc8148fbcdb6749">&#9670;&#160;</a></span>global_mutex</h2>
 

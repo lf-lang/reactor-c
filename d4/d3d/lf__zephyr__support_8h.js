@@ -7,5 +7,5 @@ var lf__zephyr__support_8h =
     [ "_zephyr_atomic_add_fetch", "d4/d3d/lf__zephyr__support_8h.html#a934c6a1dd245c567f3c23adf6acd9302", null ],
     [ "_zephyr_atomic_fetch_add", "d4/d3d/lf__zephyr__support_8h.html#acdba855386dc3cce907e0a4b759f64b9", null ],
     [ "_zephyr_bool_compare_and_swap", "d4/d3d/lf__zephyr__support_8h.html#aeea88d6f1dfe90100a500a7276560f0d", null ],
-    [ "_zephyr_val_compare_and_swap", "d4/d3d/lf__zephyr__support_8h.html#a7bc8ca3d9b0d6641877c0a379e08be42", null ]
+    [ "_zephyr_val32_compare_and_swap", "d4/d3d/lf__zephyr__support_8h.html#a969011cd50d0a4454bcaa68c7b0391b2", null ]
 ];

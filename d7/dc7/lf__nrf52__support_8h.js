@@ -1,6 +1,5 @@
 var lf__nrf52__support_8h =
 [
-    [ "_LF_CLOCK", "d7/dc7/lf__nrf52__support_8h.html#a98d0737d9461f08293ba054a2f754fc4", null ],
     [ "NO_TTY", "d7/dc7/lf__nrf52__support_8h.html#a740378474f42996dc8a9bba18b7258ae", null ],
     [ "PRINTF_MICROSTEP", "d7/dc7/lf__nrf52__support_8h.html#a1a993c1a57a54296ab361e669008b79e", null ],
     [ "PRINTF_TAG", "d7/dc7/lf__nrf52__support_8h.html#a8092ad9b0cfa72f49f205ca8a65d2736", null ],

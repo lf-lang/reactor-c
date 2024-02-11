@@ -849,7 +849,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Enter critical section by locking the global mutex. </p>
-<p>Enter critical section by disabling interrupts.</p>
+<p>Enter critical section within an environment.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>
@@ -875,7 +875,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Leave a critical section by unlocking the global mutex. </p>
-<p>Leave a critical section by enabling interrupts.</p>
+<p>Leave a critical section within an environment.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>

@@ -102,7 +102,6 @@ $(function(){initNavTree('d4/d3d/lf__zephyr__support_8h.html','../../'); initRes
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d5/da7/lf__tag__64__32_8h_source.html">lf_tag_64_32.h</a>&quot;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
-<code>#include &lt;time.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;zephyr/kernel.h&gt;</code><br />
@@ -138,9 +137,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aeea88d6f1dfe90100a500a7276560f0d" id="r_aeea88d6f1dfe90100a500a7276560f0d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeea88d6f1dfe90100a500a7276560f0d">_zephyr_bool_compare_and_swap</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">ptr</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> value, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">newval</a>)</td></tr>
 <tr class="memdesc:aeea88d6f1dfe90100a500a7276560f0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare and swap for boolaen value. If <code>*ptr</code> is equal to <code>value</code> then overwrite it with <code>newval</code>. If not do nothing. Retruns true on overwrite.  <br /></td></tr>
 <tr class="separator:aeea88d6f1dfe90100a500a7276560f0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7bc8ca3d9b0d6641877c0a379e08be42" id="r_a7bc8ca3d9b0d6641877c0a379e08be42"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7bc8ca3d9b0d6641877c0a379e08be42">_zephyr_val_compare_and_swap</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">ptr</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> value, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">newval</a>)</td></tr>
-<tr class="memdesc:a7bc8ca3d9b0d6641877c0a379e08be42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare and swap for integers. If <code>*ptr</code> is equal to <code>value</code>, it is updated to <code>newval</code>. The function returns the original value of <code>*ptr</code>.  <br /></td></tr>
-<tr class="separator:a7bc8ca3d9b0d6641877c0a379e08be42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a969011cd50d0a4454bcaa68c7b0391b2" id="r_a969011cd50d0a4454bcaa68c7b0391b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a969011cd50d0a4454bcaa68c7b0391b2">_zephyr_val32_compare_and_swap</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">uint32_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">ptr</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> value, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">newval</a>)</td></tr>
+<tr class="memdesc:a969011cd50d0a4454bcaa68c7b0391b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare and swap for integers. If <code>*ptr</code> is equal to <code>value</code>, it is updated to <code>newval</code>. The function returns the original value of <code>*ptr</code>.  <br /></td></tr>
+<tr class="separator:a969011cd50d0a4454bcaa68c7b0391b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a740378474f42996dc8a9bba18b7258ae" name="a740378474f42996dc8a9bba18b7258ae"></a>
@@ -271,16 +270,16 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a7bc8ca3d9b0d6641877c0a379e08be42" name="a7bc8ca3d9b0d6641877c0a379e08be42"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7bc8ca3d9b0d6641877c0a379e08be42">&#9670;&#160;</a></span>_zephyr_val_compare_and_swap()</h2>
+<a id="a969011cd50d0a4454bcaa68c7b0391b2" name="a969011cd50d0a4454bcaa68c7b0391b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a969011cd50d0a4454bcaa68c7b0391b2">&#9670;&#160;</a></span>_zephyr_val32_compare_and_swap()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _zephyr_val_compare_and_swap </td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _zephyr_val32_compare_and_swap </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> *</td>          <td class="paramname"><span class="paramname"><em>ptr</em>, </span></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">uint32_t</a> *</td>          <td class="paramname"><span class="paramname"><em>ptr</em>, </span></td>
         </tr>
         <tr>
           <td class="paramkey"></td>

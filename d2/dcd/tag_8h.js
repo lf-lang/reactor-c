@@ -37,7 +37,6 @@ var tag_8h =
     [ "lf_delay_strict", "d2/dcd/tag_8h.html#af61e1a6183ff7d40b1b998c08447130e", null ],
     [ "lf_delay_tag", "d2/dcd/tag_8h.html#af7feb89416e60e458d6a86cadadbc41d", null ],
     [ "lf_readable_time", "d2/dcd/tag_8h.html#a43509483b3e9886acd002c7d7b6482c8", null ],
-    [ "lf_set_physical_clock_offset", "d2/dcd/tag_8h.html#a3a209c8df88a5ef884e0cf51d4727cda", null ],
     [ "lf_tag", "d2/dcd/tag_8h.html#acbe5117469b98e0e6df45b5421f58026", null ],
     [ "lf_tag_add", "d2/dcd/tag_8h.html#aa1186f7e330ecbfd20a4dd90b97439e6", null ],
     [ "lf_tag_compare", "d2/dcd/tag_8h.html#a596d8734432616c9c7847283fde63cfa", null ],

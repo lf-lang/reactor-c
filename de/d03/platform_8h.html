@@ -101,6 +101,7 @@ $(function(){initNavTree('de/d03/platform_8h.html','../../'); initResizable(); }
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="../../da/d29/lf__atomic_8h_source.html">lf_atomic.h</a>&quot;</code><br />
 </div>
 <p><a href="../../de/d03/platform_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -122,10 +123,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:a3ab5c60e67d36e2b26eccb884ed9f668"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify of new event.  <br /></td></tr>
 <tr class="separator:a3ab5c60e67d36e2b26eccb884ed9f668"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0fda178667bc6cd94890a13316c285c" id="r_ae0fda178667bc6cd94890a13316c285c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="memdesc:ae0fda178667bc6cd94890a13316c285c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section by disabling interrupts.  <br /></td></tr>
+<tr class="memdesc:ae0fda178667bc6cd94890a13316c285c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section within an environment.  <br /></td></tr>
 <tr class="separator:ae0fda178667bc6cd94890a13316c285c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed2c25495b50b46780c6288e4370541e" id="r_aed2c25495b50b46780c6288e4370541e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="memdesc:aed2c25495b50b46780c6288e4370541e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave a critical section by enabling interrupts.  <br /></td></tr>
+<tr class="memdesc:aed2c25495b50b46780c6288e4370541e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave a critical section within an environment.  <br /></td></tr>
 <tr class="separator:aed2c25495b50b46780c6288e4370541e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe5a04985bd63ade71fc058f189d2545" id="r_abe5a04985bd63ade71fc058f189d2545"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abe5a04985bd63ade71fc058f189d2545">lf_available_cores</a> ()</td></tr>
 <tr class="memdesc:abe5a04985bd63ade71fc058f189d2545"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of cores on the host machine.  <br /></td></tr>
@@ -148,16 +149,16 @@ Functions</h2></td></tr>
 <tr class="separator:a7267ad6679b93c9a9f321cdf864e0092"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba6871b2088bcd86f973e0299cdd4ff8" id="r_aba6871b2088bcd86f973e0299cdd4ff8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aba6871b2088bcd86f973e0299cdd4ff8">lf_cond_wait</a> (<a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *cond)</td></tr>
 <tr class="separator:aba6871b2088bcd86f973e0299cdd4ff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60e8c6ec9a398e3a16dbcaf5aaafa83c" id="r_a60e8c6ec9a398e3a16dbcaf5aaafa83c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a60e8c6ec9a398e3a16dbcaf5aaafa83c">lf_cond_timedwait</a> (<a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *cond, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">absolute_time_ns</a>)</td></tr>
-<tr class="separator:a60e8c6ec9a398e3a16dbcaf5aaafa83c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ed454c4a1b6eee6debe92efa433fb37" id="r_a0ed454c4a1b6eee6debe92efa433fb37"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0ed454c4a1b6eee6debe92efa433fb37">_lf_cond_timedwait</a> (<a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *cond, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">wakeup_time</a>)</td></tr>
+<tr class="separator:a0ed454c4a1b6eee6debe92efa433fb37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5c7b68f137e69c4ad3734a42bcd0448" id="r_af5c7b68f137e69c4ad3734a42bcd0448"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af5c7b68f137e69c4ad3734a42bcd0448">_lf_initialize_clock</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
 <tr class="separator:af5c7b68f137e69c4ad3734a42bcd0448"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92308f138ec5ef8ade823097bedf98b5" id="r_a92308f138ec5ef8ade823097bedf98b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a92308f138ec5ef8ade823097bedf98b5">_lf_clock_now</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">t</a>)</td></tr>
-<tr class="separator:a92308f138ec5ef8ade823097bedf98b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a843c12cfbc698883e96a0bfe23882a9e" id="r_a843c12cfbc698883e96a0bfe23882a9e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a843c12cfbc698883e96a0bfe23882a9e">_lf_clock_gettime</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">t</a>)</td></tr>
+<tr class="separator:a843c12cfbc698883e96a0bfe23882a9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a43894d4caf7e2fc1e75b9b49d7285d" id="r_a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9a43894d4caf7e2fc1e75b9b49d7285d">lf_sleep</a> (<a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">sleep_duration</a>)</td></tr>
 <tr class="separator:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b22a974cdd69f184735503b72597698" id="r_a0b22a974cdd69f184735503b72597698"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0b22a974cdd69f184735503b72597698">_lf_interruptable_sleep_until_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">wakeup_time</a>)</td></tr>
-<tr class="memdesc:a0b22a974cdd69f184735503b72597698"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep until the given wakeup time. Assumes the lock for the given environment is held.  <br /></td></tr>
+<tr class="memdesc:a0b22a974cdd69f184735503b72597698"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep until the given wakeup time. This should not be used directly as it does not account for clock synchronization offsets. See <a class="el" href="../../d7/d6e/clock_8h.html" title="A higher level API to the clock utilities provided by the platform API.">clock.h</a>.  <br /></td></tr>
 <tr class="separator:a0b22a974cdd69f184735503b72597698"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac59c4e7dcc349d97fe413dcb5cceafe3" id="r_ac59c4e7dcc349d97fe413dcb5cceafe3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac59c4e7dcc349d97fe413dcb5cceafe3">DEPRECATED</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_nanosleep</a>(<a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">sleep_duration</a>))</td></tr>
 <tr class="separator:ac59c4e7dcc349d97fe413dcb5cceafe3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -219,23 +220,46 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a92308f138ec5ef8ade823097bedf98b5" name="a92308f138ec5ef8ade823097bedf98b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a92308f138ec5ef8ade823097bedf98b5">&#9670;&#160;</a></span>_lf_clock_now()</h2>
+<a id="a843c12cfbc698883e96a0bfe23882a9e" name="a843c12cfbc698883e96a0bfe23882a9e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a843c12cfbc698883e96a0bfe23882a9e">&#9670;&#160;</a></span>_lf_clock_gettime()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _lf_clock_now </td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _lf_clock_gettime </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *</td>          <td class="paramname"><span class="paramname"><em>t</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Fetch the value of an internal (and platform-specific) physical clock and store it in <code>t</code>.</p>
-<p>Ideally, the underlying platform clock should be monotonic. However, the core lib tries to enforce monotonicity at higher level APIs (see <a class="el" href="../../d2/dcd/tag_8h.html" title="Time and tag definitions and functions for Lingua Franca.">tag.h</a>).</p>
+<p>Fetch the value of an internal (and platform-specific) physical clock. Ideally, the underlying platform clock should be monotonic. However, the core lib enforces monotonicity at higher level APIs (see <a class="el" href="../../d7/d6e/clock_8h.html" title="A higher level API to the clock utilities provided by the platform API.">clock.h</a>).</p>
+<p>This should not be used directly as it does not apply clock synchronization offsets.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure </dd></dl>
+
+</div>
+</div>
+<a id="a0ed454c4a1b6eee6debe92efa433fb37" name="a0ed454c4a1b6eee6debe92efa433fb37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ed454c4a1b6eee6debe92efa433fb37">&#9670;&#160;</a></span>_lf_cond_timedwait()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _lf_cond_timedwait </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *</td>          <td class="paramname"><span class="paramname"><em>cond</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></td>          <td class="paramname"><span class="paramname"><em>wakeup_time</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Block the current thread on the condition variable until the condition variable pointed by "cond" is signaled or the time given by wakeup_time is reached. This should not be used directly as it does not account for clock synchronization offsets. Use <code>lf_clock_cond_timedwait</code> from <a class="el" href="../../d7/d6e/clock_8h.html" title="A higher level API to the clock utilities provided by the platform API.">clock.h</a> instead.</p>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, LF_TIMEOUT on timeout, and platform-specific error number otherwise. </dd></dl>
 
 </div>
 </div>
@@ -276,7 +300,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Sleep until the given wakeup time. Assumes the lock for the given environment is held. </p>
+<p>Sleep until the given wakeup time. This should not be used directly as it does not account for clock synchronization offsets. See <a class="el" href="../../d7/d6e/clock_8h.html" title="A higher level API to the clock utilities provided by the platform API.">clock.h</a>. </p>
+<p>This assumes the lock for the given environment is held.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>The environment within which to sleep. </td></tr>
@@ -386,29 +411,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a60e8c6ec9a398e3a16dbcaf5aaafa83c" name="a60e8c6ec9a398e3a16dbcaf5aaafa83c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a60e8c6ec9a398e3a16dbcaf5aaafa83c">&#9670;&#160;</a></span>lf_cond_timedwait()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> lf_cond_timedwait </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *</td>          <td class="paramname"><span class="paramname"><em>cond</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></td>          <td class="paramname"><span class="paramname"><em>absolute_time_ns</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Block current thread on the condition variable until condition variable pointed by "cond" is signaled or time pointed by "absolute_time_ns" in nanoseconds is reached.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, LF_TIMEOUT on timeout, and platform-specific error number otherwise. </dd></dl>
-
-</div>
-</div>
 <a id="aba6871b2088bcd86f973e0299cdd4ff8" name="aba6871b2088bcd86f973e0299cdd4ff8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aba6871b2088bcd86f973e0299cdd4ff8">&#9670;&#160;</a></span>lf_cond_wait()</h2>
 
@@ -443,14 +445,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Enter critical section by disabling interrupts. </p>
+<p>Enter critical section within an environment. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment in which we are executing.</td></tr>
   </table>
   </dd>
 </dl>
-<p>Enter critical section by disabling interrupts.</p>
+<p>Enter critical section within an environment.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>
@@ -475,14 +477,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Leave a critical section by enabling interrupts. </p>
+<p>Leave a critical section within an environment. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment in which we are executing.</td></tr>
   </table>
   </dd>
 </dl>
-<p>Leave a critical section by enabling interrupts.</p>
+<p>Leave a critical section within an environment.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>

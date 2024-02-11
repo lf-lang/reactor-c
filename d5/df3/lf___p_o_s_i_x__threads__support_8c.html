@@ -99,6 +99,7 @@ $(function(){initNavTree('d5/df3/lf___p_o_s_i_x__threads__support_8c.html','../.
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d57/lf___p_o_s_i_x__threads__support_8h_source.html">lf_POSIX_threads_support.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d4/dac/lf__unix__clock__support_8h_source.html">lf_unix_clock_support.h</a>&quot;</code><br />
 <code>#include &lt;pthread.h&gt;</code><br />
 <code>#include &lt;errno.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
@@ -123,10 +124,33 @@ Functions</h2></td></tr>
 <tr class="separator:a7267ad6679b93c9a9f321cdf864e0092"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba6871b2088bcd86f973e0299cdd4ff8" id="r_aba6871b2088bcd86f973e0299cdd4ff8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aba6871b2088bcd86f973e0299cdd4ff8">lf_cond_wait</a> (<a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *cond)</td></tr>
 <tr class="separator:aba6871b2088bcd86f973e0299cdd4ff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba8573e2c20ac759fe184a6cf6369527" id="r_aba8573e2c20ac759fe184a6cf6369527"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aba8573e2c20ac759fe184a6cf6369527">lf_cond_timedwait</a> (<a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *cond, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int64_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">absolute_time_ns</a>)</td></tr>
-<tr class="separator:aba8573e2c20ac759fe184a6cf6369527"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ed454c4a1b6eee6debe92efa433fb37" id="r_a0ed454c4a1b6eee6debe92efa433fb37"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0ed454c4a1b6eee6debe92efa433fb37">_lf_cond_timedwait</a> (<a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *cond, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">wakeup_time</a>)</td></tr>
+<tr class="separator:a0ed454c4a1b6eee6debe92efa433fb37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a0ed454c4a1b6eee6debe92efa433fb37" name="a0ed454c4a1b6eee6debe92efa433fb37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ed454c4a1b6eee6debe92efa433fb37">&#9670;&#160;</a></span>_lf_cond_timedwait()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _lf_cond_timedwait </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *</td>          <td class="paramname"><span class="paramname"><em>cond</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></td>          <td class="paramname"><span class="paramname"><em>wakeup_time</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Block the current thread on the condition variable until the condition variable pointed by "cond" is signaled or the time given by wakeup_time is reached. This should not be used directly as it does not account for clock synchronization offsets. Use <code>lf_clock_cond_timedwait</code> from <a class="el" href="../../d7/d6e/clock_8h.html" title="A higher level API to the clock utilities provided by the platform API.">clock.h</a> instead.</p>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, LF_TIMEOUT on timeout, and platform-specific error number otherwise. </dd></dl>
+
+</div>
+</div>
 <a id="a9ed434626733537f71c9b85e981109c7" name="a9ed434626733537f71c9b85e981109c7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9ed434626733537f71c9b85e981109c7">&#9670;&#160;</a></span>lf_cond_broadcast()</h2>
 
@@ -185,29 +209,6 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Wake up one thread waiting for condition variable cond.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="aba8573e2c20ac759fe184a6cf6369527" name="aba8573e2c20ac759fe184a6cf6369527"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba8573e2c20ac759fe184a6cf6369527">&#9670;&#160;</a></span>lf_cond_timedwait()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> lf_cond_timedwait </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *</td>          <td class="paramname"><span class="paramname"><em>cond</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></td>          <td class="paramname"><span class="paramname"><em>absolute_time_ns</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Block current thread on the condition variable until condition variable pointed by "cond" is signaled or time pointed by "absolute_time_ns" in nanoseconds is reached.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, LF_TIMEOUT on timeout, and platform-specific error number otherwise. </dd></dl>
 
 </div>
 </div>

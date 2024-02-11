@@ -113,6 +113,7 @@ $(function(){initNavTree('d4/db3/tag_8c.html','../../'); initResizable(); });
 <code>#include &quot;<a class="el" href="../../de/d26/environment_8h_source.html">environment.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d85/reactor_8h_source.html">reactor.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d7/d6e/clock_8h_source.html">clock.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -134,8 +135,6 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ab3508bec310297ee386a5bde718c840d" id="r_ab3508bec310297ee386a5bde718c840d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab3508bec310297ee386a5bde718c840d">_lf_physical_time</a> ()</td></tr>
-<tr class="separator:ab3508bec310297ee386a5bde718c840d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acbe5117469b98e0e6df45b5421f58026" id="r_acbe5117469b98e0e6df45b5421f58026"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acbe5117469b98e0e6df45b5421f58026">lf_tag</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *env)</td></tr>
 <tr class="separator:acbe5117469b98e0e6df45b5421f58026"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1186f7e330ecbfd20a4dd90b97439e6" id="r_aa1186f7e330ecbfd20a4dd90b97439e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa1186f7e330ecbfd20a4dd90b97439e6">lf_tag_add</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">a</a>, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">b</a>)</td></tr>
@@ -156,8 +155,6 @@ Functions</h2></td></tr>
 <tr class="separator:a98468f1c5132e3aa18d77f85d65bb6ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8da2172c41ab13ff4748994a62ae34b5" id="r_a8da2172c41ab13ff4748994a62ae34b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8da2172c41ab13ff4748994a62ae34b5">lf_time_start</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
 <tr class="separator:a8da2172c41ab13ff4748994a62ae34b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a209c8df88a5ef884e0cf51d4727cda" id="r_a3a209c8df88a5ef884e0cf51d4727cda"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3a209c8df88a5ef884e0cf51d4727cda">lf_set_physical_clock_offset</a> (<a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> offset)</td></tr>
-<tr class="separator:a3a209c8df88a5ef884e0cf51d4727cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43509483b3e9886acd002c7d7b6482c8" id="r_a43509483b3e9886acd002c7d7b6482c8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a43509483b3e9886acd002c7d7b6482c8">lf_readable_time</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62">buffer</a>, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> time)</td></tr>
 <tr class="separator:a43509483b3e9886acd002c7d7b6482c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae956f1688a3893b44cf4bced3c13ef9a" id="r_ae956f1688a3893b44cf4bced3c13ef9a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae956f1688a3893b44cf4bced3c13ef9a">lf_comma_separated_time</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62">buffer</a>, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> time)</td></tr>
@@ -167,14 +164,6 @@ Functions</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:a20b56e8fb05c017508f1c4fa2e311a87" id="r_a20b56e8fb05c017508f1c4fa2e311a87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a> = <a class="el" href="../../d2/dcd/tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td></tr>
 <tr class="separator:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab11f867fe347f51594fdc4371362c96b" id="r_ab11f867fe347f51594fdc4371362c96b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab11f867fe347f51594fdc4371362c96b">_lf_time_physical_clock_offset</a> = 0LL</td></tr>
-<tr class="separator:ab11f867fe347f51594fdc4371362c96b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4f4076229307c5b0a64a250b4fac0bd" id="r_af4f4076229307c5b0a64a250b4fac0bd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af4f4076229307c5b0a64a250b4fac0bd">_lf_time_test_physical_clock_offset</a> = 0LL</td></tr>
-<tr class="separator:af4f4076229307c5b0a64a250b4fac0bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae33f5d37733acaf7044864b1124240e0" id="r_ae33f5d37733acaf7044864b1124240e0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae33f5d37733acaf7044864b1124240e0">_lf_last_reported_physical_time_ns</a> = 0LL</td></tr>
-<tr class="separator:ae33f5d37733acaf7044864b1124240e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa69d28e60eef684c98f95a802681c4b9" id="r_aa69d28e60eef684c98f95a802681c4b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa69d28e60eef684c98f95a802681c4b9">_lf_last_reported_unadjusted_physical_time_ns</a> = <a class="el" href="../../d2/dcd/tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td></tr>
-<tr class="separator:aa69d28e60eef684c98f95a802681c4b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Implementation of time and tag functions for Lingua Franca programs. </p>
@@ -224,24 +213,6 @@ Hou Seng (Steven) Wong </dd></dl>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ab3508bec310297ee386a5bde718c840d" name="ab3508bec310297ee386a5bde718c840d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab3508bec310297ee386a5bde718c840d">&#9670;&#160;</a></span>_lf_physical_time()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> _lf_physical_time </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Return the current physical time in nanoseconds since January 1, 1970, adjusted by the global physical time offset. </p>
-
-</div>
-</div>
 <a id="ae956f1688a3893b44cf4bced3c13ef9a" name="ae956f1688a3893b44cf4bced3c13ef9a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae956f1688a3893b44cf4bced3c13ef9a">&#9670;&#160;</a></span>lf_comma_separated_time()</h2>
 
@@ -367,24 +338,6 @@ Hou Seng (Steven) Wong </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The number of characters written (not counting the null terminator). </dd></dl>
-
-</div>
-</div>
-<a id="a3a209c8df88a5ef884e0cf51d4727cda" name="a3a209c8df88a5ef884e0cf51d4727cda"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3a209c8df88a5ef884e0cf51d4727cda">&#9670;&#160;</a></span>lf_set_physical_clock_offset()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_set_physical_clock_offset </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>offset</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Set a fixed offset to the physical clock. After calling this, the value returned by <a class="el" href="../../d2/dcd/tag_8h.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical(void)</a> and <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">get_elpased_physical_time(void)</a> will have this specified offset added to what it would have returned before the call. </p>
 
 </div>
 </div>
@@ -574,66 +527,6 @@ Hou Seng (Steven) Wong </dd></dl>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="ae33f5d37733acaf7044864b1124240e0" name="ae33f5d37733acaf7044864b1124240e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae33f5d37733acaf7044864b1124240e0">&#9670;&#160;</a></span>_lf_last_reported_physical_time_ns</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> _lf_last_reported_physical_time_ns = 0LL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Stores the last reported absolute snapshot of the physical clock. </p>
-
-</div>
-</div>
-<a id="aa69d28e60eef684c98f95a802681c4b9" name="aa69d28e60eef684c98f95a802681c4b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa69d28e60eef684c98f95a802681c4b9">&#9670;&#160;</a></span>_lf_last_reported_unadjusted_physical_time_ns</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> _lf_last_reported_unadjusted_physical_time_ns = <a class="el" href="../../d2/dcd/tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Records the most recent time reported by the physical clock when accessed by <a class="el" href="#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical()</a>. This will be an epoch time (number of nanoseconds since Jan. 1, 1970), as reported when you call _lf_clock_now(CLOCK_REALTIME, ...). This differs from _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset plus any calculated drift adjustement, which are adjustments made by clock synchronization. </p>
-
-</div>
-</div>
-<a id="ab11f867fe347f51594fdc4371362c96b" name="ab11f867fe347f51594fdc4371362c96b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab11f867fe347f51594fdc4371362c96b">&#9670;&#160;</a></span>_lf_time_physical_clock_offset</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> _lf_time_physical_clock_offset = 0LL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Global physical clock offset. Initially set according to the RTI's clock in federated programs. </p>
-
-</div>
-</div>
-<a id="af4f4076229307c5b0a64a250b4fac0bd" name="af4f4076229307c5b0a64a250b4fac0bd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af4f4076229307c5b0a64a250b4fac0bd">&#9670;&#160;</a></span>_lf_time_test_physical_clock_offset</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> _lf_time_test_physical_clock_offset = 0LL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>A test offset that is applied to the clock. The clock synchronization algorithm must correct for this offset. This offset is especially useful to test clock synchronization on the same machine. </p>
-
-</div>
-</div>
 <a id="a20b56e8fb05c017508f1c4fa2e311a87" name="a20b56e8fb05c017508f1c4fa2e311a87"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a20b56e8fb05c017508f1c4fa2e311a87">&#9670;&#160;</a></span>start_time</h2>
 

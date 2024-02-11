@@ -1,9 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"d7/dc7/struct__lf__tag__advancement__barrier.html#a49b697f9e16f30a2112910efd1ee6da6":[11,0,3,1],
-"d7/dc7/struct__lf__tag__advancement__barrier.html#ad60842fa9c91497e893075d9b42913ba":[11,0,3,0],
-"d7/dc9/structlf__waveform__t.html":[11,0,32],
-"d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd":[11,0,32,0],
 "d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018":[11,0,32,1],
 "d7/dc9/structlf__waveform__t.html#add06d5d0fc6b2337a8aa902736c28558":[11,0,32,2],
 "d7/dd0/struct__lf__sensor__message__t.html":[11,0,2],
@@ -82,7 +78,7 @@ var NAVTREEINDEX4 =
 "d8/d4b/structlf__action__base__t.html#aaa41924b6862c8128e8ea02b1c964c52":[11,0,17,0],
 "d8/d4b/structlf__action__base__t.html#aacf5d85cce69c1ed02a1717a3fcbb46e":[11,0,17,4],
 "d8/d4b/structlf__action__base__t.html#abf564683446cb923e96bef03be159fac":[11,0,17,2],
-"d8/d5f/lf__macos__support_8c.html":[12,0,0,2,4],
+"d8/d5f/lf__macos__support_8c.html":[12,0,0,2,7],
 "d8/d60/trace__to__csv_8c.html":[12,0,5,0,3],
 "d8/d60/trace__to__csv_8c.html#a0ffac77b479b7e93faf906f50c4b6a95":[12,0,5,0,3,5],
 "d8/d60/trace__to__csv_8c.html#a2960eb597f48f3b59bbb850b47e895ff":[12,0,5,0,3,14],
@@ -121,7 +117,7 @@ var NAVTREEINDEX4 =
 "d8/dc4/lf__semaphore_8h.html#ab994b2ab12ced2224287919649a0b152":[12,0,1,1,4,2,4],
 "d8/dc4/lf__semaphore_8h_source.html":[12,0,1,1,4,2],
 "d8/dd6/lf__arduino__support_8c.html":[12,0,0,2,1],
-"d8/ddc/trace_8c.html":[12,0,0,12],
+"d8/ddc/trace_8c.html":[12,0,0,13],
 "d8/def/federate_8c.html":[12,0,0,0,3],
 "d8/df0/structallocation__record__t.html":[11,0,4],
 "d8/df0/structallocation__record__t.html#ad4d48c8b6826fa989e498cd7e629fd6a":[11,0,4,1],
@@ -161,6 +157,7 @@ var NAVTREEINDEX4 =
 "d9/d16/hashset__itr_8c.html#a1f8e715379e1c95db280451114056bd8":[12,0,0,4,0,1,2],
 "d9/d16/hashset__itr_8c.html#a50a2126c05927f7d11b0859af5a38f02":[12,0,0,4,0,1,1],
 "d9/d16/hashset__itr_8c.html#a5350d2cd6a1be22846c5541816fb857f":[12,0,0,4,0,1,0],
+"d9/d58/lf__atomic__windows_8c.html":[12,0,0,2,4],
 "d9/d67/structsocket__stat__t.html":[11,0,43],
 "d9/d67/structsocket__stat__t.html#a2d53d66644d18d6e948aafd2913b638d":[11,0,43,4],
 "d9/d67/structsocket__stat__t.html#a334228438ef47a0f2befc117ee0d9d47":[11,0,43,6],
@@ -249,5 +246,8 @@ var NAVTREEINDEX4 =
 "d9/da6/net__common_8h_source.html":[12,0,1,1,0,0,0],
 "d9/daa/modes_8h.html":[12,0,1,1,1,0],
 "d9/daa/modes_8h.html#a17df34d9c9d092aa6a399512b6a023e4":[12,0,1,1,1,0,0],
-"d9/daa/modes_8h_source.html":[12,0,1,1,1,0]
+"d9/daa/modes_8h_source.html":[12,0,1,1,1,0],
+"d9/dad/structlf__wav__t.html":[11,0,31],
+"d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9":[11,0,31,2],
+"d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c":[11,0,31,0]
 };
