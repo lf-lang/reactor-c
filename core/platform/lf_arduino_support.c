@@ -70,14 +70,14 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     instant_t now;
 
     _lf_async_event = false;
-    lf_disable_interrupts_nested();
+    lf_enable_interrupts_nested();
 
     // Do busy sleep
     do {
         _lf_clock_gettime(&now);
     } while ((now < wakeup) && !_lf_async_event);
 
-    lf_enable_interrupts_nested();
+    lf_disable_interrupts_nested();
 
     if (_lf_async_event) {
         _lf_async_event = false;
