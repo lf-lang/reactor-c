@@ -111,7 +111,7 @@ interval_t lf_time_logical_elapsed(void *env) {
     return lf_time_logical(env) - start_time;
 }
 
-instant_t lf_time_physical() {
+instant_t lf_time_physical(void) {
     instant_t now, last_read_local;
     // Get the current clock value
     LF_ASSERTN(lf_clock_gettime(&now), "Failed to read physical clock.");

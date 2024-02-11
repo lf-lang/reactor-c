@@ -1,3 +1,9 @@
+ * @file
+ * @author Erling Jellum
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Implementations of functions in clock.h.
+
 #include "clock.h"
 #include "platform.h"
 

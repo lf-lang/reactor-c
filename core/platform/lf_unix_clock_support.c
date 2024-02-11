@@ -29,7 +29,7 @@ void _lf_initialize_clock() {
 }
 
 /**
- * Fetch the value of CLOCK_REALTIME and store it in t. The
+ * Fetch the value of CLOCK_REALTIME and store it in t.
  * @return 0 for success, or -1 for failure.
  */
 int _lf_clock_gettime(instant_t* t) {

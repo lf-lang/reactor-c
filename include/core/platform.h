@@ -200,8 +200,8 @@ int lf_cond_signal(lf_cond_t* cond);
 int lf_cond_wait(lf_cond_t* cond);
 
 /**
- * Block current thread on the condition variable until condition variable
- * pointed by "cond" is signaled or time given by wakeup_time is reached. Should
+ * Block the current thread on the condition variable until the condition variable
+ * pointed by "cond" is signaled or the time given by wakeup_time is reached. This should
  * not be used directly as it does not account for clock synchronization offsets.
  * Use `lf_clock_cond_timedwait` from clock.h instead.
  *
@@ -221,7 +221,7 @@ void _lf_initialize_clock(void);
  * Ideally, the underlying platform clock should be monotonic. However, the core
  * lib enforces monotonicity at higher level APIs (see clock.h).
  * 
- * Should not be used directly as it does not apply clock synchronization
+ * This should not be used directly as it does not apply clock synchronization
  * offsets.
  *
  * @return 0 for success, or -1 for failure
@@ -236,10 +236,10 @@ int _lf_clock_gettime(instant_t* t);
 int lf_sleep(interval_t sleep_duration);
 
 /**
- * @brief Sleep until the given wakeup time. Should not be used directly as it
- * does not account for clock synchronization offsets.
+ * @brief Sleep until the given wakeup time. This should not be used directly as it
+ * does not account for clock synchronization offsets. See clock.h.
  *
- * Assumes the lock for the given environment is held
+ * This assumes the lock for the given environment is held.
  *
  * @param env The environment within which to sleep.
  * @param wakeup_time The time instant at which to wake up.
