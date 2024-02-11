@@ -55,7 +55,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 // Global variables defined in tag.c and shared across environments:
-extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 extern instant_t start_time;
 
 /**
@@ -81,7 +80,7 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
         lf_print_warning("Attempting to raise a barrier after the stop tag.");
         future_tag = env->stop_tag;
     }
-    tag_t current_tag = env->current_tag;
+    
     // Check to see if future_tag is actually in the future.
     if (lf_tag_compare(future_tag, env->current_tag) > 0) {
         // Future tag is actually in the future.
@@ -117,9 +116,9 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
 
 void _lf_increment_tag_barrier(environment_t *env, tag_t future_tag) {
     assert(env != GLOBAL_ENVIRONMENT);
-    lf_mutex_lock(&env->mutex);
+    LF_MUTEX_LOCK(&env->mutex);
     _lf_increment_tag_barrier_locked(env, future_tag);
-    lf_mutex_unlock(&env->mutex);
+    LF_MUTEX_UNLOCK(&env->mutex);
 }
 
 void _lf_decrement_tag_barrier_locked(environment_t* env) {
@@ -210,7 +209,7 @@ void _lf_set_present(lf_port_base_t* port) {
   if (!port->source_reactor) return;
   environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;
-    int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+    int ipfas = lf_atomic_fetch_add32(&env->is_present_fields_abbreviated_size, 1);
     if (ipfas < env->is_present_fields_size) {
         env->is_present_fields_abbreviated[ipfas] = is_present_field;
     }
@@ -220,7 +219,7 @@ void _lf_set_present(lf_port_base_t* port) {
     if(port->sparse_record
     		&& port->destination_channel >= 0
 			&& port->sparse_record->size >= 0) {
-    	int next = lf_atomic_fetch_add(&port->sparse_record->size, 1);
+    	int next = lf_atomic_fetch_add32(&port->sparse_record->size, 1);
     	if (next >= port->sparse_record->capacity) {
     		// Buffer is full. Have to revert to the classic iteration.
     		port->sparse_record->size = -1;
@@ -259,56 +258,33 @@ void _lf_set_present(lf_port_base_t* port) {
  */
 bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition) {
     LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
-    bool return_value = true;
-    interval_t wait_until_time_ns = logical_time;
+    interval_t wait_until_time = logical_time;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
     // Apply the STA to the logical time
     // Prevent an overflow
-    if (start_time != logical_time && wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
+    if (start_time != logical_time && wait_until_time < FOREVER - _lf_fed_STA_offset) {
         // If wait_time is not forever
         LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".",
                 _lf_fed_STA_offset,
-                wait_until_time_ns - start_time);
-        wait_until_time_ns += _lf_fed_STA_offset;
+                wait_until_time - start_time);
+        wait_until_time += _lf_fed_STA_offset;
     }
 #endif
     if (!fast) {
-        // Get physical time as adjusted by clock synchronization offset.
-        instant_t current_physical_time = lf_time_physical();
-        // We want to wait until that adjusted time matches the logical time.
-        interval_t ns_to_wait = wait_until_time_ns - current_physical_time;
-        // We should not wait if that adjusted time is already ahead
-        // of logical time.
-        if (ns_to_wait < MIN_SLEEP_DURATION) {
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
-                ns_to_wait, MIN_SLEEP_DURATION);
-            return return_value;
+        // Check whether we actually need to wait, or if we have already passed the timepoint.
+        interval_t wait_duration = wait_until_time - lf_time_physical();
+        if (wait_duration < MIN_SLEEP_DURATION) {
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION " PRINTF_TIME ". Skipping wait.",
+                wait_duration, MIN_SLEEP_DURATION);
+            return true;
         }
 
-        // We will use lf_cond_timedwait, which takes as an argument the absolute
-        // time to wait until. However, that will not include the offset that we
-        // have calculated with clock synchronization. So we need to instead ensure
-        // that the time it waits is ns_to_wait.
-        // We need the current clock value as obtained using CLOCK_REALTIME because
-        // that is what lf_cond_timedwait will use.
-        // The above call to setPhysicalTime() set the
-        // _lf_last_reported_unadjusted_physical_time_ns to the CLOCK_REALTIME value
-        // unadjusted by clock synchronization.
-        // Note that if ns_to_wait is large enough, then the following addition could
-        // overflow. This could happen, for example, if wait_until_time_ns == FOREVER.
-        instant_t unadjusted_wait_until_time_ns = FOREVER;
-        if (FOREVER - _lf_last_reported_unadjusted_physical_time_ns > ns_to_wait) {
-            unadjusted_wait_until_time_ns = _lf_last_reported_unadjusted_physical_time_ns + ns_to_wait;
-        }
-        LF_PRINT_DEBUG("-------- Clock offset is " PRINTF_TIME " ns.", current_physical_time - _lf_last_reported_unadjusted_physical_time_ns);
-        LF_PRINT_DEBUG("-------- Waiting " PRINTF_TIME " ns for physical time to match logical time " PRINTF_TIME ".",
-        		ns_to_wait,
-                logical_time - start_time);
-
-        // lf_cond_timedwait returns 0 if it is awakened before the timeout.
-        // Hence, we want to run it repeatedly until either it returns non-zero or the
-        // current physical time matches or exceeds the logical time.
-        if (lf_cond_timedwait(condition, unadjusted_wait_until_time_ns) != LF_TIMEOUT) {
+        // We do the sleep on the cond var so we can be awakened by the
+        // asynchronous scheduling of a physical action. lf_clock_cond_timedwait
+        // returns 0 if it is awakened before the timeout. Hence, we want to run
+        // it repeatedly until either it returns non-zero or the current
+        // physical time matches or exceeds the logical time.
+        if (lf_clock_cond_timedwait(condition, wait_until_time) != LF_TIMEOUT) {
             LF_PRINT_DEBUG("-------- wait_until interrupted before timeout.");
 
             // Wait did not time out, which means that there
@@ -317,27 +293,14 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
             // Do not adjust logical tag here. If there was an asynchronous
             // call to lf_schedule(), it will have put an event on the event queue,
             // and logical tag will be set to that time when that event is pulled.
-            return_value = false;
+            return false;
         } else {
             // Reached timeout.
-            // FIXME: move this to Mac-specific platform implementation
-            // Unfortunately, at least on Macs, pthread_cond_timedwait appears
-            // to be implemented incorrectly and it returns well short of the target
-            // time.  Check for this condition and wait again if necessary.
-            interval_t ns_to_wait = wait_until_time_ns - lf_time_physical();
-            // We should not wait if that adjusted time is already ahead
-            // of logical time.
-            if (ns_to_wait < MIN_SLEEP_DURATION) {
-                return true;
-            }
-            LF_PRINT_DEBUG("-------- lf_cond_timedwait claims to have timed out, "
-                    "but it did not reach the target time. Waiting again.");
-            return wait_until(env, wait_until_time_ns, condition);
+            LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", wait_duration);
+            return true;
         }
-
-        LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", lf_time_physical() - current_physical_time);
     }
-    return return_value;
+    return true;
 }
 
 /**
@@ -580,14 +543,14 @@ bool lf_stop_requested = false;
 void lf_request_stop() {
     // If a requested stop is pending, return without doing anything.
     LF_PRINT_LOG("lf_request_stop() has been called.");
-    lf_mutex_lock(&global_mutex);
+    LF_MUTEX_LOCK(&global_mutex);
     if (lf_stop_requested) {
-        lf_mutex_unlock(&global_mutex);
+        LF_MUTEX_UNLOCK(&global_mutex);
         LF_PRINT_LOG("Ignoring redundant lf_request_stop() call.");
         return;
     }
     lf_stop_requested = true;
-    lf_mutex_unlock(&global_mutex);
+    LF_MUTEX_UNLOCK(&global_mutex);
 
     // Iterate over scheduling enclaves to find their maximum current tag
     // and set a barrier for tag advancement for each enclave.
@@ -595,13 +558,13 @@ void lf_request_stop() {
     environment_t* env;
     int num_environments = _lf_get_environments(&env);
     for (int i = 0; i < num_environments; i++) {
-        lf_mutex_lock(&env[i].mutex);
+        LF_MUTEX_LOCK(&env[i].mutex);
         if (lf_tag_compare(env[i].current_tag, max_current_tag) > 0) {
             max_current_tag = env[i].current_tag;
         }
         // Set a barrier to prevent the enclave from advancing past the so-far maximum current tag.
         _lf_increment_tag_barrier_locked(&env[i], max_current_tag);
-        lf_mutex_unlock(&env[i].mutex);
+        LF_MUTEX_UNLOCK(&env[i].mutex);
     }
 
 #ifdef FEDERATED
@@ -612,16 +575,16 @@ void lf_request_stop() {
         // Message was not sent to the RTI.
         // Decrement the barriers to reverse our previous increment.
         for (int i = 0; i < num_environments; i++) {
-            lf_mutex_lock(&env[i].mutex);
+            LF_MUTEX_LOCK(&env[i].mutex);
             _lf_decrement_tag_barrier_locked(&env[i]);
-            lf_mutex_unlock(&env[i].mutex);
+            LF_MUTEX_UNLOCK(&env[i].mutex);
         }
     }
 #else
     // In a non-federated program, the stop_tag will be the next microstep after max_current_tag.
     // Iterate over environments to set their stop tag and release their barrier.
     for (int i = 0; i < num_environments; i++) {
-        lf_mutex_lock(&env[i].mutex);
+        LF_MUTEX_LOCK(&env[i].mutex);
         _lf_set_stop_tag(&env[i], (tag_t) {.time = max_current_tag.time, .microstep = max_current_tag.microstep+1});
         // Release the barrier on tag advancement.
         _lf_decrement_tag_barrier_locked(&env[i]);
@@ -630,7 +593,7 @@ void lf_request_stop() {
         // one worker thread can call wait_until at a given time because
         // the call to wait_until is protected by a mutex lock
         lf_cond_signal(&env->event_q_changed);
-        lf_mutex_unlock(&env[i].mutex);
+        LF_MUTEX_UNLOCK(&env[i].mutex);
     }
 #endif
 }
@@ -999,7 +962,7 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
  */
 void* worker(void* arg) {
     environment_t *env = (environment_t* ) arg;
-    lf_mutex_lock(&env->mutex);
+    LF_MUTEX_LOCK(&env->mutex);
 
     int worker_number = env->worker_thread_count++;
     LF_PRINT_LOG("Environment %u: Worker thread %d started.",env->id, worker_number);
@@ -1020,9 +983,9 @@ void* worker(void* arg) {
     #endif 
 
     // Release mutex and start working.
-    lf_mutex_unlock(&env->mutex); 
+    LF_MUTEX_UNLOCK(&env->mutex); 
     _lf_worker_do_work(env, worker_number);
-    lf_mutex_lock(&env->mutex);
+    LF_MUTEX_LOCK(&env->mutex);
 
     // This thread is exiting, so don't count it anymore.
     env->worker_thread_count--;
@@ -1045,7 +1008,7 @@ void* worker(void* arg) {
     lf_cond_signal(&env->event_q_changed);
 
     LF_PRINT_DEBUG("Worker %d: Stop requested. Exiting.", worker_number);
-    lf_mutex_unlock(&env->mutex);
+    LF_MUTEX_UNLOCK(&env->mutex);
     // timeout has been requested.
     return NULL;
 }
@@ -1164,9 +1127,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     _lf_create_environments();
 
     // Initialize the one global mutex
-    if (lf_mutex_init(&global_mutex) != 0) {
-        lf_print_error_and_exit("Could not initialize global mutex");
-    }
+    LF_MUTEX_INIT(&global_mutex);
 
     // Initialize the global payload and token allocation counts and the trigger table
     // as well as starting tracing subsystem
@@ -1200,9 +1161,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         
         // Lock mutex and spawn threads. This must be done before `_lf_initialize_start_tag` since it is using 
         //  a cond var
-        if (lf_mutex_lock(&env->mutex) != 0) {
-            lf_print_error_and_exit("Could not lock environment mutex");
-        }
+        LF_MUTEX_LOCK(&env->mutex);
 
         // Initialize start tag
         lf_print("Environment %u: ---- Intializing start tag", env->id);
@@ -1211,7 +1170,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
         start_threads(env);
         // Unlock mutex and allow threads proceed
-        lf_mutex_unlock(&env->mutex);
+        LF_MUTEX_UNLOCK(&env->mutex);
     }
     
     for (int i = 0; i<num_envs; i++) {

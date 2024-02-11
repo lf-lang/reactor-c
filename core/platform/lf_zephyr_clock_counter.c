@@ -126,7 +126,7 @@ void _lf_initialize_clock() {
  * The Counter device tracks current physical time. Overflows are handled in an
  * ISR.
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
     static uint64_t last_nsec = 0;
     uint32_t now_cycles;
     int res;
@@ -161,7 +161,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     uint32_t now_cycles, sleep_duration_ticks;
     counter_get_value(counter_dev, &now_cycles);
     instant_t now;
-    _lf_clock_now(&now);
+    _lf_clock_gettime(&now);
     interval_t sleep_for_us = (wakeup - now)/1000;
     
     while ( !async_event && 
@@ -180,13 +180,13 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
             lf_print_error_and_exit("Could not setup alarm for sleeping. Errno %i", err);
         }
         
-        lf_critical_section_exit(env);
+        LF_CRITICAL_SECTION_EXIT(env);
         k_sem_take(&semaphore, K_FOREVER);
-        lf_critical_section_enter(env);
+        LF_CRITICAL_SECTION_ENTER(env);
 
         // Then calculating remaining sleep, unless we got woken up by an event
         if (!async_event) {
-            _lf_clock_now(&now);
+            _lf_clock_gettime(&now);
             sleep_for_us = (wakeup - now)/1000;
         }
     } 

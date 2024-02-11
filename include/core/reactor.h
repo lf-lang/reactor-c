@@ -53,6 +53,7 @@
 #include "modes.h"     // Modal model support
 #include "port.h"
 #include "tag.h"       // Time-related functions.
+#include "clock.h"       // Time-related functions.
 #include "trace.h"
 #include "util.h"
 

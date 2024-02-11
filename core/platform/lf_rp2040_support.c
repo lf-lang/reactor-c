@@ -81,7 +81,7 @@ void _lf_initialize_clock(void) {
  * @param  t  pointer to the time variable to write to.
  * @return error code or 0 on success. 
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
     if (!t) {
         return -1;
     }
@@ -138,25 +138,16 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
     // create us boot wakeup time
     target = from_us_since_boot((uint64_t) (wakeup_time / 1000));
     // allow interrupts
-    lf_critical_section_exit(env);
+    LF_CRITICAL_SECTION_EXIT(env);
     // blocked sleep
     // return on timeout or on processor event
     if(sem_acquire_block_until(&_lf_sem_irq_event, target)) {
         ret_code = -1;
     }
     // remove interrupts
-    lf_critical_section_enter(env);
+    LF_CRITICAL_SECTION_ENTER(env);
     return ret_code;
 }
-
-#if defined(LF_SINGLE_THREADED)
-/**
- * The single thread RP2040 platform support treats second core
- * routines similar to external interrupt routine threads.
- * 
- * Second core activity is disabled at the same times as
- * when interrupts are disabled. 
- */
 
 /**
  * Enter a critical section where the second core is disabled
@@ -203,6 +194,7 @@ int lf_enable_interrupts_nested() {
     return 0;
 }
 
+#if defined(LF_SINGLE_THREADED)
 /**
  * Release the binary event semaphore to notify
  * the runtime of a physical action being scheduled.
