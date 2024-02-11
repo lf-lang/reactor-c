@@ -1778,7 +1778,7 @@ void termination(void) {
 
     #if !defined(LF_SINGLE_THREADED)
         // Make sure all watchdog threads have stopped
-        _lf_watchdog_terminate(&env[i]);
+        _lf_watchdog_terminate_all(&env[i]);
     #endif
 
         // Skip most cleanup on abnormal termination.

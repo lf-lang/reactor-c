@@ -95,6 +95,7 @@ typedef struct environment_t {
     watchdog_t **watchdogs;
     trace_t* trace;
     int worker_thread_count;
+    bool sleeping;
 #if defined(LF_SINGLE_THREADED)
     pqueue_t *reaction_q;
 #else

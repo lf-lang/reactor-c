@@ -336,10 +336,31 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
 /**
  * Initialize condition variable with error checking.
  * This is optimized away if the NDEBUG flag is defined.
- * @param mutex Pointer to the condition variable to initialize.
+ * @param cond Pointer to the condition variable to initialize.
  * @param mutex Pointer to the mutex to associate with the condition variable.
  */
 #define LF_COND_INIT(cond, mutex) LF_ASSERTN(lf_cond_init(cond, mutex), "Condition variable init failed.")
+
+/**
+ * Signal a condition variable with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param cond Pointer to the condition variable.
+ */
+#define LF_COND_SIGNAL(cond) LF_ASSERTN(lf_cond_signal(cond), "Condition variable signal failed.")
+
+/**
+ * Broadcast a condition variable with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param cond Pointer to the condition variable.
+ */
+#define LF_COND_BROADCAST(cond) LF_ASSERTN(lf_cond_broadcast(cond), "Condition variable broadcast failed.")
+
+/**
+ * Wait on a condition variable with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param cond Pointer to the condition variable.
+ */
+#define LF_COND_WAIT(cond) LF_ASSERTN(lf_cond_wait(cond), "Condition variable wait failed.")
 
 /**
  * Enter critical section with error checking.

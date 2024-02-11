@@ -423,7 +423,7 @@ trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t
 void _lf_initialize_watchdogs(environment_t *env);
 
 /** Terminates all watchdogs inside the environment. */
-void _lf_watchdog_terminate(environment_t *env);
+void _lf_watchdog_terminate_all(environment_t *env);
 
 /**
  * @brief Get the array of ids of enclaves directly upstream of the specified enclave.
