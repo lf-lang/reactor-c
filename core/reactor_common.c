@@ -406,7 +406,7 @@ void _lf_pop_events(environment_t *env) {
         // If the trigger is a periodic timer, create a new event for its next execution.
         if (event->trigger->is_timer && event->trigger->period > 0LL) {
             // Reschedule the trigger.
-            _lf_schedule(env, event->trigger, event->trigger->period, NULL);
+            _lf_schedule(env, NULL, event->trigger, event->trigger->period, NULL);
         }
 
         // Copy the token pointer into the trigger struct so that the
@@ -868,6 +868,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
  * The third condition is that the trigger argument is null.
  *
  * @param env Environment in which we are executing.
+ * @param action The action carrying the trigger to be scheduled.
  * @param trigger The trigger to be invoked at a later logical time.
  * @param extra_delay The logical time delay, which gets added to the
  *  trigger's minimum delay, if it has one. If this number is negative,
@@ -875,7 +876,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
  * @param token The token wrapping the payload or NULL for no payload.
  * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
+trigger_handle_t _lf_schedule(environment_t *env, lf_action_base_t* action, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
     assert(env != GLOBAL_ENVIRONMENT);
     if (_lf_is_tag_after_stop_tag(env, env->current_tag)) {
         // If schedule is called after stop_tag
@@ -1128,6 +1129,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
  * Currently, it is the compiler's responsibility to make the above scenario happen.
  * 
  * @param env Environment in which we are executing.
+ * @param action The action carrying the trigger to be scheduled.
  * @param trigger The trigger to be invoked at a later logical time.
  * @param extra_delay The logical time delay, which gets added to the
  *  trigger's minimum delay, if it has one. If this number is negative,
@@ -1135,20 +1137,16 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
  * @param token The token wrapping the payload or NULL for no payload.
  * @return A handle to the event. Currently, always return 0.
  */
-trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
-    // Copy the token pointer into the trigger struct so that the
-    // reactions can access it.
-    _lf_replace_template_token((token_template_t*)trigger, token);
-
-    // Decrement the reference count because the event queue no longer needs this token.
-    _lf_done_using(token);
-    
-    // Iterate over all triggered reactions.
-    for (int i = 0; i < trigger->number_of_reactions; i++) {
-        // Mark reactions to be triggered by the scheduled action as queued.
-        reaction_t *reaction = trigger->reactions[i];
-        reaction->status = queued;
-    }
+trigger_handle_t _lf_schedule(environment_t *env, lf_action_base_t* action, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
+    pqueue_t* pqueue = trigger->pqueue;
+    instant_t current_time = action->parent->tag.time; // FIXME: How to get the current time?
+    // FIXME: Need to recycle events instead of creating on the fly.
+    event_t *event = _lf_get_new_event(env);
+    event->next = NULL;
+    event->token = token;
+    event->trigger = trigger;
+    event->time = current_time + extra_delay;
+    pqueue_insert(pqueue, event);
     return 0;
 }
 #endif
@@ -1249,7 +1247,7 @@ trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_d
     if (lf_critical_section_enter(env) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
-    int return_value = _lf_schedule(env, action->trigger, extra_delay, token);
+    int return_value = _lf_schedule(env, action, action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
     if(lf_critical_section_exit(env) != 0) {
@@ -1281,7 +1279,7 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
     // Copy the value into the newly allocated memory.
     memcpy(token->value, value, template->type.element_size * length);
     // The schedule function will increment the reference count.
-    trigger_handle_t result = _lf_schedule(env, action->trigger, offset, token);
+    trigger_handle_t result = _lf_schedule(env, action, action->trigger, offset, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
     if(lf_critical_section_exit(env) != 0) {
@@ -1302,7 +1300,7 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
         lf_print_error_and_exit("Could not enter critical section");
     }
     lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
-    int return_value = _lf_schedule(env, action->trigger, extra_delay, token);
+    int return_value = _lf_schedule(env, action, action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
     if(lf_critical_section_exit(env) != 0) {

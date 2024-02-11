@@ -430,12 +430,13 @@ void _lf_pop_events(environment_t *env);
  * Internal version of the lf_schedule() function, used by generated
  * _lf_start_timers() function.
  * @param env The environment in which we are executing
+ * @param action The action carrying the trigger to be scheduled.
  * @param trigger The action or timer to be triggered.
  * @param delay Offset of the event release.
  * @param token The token payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
+trigger_handle_t _lf_schedule(environment_t* env, lf_action_base_t* action, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
 
 /**

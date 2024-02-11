@@ -277,6 +277,9 @@ struct trigger_t {
     instant_t physical_time_of_arrival; // The physical time at which the message has been received on the network according to the local clock.
                                         // Note: The physical_time_of_arrival is only passed down one level of the hierarchy. Default: NEVER.
 #endif
+#ifdef SCHED_STATIC
+    pqueue_t* pqueue;         // Priority queue for storing scheduled events
+#endif
 };
 
 /**
