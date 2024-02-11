@@ -42,6 +42,7 @@ extern "C" {
 
 #include "tag.h"
 #include <assert.h>
+#include "lf_atomic.h"
 
 // Forward declarations
 typedef struct environment_t environment_t;
@@ -53,16 +54,18 @@ typedef struct environment_t environment_t;
 int lf_notify_of_event(environment_t* env);
 
 /**
- * @brief Enter critical section by disabling interrupts
+ * @brief Enter critical section within an environment.
  * @param env Environment in which we are executing.
  */
 int lf_critical_section_enter(environment_t* env);
 
 /**
- * @brief Leave a critical section by enabling interrupts
+ * @brief Leave a critical section within an environment.
  * @param env Environment in which we are executing.
  */
 int lf_critical_section_exit(environment_t* env);
+
+
 
 #if defined(PLATFORM_ARDUINO)
     #include "platform/lf_arduino_support.h"
@@ -101,29 +104,25 @@ int lf_critical_section_exit(environment_t* env);
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
 #if defined (LF_SINGLE_THREADED)
     typedef void lf_mutex_t;
-    /**
+    /** 
      * @brief Disable interrupts with support for nested calls
-     * 
-     * @return int 
+     * @return 0 on success
      */
     int lf_disable_interrupts_nested();
     /**
      * @brief  Enable interrupts after potentially multiple callse to `lf_disable_interrupts_nested`
-     * 
-     * @return int 
+     * @return 0 on success
      */
     int lf_enable_interrupts_nested();
 
     /**
      * @brief Notify sleeping single-threaded context of new event
-     * 
-     * @return int 
+     * @return 0 on success
      */
     int _lf_single_threaded_notify_of_event();
 #else 
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
-
 
 /**
  * @brief Get the number of cores on the host machine.
@@ -201,86 +200,15 @@ int lf_cond_signal(lf_cond_t* cond);
 int lf_cond_wait(lf_cond_t* cond);
 
 /**
- * Block current thread on the condition variable until condition variable
- * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
- * nanoseconds is reached.
+ * Block the current thread on the condition variable until the condition variable
+ * pointed by "cond" is signaled or the time given by wakeup_time is reached. This should
+ * not be used directly as it does not account for clock synchronization offsets.
+ * Use `lf_clock_cond_timedwait` from clock.h instead.
  *
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
-
-/*
- * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.
- * @param ptr A pointer to a variable. The value of this variable will be replaced with the result of the operation.
- * @param value The value to be added to the variable pointed to by the ptr parameter.
- * @return The original value of the variable that ptr points to (i.e., from before the application of this operation).
- */
-#if defined(PLATFORM_ZEPHYR)
-#define lf_atomic_fetch_add(ptr, value) _zephyr_atomic_fetch_add((int*) ptr, value)
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-// Assume that an integer is 32 bits.
-#define lf_atomic_fetch_add(ptr, value) InterlockedExchangeAdd(ptr, value)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_atomic_fetch_add(ptr, value) __sync_fetch_and_add(ptr, value)
-#else
-#error "Compiler not supported"
-#endif
-
-/*
- * Atomically increment the variable that ptr points to by the given value, and return the new value of the variable.
- * @param ptr A pointer to a variable. The value of this variable will be replaced with the result of the operation.
- * @param value The value to be added to the variable pointed to by the ptr parameter.
- * @return The new value of the variable that ptr points to (i.e., from before the application of this operation).
- */
-#if defined(PLATFORM_ZEPHYR)
-#define lf_atomic_add_fetch(ptr, value) _zephyr_atomic_add_fetch((int*) ptr, value)
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-// Assume that an integer is 32 bits.
-#define lf_atomic_add_fetch(ptr, value) InterlockedAdd(ptr, value)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_atomic_add_fetch(ptr, value) __sync_add_and_fetch(ptr, value)
-#else
-#error "Compiler not supported"
-#endif
-
-/*
- * Atomically compare the variable that ptr points to against oldval. If the
- * current value is oldval, then write newval into *ptr.
- * @param ptr A pointer to a variable.
- * @param oldval The value to compare against.
- * @param newval The value to assign to *ptr if comparison is successful.
- * @return True if comparison was successful. False otherwise.
- */
-#if defined(PLATFORM_ZEPHYR)
-#define lf_bool_compare_and_swap(ptr, value, newval) _zephyr_bool_compare_and_swap((bool*) ptr, value, newval)
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-// Assume that a boolean is represented with a 32-bit integer.
-#define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_bool_compare_and_swap(ptr, oldval, newval) __sync_bool_compare_and_swap(ptr, oldval, newval)
-#else
-#error "Compiler not supported"
-#endif
-
-/*
- * Atomically compare the 32-bit value that ptr points to against oldval. If the
- * current value is oldval, then write newval into *ptr.
- * @param ptr A pointer to a variable.
- * @param oldval The value to compare against.
- * @param newval The value to assign to *ptr if comparison is successful.
- * @return The initial value of *ptr.
- */
-#if defined(PLATFORM_ZEPHYR)
-#define lf_val_compare_and_swap(ptr, value, newval) _zephyr_val_compare_and_swap((int*) ptr, value, newval)
-#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#define lf_val_compare_and_swap(ptr, oldval, newval) InterlockedCompareExchange(ptr, newval, oldval)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_val_compare_and_swap(ptr, oldval, newval) __sync_val_compare_and_swap(ptr, oldval, newval)
-#else
-#error "Compiler not supported"
-#endif
-
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time);
 #endif
 
 /**
@@ -289,15 +217,16 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
 void _lf_initialize_clock(void);
 
 /**
- * Fetch the value of an internal (and platform-specific) physical clock and
- * store it in `t`.
- *
- * Ideally, the underlying platform clock should be monotonic. However, the
- * core lib tries to enforce monotonicity at higher level APIs (see tag.h).
+ * Fetch the value of an internal (and platform-specific) physical clock.
+ * Ideally, the underlying platform clock should be monotonic. However, the core
+ * lib enforces monotonicity at higher level APIs (see clock.h).
+ * 
+ * This should not be used directly as it does not apply clock synchronization
+ * offsets.
  *
  * @return 0 for success, or -1 for failure
  */
-int _lf_clock_now(instant_t* t);
+int _lf_clock_gettime(instant_t* t);
 
 /**
  * Pause execution for a given duration.
@@ -307,9 +236,11 @@ int _lf_clock_now(instant_t* t);
 int lf_sleep(interval_t sleep_duration);
 
 /**
- * @brief Sleep until the given wakeup time. Assumes the lock for the
- * given environment is held
- * 
+ * @brief Sleep until the given wakeup time. This should not be used directly as it
+ * does not account for clock synchronization offsets. See clock.h.
+ *
+ * This assumes the lock for the given environment is held.
+ *
  * @param env The environment within which to sleep.
  * @param wakeup_time The time instant at which to wake up.
  * @return int 0 if sleep completed, or -1 if it was interrupted.

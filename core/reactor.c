@@ -94,7 +94,7 @@ void _lf_set_present(lf_port_base_t* port) {
 int wait_until(environment_t* env, instant_t wakeup_time) {
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
-        return _lf_interruptable_sleep_until_locked(env, wakeup_time);
+        return lf_clock_interruptable_sleep_until_locked(env, wakeup_time);
     }
     return 0;
 }

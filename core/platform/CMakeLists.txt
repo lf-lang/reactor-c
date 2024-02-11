@@ -12,12 +12,12 @@ set(LF_PLATFORM_FILES
     lf_zephyr_clock_counter.c
     lf_zephyr_clock_kernel.c
     lf_rp2040_support.c
+    lf_atomic_windows.c
+    lf_atomic_gcc_clang.c
+    lf_atomic_irq.c
 )
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(CMAKE_SYSTEM_VERSION 10.0)
-    message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
     list(APPEND REACTORC_COMPILE_DEFS PLATFORM_NRF52)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     list(APPEND REACTORC_COMPILE_DEFS PLATFORM_ZEPHYR)
