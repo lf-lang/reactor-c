@@ -9,3 +9,10 @@
 
 # Generated trace files
 *.lft
+util/tracing/trace_to_chrome
+util/tracing/trace_to_chrome.o
+util/tracing/trace_to_csv
+util/tracing/trace_to_csv.o
+util/tracing/trace_to_influxdb
+util/tracing/trace_to_influxdb.o
+util/tracing/trace_util.o

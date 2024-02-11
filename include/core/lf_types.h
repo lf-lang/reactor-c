@@ -247,7 +247,8 @@ struct trigger_t {
     interval_t offset;        // Minimum delay of an action. For a timer, this is also the maximum delay.
     interval_t period;        // Minimum interarrival time of an action. For a timer, this is also the maximal interarrival time.
     bool is_physical;         // Indicator that this denotes a physical action.
-    event_t* last;            // Pointer to the last event that was scheduled for this action.
+    tag_t last_tag;           // Tag of the last event that was scheduled for this action.
+                              // This is only used for actions and will otherwise be NEVER.
     lf_spacing_policy_t policy;          // Indicates which policy to use when an event is scheduled too early.
     port_status_t status;     // Determines the status of the port at the current logical time. Therefore, this
                               // value needs to be reset at the beginning of each logical time.

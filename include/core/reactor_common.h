@@ -20,27 +20,14 @@
 extern unsigned int _lf_number_of_workers;
 extern bool fast;
 extern instant_t duration;
-extern bool _lf_execution_started;
 extern bool keepalive_specified;
 extern interval_t _lf_fed_STA_offset;
 
+/** Flag used to disable cleanup operations on normal termination. */
+extern bool _lf_normal_termination;
+
 extern int default_argc;
 extern const char** default_argv;
-
-#ifdef FEDERATED
-void reset_status_fields_on_input_port_triggers();
-port_status_t determine_port_status_if_possible(int portID);
-typedef enum parse_rti_code_t {
-    SUCCESS,
-    INVALID_PORT,
-    INVALID_HOST,
-    INVALID_USER,
-    FAILED_TO_PARSE
-} parse_rti_code_t;
-parse_rti_code_t parse_rti_addr(const char* rti_addr);
-void set_federation_id(const char* fid);
-void set_federation_trace_object(trace_t * trace);
-#endif
 
 extern struct allocation_record_t* _lf_reactors_to_free;
 void* _lf_new_reactor(size_t size);
@@ -66,7 +53,7 @@ event_t* _lf_create_dummy_events(
     event_t* next,
     microstep_t offset
 );
-int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token);
+trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token);
 trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
 trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t* trigger, lf_token_t* token);
 

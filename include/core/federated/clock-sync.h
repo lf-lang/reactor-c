@@ -149,9 +149,9 @@ uint16_t setup_clock_synchronization_with_rti(void);
  * Failing to complete this protocol is treated as a catastrophic
  * error that causes the federate to exit.
  * 
- * @param rti_socket_TCP The rti's socket
+ * @param rti_socket_TCP Pointer to the RTI's socket
  */
-void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP);
+void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
 
 /**
  * Handle a clock synchroninzation message T1 coming from the RTI.
@@ -197,5 +197,26 @@ void* listen_to_rti_UDP_thread(void* args);
  * @return On success, returns 0; On error, it returns an error number.
  */
 int create_clock_sync_thread(lf_thread_t* thread_id);
+
+/**
+ * @brief Add the current clock synchronization offset to a specified timestamp.
+ * @param t Pointer to the timestamp to which to add the offset.
+ */
+void clock_sync_apply_offset(instant_t *t);
+
+/**
+ * @brief Subtract the clock synchronization offset from a timestamp.
+ * @param t The timestamp from which to subtract the current clock sync offset.
+ */
+void clock_sync_remove_offset(instant_t *t);
+
+/**
+ * Set a fixed offset to the physical clock.
+ * After calling this, the value returned by lf_time_physical(void)
+ * and get_elpased_physical_time(void) will have this specified offset
+ * added to what it would have returned before the call.
+ */
+void clock_sync_set_constant_bias(interval_t offset);
+
 
 #endif // CLOCK_SYNC_H

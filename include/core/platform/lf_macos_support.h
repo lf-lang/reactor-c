@@ -33,13 +33,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LF_MACOS_SUPPORT_H
 
 #include <stdint.h> // For fixed-width integral types
-#include <time.h>   // For CLOCK_MONOTONIC
 
 // Use 64-bit times and 32-bit unsigned microsteps
 #include "lf_tag_64_32.h"
-
-// The underlying physical clock for MacOS
-#define _LF_CLOCK CLOCK_MONOTONIC
 
 #if !defined LF_SINGLE_THREADED
     #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)

@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
 
-#include "semaphore.h"
+#include "lf_semaphore.h"
 #include <stdbool.h>
 
 #if SCHEDULER == SCHED_STATIC

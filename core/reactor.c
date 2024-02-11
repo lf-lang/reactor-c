@@ -94,7 +94,7 @@ void _lf_set_present(lf_port_base_t* port) {
 int wait_until(environment_t* env, instant_t wakeup_time) {
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
-        return _lf_interruptable_sleep_until_locked(env, wakeup_time);
+        return lf_clock_interruptable_sleep_until_locked(env, wakeup_time);
     }
     return 0;
 }
@@ -238,9 +238,7 @@ int next(environment_t* env) {
 
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
-    if (lf_critical_section_enter(env) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
+    LF_CRITICAL_SECTION_ENTER(env);
     event_t* event = (event_t*)pqueue_peek(env->event_q);
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
@@ -278,9 +276,7 @@ int next(environment_t* env) {
         // gets scheduled from an interrupt service routine.
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
-        if(lf_critical_section_exit(env) != 0) {
-            lf_print_error_and_exit("Could not leave critical section");
-        }
+        LF_CRITICAL_SECTION_EXIT(env);
         return 1;
     }
     // Advance current time to match that of the first event on the queue.
@@ -301,9 +297,7 @@ int next(environment_t* env) {
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
     _lf_pop_events(env);
-    if(lf_critical_section_exit(env) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
+    LF_CRITICAL_SECTION_EXIT(env);
 
     return _lf_do_step(env);
 }
@@ -371,14 +365,18 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         initialize_global();
         // Set start time
         start_time = lf_time_physical();
+
+        LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
+                FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
+                NEVER_TAG.time - start_time, 0);
+
         environment_init_tags(env, start_time, duration);
-        // Start tracing if enalbed
+        // Start tracing if enabled.
         start_trace(env->trace);
 #ifdef MODAL_REACTORS
         // Set up modal infrastructure
         _lf_initialize_modes(env);
 #endif
-        _lf_execution_started = true;
         _lf_trigger_startup_reactions(env);
         _lf_initialize_timers(env);
         // If the stop_tag is (0,0), also insert the shutdown
@@ -389,9 +387,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         }
         LF_PRINT_DEBUG("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
+        env->execution_started = true;
         if (_lf_do_step(env)) {
             while (next(env) != 0);
         }
+        _lf_normal_termination = true;
         return 0;
     } else {
         return -1;

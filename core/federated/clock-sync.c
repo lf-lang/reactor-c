@@ -44,9 +44,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.h"
 #include "util.h"
 
-// Global variables defined in tag.c:
-extern interval_t _lf_time_physical_clock_offset;
-extern interval_t _lf_time_test_physical_clock_offset;
+/** Offset calculated by the clock synchronization algorithm. */
+interval_t _lf_clock_sync_offset = NSEC(0);
+/** Offset used to test clock synchronization (clock sync should largely remove this offset). */
+interval_t _lf_clock_sync_constant_bias = NSEC(0);
 
 /**
  * Keep a record of connection statistics
@@ -71,11 +72,19 @@ instant_t _lf_last_clock_sync_instant = 0LL;
 
 /**
  * The UDP socket descriptor for this federate to communicate with the RTI.
- * This is set by setup_clock_synchronization_with_rti() in connect_to_rti()
+ * This is set by setup_clock_synchronization_with_rti() in lf_connect_to_rti()
  * in federate.c, which must be called before other
  * functions that communicate with the rti are called.
  */
 int _lf_rti_socket_UDP = -1;
+
+/**
+ * Atomically add an adjustment to the clock sync offset.
+ * This needs to be atomic to be thread safe, particularly on 32-bit platforms.
+ */
+static void adjust_lf_clock_sync_offset(interval_t adjustment) {
+    lf_atomic_fetch_add64(&_lf_clock_sync_offset, adjustment);
+}
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
 /**
@@ -169,16 +178,14 @@ uint16_t setup_clock_synchronization_with_rti() {
         _lf_rti_socket_UDP,
         (struct sockaddr *) &federate_UDP_addr,
         sizeof(federate_UDP_addr)) < 0) {
-            lf_print_error_and_exit("Failed to bind its UDP socket: %s.",
-                                    strerror(errno));
+            lf_print_error_system_failure("Failed to bind its UDP socket.");
     }
     // Retrieve the port number that was assigned by the operating system
     socklen_t addr_length = sizeof(federate_UDP_addr);
     if (getsockname(_lf_rti_socket_UDP, (struct sockaddr *)&federate_UDP_addr, &addr_length) == -1) {
         // FIXME: Send 0 UDP_PORT message instead of exiting.
         // That will disable clock synchronization.
-        lf_print_error_and_exit("Failed to retrieve UDP port: %s.",
-                                strerror(errno));
+        lf_print_error_system_failure("Failed to retrieve UDP port.");
     }
     LF_PRINT_DEBUG("Assigned UDP port number %u to its socket.", ntohs(federate_UDP_addr.sin_port));
 
@@ -205,22 +212,7 @@ uint16_t setup_clock_synchronization_with_rti() {
     return port_to_return;
 }
 
-/**
- * Synchronize the initial physical clock with the RTI.
- * A call to this function is inserted into the startup
- * sequence by the code generator if initial clock synchronization
- * is required.
- *
- * This is a blocking function that expects
- * to read a MSG_TYPE_CLOCK_SYNC_T1 from the RTI TCP socket.
- * It will then follow the PTP protocol to synchronize the local
- * physical clock with the RTI.
- * Failing to complete this protocol is treated as a catastrophic
- * error that causes the federate to exit.
- *
- * @param rti_socket_TCP The rti's socket
- */
-void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
+void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
     LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
     size_t message_size = 1 + sizeof(instant_t);
@@ -228,7 +220,7 @@ void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
 
     for (int i=0; i < _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL; i++) {
         // The first message expected from the RTI is MSG_TYPE_CLOCK_SYNC_T1
-        read_from_socket_errexit(rti_socket_TCP, message_size, buffer,
+        read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
                 "Federate %d did not get the initial clock synchronization message T1 from the RTI.",
                 _lf_my_fed_id);
 
@@ -242,12 +234,12 @@ void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
         // Handle the message and send a reply T3 message.
         // NOTE: No need to acquire the mutex lock during initialization because only
         // one thread is running.
-        if (handle_T1_clock_sync_message(buffer, rti_socket_TCP, receive_time) != 0) {
+        if (handle_T1_clock_sync_message(buffer, *rti_socket_TCP, receive_time) != 0) {
             lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
         }
 
         // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-        read_from_socket_errexit(rti_socket_TCP, message_size, buffer,
+        read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
                 "Federate %d did not get the clock synchronization message T4 from the RTI.",
                 _lf_my_fed_id);
 
@@ -257,7 +249,7 @@ void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
         }
 
         // Handle the message.
-        handle_T4_clock_sync_message(buffer, rti_socket_TCP, receive_time);
+        handle_T4_clock_sync_message(buffer, *rti_socket_TCP, receive_time);
     }
 
     LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
@@ -294,7 +286,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
 
     // Write the reply to the socket.
     LF_PRINT_DEBUG("Sending T3 message to RTI.");
-    if (write_to_socket(socket, 1 + sizeof(int), reply_buffer) != 1 + sizeof(int)) {
+    if (write_to_socket(socket, 1 + sizeof(int), reply_buffer)) {
         lf_print_error("Clock sync: Failed to send T3 message to RTI.");
         return -1;
     }
@@ -361,12 +353,11 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
     if (socket == _lf_rti_socket_UDP) {
         // Read the coded probe message.
         // We can reuse the same buffer.
-        ssize_t bytes_read = read_from_socket(socket, 1 + sizeof(instant_t), buffer);
+        int read_failed = read_from_socket(socket, 1 + sizeof(instant_t), buffer);
 
         instant_t r5 = lf_time_physical();
 
-        if ((bytes_read < 1 + (ssize_t)sizeof(instant_t))
-                || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
+        if (read_failed || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
             lf_print_warning("Clock sync: Did not get the expected coded probe message from the RTI. "
                     "Skipping clock synchronization round.");
             return;
@@ -398,7 +389,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // Apply a jitter attenuator to the estimated clock error to prevent
         // large jumps in the underlying clock.
         // Note that estimated_clock_error is calculated using lf_time_physical() which includes
-        // the _lf_time_physical_clock_offset adjustment.
+        // the clock sync adjustment.
         adjustment = estimated_clock_error / _LF_CLOCK_SYNC_ATTENUATION;
     } else {
         // Use of TCP socket means we are in the startup phase, so
@@ -438,21 +429,19 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // which means we can now adjust the clock offset.
         // For the AVG algorithm, history is a running average and can be directly
         // applied
-        _lf_time_physical_clock_offset += _lf_rti_socket_stat.history;
+        adjust_lf_clock_sync_offset(_lf_rti_socket_stat.history);
         // @note AVG and SD will be zero if collect-stats is set to false
         LF_PRINT_LOG("Clock sync:"
                     " New offset: " PRINTF_TIME "."
                     " Round trip delay to RTI (now): " PRINTF_TIME "."
                     " (AVG): " PRINTF_TIME "."
                     " (SD): " PRINTF_TIME "."
-                    " Local round trip delay: " PRINTF_TIME "."
-                    " Test offset: " PRINTF_TIME ".",
-                    _lf_time_physical_clock_offset,
+                    " Local round trip delay: " PRINTF_TIME ".",
+                    _lf_clock_sync_offset,
                     network_round_trip_delay,
                     stats.average,
                     stats.standard_deviation,
-                    _lf_rti_socket_stat.local_delay,
-                    _lf_time_test_physical_clock_offset);
+                    _lf_rti_socket_stat.local_delay);
         // Reset the stats
         reset_socket_stat(&_lf_rti_socket_stat);
         // Set the last instant at which the clocks were synchronized
@@ -556,6 +545,25 @@ void* listen_to_rti_UDP_thread(void* args) {
 }
 
 
+// If clock synchronization is enabled, provide implementations. If not
+// just empty implementations that should be optimized away.
+#if defined(FEDERATED) && defined(_LF_CLOCK_SYNC_ON)
+void clock_sync_apply_offset(instant_t *t) {
+    *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias);
+}
+
+void clock_sync_remove_offset(instant_t *t) {
+    *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias);
+}
+
+void clock_sync_set_constant_bias(interval_t offset) {
+    _lf_clock_sync_constant_bias = offset;
+}
+#else
+void clock_sync_apply_offset(instant_t *t) { }
+void clock_sync_remove_offset(instant_t *t) { }
+void clock_sync_set_constant_bias(interval_t offset) { }
+#endif
 
 /**
  * Create the thread responsible for handling clock synchronization
@@ -572,4 +580,5 @@ int create_clock_sync_thread(lf_thread_t* thread_id) {
 #endif // _LF_CLOCK_SYNC_ON
     return 0;
 }
+
 #endif

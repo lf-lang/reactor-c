@@ -7,17 +7,18 @@
  * @copyright (c) 2020-2023, The University of California at Berkeley
  * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  * 
- * This files implements the enclave coordination logic.
+ * This file implements the enclave coordination logic.
  * Here we are dealing with multiple mutexes. To avoid deadlocking we follow the
  * following rules:
  * 1) Mutexes are always locked in the following order:
- *  Enclave mutexes -> RTI mutex.
+ *  Enclave mutexes followed by RTI mutex.
  *  This means that we never lock an enclave mutex while holding the RTI mutex.
  * 2) Mutexes are always unlocked in the following order:
- *  RTI mutex -> Enclave mutex.
- * 3) If the coordination logic might block. We unlock the enclave mutex
- * 
-*/
+ *  RTI mutex followed by Enclave mutex.
+ * 3) If the coordination logic might block. We unlock the enclave mutex while
+ *  blocking, using a condition variable to unblock.
+ * 4) When blocking on the coordination logic, never hold the RTI mutex.
+ */
 
 #ifdef LF_ENCLAVES
 #include "rti_local.h"
@@ -35,11 +36,11 @@ static rti_local_t * rti_local;
 lf_mutex_t rti_mutex;
 
 void initialize_local_rti(environment_t *envs, int num_envs) {
-    rti_local = malloc(sizeof(rti_local_t));
-    LF_ASSERT(rti_local, "Out of memory");
+    rti_local = (rti_local_t*)calloc(1, sizeof(rti_local_t));
+    LF_ASSERT_NON_NULL(rti_local);
 
     initialize_rti_common(&rti_local->base);
-    LF_ASSERT(lf_mutex_init(&rti_mutex) == 0, "Could not create mutex");
+    LF_MUTEX_INIT(&rti_mutex);
     rti_local->base.mutex = &rti_mutex;
     rti_local->base.number_of_scheduling_nodes = num_envs;
     rti_local->base.tracing_enabled = (envs[0].trace != NULL);
@@ -47,7 +48,7 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
     // Allocate memory for the enclave_info objects
     rti_local->base.scheduling_nodes = (scheduling_node_t**)calloc(num_envs, sizeof(scheduling_node_t*));
     for (int i = 0; i < num_envs; i++) {
-        enclave_info_t *enclave_info = (enclave_info_t *) malloc(sizeof(enclave_info_t));
+        enclave_info_t *enclave_info = (enclave_info_t *) calloc(1, sizeof(enclave_info_t));
         initialize_enclave_info(enclave_info, i, &envs[i]);
         rti_local->base.scheduling_nodes[i] = (scheduling_node_t *) enclave_info;
 
@@ -60,6 +61,11 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
     }
 }
 
+void free_local_rti() {
+    free_scheduling_nodes(rti_local->base.scheduling_nodes, rti_local->base.number_of_scheduling_nodes);
+    free(rti_local);
+}
+
 void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t * env) {
     initialize_scheduling_node(&enclave->base, idx);
 
@@ -67,7 +73,7 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t * e
     enclave->env = env;
     
     // Initialize the next event condition variable.
-    LF_ASSERT(lf_cond_init(&enclave->next_event_condition, &rti_mutex) == 0, "Could not create cond var");
+    LF_COND_INIT(&enclave->next_event_condition, &rti_mutex);
 }
 
 tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
@@ -80,8 +86,8 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     }
     // This is called from a critical section within the source enclave. Leave
     // this critical section and acquire the RTI mutex.
-    LF_ASSERT(lf_mutex_unlock(&e->env->mutex) == 0, "Could not unlock mutex");
-    LF_ASSERT(lf_mutex_lock(rti_local->base.mutex) == 0, "Could not lock mutex");
+    LF_MUTEX_UNLOCK(&e->env->mutex);
+    LF_MUTEX_LOCK(rti_local->base.mutex);
     tracepoint_federate_to_rti(e->env->trace, send_NET, e->base.id, &next_event_tag);
     // First, update the enclave data structure to record this next_event_tag,
     // and notify any downstream scheduling_nodes, and unblock them if appropriate.
@@ -99,8 +105,8 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
         next_event_tag.time - lf_time_start(), next_event_tag.microstep);
         tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &next_event_tag);
         // Release RTI mutex and re-enter the critical section of the source enclave before returning.
-        LF_ASSERT(lf_mutex_unlock(rti_local->base.mutex) == 0, "Could not unlock mutex");
-        LF_ASSERT(lf_mutex_lock(&e->env->mutex) == 0, "Could not lock mutex");
+        LF_MUTEX_UNLOCK(rti_local->base.mutex);
+        LF_MUTEX_LOCK(&e->env->mutex);
         return next_event_tag;
     }
     
@@ -130,8 +136,8 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
         e->base.id, e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
     tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &result.tag);
     // Release RTI mutex and re-enter the critical section of the source enclave.
-    LF_ASSERT(lf_mutex_unlock(rti_local->base.mutex) == 0, "Could not unlock mutex");
-    LF_ASSERT(lf_mutex_lock(&e->env->mutex) == 0, "Could not lock mutex");
+    LF_MUTEX_UNLOCK(rti_local->base.mutex);
+    LF_MUTEX_LOCK(&e->env->mutex);
     return result.tag;
 }
 
@@ -140,24 +146,24 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed) {
         return;
     }
     // Release the enclave mutex while doing the local RTI work.
-    LF_ASSERT(lf_mutex_unlock(&enclave->env->mutex) == 0, "Could not unlock mutex");
+    LF_MUTEX_UNLOCK(&enclave->env->mutex);
     tracepoint_federate_to_rti(enclave->env->trace, send_LTC, enclave->base.id, &completed);
     _logical_tag_complete(&enclave->base, completed);
     // Acquire the enclave mutex again before returning.
-    LF_ASSERT(lf_mutex_lock(&enclave->env->mutex) == 0, "Could not lock mutex");
+    LF_MUTEX_LOCK(&enclave->env->mutex);
 }
 
 void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t * target, tag_t net) {
     // Here we do NOT leave the critical section of the target enclave before we
     // acquire the RTI mutex. This means that we cannot block within this function.
-    LF_ASSERT(lf_mutex_lock(rti_local->base.mutex) == 0, "Could not lock mutex");
+    LF_MUTEX_LOCK(rti_local->base.mutex);
     tracepoint_federate_to_federate(src->env->trace, send_TAGGED_MSG, src->base.id, target->base.id, &net);
 
     // If our proposed NET is less than the current NET, update it.
     if (lf_tag_compare(net, target->base.next_event) < 0) {
         target->base.next_event = net;
     }
-    LF_ASSERT(lf_mutex_unlock(rti_local->base.mutex) == 0, "Could not unlock mutex");
+    LF_MUTEX_UNLOCK(rti_local->base.mutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,4 +192,9 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     LF_PRINT_LOG("RTI: enclave %u callback with PTAG " PRINTF_TAG " ",
         e->id, tag.time - lf_time_start(), tag.microstep);
 }
+
+void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
+    // Nothing to do here.
+}
+
 #endif //LF_ENCLAVES
