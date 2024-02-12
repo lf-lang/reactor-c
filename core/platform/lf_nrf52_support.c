@@ -140,7 +140,7 @@ void _lf_initialize_clock() {
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
  *  set appropriately (see `man 2 clock_gettime`).
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
     assert(t);
     
     uint32_t now_us_hi_pre = _lf_time_us_high;
@@ -155,7 +155,6 @@ int _lf_clock_now(instant_t* t) {
     uint64_t now_us = COMBINE_HI_LO(now_us_hi_post, now_us_low);
 
     *t = ((instant_t)now_us) * 1000;
-
     return 0;
 }
 
@@ -171,10 +170,11 @@ int _lf_clock_now(instant_t* t) {
 int lf_sleep(interval_t sleep_duration) {
     instant_t target_time;
     instant_t current_time;
-    _lf_clock_now(&current_time);
+    _lf_clock_gettime(&current_time);
     target_time = current_time + sleep_duration;
+    
     while (current_time <= target_time) {
-        _lf_clock_now(&current_time);
+        _lf_clock_gettime(&current_time);
     }
     return 0;
 }
@@ -188,7 +188,7 @@ int lf_sleep(interval_t sleep_duration) {
 static void lf_busy_wait_until(instant_t wakeup_time) {
     instant_t now;
     do {
-        _lf_clock_now(&now);
+        _lf_clock_gettime(&now);
     } while (now < wakeup_time);
 }
 
@@ -203,7 +203,7 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
     instant_t now;
-    _lf_clock_now(&now);
+    _lf_clock_gettime(&now);
     interval_t duration = wakeup_time - now;
     if (duration <= 0) {
         return 0;
