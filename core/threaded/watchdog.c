@@ -27,7 +27,6 @@ static void* watchdog_thread_main(void* arg);
  * Finally it starts of a non-termminating thread for each watchdog.
  */
 void _lf_initialize_watchdogs(environment_t *env) {
-    int ret;            
     for (int i = 0; i < env->watchdogs_size; i++) {
         watchdog_t *watchdog = env->watchdogs[i];
         if (watchdog->base->reactor_mutex != NULL) {
@@ -35,7 +34,8 @@ void _lf_initialize_watchdogs(environment_t *env) {
         }
         LF_COND_INIT(&watchdog->cond, watchdog->base->reactor_mutex);
         
-        lf_thread_create(&watchdog->thread_id, watchdog_thread_main, (void *) watchdog);
+        int ret = lf_thread_create(&watchdog->thread_id, watchdog_thread_main, (void *) watchdog);
+        LF_ASSERTN(ret, "Could not create watchdog thread");
     }
 }
 
@@ -44,7 +44,6 @@ void _lf_initialize_watchdogs(environment_t *env) {
  */
 void _lf_watchdog_terminate_all(environment_t *env) {
     void *thread_return;
-    int ret;
     for (int i = 0; i < env->watchdogs_size; i++) {
         watchdog_t *watchdog = env->watchdogs[i];
         LF_MUTEX_LOCK(watchdog->base->reactor_mutex);
@@ -66,23 +65,24 @@ void watchdog_wait(watchdog_t *watchdog) {
 }
 
 /**
- * @brief Thread function for watchdog.
+ * @brief Thread function for a watchdog.
+ *
  * Each watchdog has a thread which sleeps until one out of two scenarios:
- * 1) The watchdog timeout expires and there has not been a renewal of the watchdog budget.
- * 2) The watchdog is signaled to wake up and terminate.
+ * 1) The watchdog timeout expires and there has not been a renewal of the
+ *    watchdog budget.
+ * 2) The watchdog is signaled to wake up and stop or terminate.
+ *
  * In normal usage, the expiration time is incremented while the thread is
- * sleeping, so when the thread wakes up, it can go back to sleep again.
- * If the watchdog does expire. It will execute the watchdog handler and the 
- * thread will terminate. To stop the watchdog, another thread will signal the
- * condition variable, in that case the watchdog thread will terminate directly.
- * The expiration field of the watchdog is used to protect against race conditions.
- * It is set to NEVER when the watchdog is terminated.
- * 
+ * sleeping, so when the thread wakes up, it can go back to sleep again. If the
+ * watchdog does expire. It will execute the watchdog handler and wait for next
+ * start. To stop a running watchdog, the expiration field is set to NEVER.
+ * The watchdog thread can also be terminated, this should only be done at the
+ * end of execution as it cannot be restarted after termination.
+ *
  * @param arg A pointer to the watchdog struct
  * @return NULL
  */
 static void* watchdog_thread_main(void* arg) {
-    int ret;
     watchdog_t* watchdog = (watchdog_t*)arg;
     self_base_t* base = watchdog->base;
     LF_PRINT_DEBUG("Starting Watchdog %p", (void *) watchdog);
@@ -154,7 +154,6 @@ void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
 }
 
 void lf_watchdog_stop(watchdog_t* watchdog) {
-    int ret;
     // If the watchdog isnt active, then it is no reason to stop it.
     if (!watchdog->active) {
         return;
