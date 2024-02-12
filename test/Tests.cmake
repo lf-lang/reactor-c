@@ -37,8 +37,8 @@ foreach(FILE ${TEST_FILES})
     target_include_directories(${NAME} PRIVATE ${TEST_DIR})
 endforeach(FILE ${TEST_FILES})
 
+# Add the test for the RTI.
 if (NOT DEFINED LF_SINGLE_THREADED)
-    # Build a test for the RTI.
     # Check which system we are running on to select the correct platform support
     # file and assign the file's path to LF_PLATFORM_FILE
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -81,9 +81,6 @@ if (NOT DEFINED LF_SINGLE_THREADED)
     target_compile_definitions(rti_common_test PUBLIC FEDERATED=1)
 
     target_compile_definitions(rti_common_test PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
-
-    # Set RTI Tracing
-    # target_compile_definitions(rti_common_test PUBLIC RTI_TRACE)
 
     # Find threads and link to it
     find_package(Threads REQUIRED)

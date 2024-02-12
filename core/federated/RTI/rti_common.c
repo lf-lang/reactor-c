@@ -316,14 +316,13 @@ static void _update_min_delays_upstream(
     // but for most programs, the gain might be negligible since there are relatively few
     // upstream nodes.
     for (int i = 0; i < intermediate->num_upstream; i++) {
-        // Add connection delay to path delay so far. Because the delay addition is not commutative
-        // but associative, we have to convert the delay to a tag and add to the path delay.
-        tag_t connection_delay = (tag_t) {.time = intermediate->upstream_delay[i], .microstep = 0};
-        if (intermediate->upstream_delay[i] == NEVER) {
-            connection_delay = ZERO_TAG;
-        } else if (intermediate->upstream_delay[i] == 0) {
-            connection_delay.microstep++;
-        }
+        // Add connection delay to path delay so far. Because tag addition is not commutative,
+        // the calculation order should be carefully handled. Specifically, we should calculate
+        // intermediate->upstream_delay[i] + delay_from_intermediate_so_far,
+        // NOT delay_from_intermediate_so_far + intermediate->upstream_delay[i].
+        // Before calculating path delay, convert intermediate->upstream_delay[i] to a tag
+        // cause there is no function that adds a tag to an interval.
+        tag_t connection_delay = lf_delay_tag(ZERO_TAG, intermediate->upstream_delay[i]);
         tag_t path_delay = lf_tag_add(connection_delay, delay_from_intermediate_so_far);
         // If the path delay is less than the so-far recorded path delay from upstream, update upstream.
         if (lf_tag_compare(path_delay, path_delays[intermediate->upstream[i]]) < 0) {
