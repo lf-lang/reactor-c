@@ -129,7 +129,7 @@ do { \
     out->length = newtoken->length; \
 } while(0)
 #else
-#define _LF_SET_TOKEN(out, newtoken) \
+#define lf_set_token(out, newtoken) \
 do { \
     lf_set_present(out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
