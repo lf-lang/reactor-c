@@ -250,8 +250,6 @@ int environment_init(
         LF_ASSERT(env->watchdogs, "Out of memory");
     }
 
-    env->sleeping = false;
-
     env->_lf_handle=1;
     
     // Initialize our priority queues.

@@ -284,7 +284,6 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
         // returns 0 if it is awakened before the timeout. Hence, we want to run
         // it repeatedly until either it returns non-zero or the current
         // physical time matches or exceeds the logical time.
-        env->sleeping = true;
         if (lf_clock_cond_timedwait(condition, wait_until_time) != LF_TIMEOUT) {
             LF_PRINT_DEBUG("-------- wait_until interrupted before timeout.");
 
@@ -294,12 +293,10 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
             // Do not adjust logical tag here. If there was an asynchronous
             // call to lf_schedule(), it will have put an event on the event queue,
             // and logical tag will be set to that time when that event is pulled.
-            env->sleeping = false;
             return false;
         } else {
             // Reached timeout.
             LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", wait_duration);
-            env->sleeping = false;
             return true;
         }
     }
