@@ -49,7 +49,7 @@ void _lf_watchdog_terminate_all(environment_t *env) {
         LF_MUTEX_LOCK(watchdog->base->reactor_mutex);
         _lf_watchdog_terminate(watchdog);
         LF_MUTEX_UNLOCK(watchdog->base->reactor_mutex);
-        int *thread_ret;
+        void *thread_ret;
         lf_thread_join(watchdog->thread_id, &thread_ret);
     }
 }
