@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"db/dc8/pythontarget_8h.html#a2f18db18bca26cafa95e9719de4a41ef":[12,0,3,0,6,0],
 "db/dc8/pythontarget_8h.html#a3cd389b61ffd75be923fd4ba3b981b91":[12,0,3,0,6,1],
 "db/dc8/pythontarget_8h.html#a43e1cad902b6477bec893cb6430bd6c8":[12,0,3,0,6,3],
 "db/dc8/pythontarget_8h.html#a497da135b6a264b24a24e36d14e78daa":[12,0,3,0,6,15],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "dc/dcc/structsummary__stats__t.html#a1634ff91d800952e04b0440a1e7d7388":[11,0,44,2],
 "dc/dcc/structsummary__stats__t.html#a41e8d8ec536eecb1f08224420fbc5d4a":[11,0,44,1],
 "dc/dcc/structsummary__stats__t.html#a4eb6941d77ab972a906c744d2e4bc2aa":[11,0,44,3],
-"dc/dcc/structsummary__stats__t.html#a57385f105e3ecb3ffa1b02f142b4b55b":[11,0,44,0],
-"dc/dcc/structsummary__stats__t.html#a581df2e22c985e5c72fcb2e5e37cced7":[11,0,44,4]
+"dc/dcc/structsummary__stats__t.html#a57385f105e3ecb3ffa1b02f142b4b55b":[11,0,44,0]
 };

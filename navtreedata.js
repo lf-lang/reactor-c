@@ -89,12 +89,12 @@ var NAVTREEINDEX =
 "annotated.html",
 "d2/d35/structreaction__t.html#a7c0b5a8f57c78b1434e92cedf0379228",
 "d4/d3d/lf__zephyr__support_8h.html#a70a82f26fdec807da483975ae378e0a2",
-"d6/d1e/namespacefedsd.html#aeb6bffa3287c668e8498bdc6295c0cd7",
-"d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018",
-"d9/dad/structlf__wav__t.html#ade6c01f216604eef5d88c937972ab052",
-"db/dc8/pythontarget_8h.html#a3cd389b61ffd75be923fd4ba3b981b91",
-"dc/dcd/python__capsule__extension_8h.html",
-"de/dcd/influxdb_8h.html#afd91aaf985037d61628552664203a397"
+"d6/d1e/namespacefedsd.html#ae5ba8ed38b1b62ab3cce546f674a623f",
+"d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd",
+"d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c",
+"db/dc8/pythontarget_8h.html#a2f18db18bca26cafa95e9719de4a41ef",
+"dc/dcc/structsummary__stats__t.html#a581df2e22c985e5c72fcb2e5e37cced7",
+"de/dcd/influxdb_8h.html#af41d4fee72efff67b442ebf9bc17f3b4"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

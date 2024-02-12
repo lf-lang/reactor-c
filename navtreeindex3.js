@@ -1,5 +1,6 @@
 var NAVTREEINDEX3 =
 {
+"d6/d1e/namespacefedsd.html#ae5ba8ed38b1b62ab3cce546f674a623f":[10,0,0,48],
 "d6/d1e/namespacefedsd.html#aeb6bffa3287c668e8498bdc6295c0cd7":[10,0,0,51],
 "d6/d1e/namespacefedsd.html#aef4d7fb4468ae45246f83a4db01ec4e2":[10,0,0,44],
 "d6/d1e/namespacefedsd.html#af4bde7c69b0ef62a9c427feb6a4461d4":[10,0,0,2],
@@ -248,6 +249,5 @@ var NAVTREEINDEX3 =
 "d7/dc7/struct__lf__tag__advancement__barrier.html":[11,0,3],
 "d7/dc7/struct__lf__tag__advancement__barrier.html#a49b697f9e16f30a2112910efd1ee6da6":[11,0,3,1],
 "d7/dc7/struct__lf__tag__advancement__barrier.html#ad60842fa9c91497e893075d9b42913ba":[11,0,3,0],
-"d7/dc9/structlf__waveform__t.html":[11,0,32],
-"d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd":[11,0,32,0]
+"d7/dc9/structlf__waveform__t.html":[11,0,32]
 };

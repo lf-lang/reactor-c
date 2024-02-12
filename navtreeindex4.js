@@ -1,5 +1,6 @@
 var NAVTREEINDEX4 =
 {
+"d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd":[11,0,32,0],
 "d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018":[11,0,32,1],
 "d7/dc9/structlf__waveform__t.html#add06d5d0fc6b2337a8aa902736c28558":[11,0,32,2],
 "d7/dd0/struct__lf__sensor__message__t.html":[11,0,2],
@@ -100,14 +101,14 @@ var NAVTREEINDEX4 =
 "d8/d7b/md_core_2federated_2_r_t_i_2_r_e_a_d_m_e.html":[1],
 "d8/d84/set__undef_8h.html":[12,0,1,0,2],
 "d8/d84/set__undef_8h_source.html":[12,0,1,0,2],
-"d8/d9c/src__gen__stub_8c.html":[12,0,4,3],
-"d8/d9c/src__gen__stub_8c.html#a114c79dc673219d5df3b794552ca88d7":[12,0,4,3,5],
-"d8/d9c/src__gen__stub_8c.html#a13c2f54f700bce3d4572600bb87ab055":[12,0,4,3,2],
-"d8/d9c/src__gen__stub_8c.html#a52ffa06ff177dc19d33713beb2ff344e":[12,0,4,3,1],
-"d8/d9c/src__gen__stub_8c.html#a75fa89818532f0a22032b4892061f4dd":[12,0,4,3,3],
-"d8/d9c/src__gen__stub_8c.html#ac109cd752121228507a95495a1eb6d8f":[12,0,4,3,0],
-"d8/d9c/src__gen__stub_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0":[12,0,4,3,4],
-"d8/d9c/src__gen__stub_8c.html#ada5e97527390d0efc2794e490725b823":[12,0,4,3,6],
+"d8/d9c/src__gen__stub_8c.html":[12,0,4,4],
+"d8/d9c/src__gen__stub_8c.html#a114c79dc673219d5df3b794552ca88d7":[12,0,4,4,5],
+"d8/d9c/src__gen__stub_8c.html#a13c2f54f700bce3d4572600bb87ab055":[12,0,4,4,2],
+"d8/d9c/src__gen__stub_8c.html#a52ffa06ff177dc19d33713beb2ff344e":[12,0,4,4,1],
+"d8/d9c/src__gen__stub_8c.html#a75fa89818532f0a22032b4892061f4dd":[12,0,4,4,3],
+"d8/d9c/src__gen__stub_8c.html#ac109cd752121228507a95495a1eb6d8f":[12,0,4,4,0],
+"d8/d9c/src__gen__stub_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0":[12,0,4,4,4],
+"d8/d9c/src__gen__stub_8c.html#ada5e97527390d0efc2794e490725b823":[12,0,4,4,6],
 "d8/dc4/lf__semaphore_8h.html":[12,0,1,1,4,2],
 "d8/dc4/lf__semaphore_8h.html#a1207a7db6221cb49ccf260c31e57a5ac":[12,0,1,1,4,2,3],
 "d8/dc4/lf__semaphore_8h.html#a2e816883471b300567e207c16471502e":[12,0,1,1,4,2,6],
@@ -248,6 +249,5 @@ var NAVTREEINDEX4 =
 "d9/daa/modes_8h.html#a17df34d9c9d092aa6a399512b6a023e4":[12,0,1,1,1,0,0],
 "d9/daa/modes_8h_source.html":[12,0,1,1,1,0],
 "d9/dad/structlf__wav__t.html":[11,0,31],
-"d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9":[11,0,31,2],
-"d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c":[11,0,31,0]
+"d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9":[11,0,31,2]
 };

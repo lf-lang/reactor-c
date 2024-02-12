@@ -1,5 +1,6 @@
 var NAVTREEINDEX7 =
 {
+"dc/dcc/structsummary__stats__t.html#a581df2e22c985e5c72fcb2e5e37cced7":[11,0,44,4],
 "dc/dcd/python__capsule__extension_8h.html":[12,0,3,0,2],
 "dc/dcd/python__capsule__extension_8h.html#a5300ad576050c86fef1f52cb929c4632":[12,0,3,0,2,3],
 "dc/dcd/python__capsule__extension_8h.html#a68af2d490a2d72837031da670cdfb3f3":[12,0,3,0,2,0],
@@ -248,6 +249,5 @@ var NAVTREEINDEX7 =
 "de/dcd/influxdb_8h.html#ad82790662264e54a9d1f0c4815b9245e":[12,0,5,0,1,6],
 "de/dcd/influxdb_8h.html#adabd4b2ff9a9ae87bb6af970dc1184f2":[12,0,5,0,1,10],
 "de/dcd/influxdb_8h.html#ae1bca5e82622ef9d7ec0d00784a6a97b":[12,0,5,0,1,24],
-"de/dcd/influxdb_8h.html#ae4983c0f27aa6bd2d0b61c013fb5ce0b":[12,0,5,0,1,13],
-"de/dcd/influxdb_8h.html#af41d4fee72efff67b442ebf9bc17f3b4":[12,0,5,0,1,26]
+"de/dcd/influxdb_8h.html#ae4983c0f27aa6bd2d0b61c013fb5ce0b":[12,0,5,0,1,13]
 };
