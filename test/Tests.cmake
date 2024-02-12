@@ -59,9 +59,11 @@ if (NOT DEFINED LF_SINGLE_THREADED)
       ${RTI_DIR}/rti_remote.c
       ${CoreLibPath}/trace.c
       ${LF_PLATFORM_FILE}
+      ${CoreLibPath}/platform/lf_atomic_gcc_clang.c
       ${CoreLibPath}/platform/lf_unix_clock_support.c
       ${CoreLibPath}/utils/util.c
       ${CoreLibPath}/tag.c
+      ${CoreLibPath}/clock.c
       ${CoreLibPath}/federated/network/net_util.c
       ${CoreLibPath}/utils/pqueue_base.c
       ${CoreLibPath}/utils/pqueue_tag.c
