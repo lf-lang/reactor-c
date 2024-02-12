@@ -68,79 +68,6 @@ extern volatile reg_t binary_sema[];
 /////////////////// Scheduler Private API /////////////////////////
 
 /**
- * @brief If there is work to be done, notify workers individually.
- *
- * This assumes that the caller is not holding any thread mutexes.
- */
-void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
-    // Note: All threads are idle. Therefore, there is no need to lock the mutex
-    // while accessing the executing queue (which is pointing to one of the
-    // reaction queues).
-    size_t workers_to_awaken = 
-        scheduler->number_of_idle_workers;
-    LF_PRINT_DEBUG("Scheduler: Notifying %zu workers.", workers_to_awaken);
-    scheduler->number_of_idle_workers -= workers_to_awaken;
-    LF_PRINT_DEBUG("Scheduler: New number of idle workers: %zu.",
-                scheduler->number_of_idle_workers);
-    if (workers_to_awaken > 1) {
-        // Notify all the workers except the worker thread that has called this
-        // function.
-        lf_semaphore_release(scheduler->semaphore,
-                             (workers_to_awaken - 1));
-    }
-}
-
-/**
- * @brief Wait until the scheduler assigns work.
- *
- * If the calling worker thread is the last to become idle, it will call on the
- * scheduler to distribute work. Otherwise, it will wait on
- * 'scheduler->semaphore'.
- * This implementation of _lf_sched_wait_for_work also takes on the role of
- * advancing time for all reactors at the end of a hyperperiod.
- *
- * @param worker_number The worker number of the worker thread asking for work
- * to be assigned to it.
- * @param next_timestamp The next timestamp all reactors advance to.
- */
-void _lf_sched_wait_for_work(
-    lf_scheduler_t* scheduler,
-    size_t worker_number,
-    instant_t next_timestamp
-) {
-    // Increment the number of idle workers by 1 and
-    // check if this is the last worker thread to become idle.
-    if (lf_atomic_add_fetch(&scheduler->number_of_idle_workers,
-                            1) ==
-        scheduler->number_of_workers) {
-        
-        // Last thread to go idle
-        LF_PRINT_DEBUG("Scheduler: Worker %zu is the last idle thread.",
-                    worker_number);
-        
-        // The last worker advances all reactors to the next tag.
-        // Also check if the new tag reaches the stop tag.
-        for (int j = 0; j < scheduler->num_reactor_self_instances; j++) {
-            scheduler->reactor_self_instances[j]->tag.time = next_timestamp;
-            scheduler->reactor_self_instances[j]->tag.microstep = 0;
-        }
-        
-        // The last worker clears all the counters.
-        for (int i = 0; i < num_counters; i++) {
-            counters[i] = 0;
-        }
-        
-        // The last worker calls on the scheduler to distribute work or advance tag.
-        _lf_sched_notify_workers(scheduler);
-
-    } else {
-        // Not the last thread to become idle.
-        // Wait for work to be released.
-        lf_semaphore_acquire(scheduler->semaphore);
-    }
-}
-
-/**
  * @brief The implementation of the ADD instruction
  */
 void execute_inst_ADD(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
@@ -255,29 +182,6 @@ void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
 }
 
 /**
- * @brief The implementation of the BIT instruction
- * 
- * FIXME: Should the timeout value be an operand?
- * FIXME: Use a global variable num_active_reactors instead of iterating over
- * a for loop. The current implementation is very inefficient.
- */
-void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
-    bool stop = true;
-    for (int i = 0; i < scheduler->num_reactor_self_instances; i++) {
-        if (!_lf_is_tag_after_stop_tag(scheduler->env, scheduler->reactor_self_instances[i]->tag)) {
-            LF_PRINT_DEBUG("*** Worker %zu: reactor %d has not reached stop tag: (%lld, %u)", worker_number, i, scheduler->reactor_self_instances[i]->tag.time, scheduler->reactor_self_instances[i]->tag.microstep);
-            stop = false;
-            break;
-        }
-    }
-    if (stop) *pc = op1.imm;    // Jump to a specified location.
-    else *pc += 1;          // Increment pc.
-    tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
-}
-
-/**
  * @brief The implementation of the BLT instruction
  */
 void execute_inst_BLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
@@ -320,23 +224,6 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
     LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
     *pc += 1; // Increment pc.
     tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, (int) *pc);
-}
-
-/**
- * @brief The implementation of the EIT instruction
- */
-void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_EIT_starts(scheduler->env->trace, worker_number, (int) *pc);
-    reaction_t* reaction = scheduler->reaction_instances[op1.imm];
-    if (reaction->status == queued) {
-        *returned_reaction = reaction;
-        *exit_loop = true;
-    } else
-        LF_PRINT_DEBUG("*** Worker %zu skip execution", worker_number);
-    *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_EIT_ends(scheduler->env->trace, worker_number, (int) *pc);
-
 }
 
 /**
@@ -413,25 +300,6 @@ void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_
 }
 
 /**
- * @brief The implementation of the SAC instruction
- */
-void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_SAC_starts(scheduler->env->trace, worker_number, (int) *pc);
-
-    // Compute the next tag for all reactors.
-    reg_t *src = op1.reg;
-    instant_t next_timestamp = *src + op2.imm;
-    
-    tracepoint_worker_wait_starts(scheduler->env->trace, worker_number);
-    _lf_sched_wait_for_work(scheduler, worker_number, next_timestamp);
-    tracepoint_worker_wait_ends(scheduler->env->trace, worker_number);
-    *pc += 1; // Increment pc.
-
-    tracepoint_static_scheduler_SAC_ends(scheduler->env->trace, worker_number, (int) *pc);
-}
-
-/**
  * @brief The implementation of the STP instruction
  */
 void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
@@ -488,11 +356,6 @@ void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t opco
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
             execute_inst_BGE(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
             break;
-        case BIT:
-            op_str = "BIT";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_BIT(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
         case BLT:
             op_str = "BLT";
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
@@ -508,11 +371,6 @@ void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t opco
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
             execute_inst_DU(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
             break;
-        case EIT:
-            op_str = "EIT";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_EIT(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
         case EXE:
             op_str = "EXE";
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
@@ -527,11 +385,6 @@ void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t opco
             op_str = "JALR";
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
             execute_inst_JALR(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case SAC:
-            op_str = "SAC";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_SAC(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
             break;
         case STP:
             op_str = "STP";
@@ -633,10 +486,10 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
     reaction_t*     returned_reaction   = NULL;
     bool            exit_loop           = false;
     size_t*         pc                  = &scheduler->pc[worker_number];
-    opcode_t         opcode;
-    operand_t        op1;
-    operand_t        op2;
-    operand_t        op3;
+    opcode_t        opcode;
+    operand_t       op1;
+    operand_t       op2;
+    operand_t       op3;
 
     while (!exit_loop) {
         opcode  = current_schedule[*pc].opcode;
@@ -662,20 +515,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
  * @param done_reaction The reaction that is done.
  */
 void lf_sched_done_with_reaction(size_t worker_number,
-                                 reaction_t* done_reaction) {
-    LF_PRINT_DEBUG("*** Worker %zu inside lf_sched_done_with_reaction, done with %s", worker_number, done_reaction->name);
-    // If the reaction status is queued, change it back to inactive.
-    // We do not check for error here because the EXE instruction
-    // can execute a reaction with an "inactive" status.
-    // The reason is that since runtime does not advance
-    // global time, the next timer events will not be
-    // scheduled and put onto the event queue. The next
-    // timer events are encoded directly into the schedule
-    // using the EXE instructions.
-    lf_bool_compare_and_swap(&done_reaction->status, queued, inactive);
-
-    LF_PRINT_DEBUG("*** Worker %zu reports updated status for %s: %u", worker_number, done_reaction->name, done_reaction->status);
-}
+                                 reaction_t* done_reaction) {}
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
@@ -696,15 +536,6 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  *
  */
-void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
-    LF_PRINT_DEBUG("*** Worker %d triggering reaction %s", worker_number, reaction->name);
-    // Mark a reaction as queued, so that it will be executed when workers do work.
-    if (!lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-        // FIXME: Uncommenting the code below yields weird exception.
-        // lf_print_error_and_exit("Worker %d reports unexpected reaction status for reaction %s: %d. Expected %d.",
-        //                         worker_number, reaction->name,
-        //                         reaction->status, inactive);
-    }
-}
+void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {}
 #endif
 #endif
