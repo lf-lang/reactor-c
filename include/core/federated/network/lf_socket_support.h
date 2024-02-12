@@ -171,7 +171,7 @@ void write_to_netdrv_fail_on_error(
  * @param buffer The buffer into which to put the bytes.
  * @return 0 for success, 1 for EOF, and -1 for an error.
  */
-int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length);
+ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length);
 
 /**
  * Read the specified number of bytes to the specified socket using read_from_socket
@@ -182,7 +182,7 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_leng
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer, size_t buffer_length);
+ssize_t read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer, size_t buffer_length);
 
 /**
  * Read the specified number of bytes from the specified socket into the

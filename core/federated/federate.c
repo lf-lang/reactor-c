@@ -1896,6 +1896,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     _fed.sockets_for_outbound_p2p_connections[remote_federate_id] = socket_id;
 }
 
+// TODO: 
 void lf_connect_to_rti(const char* hostname, int port) {
     LF_PRINT_LOG("Connecting to the RTI.");
 

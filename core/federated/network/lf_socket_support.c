@@ -431,8 +431,8 @@ void write_to_netdrv_fail_on_error(
     }
 }
 // TODO: Fix return.
-int read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer, size_t buffer_length) {
-    int bytes_read = read_from_netdrv(drv, buffer, buffer_length);
+ssize_t read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer, size_t buffer_length) {
+    ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
     if (bytes_read <= 0) {
         drv->close(drv);
         return -1;
@@ -448,7 +448,7 @@ void read_from_netdrv_fail_on_error(
 		lf_mutex_t* mutex,
 		char* format, ...) {
     va_list args;
-    int bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
+    ssize_t bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
     if (bytes_read <= 0) {
         // Read failed.
         if (mutex != NULL) {
@@ -472,7 +472,7 @@ typedef enum {
 } read_state_t;
 
 // Returns the total bytes read.
-int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length) {
+ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length) {
     socket_priv_t *priv = get_priv(netdrv);
     size_t bytes_to_read; // The bytes to read in future.
     ssize_t bytes_read = 0; // The bytes that was read by a single read() function.
