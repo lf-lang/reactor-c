@@ -42,6 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "lf_types.h"
 #include "modes.h"
+#include "reactor.h"
 #include "reactor_common.h"
 
 // Bit masks for the internally used flags on modes

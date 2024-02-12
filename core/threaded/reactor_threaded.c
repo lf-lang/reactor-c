@@ -1,34 +1,11 @@
-/* Runtime infrastructure for the threaded version of the C target of Lingua Franca. */
-
-/*************
-Copyright (c) 2019, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
-
-/** Runtime infrastructure for the threaded version of the C target of Lingua Franca.
- *
- *  @author{Edward A. Lee <eal@berkeley.edu>}
- *  @author{Marten Lohstroh <marten@berkeley.edu>}
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+/**
+ * @file
+ * @author Edward A. Lee (eal@berkeley.edu)
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca. 
  */
 #if !defined LF_SINGLE_THREADED
 #ifndef NUMBER_OF_WORKERS
@@ -42,13 +19,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_types.h"
 #include "platform.h"
-#include "reactor_common.h"
 #include "reactor_threaded.h"
 #include "reactor.h"
 #include "scheduler.h"
 #include "tag.h"
 #include "environment.h"
 #include "rti_local.h"
+#include "reactor_common.h"
 
 #ifdef FEDERATED
 #include "federate.h"
@@ -68,7 +45,6 @@ extern instant_t start_time;
  * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
 */
 lf_mutex_t global_mutex;
-
 
 void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
     assert(env != GLOBAL_ENVIRONMENT);
@@ -409,7 +385,7 @@ void _lf_next_locked(environment_t *env) {
     // to advance to FOREVER. I.e. all upstream enclaves have terminated and sent
     // an LTC for FOREVER. We can, in this case, terminate the current enclave.
     if(!keepalive_specified && lf_tag_compare(next_tag, FOREVER_TAG) == 0) {
-        _lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
+        lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
         next_tag = get_next_event_tag(env);
     }
 #elif defined FEDERATED_CENTRALIZED
@@ -444,7 +420,7 @@ void _lf_next_locked(environment_t *env) {
         // keepalive is not set so we should stop.
         // Note that federated programs with decentralized coordination always have
         // keepalive = true
-        _lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
+        lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
 
         // Stop tag has changed. Need to check next_tag again.
         next_tag = get_next_event_tag(env);
@@ -578,7 +554,7 @@ void lf_request_stop(void) {
     // Iterate over environments to set their stop tag and release their barrier.
     for (int i = 0; i < num_environments; i++) {
         LF_MUTEX_LOCK(&env[i].mutex);
-        _lf_set_stop_tag(&env[i], (tag_t) {.time = max_current_tag.time, .microstep = max_current_tag.microstep+1});
+        lf_set_stop_tag(&env[i], (tag_t) {.time = max_current_tag.time, .microstep = max_current_tag.microstep+1});
         // Release the barrier on tag advancement.
         _lf_decrement_tag_barrier_locked(&env[i]);
 

@@ -47,7 +47,7 @@ int _lf_count_token_allocations;
 #include "lf_types.h"
 #include "hashset/hashset_itr.h"
 #include "util.h"
-#include "reactor_common.h" // Enter/exit critical sections
+#include "platform.h" // Enter/exit critical sections
 #include "port.h"     // Defines lf_port_base_t.
 
 lf_token_t* _lf_tokens_allocated_in_reactions = NULL;

@@ -1,40 +1,14 @@
-/* Runtime infrastructure for the C target of Lingua Franca. */
-
-/*************
-Copyright (c) 2019, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
-
 /**
- * Runtime infrastructure for the C target of Lingua Franca.
- * This file contains resources that are shared by the threaded and
- * non-threaded versions of the C runtime.
- *
- *  @author{Edward A. Lee <eal@berkeley.edu>}
- *  @author{Marten Lohstroh <marten@berkeley.edu>}
- *  @author{Mehrdad Niknami <mniknami@berkeley.edu>}
- *  @author{Soroush Bateni <soroush@utdallas.edu}
- *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
- *  @author{Erling Rennemo Jellum <erling.r.jellum0@ntnu.no>}
+ * @file
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @author Soroush Bateni
+ * @author Mehrdad Niknami
+ * @author Alexander Schulz-Rosengarten
+ * @author Erling Rennemo Jellum
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Runtime infrastructure common to the threaded and single-threaded versions of the C runtime.
  */
 #include <assert.h>
 #include <stdio.h>
@@ -52,7 +26,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "port.h"
 #include "pqueue.h"
 #include "reactor.h"
-#include "reactor_common.h"
 #include "tag.h"
 #include "trace.h"
 #include "util.h"
@@ -60,6 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
 #include "environment.h"
+#include "reactor_common.h"
 
 #if !defined(LF_SINGLE_THREADED)
 #include "watchdog.h"
@@ -133,24 +107,10 @@ void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head) 
  */
 struct allocation_record_t* _lf_reactors_to_free = NULL;
 
-/**
- * Allocate memory for a new runtime instance of a reactor.
- * This records the reactor on the list of reactors to be freed at
- * termination of the program. If you plan to free the reactor before
- * termination of the program, use calloc instead (which this uses).
- * @param size The size of the self struct, obtained with sizeof().
- */
 void* lf_new_reactor(size_t size) {
     return lf_allocate(1, size, &_lf_reactors_to_free);
 }
 
-/**
- * Free memory on the specified allocation record, e.g. allocated by
- * {@link lf_allocate(size_t, size_t, allocation_record_t**)}.
- * Mark the list empty by setting `*head` to NULL.
- * @param head Pointer to the head of a list on which to record
- *  the allocation, or NULL to not record it.
- */
 void lf_free(struct allocation_record_t** head) {
     if (head == NULL) return;
     struct allocation_record_t* record = *head;
@@ -165,24 +125,15 @@ void lf_free(struct allocation_record_t** head) {
     *head = NULL;
 }
 
-/**
- * Free memory recorded on the allocations list of the specified reactor
- * and then free the specified self struct.
- * @param self The self struct of the reactor.
- */
-void _lf_free_reactor(self_base_t *self) {
+void lf_free_reactor(self_base_t *self) {
     lf_free(&self->allocations);
     free(self);
 }
 
-/**
- * Free all the reactors that are allocated with
- * {@link #lf_new_reactor(size_t)}.
- */
-void _lf_free_all_reactors(void) {
+void lf_free_all_reactors(void) {
     struct allocation_record_t* head = _lf_reactors_to_free;
     while (head != NULL) {
-        _lf_free_reactor((self_base_t*)head->allocated);
+        lf_free_reactor((self_base_t*)head->allocated);
         struct allocation_record_t* tmp = head->next;
         free(head);
         head = tmp;
@@ -190,46 +141,22 @@ void _lf_free_all_reactors(void) {
     _lf_reactors_to_free = NULL;
 }
 
-/**
- * Set the stop tag.
- *
- * This function will always choose the minimum
- * of the provided tag and stop_tag
- *
- * @note In threaded programs, the mutex must be locked before
- *  calling this function.
- */
-void _lf_set_stop_tag(environment_t* env, tag_t tag) {
+void lf_set_stop_tag(environment_t* env, tag_t tag) {
     assert(env != GLOBAL_ENVIRONMENT);
     if (lf_tag_compare(tag, env->stop_tag) < 0) {
         env->stop_tag = tag;
     }
 }
 
-/////////////////////////////
-// The following functions are in scope for all reactors:
-
-/**
- * Return the global STP offset on advancement of logical
- * time for federated execution.
- */
 interval_t lf_get_stp_offset() {
     return _lf_fed_STA_offset;
 }
 
-/**
- * Set the global STP offset on advancement of logical
- * time for federated execution.
- *
- * @param offset A positive time value to be applied
- *  as the STP offset.
- */
 void lf_set_stp_offset(interval_t offset) {
     if (offset > 0LL) {
         _lf_fed_STA_offset = offset;
     }
 }
-
 
 /**
  * Trigger 'reaction'.
@@ -306,12 +233,6 @@ void _lf_start_time_step(environment_t *env) {
 #endif // FEDERATED
 }
 
-/**
- * A helper function that returns true if the provided tag is after stop tag.
- *
- * @param env Environment in which we are executing.
- * @param tag The tag to check against stop tag
- */
 bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag) {
     assert(env != GLOBAL_ENVIRONMENT);
     return (lf_tag_compare(tag, env->stop_tag) > 0);
@@ -586,12 +507,6 @@ void _lf_trigger_shutdown_reactions(environment_t *env) {
 #endif
 }
 
-/**
- * Recycle the given event.
- * Zero it out and pushed it onto the recycle queue.
- * @param env Environment in which we are executing.
- * @param e The event to recycle.
- */
 void _lf_recycle_event(environment_t* env, event_t* e) {
     assert(env != GLOBAL_ENVIRONMENT);
     e->time = 0LL;
@@ -1811,7 +1726,7 @@ void termination(void) {
             }
         }
 #endif
-        _lf_free_all_reactors();
+        lf_free_all_reactors();
 
         // Free up memory associated with environment.
         // Do this last so that printed warnings don't access freed memory.

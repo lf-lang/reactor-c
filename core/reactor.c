@@ -1,47 +1,22 @@
-#if defined(LF_SINGLE_THREADED)
-/* Runtime infrastructure for the non-threaded version of the C target of Lingua Franca. */
-
-/*************
-Copyright (c) 2019, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
-
 /**
- * @brief Runtime implementation for the non-threaded version of the 
- * C target of Lingua Franca.
+ * @brief Runtime implementation for the signle-threaded version of the C target of Lingua Franca.
  * 
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
+
+#if defined(LF_SINGLE_THREADED)
+
 #include <assert.h>
 #include <string.h>
 
 #include "reactor.h"
 #include "lf_types.h"
 #include "platform.h"
-#include "reactor_common.h"
 #include "environment.h"
+#include "reactor_common.h"
 
 // Embedded platforms with no TTY shouldnt have signals
 #if !defined(NO_TTY)
@@ -50,6 +25,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Global variable defined in tag.c:
 extern instant_t start_time;
+
+// Defined in reactor_common.c:
+extern bool fast;
+extern bool keepalive_specified;
 
 void lf_set_present(lf_port_base_t* port) {
     if (!port->source_reactor) return;
@@ -240,7 +219,7 @@ int next(environment_t* env) {
     if (event == NULL) {
         // No event in the queue.
         if (!keepalive_specified) {
-            _lf_set_stop_tag( env,
+            lf_set_stop_tag( env,
                 (tag_t){.time=env->current_tag.time, .microstep=env->current_tag.microstep+1}
             );
         }
@@ -304,7 +283,7 @@ void lf_request_stop(void) {
 	tag_t new_stop_tag;
 	new_stop_tag.time = env->current_tag.time;
 	new_stop_tag.microstep = env->current_tag.microstep + 1;
-	_lf_set_stop_tag(env, new_stop_tag);
+	lf_set_stop_tag(env, new_stop_tag);
 }
 
 /**

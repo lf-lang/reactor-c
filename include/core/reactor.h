@@ -31,10 +31,10 @@
 #include "trace.h"
 #include "util.h"
 
-//////////////////////  Constants  //////////////////////
+//////////////////////  Constants & Macros  //////////////////////
 
 /**
- * @brief Macro giving the minimum amount of time to sleep to wait for physical time to reach a logical time.
+ * @brief Constant giving the minimum amount of time to sleep to wait for physical time to reach a logical time.
  * 
  * Unless the "fast" option is given, an LF program will wait until
  * physical time matches logical time before handling an event with
@@ -44,29 +44,6 @@
  * performing the wait.
  */
 #define MIN_SLEEP_DURATION USEC(10)
-
-/// \cond INTERNAL  // Doxygen conditional.
-
-/**
- * @brief Mark the given port's is_present field as true.
- * @param port A pointer to the port struct as an `lf_port_base_t*`.
- */
-void lf_set_present(lf_port_base_t* port);
-
-/**
- * @brief Forward declaration for the executable preamble;
- * @param env Environment in which to execute to preamble
- * 
- */
-void _lf_executable_preamble(environment_t* env);
-
-/// \endcond // INTERNAL
-
-//////////////////////  Macros for reading and writing ports  //////////////////////
-// NOTE: Ports passed to these macros can be cast to:
-// lf_port_base_t: which has the field bool is_present (and more);
-// token_template_t: which has a lf_token_t* token field; or
-// token_type_t: Which has element_size, destructor, and copy_constructor fields.
 
 /**
  * Macro for extracting the deadline from the index of a reaction.
@@ -86,32 +63,40 @@ void _lf_executable_preamble(environment_t* env);
  */
 #define OVERLAPPING(chain1, chain2) ((chain1 & chain2) != 0)
 
-//  ======== Function Declarations ========  //
+//////////////////////  Function Declarations  //////////////////////
 
 /**
- * Return the global STP offset on advancement of logical
- * time for federated execution.
+ * @brief Mark the given port's is_present field as true.
+ * @param port A pointer to the port struct as an `lf_port_base_t*`.
+ */
+void lf_set_present(lf_port_base_t* port);
+
+/**
+ * @brief Set the stop tag if it is less than the stop tag of the specified environment.
+ * @note In threaded programs, the environment's mutex must be locked before calling this function.
+ */
+void lf_set_stop_tag(environment_t* env, tag_t tag);
+
+/**
+ * @brief Return the global STP offset on advancement of logical time for federated execution.
  */
 interval_t lf_get_stp_offset(void);
 
 /**
- * Set the global STP offset on advancement of logical
- * time for federated execution.
- *
- * @param offset A positive time value to be applied
- *  as the STP offset.
+ * @brief Set the global STP offset on advancement of logical time for federated execution.
+ * @param offset A positive time value to be applied as the STP offset.
  */
 void lf_set_stp_offset(interval_t offset);
 
 /**
- * Print a snapshot of the priority queues used during execution
- * (for debugging).
+ * @brief Print a snapshot of the priority queues used during execution (for debugging).
  * @param env The environment in which we are executing.
  */
 void lf_print_snapshot(environment_t* env);
 
 /**
- * Request a stop to execution as soon as possible.
+ * @brief Request a stop to execution as soon as possible.
+ * 
  * In a non-federated execution with only a single enclave, this will occur
  * one microstep later than the current tag. In a federated execution or when
  * there is more than one enclave, it will likely occur at a later tag determined
@@ -120,9 +105,12 @@ void lf_print_snapshot(environment_t* env);
 void lf_request_stop(void);
 
 /**
- * Allocate memory using calloc (so the allocated memory is zeroed out)
+ * @brief Allocate memory and record on the specified allocation record (a self struct).
+ * 
+ * This will allocate memory using calloc (so the allocated memory is zeroed out)
  * and record the allocated memory on the specified self struct so that
  * it will be freed when calling {@link free_reactor(self_base_t)}.
+ * 
  * @param count The number of items of size 'size' to accomodate.
  * @param size The size of each item.
  * @param head Pointer to the head of a list on which to record
@@ -132,41 +120,41 @@ void lf_request_stop(void);
 void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head);
 
 /**
- * Free memory allocated using
- * {@link lf_allocate(size_t, size_t, allocation_record_t**)}
- * and mark the list empty by setting `*head` to NULL.
- * @param head Pointer to the head of a list on which to record
- *  the allocation, or NULL to not record it.
+ * @brief Free memory on the specified allocation record (a self struct).
+ * 
+ * This will mark the allocation record empty by setting `*head` to NULL.
+ * If the argument is NULL, do nothing.
+ * 
+ * @param head Pointer to the head of a list on which allocations are recorded.
  */
 void lf_free(struct allocation_record_t** head);
 
 /**
- * Allocate memory for a new runtime instance of a reactor.
+ * @brief Allocate memory for a new runtime instance of a reactor.
+ * 
  * This records the reactor on the list of reactors to be freed at
  * termination of the program. If you plan to free the reactor before
  * termination of the program, use
  * {@link lf_allocate(size_t, size_t, allocation_record_t**)}
  * with a null last argument instead.
+ * 
  * @param size The size of the self struct, obtained with sizeof().
  */
 void* lf_new_reactor(size_t size);
 
 /**
- * Free all the reactors that are allocated with
- * {@link #lf_new_reactor(size_t)}.
+ * @brief Free all the reactors that are allocated with {@link #lf_new_reactor(size_t)}.
  */
-void _lf_free_all_reactors(void);
+void lf_free_all_reactors(void);
 
 /**
- * Free memory recorded on the allocations list of the specified reactor.
+ * @brief Free the specified reactor.
+ * 
+ * This will free the memory recorded on the allocations list of the specified reactor
+ * and then free the specified self struct.
  * @param self The self struct of the reactor.
  */
-void _lf_free_reactor(self_base_t *self);
-
-/**
- * Generated function that optionally sets default command-line options.
- */
-void _lf_set_default_command_line_options(void);
+void lf_free_reactor(self_base_t *self);
 
 /**
  * Generated function that resets outputs to be absent at the
@@ -189,8 +177,6 @@ void _lf_initialize_trigger_objects();
  */
 void _lf_pop_events(environment_t *env);
 
-
-
 /**
  * Internal version of the lf_schedule() function, used by generated
  * _lf_start_timers() function.
@@ -202,12 +188,10 @@ void _lf_pop_events(environment_t *env);
  */
 trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
-
 /**
  * Function to initialize mutexes for watchdogs
  */
 void _lf_initialize_watchdog_mutexes(void);
-
 
 /**
  * @brief Get the array of ids of enclaves directly upstream of the specified enclave.
@@ -346,17 +330,20 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
  */
 trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length);
 
+/// \cond INTERNAL  // Doxygen conditional.
+
 /**
- * @brief Will create and initialize the required number of environments for the program
+ * @brief Create and initialize the required number of environments for the program.
  * @note Will be code generated by the compiler
  */
-void _lf_create_environments();
-
+void _lf_create_environments(void);
 
 /**
- * These functions must be implemented by both threaded and single-threaded
- * runtime. Should be routed to appropriate API calls in platform.h
-*/
+ * @brief Generated function that optionally sets default command-line options.
+ */
+void _lf_set_default_command_line_options(void);
+
+/// \endcond // INTERNAL
 
 #endif /* REACTOR_H */
 /** @} */

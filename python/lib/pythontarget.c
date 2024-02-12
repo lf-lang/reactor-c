@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "python_port.h"
 #include "python_tag.h"
 #include "python_time.h"
-#include "reactor_common.h"
+#include "reactor.h"
 #include "reactor.h"
 #include "tag.h"
 #include "util.h"
