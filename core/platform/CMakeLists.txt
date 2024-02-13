@@ -12,8 +12,9 @@ set(LF_PLATFORM_FILES
     ${CMAKE_CURRENT_LIST_DIR}/lf_zephyr_clock_counter.c
     ${CMAKE_CURRENT_LIST_DIR}/lf_zephyr_clock_kernel.c
     ${CMAKE_CURRENT_LIST_DIR}/lf_rp2040_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/platform.c
-    ${CMAKE_CURRENT_LIST_DIR}/platform_internal.c
+    ${CMAKE_CURRENT_LIST_DIR}/lf_atomic_windows.c
+    ${CMAKE_CURRENT_LIST_DIR}/lf_atomic_gcc_clang.c
+    ${CMAKE_CURRENT_LIST_DIR}/lf_atomic_irq.c
 )
 if(PLATFORM_ZEPHYR)
     message("--- Building Zephyr library")

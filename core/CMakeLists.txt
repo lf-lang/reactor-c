@@ -13,7 +13,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
 endif()
 
 # Get the general common sources for reactor-c
-list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
+list(APPEND GENERAL_SOURCES tag.c clock.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
 
 # Add tracing support if requested
 if (DEFINED LF_TRACE)

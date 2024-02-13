@@ -44,9 +44,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.h"
 #include "util.h"
 
-// Global variables defined in tag.c:
-extern interval_t _lf_time_physical_clock_offset;
-extern interval_t _lf_time_test_physical_clock_offset;
+/** Offset calculated by the clock synchronization algorithm. */
+interval_t _lf_clock_sync_offset = NSEC(0);
+/** Offset used to test clock synchronization (clock sync should largely remove this offset). */
+interval_t _lf_clock_sync_constant_bias = NSEC(0);
 
 /**
  * Keep a record of connection statistics
@@ -76,6 +77,14 @@ instant_t _lf_last_clock_sync_instant = 0LL;
  * functions that communicate with the rti are called.
  */
 int _lf_rti_socket_UDP = -1;
+
+/**
+ * Atomically add an adjustment to the clock sync offset.
+ * This needs to be atomic to be thread safe, particularly on 32-bit platforms.
+ */
+static void adjust_lf_clock_sync_offset(interval_t adjustment) {
+    lf_atomic_fetch_add64(&_lf_clock_sync_offset, adjustment);
+}
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
 /**
@@ -380,7 +389,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // Apply a jitter attenuator to the estimated clock error to prevent
         // large jumps in the underlying clock.
         // Note that estimated_clock_error is calculated using lf_time_physical() which includes
-        // the _lf_time_physical_clock_offset adjustment.
+        // the clock sync adjustment.
         adjustment = estimated_clock_error / _LF_CLOCK_SYNC_ATTENUATION;
     } else {
         // Use of TCP socket means we are in the startup phase, so
@@ -420,21 +429,19 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // which means we can now adjust the clock offset.
         // For the AVG algorithm, history is a running average and can be directly
         // applied
-        _lf_time_physical_clock_offset += _lf_rti_socket_stat.history;
+        adjust_lf_clock_sync_offset(_lf_rti_socket_stat.history);
         // @note AVG and SD will be zero if collect-stats is set to false
         LF_PRINT_LOG("Clock sync:"
                     " New offset: " PRINTF_TIME "."
                     " Round trip delay to RTI (now): " PRINTF_TIME "."
                     " (AVG): " PRINTF_TIME "."
                     " (SD): " PRINTF_TIME "."
-                    " Local round trip delay: " PRINTF_TIME "."
-                    " Test offset: " PRINTF_TIME ".",
-                    _lf_time_physical_clock_offset,
+                    " Local round trip delay: " PRINTF_TIME ".",
+                    _lf_clock_sync_offset,
                     network_round_trip_delay,
                     stats.average,
                     stats.standard_deviation,
-                    _lf_rti_socket_stat.local_delay,
-                    _lf_time_test_physical_clock_offset);
+                    _lf_rti_socket_stat.local_delay);
         // Reset the stats
         reset_socket_stat(&_lf_rti_socket_stat);
         // Set the last instant at which the clocks were synchronized
@@ -539,6 +546,25 @@ void* listen_to_rti_UDP_thread(void* args) {
 }
 
 
+// If clock synchronization is enabled, provide implementations. If not
+// just empty implementations that should be optimized away.
+#if defined(FEDERATED) && defined(_LF_CLOCK_SYNC_ON)
+void clock_sync_apply_offset(instant_t *t) {
+    *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias);
+}
+
+void clock_sync_remove_offset(instant_t *t) {
+    *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias);
+}
+
+void clock_sync_set_constant_bias(interval_t offset) {
+    _lf_clock_sync_constant_bias = offset;
+}
+#else
+void clock_sync_apply_offset(instant_t *t) { }
+void clock_sync_remove_offset(instant_t *t) { }
+void clock_sync_set_constant_bias(interval_t offset) { }
+#endif
 
 /**
  * Create the thread responsible for handling clock synchronization
@@ -555,4 +581,5 @@ int create_clock_sync_thread(lf_thread_t* thread_id) {
 #endif // _LF_CLOCK_SYNC_ON
     return 0;
 }
+
 #endif

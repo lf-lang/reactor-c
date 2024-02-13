@@ -82,17 +82,25 @@
                     lf_print_debug(format, ##__VA_ARGS__); \
                 } } while (0)
 
+
 /**
  * Assertion handling. LF_ASSERT can be used as a shorthand for verifying
  * a condition and calling `lf_print_error_and_exit` if it is not true.
  * The LF_ASSERT version requires that the condition evaluate to true
  * (non-zero), whereas the LF_ASSERTN version requires that the condition
  * evaluate to false (zero).
- * These are optimized away if the NDEBUG flag is defined.
+ * These are optimized to execute the condition argument but not
+ * check the result if the NDEBUG flag is defined.
+ * The NDEBUG flag will be defined if the user specifies `build-type: Release`
+ * in the target properties of the LF program.
+ *
+ * LF_ASSERT_NON_NULL can be used to verify that a pointer is not NULL.
+ * It differs from LF_ASSERT in that it does nothing at all if the NDEBUG flag is defined.
  */
 #if defined(NDEBUG)
 #define LF_ASSERT(condition, format, ...) (void)(condition)
 #define LF_ASSERTN(condition, format, ...) (void)(condition)
+#define LF_ASSERT_NON_NULL(pointer)
 #else
 #define LF_ASSERT(condition, format, ...) \
 	do { \
@@ -106,6 +114,12 @@
 				lf_print_error_and_exit(format, ##__VA_ARGS__); \
 		} \
 	} while(0)
+#define LF_ASSERT_NON_NULL(pointer) \
+    do { \
+        if (!(pointer)) { \
+            lf_print_error_and_exit("Assertion failed: pointer is NULL Out of memory?."); \
+        } \
+    } while(0)
 #endif // NDEBUG
 
 // ABI ****************************************************************

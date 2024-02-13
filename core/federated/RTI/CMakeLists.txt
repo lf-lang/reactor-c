@@ -67,9 +67,11 @@ add_executable(
     rti_remote.c
     ${CoreLib}/trace.c
     ${LF_PLATFORM_FILE}
+    ${CoreLib}/platform/lf_atomic_gcc_clang.c
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
+    ${CoreLib}/clock.c
     ${CoreLib}/federated/network/net_util.c
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
@@ -102,6 +104,8 @@ target_compile_definitions(RTI PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 # Set RTI Tracing
 target_compile_definitions(RTI PUBLIC RTI_TRACE)
 
+# Warnings as errors
+target_compile_options(RTI PUBLIC -Werror)
 # Find threads and link to it
 find_package(Threads REQUIRED)
 target_link_libraries(RTI Threads::Threads)

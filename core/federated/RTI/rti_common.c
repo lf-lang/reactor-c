@@ -60,7 +60,7 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
 void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
     // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
     // Careful with handling startup and shutdown.
-    lf_mutex_lock(rti_common->mutex);
+    LF_MUTEX_LOCK(rti_common->mutex);
 
     enclave->completed = completed;
 
@@ -78,7 +78,7 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
         free(visited);
     }
 
-    lf_mutex_unlock(rti_common->mutex);
+    LF_MUTEX_UNLOCK(rti_common->mutex);
 }
 
 tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
@@ -316,8 +316,14 @@ static void _update_min_delays_upstream(
     // but for most programs, the gain might be negligible since there are relatively few
     // upstream nodes.
     for (int i = 0; i < intermediate->num_upstream; i++) {
-        // Add connection delay to path delay so far.
-        tag_t path_delay = lf_delay_tag(delay_from_intermediate_so_far, intermediate->upstream_delay[i]);
+        // Add connection delay to path delay so far. Because tag addition is not commutative,
+        // the calculation order should be carefully handled. Specifically, we should calculate
+        // intermediate->upstream_delay[i] + delay_from_intermediate_so_far,
+        // NOT delay_from_intermediate_so_far + intermediate->upstream_delay[i].
+        // Before calculating path delay, convert intermediate->upstream_delay[i] to a tag
+        // cause there is no function that adds a tag to an interval.
+        tag_t connection_delay = lf_delay_tag(ZERO_TAG, intermediate->upstream_delay[i]);
+        tag_t path_delay = lf_tag_add(connection_delay, delay_from_intermediate_so_far);
         // If the path delay is less than the so-far recorded path delay from upstream, update upstream.
         if (lf_tag_compare(path_delay, path_delays[intermediate->upstream[i]]) < 0) {
             if (path_delays[intermediate->upstream[i]].time == FOREVER) {

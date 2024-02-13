@@ -134,13 +134,44 @@ void lf_vprint_error_and_exit(const char* format, va_list args)
 /**
  * Checking mutex locking and unlocking.
  * This is optimized away if the NDEBUG flag is defined.
+ * @param mutex Pointer to the mutex to initialize.
  */
-#define LF_MUTEX_INIT(mutex) LF_ASSERTN(lf_mutex_init(&mutex), "Mutex init failed.")
+#define LF_MUTEX_INIT(mutex) LF_ASSERTN(lf_mutex_init(mutex), "Mutex init failed.")
 
-#define LF_MUTEX_LOCK(mutex) LF_ASSERTN(lf_mutex_lock(&mutex), "Mutex lock failed.")
+/**
+ * Lock mutex with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param mutex Pointer to the mutex to lock.
+ */
+#define LF_MUTEX_LOCK(mutex) LF_ASSERTN(lf_mutex_lock(mutex), "Mutex lock failed.")
 
-#define LF_MUTEX_UNLOCK(mutex) LF_ASSERTN(lf_mutex_unlock(&mutex), "Mutex unlock failed.")
+/**
+ * Unlock mutex with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param mutex Pointer to the mutex to unlock.
+ */
+#define LF_MUTEX_UNLOCK(mutex) LF_ASSERTN(lf_mutex_unlock(mutex), "Mutex unlock failed.")
 
-#define LF_COND_INIT(cond, mutex) LF_ASSERTN(lf_cond_init(&cond, &mutex), "Condition variable init failed.")
+/**
+ * Initialize condition variable with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param mutex Pointer to the condition variable to initialize.
+ * @param mutex Pointer to the mutex to associate with the condition variable.
+ */
+#define LF_COND_INIT(cond, mutex) LF_ASSERTN(lf_cond_init(cond, mutex), "Condition variable init failed.")
+
+/**
+ * Enter critical section with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param env Pointer to the environment.
+ */
+#define LF_CRITICAL_SECTION_ENTER(env) LF_ASSERT(!lf_critical_section_enter(env), "Could not enter critical section")
+
+/**
+ * Exit critical section with error checking.
+ * This is optimized away if the NDEBUG flag is defined.
+ * @param env Pointer to the environment.
+ */
+#define LF_CRITICAL_SECTION_EXIT(env) LF_ASSERT(!lf_critical_section_exit(env), "Could not exit critical section")
 
 #endif /* UTIL_H */

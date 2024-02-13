@@ -52,11 +52,4 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #error Linux platform misses clock support
 #endif
 
-// The underlying physical clock for Linux
-#if defined(_POSIX_CLOCK_MONOTONIC)
-    #define _LF_CLOCK CLOCK_MONOTONIC
-#else
-    #define _LF_CLOCK CLOCK_REALTIME
-#endif
-
 #endif // LF_LINUX_SUPPORT_H
