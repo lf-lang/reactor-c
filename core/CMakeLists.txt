@@ -1,7 +1,7 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Get the general common sources for reactor-c
-list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
+list(APPEND GENERAL_SOURCES tag.c clock.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
 
 # Add tracing support if requested
 if (DEFINED LF_TRACE)

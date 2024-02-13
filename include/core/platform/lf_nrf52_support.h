@@ -38,7 +38,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NO_TTY 
 
 #include <stdint.h> // For fixed-width integral types
-#include <time.h>   // For CLOCK_MONOTONIC
 #include <stdbool.h>
 
 #include <inttypes.h>  // Needed to define PRId64 and PRIu32
@@ -51,8 +50,5 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 typedef void lf_mutex_t;
 typedef void _lf_cond_var_t;
-
-// The underlying physical clock for Linux
-#define _LF_CLOCK CLOCK_MONOTONIC
 
 #endif // LF_nRF52832_SUPPORT_H
