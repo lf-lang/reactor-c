@@ -233,7 +233,7 @@ int next(environment_t* env) {
         }
     }
 
-    if (_lf_is_tag_after_stop_tag(env, next_tag)) {
+    if (lf_is_tag_after_stop_tag(env, next_tag)) {
         // Cannot process events after the stop tag.
         next_tag = env->stop_tag;
     }

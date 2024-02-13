@@ -2668,7 +2668,7 @@ int lf_send_tagged_message(environment_t* env,
     // tag of the outgoing message.
     tag_t current_message_intended_tag = lf_delay_tag(env->current_tag, additional_delay);
 
-    if (_lf_is_tag_after_stop_tag(env, current_message_intended_tag)) {
+    if (lf_is_tag_after_stop_tag(env, current_message_intended_tag)) {
         // Message tag is past the timeout time (the stop time) so it should not be sent.
         LF_PRINT_LOG("Dropping message because it will be after the timeout time.");
         return -1;

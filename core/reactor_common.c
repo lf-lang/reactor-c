@@ -233,7 +233,7 @@ void _lf_start_time_step(environment_t *env) {
 #endif // FEDERATED
 }
 
-bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag) {
+bool lf_is_tag_after_stop_tag(environment_t* env, tag_t tag) {
     assert(env != GLOBAL_ENVIRONMENT);
     return (lf_tag_compare(tag, env->stop_tag) > 0);
 }
@@ -260,7 +260,7 @@ void _lf_pop_events(environment_t *env) {
                 LF_PRINT_DEBUG("Putting event from the event queue for the next microstep.");
                 pqueue_insert(env->next_q, event->next);
             }
-            _lf_recycle_event(env, event);
+            lf_recycle_event(env, event);
             // Peek at the next event in the event queue.
             event = (event_t*)pqueue_peek(env->event_q);
             continue;
@@ -353,7 +353,7 @@ void _lf_pop_events(environment_t *env) {
             pqueue_insert(env->next_q, event->next);
         }
 
-        _lf_recycle_event(env, event);
+        lf_recycle_event(env, event);
 
         // Peek at the next event in the event queue.
         event = (event_t*)pqueue_peek(env->event_q);
@@ -454,7 +454,7 @@ void _lf_initialize_timers(environment_t* env) {
     // the recycle queue is initialized with a single event.
     if (env->timer_triggers_size > 0) {
         event_t *e = _lf_get_new_event(env);
-        _lf_recycle_event(env, e);
+        lf_recycle_event(env, e);
     }
 }
 
@@ -507,7 +507,7 @@ void _lf_trigger_shutdown_reactions(environment_t *env) {
 #endif
 }
 
-void _lf_recycle_event(environment_t* env, event_t* e) {
+void lf_recycle_event(environment_t* env, event_t* e) {
     assert(env != GLOBAL_ENVIRONMENT);
     e->time = 0LL;
     e->trigger = NULL;
@@ -614,7 +614,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
     }
 
     // Do not schedule events if the tag is after the stop tag
-    if (_lf_is_tag_after_stop_tag(env, tag)) {
+    if (lf_is_tag_after_stop_tag(env, tag)) {
          lf_print_warning("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
         _lf_done_using(token);
         return -1;
@@ -652,23 +652,23 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
                         if (found->token != token) {
                             _lf_done_using(token);
                         }
-                        _lf_recycle_event(env, e);
+                        lf_recycle_event(env, e);
                         return(0);
                         break;
                     case replace:
                         // Replace the payload of the event at the head with our
                         // current payload.
                         _lf_replace_token(found, token);
-                        _lf_recycle_event(env, e);
+                        lf_recycle_event(env, e);
                         return 0;
                         break;
                     default:
                         // Adding a microstep to the original
                         // intended tag.
-                        if (_lf_is_tag_after_stop_tag(env, (tag_t) {.time=found->time,.microstep=1})) {
+                        if (lf_is_tag_after_stop_tag(env, (tag_t) {.time=found->time,.microstep=1})) {
                             // Scheduling e will incur a microstep after the stop tag,
                             // which is illegal.
-                            _lf_recycle_event(env, e);
+                            lf_recycle_event(env, e);
                             return 0;
                         }
                         if (found->next != NULL) {
@@ -720,23 +720,23 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
                         if (found->next->token != token) {
                             _lf_done_using(token);
                         }
-                        _lf_recycle_event(env, e);
+                        lf_recycle_event(env, e);
                         return 0;
                         break;
                     case replace:
                         // Replace the payload of the event at the head with our
                         // current payload.
                         _lf_replace_token(found->next, token);
-                        _lf_recycle_event(env, e);
+                        lf_recycle_event(env, e);
                         return 0;
                         break;
                     default:
                         // Adding a microstep to the original
                         // intended tag.
-                        if (_lf_is_tag_after_stop_tag(env, (tag_t){.time=found->time,.microstep=microstep_of_found+1})) {
+                        if (lf_is_tag_after_stop_tag(env, (tag_t){.time=found->time,.microstep=microstep_of_found+1})) {
                             // Scheduling e will incur a microstep at timeout,
                             // which is illegal.
-                            _lf_recycle_event(env, e);
+                            lf_recycle_event(env, e);
                             return 0;
                         }
                         if (found->next->next != NULL) {
@@ -809,7 +809,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
  */
 trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
     assert(env != GLOBAL_ENVIRONMENT);
-    if (_lf_is_tag_after_stop_tag(env, env->current_tag)) {
+    if (lf_is_tag_after_stop_tag(env, env->current_tag)) {
         // If schedule is called after stop_tag
         // This is a critical condition.
         _lf_done_using(token);
@@ -911,11 +911,11 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                 found = found->next;
                 intended_tag.microstep++;
             }
-            if (_lf_is_tag_after_stop_tag(env, intended_tag)) {
+            if (lf_is_tag_after_stop_tag(env, intended_tag)) {
                 LF_PRINT_DEBUG("Attempt to schedule an event after stop_tag was rejected.");
                 // Scheduling an event will incur a microstep
                 // after the stop tag.
-                _lf_recycle_event(env, e);
+                lf_recycle_event(env, e);
                 return 0;
             }
             // Hook the event into the list.
@@ -944,7 +944,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                     // Recycle the new event and decrement the
                     // reference count of the token.
                     _lf_done_using(token);
-                    _lf_recycle_event(env, e);
+                    lf_recycle_event(env, e);
                     return(0);
                 case replace:
                     LF_PRINT_DEBUG("Policy is replace. Replacing the previous event.");
@@ -961,12 +961,12 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                         // Recycle the existing token and the new event
                         // and update the token of the existing event.
                         _lf_replace_token(found, token);
-                        _lf_recycle_event(env, e);
-                        _lf_recycle_event(env, dummy);
+                        lf_recycle_event(env, e);
+                        lf_recycle_event(env, dummy);
                         // Leave the last_tag the same.
                         return(0);
                     }
-                    _lf_recycle_event(env, dummy);
+                    lf_recycle_event(env, dummy);
 
                     // If the preceding event _has_ been handled, then adjust
                     // the tag to defer the event.
@@ -1002,7 +1002,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     if (e->time > env->stop_tag.time) {
         LF_PRINT_DEBUG("_lf_schedule: event time is past the timeout. Discarding event.");
         _lf_done_using(token);
-        _lf_recycle_event(env, e);
+        lf_recycle_event(env, e);
         return(0);
     }
 

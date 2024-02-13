@@ -52,7 +52,7 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
     // Check if future_tag is after stop tag.
     // This will only occur when a federate receives a timed message with
     // a tag that is after the stop tag
-    if (_lf_is_tag_after_stop_tag(env, future_tag)) {
+    if (lf_is_tag_after_stop_tag(env, future_tag)) {
         lf_print_warning("Attempting to raise a barrier after the stop tag.");
         future_tag = env->stop_tag;
     }
@@ -146,7 +146,7 @@ int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
     if (env->barrier.requestors == 0) return 0;
 
     // Do not wait for tags after the stop tag
-    if (_lf_is_tag_after_stop_tag(env, proposed_tag)) {
+    if (lf_is_tag_after_stop_tag(env, proposed_tag)) {
         proposed_tag = env->stop_tag;
     }
     // Do not wait forever
@@ -166,7 +166,7 @@ int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
         lf_cond_wait(&env->global_tag_barrier_requestors_reached_zero);
 
         // The stop tag may have changed during the wait.
-        if (_lf_is_tag_after_stop_tag(env, proposed_tag)) {
+        if (lf_is_tag_after_stop_tag(env, proposed_tag)) {
             proposed_tag = env->stop_tag;
         }
     }
@@ -305,7 +305,7 @@ tag_t get_next_event_tag(environment_t *env) {
 
     // If a timeout tag was given, adjust the next_tag from the
     // event tag to that timeout tag.
-    if (_lf_is_tag_after_stop_tag(env, next_tag)) {
+    if (lf_is_tag_after_stop_tag(env, next_tag)) {
         next_tag = env->stop_tag;
     }
     LF_PRINT_LOG("Earliest event on the event queue (or stop time if empty) is " PRINTF_TAG ". Event queue has size %zu.",
@@ -438,7 +438,7 @@ void _lf_next_locked(environment_t *env) {
         next_tag = get_next_event_tag(env);
 
         // If this (possibly new) next tag is past the stop time, return.
-        if (_lf_is_tag_after_stop_tag(env, next_tag)) {
+        if (lf_is_tag_after_stop_tag(env, next_tag)) {
             return;
         }
     }
@@ -447,7 +447,7 @@ void _lf_next_locked(environment_t *env) {
     next_tag = get_next_event_tag(env);
 
     // If this (possibly new) next tag is past the stop time, return.
-    if (_lf_is_tag_after_stop_tag(env, next_tag)) { // lf_tag_compare(tag, stop_tag) > 0
+    if (lf_is_tag_after_stop_tag(env, next_tag)) { // lf_tag_compare(tag, stop_tag) > 0
         return;
     }
 

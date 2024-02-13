@@ -13,7 +13,7 @@
 
 //  ******** Global Variables :( ********  //
 // The following variables are efined in reactor_common.c and used in reactor.c,
-// reactor_threaded.c, and by the code generator.
+// reactor_threaded.c, and (some) by the code generator.
 extern bool _lf_normal_termination;
 extern unsigned int _lf_number_of_workers;
 extern int default_argc;
@@ -27,12 +27,11 @@ extern interval_t _lf_fed_STA_offset;
 #endif
 
 /**
- * A helper function that returns true if the provided tag is after stop tag.
- *
+ * @brief Return true if the provided tag is after stop tag.
  * @param env Environment in which we are executing.
  * @param tag The tag to check against stop tag
  */
-bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag);
+bool lf_is_tag_after_stop_tag(environment_t* env, tag_t tag);
 
 /**
  * Recycle the given event.
@@ -40,7 +39,7 @@ bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag);
  * @param env Environment in which we are executing.
  * @param e The event to recycle.
  */
-void _lf_recycle_event(environment_t* env, event_t* e);
+void lf_recycle_event(environment_t* env, event_t* e);
 
 extern struct allocation_record_t* _lf_reactors_to_free;
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);

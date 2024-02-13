@@ -431,11 +431,11 @@ void _lf_process_mode_changes(
                                 event_t* tmp = e->next;
                                 e = tmp->next;
                                 // A fresh event was created by schedule, hence, recycle old one
-                                _lf_recycle_event(env, tmp);
+                                lf_recycle_event(env, tmp);
                             }
                         }
                         // A fresh event was created by schedule, hence, recycle old one
-                        _lf_recycle_event(env, event);
+                        lf_recycle_event(env, event);
 
                         // Remove suspended event and continue
                         suspended_event = _lf_remove_suspended_event(suspended_event);
@@ -542,7 +542,7 @@ void _lf_process_mode_changes(
 void _lf_terminate_modal_reactors(environment_t* env) {
     _lf_suspended_event_t* suspended_event = _lf_suspended_events_head;
     while(suspended_event != NULL) {
-        _lf_recycle_event(env, suspended_event->event);
+        lf_recycle_event(env, suspended_event->event);
         _lf_suspended_event_t* next = suspended_event->next;
         free(suspended_event);
         suspended_event = next;
