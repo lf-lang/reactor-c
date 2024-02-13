@@ -650,7 +650,7 @@ static void* wait_for_stop_request_reply(void* args) {
     lf_print_error_and_exit("Received only %d stop request replies within timeout "
             PRINTF_TIME "ns. RTI is exiting.",
             rti_remote->base.num_scheduling_nodes_handling_stop,
-            (long int) MAX_TIME_FOR_REPLY_TO_STOP_REQUEST
+            MAX_TIME_FOR_REPLY_TO_STOP_REQUEST
     );
     return NULL;
 }
