@@ -27,7 +27,6 @@ else()
 message("--- Building non-Zephyr library")
     add_library(LfPlatform STATIC ${LF_PLATFORM_FILES})
 endif()
-# add_library(LfPlatform STATIC ${LF_PLATFORM_FILES})
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
     target_compile_definitions(LfPlatform PUBLIC PLATFORM_NRF52)
@@ -55,6 +54,3 @@ target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../inc
 target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core)
 target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core/platform)
 target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core/utils)
-
-# # Add sources to core lib
-# target_sources(react PRIVATE ${LF_PLATFORM_FILES})

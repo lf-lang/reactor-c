@@ -9,7 +9,7 @@
  *
  * See: https://www.lf-lang.org/docs/handbook/tracing?target=c
  *
-* The trace file is named trace.lft and is a binary file with the following format:
+ * The trace file is named trace.lft and is a binary file with the following format:
  *
  * Header:
  * * instant_t: The start time. This is both the starting physical time and the starting logical time.
@@ -183,12 +183,7 @@ typedef struct trace_record_t {
     interval_t extra_delay;
 } trace_record_t;
 
-// void lf_tracing_init(int process_id, int max_num_local_threads);
-
-// void lf_tracing_global_shutdown();
-
 void call_tracepoint(
-        // trace_t* trace,
         int event_type,
         void* reactor,
         tag_t tag,
@@ -200,22 +195,6 @@ void call_tracepoint(
         interval_t extra_delay,
         bool is_interval_start
 );
-
-// /**
-//  * @brief Dynamically allocate a new tracing object.
-//  *
-//  * @param env The environment in which we are tracing. If passed NULL we use the GLOBAL_ENVIRONMENT
-//  * @param filename Name of the file in which to store the trace
-//  * @return trace_t* A newly allocated trace object with environment pointer and filename initialized
-//  */
-// trace_t* trace_new(environment_t *env, const char *filename);
-
-// /**
-//  * @brief Free the memory allocated for the trace object
-//  *
-//  * @param trace
-//  */
-// void trace_free(trace_t *trace);
 
 /**
  * Register a trace object.
@@ -236,12 +215,6 @@ int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t 
  * @return 1 if successful, 0 if the trace object table is full.
  */
 int register_user_trace_event(void* self, char* description);
-
-// /**
-//  * Open a trace file and start tracing.
-//  * @param filename The filename for the trace file.
-//  */
-// void start_trace(trace_t* trace);
 
 /**
  * Trace the start of a reaction execution.
@@ -341,17 +314,6 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * of the runtime.
  */
 void lf_tracing_check_version();
-
-// /**
-//  * Flush any buffered trace records to the trace file and close the files.
-//  * @param trace The trace object.
-//  */
-// void stop_trace(trace_t* trace);
-
-// /**
-//  * Version of stop_trace() that does not lock the trace mutex.
-//  */
-// void stop_trace_locked(trace_t* trace);
 
 ////////////////////////////////////////////////////////////
 //// For federated execution
@@ -454,11 +416,6 @@ typedef struct trace_t trace_t;
 #define tracepoint_rti_to_federate(...);
 #define tracepoint_rti_from_federate(...) ;
 
-// #define start_trace(...)
-// #define stop_trace(...)
-// #define stop_trace_locked(...)
-// #define trace_new(...) NULL
-// #define trace_free(...)
 #define lf_tracing_register_trace_event(...);
 #define lf_tracing_set_start_time(...);
 #define tracepoint(...);

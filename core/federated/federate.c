@@ -274,12 +274,12 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     int comparison = lf_tag_compare(tag, input_port_action->last_known_status_tag);
     if (comparison == 0) tag.microstep++;
     if (comparison >= 0) {
-        lf_print(
+        LF_PRINT_DEBUG(
             "Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
             port_id,
-            input_port_action->last_known_status_tag.time,
+            input_port_action->last_known_status_tag.time - lf_time_start(),
             input_port_action->last_known_status_tag.microstep,
-            tag.time,
+            tag.time - lf_time_start(),
             tag.microstep
         );
         input_port_action->last_known_status_tag = tag;
@@ -1493,17 +1493,6 @@ static void send_failed_signal(environment_t* env) {
     LF_PRINT_LOG("Failed.");
 }
 
-// /**
-//  * @brief Stop the traces associated with all environments in the program.
-//  */
-// static void stop_all_traces() {
-//     environment_t *env;
-//     int num_envs = _lf_get_environments(&env);
-//     for (int i = 0; i < num_envs; i++) {
-//         stop_trace(env[i].trace);
-//     }
-// }
-
 /**
  * Handle a failed signal from the RTI. The RTI will only fail
  * if it is forced to exit, e.g. by a SIG_INT. Hence, this federate
@@ -1557,7 +1546,6 @@ static void* listen_to_rti_TCP(void* args) {
             // EOF received.
             lf_print("Connection to the RTI closed with an EOF.");
             _fed.socket_TCP_RTI = -1;
-            // stop_all_traces();
             return NULL;
         }
         switch (buffer[0]) {
@@ -2722,10 +2710,6 @@ void lf_set_federation_id(const char* fid) {
     federation_metadata.federation_id = fid;
 }
 
-// void lf_set_federation_trace_object(trace_t * trace) {
-//     _fed.trace = trace;
-// }
-
 #ifdef FEDERATED_DECENTRALIZED
 void lf_spawn_staa_thread(){
     lf_thread_create(&_fed.staaSetter, update_ports_from_staa_offsets, NULL);
@@ -2767,8 +2751,8 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
     // This always needs the top-level environment, which will be env[0].
     environment_t *env;
     _lf_get_environments(&env);
-    // int prev_max_level_allowed_to_advance = max_level_allowed_to_advance;
-    int next_max_level_allowed_to_advance = INT_MAX;
+    int prev_max_level_allowed_to_advance = max_level_allowed_to_advance;
+    max_level_allowed_to_advance = INT_MAX;
 #ifdef FEDERATED_DECENTRALIZED
     size_t action_table_size = _lf_action_table_size;
     lf_action_base_t** action_table = _lf_action_table;
@@ -2783,9 +2767,7 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
               lf_time_logical_elapsed(env)
         );
         // Safe to complete the current tag
-        int changed = (next_max_level_allowed_to_advance != max_level_allowed_to_advance);
-        max_level_allowed_to_advance = next_max_level_allowed_to_advance;
-        return changed;
+        return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
     }
 
     size_t action_table_size = _lf_zero_delay_cycle_action_table_size;
@@ -2818,10 +2800,8 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
         if (lf_tag_compare(env->current_tag,
                 input_port_action->trigger->last_known_status_tag) > 0
                 && !input_port_action->trigger->is_physical) {
-            lf_print("current tag: %lld, last known status tag: %lld",
-                    env->current_tag.time, input_port_action->trigger->last_known_status_tag.time);
-            next_max_level_allowed_to_advance = LF_MIN(
-                next_max_level_allowed_to_advance,
+            max_level_allowed_to_advance = LF_MIN(
+                max_level_allowed_to_advance,
                 ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index))
             );
         }
@@ -2830,9 +2810,7 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
         max_level_allowed_to_advance,
         lf_time_logical_elapsed(env)
     );
-    int changed = (next_max_level_allowed_to_advance != max_level_allowed_to_advance);
-    max_level_allowed_to_advance = next_max_level_allowed_to_advance;
-    return changed;
+    return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
 }
 
 #endif

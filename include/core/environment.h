@@ -90,7 +90,6 @@ typedef struct environment_t {
     reaction_t** reset_reactions;
     int reset_reactions_size;
     mode_environment_t* modes;
-    // trace_t* trace;
     int worker_thread_count;
 #if defined(LF_SINGLE_THREADED)
     pqueue_t *reaction_q;

@@ -47,43 +47,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor_common.h"
 #include "util.h"
 
-// /**
-//  * @brief This struct holds all the state associated with tracing in a single environment.
-//  * Each environment which has tracing enabled will have such a struct on its environment struct.
-//  *
-//  */
-// typedef struct trace_t {
-//     /**
-//      * Array of buffers into which traces are written.
-//      * When a buffer becomes full, the contents is flushed to the file,
-//      * which will create a significant pause in the calling thread.
-//      */
-//     trace_record_t** _lf_trace_buffer;
-//     int* _lf_trace_buffer_size;
-
-//     /** The number of trace buffers allocated when tracing starts. */
-//     int _lf_number_of_trace_buffers;
-
-//     /** Marker that tracing is stopping or has stopped. */
-//     int _lf_trace_stop;
-
-//     /** The file into which traces are written. */
-//     FILE* _lf_trace_file;
-
-//     /** The file name where the traces are written*/
-//     char *filename;
-
-//     /** Table of pointers to a description of the object. */
-//     object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
-//     int _lf_trace_object_descriptions_size;
-
-//     /** Indicator that the trace header information has been written to the file. */
-//     bool _lf_trace_header_written;
-
-//     /** Pointer back to the environment which we are tracing within*/
-//     environment_t* env;
-// } trace_t;
-
 int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
     object_description_t desc = {
         .pointer = pointer1,
@@ -92,17 +55,11 @@ int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t 
         .description = description
     };
     lf_tracing_register_trace_event(desc);
-    // trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].pointer = pointer1;
-    // trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].trigger = pointer2;
-    // trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].type = type;
-    // trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].description = description;
-    // trace->_lf_trace_object_descriptions_size++;
     return 1;
 }
 
 int register_user_trace_event(void *self, char* description) {
     LF_ASSERT(self, "Need a pointer to a self struct to register a user trace event");  // FIXME: Not needed. self not needed either
-    // trace_t * trace = ((self_base_t *) self)->environment->trace;
     return _lf_register_trace_event(description, NULL, trace_user, description);
 }
 
@@ -217,7 +174,7 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     // There will be a performance hit for this.
     environment_t *env = ((self_base_t *)self)->environment;
     // trace_t *trace = env->trace;  // FIXME
-    // lf_critical_section_enter(env);
+    // lf_critical_section_enter(env);  // FIXME
     call_tracepoint(user_value, description, env->current_tag, -1, -1, -1, NULL, NULL, value, false);
     // lf_critical_section_exit(env);
 }

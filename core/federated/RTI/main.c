@@ -107,7 +107,6 @@ void termination() {
             send_failed_signal(f);
         }
         if (rti.base.tracing_enabled) {
-            // stop_trace_locked(rti.base.trace);
             lf_print("RTI trace file saved.");
         }
         lf_print("RTI is exiting abnormally.");
@@ -311,9 +310,6 @@ int main(int argc, const char* argv[]) {
     if (rti.base.tracing_enabled) {
         _lf_number_of_workers = rti.base.number_of_scheduling_nodes;
         lf_tracing_global_init("rti", -1, _lf_number_of_workers + 1);  // FIXME: almost certainly wrong
-        // rti.base.trace = trace_new(NULL, rti_trace_file_name);
-        // LF_ASSERT(rti.base.trace, "Out of memory");
-        // start_trace(rti.base.trace);
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
 
@@ -334,7 +330,6 @@ int main(int argc, const char* argv[]) {
         normal_termination = true;
         if (rti.base.tracing_enabled) {
             // No need for a mutex lock because all threads have exited.
-            // stop_trace_locked(rti.base.trace);
             lf_tracing_global_shutdown();
             lf_print("RTI trace file saved.");
         }

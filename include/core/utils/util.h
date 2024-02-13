@@ -132,7 +132,7 @@ void lf_vprint_error_and_exit(const char* format, va_list args)
 		ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
- * Checking mutex locking and unlocking.
+ * Initialize mutex with error checking.
  * This is optimized away if the NDEBUG flag is defined.
  * @param mutex Pointer to the mutex to initialize.
  */

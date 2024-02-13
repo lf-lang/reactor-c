@@ -396,10 +396,10 @@ void _lf_pop_events(environment_t *env) {
                     if (lf_tag_compare(event->intended_tag, env->current_tag) < 0) {
                         // Mark the triggered reaction with a STP violation
                         reaction->is_STP_violated = true;
-                        lf_print("Trigger %p has violated the reaction's STP offset. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG,
+                        LF_PRINT_LOG("Trigger %p has violated the reaction's STP offset. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG,
                                     event->trigger,
-                                    event->intended_tag.time, event->intended_tag.microstep,
-                                    env->current_tag.time, env->current_tag.microstep);
+                                    event->intended_tag.time - start_time, event->intended_tag.microstep,
+                                    env->current_tag.time - start_time, env->current_tag.microstep);
                         // Need to update the last_known_status_tag of the port because otherwise,
                         // the MLAA could get stuck, causing the program to lock up.
                         // This should not call update_last_known_status_on_input_port because we
@@ -1762,15 +1762,6 @@ void initialize_global(void) {
 #else
     lf_tracing_global_init("trace_", 0, max_threads_tracing); // FIXME: is this right? In case of federation, I doubt it. Easy to check but I am in a hurry.
 #endif
-    // for (int i = 0; i<num_envs; i++) {
-    //     start_trace(envs[i].trace);
-    // }
-
-    // Federation trace object must be set before `initialize_trigger_objects` is called because it
-    //  uses tracing functionality depending on that pointer being set.
-    // #ifdef FEDERATED
-    // lf_set_federation_trace_object(envs->trace);
-    // #endif
     // Call the code-generated function to initialize all actions, timers, and ports
     // This is done for all environments/enclaves at the same time.
     _lf_initialize_trigger_objects() ;
@@ -1807,11 +1798,6 @@ void termination(void) {
             continue;
         }
         LF_PRINT_LOG("---- Terminating environment %u, normal termination: %d", env[i].id, _lf_normal_termination);
-        // // Stop any tracing, if it is running.
-        // // No need to acquire a mutex because if this is normal termination, all
-        // // other threads have stopped, and if it's not, then acquiring a mutex could
-        // // lead to a deadlock.
-        // stop_trace_locked(env[i].trace);
 
         // Skip most cleanup on abnormal termination.
         if (_lf_normal_termination) {
