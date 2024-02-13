@@ -25,4 +25,4 @@
 #undef lf_tag
 #undef lf_time_logical 
 #undef lf_time_logical_elapsed 
-#endif // REACTION_API_H
+#endif // REACTION_MACROS_H
