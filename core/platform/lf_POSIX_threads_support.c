@@ -14,41 +14,6 @@ int lf_available_cores() {
     return (int)sysconf(_SC_NPROCESSORS_ONLN);
 }
 
-int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy) {
-    int posix_policy;
-    struct sched_param schedparam;
-
-    // Get the current scheduling policy
-    if (pthread_getschedparam(thread, &posix_policy, &schedparam) != 0) {
-        return -1;
-    }
-
-    // Update the policy
-    switch(policy->policy) {
-        case LF_SCHED_FAIR:
-            posix_policy = SCHED_OTHER;
-            break;
-        case LF_SCHED_TIMESLICE:
-            posix_policy = SCHED_RR;
-            schedparam.sched_priority = ((lf_scheduling_policy_timeslice_t *) policy)->priority;
-            break;
-        case LF_SCHED_PRIORITY:
-            posix_policy = SCHED_FIFO;
-            schedparam.sched_priority = ((lf_scheduling_policy_priority_t *) policy)->priority;
-            break;
-        default:
-            return -1;
-            break;
-    }
-
-    // Write it back
-    if (pthread_setschedparam(thread, posix_policy, &schedparam) != 0) {
-        return -3;
-    }
-
-    return 0;
-}
-
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
 }
@@ -74,25 +39,6 @@ int lf_mutex_init(lf_mutex_t* mutex) {
     // pthreads. Maybe it has been fixed?
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
     return pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
-}
-
-int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
-    // First verify that we have num_cores>cpu_number
-    if (lf_available_cores() <= cpu_number) {
-        return -1;
-    }
-
-    // Create a CPU-set consisting of only the desired CPU
-    cpu_set_t cpu_set;
-    CPU_ZERO(&cpu_set);
-    CPU_SET(cpu_number, &cpu_set);
-
-    return pthread_setaffinity_np(thread, sizeof(cpu_set), &cpu_set);
-}
-
-
-int lf_thread_set_priority(lf_thread_t thread, int priority) {
-    return pthread_setschedprio(thread, priority);
 }
 
 lf_thread_t lf_thread_self() {
