@@ -25,8 +25,8 @@
  */
 
 // Prevent inclusion twice in a row without an intervening inclusion of reaction_macros_undef.h.
-#ifndef REACTION_API_H
-#define REACTION_API_H
+#ifndef REACTION_MACROS_H
+#define REACTION_MACROS_H
 
 // NOTE: According to the "Swallowing the Semicolon" section on this page:
 //    https://gcc.gnu.org/onlinedocs/gcc-3.0.1/cpp_3.html
