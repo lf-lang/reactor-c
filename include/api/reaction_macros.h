@@ -196,4 +196,4 @@ do { \
  */
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 
-#endif // REACTION_API_H
+#endif // REACTION_MACROS_H
