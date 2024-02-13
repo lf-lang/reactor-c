@@ -15,6 +15,8 @@ set(LF_PLATFORM_FILES
     ${CMAKE_CURRENT_LIST_DIR}/lf_atomic_windows.c
     ${CMAKE_CURRENT_LIST_DIR}/lf_atomic_gcc_clang.c
     ${CMAKE_CURRENT_LIST_DIR}/lf_atomic_irq.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform_internal.c
 )
 if(PLATFORM_ZEPHYR)
     message("--- Building Zephyr library")

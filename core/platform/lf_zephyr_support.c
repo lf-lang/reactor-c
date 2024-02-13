@@ -151,9 +151,9 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
 }
 
 void initialize_lf_thread_id() {
-    static volatile int _lf_worker_thread_count = 0;
+    static int _lf_worker_thread_count = 0;
     int *thread_id = (int*) malloc(sizeof(int));
-    *thread_id = lf_atomic_fetch_add(&_lf_worker_thread_count, 1);
+    *thread_id = lf_atomic_fetch_add32(&_lf_worker_thread_count, 1);
     k_thread_custom_data_set(thread_id);
 }
 
