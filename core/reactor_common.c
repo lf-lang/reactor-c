@@ -1755,12 +1755,16 @@ void initialize_global(void) {
 #if defined(LF_SINGLE_THREADED)
     int max_threads_tracing = 1;
 #else
-    int max_threads_tracing = envs[0].num_workers * num_envs + 2;
+    int max_threads_tracing = envs[0].num_workers * num_envs + 1; // add 1 for the main thread
 #endif
 #if defined(FEDERATED)
+    // NUMBER_OF_FEDERATES is an upper bound on the number of upstream federates
+    // -- threads are spawned to listen to upstream federates. Add 1 for the
+    // clock sync thread and add 1 for the staa thread
+    max_threads_tracing += NUMBER_OF_FEDERATES + 2;
     lf_tracing_global_init("federate__", FEDERATE_ID, max_threads_tracing);
 #else
-    lf_tracing_global_init("trace_", 0, max_threads_tracing); // FIXME: is this right? In case of federation, I doubt it. Easy to check but I am in a hurry.
+    lf_tracing_global_init("trace_", 0, max_threads_tracing);
 #endif
     // Call the code-generated function to initialize all actions, timers, and ports
     // This is done for all environments/enclaves at the same time.
