@@ -36,8 +36,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "python_port.h"
 #include "reactor.h"
-#include "api/api.h"
-#include "api/set.h"
+#include "api/schedule.h"
+#include "api/reaction_macros.h"
 
 PyTypeObject py_port_capsule_t;
 
