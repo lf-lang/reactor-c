@@ -63,10 +63,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if !defined(LF_SINGLE_THREADED)
 #include "watchdog.h"
-
-// Code generated global variables.
-extern int _lf_watchdog_count;
-extern watchdog_t* _lf_watchdogs;
 #endif
 
 // Global variable defined in tag.c:
@@ -1769,6 +1765,11 @@ void termination(void) {
         // lead to a deadlock.
         stop_trace_locked(env[i].trace);
 
+    #if !defined(LF_SINGLE_THREADED)
+        // Make sure all watchdog threads have stopped
+        _lf_watchdog_terminate_all(&env[i]);
+    #endif
+
         // Skip most cleanup on abnormal termination.
         if (_lf_normal_termination) {
             _lf_start_time_step(&env[i]);
@@ -1816,9 +1817,9 @@ void termination(void) {
         }
 #endif
 #if !defined(LF_SINGLE_THREADED)
-        for (int i = 0; i < _lf_watchdog_count; i++) {
-            if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
-                free(_lf_watchdogs[i].base->reactor_mutex);
+        for (int i = 0; i < env->watchdogs_size; i++) {
+            if (env->watchdogs[i]->base->reactor_mutex != NULL) {
+                free(env->watchdogs[i]->base->reactor_mutex);
             }
         }
 #endif

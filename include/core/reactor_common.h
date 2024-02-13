@@ -10,7 +10,6 @@
 #include "modes.h"
 #include "port.h"
 
-
 //  ******** Global Variables :( ********  //
 extern unsigned int _lf_number_of_workers;
 extern bool fast;
