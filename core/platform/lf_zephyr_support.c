@@ -155,7 +155,7 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
 }
 
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
-    k_thread_priority_set(thread, priority);
+    k_thread_priority_set(thread, 99 - priority);
     return 0;
 }
 

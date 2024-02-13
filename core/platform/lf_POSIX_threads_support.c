@@ -10,10 +10,6 @@
 #include <stdint.h> // For fixed-width integral types
 #include <unistd.h>
 
-#if defined PLATFORM_Linux
-#include <sys/syscall.h>
-#endif
-
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy) {
     int posix_policy;
     struct sched_param schedparam;
@@ -50,13 +46,7 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *
 }
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
-    static int core_id=0;
-    pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
-    if (lf_thread_set_cpu(*thread, core_id) != 0) {
-        lf_print_error_and_exit("Could not set CPU");
-    }
-    core_id++;
-    return 0;
+    return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
 }
 
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
