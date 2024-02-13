@@ -36,9 +36,21 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 
 #if defined LF_SINGLE_THREADED
-    #include "lf_os_single_threaded_support.c"
+#include "lf_os_single_threaded_support.c"
 #else
-    #include "lf_POSIX_threads_support.c"
+#include "lf_POSIX_threads_support.c"
+
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
+    return -1;
+}
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
+    return -1;
+}
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy) {
+    return -1;
+}
 #endif
 
 #include "lf_unix_clock_support.h"
@@ -62,17 +74,5 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
 
 int lf_nanosleep(interval_t sleep_duration) {
     return lf_sleep(sleep_duration);
-}
-
-int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
-    return -1;
-}
-
-int lf_thread_set_priority(lf_thread_t thread, int priority) {
-    return -1;
-}
-
-int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy) {
-    return -1;
 }
 #endif
