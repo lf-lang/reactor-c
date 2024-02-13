@@ -92,51 +92,34 @@ static void* watchdog_thread_main(void* arg) {
 
     // Grab reactor-mutex and start infinite loop.
     LF_MUTEX_LOCK((lf_mutex_t*)(base->reactor_mutex));
-    while (true) {
+    while (! watchdog->terminate) {
 
         // Step 1: Wait for a timeout to start watching for.
-        
-        // Edge case 1: We have already gotten a signal to terminate.
-        if (watchdog->terminate) {
-            goto terminate;
-        }
-
-        // Edge case 2: We have already received a timeout.
-        if(watchdog->expiration != NEVER) {
-            watchdog_wait(watchdog);
-        } else {
+        if(watchdog->expiration == NEVER) {
+            // Watchdog has been stopped.
             // Wait for a signal that we have a timeout to wait for on the cond-var.
             LF_COND_WAIT(&watchdog->cond);
-            
-            // Check whether we actually got a termination signal.
-            if (watchdog->terminate) {
-                goto terminate;
-            }
-
-            // Finally go wait for that timeout.
-            watchdog_wait(watchdog);
-        }
-
-        // At this point we have returned from the watchdog wait. But it could
-        // be that it was to terminate the watchdog.
-        if (watchdog->terminate) {
-            goto terminate;
-        }
-
-        // It could also be that the watchdog was just stopped
-        if (watchdog->expiration == NEVER) {
             continue;
-        }
+        } else {
+            // Watchdog has been started.
+            watchdog_wait(watchdog);
+            
+            // At this point we have returned from the watchdog wait. But it could
+            // be that it was to terminate the watchdog.
+            if (watchdog->terminate) break;
 
-        // Finally. The watchdog actually timed out. Handle it.
-        LF_PRINT_DEBUG("Watchdog %p timed out", (void *) watchdog);
-        watchdog_function_t watchdog_func = watchdog->watchdog_function;
-        (*watchdog_func)(base);
-        watchdog->expiration = NEVER;
-        watchdog->active = false;
+               // It could also be that the watchdog was just stopped
+            if (watchdog->expiration == NEVER) continue;
+
+            // If we reach here, the watchdog actually timed out. Handle it.
+            LF_PRINT_DEBUG("Watchdog %p timed out", (void *) watchdog);
+            watchdog_function_t watchdog_func = watchdog->watchdog_function;
+                (*watchdog_func)(base);
+            watchdog->expiration = NEVER;
+            watchdog->active = false;
+        }
     }
 
-terminate:
     // Here the thread terminates. 
     watchdog->active = false;
     LF_MUTEX_UNLOCK(base->reactor_mutex);

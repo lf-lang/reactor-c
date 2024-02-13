@@ -36,7 +36,7 @@ struct watchdog_t {
     lf_thread_t thread_id;                  // The thread that the watchdog is meant to run on.
     lf_cond_t cond;                         // Condition variable used for sleeping and termination.
     bool active;                            // Boolean indicating whether or not thread is active.  
-    bool terminate;                         // Boolean indicating whether or not thread is active.  
+    bool terminate;                         // Boolean indicating whether termination of the thread has been requested.  
     watchdog_function_t watchdog_function;  // The function/handler for the watchdog.
 };
 
