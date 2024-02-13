@@ -77,8 +77,9 @@ add_executable(
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
 )
-
-set(LOG_LEVEL 0)
+if (NOT DEFINED LOG_LEVEL)
+    set(LOG_LEVEL 0)
+ENDIF(NOT DEFINED LOG_LEVEL)
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages
