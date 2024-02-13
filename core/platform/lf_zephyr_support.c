@@ -146,6 +146,49 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
     return 0;
 }
 
+lf_thread_t lf_thread_self() {
+    return k_current_get();
+}
+
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
+    return k_thread_cpu_pin(thread, cpu_number);
+}
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
+    k_thread_priority_set(thread, priority);
+    return 0;
+}
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy) {
+    // Update the policy
+    switch(policy->policy) {
+        case LF_SCHED_FAIR:
+            break;
+        case LF_SCHED_TIMESLICE: {
+            int priority = ((lf_scheduling_policy_timeslice_t *) policy)->priority;
+            interval_t slice = ((lf_scheduling_policy_timeslice_t *) policy)->timeslice;
+            k_thread_priority_set(thread, 99 - priority);
+            k_sched_time_slice_set(0, slice/1000000);
+            break;
+        }
+        case LF_SCHED_PRIORITY: {
+            int priority = ((lf_scheduling_policy_timeslice_t *) policy)->priority;
+            k_thread_priority_set(thread, 99 - priority);
+            break;
+        }
+        default:
+            return -1;
+            break;
+    }
+
+    // Write it back
+    if (pthread_setschedparam(thread, posix_policy, &schedparam) != 0) {
+        return -3;
+    }
+
+    return 0;
+}
+
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
     return k_thread_join(thread, K_FOREVER);
 }

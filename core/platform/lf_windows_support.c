@@ -167,8 +167,6 @@ int lf_available_cores() {
     return sysinfo.dwNumberOfProcessors;
 }
 
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
     *thread = (HANDLE)handle;
@@ -192,6 +190,22 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
         return EINVAL;
     }
     return 0;
+}
+
+lf_thread_t lf_thread_self() {
+    return GetCurrentThread();
+}
+
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
+    return -1;
+}
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
+    return -1;
+}
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_thread_scheduling_policy_t policy) {
+    return -1;
 }
 
 int lf_mutex_init(_lf_critical_section_t* critical_section) {
@@ -297,9 +311,6 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     // Success
     return 0;
 }
-#else // If there is C11 support
-#include "lf_C11_threads_support.c"
-#endif 
 #endif
 
 

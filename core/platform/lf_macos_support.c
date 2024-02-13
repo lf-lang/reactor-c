@@ -30,6 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
+#define _GNU_SOURCE
 #include "lf_macos_support.h"
 #include "platform.h"
 #include "tag.h"

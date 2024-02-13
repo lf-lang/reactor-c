@@ -1,5 +1,6 @@
 #if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
 #include "platform.h"
+#include "util.h"
 #include "lf_POSIX_threads_support.h"
 #include "lf_unix_clock_support.h"
 
@@ -7,27 +8,43 @@
 #include <sched.h>
 #include <errno.h>
 #include <stdint.h> // For fixed-width integral types
+#include <unistd.h>
 
-int lf_thread_scheduler_init() {
+#if defined PLATFORM_Linux
+#include <sys/syscall.h>
+#endif
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy) {
+    int posix_policy;
     struct sched_param schedparam;
-    pthread_attr_t attr;
 
-    // Set the current (main) threads scheduling policy to FIFO
-    schedparam.sched_priority = 3;
-    if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &schedparam) != 0) {
+    // Get the current scheduling policy
+    if (pthread_getschedparam(thread, &posix_policy, &schedparam) != 0) {
         return -1;
     }
 
-    // Make any thread spawned from this thread inherit this policy
-    if (pthread_attr_init(&attr) != 0) {
-        return -2;
-    }
-    if (pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED) != 0) {
-        return -3;
+    // Update the policy
+    switch(policy->policy) {
+        case LF_SCHED_FAIR:
+            posix_policy = SCHED_OTHER;
+            break;
+        case LF_SCHED_TIMESLICE:
+            posix_policy = SCHED_RR;
+            schedparam.sched_priority = ((lf_scheduling_policy_timeslice_t *) policy)->priority;
+            break;
+        case LF_SCHED_PRIORITY:
+            posix_policy = SCHED_FIFO;
+            schedparam.sched_priority = ((lf_scheduling_policy_priority_t *) policy)->priority;
+            break;
+        default:
+            return -1;
+            break;
     }
 
-    // Clean up the attribute when you're done using it
-    pthread_attr_destroy(&attr);
+    // Write it back
+    if (pthread_setschedparam(thread, posix_policy, &schedparam) != 0) {
+        return -3;
+    }
 
     return 0;
 }

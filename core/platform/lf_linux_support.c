@@ -32,6 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
  
+#define _GNU_SOURCE
 #include "lf_linux_support.h"
 #include "platform.h"
 #include "tag.h"

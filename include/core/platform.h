@@ -125,16 +125,15 @@ int lf_critical_section_exit(environment_t* env);
 // abstract the API so that the LF runtime remains portable.
 
 /**
- * Initializes the underlying thread scheduler.
- * 
- * @return int 0 on success, platform-specific error number otherwise.
- */
-int lf_thread_scheduler_init();
-
-/**
  * @brief Get the number of cores on the host machine.
  */
 int lf_available_cores();
+
+/**
+ * Returns the thread ID of the calling thread
+ * 
+ */
+lf_thread_t lf_thread_self();
 
 /**
  * Create a new thread, starting with execution of lf_thread
@@ -156,6 +155,36 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return);
 
+
+// The following API introduce the ability to change how the LF workers are sheduled
+// by the underlying thread scheduling. This API is still experimental and future
+// changes are expected.
+
+/**
+ * @brief The thread scheduling policies. 
+ * 
+ */
+typedef enum {
+    LF_SCHED_FAIR, // Non real-time scheduling policy. Corresponds to SCHED_OTHER
+    LF_SCHED_TIMESLICE, // Real-time, time-slicing priority-based policty. Corresponds to SCHED_RR.
+    LF_SCHED_PRIORITY, // Real-time, priority-only based scheduling. Corresponds to SCHED_FIFO.
+} lf_scheduling_policy_type_t;
+
+typedef struct {
+    lf_scheduling_policy_type_t policy;
+} lf_scheduling_policy_t;
+
+typedef struct {
+    lf_scheduling_policy_t base;
+    int priority;
+    interval_t time_slice;
+} lf_scheduling_policy_timeslice_t;
+
+typedef struct {
+    lf_scheduling_policy_t base;
+    int priority;
+} lf_scheduling_policy_priority_t;
+
 /**
  * This pins a lf_thread to a specific CPU
  * 
@@ -167,7 +196,8 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
 
 /**
  * Sets the priority of a thread. Priority ranges from 0 to 99 where a higher
- * number indicates higher priority.
+ * number indicates higher priority. Setting the priority of a thread only
+ * makes sense if the thread is scheduled with LF_SCHED_TIMESLICE or LF_THREAD_PRIORITY
  *
  * @param thread The thread.
  * @param priority The priority.
@@ -176,11 +206,11 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
 int lf_thread_set_priority(lf_thread_t thread, int priority);
 
 /**
- * Returns the thread ID of the calling thread
- * 
+ * Sets the scheduling policy of a thread.
+ *  
+ * @return int 0 on success, platform-specific error number otherwise.
  */
-lf_thread_t lf_thread_self();
-
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy);
 
 /**
  * Initialize a mutex.
