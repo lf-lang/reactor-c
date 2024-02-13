@@ -33,13 +33,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_macos_support.h"
 #include "platform.h"
 #include "tag.h"
-#define LF_MIN_SLEEP_NS USEC(10)
 
-#if defined LF_UNTHREADED
+#if defined LF_SINGLE_THREADED
     #include "lf_os_single_threaded_support.c"
 #endif
 
-#if defined LF_THREADED
+#if !defined LF_SINGLE_THREADED
     #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
         // (Not C++11 or later) or no threads support
         #include "lf_POSIX_threads_support.c"
@@ -62,7 +61,7 @@ int lf_sleep(interval_t sleep_duration) {
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
-    if (sleep_duration < LF_MIN_SLEEP_NS) {
+    if (sleep_duration <= 0) {
         return 0;
     } else {
         return lf_sleep(sleep_duration);

@@ -31,6 +31,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
  */
 
+#if !defined(LF_SINGLE_THREADED)
+#error "Only the single-threaded runtime has support for RP2040"
+#endif
+
 #include "lf_rp2040_support.h"
 #include "platform.h"
 #include "utils/util.h"
@@ -59,7 +63,7 @@ static uint32_t _lf_num_nested_crit_sec = 0;
 
 /**
  * Initialize basic runtime infrastructure and 
- * synchronization structs for an unthreaded runtime.
+ * synchronization structs for an single-threaded runtime.
  */
 void _lf_initialize_clock(void) {
     // init stdio lib
@@ -77,7 +81,7 @@ void _lf_initialize_clock(void) {
  * @param  t  pointer to the time variable to write to.
  * @return error code or 0 on success. 
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
     if (!t) {
         return -1;
     }
@@ -113,8 +117,8 @@ int lf_sleep(interval_t sleep_duration) {
  * by the argument or return early if the binary 
  * _lf_sem_irq_event semaphore is released before the target time.
  *
- * The semaphore is released using the _lf_unthreaded_notify_of_event
- * which is called by lf_schedule in the unthreaded runtime for physical actions.
+ * The semaphore is released using the _lf_single_threaded_notify_of_event
+ * which is called by lf_schedule in the single_threaded runtime for physical actions.
  *
  * @param  env  pointer to environment struct this runs in.
  * @param  wakeup_time  time in nanoseconds since boot to sleep until.
@@ -134,25 +138,16 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
     // create us boot wakeup time
     target = from_us_since_boot((uint64_t) (wakeup_time / 1000));
     // allow interrupts
-    lf_critical_section_exit(env);
+    LF_CRITICAL_SECTION_EXIT(env);
     // blocked sleep
     // return on timeout or on processor event
     if(sem_acquire_block_until(&_lf_sem_irq_event, target)) {
         ret_code = -1;
     }
     // remove interrupts
-    lf_critical_section_enter(env);
+    LF_CRITICAL_SECTION_ENTER(env);
     return ret_code;
 }
-
-#ifdef LF_UNTHREADED
-/**
- * The single thread RP2040 platform support treats second core
- * routines similar to external interrupt routine threads.
- * 
- * Second core activity is disabled at the same times as
- * when interrupts are disabled. 
- */
 
 /**
  * Enter a critical section where the second core is disabled
@@ -199,22 +194,20 @@ int lf_enable_interrupts_nested() {
     return 0;
 }
 
+#if defined(LF_SINGLE_THREADED)
 /**
  * Release the binary event semaphore to notify
  * the runtime of a physical action being scheduled.
  *
  * @return error code or 0 on success
  */
-int _lf_unthreaded_notify_of_event() {
+int _lf_single_threaded_notify_of_event() {
     // notify main sleep loop of event
     sem_release(&_lf_sem_irq_event);
     return 0;
 }
-#endif //LF_UNTHREADED
+#endif // LF_SINGLE_THREADED
 
-#ifdef LF_THREADED
-#error "Threading for baremetal RP2040 not supported"
-#endif //LF_THREADED
 
 #endif // PLATFORM_RP2040
 

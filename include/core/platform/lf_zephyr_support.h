@@ -34,14 +34,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_tag_64_32.h"
 
 #include <stdint.h> // For fixed-width integral types
-#include <time.h>   // For CLOCK_MONOTONIC
 #include <stdbool.h>
 #include <stdlib.h> //malloc, calloc, free, realloc
 
 #include <zephyr/kernel.h>
 
 #define NO_TTY
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
 
 typedef struct k_mutex lf_mutex_t;
 typedef struct {
@@ -71,9 +70,9 @@ bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval);
  * to `value`, it is updated to `newval`. The function returns
  * the original value of `*ptr`.
  */
-int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval);
+int  _zephyr_val32_compare_and_swap(uint32_t *ptr, int value, int newval);
 
-#endif // LF_THREADED
+#endif // !LF_SINGLE_THREADED
 
 
 

@@ -8,7 +8,7 @@ CFLAGS=	-I$(REACTOR_C)/include/core/ \
 		-I$(REACTOR_C)/include/core/modal_models \
 		-I$(REACTOR_C)/include/core/platform \
 		-I$(REACTOR_C)/include/core/utils \
-		-DLF_UNTHREADED=1 \
+		-DLF_SINGLE_THREADED=1 \
 		-Wall
 DEPS=
 LIBS=-lcurl
@@ -37,4 +37,4 @@ install: trace_to_csv trace_to_chrome trace_to_influxdb
 	chmod +x $(BIN_INSTALL_PATH)/fedsd
 	
 clean:
-	rm -f *.o
+	rm -f *.o trace_to_chrome trace_to_influxdb trace_to_csv

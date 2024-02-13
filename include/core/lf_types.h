@@ -239,7 +239,8 @@ struct trigger_t {
     interval_t offset;        // Minimum delay of an action. For a timer, this is also the maximum delay.
     interval_t period;        // Minimum interarrival time of an action. For a timer, this is also the maximal interarrival time.
     bool is_physical;         // Indicator that this denotes a physical action.
-    event_t* last;            // Pointer to the last event that was scheduled for this action.
+    tag_t last_tag;           // Tag of the last event that was scheduled for this action.
+                              // This is only used for actions and will otherwise be NEVER.
     lf_spacing_policy_t policy;          // Indicates which policy to use when an event is scheduled too early.
     port_status_t status;     // Determines the status of the port at the current logical time. Therefore, this
                               // value needs to be reset at the beginning of each logical time.
@@ -298,11 +299,11 @@ typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
     environment_t * environment;
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
                           // It is not declared as such to avoid a dependence on platform.h.
 #endif
-#ifdef MODAL_REACTORS
+#if defined(MODAL_REACTORS)
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
 } self_base_t;

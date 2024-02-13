@@ -76,9 +76,10 @@ typedef enum
     worker_wait_ends,
     scheduler_advancing_time_starts,
     scheduler_advancing_time_ends,
-    federated, // Everything above this is tracing federated interactions.
+    federated, // Everything below this is for tracing federated interactions.
     // Sending messages
     send_ACK,
+    send_FAILED,
     send_TIMESTAMP,
     send_NET,
     send_LTC,
@@ -100,6 +101,7 @@ typedef enum
     send_ADR_QR,
     // Receiving messages
     receive_ACK,
+    receive_FAILED,
     receive_TIMESTAMP,
     receive_NET,
     receive_LTC,
@@ -142,6 +144,7 @@ static const char *trace_event_names[] = {
     "Federated marker",
     // Sending messages
     "Sending ACK",
+    "Sending FAILED",
     "Sending TIMESTAMP",
     "Sending NET",
     "Sending LTC",
@@ -163,6 +166,7 @@ static const char *trace_event_names[] = {
     "Sending ADR_QR",
     // Receiving messages
     "Receiving ACK",
+    "Receiving FAILED",
     "Receiving TIMESTAMP",
     "Receiving NET",
     "Receiving LTC",
@@ -348,7 +352,7 @@ void tracepoint(
  * Trace the start of a reaction execution.
  * @param env The environment in which we are executing
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker);
 
@@ -356,7 +360,7 @@ void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker
  * Trace the end of a reaction execution.
  * @param env The environment in which we are executing
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker);
 
@@ -397,14 +401,14 @@ void tracepoint_user_value(void* self, char* description, long long value);
 /**
  * Trace the start of a worker waiting for something to change on the reaction queue.
  * @param env The environment in which we are executing
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_worker_wait_starts(trace_t* trace, int worker);
 
 /**
  * Trace the end of a worker waiting for something to change on reaction queue.
  * @param env The environment in which we are executing
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_worker_wait_ends(trace_t* trace, int worker);
 
@@ -426,7 +430,7 @@ void tracepoint_scheduler_advancing_time_ends(trace_t* trace);
  * Trace the occurence of a deadline miss.
  * @param env The environment in which we are executing
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker);
 
@@ -436,10 +440,15 @@ void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, i
  */
 void stop_trace(trace_t* trace);
 
+/**
+ * Version of stop_trace() that does not lock the trace mutex.
+ */
+void stop_trace_locked(trace_t* trace);
+
 ////////////////////////////////////////////////////////////
 //// For federated execution
 
-#ifdef FEDERATED
+#if defined(FEDERATED) || defined(LF_ENCLAVES)
 
 /**
  * Trace federate sending a message to the RTI.
@@ -479,6 +488,11 @@ void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, i
  */
 void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag);
 
+#else
+#define tracepoint_federate_to_rti(...);
+#define tracepoint_federate_from_rti(...);
+#define tracepoint_federate_to_federate(...);
+#define tracepoint_federate_from_federate(...);
 #endif // FEDERATED
 
 ////////////////////////////////////////////////////////////
@@ -504,9 +518,13 @@ void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fe
  */
 void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag);
 
+#else
+#define tracepoint_rti_to_federate(...);
+#define tracepoint_rti_from_federate(...) ;
 #endif // RTI_TRACE
 
 #else
+typedef struct trace_t trace_t;
 
 // empty definition in case we compile without tracing
 #define _lf_register_trace_event(...)
@@ -531,6 +549,7 @@ void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int 
 
 #define start_trace(...)
 #define stop_trace(...)
+#define stop_trace_locked(...)
 #define trace_new(...) NULL
 #define trace_free(...)
 

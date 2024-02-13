@@ -27,7 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Anirudh Rengarajan <arengarajan@berkeley.edu>}
  */
 
-#if defined(LF_THREADED)
+#if !defined(LF_SINGLE_THREADED)
 #include "mbed.h"
 #include "MutexWrapper.h"
 
@@ -46,9 +46,9 @@ void condition_delete(void* condition){
     delete cv;
 }
 
-bool condition_wait_for(void* condition, int64_t absolute_time_ns){
+bool condition_wait_for(void* condition, int64_t wakeup_time){
     ConditionVariable* cv = (ConditionVariable*) condition;
-    return cv->wait_for(absolute_time_ns / 1000000LL);
+    return cv->wait_for(wakeup_time / 1000000LL);
 }
 
 int condition_wait(void* condition){

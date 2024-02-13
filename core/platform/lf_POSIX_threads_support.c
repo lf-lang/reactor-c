@@ -1,6 +1,7 @@
-#if defined(LF_THREADED) && !defined(PLATFORM_ARDUINO)
+#if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
 #include "platform.h"
 #include "lf_POSIX_threads_support.h"
+#include "lf_unix_clock_support.h"
 
 #include <pthread.h>
 #include <sched.h>
@@ -116,13 +117,9 @@ int lf_cond_wait(lf_cond_t* cond) {
     return pthread_cond_wait((pthread_cond_t*)&cond->condition, (pthread_mutex_t*)cond->mutex);
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, int64_t absolute_time_ns) {
-    // Convert the absolute time to a timespec.
-    // timespec is seconds and nanoseconds.
-    struct timespec timespec_absolute_time
-            = {(time_t)absolute_time_ns / 1000000000LL, (long)absolute_time_ns % 1000000000LL};
-    int return_value = 0;
-    return_value = pthread_cond_timedwait(
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+    struct timespec timespec_absolute_time = convert_ns_to_timespec(wakeup_time);
+    int return_value = pthread_cond_timedwait(
         (pthread_cond_t*)&cond->condition,
         (pthread_mutex_t*)cond->mutex,
         &timespec_absolute_time

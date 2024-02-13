@@ -17,7 +17,7 @@ void try_advance_level(environment_t* env, volatile size_t* next_reaction_level)
  * message to downstream federates if a given network output port is not present.
  * @param env The environment in which we are executing
  */
-void enqueue_port_absent_reactions(environment_t* env);
+void lf_enqueue_port_absent_reactions(environment_t* env);
 
 /**
  * Raise a barrier to prevent the current tag for the specified environment from advancing
@@ -79,7 +79,7 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag);
 void _lf_decrement_tag_barrier_locked(environment_t* env);
 
 int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag);
-void synchronize_with_other_federates(void);
+void lf_synchronize_with_other_federates(void);
 bool wait_until(environment_t* env, instant_t logical_time_ns, lf_cond_t* condition);
 tag_t get_next_event_tag(environment_t* env);
 tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply);

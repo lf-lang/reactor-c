@@ -20,7 +20,7 @@
 #include "reactor.h"
 #include "util.h"
 #include "lf_types.h"
-
+#include "clock.h"
 
 /**
  * An enum for specifying the desired tag when calling "lf_time"
@@ -40,74 +40,9 @@ instant_t start_time = NEVER;
 
 //////////////// Global variables not declared in tag.h (must be declared extern if used elsewhere):
 
-/**
- * Global physical clock offset.
- * Initially set according to the RTI's clock in federated
- * programs.
- */
-interval_t _lf_time_physical_clock_offset = 0LL;
-
-/**
- * A test offset that is applied to the clock.
- * The clock synchronization algorithm must correct for this offset.
- * This offset is especially useful to test clock synchronization on the
- * same machine.
- */
-interval_t _lf_time_test_physical_clock_offset = 0LL;
-
-/**
- * Stores the last reported absolute snapshot of the
- * physical clock.
- */
-instant_t _lf_last_reported_physical_time_ns = 0LL;
-
-/**
- * Records the most recent time reported by the physical clock
- * when accessed by lf_time_physical(). This will be an epoch time
- * (number of nanoseconds since Jan. 1, 1970), as reported when
- * you call _lf_clock_now(CLOCK_REALTIME, ...). This differs from
- * _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset
- * plus any calculated drift adjustement, which are adjustments made
- * by clock synchronization.
- */
-instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 
 ////////////////  Functions not declared in tag.h (local use only)
 
-/**
- * Return the current physical time in nanoseconds since January 1, 1970,
- * adjusted by the global physical time offset.
- */
-instant_t _lf_physical_time() {
-    // Get the current clock value
-    int result = _lf_clock_now(&_lf_last_reported_unadjusted_physical_time_ns);
-
-    if (result != 0) {
-        lf_print_error("Failed to read the physical clock.");
-    }
-
-    // Adjust the reported clock with the appropriate offsets
-    instant_t adjusted_clock_ns = _lf_last_reported_unadjusted_physical_time_ns
-            + _lf_time_physical_clock_offset;
-
-    // Apply the test offset
-    adjusted_clock_ns += _lf_time_test_physical_clock_offset;
-
-    // Check if the clock has progressed since the last reported value
-    // This ensures that the clock is monotonic
-    if (adjusted_clock_ns > _lf_last_reported_physical_time_ns) {
-        _lf_last_reported_physical_time_ns = adjusted_clock_ns;
-    }
-
-    LF_PRINT_DEBUG("Physical time: " PRINTF_TIME
-    		". Elapsed: " PRINTF_TIME
-			". Offset: " PRINTF_TIME,
-            _lf_last_reported_physical_time_ns,
-            _lf_last_reported_physical_time_ns - start_time,
-            _lf_time_physical_clock_offset + _lf_time_test_physical_clock_offset);
-
-    return _lf_last_reported_physical_time_ns;
-}
 
 ////////////////  Functions declared in tag.h
 
@@ -116,14 +51,23 @@ tag_t lf_tag(void *env) {
     return ((environment_t *)env)->current_tag;
 }
 
+tag_t lf_tag_add(tag_t a, tag_t b) {
+    if (a.time == NEVER || b.time == NEVER) return NEVER_TAG;
+    if (a.time == FOREVER || b.time == FOREVER) return FOREVER_TAG;
+    if (b.time > 0) a.microstep = 0; // Ignore microstep of first arg if time of second is > 0.
+    tag_t result = {.time = a.time + b.time, .microstep = a.microstep + b.microstep};
+    if (result.microstep < a.microstep) return FOREVER_TAG;
+    if (result.time < a.time && b.time > 0) return FOREVER_TAG;
+    if (result.time > a.time && b.time < 0) return NEVER_TAG;
+    return result;
+}
+
 int lf_tag_compare(tag_t tag1, tag_t tag2) {
     if (tag1.time < tag2.time) {
-        LF_PRINT_DEBUG(PRINTF_TIME " < " PRINTF_TIME, tag1.time, tag2.time);
         return -1;
     } else if (tag1.time > tag2.time) {
         return 1;
     } else if (tag1.microstep < tag2.microstep) {
-        LF_PRINT_DEBUG(PRINTF_TIME " and microstep < " PRINTF_TIME, tag1.time, tag2.time);
         return -1;
     } else if (tag1.microstep > tag2.microstep) {
         return 1;
@@ -134,6 +78,8 @@ int lf_tag_compare(tag_t tag1, tag_t tag2) {
 
 tag_t lf_delay_tag(tag_t tag, interval_t interval) {
     if (tag.time == NEVER || interval < 0LL) return tag;
+    // Note that overflow in C is undefined for signed variables.
+    if (tag.time >= FOREVER - interval) return FOREVER_TAG; // Overflow.
     tag_t result = tag;
     if (interval == 0LL) {
         // Note that unsigned variables will wrap on overflow.
@@ -141,12 +87,7 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
         // microsteps.
         result.microstep++;
     } else {
-        // Note that overflow in C is undefined for signed variables.
-        if (FOREVER - interval < result.time) {
-            result.time = FOREVER;
-        } else {
-            result.time += interval;
-        }
+        result.time += interval;
         result.microstep = 0;
     }
     return result;
@@ -155,7 +96,6 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
 tag_t lf_delay_strict(tag_t tag, interval_t interval) {
     tag_t result = lf_delay_tag(tag, interval);
     if (interval != 0 && interval != NEVER && interval != FOREVER && result.time != NEVER && result.time != FOREVER) {
-        LF_PRINT_DEBUG("interval=%lld, result time=%lld", (long long) interval, (long long) result.time);
         result.time -= 1;
         result.microstep = UINT_MAX;
     }
@@ -167,27 +107,24 @@ instant_t lf_time_logical(void *env) {
     return ((environment_t *) env)->current_tag.time;
 }
 
-/**
- * Return the elapsed logical time in nanoseconds since the start of execution.
- */
 interval_t lf_time_logical_elapsed(void *env) {
     return lf_time_logical(env) - start_time;
 }
 
 instant_t lf_time_physical(void) {
-    return _lf_physical_time();
+    instant_t now, last_read_local;
+    // Get the current clock value
+    LF_ASSERTN(lf_clock_gettime(&now), "Failed to read physical clock.");
+    return now;
+
 }
 
 instant_t lf_time_physical_elapsed(void) {
-    return _lf_physical_time() - start_time;
+    return lf_time_physical() - start_time;
 }
 
 instant_t lf_time_start(void) {
     return start_time;
-}
-
-void lf_set_physical_clock_offset(interval_t offset) {
-    _lf_time_test_physical_clock_offset += offset;
 }
 
 size_t lf_readable_time(char* buffer, instant_t time) {
@@ -257,10 +194,10 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         const char* units = "nanoseconds";
         if (time % MSEC(1) == (instant_t) 0) {
             units = "milliseconds";
-            time = time % MSEC(1);
+            time = time / MSEC(1);
         } else if (time % USEC(1) == (instant_t) 0) {
             units = "microseconds";
-            time = time % USEC(1);
+            time = time / USEC(1);
         }
         size_t printed = lf_comma_separated_time(buffer, time);
         buffer += printed;

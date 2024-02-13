@@ -43,7 +43,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h> // For fixed-width integral types
 #include <windows.h>
 
-#if defined LF_THREADED
+#if !defined LF_SINGLE_THREADED
     #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
         /**
          * On Windows, one could use both a mutex or
@@ -69,8 +69,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Use 64-bit times and 32-bit unsigned microsteps
 #include "lf_tag_64_32.h"
-
-// FIXME: Windows does not #define _LF_CLOCK
 
 #endif // LF_WINDOWS_SUPPORT_H
 

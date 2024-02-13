@@ -112,14 +112,14 @@ struct timespec {
 #endif
 #endif
 
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
 #warning "Threaded support on Arduino is still experimental"
 
 typedef void* lf_mutex_t;
 typedef void* lf_cond_t;
 typedef void* lf_thread_t;
 
-#endif // LF_THREADED
+#endif // !LF_SNIGLE_THREADED
 
 #define PRINTF_TIME "%" PRIu32
 #define PRINTF_MICROSTEP "%" PRIu32

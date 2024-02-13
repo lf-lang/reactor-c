@@ -53,14 +53,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         fprintf(stderr, "WARNING: Access to trace file failed.\n"); \
         fclose(trace->_lf_trace_file); \
         trace->_lf_trace_file = NULL; \
-        lf_critical_section_exit(trace->env); \
         return -1; \
     } while(0)
 
 
 trace_t* trace_new(environment_t* env, const char * filename) {
     trace_t * trace = (trace_t *) calloc(1, sizeof(trace_t));
-    lf_assert(trace, "Out of memory");
+    LF_ASSERT_NON_NULL(trace);
 
     trace->_lf_trace_stop=1;
     trace->env = env;
@@ -70,7 +69,7 @@ trace_t* trace_new(environment_t* env, const char * filename) {
 
     // Allocate memory for the filename on the trace struct
     trace->filename = (char*) malloc(len * sizeof(char));
-    lf_assert(trace->filename, "Out of memory");
+    LF_ASSERT_NON_NULL(trace->filename);
 
     // Copy it to the struct
     strncpy(trace->filename, filename, len);
@@ -85,9 +84,9 @@ void trace_free(trace_t *trace) {
 
 
 int _lf_register_trace_event(trace_t* trace, void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
-    lf_critical_section_enter(trace->env);
+    LF_CRITICAL_SECTION_ENTER(trace->env);
     if (trace->_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
-        lf_critical_section_exit(trace->env);
+        LF_CRITICAL_SECTION_EXIT(trace->env);
         fprintf(stderr, "WARNING: Exceeded trace object table size. Trace file will be incomplete.\n");
         return 0;
     }
@@ -96,12 +95,12 @@ int _lf_register_trace_event(trace_t* trace, void* pointer1, void* pointer2, _lf
     trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].type = type;
     trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].description = description;
     trace->_lf_trace_object_descriptions_size++;
-    lf_critical_section_exit(trace->env);
+    LF_CRITICAL_SECTION_EXIT(trace->env);
     return 1;
 }
 
 int register_user_trace_event(void *self, char* description) {
-    lf_assert(self, "Need a pointer to a self struct to register a user trace event");
+    LF_ASSERT(self, "Need a pointer to a self struct to register a user trace event");
     trace_t * trace = ((self_base_t *) self)->environment->trace;
     return _lf_register_trace_event(trace, description, NULL, trace_user, description);
 }
@@ -196,7 +195,10 @@ void flush_trace_locked(trace_t* trace, int worker) {
         // This is deferred to here so that user trace objects can be
         // registered in startup reactions.
         if (!trace->_lf_trace_header_written) {
-            write_trace_header(trace);
+            if (write_trace_header(trace) < 0) {
+                lf_print_error("Failed to write trace header. Trace file will be incomplete.");
+                return;
+            }
             trace->_lf_trace_header_written = true;
         }
 
@@ -236,9 +238,9 @@ void flush_trace_locked(trace_t* trace, int worker) {
 void flush_trace(trace_t* trace, int worker) {
     // To avoid having more than one worker writing to the file at the same time,
     // enter a critical section.
-    lf_critical_section_enter(GLOBAL_ENVIRONMENT);
+    LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
     flush_trace_locked(trace, worker);
-    lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
 }
 
 void start_trace(trace_t* trace) {
@@ -254,7 +256,7 @@ void start_trace(trace_t* trace) {
     trace->_lf_trace_header_written = false;
 
     // Allocate an array of arrays of trace records, one per worker thread plus one
-    // for the 0 thread (the main thread, or in an unthreaded program, the only
+    // for the 0 thread (the main thread, or in an single-threaded program, the only
     // thread).
     trace->_lf_number_of_trace_buffers = _lf_number_of_workers + 1;
     trace->_lf_trace_buffer = (trace_record_t**)malloc(sizeof(trace_record_t*) * trace->_lf_number_of_trace_buffers);
@@ -326,7 +328,7 @@ void tracepoint(
 /**
  * Trace the start of a reaction execution.
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker) {
     tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
@@ -335,7 +337,7 @@ void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker
 /**
  * Trace the end of a reaction execution.
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker) {
     tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
@@ -380,12 +382,12 @@ void tracepoint_user_event(void* self, char* description) {
     // But to be safe, then, we have acquire a mutex before calling this
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
-    lf_assert(self, "A pointer to the self struct is needed to trace an event");
+    LF_ASSERT(self, "A pointer to the self struct is needed to trace an event");
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
-    lf_critical_section_enter(env);
+    LF_CRITICAL_SECTION_ENTER(env);
     tracepoint(trace, user_event, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
-    lf_critical_section_exit(env);
+    LF_CRITICAL_SECTION_EXIT(env);
 }
 
 /**
@@ -411,14 +413,14 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     // There will be a performance hit for this.
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
-    lf_critical_section_enter(env);
+    LF_CRITICAL_SECTION_ENTER(env);
     tracepoint(trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
-    lf_critical_section_exit(env);
+    LF_CRITICAL_SECTION_EXIT(env);
 }
 
 /**
  * Trace the start of a worker waiting for something to change on the event or reaction queue.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
     tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true);
@@ -426,7 +428,7 @@ void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
 
 /**
  * Trace the end of a worker waiting for something to change on the event or reaction queue.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_worker_wait_ends(trace_t* trace, int worker) {
     tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false);
@@ -451,14 +453,19 @@ void tracepoint_scheduler_advancing_time_ends(trace_t* trace) {
 /**
  * Trace the occurrence of a deadline miss.
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker) {
     tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
 }
 
 void stop_trace(trace_t* trace) {
-    lf_critical_section_enter(trace->env);
+    LF_CRITICAL_SECTION_ENTER(trace->env);
+    stop_trace_locked(trace);
+    LF_CRITICAL_SECTION_EXIT(trace->env);
+}
+
+void stop_trace_locked(trace_t* trace) {
     if (trace->_lf_trace_stop) {
         // Trace was already stopped. Nothing to do.
         return;
@@ -477,16 +484,17 @@ void stop_trace(trace_t* trace) {
         flush_trace_locked(trace, 0);
     }
     trace->_lf_trace_stop = 1;
-    fclose(trace->_lf_trace_file);
-    trace->_lf_trace_file = NULL;
+    if (trace->_lf_trace_file != NULL) {
+        fclose(trace->_lf_trace_file);
+        trace->_lf_trace_file = NULL;
+    }
     LF_PRINT_DEBUG("Stopped tracing.");
-    lf_critical_section_exit(trace->env);
 }
 
 ////////////////////////////////////////////////////////////
 //// For federated execution
 
-#ifdef FEDERATED
+#if defined FEDERATED || defined LF_ENCLAVES
 
 /**
  * Trace federate sending a message to the RTI.

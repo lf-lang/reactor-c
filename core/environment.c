@@ -34,7 +34,7 @@
 #include "lf_types.h"
 #include <string.h>
 #include "trace.h"
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
 #include "scheduler.h"
 #endif
 
@@ -42,32 +42,25 @@
  * @brief Initialize the threaded part of the environment struct.
  */
 static void environment_init_threaded(environment_t* env, int num_workers) {
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     env->num_workers = num_workers;
     env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
-    lf_assert(env->thread_ids != NULL, "Out of memory");
+    LF_ASSERT_NON_NULL(env->thread_ids);
     env->barrier.requestors = 0;
     env->barrier.horizon = FOREVER_TAG;
     
     // Initialize synchronization objects.
-    if (lf_mutex_init(&env->mutex) != 0) {
-        lf_print_error_and_exit("Could not initialize environment mutex");
-    }
-    if (lf_cond_init(&env->event_q_changed, &env->mutex) != 0) {
-        lf_print_error_and_exit("Could not initialize environment event queue condition variable");
-    }
-    if (lf_cond_init(&env->global_tag_barrier_requestors_reached_zero, &env->mutex)) {
-        lf_print_error_and_exit("Could not initialize environment tag barrier condition variable");
-    }
-
+    LF_MUTEX_INIT(&env->mutex);
+    LF_COND_INIT(&env->event_q_changed, &env->mutex);
+    LF_COND_INIT(&env->global_tag_barrier_requestors_reached_zero, &env->mutex);
 
 #endif
 }
 /**
- * @brief Initialize the unthreaded-specific parts of the environment struct.
+ * @brief Initialize the single-threaded-specific parts of the environment struct.
  */
-static void environment_init_unthreaded(environment_t* env) {
-#ifdef LF_UNTHREADED
+static void environment_init_single_threaded(environment_t* env) {
+#ifdef LF_SINGLE_THREADED
     // Reaction queue ordered first by deadline, then by level.
     // The index of the reaction holds the deadline in the 48 most significant bits,
     // the level in the 16 least significant bits.
@@ -84,15 +77,19 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
 #ifdef MODAL_REACTORS
     if (num_modes > 0) {
         mode_environment_t* modes = (mode_environment_t *) calloc(1, sizeof(mode_environment_t));
-        lf_assert(modes != NULL, "Out of memory");
+        LF_ASSERT_NON_NULL(modes);
         modes->modal_reactor_states = (reactor_mode_state_t**) calloc(num_modes, sizeof(reactor_mode_state_t*));
-        lf_assert(modes->modal_reactor_states != NULL, "Out of memory");
+        LF_ASSERT_NON_NULL(modes->modal_reactor_states);
         modes->modal_reactor_states_size = num_modes;
         modes->triggered_reactions_request = 0;
 
-        modes->state_resets = (mode_state_variable_reset_data_t *) calloc(num_state_resets, sizeof(mode_state_variable_reset_data_t));
-        lf_assert(modes->state_resets != NULL, "Out of memory");
         modes->state_resets_size = num_state_resets;
+        if (modes->state_resets_size > 0) {
+            modes->state_resets = (mode_state_variable_reset_data_t *) calloc(modes->state_resets_size, sizeof(mode_state_variable_reset_data_t));
+            LF_ASSERT_NON_NULL(modes->state_resets);
+        } else {
+            modes->state_resets = NULL;
+        }
 
         env->modes = modes;
 
@@ -107,9 +104,14 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
  */
 static void environment_init_federated(environment_t* env, int num_is_present_fields) {
 #ifdef FEDERATED_DECENTRALIZED
-    env->_lf_intended_tag_fields = (tag_t**) calloc(num_is_present_fields, sizeof(tag_t*));
-    lf_assert(env->_lf_intended_tag_fields != NULL, "Out of memory");
-    env->_lf_intended_tag_fields_size = num_is_present_fields;
+    if (num_is_present_fields > 0) {
+        env->_lf_intended_tag_fields = (tag_t**) calloc(num_is_present_fields, sizeof(tag_t*));
+        LF_ASSERT_NON_NULL(env->_lf_intended_tag_fields);
+        env->_lf_intended_tag_fields_size = num_is_present_fields;
+    } else {
+        env->_lf_intended_tag_fields = NULL;
+        env->_lf_intended_tag_fields_size = 0;
+    }
 #endif
 }
 
@@ -126,14 +128,14 @@ void environment_init_tags( environment_t *env, instant_t start_time, interval_t
 }
 
 static void environment_free_threaded(environment_t* env) {
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     free(env->thread_ids);
     lf_sched_free(env->scheduler);   
 #endif
 }
 
-static void environment_free_unthreaded(environment_t* env) {
-#ifdef LF_UNTHREADED
+static void environment_free_single_threaded(environment_t* env) {
+#ifdef LF_SINGLE_THREADED
     pqueue_free(env->reaction_q);
 #endif
 }
@@ -155,6 +157,7 @@ static void environment_free_federated(environment_t* env) {
 }
 
 void environment_free(environment_t* env) {
+    free(env->name);
     free(env->timer_triggers);
     free(env->startup_reactions);
     free(env->shutdown_reactions);
@@ -166,7 +169,7 @@ void environment_free(environment_t* env) {
     pqueue_free(env->next_q);
 
     environment_free_threaded(env);
-    environment_free_unthreaded(env);
+    environment_free_single_threaded(env);
     environment_free_modes(env);
     environment_free_federated(env);
     trace_free(env->trace);
@@ -175,6 +178,7 @@ void environment_free(environment_t* env) {
 
 int environment_init(
     environment_t* env,
+    const char *name, 
     int id,
     int num_workers,
     int num_timers, 
@@ -187,33 +191,57 @@ int environment_init(
     const char * trace_file_name
 ) {
 
+    env->name = malloc(strlen(name) + 1);  // +1 for the null terminator
+    LF_ASSERT_NON_NULL(env->name);
+    strcpy(env->name, name);
+    
     env->id = id;
     env->stop_tag = FOREVER_TAG;
 
     env->timer_triggers_size=num_timers;
-    env->timer_triggers = (trigger_t **) calloc(num_timers, sizeof(trigger_t));
-    lf_assert(env->timer_triggers != NULL, "Out of memory");
+    if(env->timer_triggers_size > 0) {
+        env->timer_triggers = (trigger_t **) calloc(num_timers, sizeof(trigger_t));
+        LF_ASSERT_NON_NULL(env->timer_triggers);
+    } else {
+        env->timer_triggers = NULL;
+    }
 
     env->startup_reactions_size=num_startup_reactions;
-    env->startup_reactions = (reaction_t **) calloc(num_startup_reactions, sizeof(reaction_t));
-    lf_assert(env->startup_reactions != NULL, "Out of memory");
+    if (env->startup_reactions_size > 0) {
+        env->startup_reactions = (reaction_t **) calloc(num_startup_reactions, sizeof(reaction_t));
+        LF_ASSERT_NON_NULL(env->startup_reactions);
+    } else {
+        env->startup_reactions = NULL;
+    }
 
     env->shutdown_reactions_size=num_shutdown_reactions;
-    env->shutdown_reactions = (reaction_t **) calloc(num_shutdown_reactions, sizeof(reaction_t));
-    lf_assert(env->shutdown_reactions != NULL, "Out of memory");
+    if(env->shutdown_reactions_size > 0) {
+        env->shutdown_reactions = (reaction_t **) calloc(num_shutdown_reactions, sizeof(reaction_t));
+        LF_ASSERT_NON_NULL(env->shutdown_reactions);
+    } else {
+        env->shutdown_reactions = NULL;
+    }
 
     env->reset_reactions_size=num_reset_reactions;
-    env->reset_reactions = (reaction_t **) calloc(num_reset_reactions, sizeof(reaction_t));
-    lf_assert(env->reset_reactions != NULL, "Out of memory");
+    if (env->reset_reactions_size > 0) {
+        env->reset_reactions = (reaction_t **) calloc(num_reset_reactions, sizeof(reaction_t));
+        LF_ASSERT_NON_NULL(env->reset_reactions);
+    } else {
+        env->reset_reactions = NULL;
+    }
 
     env->is_present_fields_size = num_is_present_fields;
     env->is_present_fields_abbreviated_size = 0;
 
-    env->is_present_fields = (bool**)calloc(num_is_present_fields, sizeof(bool*));
-    lf_assert(env->is_present_fields != NULL, "Out of memory");
-
-    env->is_present_fields_abbreviated = (bool**)calloc(num_is_present_fields, sizeof(bool*));
-    lf_assert(env->is_present_fields_abbreviated != NULL, "Out of memory");
+    if (env->is_present_fields_size > 0) {
+        env->is_present_fields = (bool**)calloc(num_is_present_fields, sizeof(bool*));
+        LF_ASSERT_NON_NULL(env->is_present_fields);
+        env->is_present_fields_abbreviated = (bool**)calloc(num_is_present_fields, sizeof(bool*));
+        LF_ASSERT_NON_NULL(env->is_present_fields_abbreviated);
+    } else {
+        env->is_present_fields = NULL;
+        env->is_present_fields_abbreviated = NULL;
+    }
 
     env->_lf_handle=1;
     
@@ -230,7 +258,7 @@ int environment_init(
 
     // Initialize functionality depending on target properties.
     environment_init_threaded(env, num_workers);
-    environment_init_unthreaded(env);
+    environment_init_single_threaded(env);
     environment_init_modes(env, num_modes, num_state_resets);
     environment_init_federated(env, num_is_present_fields);
 

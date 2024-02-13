@@ -1,4 +1,4 @@
-#if defined(LF_UNTHREADED)
+#if defined(LF_SINGLE_THREADED)
 /* Runtime infrastructure for the non-threaded version of the C target of Lingua Franca. */
 
 /*************
@@ -94,7 +94,7 @@ void _lf_set_present(lf_port_base_t* port) {
 int wait_until(environment_t* env, instant_t wakeup_time) {
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
-        return _lf_interruptable_sleep_until_locked(env, wakeup_time);
+        return lf_clock_interruptable_sleep_until_locked(env, wakeup_time);
     }
     return 0;
 }
@@ -114,7 +114,7 @@ void lf_print_snapshot(environment_t* env) {
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
@@ -195,7 +195,7 @@ int _lf_do_step(environment_t* env) {
 
         if (!violation) {
             // Invoke the reaction function.
-            _lf_invoke_reaction(env, reaction, 0);   // 0 indicates unthreaded.
+            _lf_invoke_reaction(env, reaction, 0);   // 0 indicates single-threaded.
 
             // If the reaction produced outputs, put the resulting triggered
             // reactions into the queue.
@@ -238,9 +238,7 @@ int next(environment_t* env) {
 
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
-    if (lf_critical_section_enter(env) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
+    LF_CRITICAL_SECTION_ENTER(env);
     event_t* event = (event_t*)pqueue_peek(env->event_q);
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
@@ -278,9 +276,7 @@ int next(environment_t* env) {
         // gets scheduled from an interrupt service routine.
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
-        if(lf_critical_section_exit(env) != 0) {
-            lf_print_error_and_exit("Could not leave critical section");
-        }
+        LF_CRITICAL_SECTION_EXIT(env);
         return 1;
     }
     // Advance current time to match that of the first event on the queue.
@@ -301,9 +297,7 @@ int next(environment_t* env) {
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
     _lf_pop_events(env);
-    if(lf_critical_section_exit(env) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
+    LF_CRITICAL_SECTION_EXIT(env);
 
     return _lf_do_step(env);
 }
@@ -364,21 +358,25 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_create_environments();   // code-generated function
         environment_t *env;
         int num_environments = _lf_get_environments(&env);
-        lf_assert(num_environments == 1,
-            "Found %d environments. Only 1 can be used with the unthreaded runtime", num_environments);
+        LF_ASSERT(num_environments == 1,
+            "Found %d environments. Only 1 can be used with the single-threaded runtime", num_environments);
         
         LF_PRINT_DEBUG("Initializing.");
         initialize_global();
         // Set start time
         start_time = lf_time_physical();
+
+        LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
+                FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
+                NEVER_TAG.time - start_time, 0);
+
         environment_init_tags(env, start_time, duration);
-        // Start tracing if enalbed
+        // Start tracing if enabled.
         start_trace(env->trace);
 #ifdef MODAL_REACTORS
         // Set up modal infrastructure
         _lf_initialize_modes(env);
 #endif
-        _lf_execution_started = true;
         _lf_trigger_startup_reactions(env);
         _lf_initialize_timers(env);
         // If the stop_tag is (0,0), also insert the shutdown
@@ -389,17 +387,23 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         }
         LF_PRINT_DEBUG("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
+        env->execution_started = true;
         if (_lf_do_step(env)) {
             while (next(env) != 0);
         }
+        _lf_normal_termination = true;
         return 0;
     } else {
         return -1;
     }
 }
 
+/**
+ * @brief Notify of new event by calling the single-threaded platform API
+ * @param env Environment in which we are executing.
+ */
 int lf_notify_of_event(environment_t* env) {
-    return _lf_unthreaded_notify_of_event();
+    return _lf_single_threaded_notify_of_event();
 }
 
 int lf_critical_section_enter(environment_t* env) {
