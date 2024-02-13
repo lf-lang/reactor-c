@@ -1480,9 +1480,15 @@ static void handle_downstream_next_event_tag() {
     tracepoint_federate_from_rti(_fed.trace, receive_DNET, _lf_my_fed_id, &DNET);
 
     LF_PRINT_LOG("Received Downstream Next Event Tag (DNET): " PRINTF_TAG ".",
-            _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
+            DNET.time - start_time, DNET.microstep);
 
     _fed.last_DNET = DNET;
+
+    if (lf_tag_compare(_fed.last_skipped_LTC, NEVER_TAG) != 0
+    && lf_tag_compare(_fed.last_skipped_LTC, _fed.last_DNET) >= 0) {
+        send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, _fed.last_skipped_LTC);
+        _fed.last_skipped_LTC = NEVER_TAG;
+    }
 }
 
 /**
@@ -2312,6 +2318,7 @@ void lf_latest_tag_complete(tag_t tag_to_send) {
                 tag_to_send.time - start_time,
                 tag_to_send.microstep);
         _fed.last_skipped_LTC = tag_to_send;
+        return;
     }
     LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.",
             tag_to_send.time - start_time,
@@ -2734,10 +2741,6 @@ int lf_send_tagged_message(environment_t* env,
 
     if (lf_tag_compare(_fed.last_DNET, current_message_intended_tag) > 0) {
         _fed.last_DNET = current_message_intended_tag;
-        if (lf_tag_compare(_fed.last_skipped_LTC, NEVER_TAG) != 0) {
-            send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, _fed.last_skipped_LTC);
-            _fed.last_skipped_LTC = NEVER_TAG;
-        }
     }
 
     int result = write_to_socket_close_on_error(socket, header_length, header_buffer);

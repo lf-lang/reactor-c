@@ -460,16 +460,22 @@ void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, tag_t new
         for (int i = 0; i < node->num_all_downstreams; i++) {
             uint16_t target_downstream_id = node->all_downstreams[i];
             scheduling_node_t* target_dowstream = rti_common->scheduling_nodes[target_downstream_id];
-            update_min_delays_upstream(target_dowstream);
+
+            if (is_in_zero_delay_cycle(target_dowstream)) {
+                // This node is an upstream of ZDC. Do not send DNET to this node.
+                return;
+            }
+
             int index = node->id * rti_common->number_of_scheduling_nodes + target_downstream_id;
             tag_t DNET_candidate = lf_tag_subtract(target_dowstream->next_event, rti_common->min_delays[index]);
 
-            if (DNET_candidate.time < start_time) {
-                DNET_candidate = NEVER_TAG;
-            }
             if (lf_tag_compare(DNET, DNET_candidate) > 0) {
                 DNET = DNET_candidate;
             }
+        }
+        if (DNET.time < start_time) {
+            // DNET is NEVER and no need to be sent.
+            return;
         }
     }
     if (lf_tag_compare(node->last_DNET, DNET) != 0
