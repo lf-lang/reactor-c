@@ -62,7 +62,7 @@ extern int _lf_count_payload_allocations;
  */
 interval_t lf_fed_STA_offset = 0LL;
 
-#endif FEDERATED_DECENTRALIZED
+#endif // FEDERATED_DECENTRALIZED
 
 /**
  * Indicator of whether to wait for physical time to match logical time.

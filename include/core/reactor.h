@@ -60,7 +60,7 @@ interval_t lf_get_stp_offset(void);
  */
 void lf_set_stp_offset(interval_t offset);
 
-#endif FEDERATED_DECENTRALIZED
+#endif // FEDERATED_DECENTRALIZED
 
 /**
  * @brief Print a snapshot of the priority queues used during execution (for debugging).
