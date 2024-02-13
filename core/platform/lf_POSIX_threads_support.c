@@ -10,6 +10,10 @@
 #include <stdint.h> // For fixed-width integral types
 #include <unistd.h>
 
+int lf_available_cores() {
+    return (int)sysconf(_SC_NPROCESSORS_ONLN);
+}
+
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy) {
     int posix_policy;
     struct sched_param schedparam;

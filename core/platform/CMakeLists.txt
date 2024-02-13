@@ -3,7 +3,6 @@
 
 set(LF_PLATFORM_FILES
     lf_unix_clock_support.c
-    lf_unix_syscall_support.c
     lf_linux_support.c
     lf_macos_support.c
     lf_windows_support.c
