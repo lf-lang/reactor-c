@@ -60,7 +60,7 @@ void watchdog_wait(watchdog_t *watchdog) {
     while ( watchdog->expiration != NEVER && 
             physical_time < watchdog->expiration &&
             !watchdog->terminate) {
-        // Wait for expiration, or a signal to terminate
+        // Wait for expiration, or a signal to stop or terminate.
         lf_clock_cond_timedwait(&watchdog->cond, watchdog->expiration);
         physical_time = lf_time_physical();
     }
@@ -97,7 +97,9 @@ static void* watchdog_thread_main(void* arg) {
         // Step 1: Wait for a timeout to start watching for.
         if(watchdog->expiration == NEVER) {
             // Watchdog has been stopped.
-            // Wait for a signal that we have a timeout to wait for on the cond-var.
+            // Let the runtime know that we are in an inactive/stopped state.
+            watchdog->active = false;
+            // Wait here until the watchdog is started and we can enter the active state.
             LF_COND_WAIT(&watchdog->cond);
             continue;
         } else {
@@ -108,7 +110,7 @@ static void* watchdog_thread_main(void* arg) {
             // be that it was to terminate the watchdog.
             if (watchdog->terminate) break;
 
-               // It could also be that the watchdog was just stopped
+            // It could also be that the watchdog was stopped
             if (watchdog->expiration == NEVER) continue;
 
             // If we reach here, the watchdog actually timed out. Handle it.
@@ -116,7 +118,6 @@ static void* watchdog_thread_main(void* arg) {
             watchdog_function_t watchdog_func = watchdog->watchdog_function;
                 (*watchdog_func)(base);
             watchdog->expiration = NEVER;
-            watchdog->active = false;
         }
     }
 
