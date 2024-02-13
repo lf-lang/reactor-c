@@ -309,7 +309,7 @@ int main(int argc, const char* argv[]) {
 
     if (rti.base.tracing_enabled) {
         _lf_number_of_workers = rti.base.number_of_scheduling_nodes;
-        lf_tracing_global_init("rti", -1, _lf_number_of_workers + NUMBER_OF_FEDERATES * 2 + 3);
+        lf_tracing_global_init("rti", -1, _lf_number_of_workers * 2 + 3);
         // One thread communicating to each federate. Add 1 for 1 ephemeral
         // timeout thread for each federate (this should be created only once
         // per federate because shutdown only occurs once). Add 1 for the clock
