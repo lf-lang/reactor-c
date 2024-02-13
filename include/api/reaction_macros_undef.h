@@ -9,9 +9,9 @@
  */
 
 // Prevent inclusion if reaction_macros.h has not been included.
-#ifdef REACTION_API_H
+#ifdef REACTION_MACROS_H
 // Allow subsequent inclusion of reaction_macros.h.
-#undef REACTION_API_H
+#undef REACTION_MACROS_H
 
 #undef lf_set
 #undef lf_set_token
@@ -25,4 +25,4 @@
 #undef lf_tag
 #undef lf_time_logical 
 #undef lf_time_logical_elapsed 
-#endif // REACTION_API_H
+#endif // REACTION_MACROS_H
