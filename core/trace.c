@@ -75,22 +75,11 @@ void call_tracepoint(
         interval_t extra_delay,
         bool is_interval_start  // FIXME: Unused argument. It originally was a micro-optimization which I suspect is not needed, but if there is (statistically significant) empirical evidence that it is needed, then we should use it. Note that without a memory barrier, even its original use may have had no effect (i.e., it could have generated the same assembly code anyway).
 ) {
-    // environment_t *env = trace->env;
     instant_t local_time;
     if (physical_time == NULL) {
         local_time = lf_time_physical();
         physical_time = &local_time;
     }
-    // tag_t local_tag;
-    // if (tag != NULL) {
-    //     local_tag.time = tag->time;
-    //     local_tag.microstep = tag->microstep;
-    // }
-    // // else if (env != NULL) {
-    // //     local_tag.time = ((environment_t *)env)->current_tag.time;
-    // //     local_tag.microstep = ((environment_t*)env)->current_tag.microstep;
-    // // }
-    // tag = &local_tag;
     trace_record_t tr = {
         .event_type = event_type,
         .pointer = reactor,
