@@ -296,6 +296,10 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     // Send DNET to the node's upstreams if needed
     for (int i = 0; i < e->num_all_upstreams; i++) {
         int target_upstream_id = e->all_upstreams[i];
+        if (target_upstream_id == e->id) {
+            // FIXME: This shouldn't be entered, but currently, it's entered.
+            continue;
+        }
         send_downstream_next_event_tag_if_needed(rti_common->scheduling_nodes[target_upstream_id], next_event_tag);
     }
 }
@@ -474,8 +478,8 @@ void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, tag_t new
             }
         }
         if (DNET.time < start_time) {
-            // DNET is NEVER and no need to be sent.
-            return;
+            // DNET is NEVER.
+            DNET = NEVER_TAG;
         }
     }
     if (lf_tag_compare(node->last_DNET, DNET) != 0
