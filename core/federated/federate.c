@@ -220,7 +220,7 @@ static void update_last_known_status_on_input_ports(tag_t tag) {
         // we do not update the last known status tag.
         if (lf_tag_compare(tag,
                 input_port_action->trigger->last_known_status_tag) >= 0) {
-            lf_print(
+            LF_PRINT_DEBUG(
                 "Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
                 i,
                 input_port_action->trigger->last_known_status_tag.time - lf_time_start(),
@@ -274,7 +274,7 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     int comparison = lf_tag_compare(tag, input_port_action->last_known_status_tag);
     if (comparison == 0) tag.microstep++;
     if (comparison >= 0) {
-        LF_PRINT_DEBUG(
+        LF_PRINT_LOG(
             "Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
             port_id,
             input_port_action->last_known_status_tag.time - lf_time_start(),
