@@ -155,7 +155,7 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
 }
 
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
-    k_thread_priority_set(thread, 99 - priority);
+    k_thread_priority_set(thread, LF_SCHED_MAX_PRIORITY - priority);
     return 0;
 }
 
@@ -167,7 +167,7 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *
         case LF_SCHED_TIMESLICE: {
             int priority = ((lf_scheduling_policy_timeslice_t *) policy)->priority;
             interval_t slice = ((lf_scheduling_policy_timeslice_t *) policy)->time_slice;
-            k_thread_priority_set(thread, 99 - priority);
+            k_thread_priority_set(thread, LF_SCHED_MAX_PRIORITY - priority);
             k_sched_time_slice_set(0, slice/1000000);
             break;
         }

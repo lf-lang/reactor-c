@@ -160,6 +160,8 @@ int lf_thread_join(lf_thread_t thread, void** thread_return);
 // by the underlying thread scheduling. This API is still experimental and future
 // changes are expected.
 
+#define LF_SCHED_MAX_PRIORITY 99
+#define LF_SCHED_MIN_PRIORITY 0
 /**
  * @brief The thread scheduling policies. 
  * 
