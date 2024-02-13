@@ -42,6 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor.h"
 #include "tag.h"
 #include "util.h"
+#include "environment.h"
 
 ////////////// Global variables ///////////////
 // The global Python object that holds the .py module that the
