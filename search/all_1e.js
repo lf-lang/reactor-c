@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['wait_5funtil_0',['wait_until',['../d5/dbc/reactor__threaded_8c.html#ab769495d64de2c45344fad51a14d3db2',1,'wait_until(environment_t *env, instant_t logical_time, lf_cond_t *condition):&#160;reactor_threaded.c'],['../d4/dd2/reactor__threaded_8h.html#a28427d09e6613e4fcfce2fdf184a8e7d',1,'wait_until(environment_t *env, instant_t logical_time_ns, lf_cond_t *condition):&#160;reactor_threaded.c']]],
+  ['wait_5funtil_0',['wait_until',['../d4/dd2/reactor__threaded_8h.html#a28427d09e6613e4fcfce2fdf184a8e7d',1,'wait_until(environment_t *env, instant_t logical_time_ns, lf_cond_t *condition):&#160;reactor_threaded.c'],['../d5/dbc/reactor__threaded_8c.html#ab769495d64de2c45344fad51a14d3db2',1,'wait_until(environment_t *env, instant_t logical_time, lf_cond_t *condition):&#160;reactor_threaded.c']]],
   ['watchdog_2ec_1',['watchdog.c',['../d6/d88/watchdog_8c.html',1,'']]],
   ['watchdog_2eh_2',['watchdog.h',['../d9/da3/watchdog_8h.html',1,'']]],
   ['watchdog_5ffunction_3',['watchdog_function',['../d3/dc4/structwatchdog__t.html#a1f8645aac940f26a359516be2339ac7d',1,'watchdog_t']]],
@@ -15,7 +15,7 @@ var searchData=
   ['welcome_5fmessage_5flength_12',['welcome_message_length',['../d7/d58/sensor__simulator_8c.html#aed914099b551105b7294552e79e13b16',1,'sensor_simulator.c']]],
   ['wgetchr_5ftimeout_13',['WGETCHR_TIMEOUT',['../d7/d58/sensor__simulator_8c.html#a67eec5f95f4bdd36888379013c2cf10b',1,'sensor_simulator.c']]],
   ['while_14',['while',['../d6/df3/hashmap_8h.html#a8cd842f29595524580f36ac339471bc0',1,'hashmap.h']]],
-  ['width_15',['width',['../d4/d7d/structlf__multiport__iterator__t.html#a9a506388d73fdb6c0fd45c182f6a41ac',1,'lf_multiport_iterator_t::width'],['../d2/dab/structgeneric__port__capsule__struct.html#a8336292b3d416c8bcd8af788ab71ee9a',1,'generic_port_capsule_struct::width']]],
+  ['width_15',['width',['../d2/dab/structgeneric__port__capsule__struct.html#a8336292b3d416c8bcd8af788ab71ee9a',1,'generic_port_capsule_struct::width'],['../d4/d7d/structlf__multiport__iterator__t.html#a9a506388d73fdb6c0fd45c182f6a41ac',1,'lf_multiport_iterator_t::width']]],
   ['worker_16',['worker',['../d5/dbc/reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63',1,'reactor_threaded.c']]],
   ['worker_5faffinity_17',['worker_affinity',['../d2/d35/structreaction__t.html#a861cbf9521eb367cedf9e2d0ecee0fca',1,'reaction_t']]],
   ['worker_5fthread_5fcount_18',['worker_thread_count',['../d2/d01/structenvironment__t.html#a64c98375fa4b34629073863a9bcd6845',1,'environment_t::worker_thread_count'],['../d5/dbc/reactor__threaded_8c.html#a76d8bd3f166632ed8f2990a1f29852cd',1,'worker_thread_count:&#160;reactor_threaded.c']]],

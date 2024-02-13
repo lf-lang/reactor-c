@@ -6,7 +6,7 @@ var searchData=
   ['action_3',['action',['../da/d00/structgeneric__action__capsule__struct.html#a4ea107a9738cdbb1650d110693ad81bf',1,'generic_action_capsule_struct']]],
   ['actors_4',['actors',['../d6/d1e/namespacefedsd.html#a10f9ea3e1343406c8f4c47f5f2206bae',1,'fedsd']]],
   ['actors_5fnames_5',['actors_names',['../d6/d1e/namespacefedsd.html#ab371213c8780bc5058f824e060709a25',1,'fedsd']]],
-  ['add_5fto_5fsound_6',['add_to_sound',['../da/d0e/audio__loop__linux_8c.html#ae0d2efe97b2aac751245705e32d2c927',1,'add_to_sound(int index_offset, double value):&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#ae0d2efe97b2aac751245705e32d2c927',1,'add_to_sound(int index_offset, double value):&#160;audio_loop_mac.c']]],
+  ['add_5fto_5fsound_6',['add_to_sound',['../d5/daa/audio__loop__mac_8c.html#ae0d2efe97b2aac751245705e32d2c927',1,'add_to_sound(int index_offset, double value):&#160;audio_loop_mac.c'],['../da/d0e/audio__loop__linux_8c.html#ae0d2efe97b2aac751245705e32d2c927',1,'add_to_sound(int index_offset, double value):&#160;audio_loop_linux.c']]],
   ['addenda_7',['Addenda',['../d6/dcd/md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md15',1,'']]],
   ['address_8',['address',['../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f',1,'hashmap.h']]],
   ['address_5fquery_5fretry_5finterval_9',['ADDRESS_QUERY_RETRY_INTERVAL',['../d9/da6/net__common_8h.html#a8ce563da4edbe9c4f7c1ccf35ad8694f',1,'net_common.h']]],
