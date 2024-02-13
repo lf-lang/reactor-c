@@ -54,7 +54,7 @@ extern instant_t duration;
 extern bool fast;
 extern bool keepalive_specified;
 
-#ifdef FEDERATED
+#ifdef FEDERATED_DECENTRALIZED
 extern interval_t lf_fed_STA_offset;
 #endif
 
