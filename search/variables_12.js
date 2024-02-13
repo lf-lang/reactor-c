@@ -2,7 +2,7 @@ var searchData=
 [
   ['table_5fsize_0',['table_size',['../d8/d60/trace__to__csv_8c.html#ad659b104f194d3ba65fe3cdd91c9d6f7',1,'trace_to_csv.c']]],
   ['tag_1',['tag',['../d2/d92/structpy__tag__t.html#a6d5d18a50affb88ed575789599f4140e',1,'py_tag_t::tag'],['../d2/dce/structpqueue__tag__element__t.html#a3c8c28164b948edc70f9b0d403043fcb',1,'pqueue_tag_element_t::tag']]],
-  ['thread_5factive_2',['thread_active',['../d3/dc4/structwatchdog__t.html#afea28ac137b6957ec67a0d2f9ab22f7a',1,'watchdog_t']]],
+  ['terminate_2',['terminate',['../d3/dc4/structwatchdog__t.html#af503486d68aae7eb02ee348a5254b0fd',1,'watchdog_t']]],
   ['thread_5fcreated_3',['thread_created',['../d7/d58/sensor__simulator_8c.html#a413abe5862c9af4154bcabf47cbde022',1,'sensor_simulator.c']]],
   ['thread_5fid_4',['thread_id',['../d3/dc4/structwatchdog__t.html#a7b5873e876b6afdfebcca38cd2e6b56c',1,'watchdog_t']]],
   ['thread_5fids_5',['thread_ids',['../d2/d01/structenvironment__t.html#adf02bc4c7926af749b64b24a1d3be7a3',1,'environment_t']]],

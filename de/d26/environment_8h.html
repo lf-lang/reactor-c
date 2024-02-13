@@ -124,15 +124,17 @@ Typedefs</h2></td></tr>
 <tr class="separator:a7941464261ddb811cc9b63a85c11d1ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1567a1034e3b7c6528bc12fdc04a4c71" id="r_a1567a1034e3b7c6528bc12fdc04a4c71"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a></td></tr>
 <tr class="separator:a1567a1034e3b7c6528bc12fdc04a4c71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee1cd2bc521f76fa428cc659474d9570" id="r_aee1cd2bc521f76fa428cc659474d9570"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d3/dc4/structwatchdog__t.html">watchdog_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d26/environment_8h.html#aee1cd2bc521f76fa428cc659474d9570">watchdog_t</a></td></tr>
+<tr class="separator:aee1cd2bc521f76fa428cc659474d9570"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa47b54e9e041dfe1b75fffceb1051466" id="r_aa47b54e9e041dfe1b75fffceb1051466"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d26/environment_8h.html#aa47b54e9e041dfe1b75fffceb1051466">environment_t</a></td></tr>
 <tr class="memdesc:aa47b54e9e041dfe1b75fffceb1051466"><td class="mdescLeft">&#160;</td><td class="mdescRight">Execution environment. This struct contains information about the execution environment. An execution environment maintains a notion of a "current tag" and has its own event queue and scheduler. Normally, there is only one execution environment, but if you use scheduling enclaves, then there will be one for each enclave.  <br /></td></tr>
 <tr class="separator:aa47b54e9e041dfe1b75fffceb1051466"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a7775a7a5cdf2865c3fbe0d3dbe946423" id="r_a7775a7a5cdf2865c3fbe0d3dbe946423"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d26/environment_8h.html#a7775a7a5cdf2865c3fbe0d3dbe946423">environment_init</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *name, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> id, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> num_workers, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_timers</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_startup_reactions</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_shutdown_reactions</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_reset_reactions</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_is_present_fields</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_modes</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_state_resets</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">trace_file_name</a>)</td></tr>
-<tr class="memdesc:a7775a7a5cdf2865c3fbe0d3dbe946423"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize an environment struct with parameters given in the arguments.  <br /></td></tr>
-<tr class="separator:a7775a7a5cdf2865c3fbe0d3dbe946423"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab49da5954eb69f3d126162da44c25b36" id="r_ab49da5954eb69f3d126162da44c25b36"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d26/environment_8h.html#ab49da5954eb69f3d126162da44c25b36">environment_init</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *name, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> id, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> num_workers, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_timers</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_startup_reactions</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_shutdown_reactions</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_reset_reactions</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_is_present_fields</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_modes</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_state_resets</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_watchdogs</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">trace_file_name</a>)</td></tr>
+<tr class="memdesc:ab49da5954eb69f3d126162da44c25b36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize an environment struct with parameters given in the arguments.  <br /></td></tr>
+<tr class="separator:ab49da5954eb69f3d126162da44c25b36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af73b90f735c070d534171f3e92730ac8" id="r_af73b90f735c070d534171f3e92730ac8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d26/environment_8h.html#af73b90f735c070d534171f3e92730ac8">environment_free</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="memdesc:af73b90f735c070d534171f3e92730ac8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the dynamically allocated memory on the environment struct.  <br /></td></tr>
 <tr class="separator:af73b90f735c070d534171f3e92730ac8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -233,6 +235,20 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
+<a id="aee1cd2bc521f76fa428cc659474d9570" name="aee1cd2bc521f76fa428cc659474d9570"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee1cd2bc521f76fa428cc659474d9570">&#9670;&#160;</a></span>watchdog_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d3/dc4/structwatchdog__t.html">watchdog_t</a> <a class="el" href="../../d3/dc4/structwatchdog__t.html">watchdog_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="ac109cd752121228507a95495a1eb6d8f" name="ac109cd752121228507a95495a1eb6d8f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac109cd752121228507a95495a1eb6d8f">&#9670;&#160;</a></span>_lf_get_environments()</h2>
@@ -288,8 +304,8 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
-<a id="a7775a7a5cdf2865c3fbe0d3dbe946423" name="a7775a7a5cdf2865c3fbe0d3dbe946423"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7775a7a5cdf2865c3fbe0d3dbe946423">&#9670;&#160;</a></span>environment_init()</h2>
+<a id="ab49da5954eb69f3d126162da44c25b36" name="ab49da5954eb69f3d126162da44c25b36"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab49da5954eb69f3d126162da44c25b36">&#9670;&#160;</a></span>environment_init()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -359,6 +375,12 @@ Functions intitializing and freeing memory for environments.</h1>
           <td></td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
           <td class="paramname"><em>num_state_resets</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>num_watchdogs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>

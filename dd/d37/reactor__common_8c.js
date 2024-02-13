@@ -38,8 +38,6 @@ var reactor__common_8c =
     [ "_lf_number_of_workers", "dd/d37/reactor__common_8c.html#a01fd0d1404992f7d875791a764a26925", null ],
     [ "_lf_reactors_to_free", "dd/d37/reactor__common_8c.html#af4b5bfd131da48f0fb95eab14e6e61c8", null ],
     [ "_lf_termination_executed", "dd/d37/reactor__common_8c.html#a1910a0a95d3c03a692687866ae34428f", null ],
-    [ "_lf_watchdog_count", "dd/d37/reactor__common_8c.html#a880e557a82e4187d4db968b54ab5c1f6", null ],
-    [ "_lf_watchdogs", "dd/d37/reactor__common_8c.html#aeaa7413bd0991c342f07dd55163d6c3d", null ],
     [ "default_argc", "dd/d37/reactor__common_8c.html#aab46895a3a4d1341a19b689a0ea902d1", null ],
     [ "default_argv", "dd/d37/reactor__common_8c.html#ad0fd32b8326e2d630ee8f4a431ea2867", null ],
     [ "duration", "dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77", null ],
