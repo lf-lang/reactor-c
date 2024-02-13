@@ -1122,7 +1122,7 @@ static void* update_ports_from_staa_offsets(void* args) {
             staa_t* staa_elem = staa_lst[i];
             // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
             // The list is sorted in increasing order of adjusted STAA offsets.
-            // The wait_until function automatically adds the _lf_fed_STA_offset to the wait time.
+            // The wait_until function automatically adds the lf_fed_STA_offset to the wait time.
             interval_t wait_until_time = env->current_tag.time + staa_elem->STAA;
             LF_PRINT_DEBUG("**** (update thread) original wait_until_time: " PRINTF_TIME, wait_until_time - lf_time_start());
     
@@ -1136,7 +1136,7 @@ static void* update_ports_from_staa_offsets(void* args) {
             // block progress of any execution that is actually processing events.
             // It only slightly delays the decision that an event is absent, and only
             // if the STAA and STA are extremely small.
-            if (_lf_fed_STA_offset + staa_elem->STAA < 5 * MIN_SLEEP_DURATION) {
+            if (lf_fed_STA_offset + staa_elem->STAA < 5 * MIN_SLEEP_DURATION) {
                 wait_until_time += 5 * MIN_SLEEP_DURATION;
             }
             while (a_port_is_unknown(staa_elem)) {

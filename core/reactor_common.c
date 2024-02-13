@@ -51,6 +51,19 @@ extern instant_t start_time;
 extern int _lf_count_payload_allocations;
 #endif
 
+#ifdef FEDERATED_DECENTRALIZED
+
+/**
+ * @brief Global STA (safe to advance) offset uniformly applied to advancement of each
+ * time step in federated execution.
+ * 
+ * This can be retrieved in user code by calling lf_get_stp_offset() and adjusted by
+ * calling lf_set_stp_offset(interval_t offset).
+ */
+interval_t lf_fed_STA_offset = 0LL;
+
+#endif FEDERATED_DECENTRALIZED
+
 /**
  * Indicator of whether to wait for physical time to match logical time.
  * By default, execution will wait. The command-line argument -fast will
@@ -77,14 +90,6 @@ instant_t duration = -1LL;
 
 /** Indicator of whether the keepalive command-line option was given. */
 bool keepalive_specified = false;
-
-/**
- * Global STP offset uniformly applied to advancement of each
- * time step in federated execution. This can be retrieved in
- * user code by calling lf_get_stp_offset() and adjusted by
- * calling lf_set_stp_offset(interval_t offset).
- */
-interval_t _lf_fed_STA_offset = 0LL;
 
 void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head) {
     void *mem = calloc(count, size);
@@ -148,15 +153,19 @@ void lf_set_stop_tag(environment_t* env, tag_t tag) {
     }
 }
 
+#ifdef FEDERATED_DECENTRALIZED
+
 interval_t lf_get_stp_offset() {
-    return _lf_fed_STA_offset;
+    return lf_fed_STA_offset;
 }
 
 void lf_set_stp_offset(interval_t offset) {
     if (offset > 0LL) {
-        _lf_fed_STA_offset = offset;
+        lf_fed_STA_offset = offset;
     }
 }
+
+#endif // FEDERATED_DECENTRALIZED
 
 /**
  * Trigger 'reaction'.

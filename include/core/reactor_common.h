@@ -1,3 +1,20 @@
+/**
+ * @file
+ * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Marten Lohstroh
+ * @author Soroush Bateni
+ * @author Mehrdad Niknami
+ * @author Alexander Schulz-Rosengarten
+ * @author Erling Rennemo Jellum
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Declarations of functions with implementations in reactor.c and reactor_threaded.c.
+ * 
+ * The functions declared in this file, as opposed to the onese in reactor.h, are not meant to be
+ * called by application programmers. They should be viewed as private functions that make up the
+ * C runtime.
+ */
+
 #ifndef REACTOR_COMMON_H
 #define REACTOR_COMMON_H
 
@@ -10,8 +27,23 @@
 #include "modes.h"
 #include "port.h"
 
+//////////////////////  Constants & Macros  //////////////////////
 
-//  ******** Global Variables :( ********  //
+/**
+ * @brief Constant giving the minimum amount of time to sleep to wait
+ * for physical time to reach a logical time.
+ * 
+ * Unless the "fast" option is given, an LF program will wait until
+ * physical time matches logical time before handling an event with
+ * a given logical time. The amount of time is less than this given
+ * threshold, then no wait will occur. The purpose of this is
+ * to prevent unnecessary delays caused by simply setting up and
+ * performing the wait.
+ */
+#define MIN_SLEEP_DURATION USEC(10)
+
+//////////////////////  Global Variables  //////////////////////
+
 // The following variables are efined in reactor_common.c and used in reactor.c,
 // reactor_threaded.c, and (some) by the code generator.
 extern bool _lf_normal_termination;
@@ -23,23 +55,28 @@ extern bool fast;
 extern bool keepalive_specified;
 
 #ifdef FEDERATED
-extern interval_t _lf_fed_STA_offset;
+extern interval_t lf_fed_STA_offset;
 #endif
 
-/**
- * @brief Return true if the provided tag is after stop tag.
- * @param env Environment in which we are executing.
- * @param tag The tag to check against stop tag
- */
-bool lf_is_tag_after_stop_tag(environment_t* env, tag_t tag);
+//////////////////////  Private Functions  //////////////////////
 
 /**
- * Recycle the given event.
- * Zero it out and pushed it onto the recycle queue.
+ * @brief Recycle the given event.
+ * 
+ * This will zero out the event and push it onto the recycle queue.
  * @param env Environment in which we are executing.
  * @param e The event to recycle.
  */
 void lf_recycle_event(environment_t* env, event_t* e);
+
+/**
+ * @brief Perform final wrap-up on exit.
+ * 
+ * This function will be registered to execute on exit.
+ * It reports elapsed logical and physical times and reports if any
+ * memory allocated for tokens has not been freed.
+ */
+void termination(void);
 
 extern struct allocation_record_t* _lf_reactors_to_free;
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);

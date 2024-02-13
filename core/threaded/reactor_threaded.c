@@ -231,12 +231,12 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
     // Apply the STA to the logical time
     // Prevent an overflow
-    if (start_time != logical_time && wait_until_time < FOREVER - _lf_fed_STA_offset) {
+    if (start_time != logical_time && wait_until_time < FOREVER - lf_fed_STA_offset) {
         // If wait_time is not forever
         LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".",
-                _lf_fed_STA_offset,
+                lf_fed_STA_offset,
                 wait_until_time - start_time);
-        wait_until_time += _lf_fed_STA_offset;
+        wait_until_time += lf_fed_STA_offset;
     }
 #endif
     if (!fast) {
@@ -633,7 +633,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     // If we have a non-zero STA offset, then we need to allow messages to arrive
     // prior to the start time.  To avoid spurious STP violations, we temporarily
     // set the current time back by the STA offset.
-    env->current_tag = (tag_t){.time = start_time - _lf_fed_STA_offset, .microstep = 0u};
+    env->current_tag = (tag_t){.time = start_time - lf_fed_STA_offset, .microstep = 0u};
 
     // Call wait_until if federated. This is required because the startup procedure
     // in lf_synchronize_with_other_federates() can decide on a new start_time that is
@@ -649,12 +649,12 @@ void _lf_initialize_start_tag(environment_t *env) {
     // especially useful if an STA is set properly because the federate will get
     // a chance to process incoming messages while utilizing the STA.
     LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
-            start_time, _lf_fed_STA_offset);
+            start_time, lf_fed_STA_offset);
     // Here we wait until the start time and also release the environment mutex.
     // this means that the other worker threads will be allowed to start. We need
     // this to avoid potential deadlock in federated startup.
-    while(!wait_until(env, start_time + _lf_fed_STA_offset, &env->event_q_changed)) {};
-    LF_PRINT_DEBUG("Done waiting for start time + STA offset " PRINTF_TIME ".", start_time + _lf_fed_STA_offset);
+    while(!wait_until(env, start_time + lf_fed_STA_offset, &env->event_q_changed)) {};
+    LF_PRINT_DEBUG("Done waiting for start time + STA offset " PRINTF_TIME ".", start_time + lf_fed_STA_offset);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME 
             ". This should be close to the STA offset.",
             lf_time_physical() - start_time);

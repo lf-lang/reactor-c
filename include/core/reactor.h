@@ -8,16 +8,11 @@
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.
  * 
- * This header file defines the functions and macros that programmers use
- * in the body of reactions for reading and writing inputs and outputs and
- * scheduling future events. The LF compiler does not parse that C code.
- * This fact strongly affects the design.
- *
- * The intent of the C target for Lingua Franca not to provide a safe
- * programming environment (The C++ and TypeScript targets are better
- * choices for that), but rather to find the lowest possible overhead
- * implementation of Lingua Franca. The API herein can easily be misused,
- * leading to memory leaks, nondeterminism, or program crashes.
+ * This header file defines functions that programmers use in the body of reactions for reading and
+ * writing inputs and outputs and scheduling future events. Other functions that might be useful to
+ * application programmers are also defined here.
+ * 
+ * Many of these functions have macro wrappers defined in reaction_macros.h.
  */
 
 #ifndef REACTOR_H
@@ -31,39 +26,14 @@
 #include "trace.h"
 #include "util.h"
 
-//////////////////////  Constants & Macros  //////////////////////
-
-/**
- * @brief Constant giving the minimum amount of time to sleep to wait for physical time to reach a logical time.
- * 
- * Unless the "fast" option is given, an LF program will wait until
- * physical time matches logical time before handling an event with
- * a given logical time. The amount of time is less than this given
- * threshold, then no wait will occur. The purpose of this is
- * to prevent unnecessary delays caused by simply setting up and
- * performing the wait.
- */
-#define MIN_SLEEP_DURATION USEC(10)
-
-/**
- * Macro for extracting the deadline from the index of a reaction.
- * The reaction queue is sorted according to this index, and the
- * use of the deadline here results in an earliest deadline first
- * (EDF) scheduling poicy.
- */
-#define DEADLINE(index) (index & 0x7FFFFFFFFFFF0000)
-
-/**
- * Macro for determining whether two reactions are in the
- * same chain (one depends on the other). This is conservative.
- * If it returns false, then they are surely not in the same chain,
- * but if it returns true, they may be in the same chain.
- * This is in reactor_threaded.c to execute reactions in parallel
- * on multiple cores even if their levels are different.
- */
-#define OVERLAPPING(chain1, chain2) ((chain1 & chain2) != 0)
-
 //////////////////////  Function Declarations  //////////////////////
+
+/**
+ * @brief Return true if the provided tag is after stop tag.
+ * @param env Environment in which we are executing.
+ * @param tag The tag to check against stop tag
+ */
+bool lf_is_tag_after_stop_tag(environment_t* env, tag_t tag);
 
 /**
  * @brief Mark the given port's is_present field as true.
@@ -77,6 +47,8 @@ void lf_set_present(lf_port_base_t* port);
  */
 void lf_set_stop_tag(environment_t* env, tag_t tag);
 
+#ifdef FEDERATED_DECENTRALIZED
+
 /**
  * @brief Return the global STP offset on advancement of logical time for federated execution.
  */
@@ -87,6 +59,8 @@ interval_t lf_get_stp_offset(void);
  * @param offset A positive time value to be applied as the STP offset.
  */
 void lf_set_stp_offset(interval_t offset);
+
+#endif FEDERATED_DECENTRALIZED
 
 /**
  * @brief Print a snapshot of the priority queues used during execution (for debugging).
@@ -232,8 +206,6 @@ int _lf_get_upstream_delay_of(int enclave_id, interval_t** result);
  * @param env The environment in which we are executing
  */
 void terminate_execution(environment_t* env);
-
-void termination();
 
 /**
  * Schedule the specified action with an integer value at a later logical

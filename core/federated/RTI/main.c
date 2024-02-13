@@ -91,6 +91,7 @@ static void send_failed_signal(federate_info_t* fed) {
 
 /**
  * @brief Function to run upon termination.
+ * 
  * This function will be invoked both after main() returns and when a signal
  * that results in terminating the process, such as SIGINT.  In the former
  * case, it should do nothing.  In the latter case, it will send a MSG_TYPE_FAILED
