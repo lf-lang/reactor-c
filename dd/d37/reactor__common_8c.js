@@ -13,7 +13,6 @@ var reactor__common_8c =
     [ "_lf_is_tag_after_stop_tag", "dd/d37/reactor__common_8c.html#a70aa1225071913da79877e8fc051e9b5", null ],
     [ "_lf_new_reactor", "dd/d37/reactor__common_8c.html#a906a0d04740b6228fe3719624d11c14a", null ],
     [ "_lf_pop_events", "dd/d37/reactor__common_8c.html#a41e1c14ed7c1ab5ab19b8b98d84006b6", null ],
-    [ "_lf_print_event", "dd/d37/reactor__common_8c.html#a833bcb0028e522544e8a08da551ee2b7", null ],
     [ "_lf_recycle_event", "dd/d37/reactor__common_8c.html#a09c9ff31293099899899b09041be5c9e", null ],
     [ "_lf_schedule", "dd/d37/reactor__common_8c.html#aa84f7383f6f8866ddfeb1fbd9e913948", null ],
     [ "_lf_schedule_at_tag", "dd/d37/reactor__common_8c.html#a9d2634d70492498740984f320dffe8f0", null ],

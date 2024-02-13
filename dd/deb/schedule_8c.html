@@ -97,7 +97,10 @@ $(function(){initNavTree('dd/deb/schedule_8c.html','../../'); initResizable(); }
   <div class="headertitle"><div class="title">schedule.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="../../dc/d65/api_8h_source.html">api.h</a>&quot;</code><br />
+
+<p>Implementation of schedule functions for Lingua Franca programs.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &quot;<a class="el" href="../../de/d6b/schedule_8h_source.html">schedule.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d85/reactor_8h_source.html">reactor.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -116,20 +119,9 @@ Functions</h2></td></tr>
 <tr class="separator:ab3a04dd0a1581844829b28686b6b3c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
-<h1><a class="anchor" id="LICENSE"></a>
-LICENSE</h1>
-<p>Copyright (c) 2020, The University of California at Berkeley.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<h1><a class="anchor" id="DESCRIPTION"></a>
-Functions intitializing and freeing memory for environments.</h1>
-<p>Target-specific runtime functions for the C target language. This API layer can be used in conjunction with: target C;</p>
-<p>Note for target language developers. This is one way of developing a target language where the C core runtime is adopted. This file is a translation layer that implements Lingua Franca APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a template for future runtime developement for target languages. For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend. </p>
+<div class="textblock"><p>Implementation of schedule functions for Lingua Franca programs. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="ab3a04dd0a1581844829b28686b6b3c53" name="ab3a04dd0a1581844829b28686b6b3c53"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab3a04dd0a1581844829b28686b6b3c53">&#9670;&#160;</a></span>lf_check_deadline()</h2>

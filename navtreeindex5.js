@@ -1,13 +1,5 @@
 var NAVTREEINDEX5 =
 {
-"d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c":[11,0,31,0],
-"d9/dad/structlf__wav__t.html#ade6c01f216604eef5d88c937972ab052":[11,0,31,1],
-"d9/daf/lf__zephyr__clock__counter_8c.html":[12,0,0,2,15],
-"d9/dc7/trace__util_8h.html":[12,0,5,0,6],
-"d9/dc7/trace__util_8h.html#a139bc891db3edc74b0d9f49d1cec20b9":[12,0,5,0,6,5],
-"d9/dc7/trace__util_8h.html#a14da003f17f3fb32043a735158a234c5":[12,0,5,0,6,3],
-"d9/dc7/trace__util_8h.html#a20b56e8fb05c017508f1c4fa2e311a87":[12,0,5,0,6,14],
-"d9/dc7/trace__util_8h.html#a2960eb597f48f3b59bbb850b47e895ff":[12,0,5,0,6,13],
 "d9/dc7/trace__util_8h.html#a2ef30c42cbc289d899a8be5d2d8f77d0":[12,0,5,0,6,10],
 "d9/dc7/trace__util_8h.html#a3b6aa696de734ff8fa179a9349e14fe7":[12,0,5,0,6,2],
 "d9/dc7/trace__util_8h.html#a3c9ac13d4710a48bf74879b8bc899f5c":[12,0,5,0,6,11],
@@ -249,5 +241,13 @@ var NAVTREEINDEX5 =
 "db/dab/structdeque__node__t.html#af0b3f351d6dab10d51b9f79092ee17f6":[11,0,5,1],
 "db/dc8/pythontarget_8h.html":[12,0,3,0,6],
 "db/dc8/pythontarget_8h.html#a0f16ef4bd6f5ce18c46b2ada2fd3f86f":[12,0,3,0,6,5],
-"db/dc8/pythontarget_8h.html#a1a013caac994b0b05697d0006bf8efcf":[12,0,3,0,6,10]
+"db/dc8/pythontarget_8h.html#a1a013caac994b0b05697d0006bf8efcf":[12,0,3,0,6,10],
+"db/dc8/pythontarget_8h.html#a2f18db18bca26cafa95e9719de4a41ef":[12,0,3,0,6,0],
+"db/dc8/pythontarget_8h.html#a3cd389b61ffd75be923fd4ba3b981b91":[12,0,3,0,6,1],
+"db/dc8/pythontarget_8h.html#a43e1cad902b6477bec893cb6430bd6c8":[12,0,3,0,6,3],
+"db/dc8/pythontarget_8h.html#a497da135b6a264b24a24e36d14e78daa":[12,0,3,0,6,15],
+"db/dc8/pythontarget_8h.html#a4edcc011de4a45d924a03a3125d4cf91":[12,0,3,0,6,8],
+"db/dc8/pythontarget_8h.html#a543f7a99c5c0d688350df1dd90ea81bd":[12,0,3,0,6,7],
+"db/dc8/pythontarget_8h.html#a9063e80f8777300c93afde6e6f4c9cea":[12,0,3,0,6,4],
+"db/dc8/pythontarget_8h.html#a9de058b2babd69a4ed9046fccc6e4f47":[12,0,3,0,6,16]
 };

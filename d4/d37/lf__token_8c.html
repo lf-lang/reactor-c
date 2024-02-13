@@ -171,7 +171,7 @@ LICENSE</h1>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
 Functions intitializing and freeing memory for environments.</h1>
-<p>Functions supporting token types. See <a class="el" href="../../d2/dff/lf__token_8h.html">lf_token.h</a> for docs. </p>
+<p>Functions supporting token types. See <a class="el" href="../../d2/dff/lf__token_8h.html" title="Definitions for token objects, reference-counted wrappers around dynamically-allocated messages.">lf_token.h</a> for docs. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="ad6be436dfb95ab914336870d340b207d" name="ad6be436dfb95ab914336870d340b207d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad6be436dfb95ab914336870d340b207d">&#9670;&#160;</a></span>_LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT</h2>
@@ -521,10 +521,11 @@ Functions intitializing and freeing memory for environments.</h1>
 </div><div class="memdoc">
 <p>Return a writable copy of the token in the specified template. If the reference count is 1, this returns the template's token rather than a copy. The reference count will be 1. Otherwise, if the size of the token payload is zero, this also returns the original token, again with reference count of 1. Otherwise, this returns a new token with a reference count of 1. The new token is added to a list of tokens whose reference counts will be decremented at the start of the next tag. If the template has no token (it has a primitive type), then there is no need for a writable copy. Return NULL. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">port</td><td>An input port. </td></tr>
+    <tr><td class="paramname">port</td><td>An input port, cast to (lf_port_base_t*). </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer to a writable copy of the token, or NULL if the type is primitive. </dd></dl>
 
 </div>
 </div>

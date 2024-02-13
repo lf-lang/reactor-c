@@ -1,11 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd":[11,0,32,0],
-"d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018":[11,0,32,1],
-"d7/dc9/structlf__waveform__t.html#add06d5d0fc6b2337a8aa902736c28558":[11,0,32,2],
-"d7/dd0/struct__lf__sensor__message__t.html":[11,0,2],
-"d7/dd0/struct__lf__sensor__message__t.html#a3a9fd3aca3ae40d8a10665c4cc89cd68":[11,0,2,0],
-"d7/dd0/struct__lf__sensor__message__t.html#a96731ca0567d1b00ef6f677a35a95228":[11,0,2,1],
 "d7/dd0/struct__lf__sensor__message__t.html#a985768458c6b00559db82b549f2870a4":[11,0,2,2],
 "d7/dd5/md_core_2utils_2hashset_2_r_e_a_d_m_e.html":[2],
 "d7/dd5/md_core_2utils_2hashset_2_r_e_a_d_m_e.html#autotoc_md26":[2,0],
@@ -99,8 +93,6 @@ var NAVTREEINDEX4 =
 "d8/d60/trace__to__csv_8c.html#ae349f8fec14a7cc3d663cf7eecf5a527":[12,0,5,0,3,4],
 "d8/d60/trace__to__csv_8c.html#ae957200dda71fc243bd75ac28d24418d":[12,0,5,0,3,16],
 "d8/d7b/md_core_2federated_2_r_t_i_2_r_e_a_d_m_e.html":[1],
-"d8/d84/set__undef_8h.html":[12,0,1,0,2],
-"d8/d84/set__undef_8h_source.html":[12,0,1,0,2],
 "d8/d9c/src__gen__stub_8c.html":[12,0,4,4],
 "d8/d9c/src__gen__stub_8c.html#a114c79dc673219d5df3b794552ca88d7":[12,0,4,4,5],
 "d8/d9c/src__gen__stub_8c.html#a13c2f54f700bce3d4572600bb87ab055":[12,0,4,4,2],
@@ -249,5 +241,13 @@ var NAVTREEINDEX4 =
 "d9/daa/modes_8h.html#a17df34d9c9d092aa6a399512b6a023e4":[12,0,1,1,1,0,0],
 "d9/daa/modes_8h_source.html":[12,0,1,1,1,0],
 "d9/dad/structlf__wav__t.html":[11,0,31],
-"d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9":[11,0,31,2]
+"d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9":[11,0,31,2],
+"d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c":[11,0,31,0],
+"d9/dad/structlf__wav__t.html#ade6c01f216604eef5d88c937972ab052":[11,0,31,1],
+"d9/daf/lf__zephyr__clock__counter_8c.html":[12,0,0,2,15],
+"d9/dc7/trace__util_8h.html":[12,0,5,0,6],
+"d9/dc7/trace__util_8h.html#a139bc891db3edc74b0d9f49d1cec20b9":[12,0,5,0,6,5],
+"d9/dc7/trace__util_8h.html#a14da003f17f3fb32043a735158a234c5":[12,0,5,0,6,3],
+"d9/dc7/trace__util_8h.html#a20b56e8fb05c017508f1c4fa2e311a87":[12,0,5,0,6,14],
+"d9/dc7/trace__util_8h.html#a2960eb597f48f3b59bbb850b47e895ff":[12,0,5,0,6,13]
 };

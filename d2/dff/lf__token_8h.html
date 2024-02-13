@@ -101,6 +101,9 @@ $(function(){initNavTree('d2/dff/lf__token_8h.html','../../'); initResizable(); 
   <div class="headertitle"><div class="title">lf_token.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Definitions for token objects, reference-counted wrappers around dynamically-allocated messages.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdlib.h&gt;</code><br />
 </div>
 <p><a href="../../d2/dff/lf__token_8h_source.html">Go to the source code of this file.</a></p>
@@ -192,18 +195,9 @@ Variables</h2></td></tr>
 <tr class="separator:af4657205de7da8f0bf7b346985a983fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
-<h1><a class="anchor" id="LICENSE"></a>
-LICENSE</h1>
-<p>Copyright (c) 2022, The University of California at Berkeley.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<h1><a class="anchor" id="DESCRIPTION"></a>
-Functions intitializing and freeing memory for environments.</h1>
+<div class="textblock"><p>Definitions for token objects, reference-counted wrappers around dynamically-allocated messages. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
 <p>This header file supports token objects, which are reference-counted wrappers around values that are carried by events scheduled on the event queue and held in ports and actions when the type is not a primitive type.</p>
 <p>A token has type <a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a>. It points to a value, a dynamically allocated chunk of memory on the heap. It has a length field, which enables its value to be interpreted as an array of the given length. It has a pointer to type (<a class="el" href="../../db/d12/structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a>), which has an element_size field specifying the size of each array element (or the size of the whole value if it is not an array and has length 1). The type also optionally has function pointers to a destructor and copy constructor. These must be specified if the payload (value) is a complex struct that cannot be freed by a simple call to <a class="el" href="../../d6/df3/hashmap_8h.html#a3efbc6cc1cee65d1129402b3476becd9" title="Free all memory used by the given hashmap.">free()</a> or copied by a call to <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">memcpy()</a>.</p>
 <p>An instance of a port struct and <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> struct (an action or an input port) can be cast to <a class="el" href="../../de/d6b/structtoken__template__t.html" title="Base type for ports (lf_port_base_t) and actions (trigger_t), which can carry tokens....">token_template_t</a>, which has a <a class="el" href="../../db/d12/structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a> field called type and a pointer to a token (which may be NULL). The same instance can also be cast to <a class="el" href="../../db/d12/structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a>, which has an element_size field and (possibly) function pointers to a destructor and a copy constructor.</p>
@@ -673,10 +667,11 @@ Functions intitializing and freeing memory for environments.</h1>
 </div><div class="memdoc">
 <p>Return a writable copy of the token in the specified template. If the reference count is 1, this returns the template's token rather than a copy. The reference count will be 1. Otherwise, if the size of the token payload is zero, this also returns the original token, again with reference count of 1. Otherwise, this returns a new token with a reference count of 1. The new token is added to a list of tokens whose reference counts will be decremented at the start of the next tag. If the template has no token (it has a primitive type), then there is no need for a writable copy. Return NULL. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">port</td><td>An input port. </td></tr>
+    <tr><td class="paramname">port</td><td>An input port, cast to (lf_port_base_t*). </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer to a writable copy of the token, or NULL if the type is primitive. </dd></dl>
 
 </div>
 </div>

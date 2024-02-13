@@ -119,8 +119,6 @@ $(function(){initNavTree('dd/d37/reactor__common_8c.html','../../'); initResizab
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a833bcb0028e522544e8a08da551ee2b7" id="r_a833bcb0028e522544e8a08da551ee2b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a833bcb0028e522544e8a08da551ee2b7">_lf_print_event</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *event)</td></tr>
-<tr class="separator:a833bcb0028e522544e8a08da551ee2b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa9a756e5a6685531141bb4bfdc1f327" id="r_afa9a756e5a6685531141bb4bfdc1f327"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa9a756e5a6685531141bb4bfdc1f327">_lf_allocate</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> count, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> size, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">head</a>)</td></tr>
 <tr class="separator:afa9a756e5a6685531141bb4bfdc1f327"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a906a0d04740b6228fe3719624d11c14a" id="r_a906a0d04740b6228fe3719624d11c14a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a906a0d04740b6228fe3719624d11c14a">_lf_new_reactor</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> size)</td></tr>
@@ -594,24 +592,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a833bcb0028e522544e8a08da551ee2b7" name="a833bcb0028e522544e8a08da551ee2b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a833bcb0028e522544e8a08da551ee2b7">&#9670;&#160;</a></span>_lf_print_event()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_print_event </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *</td>          <td class="paramname"><span class="paramname"><em>event</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Print an event from the event queue. This is a function of type pqueue_print_entry_f. </p>
-
-</div>
-</div>
 <a id="a09c9ff31293099899899b09041be5c9e" name="a09c9ff31293099899899b09041be5c9e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a09c9ff31293099899899b09041be5c9e">&#9670;&#160;</a></span>_lf_recycle_event()</h2>
 
@@ -668,7 +648,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Schedule the specified trigger at env-&gt;current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">schedule_token()</a> in <a class="el" href="../../dc/d85/reactor_8h.html">reactor.h</a> for details. This is the internal implementation shared by both the threaded and non-threaded versions.</p>
+<p>Schedule the specified trigger at env-&gt;current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">schedule_token()</a> in <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for details. This is the internal implementation shared by both the threaded and non-threaded versions.</p>
 <p>The value is required to be either NULL or a pointer to a token wrapping the payload. The token carries a reference count, and when the reference count decrements to 0, the will be freed. Hence, it is essential that the payload be in memory allocated using malloc.</p>
 <p>There are several conditions under which this function will not actually put an event on the event queue and decrement the reference count of the token (if there is one), which could result in the payload being freed. In all cases, this function returns 0. Otherwise, it returns a handle to the scheduled trigger, which is an integer greater than 0.</p>
 <p>The first condition is that a stop has been requested and the trigger offset plus the extra delay is greater than zero. The second condition is that the trigger offset plus the extra delay is greater that the requested stop time (timeout). A third condition is that the trigger argument is null. Also, an event might not be scheduled if the trigger is an action with a <code>min_spacing</code> parameter. See the documentation.</p>
@@ -758,7 +738,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Schedule an action to occur with the specified value and time offset with a copy of the specified value. See <a class="el" href="../../dc/d85/reactor_8h.html">reactor.h</a> for documentation. </p>
+<p>Schedule an action to occur with the specified value and time offset with a copy of the specified value. See <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for documentation. </p>
 
 </div>
 </div>
@@ -785,7 +765,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Variant of schedule_value when the value is an integer. See <a class="el" href="../../dc/d85/reactor_8h.html">reactor.h</a> for documentation. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Variant of schedule_value when the value is an integer. See <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for documentation. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">action</td><td>Pointer to an action on the self struct. </td></tr>
   </table>
@@ -817,7 +797,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Schedule the specified trigger at env-&gt;current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="../../dc/d85/reactor_8h.html">reactor.h</a> for documentation. </p>
+<p>Schedule the specified trigger at env-&gt;current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for documentation. </p>
 
 </div>
 </div>
@@ -849,7 +829,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Variant of schedule_token that creates a token to carry the specified value. See <a class="el" href="../../dc/d85/reactor_8h.html">reactor.h</a> for documentation. </p>
+<p>Variant of schedule_token that creates a token to carry the specified value. See <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for documentation. </p>
 
 </div>
 </div>
@@ -1119,7 +1099,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Report elapsed logical and physical times and report if any memory allocated by set_new, set_new_array, or lf_writable_copy has not been freed. </p>
+<p>Report elapsed logical and physical times and report if any memory allocated for tokens has not been freed. </p>
 
 </div>
 </div>

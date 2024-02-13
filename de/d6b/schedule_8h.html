@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.10.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: include/api/api.h File Reference</title>
+<title>reactor-c: include/api/schedule.h File Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -66,7 +66,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(function(){initNavTree('dc/d65/api_8h.html','../../'); initResizable(); });
+$(function(){initNavTree('de/d6b/schedule_8h.html','../../'); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -95,14 +95,14 @@ $(function(){initNavTree('dc/d65/api_8h.html','../../'); initResizable(); });
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">api.h File Reference</div></div>
+  <div class="headertitle"><div class="title">schedule.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 </div>
-<p><a href="../../dc/d65/api_8h_source.html">Go to the source code of this file.</a></p>
+<p><a href="../../de/d6b/schedule_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -123,26 +123,12 @@ Functions</h2></td></tr>
 <tr class="separator:a986bb1be3a9e4f71e5b5dde30d9dc6ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3a04dd0a1581844829b28686b6b3c53" id="r_ab3a04dd0a1581844829b28686b6b3c53"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab3a04dd0a1581844829b28686b6b3c53">lf_check_deadline</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *self, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">invoke_deadline_handler</a>)</td></tr>
 <tr class="separator:ab3a04dd0a1581844829b28686b6b3c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a596d8734432616c9c7847283fde63cfa" id="r_a596d8734432616c9c7847283fde63cfa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a596d8734432616c9c7847283fde63cfa">lf_tag_compare</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">tag1</a>, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">tag2</a>)</td></tr>
-<tr class="separator:a596d8734432616c9c7847283fde63cfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acbe5117469b98e0e6df45b5421f58026" id="r_acbe5117469b98e0e6df45b5421f58026"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acbe5117469b98e0e6df45b5421f58026">lf_tag</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *env)</td></tr>
-<tr class="separator:acbe5117469b98e0e6df45b5421f58026"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd>
 <dd>
-Hou Seng (Steven) Wong</dd></dl>
-<h1><a class="anchor" id="LICENSE"></a>
-LICENSE</h1>
-<p>Copyright (c) 2020, The University of California at Berkeley.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<h1><a class="anchor" id="DESCRIPTION"></a>
-Functions intitializing and freeing memory for environments.</h1>
+Hou Seng (Steven) Wong </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a></dd></dl>
 <p>This file is a translation layer that implements Lingua Franca APIs which interact with the internal _lf_SET and _lf_schedule APIs. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a4625be3023ef492f25fd5193ef754774" name="a4625be3023ef492f25fd5193ef754774"></a>
@@ -430,66 +416,12 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
-<a id="acbe5117469b98e0e6df45b5421f58026" name="acbe5117469b98e0e6df45b5421f58026"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acbe5117469b98e0e6df45b5421f58026">&#9670;&#160;</a></span>lf_tag()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a> lf_tag </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Return the current tag of a reactor. If NULL is passed to this function it will return the "global tag" of the runtime. <br  />
- </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">self</td><td>A pointer to the environment of which you want the current tag </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>the current tag </dd></dl>
-
-</div>
-</div>
-<a id="a596d8734432616c9c7847283fde63cfa" name="a596d8734432616c9c7847283fde63cfa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a596d8734432616c9c7847283fde63cfa">&#9670;&#160;</a></span>lf_tag_compare()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> lf_tag_compare </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag1</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag2</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Compare two tags. Return -1 if the first is less than the second, 0 if they are equal, and +1 if the first is greater than the second. A tag is greater than another if its time is greater or if its time is equal and its microstep is greater. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">tag1</td><td></td></tr>
-    <tr><td class="paramname">tag2</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>-1, 0, or 1 depending on the relation. </dd></dl>
-
-</div>
-</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="../../dir_2d52abcd54c181b91d630da402923092.html">api</a></li><li class="navelem"><a class="el" href="../../dc/d65/api_8h.html">api.h</a></li>
+    <li class="navelem"><a class="el" href="../../dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="../../dir_2d52abcd54c181b91d630da402923092.html">api</a></li><li class="navelem"><a class="el" href="../../de/d6b/schedule_8h.html">schedule.h</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>
