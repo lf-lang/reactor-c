@@ -204,7 +204,7 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
     return -1;
 }
 
-int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_thread_scheduling_policy_t policy) {
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy) {
     return -1;
 }
 

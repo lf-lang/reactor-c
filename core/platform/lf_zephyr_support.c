@@ -181,11 +181,6 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *
             break;
     }
 
-    // Write it back
-    if (pthread_setschedparam(thread, posix_policy, &schedparam) != 0) {
-        return -3;
-    }
-
     return 0;
 }
 
