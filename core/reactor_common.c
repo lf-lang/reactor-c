@@ -112,16 +112,6 @@ bool keepalive_specified = false;
  */
 interval_t _lf_fed_STA_offset = 0LL;
 
-void _lf_print_event(void* event) {
-    if (event == NULL) {
-        printf("NULL");
-    } else {
-        event_t* ev = (event_t*)event;
-        lf_print("Event: Time=" PRINTF_TIME ", dummy=%d, timer=%d",
-                ev->time - start_time, ev->is_dummy, ev->trigger->is_timer);
-    }
-}
-
 /**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
  * and record the allocated memory on the specified self struct so that
@@ -1754,8 +1744,7 @@ bool _lf_normal_termination = false;
 
 /**
  * Report elapsed logical and physical times and report if any
- * memory allocated by set_new, set_new_array, or lf_writable_copy
- * has not been freed.
+ * memory allocated for tokens has not been freed.
  */
 void termination(void) {
     if (_lf_termination_executed) return;

@@ -1,43 +1,12 @@
 /**
  * @file
  * @author Edward A. Lee (eal@berkeley.edu)
- *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Target-specific runtime functions for the C target language.
- * This API layer can be used in conjunction with:
- *     target C;
- *
- * Note for target language developers. This is one way of developing a target language where
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
- * template for future runtime developement for target languages.
- * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Implementation of schedule functions for Lingua Franca programs.
  */
 
-#include "api.h"
+#include "schedule.h"
 #include "reactor.h"
 
 /**
@@ -64,8 +33,7 @@ trigger_handle_t lf_schedule(void* action, interval_t offset) {
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value)
-{
+trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value) {
     return _lf_schedule_int((lf_action_base_t*)action, extra_delay, value);
 }
 
@@ -176,7 +144,6 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
     }
     return _lf_schedule_value((lf_action_base_t*)action, extra_delay, value, (size_t)length);
 }
-
 
 /**
  * Check the deadline of the currently executing reaction against the
