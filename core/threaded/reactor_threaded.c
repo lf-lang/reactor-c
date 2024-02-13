@@ -1111,8 +1111,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // as well as starting tracing subsystem
     initialize_global();
         
-    // Initialize the watchdog-specific mutexes. This is still handled globally and not per-environment
-    _lf_initialize_watchdog_mutexes();
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
@@ -1124,6 +1122,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Do environment-specific setup
     for (int i = 0; i<num_envs; i++) {
         environment_t *env = &envs[i];
+        
+        // Initialize the watchdogs on this environment.
+        _lf_initialize_watchdogs(env);
 
         // Initialize the start and stop tags of the environment
         environment_init_tags(env, start_time, duration);
