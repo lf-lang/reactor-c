@@ -211,18 +211,6 @@ int _lf_get_upstream_delay_of(int enclave_id, interval_t** result);
 void terminate_execution(environment_t* env);
 
 /**
- * Schedule the specified action with an integer value at a later logical
- * time that depends on whether the action is logical or physical and
- * what its parameter values are. This wraps a copy of the integer value
- * in a token. See schedule_token() for more details.
- * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
- * @param value The value to send.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
- */
-trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
-
-/**
  * Create a dummy event to be used as a spacer in the event queue.
  */
 event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* next, unsigned int offset);

@@ -567,16 +567,6 @@ void lf_request_stop(void) {
 #endif
 }
 
-/**
- * Trigger 'reaction'.
- *
- * @param env Environment within which we are executing.
- * @param reaction The reaction.
- * @param worker_number The ID of the worker that is making this call. 0 should be
- *  used if there is only one worker (e.g., when the program is using the
- *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
- *  worker number does not make sense (e.g., the caller is not a worker thread).
- */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
     assert(env != GLOBAL_ENVIRONMENT);
 

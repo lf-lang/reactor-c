@@ -10,9 +10,10 @@
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Declarations of functions with implementations in reactor.c and reactor_threaded.c.
  * 
- * The functions declared in this file, as opposed to the onese in reactor.h, are not meant to be
+ * The functions declared in this file, as opposed to the ones in reactor.h, are not meant to be
  * called by application programmers. They should be viewed as private functions that make up the
- * C runtime.
+ * C runtime.  In some cases, the implementation of these functions is in reactor_common.c, and in
+ * other cases, alternative implementations are provided in reactor.c and reactor_threaded.c.
  */
 
 #ifndef REACTOR_COMMON_H
@@ -44,8 +45,8 @@
 
 //////////////////////  Global Variables  //////////////////////
 
-// The following variables are efined in reactor_common.c and used in reactor.c,
-// reactor_threaded.c, and (some) by the code generator.
+// The following variables are defined in reactor_common.c and used in reactor.c,
+// reactor_threaded.c, modes.c, and by the code generator.
 extern bool _lf_normal_termination;
 extern unsigned int _lf_number_of_workers;
 extern int default_argc;
@@ -57,6 +58,9 @@ extern bool keepalive_specified;
 #ifdef FEDERATED_DECENTRALIZED
 extern interval_t lf_fed_STA_offset;
 #endif
+
+// The following is defined by the code generator.
+extern struct allocation_record_t* _lf_reactors_to_free;
 
 //////////////////////  Private Functions  //////////////////////
 
@@ -78,12 +82,54 @@ void lf_recycle_event(environment_t* env, event_t* e);
  */
 void termination(void);
 
-extern struct allocation_record_t* _lf_reactors_to_free;
+/**
+ * @brief Trigger the specified reaction on the specified worker in the specified environment.
+ * @param env Environment in which we are executing.
+ * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making this call. 0 should be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
+ *  worker number does not make sense (e.g., the caller is not a worker thread).
+ */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);
+
+/**
+ * @brief Initialize the given timer.
+ * If this timer has a zero offset, enqueue the reactions it triggers.
+ * If this timer is to trigger reactions at a _future_ tag as well,
+ * schedule it accordingly.
+ * @param env Environment in which we are executing.
+ * @param timer The timer to initialize.
+ */
 void _lf_initialize_timer(environment_t* env, trigger_t* timer);
+
+/**
+ * @brief Initialize all the timers in the environment
+ * @param env Environment in which we are executing.
+ */
 void _lf_initialize_timers(environment_t* env);
+
+/**
+ * @brief Trigger all the startup reactions in the specified environment.
+ * @param env Environment in which we are executing.
+ */
 void _lf_trigger_startup_reactions(environment_t* env);
+
+/**
+ * @brief Trigger all the shutdown reactions in the specified environment.
+ * @param env Environment in which we are executing.
+ */
 void _lf_trigger_shutdown_reactions(environment_t *env);
+
+/**
+ * Create dummy events to be used as spacers in the event queue.
+ * @param env Environment in which we are executing.
+ * @param trigger The eventual event to be triggered.
+ * @param time The logical time of that event.
+ * @param next The event to place after the dummy events.
+ * @param offset The number of dummy events to insert.
+ * @return A pointer to the first dummy event.
+ */
 event_t* _lf_create_dummy_events(
     environment_t* env,
     trigger_t* trigger,
@@ -91,7 +137,44 @@ event_t* _lf_create_dummy_events(
     event_t* next,
     microstep_t offset
 );
+
+/**
+ * @brief Schedule an event at a specific tag (time, microstep).
+ *
+ * If there is an event found at the requested tag, the payload
+ * is replaced and 0 is returned.
+ *
+ * Note that this function is an internal API that must be called with a tag that is in the future
+ * relative to the current tag (or the environment has not started executing). Also, it must be called
+ * with tags that are in order for a given trigger. This means that the following order is illegal:
+ * ```
+ * _lf_schedule_at_tag(trigger1, bigger_tag, ...);
+ * _lf_schedule_at_tag(trigger1, smaller_tag, ...);
+ * ```
+ * where `bigger_tag > smaller_tag`. This function is primarily
+ * used for network communication (which is assumed to be in order).
+ *
+ * This function assumes the caller holds the mutex lock.
+ *
+ * @param env Environment in which we are executing.
+ * @param trigger The trigger to be invoked at a later logical time.
+ * @param tag Logical tag of the event
+ * @param token The token wrapping the payload or NULL for no payload.
+ *
+ * @return A positive trigger handle for success, 0 if no new event was scheduled
+ *  (instead, the payload was updated), or -1 for error (the tag is equal to or less
+ *  than the current tag).
+ */
 trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token);
+
+/**
+ * @brief Insert reactions triggered by trigger to the reaction queue.
+ * @param env Environment in which we are executing.
+ * @param trigger The trigger.
+ * @param token The token wrapping the payload or NULL for no payload.
+ * @return 1 if successful, or 0 if no new reaction was scheduled because the function
+ *  was called incorrectly.
+ */
 trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t* trigger, lf_token_t* token);
 
 /**
@@ -102,7 +185,19 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
  * @param next_time The time step to advance to.
  */
 void _lf_advance_logical_time(environment_t *env, instant_t next_time);
+
+/**
+ * Schedule the specified action with an integer value at a later logical
+ * time that depends on whether the action is logical or physical and
+ * what its parameter values are. This wraps a copy of the integer value
+ * in a token. See schedule_token() for more details.
+ * @param action The action to be triggered.
+ * @param extra_delay Extra offset of the event release above that in the action.
+ * @param value The value to send.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ */
 trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
+
 void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker);
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
