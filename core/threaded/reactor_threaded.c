@@ -197,14 +197,7 @@ int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
     return result;
 }
 
-/**
- * Mark the given port's is_present field as true. This is_present field
- * will later be cleaned up by _lf_start_time_step. If the port is unconnected,
- * do nothing.
- * This assumes that the mutex is not held.
- * @param port A pointer to the port struct.
- */
-void _lf_set_present(lf_port_base_t* port) {
+void lf_set_present(lf_port_base_t* port) {
   if (!port->source_reactor) return;
   environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;
@@ -539,7 +532,7 @@ void _lf_next_locked(environment_t *env) {
 bool lf_stop_requested = false;
 
 // See reactor.h for docs.
-void lf_request_stop() {
+void lf_request_stop(void) {
     // If a requested stop is pending, return without doing anything.
     LF_PRINT_LOG("lf_request_stop() has been called.");
     LF_MUTEX_LOCK(&global_mutex);
@@ -1136,9 +1129,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // as well as starting tracing subsystem
     initialize_global();
 
-    // Initialize the watchdog-specific mutexes. This is still handled globally and not per-environment
-    _lf_initialize_watchdog_mutexes();
-    
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
 
@@ -1149,6 +1139,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Do environment-specific setup
     for (int i = 0; i<num_envs; i++) {
         environment_t *env = &envs[i];
+        
+        // Initialize the watchdogs on this environment.
+        _lf_initialize_watchdogs(env);
 
         // Initialize the start and stop tags of the environment
         environment_init_tags(env, start_time, duration);

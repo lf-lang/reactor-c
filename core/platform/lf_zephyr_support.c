@@ -92,7 +92,13 @@ int lf_enable_interrupts_nested() {
 #define USER_THREADS 0
 #endif
 
-#define NUMBER_OF_THREADS (NUMBER_OF_WORKERS + USER_THREADS)
+// If we have watchdogs, set aside threads for them also
+#if !defined(NUMBER_OF_WATCHDOGS)
+#define NUMBER_OF_WATCHDOGS 0
+#endif
+
+
+#define NUMBER_OF_THREADS (NUMBER_OF_WORKERS + USER_THREADS + NUMBER_OF_WATCHDOGS)
 
 K_MUTEX_DEFINE(thread_mutex);
 

@@ -64,10 +64,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if !defined(LF_SINGLE_THREADED)
 #include "watchdog.h"
-
-// Code generated global variables.
-extern int _lf_watchdog_count;
-extern watchdog_t* _lf_watchdogs;
 #endif
 
 // Global variable defined in tag.c:
@@ -112,16 +108,6 @@ bool keepalive_specified = false;
  * calling lf_set_stp_offset(interval_t offset).
  */
 interval_t _lf_fed_STA_offset = 0LL;
-
-void _lf_print_event(void* event) {
-    if (event == NULL) {
-        printf("NULL");
-    } else {
-        event_t* ev = (event_t*)event;
-        lf_print("Event: Time=" PRINTF_TIME ", dummy=%d, timer=%d",
-                ev->time - start_time, ev->is_dummy, ev->trigger->is_timer);
-    }
-}
 
 /**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
@@ -1782,8 +1768,7 @@ bool _lf_normal_termination = false;
 
 /**
  * Report elapsed logical and physical times and report if any
- * memory allocated by set_new, set_new_array, or lf_writable_copy
- * has not been freed.
+ * memory allocated for tokens has not been freed.
  */
 void termination(void) {
     if (_lf_termination_executed) return;
@@ -1802,6 +1787,11 @@ void termination(void) {
             continue;
         }
         LF_PRINT_LOG("---- Terminating environment %u, normal termination: %d", env[i].id, _lf_normal_termination);
+
+    #if !defined(LF_SINGLE_THREADED)
+        // Make sure all watchdog threads have stopped
+        _lf_watchdog_terminate_all(&env[i]);
+    #endif
 
         // Skip most cleanup on abnormal termination.
         if (_lf_normal_termination) {
@@ -1850,9 +1840,9 @@ void termination(void) {
         }
 #endif
 #if !defined(LF_SINGLE_THREADED)
-        for (int i = 0; i < _lf_watchdog_count; i++) {
-            if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
-                free(_lf_watchdogs[i].base->reactor_mutex);
+        for (int i = 0; i < env->watchdogs_size; i++) {
+            if (env->watchdogs[i]->base->reactor_mutex != NULL) {
+                free(env->watchdogs[i]->base->reactor_mutex);
             }
         }
 #endif

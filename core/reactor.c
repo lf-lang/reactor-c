@@ -72,8 +72,8 @@ int lf_mutex_lock(lf_mutex_t* mutex) {
  * @param port A pointer to the port struct.
  */
 void _lf_set_present(lf_port_base_t* port) {
-  if (!port->source_reactor) return;
-  environment_t *env = port->source_reactor->environment;
+    if (!port->source_reactor) return;
+    environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;
     if (env->is_present_fields_abbreviated_size < env->is_present_fields_size) {
         env->is_present_fields_abbreviated[env->is_present_fields_abbreviated_size]
@@ -315,7 +315,7 @@ int next(environment_t* env) {
     return _lf_do_step(env);
 }
 
-void lf_request_stop() {
+void lf_request_stop(void) {
     // There is only one enclave, so get its environment.
     environment_t *env;
     int num_environments = _lf_get_environments(&env);
