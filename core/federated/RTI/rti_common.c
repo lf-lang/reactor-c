@@ -300,7 +300,7 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
             // FIXME: This shouldn't be entered, but currently, it's entered.
             continue;
         }
-        send_downstream_next_event_tag_if_needed(rti_common->scheduling_nodes[target_upstream_id], next_event_tag);
+        send_downstream_next_event_tag_if_needed(rti_common->scheduling_nodes[target_upstream_id], e->id);
     }
 }
 
@@ -453,13 +453,23 @@ void update_all_downstreams(scheduling_node_t* node) {
     }
 }
 
-void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, tag_t new_NET) {
+// It should be static because it's used only in this file. Remove from the header file.
+void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id) {
     if (is_in_zero_delay_cycle(node)) {
         return;
     }
+
     tag_t DNET = FOREVER_TAG;
-    if (lf_tag_compare(node->last_DNET, new_NET) >= 0) {
-        DNET = new_NET;
+    scheduling_node_t* new_NET_source_federate = rti_common->scheduling_nodes[new_NET_source_federate_id];
+    if (is_in_zero_delay_cycle(new_NET_source_federate)) {
+        return;
+    }
+
+    int index = node->id * rti_common->number_of_scheduling_nodes + new_NET_source_federate_id;
+    tag_t DNET_candidate = lf_tag_subtract(new_NET_source_federate->next_event, rti_common->min_delays[index]);
+
+    if (lf_tag_compare(node->last_DNET, DNET_candidate) >= 0) {
+        DNET = DNET_candidate;
     } else {
         for (int i = 0; i < node->num_all_downstreams; i++) {
             uint16_t target_downstream_id = node->all_downstreams[i];
@@ -470,8 +480,8 @@ void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, tag_t new
                 return;
             }
 
-            int index = node->id * rti_common->number_of_scheduling_nodes + target_downstream_id;
-            tag_t DNET_candidate = lf_tag_subtract(target_dowstream->next_event, rti_common->min_delays[index]);
+            index = node->id * rti_common->number_of_scheduling_nodes + target_downstream_id;
+            DNET_candidate = lf_tag_subtract(target_dowstream->next_event, rti_common->min_delays[index]);
 
             if (lf_tag_compare(DNET, DNET_candidate) > 0) {
                 DNET = DNET_candidate;

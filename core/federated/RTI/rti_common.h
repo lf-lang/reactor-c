@@ -298,7 +298,7 @@ void send_downstream_next_event_tag(scheduling_node_t *e, tag_t tag);
  * @param node
  * @param new_NET
 */
-void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, tag_t new_NET);
+void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id);
 
 /**
  * For the given scheduling node (enclave or federate), invalidate the `min_delays`,
