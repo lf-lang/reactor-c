@@ -471,6 +471,121 @@ typedef enum {
     FINISH_READ
 } read_state_t;
 
+static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* bytes_to_read, int* state) {
+    switch(buffer[0]) {
+        // case MSG_TYPE_REJECT: // 1 +1
+        //     break;
+        // case MSG_TYPE_ACK: // 1
+        //     break;
+        case MSG_TYPE_UDP_PORT: // 1 + sizeof(uint16_t) = 3
+            *bytes_to_read = sizeof(uint16_t);
+            *state = FINISH_READ;
+            break;
+        case MSG_TYPE_FED_IDS: // 1 + sizeof(uint16_t) + 1 + federation_id
+            *bytes_to_read = sizeof(uint16_t) + 1;
+            *state = READ_MSG_TYPE_FED_IDS;
+            break;
+        case MSG_TYPE_FED_NONCE: // 1 + sizeof(uint16_t) + NONCE_LENGTH(8)
+            *bytes_to_read = sizeof(uint16_t) + NONCE_LENGTH;
+            *state = FINISH_READ;
+            break;
+        // case MSG_TYPE_RTI_RESPONSE: // 1 + sizeof(uint16_t) + NONCE_LENGTH(8)
+        //     break;
+        case MSG_TYPE_FED_RESPONSE: // 1 + SHA256_HMAC_LENGTH(8)
+            *bytes_to_read = SHA256_HMAC_LENGTH;
+            *state = FINISH_READ;
+            break;
+        case MSG_TYPE_TIMESTAMP: // 1+sizeof(int64_t)
+            *bytes_to_read = sizeof(int64_t);
+            *state = FINISH_READ;
+            break;
+        case MSG_TYPE_RESIGN:
+            *state = FINISH_READ;
+            break;          
+        case MSG_TYPE_TAGGED_MESSAGE:
+            *bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
+            *state = READ_MSG_TYPE_TAGGED_MESSAGE;
+            break;
+        case MSG_TYPE_NEXT_EVENT_TAG:
+            *bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
+            *state = FINISH_READ;
+            break;
+        //     case MSG_TYPE_TAG_ADVANCE_GRANT:
+        //         handle_tag_advance_grant();
+        //         break;
+        //     case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
+        //         handle_provisional_tag_advance_grant();
+        //         break;
+        case MSG_TYPE_LATEST_TAG_COMPLETE:
+            *bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
+            *state = FINISH_READ;
+            break;
+        case MSG_TYPE_STOP_REQUEST:
+            *bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
+            *state = FINISH_READ;
+            break;  
+        case MSG_TYPE_STOP_REQUEST_REPLY:
+            *bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
+            *state = FINISH_READ;
+            break;
+        //     case MSG_TYPE_STOP_GRANTED:
+        //         handle_stop_granted_message();
+        //         break;   
+        case MSG_TYPE_ADDRESS_QUERY:
+            *bytes_to_read = sizeof(uint16_t);
+            *state = FINISH_READ;
+            break;
+        case MSG_TYPE_ADDRESS_ADVERTISEMENT:
+            *bytes_to_read = sizeof(int32_t);
+            *state = FINISH_READ;
+            break;
+        // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
+        //     break;   
+        //     case MSG_TYPE_P2P_MESSAGE:
+        //         LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
+        //         if (handle_message(socket_id, fed_id)) {
+        //             // Failed to complete the reading of a message on a physical connection.
+        //             lf_print_warning("Failed to complete reading of message on physical connection.");
+        //             socket_closed = true;
+        //         }
+        //         break;
+        //     case MSG_TYPE_P2P_TAGGED_MESSAGE:
+        //         LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
+        //         if (handle_tagged_message(socket_id, fed_id)) {
+        //             // P2P tagged messages are only used in decentralized coordination, and
+        //             // it is not a fatal error if the socket is closed before the whole message is read.
+        //             // But this thread should exit.
+        //             lf_print_warning("Failed to complete reading of tagged message.");
+        //             socket_closed = true;
+        //         }
+        //         break;
+        // case MSG_TYPE_CLOCK_SYNC_T1:
+        //     break;   
+        case MSG_TYPE_CLOCK_SYNC_T3:
+            *bytes_to_read = sizeof(int32_t);
+            *state = FINISH_READ;
+            break;
+        // case MSG_TYPE_CLOCK_SYNC_T4:
+        //     break;
+        // case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
+        //     break;
+        case MSG_TYPE_PORT_ABSENT:
+            *bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
+            *state = FINISH_READ;
+            break;
+        case MSG_TYPE_NEIGHBOR_STRUCTURE:
+            *bytes_to_read = MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1;
+            *state = READ_MSG_TYPE_NEIGHBOR_STRUCTURE;
+            break;
+        case MSG_TYPE_FAILED:
+            *state = FINISH_READ;
+        default:
+            // Error handling?
+            *state = FINISH_READ;
+        }
+}
+
+
 // Returns the total bytes read.
 ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length) {
     socket_priv_t *priv = get_priv(netdrv);
@@ -500,6 +615,7 @@ ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_
     for (;;) {
         retry_count = 0;
         while (bytes_to_read > 0) {
+            //TODO: Check buffer_length.
             bytes_read = read(priv->socket_descriptor, buffer + total_bytes_read, bytes_to_read);
             if (bytes_read < 0 &&  // If)  Error has occurred,
                 retry_count++ < NUM_SOCKET_RETRIES && // there are left retry counts,
@@ -520,127 +636,9 @@ ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_
 
         switch(state) {
             case HEADER_READ:
-                switch(buffer[0]) {
-                    // case MSG_TYPE_REJECT: // 1 +1
-                    //     break;
-                    // case MSG_TYPE_ACK: // 1
-                    //     break;
-                    case MSG_TYPE_UDP_PORT: // 1 + sizeof(uint16_t) = 3
-                        bytes_to_read = sizeof(uint16_t);
-                        state = FINISH_READ;
-                        break;
-                    case MSG_TYPE_FED_IDS: // 1 + sizeof(uint16_t) + 1 + federation_id
-                        bytes_to_read = sizeof(uint16_t) + 1;
-                        state = READ_MSG_TYPE_FED_IDS;
-                        break;
-
-                    case MSG_TYPE_FED_NONCE: // 1 + sizeof(uint16_t) + NONCE_LENGTH(8)
-                        bytes_to_read = sizeof(uint16_t) + NONCE_LENGTH;
-                        state = FINISH_READ;
-                        break;
-
-                    // case MSG_TYPE_RTI_RESPONSE: // 1 + sizeof(uint16_t) + NONCE_LENGTH(8)
-                    //     break;
-
-                    case MSG_TYPE_FED_RESPONSE: // 1 + SHA256_HMAC_LENGTH(8)
-                        bytes_to_read = SHA256_HMAC_LENGTH;
-                        state = FINISH_READ;
-                        break;
-
-                    case MSG_TYPE_TIMESTAMP: // 1+sizeof(int64_t)
-                        bytes_to_read = sizeof(int64_t);
-                        state = FINISH_READ;
-                        break;
-
-                    case MSG_TYPE_RESIGN:
-                        state = FINISH_READ;
-                        break;          
-                    case MSG_TYPE_TAGGED_MESSAGE:
-                        bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
-                        state = READ_MSG_TYPE_TAGGED_MESSAGE;
-                        break;
-                    case MSG_TYPE_NEXT_EVENT_TAG:
-                        bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
-                        state = FINISH_READ;
-                        break;
-                    //     case MSG_TYPE_TAG_ADVANCE_GRANT:
-                    //         handle_tag_advance_grant();
-                    //         break;
-                    //     case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
-                    //         handle_provisional_tag_advance_grant();
-                    //         break;
-
-                    case MSG_TYPE_LATEST_TAG_COMPLETE:
-                        bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
-                        state = FINISH_READ;
-                        break;
-                    case MSG_TYPE_STOP_REQUEST:
-                        bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
-                        state = FINISH_READ;
-                        break;
-
-                    case MSG_TYPE_STOP_REQUEST_REPLY:
-                        bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
-                        state = FINISH_READ;
-                        break;
-                    //     case MSG_TYPE_STOP_GRANTED:
-                    //         handle_stop_granted_message();
-                    //         break;
-
-                    case MSG_TYPE_ADDRESS_QUERY:
-                        bytes_to_read = sizeof(uint16_t);
-                        state = FINISH_READ;
-                        break;
-                    case MSG_TYPE_ADDRESS_ADVERTISEMENT:
-                        bytes_to_read = sizeof(int32_t);
-                        state = FINISH_READ;
-                        break;
-                    // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
-                    //     break;
-
-                    //     case MSG_TYPE_P2P_MESSAGE:
-                    //         LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
-                    //         if (handle_message(socket_id, fed_id)) {
-                    //             // Failed to complete the reading of a message on a physical connection.
-                    //             lf_print_warning("Failed to complete reading of message on physical connection.");
-                    //             socket_closed = true;
-                    //         }
-                    //         break;
-                    //     case MSG_TYPE_P2P_TAGGED_MESSAGE:
-                    //         LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
-                    //         if (handle_tagged_message(socket_id, fed_id)) {
-                    //             // P2P tagged messages are only used in decentralized coordination, and
-                    //             // it is not a fatal error if the socket is closed before the whole message is read.
-                    //             // But this thread should exit.
-                    //             lf_print_warning("Failed to complete reading of tagged message.");
-                    //             socket_closed = true;
-                    //         }
-                    //         break;
-                    // case MSG_TYPE_CLOCK_SYNC_T1:
-                    //     break;
-
-                    case MSG_TYPE_CLOCK_SYNC_T3:
-                        bytes_to_read = sizeof(int32_t);
-                        state = FINISH_READ;
-                        break;
-                    // case MSG_TYPE_CLOCK_SYNC_T4:
-                    //     break;
-                    // case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
-                    //     break;
-                    case MSG_TYPE_PORT_ABSENT:
-                        bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
-                        state = FINISH_READ;
-                        break;
-                    case MSG_TYPE_NEIGHBOR_STRUCTURE:
-                        bytes_to_read = MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1;
-                        state = READ_MSG_TYPE_NEIGHBOR_STRUCTURE;
-                        break;
-                    case MSG_TYPE_FAILED:
-                        state = FINISH_READ;
-                    default:
-                        return -1;
-                }
+                handle_header_read(netdrv, buffer, &bytes_to_read, &state);
                 break;
+
             case READ_MSG_TYPE_FED_IDS: ;
                 size_t federation_id_length = (size_t)buffer[1 + sizeof(uint16_t)];
                 bytes_to_read = federation_id_length;
