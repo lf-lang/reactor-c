@@ -34,7 +34,18 @@ trigger_handle_t lf_schedule(void* action, interval_t offset) {
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value) {
-    return _lf_schedule_int((lf_action_base_t*)action, extra_delay, value);
+    token_template_t* template = (token_template_t*)action;
+
+    // NOTE: This doesn't acquire the mutex lock in the multithreaded version
+    // until schedule_value is called. This should be OK because the element_size
+    // does not change dynamically.
+    if (template->type.element_size != sizeof(int)) {
+        lf_print_error("Action type is not an integer. element_size is %zu", template->type.element_size);
+        return -1;
+    }
+    int* container = (int*)malloc(sizeof(int));
+    *container = value;
+    return _lf_schedule_value(action, extra_delay, container, 1);
 }
 
 /**

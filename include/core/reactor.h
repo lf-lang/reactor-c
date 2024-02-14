@@ -26,6 +26,11 @@
 #include "trace.h"
 #include "util.h"
 
+/**
+ * @brief Macro to suppress warnings about unused variables.
+ */
+#define SUPPRESS_UNUSED_WARNING(x) (void)(x)
+
 //////////////////////  Function Declarations  //////////////////////
 
 /**

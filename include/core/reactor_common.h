@@ -186,18 +186,6 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
  */
 void _lf_advance_logical_time(environment_t *env, instant_t next_time);
 
-/**
- * Schedule the specified action with an integer value at a later logical
- * time that depends on whether the action is logical or physical and
- * what its parameter values are. This wraps a copy of the integer value
- * in a token. See schedule_token() for more details.
- * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
- * @param value The value to send.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
- */
-trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
-
 void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker);
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
