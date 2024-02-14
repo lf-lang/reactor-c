@@ -37,10 +37,10 @@ jobs:
       - id: do
         name: Check which targets have changes
         run: |
-          ./check-diff.sh main "arduino" arduino
-          ./check-diff.sh main "macos|unix" macos
-          ./check-diff.sh main "python" python
-          ./check-diff.sh main "windows" windows
-          ./check-diff.sh main "zephyr" zephyr
+          ./check-diff.sh "arduino" arduino
+          ./check-diff.sh "macos|unix" macos
+          ./check-diff.sh "python" python
+          ./check-diff.sh "windows" windows
+          ./check-diff.sh "zephyr" zephyr
         shell: bash
         working-directory: .github/scripts
