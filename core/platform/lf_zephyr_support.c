@@ -22,14 +22,13 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT
 STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
-
+// FIXME: Comment added to see if the Zephyr tests will run.
 /**
  * @brief Zephyr support for the C target of Lingua Franca.
  *
  * @author{Erling Jellum <erling.r.jellum@ntnu.no>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
-
 #include <time.h>
 #include <errno.h>
 
@@ -94,7 +93,13 @@ int lf_enable_interrupts_nested() {
 #define USER_THREADS 0
 #endif
 
-#define NUMBER_OF_THREADS (NUMBER_OF_WORKERS + USER_THREADS)
+// If we have watchdogs, set aside threads for them also
+#if !defined(NUMBER_OF_WATCHDOGS)
+#define NUMBER_OF_WATCHDOGS 0
+#endif
+
+
+#define NUMBER_OF_THREADS (NUMBER_OF_WORKERS + USER_THREADS + NUMBER_OF_WATCHDOGS)
 
 K_MUTEX_DEFINE(thread_mutex);
 
@@ -183,10 +188,10 @@ int lf_cond_wait(lf_cond_t* cond) {
     return k_condvar_wait(&cond->condition, cond->mutex, K_FOREVER);
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     instant_t now;
-    _lf_clock_now(&now);
-    interval_t sleep_duration_ns = absolute_time_ns - now;
+    _lf_clock_gettime(&now);
+    interval_t sleep_duration_ns = wakeup_time - now;
     k_timeout_t timeout = K_NSEC(sleep_duration_ns);
     int res = k_condvar_wait(&cond->condition, cond->mutex, timeout);
     if (res == 0) {
@@ -196,63 +201,7 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     }
 }
 
-// Atomics
-//  Implemented by just entering a critical section and doing the arithmetic.
-//  This is somewhat inefficient considering enclaves. Since we get a critical
-//  section inbetween different enclaves
 
-/**
- * @brief Add `value` to `*ptr` and return original value of `*ptr` 
- * 
- */
-int _zephyr_atomic_fetch_add(int *ptr, int value) {
-    lf_disable_interrupts_nested();
-    int res = *ptr;
-    *ptr += value;
-    lf_enable_interrupts_nested();
-    return res;
-}
-/**
- * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
- */
-int _zephyr_atomic_add_fetch(int *ptr, int value) {
-    lf_disable_interrupts_nested();
-    int res = *ptr + value;
-    *ptr = res;
-    lf_enable_interrupts_nested();
-    return res;
-}
-
-/**
- * @brief Compare and swap for boolaen value.
- * If `*ptr` is equal to `value` then overwrite it 
- * with `newval`. If not do nothing. Retruns true on overwrite.
- */
-bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
-    lf_disable_interrupts_nested();
-    bool res = false;
-    if (*ptr == value) {
-        *ptr = newval;
-        res = true;
-    }
-    lf_enable_interrupts_nested();
-    return res;
-}
-
-/**
- * @brief Compare and swap for integers. If `*ptr` is equal
- * to `value`, it is updated to `newval`. The function returns
- * the original value of `*ptr`.
- */
-int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
-    lf_disable_interrupts_nested();
-    int res = *ptr;
-    if (*ptr == value) {
-        *ptr = newval;
-    }
-    lf_enable_interrupts_nested();
-    return res;
-}
 
 #endif // NUMBER_OF_WORKERS
 #endif

@@ -55,7 +55,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 // Global variables defined in tag.c and shared across environments:
-extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 extern instant_t start_time;
 
 /**
@@ -81,7 +80,7 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
         lf_print_warning("Attempting to raise a barrier after the stop tag.");
         future_tag = env->stop_tag;
     }
-    tag_t current_tag = env->current_tag;
+    
     // Check to see if future_tag is actually in the future.
     if (lf_tag_compare(future_tag, env->current_tag) > 0) {
         // Future tag is actually in the future.
@@ -199,18 +198,11 @@ int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
     return result;
 }
 
-/**
- * Mark the given port's is_present field as true. This is_present field
- * will later be cleaned up by _lf_start_time_step. If the port is unconnected,
- * do nothing.
- * This assumes that the mutex is not held.
- * @param port A pointer to the port struct.
- */
-void _lf_set_present(lf_port_base_t* port) {
+void lf_set_present(lf_port_base_t* port) {
   if (!port->source_reactor) return;
   environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;
-    int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+    int ipfas = lf_atomic_fetch_add32(&env->is_present_fields_abbreviated_size, 1);
     if (ipfas < env->is_present_fields_size) {
         env->is_present_fields_abbreviated[ipfas] = is_present_field;
     }
@@ -220,7 +212,7 @@ void _lf_set_present(lf_port_base_t* port) {
     if(port->sparse_record
     		&& port->destination_channel >= 0
 			&& port->sparse_record->size >= 0) {
-    	int next = lf_atomic_fetch_add(&port->sparse_record->size, 1);
+    	int next = lf_atomic_fetch_add32(&port->sparse_record->size, 1);
     	if (next >= port->sparse_record->capacity) {
     		// Buffer is full. Have to revert to the classic iteration.
     		port->sparse_record->size = -1;
@@ -259,56 +251,33 @@ void _lf_set_present(lf_port_base_t* port) {
  */
 bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition) {
     LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
-    bool return_value = true;
-    interval_t wait_until_time_ns = logical_time;
+    interval_t wait_until_time = logical_time;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
     // Apply the STA to the logical time
     // Prevent an overflow
-    if (start_time != logical_time && wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
+    if (start_time != logical_time && wait_until_time < FOREVER - _lf_fed_STA_offset) {
         // If wait_time is not forever
         LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".",
                 _lf_fed_STA_offset,
-                wait_until_time_ns - start_time);
-        wait_until_time_ns += _lf_fed_STA_offset;
+                wait_until_time - start_time);
+        wait_until_time += _lf_fed_STA_offset;
     }
 #endif
     if (!fast) {
-        // Get physical time as adjusted by clock synchronization offset.
-        instant_t current_physical_time = lf_time_physical();
-        // We want to wait until that adjusted time matches the logical time.
-        interval_t ns_to_wait = wait_until_time_ns - current_physical_time;
-        // We should not wait if that adjusted time is already ahead
-        // of logical time.
-        if (ns_to_wait < MIN_SLEEP_DURATION) {
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
-                ns_to_wait, MIN_SLEEP_DURATION);
-            return return_value;
+        // Check whether we actually need to wait, or if we have already passed the timepoint.
+        interval_t wait_duration = wait_until_time - lf_time_physical();
+        if (wait_duration < MIN_SLEEP_DURATION) {
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION " PRINTF_TIME ". Skipping wait.",
+                wait_duration, MIN_SLEEP_DURATION);
+            return true;
         }
 
-        // We will use lf_cond_timedwait, which takes as an argument the absolute
-        // time to wait until. However, that will not include the offset that we
-        // have calculated with clock synchronization. So we need to instead ensure
-        // that the time it waits is ns_to_wait.
-        // We need the current clock value as obtained using CLOCK_REALTIME because
-        // that is what lf_cond_timedwait will use.
-        // The above call to setPhysicalTime() set the
-        // _lf_last_reported_unadjusted_physical_time_ns to the CLOCK_REALTIME value
-        // unadjusted by clock synchronization.
-        // Note that if ns_to_wait is large enough, then the following addition could
-        // overflow. This could happen, for example, if wait_until_time_ns == FOREVER.
-        instant_t unadjusted_wait_until_time_ns = FOREVER;
-        if (FOREVER - _lf_last_reported_unadjusted_physical_time_ns > ns_to_wait) {
-            unadjusted_wait_until_time_ns = _lf_last_reported_unadjusted_physical_time_ns + ns_to_wait;
-        }
-        LF_PRINT_DEBUG("-------- Clock offset is " PRINTF_TIME " ns.", current_physical_time - _lf_last_reported_unadjusted_physical_time_ns);
-        LF_PRINT_DEBUG("-------- Waiting " PRINTF_TIME " ns for physical time to match logical time " PRINTF_TIME ".",
-        		ns_to_wait,
-                logical_time - start_time);
-
-        // lf_cond_timedwait returns 0 if it is awakened before the timeout.
-        // Hence, we want to run it repeatedly until either it returns non-zero or the
-        // current physical time matches or exceeds the logical time.
-        if (lf_cond_timedwait(condition, unadjusted_wait_until_time_ns) != LF_TIMEOUT) {
+        // We do the sleep on the cond var so we can be awakened by the
+        // asynchronous scheduling of a physical action. lf_clock_cond_timedwait
+        // returns 0 if it is awakened before the timeout. Hence, we want to run
+        // it repeatedly until either it returns non-zero or the current
+        // physical time matches or exceeds the logical time.
+        if (lf_clock_cond_timedwait(condition, wait_until_time) != LF_TIMEOUT) {
             LF_PRINT_DEBUG("-------- wait_until interrupted before timeout.");
 
             // Wait did not time out, which means that there
@@ -317,27 +286,14 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
             // Do not adjust logical tag here. If there was an asynchronous
             // call to lf_schedule(), it will have put an event on the event queue,
             // and logical tag will be set to that time when that event is pulled.
-            return_value = false;
+            return false;
         } else {
             // Reached timeout.
-            // FIXME: move this to Mac-specific platform implementation
-            // Unfortunately, at least on Macs, pthread_cond_timedwait appears
-            // to be implemented incorrectly and it returns well short of the target
-            // time.  Check for this condition and wait again if necessary.
-            interval_t ns_to_wait = wait_until_time_ns - lf_time_physical();
-            // We should not wait if that adjusted time is already ahead
-            // of logical time.
-            if (ns_to_wait < MIN_SLEEP_DURATION) {
-                return true;
-            }
-            LF_PRINT_DEBUG("-------- lf_cond_timedwait claims to have timed out, "
-                    "but it did not reach the target time. Waiting again.");
-            return wait_until(env, wait_until_time_ns, condition);
+            LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", wait_duration);
+            return true;
         }
-
-        LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", lf_time_physical() - current_physical_time);
     }
-    return return_value;
+    return true;
 }
 
 /**
@@ -577,7 +533,7 @@ void _lf_next_locked(environment_t *env) {
 bool lf_stop_requested = false;
 
 // See reactor.h for docs.
-void lf_request_stop() {
+void lf_request_stop(void) {
     // If a requested stop is pending, return without doing anything.
     LF_PRINT_LOG("lf_request_stop() has been called.");
     LF_MUTEX_LOCK(&global_mutex);
@@ -1170,8 +1126,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // as well as starting tracing subsystem
     initialize_global();
         
-    // Initialize the watchdog-specific mutexes. This is still handled globally and not per-environment
-    _lf_initialize_watchdog_mutexes();
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
@@ -1183,6 +1137,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Do environment-specific setup
     for (int i = 0; i<num_envs; i++) {
         environment_t *env = &envs[i];
+        
+        // Initialize the watchdogs on this environment.
+        _lf_initialize_watchdogs(env);
 
         // Initialize the start and stop tags of the environment
         environment_init_tags(env, start_time, duration);

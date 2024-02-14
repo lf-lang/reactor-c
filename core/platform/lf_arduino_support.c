@@ -68,15 +68,16 @@ static volatile uint32_t _lf_time_us_low_last = 0;
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     instant_t now;
+
     _lf_async_event = false;
-    lf_disable_interrupts_nested();
+    lf_enable_interrupts_nested();
 
     // Do busy sleep
     do {
-        _lf_clock_now(&now);
+        _lf_clock_gettime(&now);
     } while ((now < wakeup) && !_lf_async_event);
 
-    lf_enable_interrupts_nested();
+    lf_disable_interrupts_nested();
 
     if (_lf_async_event) {
         _lf_async_event = false;
@@ -88,12 +89,12 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
 
 int lf_sleep(interval_t sleep_duration) {
     instant_t now;
-    _lf_clock_now(&now);
+    _lf_clock_gettime(&now);
     instant_t wakeup = now + sleep_duration;
 
     // Do busy sleep
     do {
-        _lf_clock_now(&now);
+        _lf_clock_gettime(&now);
     } while ((now < wakeup));
     return 0;
 }
@@ -109,14 +110,14 @@ void _lf_initialize_clock() {}
  * This has to be called at least once per 35 minutes to properly handle overflows of the 32-bit clock.
  * TODO: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
 
     assert(t != NULL);
 
     uint32_t now_us_low = micros();
 
     // Detect whether overflow has occured since last read
-    // TODO: This assumes that we _lf_clock_now is called at least once per overflow
+    // TODO: This assumes that we _lf_clock_gettime is called at least once per overflow
     if (now_us_low < _lf_time_us_low_last) {
         _lf_time_us_high++;
     }
@@ -124,8 +125,6 @@ int _lf_clock_now(instant_t* t) {
     *t = COMBINE_HI_LO(_lf_time_us_high, now_us_low) * 1000ULL;
     return 0;
 }
-
-#if defined(LF_SINGLE_THREADED)
 
 int lf_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
@@ -148,6 +147,7 @@ int lf_disable_interrupts_nested() {
     return 0;
 }
 
+#if defined(LF_SINGLE_THREADED)
 /**
  * Handle notifications from the runtime of changes to the event queue.
  * If a sleep is in progress, it should be interrupted.
@@ -219,10 +219,10 @@ int lf_cond_wait(lf_cond_t* cond) {
     return 0;
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     instant_t now;
-    _lf_clock_now(&now);
-    interval_t sleep_duration_ns = absolute_time_ns - now;
+    _lf_clock_gettime(&now);
+    interval_t sleep_duration_ns = wakeup_time - now;
     bool res = condition_wait_for(*cond, sleep_duration_ns);
     if (!res) {
         return 0;

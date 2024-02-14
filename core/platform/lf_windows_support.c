@@ -45,8 +45,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "util.h"
 
-#define LF_MIN_SLEEP_NS USEC(10)
-
 /**
  * Indicate whether or not the underlying hardware
  * supports Windows' high-resolution counter. It should
@@ -73,7 +71,6 @@ void _lf_initialize_clock() {
     }
 }
 
-
 /**
  * Fetch the value of the physical clock (see lf_windows_support.h) and store it in t.
  * The timestamp value in 't' will be based on QueryPerformanceCounter, adjusted to
@@ -82,7 +79,7 @@ void _lf_initialize_clock() {
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
  *  set to EINVAL or EFAULT.
  */
-int _lf_clock_now(instant_t* t) {
+int _lf_clock_gettime(instant_t* t) {
     // Adapted from gclib/GResUsage.cpp
     // (https://github.com/gpertea/gclib/blob/8aee376774ccb2f3bd3f8e3bf1c9df1528ac7c5b/GResUsage.cpp)
     // License: https://github.com/gpertea/gclib/blob/master/LICENSE.txt
@@ -96,7 +93,7 @@ int _lf_clock_now(instant_t* t) {
     if (_lf_use_performance_counter) {
         int result = QueryPerformanceCounter(&windows_time);
         if ( result == 0) {
-            lf_print_error("_lf_clock_now(): Failed to read the value of the physical clock.");
+            lf_print_error("_lf_clock_gettime(): Failed to read the value of the physical clock.");
             return result;
         }
     } else {
@@ -147,7 +144,7 @@ int lf_sleep(interval_t sleep_duration) {
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
-    if (sleep_duration < LF_MIN_SLEEP_NS) {
+    if (sleep_duration <= 0) {
         return 0;
     } else {
         return lf_sleep(sleep_duration);
@@ -272,24 +269,22 @@ int lf_cond_wait(lf_cond_t* cond) {
      }
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
-    // Convert the absolute time to a relative time
-    instant_t current_time_ns;
-    _lf_clock_now(&current_time_ns);
-    interval_t relative_time_ns = (absolute_time_ns - current_time_ns);
-    if (relative_time_ns <= 0) {
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+    // Convert the absolute time to a relative time.
+    interval_t wait_duration = wakeup_time - lf_time_physical();
+    if (wait_duration<= 0) {
       // physical time has already caught up sufficiently and we do not need to wait anymore
       return 0;
     }
 
     // convert ns to ms and round up to closest full integer
-    DWORD relative_time_ms = (relative_time_ns + 999999LL) / 1000000LL;
+    DWORD wait_duration_ms = (wait_duration + 999999LL) / 1000000LL;
 
     int return_value =
      (int)SleepConditionVariableCS(
          (PCONDITION_VARIABLE)&cond->condition,
          (PCRITICAL_SECTION)cond->critical_section,
-         relative_time_ms
+         wait_duration_ms
      );
     if (return_value == 0) {
       // Error

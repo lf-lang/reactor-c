@@ -42,7 +42,6 @@
 #endif
 
 // Global variables defined in tag.c:
-extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 extern instant_t start_time;
 
 // Global variable defined in reactor_common.c:
@@ -1842,7 +1841,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                             remote_federate_id, CONNECT_MAX_RETRIES);
                 return;
             }
-            lf_print_warning("Could not connect to federate %d. Will try again every %lld nanoseconds.\n",
+            lf_print_warning("Could not connect to federate %d. Will try again every" PRINTF_TIME "nanoseconds.\n",
                    remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
             
             // Check whether the RTI is still there.
@@ -2138,7 +2137,7 @@ void lf_enqueue_port_absent_reactions(environment_t* env){
         return;
     }
 #endif
-    LF_PRINT_DEBUG("Enqueueing port absent reactions at time %lld.", (long long) (env->current_tag.time - start_time));
+    LF_PRINT_DEBUG("Enqueueing port absent reactions at time " PRINTF_TIME ".", (env->current_tag.time - start_time));
     if (num_port_absent_reactions == 0) {
         LF_PRINT_DEBUG("No port absent reactions.");
         return;
@@ -2503,13 +2502,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
         // RTI. That amount of time will be no greater than ADVANCE_MESSAGE_INTERVAL in the future.
         LF_PRINT_DEBUG("Waiting for physical time to elapse or an event on the event queue.");
 
-        // The above call to bounded_NET called lf_time_physical()
-        // set _lf_last_reported_unadjusted_physical_time_ns, the
-        // time obtained using CLOCK_REALTIME before adjustment for
-        // clock synchronization. Since that is the clock used by
-        // lf_cond_timedwait, this is the clock we want to use.
-        instant_t wait_until_time_ns =
-                _lf_last_reported_unadjusted_physical_time_ns + ADVANCE_MESSAGE_INTERVAL;
+        instant_t wait_until_time_ns = lf_time_physical() + ADVANCE_MESSAGE_INTERVAL;
 
         // Regardless of the ADVANCE_MESSAGE_INTERVAL, do not let this
         // wait exceed the time of the next tag.
@@ -2517,7 +2510,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
             wait_until_time_ns = original_tag.time;
         }
 
-        lf_cond_timedwait(&env->event_q_changed, wait_until_time_ns);
+        lf_clock_cond_timedwait(&env->event_q_changed, wait_until_time_ns);
 
         LF_PRINT_DEBUG("Wait finished or interrupted.");
 

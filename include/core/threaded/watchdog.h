@@ -34,15 +34,17 @@ struct watchdog_t {
     instant_t expiration;                   // The expiration instant for the watchdog. (Initialized to NEVER)
     interval_t min_expiration;              // The minimum expiration interval for the watchdog.
     lf_thread_t thread_id;                  // The thread that the watchdog is meant to run on.
-    bool thread_active;                     // Boolean indicating whether or not thread is active.  
+    lf_cond_t cond;                         // Condition variable used for sleeping and termination.
+    bool active;                            // Boolean indicating whether or not thread is active.  
+    bool terminate;                         // Boolean indicating whether termination of the thread has been requested.  
     watchdog_function_t watchdog_function;  // The function/handler for the watchdog.
 };
 
 /** 
  * @brief Start or restart the watchdog timer.
+ * 
  * This function sets the expiration time of the watchdog to the current logical time
  * plus the minimum timeout of the watchdog plus the specified `additional_timeout`.
- * If a watchdog timer thread is not already running, then this function will start one.
  * This function assumes the reactor mutex is held when it is called; this assumption
  * is satisfied whenever this function is called from within a reaction that declares
  * the watchdog as an effect.

@@ -188,7 +188,7 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
 void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
     // Increment the number of idle workers by 1 and check if this is the last
     // worker thread to become idle.
-    if (lf_atomic_add_fetch(&scheduler->number_of_idle_workers,
+    if (lf_atomic_add_fetch32((int32_t *) &scheduler->number_of_idle_workers,
                             1) ==
         scheduler->number_of_workers) {
         // Last thread to go idle
@@ -332,7 +332,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
  */
 void lf_sched_done_with_reaction(size_t worker_number,
                                  reaction_t* done_reaction) {
-    if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
+    if (!lf_atomic_bool_compare_and_swap32((int32_t *) &done_reaction->status, queued, inactive)) {
         lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
                              done_reaction->status, queued);
     }
@@ -355,7 +355,7 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
-    if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
+    if (reaction == NULL || !lf_atomic_bool_compare_and_swap32((int32_t *) &reaction->status, inactive, queued)) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.",

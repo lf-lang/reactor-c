@@ -182,10 +182,10 @@ void handle_port_absent_message(federate_info_t *sending_federate, unsigned char
         LF_MUTEX_UNLOCK(&rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                          federate_id);
-        LF_PRINT_LOG("Fed status: next_event (" PRINTF_TIME ", %d), "
-                     "completed (" PRINTF_TIME ", %d), "
-                     "last_granted (" PRINTF_TIME ", %d), "
-                     "last_provisionally_granted (" PRINTF_TIME ", %d).",
+        LF_PRINT_LOG("Fed status: next_event " PRINTF_TAG ", "
+                     "completed " PRINTF_TAG ", "
+                     "last_granted " PRINTF_TAG ", "
+                     "last_provisionally_granted " PRINTF_TAG ".",
                      fed->enclave.next_event.time - start_time,
                      fed->enclave.next_event.microstep,
                      fed->enclave.completed.time - start_time,
@@ -269,10 +269,10 @@ void handle_timed_message(federate_info_t *sending_federate, unsigned char *buff
         LF_MUTEX_UNLOCK(&rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                          federate_id);
-        LF_PRINT_LOG("Fed status: next_event (" PRINTF_TIME ", %d), "
-                     "completed (" PRINTF_TIME ", %d), "
-                     "last_granted (" PRINTF_TIME ", %d), "
-                     "last_provisionally_granted (" PRINTF_TIME ", %d).",
+        LF_PRINT_LOG("Fed status: next_event " PRINTF_TAG ", "
+                     "completed " PRINTF_TAG ", "
+                     "last_granted " PRINTF_TAG ", "
+                     "last_provisionally_granted " PRINTF_TAG ".",
                      fed->enclave.next_event.time - start_time,
                      fed->enclave.next_event.microstep,
                      fed->enclave.completed.time - start_time,
