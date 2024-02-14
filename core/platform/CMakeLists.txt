@@ -49,6 +49,7 @@ platform_define(LOG_LEVEL)
 platform_define(MODAL_REACTORS)
 platform_define(USER_THREADS)
 platform_define(NUMBER_OF_WORKERS)
+platform_define(NUMBER_OF_WATCHDOGS)
 
 target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include)
 target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core)
