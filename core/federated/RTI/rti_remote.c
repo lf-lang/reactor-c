@@ -786,19 +786,21 @@ static void broadcast_stop_time_to_federates_locked() {
 }
 
 /**
- * Mark a federate requesting stop. If the number of federates handling stop reaches the
- * NUM_OF_FEDERATES, broadcast MSG_TYPE_STOP_GRANTED to every federate.
+ * Mark a federate requesting stop. If the number of federates handling stop reaches
+ * the number of persistent federates, broadcast MSG_TYPE_STOP_GRANTED to every federate.
  * This function assumes the _RTI.mutex is already locked.
  * @param fed The federate that has requested a stop.
  * @return 1 if stop time has been sent to all federates and 0 otherwise.
  */
 static int mark_federate_requesting_stop(federate_info_t *fed) {
     if (!fed->requested_stop) {
-        rti_remote->base.num_scheduling_nodes_handling_stop++;
+        // Increment the number of federates handling stop only if it is persistent
+        if (!fed->is_transient)
+            rti_remote->base.num_scheduling_nodes_handling_stop++;
         fed->requested_stop = true;
     }
     if (rti_remote->base.num_scheduling_nodes_handling_stop
-            == rti_remote->base.number_of_scheduling_nodes) {
+            == (rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates)) {
         // We now have information about the stop time of all
         // federates.
         broadcast_stop_time_to_federates_locked();
