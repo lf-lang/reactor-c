@@ -1461,6 +1461,7 @@ void lf_connect_to_federates(netdrv_t *rti_netdrv) {
 
 void *respond_to_erroneous_connections(void *nothing) {
     while (true) {
+        // TODO: DONGHA: Need to fix. Do we need accept as api?
         netdrv_t *fed_netdrv = netdrv_accept(rti_remote->rti_netdrv);
 
         if (rti_remote->all_federates_exited) {
