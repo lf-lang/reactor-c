@@ -69,6 +69,9 @@ void lf_set_stp_offset(interval_t offset);
 
 /**
  * @brief Print a snapshot of the priority queues used during execution (for debugging).
+ * 
+ * This function implementation will be empty if the NDEBUG macro is defined; that macro
+ * is normally defined for release builds.
  * @param env The environment in which we are executing.
  */
 void lf_print_snapshot(environment_t* env);
@@ -134,27 +137,6 @@ void lf_free_all_reactors(void);
  * @param self The self struct of the reactor.
  */
 void lf_free_reactor(self_base_t *self);
-
-/**
- * Generated function that resets outputs to be absent at the
- * start of a new time step.
- * @param env The environment in which we are executing
- */
-void _lf_start_time_step(environment_t *env);
-
-/**
- * Generated function that produces a table containing all triggers
- * (i.e., inputs, timers, and actions).
- */
-void _lf_initialize_trigger_objects();
-
-/**
- * Pop all events from event_q with timestamp equal to current_time, extract all
- * the reactions triggered by these events, and stick them into the reaction
- * queue.
- * @param env The environment in which we are executing
- */
-void _lf_pop_events(environment_t *env);
 
 /**
  * Internal version of the lf_schedule() function, used by generated

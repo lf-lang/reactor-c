@@ -74,6 +74,21 @@ extern struct allocation_record_t* _lf_reactors_to_free;
 void lf_recycle_event(environment_t* env, event_t* e);
 
 /**
+ * @brief Perform whatever is needed to start a time step.
+ * 
+ * For example, this function resets outputs to be absent at the start of a new time step.
+ * 
+ * @param env The environment in which we are executing
+ */
+void _lf_start_time_step(environment_t *env);
+
+/**
+ * Generated function that produces a table containing all triggers
+ * (i.e., inputs, timers, and actions).
+ */
+void _lf_initialize_trigger_objects();
+
+/**
  * @brief Perform final wrap-up on exit.
  * 
  * This function will be registered to execute on exit.
@@ -186,9 +201,23 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
  */
 void _lf_advance_logical_time(environment_t *env, instant_t next_time);
 
+/**
+ * @brief Pop all events from event_q with tag equal to current tag.
+ * 
+ * This will extract all the reactions triggered by these events and stick them onto the
+ * reaction queue.
+ * 
+ * @param env The environment in which we are executing
+ */
+void _lf_pop_events(environment_t *env);
+
 void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker);
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
+
+/**
+ * @brief Initialize global variables and start tracing before calling the `_lf_initialize_trigger_objects` function.
+ */
 void initialize_global();
 
 #endif

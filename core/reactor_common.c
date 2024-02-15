@@ -163,12 +163,6 @@ void lf_set_stp_offset(interval_t offset) {
 
 #endif // FEDERATED_DECENTRALIZED
 
-/**
- * Use tables to reset is_present fields to false,
- * set intended_tag fields in federated execution
- * to the current_tag, and decrement reference
- * counts between time steps and at the end of execution.
- */
 void _lf_start_time_step(environment_t *env) {
     assert(env != GLOBAL_ENVIRONMENT);
     if (!env->execution_started) {
@@ -231,12 +225,6 @@ bool lf_is_tag_after_stop_tag(environment_t* env, tag_t tag) {
     return (lf_tag_compare(tag, env->stop_tag) > 0);
 }
 
-/**
- * Pop all events from event_q with timestamp equal to current_tag.time, extract all
- * the reactions triggered by these events, and stick them into the reaction
- * queue.
- * @param env Environment in which we are executing.
- */
 void _lf_pop_events(environment_t *env) {
     assert(env != GLOBAL_ENVIRONMENT);
 #ifdef MODAL_REACTORS
@@ -1518,10 +1506,6 @@ int process_args(int argc, const char* argv[]) {
     return 1;
 }
 
-/**
- * Initialize global variables and start tracing before calling the
- * `_lf_initialize_trigger_objects` function
- */
 void initialize_global(void) {
     #if !defined NDEBUG
     _lf_count_payload_allocations = 0;

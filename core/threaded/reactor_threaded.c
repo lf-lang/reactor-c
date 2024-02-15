@@ -981,11 +981,7 @@ void* worker(void* arg) {
     return NULL;
 }
 
-/**
- * If DEBUG logging is enabled, prints the status of the event queue,
- * the reaction queue, and the executing queue.
- * @param env Environment within which we are executing.
- */
+#ifndef NDEBUG
 void lf_print_snapshot(environment_t* env) {
     assert(env != GLOBAL_ENVIRONMENT);
 
@@ -1000,6 +996,11 @@ void lf_print_snapshot(environment_t* env) {
         LF_PRINT_DEBUG(">>> END Snapshot");
     }
 }
+#else // NDEBUG
+void lf_print_snapshot(environment_t* env) {
+    // Do nothing.
+}
+#endif // NDEBUG
 
 // Start threads in the thread pool.
 void start_threads(environment_t* env) {

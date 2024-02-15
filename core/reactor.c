@@ -71,6 +71,7 @@ int wait_until(environment_t* env, instant_t wakeup_time) {
     return 0;
 }
 
+#ifndef NDEBUG
 void lf_print_snapshot(environment_t* env) {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
@@ -78,6 +79,30 @@ void lf_print_snapshot(environment_t* env) {
         LF_PRINT_DEBUG(">>> END Snapshot");
     }
 }
+#else // NDEBUG
+void lf_print_snapshot(environment_t* env) {
+    // Do nothing.
+}
+#endif // NDEBUG
+
+/**
+ * Wait until physical time matches or exceeds the specified logical time,
+ * unless -fast is given. For decentralized coordination, this function will
+ * add the STA offset to the wait time.
+ *
+ * If an event is put on the event queue during the wait, then the wait is
+ * interrupted and this function returns false. It also returns false if the
+ * timeout time is reached before the wait has completed. Note this this could
+ * return true even if the a new event was placed on the queue if that event
+ * time matches or exceeds the specified time.
+ * @param env Environment in which we are executing
+ * @param time Logical time to wait until
+ * @return 0 if the wait was completed, -1 if it was skipped or interrupted.
+ */
+int lf_wait(environment_t* env, instant_t time) {
+    if (!fast) {
+        LF_PRINT_LOG("Waiting for logical time " PRINTF_TIME ".", time - start_time);
+        return lf_clock_
 
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
     assert(env != GLOBAL_ENVIRONMENT);
