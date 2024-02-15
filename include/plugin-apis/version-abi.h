@@ -2,7 +2,9 @@
  * @file version-abi.h
  * @author Peter Donovan (peter@xronos.com)
  * @brief API for runtime plugins to use to sanity-check compatibility with the
- * core.
+ * core. Plugins APIs can include a function to get information about the
+ * version of the plugin, and the core can use that information to determine if
+ * the plugin is compatible with the core.
  * @version 0.1
  * @date 2024-01-29
  *
