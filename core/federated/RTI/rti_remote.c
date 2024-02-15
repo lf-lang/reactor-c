@@ -267,6 +267,60 @@ static void notify_tag_advance_grant_immediate(scheduling_node_t* e, tag_t tag) 
   }
 }
 
+/**
+ * @brief Thread that sleeps for a period of time, and then wakes up to check if
+ * a tag advance grant needs to be sent. That is, if the pending tag have not
+ * been reset to NEVER_TAG, the tag advance grant will be immediate.
+ *
+ * @param federate the fedarate whose tag advance grant needs to be delayed.
+ */
+void* pending_grant_thread(void* federate) {
+  federate_info_t* fed = (federate_info_t*)federate;
+
+  interval_t sleep_interval = fed->pending_grant.time - lf_time_physical();
+  if (sleep_interval > 0) {
+    lf_sleep(sleep_interval);
+  }
+
+  lf_mutex_lock(&rti_mutex);
+
+  // If the pending grant becomes NEVER_TAG, then this means that it should
+  // not be sent
+  if (lf_tag_compare(fed->pending_grant, NEVER_TAG) != 0) {
+    notify_tag_advance_grant_immediate(&(fed->enclave), fed->pending_grant);
+    fed->pending_grant = NEVER_TAG;
+  }
+  lf_mutex_unlock(&rti_mutex);
+}
+
+/**
+ * Notify a tag advance grant (TAG) message to the specified federate after
+ * the physical time reaches the tag. A thread is created to this end.
+ *
+ * If a provisionl tag advance grant is pending, cancel it. If there is another
+ * pending tag advance grant, do not proceed with the thread creation.
+ *
+ * @param e The enclave.
+ * @param tag The tag to grant.
+ */
+void notify_tag_advance_grant_delayed(scheduling_node_t* e, tag_t tag) {
+  federate_info_t* fed = GET_FED_INFO(e->id);
+
+  // Check wether there is already a pending grant
+  // And check the pending provisional grant as well
+  lf_mutex_lock(&rti_mutex);
+  if (lf_tag_compare(fed->pending_grant, NEVER_TAG) == 0) {
+    // If a tag is issued, then stop any possible provisional tag grant
+    fed->pending_grant = tag;
+    fed->pending_provisional_grant = NEVER_TAG;
+    lf_thread_create(&(fed->pending_grant_thread_id), pending_grant_thread, fed);
+  } else {
+    // If there is already a pending tag grant, then let it be sent first
+    // FIXME: Is this correct?
+  }
+  lf_mutex_unlock(&rti_mutex);
+}
+
 void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   if (e->state == NOT_CONNECTED || lf_tag_compare(tag, e->last_granted) <= 0 ||
       lf_tag_compare(tag, e->last_provisionally_granted) <= 0) {
@@ -279,20 +333,21 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     lf_cond_wait(&sent_start_time);
   }
 
-  // Check if sending the tag advance grant needs to be delayed or not.
-  // Delay is needed when a federate has at least one absent upstream transient.
-
   // Check if sending the tag advance grant needs to be delayed or not
   // Delay is needed when a federate has, at least one, absent upstream transient
-  federate_info_t* fed = GET_FED_INFO(e->id);
-  if (!fed->has_upstream_transient_federates) {
-    notify_tag_advance_grant_immediate(e, tag);
-  } else {
-    if (get_num_absent_upstream_transients(fed) > 0) {
-      notify_grant_delayed(fed, tag, false);
-    } else {
-      notify_tag_advance_grant_immediate(e, tag);
+  int num_absent_upstram_transients = 0;
+  for (int j = 0; j < e->num_upstream; j++) {
+    federate_info_t* upstream = GET_FED_INFO(e->upstream[j]);
+    // Do Ignore this enclave if it no longer connected.
+    if ((upstream->enclave.state == NOT_CONNECTED) && (upstream->is_transient)) {
+      num_absent_upstram_transients++;
+      break;
     }
+  }
+  if (num_absent_upstram_transients > 0) {
+    notify_tag_advance_grant_delayed(e, tag);
+  } else {
+    notify_tag_advance_grant_immediate(e, tag);
   }
 }
 
@@ -306,7 +361,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
  * @param e The scheduling node.
  * @param tag The tag to grant.
  */
-static void notify_provisional_tag_advance_grant_immediate(scheduling_node_t* e, tag_t tag) {
+void notify_provisional_tag_advance_grant_immediate(scheduling_node_t* e, tag_t tag) {
   size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
   unsigned char buffer[message_length];
   buffer[0] = MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT;
@@ -1908,166 +1963,144 @@ static bool authenticate_federate(int* socket) {
 
 void lf_connect_to_persistent_federates(int socket_descriptor) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes - rti_remote.number_of_transient_federates; i++) {
-    // FIXME: The socket descriptor here (parameter) is not used. Should be removed?
-    void lf_connect_to_persistent_federates(int socket_descriptor) {
-      for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates;
-           i++) {
-        // Wait for an incoming connection request.
-        struct sockaddr client_fd;
-        uint32_t client_length = sizeof(client_fd);
-        // The following blocks until a federate connects.
-        int socket_id = -1;
-        while (1) {
-          socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
-          if (socket_id >= 0) {
-            // Got a socket
-            break;
-          } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-            lf_print_error_system_failure("RTI failed to accept the socket.");
-          } else {
-            // Try again
-            lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
-            continue;
-          }
-        }
-
-// Wait for the first message from the federate when RTI -a option is on.
-#ifdef __RTI_AUTH__
-        if (rti_remote->authentication_enabled) {
-          if (!authenticate_federate(&socket_id)) {
-            lf_print_warning("RTI failed to authenticate the incoming federate.");
-            // Close the socket.
-            shutdown(socket_id, SHUT_RDWR);
-            close(socket_id);
-            socket_id = -1;
-            // Ignore the federate that failed authentication.
-            i--;
-            continue;
-          }
-        }
-#endif
-
-        // The first message from the federate should contain its ID and the federation ID.
-        int32_t fed_id = receive_and_check_fed_id_message(&socket_id);
-        if (fed_id >= 0 && socket_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
-            receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
-
-          // Create a thread to communicate with the federate.
-          // This has to be done after clock synchronization is finished
-          // or that thread may end up attempting to handle incoming clock
-          // synchronization messages.
-          federate_info_t* fed = GET_FED_INFO(fed_id);
-          lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
-
-          // If the federate is transient, then do not count it.
-          if (fed->is_transient) {
-            rti_remote.number_of_connected_transient_federates++;
-            assert(rti_remote.number_of_connected_transient_federates <= rti_remote.number_of_transient_federates);
-            i--;
-            lf_print("RTI: Transient federate %d joined.", fed->base.id);
-          }
-        } else {
-          // Received message was rejected. Try again.
-          i--;
-        }
-      }
-      // All federates have connected.
-      LF_PRINT_DEBUG("All persistent federates have connected to RTI.");
-
-      if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-        // Create the thread that performs periodic PTP clock synchronization sessions
-        // over the UDP channel, but only if the UDP channel is open and at least one
-        // federate is performing runtime clock synchronization.
-        bool clock_sync_enabled = false;
-        for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-          federate_info_t* fed_info = GET_FED_INFO(i);
-          if (fed_info->clock_synchronization_enabled) {
-            clock_sync_enabled = true;
-            break;
-          }
-        }
-        if (rti_remote->final_port_UDP != UINT16_MAX && clock_sync_enabled) {
-          lf_thread_create(&rti_remote->clock_thread, clock_synchronization_thread, NULL);
-        }
+    // Wait for an incoming connection request.
+    struct sockaddr client_fd;
+    uint32_t client_length = sizeof(client_fd);
+    // The following blocks until a federate connects.
+    int socket_id = -1;
+    while (1) {
+      socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
+      if (socket_id >= 0) {
+        // Got a socket
+        break;
+      } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+        lf_print_error_system_failure("RTI failed to accept the socket.");
+      } else {
+        // Try again
+        lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+        continue;
       }
     }
 
-    void* lf_connect_to_transient_federates_thread(int socket_descriptor) {
-      // This loop will continue to accept connections of transient federates, as
-      // soon as there is room, or enable hot swap
+// Wait for the first message from the federate when RTI -a option is on.
+#ifdef __RTI_AUTH__
+    if (rti_remote->authentication_enabled) {
+      if (!authenticate_federate(&socket_id)) {
+        lf_print_warning("RTI failed to authenticate the incoming federate.");
+        // Close the socket.
+        shutdown(socket_id, SHUT_RDWR);
+        close(socket_id);
+        socket_id = -1;
+        // Ignore the federate that failed authentication.
+        i--;
+        continue;
+      }
+    }
+#endif
 
-      while (!rti_remote.all_persistent_federates_exited) {
-        // Continue waiting for an incoming connection requests from transients
-        // to join, or for hot swap.
-        // Wait for an incoming connection request.
-        struct sockaddr client_fd;
-        uint32_t client_length = sizeof(client_fd);
-        // The following blocks until a federate connects.
-        int socket_id = -1;
-        while (1) {
-          if (!rti_remote.all_persistent_federates_exited) {
-            return NULL;
-          }
-          socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
-          if (socket_id >= 0) {
-            // Got a socket
-            break;
-          } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-            lf_print_error_system_failure("RTI failed to accept the socket.");
-          } else {
-            // Try again
-            lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
-            continue;
-          }
-        }
+    // The first message from the federate should contain its ID and the federation ID.
+    int32_t fed_id = receive_and_check_fed_id_message(&socket_id);
+    if (fed_id >= 0 && socket_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
+        receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
+
+      // Create a thread to communicate with the federate.
+      // This has to be done after clock synchronization is finished
+      // or that thread may end up attempting to handle incoming clock
+      // synchronization messages.
+      federate_info_t* fed = GET_FED_INFO(fed_id);
+      lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
+
+      // If the federate is transient, then do not count it.
+      if (fed->is_transient) {
+        rti_remote->number_of_connected_transient_federates++;
+        assert(rti_remote->number_of_connected_transient_federates <= rti_remote->number_of_transient_federates);
+        i--;
+        lf_print("RTI: Transient federate %d joined.", fed->enclave.id);
+      }
+    } else {
+      // Received message was rejected. Try again.
+      i--;
+    }
+  }
+  // All federates have connected.
+  LF_PRINT_DEBUG("All persistent federates have connected to RTI.");
+
+  if (rti_remote->clock_sync_global_status >= clock_sync_on) {
+    // Create the thread that performs periodic PTP clock synchronization sessions
+    // over the UDP channel, but only if the UDP channel is open and at least one
+    // federate is performing runtime clock synchronization.
+    bool clock_sync_enabled = false;
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+      federate_info_t* fed_info = GET_FED_INFO(i);
+      if (fed_info->clock_synchronization_enabled) {
+        clock_sync_enabled = true;
+        break;
+      }
+    }
+    if (rti_remote->final_port_UDP != UINT16_MAX && clock_sync_enabled) {
+      lf_thread_create(&rti_remote->clock_thread, clock_synchronization_thread, NULL);
+    }
+  }
+}
+
+void* lf_connect_to_transient_federates_thread(int socket_descriptor) {
+  // This loop will continue to accept connections of transient federates, as
+  // soon as there is room, or enable hot swap
+
+  while (!rti_remote->all_persistent_federates_exited) {
+    // Continue waiting for an incoming connection requests from transients
+    // to join, or for hot swap.
+    // Wait for an incoming connection request.
+    struct sockaddr client_fd;
+    uint32_t client_length = sizeof(client_fd);
+    // The following blocks until a federate connects.
+    int socket_id = -1;
+    while (1) {
+      if (!rti_remote->all_persistent_federates_exited) {
+        return NULL;
+      }
+      socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
+      if (socket_id >= 0) {
+        // Got a socket
+        break;
+      } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+        lf_print_error_system_failure("RTI failed to accept the socket.");
+      } else {
+        // Try again
+        lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+        continue;
+      }
+    }
 
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
-        if (rti_remote->authentication_enabled) {
-          if (!authenticate_federate(&socket_id)) {
-            lf_print_warning("RTI failed to authenticate the incoming federate.");
-            // Close the socket.
-            shutdown(socket_id, SHUT_RDWR);
-            close(socket_id);
-            socket_id = -1;
-            // Ignore the federate that failed authentication.
-            i--;
-            continue;
-          }
-        }
-#endif
-
-        // The first message from the federate should contain its ID and the federation ID.
-        // The function also detects if a hot swap request is initiated.
-        int32_t fed_id = receive_and_check_fed_id_message(&socket_id, (struct sockaddr_in*)&client_fd);
-        if (fed_id >= 0 && socket_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
-            receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
-        }
-
-        //     // Create a thread to communicate with the federate.
-        //     // This has to be done after clock synchronization is finished
-        //     // or that thread may end up attempting to handle incoming clock
-        //     // synchronization messages.
-        //     federate_info_t *fed = GET_FED_INFO(fed_id);
-        //     lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
-
-        //     // If the federate is transient, then do not count it.
-        //     if (fed->is_transient) {
-        //         rti_remote.number_of_connected_transient_federates++;
-        //         assert(rti_remote.number_of_connected_transient_federates <=
-        //         rti_remote.number_of_transient_federates); i--; lf_print("RTI: Transient federate %d joined.",
-        //         fed->base.id);
-        //     }
-        // } else {
-        //     // Received message was rejected. Try again.
-        //     i--;
-        // }
-
-        // FIXME: Check again if runtime clock synchronization should be lauched,
-        // only if the number of persistent threads is zero. This should be done
-        // only once, not at every transient connection.
+    if (rti_remote->authentication_enabled) {
+      if (!authenticate_federate(&socket_id)) {
+        lf_print_warning("RTI failed to authenticate the incoming federate.");
+        // Close the socket.
+        shutdown(socket_id, SHUT_RDWR);
+        close(socket_id);
+        socket_id = -1;
+        // Ignore the federate that failed authentication.
+        i--;
+        continue;
       }
     }
+#endif
+
+    // The first message from the federate should contain its ID and the federation ID.
+    // The function also detects if a hot swap request is initiated.
+    int32_t fed_id = receive_and_check_fed_id_message(&socket_id, (struct sockaddr_in*)&client_fd);
+    if (fed_id >= 0 && socket_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
+        receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
+    }
+
+    //     // Create a thread to communicate with the federate.
+    //     // This has to be done after clock synchronization is finished
+    //     // or that thread may end up attempting to handle incoming clock
+    //     // synchronization messages.
+    //     federate_info_t *fed = GET_FED_INFO(fed_id);
+    //     lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
 
     /**
      * @brief A request for immediate stop to the federate
