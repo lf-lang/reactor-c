@@ -156,6 +156,9 @@ tag_t eimt_strict(scheduling_node_t* e) {
 tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     tag_advance_grant_t result = {.tag = NEVER_TAG, .is_provisional = false};
 
+    // Check how many upstream federates are connected
+    int num_connected_upstream = 0;
+
     // Find the earliest LTC of upstream scheduling_nodes (M).
     tag_t min_upstream_completed = FOREVER_TAG;
 
@@ -164,6 +167,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
 
         // Ignore this enclave/federate if it is not connected.
         if (upstream->state == NOT_CONNECTED) continue;
+        num_connected_upstream++;
 
         // Adjust by the "after" delay.
         // Note that "no delay" is encoded as NEVER,
@@ -178,7 +182,14 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
             "(adjusted by after delay).",
             e->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
-    if (lf_tag_compare(min_upstream_completed, e->last_granted) > 0
+    
+     if (num_connected_upstream == 0) {
+        // When none of the upstream federates is connected (case of transients),
+        if (lf_tag_compare(e->next_event, FOREVER_TAG) != 0) {
+            result.tag = e->next_event; 
+            return result;
+        }
+    } else if (lf_tag_compare(min_upstream_completed, e->last_granted) > 0
         && lf_tag_compare(min_upstream_completed, e->next_event) >= 0 // The enclave has to advance its tag
     ) {
         result.tag = min_upstream_completed;
