@@ -24,18 +24,31 @@ static socket_priv_t *get_priv(netdrv_t *drv) {
     return (socket_priv_t *)(drv + 1);
 }
 
-char *get_host_name(netdrv_t *drv) {
+char* get_host_name(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
     return priv->server_hostname;
 }
-int32_t *get_port(netdrv_t *drv) {
+int32_t* get_port(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
     return &priv->server_port;
 }
-struct in_addr *get_ip_addr(netdrv_t *drv) {
+struct in_addr* get_ip_addr(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
     return &priv->server_ip_addr;
 }
+// void set_host_name(netdrv_t *drv, const char* hostname) {
+//     socket_priv_t *priv = get_priv(drv);
+//     memcpy(priv->server_hostname, hostname, len(hostname))
+//     priv->server_hostname = hostname;
+// }
+// void set_port(netdrv_t *drv, int port) {
+//     socket_priv_t *priv = get_priv(drv);
+//     priv->server_port = port;
+// }
+// void set_ip_addr(netdrv_t *drv) {
+//     socket_priv_t *priv = get_priv(drv);
+//     return &priv->server_ip_addr;
+// }
 static int socket_open(netdrv_t *drv) {
     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock < 0) {
@@ -329,7 +342,7 @@ netdrv_t *netdrv_accept(netdrv_t *rti_netdrv) {
     struct sockaddr client_fd;
     uint32_t client_length = sizeof(client_fd);
     fed_priv->socket_descriptor = accept(rti_priv->socket_descriptor, &client_fd, &client_length);
-    if (fed_priv->socket_descriptor < 0) return NULL;
+    // if (fed_priv->socket_descriptor < 0) return NULL;
     return fed_netdrv;
 }
 
@@ -363,6 +376,11 @@ netdrv_t *accept_connection(netdrv_t *rti_netdrv) {
     fed_priv->server_ip_addr = pV4_addr->sin_addr;
     return fed_netdrv;
 }
+
+int netdrv_connect(netdrv_t *netdrv) {
+
+}
+
 
 ssize_t peek_from_netdrv(netdrv_t *drv, unsigned char* result) {
     socket_priv_t *priv = get_priv(drv);
