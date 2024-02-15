@@ -71,7 +71,16 @@ typedef struct federate_info_t {
                             // RTI has not been informed of the port number.
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
-    bool is_transient;
+    bool is_transient;      // Indicates whether the federate is transient or persistent.
+    tag_t effective_start_tag;  // Records the start time of the federate, which is 
+                                // mainly useful for transient federates  
+    tag_t pending_grant;    // The pending tag advance grant
+    tag_t pending_provisional_grant;        // The pending provisional tag advance grant
+    lf_thread_t pending_grant_thread_id;    // The ID of the thread handling the pending
+                                            // tag grant 
+    lf_thread_t pending_provisional_grant_thread_id;    // The ID of the thread handling
+                                            // the pending provitional tag grant 
+
 } federate_info_t;
 
 
@@ -395,9 +404,8 @@ void lf_connect_to_persistent_federates(int socket_descriptor);
  * Upon receiving the connection request, check if a hot swap should start or 
  * simply create a thread to communicate with that federate.
  * Stops if all persistent federates exited.
- * @param socket_descriptor The socket on which to accept connections.
  */
-void* lf_connect_to_transient_federates_thread(int socket_descriptor);
+void* lf_connect_to_transient_federates_thread(void* nothing);
 
 /**
  * Thread to respond to new connections, which could be federates of other
