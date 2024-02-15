@@ -38,6 +38,15 @@ extern instant_t start_time;
  */
 static rti_remote_t *rti_remote;
 
+// Referance to the federate instance to support hot swap 
+federate_info_t * hot_swap_federate;
+
+// Indicates if a hot swap process is in progress
+bool hot_swap_in_progress = false;
+
+// Indicates thatthe old federate has stopped
+bool hot_swap_old_resigned = false; 
+
 bool _lf_federate_reports_error = false;
 
 // A convenient macro for getting the `federate_info_t *` at index `_idx`
@@ -1500,11 +1509,12 @@ void *federate_info_thread_TCP(void *fed) {
     close(my_fed->socket); //  from unistd.h
     // Manual clean, in case of a transient federate 
     if (my_fed->is_transient) {
-        free_in_transit_message_q(my_fed->in_transit_message_tags);
+        // FIXME: Aren't there transit messages anymore??? 
+        // free_in_transit_message_q(my_fed->in_transit_message_tags);
         lf_print("RTI: Transient Federate %d thread exited.", my_fed->enclave.id);
 
         // Update the number of connected transient federates
-        _f_rti->number_of_connected_transient_federates--;
+        rti_remote->number_of_connected_transient_federates--;
 
         // Reset the status of the leaving federate
         reset_transient_federate(my_fed);
@@ -1644,8 +1654,8 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
                                         because a hot swap is already in progress for federate %d. \n\
                                         Only one hot swap operation is allowed at a time.",
                                         fed_id, hot_swap_federate->enclave.id);
-                        if (_f_rti->tracing_enabled) {
-                            tracepoint_rti_to_federate(_f_rti->trace, send_REJECT, fed_id, NULL);
+                        if (rti_remote->base.tracing_enabled) {
+                            tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
                         }
                         send_reject(socket_id, FEDERATE_ID_IN_USE);
                         return -1;
@@ -1985,6 +1995,7 @@ static bool authenticate_federate(int *socket) {
 }
 #endif
 
+// FIXME: The socket descriptor here (parameter) is not used. Should be removed?
 void lf_connect_to_persistent_federates(int socket_descriptor) {
     for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates ; i++) {
         // Wait for an incoming connection request.
@@ -2115,37 +2126,76 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
 
         // The first message from the federate should contain its ID and the federation ID.
         // The function also detects if a hot swap request is initiated.
-        int32_t fed_id = receive_and_check_fed_id_message(&socket_id, (struct sockaddr_in *)&client_fd);
-        if (fed_id >= 0 && socket_id >= 0
-                && receive_connection_information(&socket_id, (uint16_t)fed_id)
-                && receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)
-        ) {
+        int32_t fed_id = receive_and_check_fed_id_message(&socket_id, (struct sockaddr_in*)&client_fd);
 
+        if (fed_id >= 0
+            && receive_connection_information(&socket_id, (uint16_t)fed_id)
+            && receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) 
+        {   
+            lf_mutex_lock(&rti_mutex);
+            if (hot_swap_in_progress) {
+                lf_print("RTI: Hot swap confirmed for federate %d.", fed_id);
+
+                // Then send STOP
+                federate_info_t *fed_old = GET_FED_INFO(fed_id);
+                hot_swap_federate->enclave.completed = fed_old->enclave.completed;
+
+                LF_PRINT_LOG("RTI: Send MSG_TYPE_STOP to old federate %d.", fed_id);
+                send_stop(fed_old);
+                lf_mutex_unlock(&rti_mutex);
+
+                // Wait for the old federate to send MSG_TYPE_RESIGN
+                LF_PRINT_LOG("RTI: Waiting for old federate %d to send resign.", fed_id);
+                // FIXME: Should this have a timeout?
+                while(!hot_swap_old_resigned);
+
+                // The latest LTC is the tag at which the old federate resigned. This is useful
+                // for computing the effective_start_time of the new joining federate.
+                hot_swap_federate->enclave.completed = fed_old->enclave.completed;
+
+                // Create a thread to communicate with the federate.
+                // This has to be done after clock synchronization is finished
+                // or that thread may end up attempting to handle incoming clock
+                // synchronization messages.     
+                lf_thread_create(&(hot_swap_federate->thread_id), federate_info_thread_TCP, hot_swap_federate);
+
+                // Redirect the federate in rti_remote
+                rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*) hot_swap_federate;
+
+                // Free the old federate memory and reset the Hot wap indicators 
+                // FIXME: Is this enough to free the memory allocated to the federate?
+                free(fed_old);
+                lf_mutex_lock(&rti_mutex);
+                hot_swap_in_progress = false;
+                lf_mutex_unlock(&rti_mutex);
+
+                lf_print("RTI: Hot swap succeeded for federate %d.", fed_id);
+            } else {
+                lf_mutex_unlock(&rti_mutex);
+
+                // Create a thread to communicate with the federate.
+                // This has to be done after clock synchronization is finished
+                // or that thread may end up attempting to handle incoming clock
+                // synchronization messages.
+                federate_info_t *fed = GET_FED_INFO(fed_id);
+                lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
+                lf_print("RTI: Transient federate %d joined.", fed_id);
+            }
+            rti_remote->number_of_connected_transient_federates++;          
+        } else {
+            // If a hot swap was initialed, but the connection information or/and clock
+            // synchronization fail, then reset hot_swap_in_profress, and free the memory
+            // allocated for hot_swap_federate
+            if (hot_swap_in_progress) {
+                lf_print("RTI: Hot swap canceled for federate %d.", fed_id);
+                lf_mutex_lock(&rti_mutex);
+                hot_swap_in_progress = false;
+                lf_mutex_unlock(&rti_mutex);
+
+                // FIXME: Is this enough to free the memory of a federate_info_t data structure? 
+                free(hot_swap_federate);
+            }
         }
-
-        //     // Create a thread to communicate with the federate.
-        //     // This has to be done after clock synchronization is finished
-        //     // or that thread may end up attempting to handle incoming clock
-        //     // synchronization messages.
-        //     federate_info_t *fed = GET_FED_INFO(fed_id);
-        //     lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
-
-        //     // If the federate is transient, then do not count it.
-        //     if (fed->is_transient) {                    
-        //         rti_remote->number_of_connected_transient_federates++;
-        //         assert(rti_remote->number_of_connected_transient_federates <= number_ofrti_remote->number_of_transient_federates_transient_federates);
-        //         i--;
-        //         lf_print("RTI: Transient federate %d joined.", fed->base.id);
-        //     }        
-        // } else {
-        //     // Received message was rejected. Try again.
-        //     i--;
-        // }
-    
-
-        // FIXME: Check again if runtime clock synchronization should be lauched,
-        // only if the number of persistent threads is zero. This should be done
-        // only once, not at every transient connection.
     }
 }
 
@@ -2188,6 +2238,27 @@ void initialize_federate(federate_info_t *fed, uint16_t id) {
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
     fed->is_transient = true;
+    fed->effective_start_tag = NEVER_TAG;
+    fed->pending_grant = NEVER_TAG;
+    fed->pending_provisional_grant = NEVER_TAG;
+}
+
+void reset_transient_federate(federate_info_t* fed) {
+    fed->enclave.next_event = NEVER_TAG;
+    fed->enclave.state = NOT_CONNECTED;
+    // Reset of the federate-related attributes
+    fed->socket = -1;      // No socket.
+    fed->clock_synchronization_enabled = true;
+    fed->in_transit_message_tags = pqueue_tag_init(10);
+    strncpy(fed->server_hostname ,"localhost", INET_ADDRSTRLEN);
+    fed->server_ip_addr.s_addr = 0;
+    fed->server_port = -1;
+    fed->requested_stop = false;
+    fed->is_transient = true;
+    fed->effective_start_tag = NEVER_TAG;
+    fed->pending_grant = NEVER_TAG;
+    fed->pending_provisional_grant = NEVER_TAG;
+    // FIXME: There is room though to check if the interface has changed??? Do we allow this?
 }
 
 int32_t start_rti_server(uint16_t port) {
@@ -2242,6 +2313,8 @@ void wait_for_federates(int socket_descriptor) {
     }
 
     rti_remote->all_persistent_federates_exited = true;
+    rti_remote->phase = shutdown_phase;
+    lf_print("RTI: All persistent threads exited.");
 
     // Wait for transient federate threads to exit, if any.
     if (rti_remote->number_of_transient_federates > 0) {
@@ -2307,6 +2380,7 @@ void initialize_RTI(rti_remote_t *rti) {
     rti_remote->base.tracing_enabled = false;
     rti_remote->stop_in_progress = false;
     rti_remote->number_of_transient_federates = 0;
+    rti_remote->phase = startup_phase;
 }
 
 void free_scheduling_nodes(scheduling_node_t **scheduling_nodes, uint16_t number_of_scheduling_nodes) {

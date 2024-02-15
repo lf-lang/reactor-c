@@ -420,6 +420,12 @@ void* respond_to_erroneous_connections(void* nothing);
  */
 void initialize_federate(federate_info_t* fed, uint16_t id);
 
+/** 
+ * Reset the federate. The federate has to be transient.
+ * @param fed A pointer to the federate
+ */
+void reset_transient_federate(federate_info_t* fed);
+
 /**
  * Start the socket server for the runtime infrastructure (RTI) and
  * return the socket descriptor.
