@@ -256,7 +256,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * FIXME: This could use the latency estimates that were
  * acquired during initial clock synchronization.
  */
-#define DELAY_START MSEC(100)
+#define DELAY_START SEC(1)
 
 ////////////////////////////////////////////
 //// Message types
