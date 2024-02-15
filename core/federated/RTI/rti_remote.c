@@ -2079,6 +2079,26 @@ void lf_connect_to_persistent_federates(int socket_descriptor) {
     }
 }
 
+/**
+ * @brief A request for immediate stop to the federate
+ * 
+ * @param fed: the deferate to stop
+ */
+void send_stop(federate_info_t * fed) {
+    // Reply with a stop granted to all federates
+    unsigned char outgoing_buffer[MSG_TYPE_STOP_LENGTH];
+    outgoing_buffer[0] = MSG_TYPE_STOP;
+    lf_print("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
+
+    if (rti_remote->base.tracing_enabled) {
+        tracepoint_rti_to_federate(rti_remote->base.trace, send_STOP, fed->enclave.id, NULL);
+    }
+    write_to_socket_fail_on_error(&(fed->socket), MSG_TYPE_STOP_LENGTH, outgoing_buffer, NULL,
+        "RTI failed to send MSG_TYPE_STOP message to federate %d.", fed->enclave.id);
+
+    LF_PRINT_LOG("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
+}
+
 void* lf_connect_to_transient_federates_thread(void* nothing) {
     // This loop will continue to accept connections of transient federates, as
     // soon as there is room, or enable hot swap
