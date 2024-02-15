@@ -1447,10 +1447,11 @@ void* federate_info_thread_TCP(void* fed) {
   close(my_fed->socket); //  from unistd.h
   // Manual clean, in case of a transient federate
   if (my_fed->is_transient) {
+    free_in_transit_message_q(my_fed->in_transit_message_tags);
     lf_print("RTI: Transient Federate %d thread exited.", my_fed->enclave.id);
 
     // Update the number of connected transient federates
-    rti_remote->number_of_connected_transient_federates--;
+    _f_rti->number_of_connected_transient_federates--;
 
     // Reset the status of the leaving federate
     reset_transient_federate(my_fed);
@@ -1550,7 +1551,7 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
     LF_PRINT_DEBUG("RTI received federation ID: %s.", federation_id_received);
 
     if (rti_remote->base.tracing_enabled) {
-      tracepoint_rti_from_federate(receive_FED_ID, fed_id, NULL);
+      tracepoint_rti_from_federate(rti_remote->base.trace, receive_FED_ID, fed_id, NULL);
     }
     // Compare the received federation ID to mine.
     if (strncmp(rti_remote->federation_id, federation_id_received, federation_id_length) != 0) {
@@ -1558,7 +1559,7 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
       lf_print_warning("Federate from another federation %s attempted to connect to RTI in federation %s.",
                        federation_id_received, rti_remote->federation_id);
       if (rti_remote->base.tracing_enabled) {
-        tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
+        tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
       }
       send_reject(socket_id, FEDERATION_ID_DOES_NOT_MATCH);
       return -1;
@@ -1567,11 +1568,17 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
         // Federate ID is out of range.
         lf_print_error("RTI received federate ID %d, which is out of range.", fed_id);
         if (rti_remote->base.tracing_enabled) {
-          tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
+          tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
         }
         send_reject(socket_id, FEDERATE_ID_OUT_OF_RANGE);
         return -1;
       } else {
+        // Find out if it is a new connection or a hot swap.
+        // Reject if:
+        //  - duplicate of a connected persistent federate
+        //  - or hot_swap is already in progress (Only 1 hot swap at a time!), for that
+        //    particular federate
+        //  - or it is a hot swap, but it is not the execution phase yet
         // Find out if it is a new connection or a hot swap.
         // Reject if:
         //  - duplicate of a connected persistent federate
