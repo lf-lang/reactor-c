@@ -76,7 +76,7 @@ typedef struct federate_info_t {
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
 
-    netdrv_t *fed_netdrv;
+    netdrv_t *fed_netdrv; // The netdriver that the RTI handling each federate.
     netdrv_t *clock_netdrv;                            
 } federate_info_t;
 

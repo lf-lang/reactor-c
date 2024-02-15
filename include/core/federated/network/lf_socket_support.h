@@ -55,6 +55,7 @@ typedef struct socket_priv_t {
 	int proto;
 	uint16_t user_specified_port;
 
+    // Used for the RTI, to read the connected federate's info.
     char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
     int32_t server_port;    // port number of the socket server of the federate
                             // if it has any incoming direct connections from other federates.

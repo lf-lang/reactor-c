@@ -1301,6 +1301,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t 
             if (rti_remote->clock_sync_global_status >= clock_sync_on) {
                 // If no runtime clock sync, no need to set up the UDP port.
                 if (federate_UDP_port_number > 0) {
+                    // TODO: DONGHA: NEED to be fixed.
                     // Initialize the UDP_addr field of the federate struct
                     fed->UDP_addr.sin_family = AF_INET;
                     fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
