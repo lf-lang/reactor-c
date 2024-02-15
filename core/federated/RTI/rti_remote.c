@@ -445,6 +445,13 @@ void handle_timed_message(federate_info_t *sending_federate, unsigned char *buff
                      fed->enclave.last_provisionally_granted.time - start_time,
                      fed->enclave.last_provisionally_granted.microstep);
         return;
+    } else {
+        if(lf_tag_compare(intended_tag, fed->effective_start_tag) < 0) {
+            // Do not forward the message if the federate is connected, but its 
+            // start_time is not reached yet
+            lf_mutex_unlock(&rti_mutex);
+            return;
+        }
     }
 
     LF_PRINT_DEBUG(
