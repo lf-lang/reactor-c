@@ -65,9 +65,13 @@ typedef struct socket_priv_t {
                                 // server of the federate.
 } socket_priv_t;
 
-char *get_host_name(netdrv_t *drv);
-int32_t *get_port(netdrv_t *drv);
-struct in_addr *get_ip_addr(netdrv_t *drv);
+char* get_host_name(netdrv_t *drv);
+int32_t* get_port(netdrv_t *drv);
+struct in_addr* get_ip_addr(netdrv_t *drv);
+
+void set_host_name(netdrv_t *drv, const char* hostname);
+void set_port(netdrv_t *drv, int port);
+// void set_ip_addr(netdrv_t *drv);
 
 netdrv_t * netdrv_init();
 
@@ -96,6 +100,8 @@ void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv);
 netdrv_t *netdrv_accept(netdrv_t *rti_netdrv);
 
 netdrv_t *accept_connection(netdrv_t * rti_netdrv);
+
+int netdrv_connect(netdrv_t *netdrv);
 
 
 
