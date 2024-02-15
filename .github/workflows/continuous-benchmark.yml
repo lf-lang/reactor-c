@@ -1,0 +1,77 @@
+name: Continuous Benchmarking
+
+
+on:
+  push:
+    branches: [continuous-benchmarking] #FIXME: delete this line before merge
+  pull_request:
+  workflow_dispatch:
+
+
+permissions:
+  contents: write
+  deployments: write
+
+
+jobs:
+  benchmark:
+    name: Run C Benchmarks
+    runs-on: ubuntu-latest #FIXME: change to self-hosted after russel is set up.
+
+    steps:
+      - name: Checkout benchmark repository
+        uses: actions/checkout@v2
+        with:
+          repository: lf-lang/benchmarks-lingua-franca
+          ref: automated-full-benchmark # FIXME: delete this line before merge
+
+      - name: Set up workspace
+        uses: lf-lang/reactor-c/.github/actions/set-up-workspace@automated-full-benchmark
+
+      - name: Update LFC
+        run: |
+          cd lf
+          ./gradlew buildLfc
+          cd ..
+        shell: bash
+
+      - name: Run C Benchmarks (multithreaded)
+        run: |
+          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 \
+            benchmark="glob(*)" target=lf-c problem_size=small \
+            target.params.scheduler=GEDF_NP,NP,adaptive threads=0
+
+      - name: Collect results
+        run: python3 runner/collect_results.py continuous-benchmarking-results-multi-threaded.json
+
+      - name: Store Benchmark Result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Lingua Franca C Benchmark -- Multithreaded
+          tool: customSmallerIsBetter
+          output-file-path: continuous-benchmarking-results-multi-threaded.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold
+          comment-on-alert: true
+          fail-on-alert: false
+
+      - name: Run C Benchmarks (unthreaded)
+        run: |
+          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 problem_size=small \
+            benchmark="glob(*)" target=lf-c-unthreaded
+
+      - name: Collect results
+        run: python3 runner/collect_results.py continuous-benchmarking-results-single-threaded.json
+
+      - name: Store Benchmark Result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Lingua Franca C Benchmark -- Single-Threaded
+          tool: customSmallerIsBetter
+          output-file-path: continuous-benchmarking-results-single-threaded.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold
+          comment-on-alert: true
+          fail-on-alert: false
