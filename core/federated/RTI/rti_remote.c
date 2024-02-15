@@ -287,6 +287,13 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     }
     LF_MUTEX_UNLOCK(&rti_mutex);
     return;
+  } else {
+    if (lf_tag_compare(intended_tag, fed->effective_start_tag) < 0) {
+      // Do not forward the message if the federate is connected, but its
+      // start_time is not reached yet
+      lf_mutex_unlock(&rti_mutex);
+      return;
+    }
   }
 
   LF_PRINT_DEBUG("RTI forwarding message to port %d of federate %hu of length %zu.", reactor_port_id, federate_id,
