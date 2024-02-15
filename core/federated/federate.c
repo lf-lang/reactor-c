@@ -75,6 +75,8 @@ int max_level_allowed_to_advance;
  * The state of this federate instance. Each executable has exactly one federate instance,
  * and the _fed global variable refers to that instance.
  */
+
+//TODO: DONGHA: Need to change socket_related. socket_TCP_RTI, server_socket, server_port
 federate_instance_t _fed = {
         .socket_TCP_RTI = -1,
         .number_of_inbound_p2p_connections = 0,
@@ -93,6 +95,7 @@ federate_instance_t _fed = {
         .min_delay_from_physical_action_to_federate_output = NEVER
 };
 
+//TODO: DONGHA: Need to change host and port.
 federation_metadata_t federation_metadata = {
     .federation_id =  "Unidentified Federation",
     .rti_host = NULL,
@@ -1895,10 +1898,11 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     _fed.sockets_for_outbound_p2p_connections[remote_federate_id] = socket_id;
 }
 
-// TODO: 
+
 void lf_connect_to_rti(const char* hostname, int port) {
     LF_PRINT_LOG("Connecting to the RTI.");
 
+    // TODO: DONGHA: Need to change these?
     // Override passed hostname and port if passed as runtime arguments.
     hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
     port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
@@ -1920,14 +1924,25 @@ void lf_connect_to_rti(const char* hostname, int port) {
         uport = DEFAULT_PORT;
     }
 
-    // Create a socket
+    // Initialize netdriver to rti.
+    // _fed.netdrv_to_rti = netdrv_init();
+    // _fed.netdrv_to_rti->open(_fed.netdrv_to_rti);
+    // set_host_name(_fed.netdrv_to_rti, hostname);
+    // set_port(_fed.netdrv_to_rti, port);
+    // // Create a socket
     _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
 
+    // Connect
     int result = -1;
     int count_retries = 0;
     struct addrinfo* res = NULL;
 
     while (count_retries++ < CONNECT_MAX_RETRIES && !_lf_termination_executed) {
+        // TODO: DONGHA: Connecting phase. Let's just make a connect() api first.
+        // if (netdrv_connect() < 0) continue; // Connect failed.
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         if (res != NULL) {
             // This is a repeated attempt.
             if (_fed.socket_TCP_RTI >= 0) close_rti_socket();
@@ -1956,6 +1971,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
         result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
         if (result < 0) continue; // Connect failed.
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         // Have connected to an RTI, but not sure it's the right RTI.
         // Send a MSG_TYPE_FED_IDS message and wait for a reply.
         // Notify the RTI of the ID of this federate and its federation.
@@ -1969,6 +1986,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
                 // No point in trying again because it will be the same port.
                 close_rti_socket();
                 lf_print_error_and_exit("Authentication failed.");
+                // _fed.netdrv_to_rti->close(_fed.netdrv_to_rti);
             }
         }
 #else

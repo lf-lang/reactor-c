@@ -19,6 +19,9 @@
 #include "environment.h"
 #include "platform.h"
 
+//TODO: Need to be fixed later.
+#include "lf_socket_support.h"
+
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)
 #endif
@@ -30,6 +33,11 @@
  * Structure that a federate instance uses to keep track of its own state.
  */
 typedef struct federate_instance_t {
+    netdrv_t *netdrv_to_rti; // socket_TCP_RTI;
+    netdrv_t *my_netdrv; // server_socket; server_port;
+    netdrv_t *netdrv_to_inbound[NUMBER_OF_FEDERATES]; //sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+    netdrv_t *netdrv_to_outbound[NUMBER_OF_FEDERATES]; //sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+
     /**
      * The TCP socket descriptor for this federate to communicate with the RTI.
      * This is set by lf_connect_to_rti(), which must be called before other
