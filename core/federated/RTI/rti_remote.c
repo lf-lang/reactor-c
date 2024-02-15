@@ -1007,44 +1007,27 @@ void handle_address_ad(uint16_t federate_id) {
     }
 }
 
-void handle_timestamp(federate_info_t *my_fed) {
-    unsigned char buffer[sizeof(int64_t)];
-    // Read bytes from the socket. We need 8 bytes.
-    read_from_socket_fail_on_error(&my_fed->socket, sizeof(int64_t), (unsigned char *)&buffer, NULL,
-            "ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
-
-    int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&buffer)));
-    if (rti_remote->base.tracing_enabled) {
-        tag_t tag = {.time = timestamp, .microstep = 0};
-        tracepoint_rti_from_federate(rti_remote->base.trace, receive_TIMESTAMP, my_fed->enclave.id, &tag);
-    }
-    LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ".", timestamp);
-
-    LF_MUTEX_LOCK(&rti_mutex);
-    rti_remote->num_feds_proposed_start++;
-    if (timestamp > rti_remote->max_start_time) {
-        rti_remote->max_start_time = timestamp;
-    }
-    if (rti_remote->num_feds_proposed_start == rti_remote->base.number_of_scheduling_nodes) {
-        // All federates have proposed a start time.
-        lf_cond_broadcast(&received_start_times);
-    } else {
-        // Some federates have not yet proposed a start time.
-        // wait for a notification.
-        while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_scheduling_nodes) {
-            // FIXME: Should have a timeout here?
-            lf_cond_wait(&received_start_times);
-        }
-    }
-
-    LF_MUTEX_UNLOCK(&rti_mutex);
-
-    // Send back to the federate the maximum time plus an offset on a TIMESTAMP
+/**
+ * Send to the start time to the federate my_fed.
+ * This function assumes the caller does not hold the mutex.
+ * 
+ * If it is the startup phase, the start_time will be the maximum received timestamps
+ * plus an offset. The federate will then receive identical federation_start_time 
+ * and federate_start_tag.time (the federate_start_tag.microstep will be 0).
+ * If, however, the startup phase is passed, the federate will receive different 
+ * values than sateted above.
+ * 
+ * @param my_fed the federate to send the start time to.
+ * @param federation_start_time the federation start_time
+ * @param federate_start_tag the federate effective start tag
+ */
+void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
+    // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
     // message.
+    // In the startup phase, federates will receive identical start_time and 
+    // effective_start_tag
     unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
     start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
-    // Add an offset to this start time to get everyone starting together.
-    start_time = rti_remote->max_start_time + DELAY_START;
     encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
 
     if (rti_remote->base.tracing_enabled) {
@@ -1063,6 +1046,140 @@ void handle_timestamp(federate_info_t *my_fed) {
     lf_cond_broadcast(&sent_start_time);
     LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
     LF_MUTEX_UNLOCK(&rti_mutex);
+}
+
+void handle_timestamp(federate_info_t *my_fed) {
+    unsigned char buffer[sizeof(int64_t)];
+    // Read bytes from the socket. We need 8 bytes.
+    read_from_socket_fail_on_error(&my_fed->socket, sizeof(int64_t), (unsigned char *)&buffer, NULL,
+            "ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
+
+    int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&buffer)));
+    if (rti_remote->base.tracing_enabled) {
+        tag_t tag = {.time = timestamp, .microstep = 0};
+        tracepoint_rti_from_federate(rti_remote->base.trace, receive_TIMESTAMP, my_fed->enclave.id, &tag);
+    }
+    LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ".", timestamp);
+
+    LF_MUTEX_LOCK(&rti_mutex);
+
+    // Processing the TIMESTAMP depends on whether it is the startup phase (all 
+    // persistent federates joined) or not. 
+    if (rti_remote->phase == startup_phase) { // This is equivalent to: rti_remote->num_feds_proposed_start < (rti_remote->number_of_enclaves - rti_remote->number_of_transient_federates)
+        if (timestamp > rti_remote->max_start_time) {
+            rti_remote->max_start_time = timestamp;
+        }
+        // Check that persistent federates did propose a start_time
+        if (!my_fed->is_transient) {
+            rti_remote->num_feds_proposed_start++;
+        }
+        if (rti_remote->num_feds_proposed_start == (rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates)) {
+            // All federates have proposed a start time.
+            lf_cond_broadcast(&received_start_times);
+            rti_remote->phase = execution_phase;
+        } else {
+            // Some federates have not yet proposed a start time.
+            // wait for a notification.
+            while (rti_remote->num_feds_proposed_start < (rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates)) {
+                // FIXME: Should have a timeout here?
+                lf_cond_wait(&received_start_times);
+            }
+        }
+
+        LF_MUTEX_UNLOCK(&rti_mutex);
+
+        // Send back to the federate the maximum time plus an offset on a TIMESTAMP
+        // message.
+        // Add an offset to this start time to get everyone starting together.
+        start_time = rti_remote->max_start_time + DELAY_START;
+        my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
+        send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
+    } else if (rti_remote->phase == shutdown_phase) {
+        // Do not answer the federate if the federation is in hsutdown phase
+        // Or maybe send and error message?
+        LF_MUTEX_LOCK(&rti_mutex);
+        return;
+    } else {    // The federation is the execution phase
+        // A transient has joined after the startup phase
+        // At this point, we already hold the mutex
+
+        // This is rather a possible extreme corner case, where a transient sends its timestamp, and only
+        // enters the if section after all persistents have joined.
+        if (timestamp < start_time) {
+            timestamp = start_time;
+        }
+
+        //// Algorithm for computing the effective_start_time of a joining transient
+        // The effective_start_time will be the max among all the following tags:
+        //  - At tag: (joining time, 0 microstep)
+        //  - The latest completed logical tag + 1 microstep
+        //  - The latest granted tag + 1 microstep, of every downstream federate
+        //  - The latest provisionnaly granted tag + 1 microstep, of every downstream federate
+
+        my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
+
+        if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) > 0) {
+            my_fed->effective_start_tag = my_fed->enclave.completed;
+            my_fed->effective_start_tag.microstep++;
+        }
+
+        // Iterate over the downstream federates 
+        for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
+            federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.downstream[j]);
+
+            // Ignore this federate if it has resigned.
+            if (downstream->enclave.state == NOT_CONNECTED) {
+                continue;
+            }
+
+            // Get the max over the TAG of the downstreams
+            if (lf_tag_compare(downstream->enclave.last_granted, my_fed->effective_start_tag) > 0) {
+                my_fed->effective_start_tag =  downstream->enclave.last_granted;
+                my_fed->effective_start_tag.microstep++;
+            }
+
+            // Get the max over the PTAG of the downstreams
+            if (lf_tag_compare(downstream->enclave.last_provisionally_granted, my_fed->effective_start_tag) > 0) {
+                my_fed->effective_start_tag =  downstream->enclave.last_provisionally_granted;
+                my_fed->effective_start_tag.microstep++;
+            }
+        }
+
+        // For every downstream that has a pending grant that is higher then the 
+        // effective_start_time of the federate, cancel it
+        for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
+            federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.downstream[j]);
+
+            // Ignore this federate if it has resigned.
+            if (downstream->enclave.state == NOT_CONNECTED) {
+                continue;
+            }
+
+            // Check the pending tag grant, if any, and keep it only if it is 
+            // sonner than the effective start tag 
+            if (
+                lf_tag_compare(downstream->pending_grant, NEVER_TAG) != 0 
+                && lf_tag_compare(downstream->pending_grant, my_fed->effective_start_tag) > 0
+            ) {
+                downstream->pending_grant = NEVER_TAG;
+            }
+            // Same for the possible pending provisional tag grant
+            if (
+                lf_tag_compare(downstream->pending_provisional_grant, NEVER_TAG) != 0 
+                && lf_tag_compare(downstream->pending_provisional_grant, my_fed->effective_start_tag) > 0
+            ) {
+                downstream->pending_provisional_grant = NEVER_TAG;
+            }
+        }
+
+        LF_MUTEX_UNLOCK(&rti_mutex);
+
+        // Once the effective start time set, sent it to the joining transient,
+        // together with the start time of the federation.
+
+        // Send the start time
+        send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
+    }
 }
 
 void send_physical_clock(unsigned char message_type, federate_info_t *fed, socket_type_t socket_type) {
