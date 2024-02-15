@@ -37,28 +37,31 @@ struct in_addr *get_ip_addr(netdrv_t *drv) {
     return &priv->server_ip_addr;
 }
 static int socket_open(netdrv_t *drv) {
-    // socket_priv_t *priv = get_priv(drv);
-    // priv->sock = socket(AF_PACKET, SOCK_RAW, htons(priv->proto));
-    // if (priv->sock < 0)
-    //     return -1;
+    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock < 0) {
+        lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
+    }
+    // Disable Nagle's algorithm which bundles together small TCP messages to
+    //  reduce network traffic
+    // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
+    //  is enough.
+    int flag = 1;
+    int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
 
-    // /* If Rx, timeout is a good thing */
-    // if (priv->timeout_us > 0) {
-    //     struct timeval tv = {
-    //         .tv_sec = priv->timeout_us / 1e6,
-    //         .tv_usec = priv->timeout_us % 1000000,
-    //     };
-    //     if (setsockopt(priv->sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof tv) == -1) {
-    //         printf("%s(): Could not set timeout on socket (%d): %s\n",
-    //                __func__, priv->sock, strerror(errno));
-    //         close(priv->sock);
-    //         return -1;
-    //     }
-    // }
-    // /* bind to device, ... */
+    if (result < 0) {
+        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+    }
 
-    // printf("Socket created\n");
-    // return 0;
+// Disable delayed ACKs. Only possible on Linux
+#if defined(PLATFORM_Linux)
+    result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+
+    if (result < 0) {
+        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+    }
+#endif
+
+    return sock;
 }
 
 static void socket_close(netdrv_t *drv) {
@@ -93,7 +96,7 @@ netdrv_t *netdrv_init() {
 
     drv->read_remaining_bytes = 0;
 
-    // drv->open = socket_open;
+    drv->open = socket_open;
     drv->close = socket_close;
     // drv->read = socket_read;
     // drv->write = socket_write;
