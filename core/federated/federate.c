@@ -874,8 +874,8 @@ static int perform_hmac_authentication() {
     RAND_bytes(fed_nonce, NONCE_LENGTH);
     memcpy(&fed_hello_buf[1 + fed_id_length], fed_nonce, NONCE_LENGTH);
 
-    write_to_socket_fail_on_error(
-        &_fed.socket_TCP_RTI, message_length, fed_hello_buf, NULL,
+    write_to_netdrv_fail_on_error(
+        _fed.netdrv_to_rti, message_length, fed_hello_buf, NULL,
         "Failed to write nonce.");
 
     // Check HMAC of received FED_RESPONSE message.
@@ -883,7 +883,7 @@ static int perform_hmac_authentication() {
     size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
 
     unsigned char received[1 + NONCE_LENGTH + hmac_length];
-    if (read_from_socket_close_on_error(&_fed.socket_TCP_RTI, 1 + NONCE_LENGTH + hmac_length, received)) {
+    if (read_from_netdrv_close_on_error(_fed.netdrv_to_rti, received, 1 + NONCE_LENGTH + hmac_length)) {
         lf_print_warning("Failed to read RTI response.");
         return -1;
     }
@@ -916,7 +916,7 @@ static int perform_hmac_authentication() {
         response[1] = HMAC_DOES_NOT_MATCH;
 
         // Ignore errors on writing back.
-        write_to_socket(_fed.socket_TCP_RTI, 2, response);
+        write_to_netdrv(_fed.netdrv_to_rti, 2, response);
         return -1;
     } else {
         LF_PRINT_LOG("HMAC verified.");
@@ -930,8 +930,8 @@ static int perform_hmac_authentication() {
         HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH,
              &sender[1], &hmac_length);
 
-        write_to_socket_fail_on_error(
-            &_fed.socket_TCP_RTI, 1 + hmac_length, sender, NULL,
+        write_to_netdrv_fail_on_error(
+            _fed.netdrv_to_rti, 1 + hmac_length, sender, NULL,
             "Failed to write fed response.");
     }
     return 0;
@@ -942,36 +942,6 @@ static void close_rti_socket() {
     shutdown(_fed.socket_TCP_RTI, SHUT_RDWR);
     close(_fed.socket_TCP_RTI);
     _fed.socket_TCP_RTI = -1;
-}
-
-/**
- * Return in the result a struct with the address info for the specified hostname and port.
- * The memory for the result is dynamically allocated and must be freed using freeaddrinfo.
- * @param hostname The host name.
- * @param port The port number.
- * @param result The struct into which to write.
- */
-static void rti_address(const char* hostname, uint16_t port, struct addrinfo** result) {
-    struct addrinfo hints;
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;          /* Allow IPv4 */
-    hints.ai_socktype = SOCK_STREAM;    /* Stream socket */
-    hints.ai_protocol = IPPROTO_TCP;    /* TCP protocol */
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
-    hints.ai_flags = AI_NUMERICSERV;    /* Allow only numeric port numbers */
-
-    // Convert port number to string.
-    char str[6];
-    sprintf(str, "%u", port);
-
-    // Get address structure matching hostname and hints criteria, and
-    // set port to the port number provided in str. There should only 
-    // ever be one matching address structure, and we connect to that.
-    if (getaddrinfo(hostname, (const char*)&str, &hints, result)) {
-        lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
-    }
 }
 
 /**
@@ -1925,53 +1895,31 @@ void lf_connect_to_rti(const char* hostname, int port) {
     }
 
     // Initialize netdriver to rti.
-    // _fed.netdrv_to_rti = netdrv_init();
-    // _fed.netdrv_to_rti->open(_fed.netdrv_to_rti);
-    // set_host_name(_fed.netdrv_to_rti, hostname);
-    // set_port(_fed.netdrv_to_rti, port);
-    // // Create a socket
-    _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
+    _fed.netdrv_to_rti = netdrv_init(); // set memory.
+    _fed.netdrv_to_rti->open(_fed.netdrv_to_rti); // open netdriver.
+    set_host_name(_fed.netdrv_to_rti, hostname);
+    set_port(_fed.netdrv_to_rti, uport);
 
     // Connect
     int result = -1;
     int count_retries = 0;
     struct addrinfo* res = NULL;
-
+//TODO: DONGHA: count_retries not being updated for the authentication process?
     while (count_retries++ < CONNECT_MAX_RETRIES && !_lf_termination_executed) {
-        // TODO: DONGHA: Connecting phase. Let's just make a connect() api first.
-        // if (netdrv_connect() < 0) continue; // Connect failed.
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        if (res != NULL) {
-            // This is a repeated attempt.
-            if (_fed.socket_TCP_RTI >= 0) close_rti_socket();
-
-            lf_sleep(CONNECT_RETRY_INTERVAL);
-
-            // Create a new socket.
-            _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
-
-            if (port == 0) {
-                // Free previously allocated address info.
-                freeaddrinfo(res);
-                // Increment the port number.
+        // TODO: DONGHA: Connecting phase. Let's just make a netdrv_connect() api first.
+        if (netdrv_connect(_fed.netdrv_to_rti) < 0) {
+            _fed.netdrv_to_rti->close(_fed.netdrv_to_rti);
+            netdrv_free(_fed.netdrv_to_rti);
+            _fed.netdrv_to_rti = netdrv_init();
+            _fed.netdrv_to_rti->open(_fed.netdrv_to_rti);
+            set_host_name(_fed.netdrv_to_rti, hostname);
+            if (port == 0)  {
                 uport++;
                 if (uport >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) uport = DEFAULT_PORT;
-
-                // Reconstruct the address info.
-                rti_address(hostname, uport, &res);
             }
-            lf_print("Trying RTI again on port %d (attempt %d).", uport, count_retries);
-        } else {
-            // This is the first attempt.
-            rti_address(hostname, uport, &res);
+            set_port(_fed.netdrv_to_rti, uport);
+            continue; // Connect failed.
         }
-
-        result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
-        if (result < 0) continue; // Connect failed.
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Have connected to an RTI, but not sure it's the right RTI.
         // Send a MSG_TYPE_FED_IDS message and wait for a reply.
@@ -1984,9 +1932,9 @@ void lf_connect_to_rti(const char* hostname, int port) {
                 continue; // Try again with a new port.
             } else {
                 // No point in trying again because it will be the same port.
-                close_rti_socket();
+                // close_rti_socket();
+                _fed.netdrv_to_rti->close(_fed.netdrv_to_rti);
                 lf_print_error_and_exit("Authentication failed.");
-                // _fed.netdrv_to_rti->close(_fed.netdrv_to_rti);
             }
         }
 #else
@@ -2010,7 +1958,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
         tracepoint_federate_to_rti(_fed.trace, send_FED_ID, _lf_my_fed_id, NULL);
 
         // No need for a mutex here because no other threads are writing to this socket.
-        if (write_to_socket(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t) + federation_id_length, buffer)) {
+        if (write_to_netdrv(_fed.netdrv_to_rti, 2 + sizeof(uint16_t) + federation_id_length, buffer)) {
             continue; // Try again, possibly on a new port.
         }
 
@@ -2018,20 +1966,18 @@ void lf_connect_to_rti(const char* hostname, int port) {
         // The response will be MSG_TYPE_REJECT if the federation ID doesn't match.
         // Otherwise, it will be either MSG_TYPE_ACK or MSG_TYPE_UDP_PORT, where the latter
         // is used if clock synchronization will be performed.
-        unsigned char response;
+        unsigned char response[2];
 
         LF_PRINT_DEBUG("Waiting for response to federation ID from the RTI.");
 
-        if (read_from_socket(_fed.socket_TCP_RTI, 1, &response)) {
+        if (read_from_netdrv(_fed.netdrv_to_rti, response, 2)) {
             continue; // Try again.
         }
         if (response == MSG_TYPE_REJECT) {
             // Trace the event when tracing is enabled
             tracepoint_federate_from_rti(_fed.trace, receive_REJECT, _lf_my_fed_id, NULL);
             // Read one more byte to determine the cause of rejection.
-            unsigned char cause;
-            read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, 1, &cause, NULL,
-                    "Failed to read the cause of rejection by the RTI.");
+            unsigned char cause = response[1];
             if (cause == FEDERATION_ID_DOES_NOT_MATCH || cause == WRONG_SERVER) {
                 lf_print_warning("Connected to the wrong RTI on port %d. Will try again", uport);
                 continue;
@@ -2053,96 +1999,56 @@ void lf_connect_to_rti(const char* hostname, int port) {
         lf_print_error_and_exit("Failed to connect to RTI after %d tries.", CONNECT_MAX_RETRIES);
     }
 
-    freeaddrinfo(res);           /* No longer needed */
-
     // Call a generated (external) function that sends information
     // about connections between this federate and other federates
     // where messages are routed through the RTI.
     // @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
-    lf_send_neighbor_structure_to_RTI(_fed.socket_TCP_RTI);
+    lf_send_neighbor_structure_to_RTI(_fed.netdrv_to_rti);
 
+
+    //TODO: DONGHA: Handle UDP Clock sync.
     uint16_t udp_port = setup_clock_synchronization_with_rti();
 
     // Write the returned port number to the RTI
     unsigned char UDP_port_number[1 + sizeof(uint16_t)];
     UDP_port_number[0] = MSG_TYPE_UDP_PORT;
     encode_uint16(udp_port, &(UDP_port_number[1]));
-    write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, 1 + sizeof(uint16_t), UDP_port_number, NULL,
+    write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, 1 + sizeof(uint16_t), UDP_port_number, NULL,
                 "Failed to send the UDP port number to the RTI.");
 
     lf_print("Connected to RTI at %s:%d.", hostname, uport);
 }
 
+//TODO: DONGHA: NEED to make specified port work.
 void lf_create_server(int specified_port) {
     assert(specified_port <= UINT16_MAX && specified_port >= 0);
     uint16_t port = (uint16_t)specified_port;
     LF_PRINT_LOG("Creating a socket server on port %d.", port);
-    // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-    int socket_descriptor = create_real_time_tcp_socket_errexit();
 
-    // Server file descriptor.
-    struct sockaddr_in server_fd;
-    // Zero out the server address structure.
-    bzero((char*)&server_fd, sizeof(server_fd));
+    netdrv_t* my_netdrv = netdrv_init();
+    my_netdrv->open(my_netdrv);
+    create_federate_server(my_netdrv, port, specified_port);
 
-    server_fd.sin_family = AF_INET;            // IPv4
-    server_fd.sin_addr.s_addr = INADDR_ANY;    // All interfaces, 0.0.0.0.
-    // Convert the port number from host byte order to network byte order.
-    server_fd.sin_port = htons(port);
-
-    int result = bind(
-            socket_descriptor,
-            (struct sockaddr *) &server_fd,
-            sizeof(server_fd));
-    int count = 0;
-    while (result < 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-        lf_sleep(PORT_BIND_RETRY_INTERVAL);
-        result = bind(
-                socket_descriptor,
-                (struct sockaddr *) &server_fd,
-                sizeof(server_fd));
-    }
-    if (result < 0) {
-        lf_print_error_and_exit("Failed to bind socket on port %d.", port);
-    }
-
-    // Set the global server port.
-    if (specified_port == 0) {
-        // Need to retrieve the port number assigned by the OS.
-        struct sockaddr_in assigned;
-        socklen_t addr_len = sizeof(assigned);
-        if (getsockname(socket_descriptor, (struct sockaddr *) &assigned, &addr_len) < 0) {
-            lf_print_error_and_exit("Failed to retrieve assigned port number.");
-        }
-        _fed.server_port = ntohs(assigned.sin_port);
-    } else {
-        _fed.server_port = port;
-    }
-
-    // Enable listening for socket connections.
-    // The second argument is the maximum number of queued socket requests,
-    // which according to the Mac man page is limited to 128.
-    listen(socket_descriptor, 128);
-
-    LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
+    //TODO: NEED to fix.
+    LF_PRINT_LOG("Server for communicating with other federates started using port %d.", get_my_port(_fed.my_netdrv));
 
     // Send the server port number to the RTI
     // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
     unsigned char buffer[sizeof(int32_t) + 1];
     buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
-    encode_int32(_fed.server_port, &(buffer[1]));
+    encode_int32(get_my_port(_fed.my_netdrv), &(buffer[1]));
 
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(_fed.trace, send_ADR_AD, _lf_my_fed_id, NULL);
 
     // No need for a mutex because we have the only handle on this socket.
-    write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
+    write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
                     "Failed to send address advertisement.");
 
-    LF_PRINT_DEBUG("Sent port %d to the RTI.", _fed.server_port);
+    LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(_fed.my_netdrv));
 
     // Set the global server socket
-    _fed.server_socket = socket_descriptor;
+    _fed.my_netdrv = my_netdrv;
 }
 
 void lf_enqueue_port_absent_reactions(environment_t* env){

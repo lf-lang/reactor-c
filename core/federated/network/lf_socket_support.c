@@ -7,10 +7,13 @@
 #include <netinet/ether.h>
 #include <netinet/in.h>   // IPPROTO_TCP, IPPROTO_UDP
 #include <netinet/tcp.h>  // TCP_NODELAY
+#include <netdb.h> 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "util.h"
@@ -28,6 +31,10 @@ char* get_host_name(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
     return priv->server_hostname;
 }
+int32_t* get_my_port(netdrv_t *drv) {
+    socket_priv_t *priv = get_priv(drv);
+    return &priv->port;
+}
 int32_t* get_port(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
     return &priv->server_port;
@@ -36,19 +43,20 @@ struct in_addr* get_ip_addr(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
     return &priv->server_ip_addr;
 }
-// void set_host_name(netdrv_t *drv, const char* hostname) {
-//     socket_priv_t *priv = get_priv(drv);
-//     memcpy(priv->server_hostname, hostname, len(hostname))
-//     priv->server_hostname = hostname;
-// }
-// void set_port(netdrv_t *drv, int port) {
-//     socket_priv_t *priv = get_priv(drv);
-//     priv->server_port = port;
-// }
+void set_host_name(netdrv_t *drv, const char* hostname) {
+    socket_priv_t *priv = get_priv(drv);
+    memcpy(priv->server_hostname, hostname, INET_ADDRSTRLEN);
+}
+void set_port(netdrv_t *drv, int port) {
+    socket_priv_t *priv = get_priv(drv);
+    priv->server_port = port;
+}
 // void set_ip_addr(netdrv_t *drv) {
 //     socket_priv_t *priv = get_priv(drv);
 //     return &priv->server_ip_addr;
 // }
+
+// create_real_time_tcp_socket_errexit
 static int socket_open(netdrv_t *drv) {
     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock < 0) {
@@ -75,6 +83,12 @@ static int socket_open(netdrv_t *drv) {
 #endif
 
     return sock;
+}
+
+void netdrv_free(netdrv_t *drv) {
+    socket_priv_t *priv = get_priv(drv);
+    free(priv);
+    free(drv);
 }
 
 static void socket_close(netdrv_t *drv) {
@@ -152,6 +166,54 @@ static int net_create_real_time_tcp_socket_errexit() {
     return sock;
 }
 
+//TODO: DONGHA: Need to fix port. 
+int create_federate_server(netdrv_t* drv, uint16_t port, int specified_port) {
+    socket_priv_t *priv = get_priv(drv);
+    // Server file descriptor.
+    struct sockaddr_in server_fd;
+    // Zero out the server address structure.
+    bzero((char*)&server_fd, sizeof(server_fd));
+
+    server_fd.sin_family = AF_INET;            // IPv4
+    server_fd.sin_addr.s_addr = INADDR_ANY;    // All interfaces, 0.0.0.0.
+    // Convert the port number from host byte order to network byte order.
+    server_fd.sin_port = htons(port);
+
+    int result = bind(
+            priv->socket_descriptor,
+            (struct sockaddr *) &server_fd,
+            sizeof(server_fd));
+    int count = 0;
+    while (result < 0 && count++ < PORT_BIND_RETRY_LIMIT) {
+        lf_sleep(PORT_BIND_RETRY_INTERVAL);
+        result = bind(
+                priv->socket_descriptor,
+                (struct sockaddr *) &server_fd,
+                sizeof(server_fd));
+    }
+    if (result < 0) {
+        lf_print_error_and_exit("Failed to bind socket on port %d.", port);
+    }
+
+    // Set the global server port.
+    if (specified_port == 0) {
+        // Need to retrieve the port number assigned by the OS.
+        struct sockaddr_in assigned;
+        socklen_t addr_len = sizeof(assigned);
+        if (getsockname(priv->socket_descriptor, (struct sockaddr *) &assigned, &addr_len) < 0) {
+            lf_print_error_and_exit("Failed to retrieve assigned port number.");
+        }
+        priv->port = ntohs(assigned.sin_port);
+    } else {
+        priv->port = port;
+    }
+
+    // Enable listening for socket connections.
+    // The second argument is the maximum number of queued socket requests,
+    // which according to the Mac man page is limited to 128.
+    listen(priv->socket_descriptor, 128);
+}
+
 /**
  * Create a server and enable listening for socket connections.
  * If the specified port if it is non-zero, it will attempt to acquire that port.
@@ -168,7 +230,7 @@ static int net_create_real_time_tcp_socket_errexit() {
  * @return The socket descriptor on which to accept connections.
  */
 //TODO: Fix comments.
-int create_rti_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
+int create_rti_server(netdrv_t* drv, netdrv_type_t netdrv_type) {
     socket_priv_t *priv = get_priv(drv);
 
     // Timeout time for the communications of the server
@@ -377,8 +439,34 @@ netdrv_t *accept_connection(netdrv_t *rti_netdrv) {
     return fed_netdrv;
 }
 
-int netdrv_connect(netdrv_t *netdrv) {
+int netdrv_connect(netdrv_t *drv) {
+    socket_priv_t *priv = get_priv(drv);
+    
+    struct addrinfo hints;
+    struct addrinfo  *result;
 
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;          /* Allow IPv4 */
+    hints.ai_socktype = SOCK_STREAM;    /* Stream socket */
+    hints.ai_protocol = IPPROTO_TCP;    /* TCP protocol */
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+    hints.ai_flags = AI_NUMERICSERV;    /* Allow only numeric port numbers */
+
+    // Convert port number to string.
+    char str[6];
+    sprintf(str, "%u", priv->port);
+
+    // Get address structure matching hostname and hints criteria, and
+    // set port to the port number provided in str. There should only 
+    // ever be one matching address structure, and we connect to that.
+    if (getaddrinfo(priv->server_hostname, (const char*)&str, &hints, &result)) {
+        lf_print_error_and_exit("No host for RTI matching given hostname: %s", priv->server_hostname);
+    }
+
+    int ret = connect(priv->socket_descriptor, result->ai_addr, result->ai_addrlen);
+    freeaddrinfo(result);
+    return ret;
 }
 
 
@@ -494,10 +582,13 @@ typedef enum {
 
 static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* bytes_to_read, int* state) {
     switch(buffer[0]) {
-        // case MSG_TYPE_REJECT: // 1 +1
-        //     break;
-        // case MSG_TYPE_ACK: // 1
-        //     break;
+        case MSG_TYPE_REJECT: // 1 +1
+            *bytes_to_read = 1;
+            *state = FINISH_READ;
+            break;
+        case MSG_TYPE_ACK: // 1
+            *state = FINISH_READ;
+            break;
         case MSG_TYPE_UDP_PORT: // 1 + sizeof(uint16_t) = 3
             *bytes_to_read = sizeof(uint16_t);
             *state = FINISH_READ;
@@ -510,8 +601,10 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
             *bytes_to_read = sizeof(uint16_t) + NONCE_LENGTH;
             *state = FINISH_READ;
             break;
-        // case MSG_TYPE_RTI_RESPONSE: // 1 + sizeof(uint16_t) + NONCE_LENGTH(8)
-        //     break;
+        case MSG_TYPE_RTI_RESPONSE: // 1 + sizeof(uint16_t) + NONCE_LENGTH(8)
+            *bytes_to_read = sizeof(uint16_t) + NONCE_LENGTH;
+            *state = FINISH_READ;
+            break;
         case MSG_TYPE_FED_RESPONSE: // 1 + SHA256_HMAC_LENGTH(8)
             *bytes_to_read = SHA256_HMAC_LENGTH;
             *state = FINISH_READ;
@@ -607,6 +700,7 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
 }
 
 
+//TODO: DONGHA: ADD buffer_length checking.
 // Returns the total bytes read.
 ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length) {
     socket_priv_t *priv = get_priv(netdrv);

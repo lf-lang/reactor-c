@@ -373,7 +373,7 @@ int lf_send_message(int message_type,
  * information is needed for the RTI to perform the centralized coordination.
  * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
  */
-void lf_send_neighbor_structure_to_RTI(int);
+void lf_send_neighbor_structure_to_RTI(netdrv_t *netdrv);
 
 /**
  * @brief Send a next event tag (NET) signal.
