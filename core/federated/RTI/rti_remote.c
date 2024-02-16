@@ -613,7 +613,7 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
 
     // Send the port number (which could be -1) and server IP address to federate.
     LF_MUTEX_LOCK(&rti_mutex);
-    encode_int32(*get_port(remote_fed->fed_netdrv), (unsigned char *)&buf[1]);
+    encode_int32(get_port(remote_fed->fed_netdrv), (unsigned char *)&buf[1]);
     memcpy(buf + 1 + sizeof(int32_t), (unsigned char *)get_ip_addr(remote_fed->fed_netdrv), sizeof(*get_ip_addr(remote_fed->fed_netdrv)));
     write_to_netdrv_fail_on_error(
             fed->fed_netdrv, sizeof(int32_t) + 1 + sizeof(*get_ip_addr(remote_fed->fed_netdrv)), (unsigned char *)buf, &rti_mutex,
@@ -622,7 +622,7 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
     LF_MUTEX_UNLOCK(&rti_mutex);
 
     LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.",
-            fed_id, get_host_name(remote_fed->fed_netdrv), *get_port(remote_fed->fed_netdrv));
+            fed_id, get_host_name(remote_fed->fed_netdrv), get_port(remote_fed->fed_netdrv));
 }
 
 //TODO: NEED to be fixed.
@@ -637,7 +637,7 @@ void handle_address_ad(uint16_t federate_id, unsigned char *buffer) {
     assert(server_port < 65536);
 
     LF_MUTEX_LOCK(&rti_mutex);
-    *get_port(fed->fed_netdrv) = server_port;
+    get_port(fed->fed_netdrv) = server_port;
     LF_MUTEX_UNLOCK(&rti_mutex);
 
     LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);

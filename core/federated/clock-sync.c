@@ -44,6 +44,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.h"
 #include "util.h"
 
+//TODO: Temp include.
+#include "lf_socket_support.h"
+
 /** Offset calculated by the clock synchronization algorithm. */
 interval_t _lf_clock_sync_offset = NSEC(0);
 /** Offset used to test clock synchronization (clock sync should largely remove this offset). */
@@ -212,7 +215,7 @@ uint16_t setup_clock_synchronization_with_rti() {
     return port_to_return;
 }
 
-void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
+void synchronize_initial_physical_clock_with_rti(netdrv_t* netdrv_to_rti) {
     LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
     size_t message_size = 1 + sizeof(instant_t);
@@ -220,7 +223,7 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
 
     for (int i=0; i < _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL; i++) {
         // The first message expected from the RTI is MSG_TYPE_CLOCK_SYNC_T1
-        read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
+        read_from_netdrv_fail_on_error(netdrv_to_rti, buffer, message_size, NULL,
                 "Federate %d did not get the initial clock synchronization message T1 from the RTI.",
                 _lf_my_fed_id);
 
@@ -234,12 +237,12 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
         // Handle the message and send a reply T3 message.
         // NOTE: No need to acquire the mutex lock during initialization because only
         // one thread is running.
-        if (handle_T1_clock_sync_message(buffer, *rti_socket_TCP, receive_time) != 0) {
+        if (handle_T1_clock_sync_message(buffer, netdrv_to_rti, receive_time) != 0) {
             lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
         }
 
         // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-        read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
+        read_from_netdrv_fail_on_error(netdrv_to_rti, buffer, message_size, NULL,
                 "Federate %d did not get the clock synchronization message T4 from the RTI.",
                 _lf_my_fed_id);
 
@@ -249,7 +252,7 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
         }
 
         // Handle the message.
-        handle_T4_clock_sync_message(buffer, *rti_socket_TCP, receive_time);
+        handle_T4_clock_sync_message(buffer, netdrv_to_rti, receive_time);
     }
 
     LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
@@ -266,7 +269,7 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
  * @param t2 The physical time at which the T1 message was received.
  * @return 0 if T3 reply is successfully sent, -1 otherwise.
  */
-int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2) {
+int handle_T1_clock_sync_message(unsigned char* buffer, netdrv_t* netdrv, instant_t t2) {
     // Extract the payload
     instant_t t1 = extract_int64(&(buffer[1]));
 
@@ -286,7 +289,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
 
     // Write the reply to the socket.
     LF_PRINT_DEBUG("Sending T3 message to RTI.");
-    if (write_to_socket(socket, 1 + sizeof(int), reply_buffer)) {
+    if (write_to_netdrv(netdrv, 1 + sizeof(int), reply_buffer)) {
         lf_print_error("Clock sync: Failed to send T3 message to RTI.");
         return -1;
     }
@@ -314,7 +317,9 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
  * @param socket The socket (either _lf_rti_socket_TCP or _lf_rti_socket_UDP).
  * @param r4 The physical time at which this T4 message was received.
  */
-void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r4) {
+
+//TODO: DONGHA: Need to check here...
+void handle_T4_clock_sync_message(unsigned char* buffer, netdrv_t* netdrv, instant_t r4) {
     // Increment the number of received T4 messages
     _lf_rti_socket_stat.received_T4_messages_in_current_sync_window++;
 
@@ -350,14 +355,17 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
     // If the socket is _lf_rti_socket_UDP, then
     // after sending T4, the RTI sends a "coded probe" message,
     // which can be used to filter out noise.
+
+    //TODO: DONGHA: CHECK here.
+    int socket = 0; // Makeshift.
     if (socket == _lf_rti_socket_UDP) {
         // Read the coded probe message.
         // We can reuse the same buffer.
-        int read_failed = read_from_socket(socket, 1 + sizeof(instant_t), buffer);
+        int bytes_read = read_from_netdrv(netdrv, buffer, 1 + sizeof(instant_t));
 
         instant_t r5 = lf_time_physical();
 
-        if (read_failed || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
+        if (bytes_read <= 0 || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
             lf_print_warning("Clock sync: Did not get the expected coded probe message from the RTI. "
                     "Skipping clock synchronization round.");
             return;

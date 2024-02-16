@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CLOCK_SYNC_H
 
 #include "platform.h"
+#include "net_util.h"
 
 /**
  * Number of required clock sync T4 messages per synchronization
@@ -151,7 +152,7 @@ uint16_t setup_clock_synchronization_with_rti(void);
  * 
  * @param rti_socket_TCP Pointer to the RTI's socket
  */
-void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
+void synchronize_initial_physical_clock_with_rti(netdrv_t* netdrv_to_rti);
 
 /**
  * Handle a clock synchroninzation message T1 coming from the RTI.
@@ -164,7 +165,7 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
  * @param t2 The physical time at which the T1 message was received.
  * @return 0 if T3 reply is successfully sent, -1 otherwise.
  */
-int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2);
+int handle_T1_clock_sync_message(unsigned char* buffer, netdrv_t* netdrv, instant_t t2);
 
 /**
  * Handle a clock synchronization message T4 coming from the RTI.
@@ -182,7 +183,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
  * @param socket The socket (either _lf_rti_socket_TCP or _lf_rti_socket_UDP).
  * @param r4 The physical time at which this T4 message was received.
  */
-void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r4);
+void handle_T4_clock_sync_message(unsigned char* buffer, netdrv_t* netdrv, instant_t r4);
 
 /** 
  * Thread that listens for UDP inputs from the RTI.

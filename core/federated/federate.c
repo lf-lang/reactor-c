@@ -124,7 +124,7 @@ static void send_time(unsigned char type, instant_t time) {
     tracepoint_federate_to_rti(_fed.trace, send_TIMESTAMP, _lf_my_fed_id, &tag);
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
+    write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
         "Failed to send time " PRINTF_TIME " to the RTI.", time - start_time);
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 }
@@ -151,8 +151,8 @@ static void send_tag(unsigned char type, tag_t tag) {
     trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(_fed.trace, event_type, _lf_my_fed_id, &tag);
-    write_to_socket_fail_on_error(
-            &_fed.socket_TCP_RTI, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
+    write_to_netdrv_fail_on_error(
+            _fed.netdrv_to_rti, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
             "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 }
@@ -692,13 +692,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure to complete the read.
  */
-static int handle_port_absent_message(int* socket, int fed_id) {
-    size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t);
-    unsigned char buffer[bytes_to_read];
-    if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
-        return -1;
-    }
-
+static int handle_port_absent_message(unsigned char* buffer, int fed_id) {
     // Extract the header information.
     unsigned short port_id = extract_uint16(buffer);
     // The next part of the message is the federate_id, but we don't need it.
@@ -759,7 +753,7 @@ static void* listen_to_federates(void* _args) {
         bool socket_closed = false;
         // Read one byte to get the message type.
         LF_PRINT_DEBUG("Waiting for a P2P message on socket %d.", *socket_id);
-        if (read_from_socket_close_on_error(socket_id, 1, buffer)) {
+        if (read_from_netdrv_close_on_error(socket_id, buffer, FED_COM_BUFFER_SIZE)) {
             // Socket has been closed.
             lf_print("Socket from federate %d is closed.", fed_id);
             // Stop listening to this federate.
@@ -790,7 +784,7 @@ static void* listen_to_federates(void* _args) {
                 break;
             case MSG_TYPE_PORT_ABSENT:
                 LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
-                if (handle_port_absent_message(socket_id, fed_id)) {
+                if (handle_port_absent_message(buffer + 1, fed_id)) {
                     // P2P tagged messages are only used in decentralized coordination, and
                     // it is not a fatal error if the socket is closed before the whole message is read.
                     // But this thread should exit.
@@ -962,7 +956,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
     size_t buffer_length = 1 + sizeof(instant_t);
     unsigned char buffer[buffer_length];
 
-    read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, buffer_length, buffer, NULL,
+    read_from_netdrv_fail_on_error(_fed.netdrv_to_rti, buffer, buffer_length, NULL,
             "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
     LF_PRINT_DEBUG("Read 9 bytes.");
 
@@ -1000,15 +994,11 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
  * @note This function is very similar to handle_provisinal_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to false.
  */
-static void handle_tag_advance_grant(void) {
+static void handle_tag_advance_grant(unsigned char* buffer) {
     // Environment is always the one corresponding to the top-level scheduling enclave.
     environment_t *env;
     _lf_get_environments(&env);
 
-    size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
-    unsigned char buffer[bytes_to_read];
-    read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
-            "Failed to read tag advance grant from RTI.");
     tag_t TAG = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
@@ -1204,15 +1194,10 @@ static void* update_ports_from_staa_offsets(void* args) {
  *  it sets last_TAG_was_provisional to true and also it does not update the
  *  last known tag for input ports.
  */
-static void handle_provisional_tag_advance_grant() {
+static void handle_provisional_tag_advance_grant(unsigned char* buffer) {
     // Environment is always the one corresponding to the top-level scheduling enclave.
     environment_t *env;
     _lf_get_environments(&env);
-
-    size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
-    unsigned char buffer[bytes_to_read];
-    read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
-            "Failed to read provisional tag advance grant from RTI.");
     tag_t PTAG = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
@@ -1306,13 +1291,7 @@ static void handle_provisional_tag_advance_grant() {
  * logical time raised when lf_request_stop() was
  * called in the environment for each enclave.
  */
-static void handle_stop_granted_message() {
-
-    size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
-    unsigned char buffer[bytes_to_read];
-    read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
-            "Failed to read stop granted from RTI.");
-
+static void handle_stop_granted_message(unsigned char* buffer) {
     tag_t received_stop_tag = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
@@ -1350,11 +1329,7 @@ static void handle_stop_granted_message() {
 /**
  * Handle a MSG_TYPE_STOP_REQUEST message from the RTI.
  */
-static void handle_stop_request_message() {
-    size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
-    unsigned char buffer[bytes_to_read];
-    read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
-            "Failed to read stop request from RTI.");
+static void handle_stop_request_message(unsigned char* buffer) {
     tag_t tag_to_stop = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
@@ -1427,8 +1402,8 @@ static void handle_stop_request_message() {
 
     // Send the current logical time to the RTI.
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    write_to_socket_fail_on_error(
-            &_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer, &lf_outbound_netdrv_mutex,
+    write_to_netdrv_fail_on_error(
+            _fed.netdrv_to_rti, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer, &lf_outbound_netdrv_mutex,
             "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
@@ -1444,8 +1419,8 @@ static void send_resign_signal(environment_t* env) {
     unsigned char buffer[bytes_to_write];
     buffer[0] = MSG_TYPE_RESIGN;
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    write_to_socket_fail_on_error(
-            &_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_netdrv_mutex,
+    write_to_netdrv_fail_on_error(
+            _fed.netdrv_to_rti, bytes_to_write, &(buffer[0]), &lf_outbound_netdrv_mutex,
             "Failed to send MSG_TYPE_RESIGN.");
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
     LF_PRINT_LOG("Resigned.");
@@ -1458,8 +1433,8 @@ static void send_failed_signal(environment_t* env) {
     size_t bytes_to_write = 1;
     unsigned char buffer[bytes_to_write];
     buffer[0] = MSG_TYPE_FAILED;
-    write_to_socket_fail_on_error(
-            &_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]), NULL,
+    write_to_netdrv_fail_on_error(
+            _fed.netdrv_to_rti, bytes_to_write, &(buffer[0]), NULL,
             "Failed to send MSG_TYPE_FAILED.");
     LF_PRINT_LOG("Failed.");
 }
@@ -1498,36 +1473,34 @@ static void* listen_to_rti_TCP(void* args) {
 
     // Listen for messages from the federate.
     while (1) {
-        // Check whether the RTI socket is still valid
-        if (_fed.socket_TCP_RTI < 0) {
-            lf_print_warning("Socket to the RTI unexpectedly closed.");
-            return NULL;
-        }
         // Read one byte to get the message type.
         // This will exit if the read fails.
-        int read_failed = read_from_socket(_fed.socket_TCP_RTI, 1, buffer);
-        if (read_failed < 0) {
-            if (errno == ECONNRESET) {
-                lf_print_error("Socket connection to the RTI was closed by the RTI without"
-                        " properly sending an EOF first. Considering this a soft error.");
-                // FIXME: If this happens, possibly a new RTI must be elected.
-                _fed.socket_TCP_RTI = -1;
-                return NULL;
-            } else {
-                lf_print_error("Socket connection to the RTI has been broken with error %d: %s."
-                        " The RTI should close connections with an EOF first."
-                        " Considering this a soft error.",
-                        errno,
-                        strerror(errno));
-                // FIXME: If this happens, possibly a new RTI must be elected.
-                _fed.socket_TCP_RTI = -1;
-                return NULL;
-            }
-        } else if (read_failed > 0) {
-            // EOF received.
-            lf_print("Connection to the RTI closed with an EOF.");
-            _fed.socket_TCP_RTI = -1;
-            stop_all_traces();
+        int bytes_read = read_from_netdrv(_fed.netdrv_to_rti, buffer, FED_COM_BUFFER_SIZE);
+        // if (read_failed < 0) {
+        //     if (errno == ECONNRESET) {
+        //         lf_print_error("Socket connection to the RTI was closed by the RTI without"
+        //                 " properly sending an EOF first. Considering this a soft error.");
+        //         // FIXME: If this happens, possibly a new RTI must be elected.
+        //         _fed.socket_TCP_RTI = -1;
+        //         return NULL;
+        //     } else {
+        //         lf_print_error("Socket connection to the RTI has been broken with error %d: %s."
+        //                 " The RTI should close connections with an EOF first."
+        //                 " Considering this a soft error.",
+        //                 errno,
+        //                 strerror(errno));
+        //         // FIXME: If this happens, possibly a new RTI must be elected.
+        //         _fed.socket_TCP_RTI = -1;
+        //         return NULL;
+        //     }
+        // } else if (read_failed > 0) {
+        //     // EOF received.
+        //     lf_print("Connection to the RTI closed with an EOF.");
+        //     _fed.socket_TCP_RTI = -1;
+        //     stop_all_traces();
+        //     return NULL;
+        // }
+        if (bytes_read <= 0) {
             return NULL;
         }
         switch (buffer[0]) {
@@ -1538,19 +1511,19 @@ static void* listen_to_rti_TCP(void* args) {
                 }
                 break;
             case MSG_TYPE_TAG_ADVANCE_GRANT:
-                handle_tag_advance_grant();
+                handle_tag_advance_grant(buffer + 1);
                 break;
             case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
-                handle_provisional_tag_advance_grant();
+                handle_provisional_tag_advance_grant(buffer + 1);
                 break;
             case MSG_TYPE_STOP_REQUEST:
-                handle_stop_request_message();
+                handle_stop_request_message(buffer + 1);
                 break;
             case MSG_TYPE_STOP_GRANTED:
-                handle_stop_granted_message();
+                handle_stop_granted_message(buffer + 1);
                 break;
             case MSG_TYPE_PORT_ABSENT:
-                if (handle_port_absent_message(&_fed.socket_TCP_RTI, -1)) {
+                if (handle_port_absent_message(buffer + 1, -1)) {
                     // Failures to complete the read of absent messages from the RTI are fatal.
                     lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
                 }
@@ -1684,7 +1657,7 @@ void terminate_execution(environment_t* env) {
 
     LF_PRINT_DEBUG("Waiting for RTI's socket listener threads.");
     // Wait for the thread listening for messages from the RTI to close.
-    lf_thread_join(_fed.RTI_socket_listener, NULL);
+    lf_thread_join(_fed.RTI_netdrv_listener, NULL);
 
     // For abnormal termination, there is no need to free memory.
     if (_lf_normal_termination) {
@@ -2272,15 +2245,16 @@ int lf_send_message(int message_type,
     // Use a mutex lock to prevent multiple threads from simultaneously sending.
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
     
-    int* socket = &_fed.sockets_for_outbound_p2p_connections[federate];
+    netdrv_t* netdrv = _fed.netdrv_for_outbound_p2p_connections[federate];
 
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(_fed.trace, send_P2P_MSG, _lf_my_fed_id, federate, NULL);
 
-    int result = write_to_socket_close_on_error(socket, header_length, header_buffer);
+    //TODO: Need to fix in future.
+    int result = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
     if (result == 0) {
         // Header sent successfully. Send the body.
-        result = write_to_socket_close_on_error(socket, length, message);
+        result = write_to_netdrv_close_on_error(netdrv, length, message);
     }
     if (result != 0) {
         // Message did not send. Since this is used for physical connections, this is not critical.
@@ -2461,13 +2435,13 @@ void lf_send_port_absent_to_federate(
 
 #ifdef FEDERATED_CENTRALIZED
     // Send the absent message through the RTI
-    int* socket = &_fed.socket_TCP_RTI;
+    netdrv_t* netdrv = _fed.netdrv_to_rti;
 #else
     // Send the absent message directly to the federate
-    int* socket = &_fed.sockets_for_outbound_p2p_connections[fed_ID];
+    netdrv_t* netdrv = _fed.netdrv_for_outbound_p2p_connections[fed_ID];
 #endif
 
-    if (socket == &_fed.socket_TCP_RTI) {
+    if (netdrv == _fed.netdrv_to_rti) {
         tracepoint_federate_to_rti(
                 _fed.trace, send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
     } else {
@@ -2476,12 +2450,12 @@ void lf_send_port_absent_to_federate(
     }
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    int result = write_to_socket_close_on_error(socket, message_length, buffer);
+    int result = write_to_netdrv_close_on_error(netdrv, message_length, buffer);
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
     if (result != 0) {
         // Write failed. Response depends on whether coordination is centralized.
-        if (socket == &_fed.socket_TCP_RTI) {
+        if (netdrv == _fed.netdrv_to_rti) {
             // Centralized coordination. This is a critical error.
             lf_print_error_system_failure("Failed to send port absent message for port %hu to federate %hu.",
                     port_ID, fed_ID);
@@ -2516,7 +2490,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
         // Trace the event when tracing is enabled
         tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
 
-        write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
+        write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, MSG_TYPE_STOP_REQUEST_LENGTH,
                 buffer, &lf_outbound_netdrv_mutex,
                 "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
 
@@ -2654,7 +2628,7 @@ void lf_synchronize_with_other_federates(void) {
     // @note Up until this point, the federate has been listening for messages
     //  from the RTI in a sequential manner in the main thread. From now on, a
     //  separate thread is created to allow for asynchronous communication.
-    lf_thread_create(&_fed.RTI_socket_listener, listen_to_rti_TCP, NULL);
+    lf_thread_create(&_fed.RTI_netdrv_listener, listen_to_rti_TCP, NULL);
     lf_thread_t thread_id;
     if (create_clock_sync_thread(&thread_id)) {
         lf_print_warning("Failed to create thread to handle clock synchronization.");

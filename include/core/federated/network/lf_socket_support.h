@@ -66,8 +66,8 @@ typedef struct socket_priv_t {
 } socket_priv_t;
 
 char* get_host_name(netdrv_t *drv);
-int32_t* get_my_port(netdrv_t *drv);
-int32_t* get_port(netdrv_t *drv);
+int32_t get_my_port(netdrv_t *drv);
+int32_t get_port(netdrv_t *drv);
 struct in_addr* get_ip_addr(netdrv_t *drv);
 
 void set_host_name(netdrv_t *drv, const char* hostname);

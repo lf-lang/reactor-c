@@ -31,13 +31,13 @@ char* get_host_name(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
     return priv->server_hostname;
 }
-int32_t* get_my_port(netdrv_t *drv) {
+int32_t get_my_port(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
-    return &priv->port;
+    return priv->port;
 }
-int32_t* get_port(netdrv_t *drv) {
+int32_t get_port(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
-    return &priv->server_port;
+    return priv->server_port;
 }
 struct in_addr* get_ip_addr(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
@@ -626,12 +626,14 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
             *bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
             *state = FINISH_READ;
             break;
-        //     case MSG_TYPE_TAG_ADVANCE_GRANT:
-        //         handle_tag_advance_grant();
-        //         break;
-        //     case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
-        //         handle_provisional_tag_advance_grant();
-        //         break;
+        case MSG_TYPE_TAG_ADVANCE_GRANT:
+            *bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
+            *state = FINISH_READ;
+            break;
+        case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
+            *bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
+            *state = FINISH_READ;
+            break;
         case MSG_TYPE_LATEST_TAG_COMPLETE:
             *bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
             *state = FINISH_READ;
@@ -644,9 +646,10 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
             *bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
             *state = FINISH_READ;
             break;
-        //     case MSG_TYPE_STOP_GRANTED:
-        //         handle_stop_granted_message();
-        //         break;   
+        case MSG_TYPE_STOP_GRANTED:
+            *bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
+            *state = FINISH_READ;
+            break;   
         case MSG_TYPE_ADDRESS_QUERY:
             *bytes_to_read = sizeof(uint16_t);
             *state = FINISH_READ;
@@ -675,14 +678,18 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
         //             socket_closed = true;
         //         }
         //         break;
-        // case MSG_TYPE_CLOCK_SYNC_T1:
-        //     break;   
+        case MSG_TYPE_CLOCK_SYNC_T1:
+            *bytes_to_read = sizeof(instant_t);
+            *state = FINISH_READ;
+            break;   
         case MSG_TYPE_CLOCK_SYNC_T3:
             *bytes_to_read = sizeof(int32_t);
             *state = FINISH_READ;
             break;
-        // case MSG_TYPE_CLOCK_SYNC_T4:
-        //     break;
+        case MSG_TYPE_CLOCK_SYNC_T4:
+            *bytes_to_read = sizeof(instant_t);
+            *state = FINISH_READ;
+            break;
         // case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
         //     break;
         case MSG_TYPE_PORT_ABSENT:
