@@ -566,4 +566,21 @@ bool lf_update_max_level(tag_t tag, bool is_provisional);
  */
 char* lf_get_federates_bin_directory();
 
+/**
+ * @brief Returns the federation id.
+ * 
+ * This function is useful for creating federates on runtime.
+ */
+char* lf_get_federation_id();
+
+/**
+ * @brief Returns the effective start time of the federate. The start_time of persistent
+ * federates is equal to their effective_start_time. Transient federates, however, 
+ * have their effective_start_time higher or equal to their start_time.
+ */
+instant_t lf_get_effective_start_time();
+
+/** @brief Returns the start time of the federate. */
+instant_t lf_get_start_time();
+
 #endif // FEDERATE_H

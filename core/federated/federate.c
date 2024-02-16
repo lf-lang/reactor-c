@@ -2879,4 +2879,16 @@ char* lf_get_federates_bin_directory() {
     return LF_FEDERATES_BIN_DIRECTORY;
 }
 
+char* lf_get_federation_id() {
+    return federation_metadata.federation_id;
+}
+
+instant_t lf_get_effective_start_time() {
+    return effective_start_tag.time;
+}
+
+instant_t lf_get_start_time() {
+    return start_time;
+}
+
 #endif
