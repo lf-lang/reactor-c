@@ -35,8 +35,8 @@
 typedef struct federate_instance_t {
     netdrv_t *netdrv_to_rti; // socket_TCP_RTI;
     netdrv_t *my_netdrv; // server_socket; server_port;
-    netdrv_t *netdrv_to_inbound[NUMBER_OF_FEDERATES]; //sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
-    netdrv_t *netdrv_to_outbound[NUMBER_OF_FEDERATES]; //sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+    netdrv_t *netdrv_for_inbound_p2p_connections[NUMBER_OF_FEDERATES]; //sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+    netdrv_t *netdrv_for_outbound_p2p_connections[NUMBER_OF_FEDERATES]; //sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
     /**
      * The TCP socket descriptor for this federate to communicate with the RTI.
@@ -62,7 +62,7 @@ typedef struct federate_instance_t {
      * This is NULL if there are none and otherwise has size given by
      * number_of_inbound_p2p_connections.
      */
-    lf_thread_t *inbound_socket_listeners;
+    lf_thread_t *inbound_netdriv_listeners;
 
     /**
      * Number of outbound peer-to-peer connections from the federate.
@@ -227,7 +227,7 @@ typedef enum parse_rti_code_t {
 /**
  * Mutex lock held while performing socket write and close operations.
  */
-extern lf_mutex_t lf_outbound_socket_mutex;
+extern lf_mutex_t lf_outbound_netdrv_mutex;
 
 /**
  * Condition variable for blocking on unkonwn federate input ports.
@@ -346,7 +346,7 @@ void lf_reset_status_fields_on_input_port_triggers();
  * between federates. If the socket connection to the remote federate or the RTI has been broken,
  * then this returns -1 without sending. Otherwise, it returns 0.
  * 
- * This method assumes that the caller does not hold the lf_outbound_socket_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_netdrv_mutex lock,
  * which it acquires to perform the send.
  *
  * @param message_type The type of the message being sent (currently only MSG_TYPE_P2P_MESSAGE).
@@ -476,7 +476,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  * to believe that there were no messages forthcoming.  In this case, on failure to send
  * the message, this function returns -11.
  *
- * This method assumes that the caller does not hold the lf_outbound_socket_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_netdrv_mutex lock,
  * which it acquires to perform the send.
  *
  * @param env The environment from which to get the current tag.

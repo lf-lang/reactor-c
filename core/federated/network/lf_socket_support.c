@@ -397,15 +397,17 @@ void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
     }
 }
 
-netdrv_t *netdrv_accept(netdrv_t *rti_netdrv) {
-    netdrv_t *fed_netdrv = netdrv_init();
-    socket_priv_t *rti_priv = get_priv(rti_netdrv);
-    socket_priv_t *fed_priv = get_priv(fed_netdrv);
+netdrv_t *netdrv_accept(netdrv_t *my_netdrv) {
+    netdrv_t *client_netdrv = netdrv_init();
+    socket_priv_t *my_priv = get_priv(my_netdrv);
+    socket_priv_t *client_priv = get_priv(client_netdrv);
     struct sockaddr client_fd;
     uint32_t client_length = sizeof(client_fd);
-    fed_priv->socket_descriptor = accept(rti_priv->socket_descriptor, &client_fd, &client_length);
-    // if (fed_priv->socket_descriptor < 0) return NULL;
-    return fed_netdrv;
+    client_priv->socket_descriptor = accept(my_priv->socket_descriptor, &client_fd, &client_length);
+    if (client_priv->socket_descriptor < 0) {
+        return NULL;
+    }
+    return client_netdrv;
 }
 
 netdrv_t *accept_connection(netdrv_t *rti_netdrv) {

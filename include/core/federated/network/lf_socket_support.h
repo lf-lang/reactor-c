@@ -50,12 +50,12 @@
 #define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
 
 typedef struct socket_priv_t {
-    int port;
+    int port; // my port number
     int socket_descriptor;
 	int proto;
 	uint16_t user_specified_port;
 
-    // Used for the RTI, to read the connected federate's info.
+    // The connected other side's info.
     char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
     int32_t server_port;    // port number of the socket server of the federate
                             // if it has any incoming direct connections from other federates.
@@ -66,6 +66,7 @@ typedef struct socket_priv_t {
 } socket_priv_t;
 
 char* get_host_name(netdrv_t *drv);
+int32_t* get_my_port(netdrv_t *drv);
 int32_t* get_port(netdrv_t *drv);
 struct in_addr* get_ip_addr(netdrv_t *drv);
 
@@ -74,6 +75,11 @@ void set_port(netdrv_t *drv, int port);
 // void set_ip_addr(netdrv_t *drv);
 
 netdrv_t * netdrv_init();
+
+void netdrv_free(netdrv_t *drv);
+
+
+int create_federate_server(netdrv_t* drv, uint16_t port, int specified_port);
 
 /**
  * Create a server and enable listening for socket connections.
@@ -97,11 +103,11 @@ int create_rti_server(netdrv_t *drv, netdrv_type_t netdrv_type);
 // int create_real_time_tcp_socket_errexit();
 void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv);
 
-netdrv_t *netdrv_accept(netdrv_t *rti_netdrv);
+netdrv_t *netdrv_accept(netdrv_t *my_netdrv);
 
 netdrv_t *accept_connection(netdrv_t * rti_netdrv);
 
-int netdrv_connect(netdrv_t *netdrv);
+int netdrv_connect(netdrv_t *drv);
 
 
 
