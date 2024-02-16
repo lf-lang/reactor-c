@@ -1381,6 +1381,21 @@ static void handle_stop_granted_message() {
 }
 
 /**
+ * Handle a MSG_TYPE_STOP message from the RTI.
+ *
+ * This function simply calls lf_stop().
+ */
+void handle_stop() {
+    // Trace the event when tracing is enabled
+    tracepoint_federate_from_rti(_fed.trace, receive_STOP, _lf_my_fed_id, NULL);
+
+    lf_print("Received from RTI a MSG_TYPE_STOP at physical time " PRINTF_TIME ".",
+            lf_time_physical());
+
+    lf_stop();
+}
+
+/**
  * Handle a MSG_TYPE_STOP_REQUEST message from the RTI.
  */
 static void handle_stop_request_message() {
@@ -1581,6 +1596,9 @@ static void* listen_to_rti_TCP(void* args) {
                 break;
             case MSG_TYPE_STOP_GRANTED:
                 handle_stop_granted_message();
+                break;
+            case MSG_TYPE_STOP:
+                handle_stop();
                 break;
             case MSG_TYPE_PORT_ABSENT:
                 if (handle_port_absent_message(&_fed.socket_TCP_RTI, -1)) {
