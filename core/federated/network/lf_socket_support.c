@@ -51,10 +51,10 @@ void set_port(netdrv_t *drv, int port) {
     socket_priv_t *priv = get_priv(drv);
     priv->server_port = port;
 }
-// void set_ip_addr(netdrv_t *drv) {
-//     socket_priv_t *priv = get_priv(drv);
-//     return &priv->server_ip_addr;
-// }
+void set_ip_addr(netdrv_t *drv, struct in_addr ip_addr){
+    socket_priv_t *priv = get_priv(drv);
+    priv->server_ip_addr = ip_addr;
+}
 
 // create_real_time_tcp_socket_errexit
 static int socket_open(netdrv_t *drv) {
@@ -463,7 +463,7 @@ int netdrv_connect(netdrv_t *drv) {
     // set port to the port number provided in str. There should only 
     // ever be one matching address structure, and we connect to that.
     if (getaddrinfo(priv->server_hostname, (const char*)&str, &hints, &result)) {
-        lf_print_error_and_exit("No host for RTI matching given hostname: %s", priv->server_hostname);
+        lf_print_error_and_exit("No host matching given hostname: %s", priv->server_hostname);
     }
 
     int ret = connect(priv->socket_descriptor, result->ai_addr, result->ai_addrlen);
