@@ -607,9 +607,6 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
     // from this federate. In that case, it will respond by sending -1. 
     
     federate_info_t *remote_fed = GET_FED_INFO(remote_fed_id);
-    struct in_addr a = *get_ip_addr(remote_fed->fed_netdrv);
-    size_t size = sizeof(*get_ip_addr(remote_fed->fed_netdrv));
-    int32_t port = *get_port(remote_fed->fed_netdrv);
     unsigned char buf[1 + sizeof(int32_t) + sizeof(*get_ip_addr(remote_fed->fed_netdrv))];
     // Response message is also of type MSG_TYPE_ADDRESS_QUERY.
     buf[0] = MSG_TYPE_ADDRESS_QUERY;
