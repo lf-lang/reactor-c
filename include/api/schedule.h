@@ -61,21 +61,19 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * to the current time, then the tag will be one microstep beyond the current tag.
  * If the action is physical, the time will be the current physical time plus the extra delay,
  * and the microstep will be zero.
- *
+ * 
  * For a logical action:
  * 
  * A logical action has a minimum delay (default is zero) and a minimum spacing, which also
  * defaults to zero. The logical time at which this scheduled event will trigger is the current time
- * of the environment associated with the action 
- * 
- * plus the offset plus the delay argument given to
+ * of the environment associated with the action plus the offset plus the delay argument given to
  * this function. If, however, that time is not greater than a prior
- * triggering of this logical action by at least the MIT, then the
+ * triggering of this logical action by at least the minimum spacing, then the
  * one of two things can happen depending on the policy specified
  * for the action. If the action's policy is DROP (default), then the
  * action is simply dropped and the memory pointed to by value argument
  * is freed. If the policy is DEFER, then the time will be increased
- * to equal the time of the most recent triggering plus the MIT.
+ * to equal the time of the most recent triggering plus the minimum spacing.
  *
  * For the above, "current time" means the logical time of the
  * reaction that is calling this function. Logical actions should
@@ -101,16 +99,18 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * properties or on the command line.
  * The third condition is that the trigger argument is null.
  *
- * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
+ * @param action The action to be triggered.
  * @param extra_delay Extra offset of the event release above that in the action.
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token);
+trigger_handle_t lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token);
 
 /**
- * Schedule an action to occur with the specified value and time offset with a
- * copy of the specified value. If the value is non-null, then it will be copied
+ * @brief Schedule an action to occur with the specified value and time offset with a
+ * copy of the specified value.
+ * 
+ * If the value is non-null, then it will be copied
  * into newly allocated memory under the assumption that its size is given in
  * the trigger's token object's element_size field multiplied by the specified
  * length.
@@ -131,7 +131,8 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length);
+trigger_handle_t lf_schedule_copy(
+        lf_action_base_t* action, interval_t offset, void* value, size_t length);
 
 /**
  * Variant of lf_schedule_token that creates a token to carry the specified value.

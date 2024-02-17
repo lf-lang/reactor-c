@@ -106,7 +106,7 @@ PyObject* py_schedule(PyObject *self, PyObject *args) {
 
 
     // Pass the token along
-    _lf_schedule_token(action, offset, t);
+    lf_schedule_token(action, offset, t);
 
     // FIXME: handle is not passed to the Python side
 
@@ -135,7 +135,7 @@ PyObject* py_schedule_copy(PyObject *self, PyObject *args) {
         exit(1);
     }
 
-    _lf_schedule_copy(action, offset, value, length);
+    lf_schedule_copy(action, offset, value, length);
 
     // FIXME: handle is not passed to the Python side
 

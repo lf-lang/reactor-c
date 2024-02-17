@@ -25,4 +25,7 @@
 #undef lf_tag
 #undef lf_time_logical 
 #undef lf_time_logical_elapsed 
+
+#undef lf_schedule_token
+#undef lf_schedule_copy
 #endif // REACTION_MACROS_H

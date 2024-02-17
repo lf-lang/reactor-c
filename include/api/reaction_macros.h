@@ -196,4 +196,35 @@ do { \
  */
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 
+/**
+ * @brief Schedule the specified action at a later tag with the specified token as a payload.
+ * 
+ * This is a thin wrapper around `lf_schedule_token()` that casts the action argument to a pointer
+ * to an `lf_action_base_t`.
+ *
+ * @param action The action to be triggered (a pointer to an lf_action_base_t).
+ * @param extra_delay Extra offset of the event release above that in the action.
+ * @param token The token to carry the payload or null for no payload.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ */
+#define lf_schedule_token(action, extra_delay, token) \
+        lf_schedule_token((lf_action_base_t*)action, extra_delay, token)
+
+/**
+ * @brief Schedule an action to occur with the specified value and time offset with a
+ * copy of the specified value.
+ * 
+ * This is a thin wrapper around `lf_schedule_copy()` that casts the action argument to a pointer
+ * to an `lf_action_base_t`.
+ *
+ * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
+ * @param offset The time offset over and above that in the action.
+ * @param value A pointer to the value to copy.
+ * @param length The length, if an array, 1 if a scalar, and 0 if value is NULL.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ *  error.
+ */
+#define lf_schedule_copy(action, offset, value, length) \
+        lf_schedule_copy((lf_action_base_t*) action, offset, value, length)
+
 #endif // REACTION_MACROS_H

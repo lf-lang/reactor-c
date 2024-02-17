@@ -8,6 +8,7 @@
 
 #include "schedule.h"
 #include "reactor.h"
+#include <string.h> // Defines memcpy.
 
 /**
  * Schedule an action to occur with the specified value and time offset
@@ -19,7 +20,7 @@
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t lf_schedule(void* action, interval_t offset) {
-    return _lf_schedule_token((lf_action_base_t*)action, offset, NULL);
+    return lf_schedule_token((lf_action_base_t*)action, offset, NULL);
 }
 
 /**
@@ -95,8 +96,15 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return _lf_schedule_token((lf_action_base_t*)action, extra_delay, token);
+trigger_handle_t lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token) {
+    environment_t* env = action->parent->environment;
+    
+    LF_CRITICAL_SECTION_ENTER(env);
+    int return_value = _lf_schedule(env, action->trigger, extra_delay, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    lf_notify_of_event(env);
+    LF_CRITICAL_SECTION_EXIT(env);
+    return return_value;
 }
 
 /**
@@ -115,18 +123,38 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length) {
+trigger_handle_t lf_schedule_copy(
+        lf_action_base_t* action, interval_t offset, void* value, size_t length
+) {
     if (length < 0) {
         lf_print_error(
             "schedule_copy():"
-            " Ignoring request to copy a value with a negative length (%d).",
+            " Ignoring request to copy a value with a negative length (%zu).",
             length
         );
         return -1;
     }
-    return _lf_schedule_copy((lf_action_base_t*)action, offset, value, (size_t)length);
+    if (value == NULL) {
+        return lf_schedule_token(action, offset, NULL);
+    }
+    environment_t* env = action->parent->environment;
+    token_template_t* template = (token_template_t*)action;
+    if (action == NULL || template->type.element_size <= 0) {
+        lf_print_error("schedule: Invalid element size.");
+        return -1;
+    }
+    LF_CRITICAL_SECTION_ENTER(env);
+    // Initialize token with an array size of length and a reference count of 0.
+    lf_token_t* token = _lf_initialize_token(template, length);
+    // Copy the value into the newly allocated memory.
+    memcpy(token->value, value, template->type.element_size * length);
+    // The schedule function will increment the reference count.
+    trigger_handle_t result = _lf_schedule(env, action->trigger, offset, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    lf_notify_of_event(env);
+    LF_CRITICAL_SECTION_EXIT(env);
+    return result;
 }
-
 
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
