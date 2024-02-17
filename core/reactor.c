@@ -1,22 +1,47 @@
+#if defined(LF_SINGLE_THREADED)
+/* Runtime infrastructure for the non-threaded version of the C target of Lingua Franca. */
+
+/*************
+Copyright (c) 2019, The University of California at Berkeley.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************/
+
 /**
- * @brief Runtime implementation for the signle-threaded version of the C target of Lingua Franca.
+ * @brief Runtime implementation for the non-threaded version of the 
+ * C target of Lingua Franca.
  * 
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
-
-#if defined(LF_SINGLE_THREADED)
-
 #include <assert.h>
 #include <string.h>
 
 #include "reactor.h"
 #include "lf_types.h"
 #include "platform.h"
-#include "environment.h"
 #include "reactor_common.h"
+#include "environment.h"
 
 // Embedded platforms with no TTY shouldnt have signals
 #if !defined(NO_TTY)
@@ -25,10 +50,6 @@
 
 // Global variable defined in tag.c:
 extern instant_t start_time;
-
-// Defined in reactor_common.c:
-extern bool fast;
-extern bool keepalive_specified;
 
 void lf_set_present(lf_port_base_t* port) {
     if (!port->source_reactor) return;
@@ -71,7 +92,6 @@ int wait_until(environment_t* env, instant_t wakeup_time) {
     return 0;
 }
 
-#ifndef NDEBUG
 void lf_print_snapshot(environment_t* env) {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
@@ -79,31 +99,17 @@ void lf_print_snapshot(environment_t* env) {
         LF_PRINT_DEBUG(">>> END Snapshot");
     }
 }
-#else // NDEBUG
-void lf_print_snapshot(environment_t* env) {
-    // Do nothing.
-}
-#endif // NDEBUG
 
 /**
- * Wait until physical time matches or exceeds the specified logical time,
- * unless -fast is given. For decentralized coordination, this function will
- * add the STA offset to the wait time.
+ * Trigger 'reaction'.
  *
- * If an event is put on the event queue during the wait, then the wait is
- * interrupted and this function returns false. It also returns false if the
- * timeout time is reached before the wait has completed. Note this this could
- * return true even if the a new event was placed on the queue if that event
- * time matches or exceeds the specified time.
  * @param env Environment in which we are executing
- * @param time Logical time to wait until
- * @return 0 if the wait was completed, -1 if it was skipped or interrupted.
+ * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making this call. 0 should be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
+ *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
-int lf_wait(environment_t* env, instant_t time) {
-    if (!fast) {
-        LF_PRINT_LOG("Waiting for logical time " PRINTF_TIME ".", time - start_time);
-        return lf_clock_
-
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
     assert(env != GLOBAL_ENVIRONMENT);
 
@@ -234,7 +240,7 @@ int next(environment_t* env) {
     if (event == NULL) {
         // No event in the queue.
         if (!keepalive_specified) {
-            lf_set_stop_tag( env,
+            _lf_set_stop_tag( env,
                 (tag_t){.time=env->current_tag.time, .microstep=env->current_tag.microstep+1}
             );
         }
@@ -248,7 +254,7 @@ int next(environment_t* env) {
         }
     }
 
-    if (lf_is_tag_after_stop_tag(env, next_tag)) {
+    if (_lf_is_tag_after_stop_tag(env, next_tag)) {
         // Cannot process events after the stop tag.
         next_tag = env->stop_tag;
     }
@@ -298,7 +304,7 @@ void lf_request_stop(void) {
 	tag_t new_stop_tag;
 	new_stop_tag.time = env->current_tag.time;
 	new_stop_tag.microstep = env->current_tag.microstep + 1;
-	lf_set_stop_tag(env, new_stop_tag);
+	_lf_set_stop_tag(env, new_stop_tag);
 }
 
 /**
