@@ -33,6 +33,7 @@
 #include "reactor.h"
 #include "reactor_common.h"
 #include "reactor_threaded.h"
+#include "api/schedule.h"
 #include "scheduler.h"
 #include "trace.h"
 
@@ -501,7 +502,7 @@ static int handle_message(int* socket, int fed_id) {
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
-    _lf_schedule_value(action, 0, message_contents, length);
+    lf_schedule_value(action, 0, message_contents, length);
     return 0;
 }
 

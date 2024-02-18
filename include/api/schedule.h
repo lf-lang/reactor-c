@@ -135,7 +135,8 @@ trigger_handle_t lf_schedule_copy(
         lf_action_base_t* action, interval_t offset, void* value, size_t length);
 
 /**
- * Variant of lf_schedule_token that creates a token to carry the specified value.
+ * @brief Variant of lf_schedule_token that creates a token to carry the specified value.
+ * 
  * The value is required to be malloc'd memory with a size equal to the
  * element_size of the specified action times the length parameter.
  *
@@ -150,7 +151,7 @@ trigger_handle_t lf_schedule_copy(
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length);
+trigger_handle_t lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, int length);
 
 /**
  * Check the deadline of the currently executing reaction against the

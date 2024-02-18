@@ -202,20 +202,6 @@ void terminate_execution(environment_t* env);
  */
 event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* next, unsigned int offset);
 
-/**
- * Variant of schedule_token that creates a token to carry the specified value.
- * The value is required to be malloc'd memory with a size equal to the
- * element_size of the specifies action times the length parameter.
- * See lf_schedule_token() for details.
- * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
- * @param value Dynamically allocated memory containing the value to send.
- * @param length The length of the array, if it is an array, or 1 for a
- *  scalar and 0 for no payload.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
- */
-trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length);
-
 /// \cond INTERNAL  // Doxygen conditional.
 
 /**

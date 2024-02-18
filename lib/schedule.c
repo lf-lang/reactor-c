@@ -46,7 +46,7 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
     }
     int* container = (int*)malloc(sizeof(int));
     *container = value;
-    return _lf_schedule_value(action, extra_delay, container, 1);
+    return lf_schedule_value(action, extra_delay, container, 1);
 }
 
 /**
@@ -156,23 +156,7 @@ trigger_handle_t lf_schedule_copy(
     return result;
 }
 
-/**
- * Variant of schedule_token that creates a token to carry the specified value.
- * The value is required to be malloc'd memory with a size equal to the
- * element_size of the specifies action times the length parameter.
- *
- * See schedule_token(), which this uses, for details.
- *
- * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the
- *  action.
- * @param value Dynamically allocated memory containing the value to send.
- * @param length The length of the array, if it is an array, or 1 for a scalar
- *  and 0 for no payload.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for
- *  error.
- */
-trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length) {
+trigger_handle_t lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, int length) {
     if (length < 0) {
         lf_print_error(
             "schedule_value():"
@@ -181,7 +165,15 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
         );
         return -1;
     }
-    return _lf_schedule_value((lf_action_base_t*)action, extra_delay, value, (size_t)length);
+    token_template_t* template = (token_template_t*)action;
+    environment_t* env = action->parent->environment;
+    LF_CRITICAL_SECTION_ENTER(env);
+    lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
+    int return_value = _lf_schedule(env, action->trigger, extra_delay, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    lf_notify_of_event(env);
+    LF_CRITICAL_SECTION_EXIT(env);
+    return return_value;
 }
 
 /**

@@ -227,4 +227,22 @@ do { \
 #define lf_schedule_copy(action, offset, value, length) \
         lf_schedule_copy((lf_action_base_t*) action, offset, value, length)
 
+/**
+ * @brief Variant of lf_schedule_token that creates a token to carry the specified value.
+ * 
+ * This is a thin wrapper around `lf_schedule_value()` that casts the action argument to a pointer
+ * to an `lf_action_base_t`.
+ *
+ * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
+ * @param extra_delay Extra offset of the event release above that in the
+ *  action.
+ * @param value Dynamically allocated memory containing the value to send.
+ * @param length The length of the array, if it is an array, or 1 for a scalar
+ *  and 0 for no payload.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ *  error.
+ */
+#define lf_schedule_value(action, extra_delay, value, length) \
+        lf_schedule_value((lf_action_base_t*)action, extra_delay, value, length)
+
 #endif // REACTION_MACROS_H

@@ -1033,22 +1033,6 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
     return 1;
 }
 
-/**
- * Variant of schedule_token that creates a token to carry the specified value.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length) {
-    token_template_t* template = (token_template_t*)action;
-    environment_t* env = action->parent->environment;
-    LF_CRITICAL_SECTION_ENTER(env);
-    lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
-    int return_value = _lf_schedule(env, action->trigger, extra_delay, token);
-    // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_notify_of_event(env);
-    LF_CRITICAL_SECTION_EXIT(env);
-    return return_value;
-}
-
 void _lf_advance_logical_time(environment_t *env, instant_t next_time) {
     assert(env != GLOBAL_ENVIRONMENT);
 
