@@ -28,4 +28,5 @@
 
 #undef lf_schedule_token
 #undef lf_schedule_copy
+#undef lf_schedule_value
 #endif // REACTION_MACROS_H
