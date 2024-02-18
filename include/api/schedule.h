@@ -50,7 +50,7 @@ trigger_handle_t lf_schedule(void* action, interval_t offset);
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value);
+trigger_handle_t lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
 
 /**
  * @brief Schedule the specified action at a later tag with the specified token as a payload.

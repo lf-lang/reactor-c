@@ -245,4 +245,17 @@ do { \
 #define lf_schedule_value(action, extra_delay, value, length) \
         lf_schedule_value((lf_action_base_t*)action, extra_delay, value, length)
 
+/**
+ * @brief Schedule the specified action with an integer value at a later logical time.
+ * 
+ * This is a thin wrapper around `lf_schedule_int()` that casts the action argument to a pointer
+ * to an `lf_action_base_t`.
+ *
+ * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
+ * @param extra_delay Extra offset of the event release above that in the action.
+ * @param value The value to send.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ */
+#define lf_schedule_int(action, extra_delay, value) lf_schedule_int((lf_action_base_t*)action, extra_delay, value)
+
 #endif // REACTION_MACROS_H
