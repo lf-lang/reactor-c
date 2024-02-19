@@ -12,7 +12,7 @@
 
 #include "lf_types.h"
 #include "environment.h"
-#include "platform.h"
+#include "platform.h"    // For lf_thread_t.
 
 #ifdef __cplusplus
 extern "C" {

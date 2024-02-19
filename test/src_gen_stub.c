@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include "tag.h"
 #include "environment.h"
-#include "watchdog.h"
 
 /**
  * This file enables unit tests to run without there having been an actual code generation
@@ -15,7 +14,7 @@ environment_t _env;
 void _lf_initialize_trigger_objects(void) {}
 void lf_terminate_execution(void) {}
 void lf_set_default_command_line_options(void) {}
-void _lf_initialize_watchdogs() {}
+void _lf_initialize_watchdogs(environment_t ** envs) {}
 void logical_tag_complete(tag_t tag_to_send) {}
 int _lf_get_environments(environment_t ** envs) {
   *envs = &_env;
