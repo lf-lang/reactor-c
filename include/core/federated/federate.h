@@ -530,6 +530,16 @@ void lf_synchronize_with_other_federates();
  */
 bool lf_update_max_level(tag_t tag, bool is_provisional);
 
+/**
+ * @brief Stop the execution of a federate.
+ * Every enclave within the federate will stop at one microstep later than its
+ * current tag. Unlike lf_request_stop(), this process does not require any
+ * involvement from the RTI, nor does it necessitate any consensus.
+ *
+ * This function is particularly useful for testing transient federates.
+ */
+void lf_stop();
+
 #ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Return the physical time that we should wait until before advancing to the specified tag.
@@ -547,14 +557,14 @@ instant_t lf_wait_until_time(tag_t tag);
 
 /**
  * @brief Returns the federation id.
- * 
+ *
  * This function is useful for creating federates on runtime.
  */
 char* lf_get_federation_id();
 
 /**
  * @brief Returns the effective start time of the federate. The start_time of persistent
- * federates is equal to their effective_start_time. Transient federates, however, 
+ * federates is equal to their effective_start_time. Transient federates, however,
  * have their effective_start_time higher or equal to their start_time.
  */
 instant_t lf_get_effective_start_time();
