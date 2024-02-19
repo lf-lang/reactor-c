@@ -2,7 +2,7 @@
  * @file
  * @author Benjamin Asch
  * @author Edward A. Lee
- * @copyright (c) 2023, The University of California at Berkeley.
+ * @copyright (c) 2023-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Declarations for watchdogs.
  */
@@ -25,10 +25,7 @@ extern "C" {
 typedef void(*watchdog_function_t)(void*);
 
 /** Typdef for watchdog_t struct, used to call watchdog handler. */
-typedef struct watchdog_t watchdog_t;
-
-/** Watchdog struct for handler. */
-struct watchdog_t {
+typedef struct watchdog_t {
     struct self_base_t* base;               // The reactor that contains the watchdog.
     trigger_t* trigger;                     // The trigger associated with this watchdog.
     instant_t expiration;                   // The expiration instant for the watchdog. (Initialized to NEVER)
@@ -38,7 +35,7 @@ struct watchdog_t {
     bool active;                            // Boolean indicating whether or not thread is active.  
     bool terminate;                         // Boolean indicating whether termination of the thread has been requested.  
     watchdog_function_t watchdog_function;  // The function/handler for the watchdog.
-};
+} watchdog_t;
 
 /** 
  * @brief Start or restart the watchdog timer.
@@ -62,6 +59,21 @@ void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
  * @param watchdog The watchdog.
  */
 void lf_watchdog_stop(watchdog_t* watchdog);
+
+
+///////////////////// Internal functions /////////////////////
+// The following functions are internal to the runtime and should not be documented by Doxygen.
+/// \cond INTERNAL  // Doxygen conditional.
+
+/**
+ * Function to initialize mutexes for watchdogs
+ */
+void _lf_initialize_watchdogs(environment_t *env);
+
+/** Terminates all watchdogs inside the environment. */
+void _lf_watchdog_terminate_all(environment_t *env);
+
+/// \endcond // INTERNAL
 
 #ifdef __cplusplus
 }

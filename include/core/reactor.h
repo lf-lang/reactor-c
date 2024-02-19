@@ -96,20 +96,10 @@ void lf_request_stop(void);
  * @param count The number of items of size 'size' to accomodate.
  * @param size The size of each item.
  * @param head Pointer to the head of a list on which to record
- *  the allocation, or NULL to not record it.
+ *  the allocation, or NULL to not record it (an `allocation_record_t**`),
  * @return A pointer to the allocated memory.
  */
 void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head);
-
-/**
- * @brief Free memory on the specified allocation record (a self struct).
- * 
- * This will mark the allocation record empty by setting `*head` to NULL.
- * If the argument is NULL, do nothing.
- * 
- * @param head Pointer to the head of a list on which allocations are recorded.
- */
-void lf_free(struct allocation_record_t** head);
 
 /**
  * @brief Allocate memory for a new runtime instance of a reactor.
@@ -122,7 +112,7 @@ void lf_free(struct allocation_record_t** head);
  * 
  * @param size The size of the self struct, obtained with sizeof().
  */
-void* lf_new_reactor(size_t size);
+self_base_t* lf_new_reactor(size_t size);
 
 /**
  * @brief Free all the reactors that are allocated with {@link #lf_new_reactor(size_t)}.
@@ -137,14 +127,6 @@ void lf_free_all_reactors(void);
  * @param self The self struct of the reactor.
  */
 void lf_free_reactor(self_base_t *self);
-
-/**
- * Function to initialize mutexes for watchdogs
- */
-void _lf_initialize_watchdogs(environment_t *env);
-
-/** Terminates all watchdogs inside the environment. */
-void _lf_watchdog_terminate_all(environment_t *env);
 
 /**
  * @brief Get the array of ids of enclaves directly upstream of the specified enclave.

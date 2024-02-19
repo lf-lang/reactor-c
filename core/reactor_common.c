@@ -107,8 +107,8 @@ void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head) 
  */
 struct allocation_record_t* _lf_reactors_to_free = NULL;
 
-void* lf_new_reactor(size_t size) {
-    return lf_allocate(1, size, &_lf_reactors_to_free);
+self_base_t* lf_new_reactor(size_t size) {
+    return (self_base_t*)lf_allocate(1, size, &_lf_reactors_to_free);
 }
 
 void lf_free(struct allocation_record_t** head) {

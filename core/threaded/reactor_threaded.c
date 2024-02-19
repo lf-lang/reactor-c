@@ -26,6 +26,7 @@
 #include "environment.h"
 #include "rti_local.h"
 #include "reactor_common.h"
+#include "watchdog.h"
 
 #ifdef FEDERATED
 #include "federate.h"

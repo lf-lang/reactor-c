@@ -65,6 +65,16 @@ extern struct allocation_record_t* _lf_reactors_to_free;
 //////////////////////  Functions  //////////////////////
 
 /**
+ * @brief Free memory on the specified allocation record (a self struct).
+ * 
+ * This will mark the allocation record empty by setting `*head` to NULL.
+ * If the argument is NULL, do nothing.
+ * 
+ * @param head Pointer to the head of a list on which allocations are recorded.
+ */
+void lf_free(struct allocation_record_t** head);
+
+/**
  * Get a new event. If there is a recycled event available, use that.
  * If not, allocate a new one. In either case, all fields will be zero'ed out.
  * @param env Environment in which we are executing.

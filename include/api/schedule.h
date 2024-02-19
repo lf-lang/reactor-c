@@ -190,10 +190,17 @@ trigger_handle_t lf_schedule_value(lf_action_base_t* action, interval_t extra_de
 trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
 /**
- * Check the deadline of the currently executing reaction against the
- * current physical time. If the deadline has passed, invoke the deadline
+ * @brief Check the deadline of the currently executing reaction against the
+ * current physical time.
+ * 
+ * If the deadline has passed, invoke the deadline
  * handler (if invoke_deadline_handler parameter is set true) and return true.
  * Otherwise, return false.
+ * 
+ * This function is intended to be used within a reaction that has been invoked without a deadline
+ * violation, but that wishes to check whether the deadline gets violated _during_ the execution of
+ * the reaction. This can be used, for example, to implement a timeout mechanism that bounds the
+ * execution time of a reaction, for example to realize an "anytime" computation.
  *
  * @param self The self struct of the reactor.
  * @param invoke_deadline_handler When this is set true, also invoke deadline

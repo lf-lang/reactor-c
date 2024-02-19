@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include "tag.h"
 #include "environment.h"
+#include "watchdog.h"
 
 /**
  * This file enables unit tests to run without there having been an actual code generation
