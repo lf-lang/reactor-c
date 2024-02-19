@@ -30,4 +30,5 @@
 #undef lf_schedule_copy
 #undef lf_schedule_value
 #undef lf_schedule_int
+#undef lf_schedule
 #endif // REACTION_MACROS_H

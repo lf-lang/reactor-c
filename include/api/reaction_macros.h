@@ -258,4 +258,16 @@ do { \
  */
 #define lf_schedule_int(action, extra_delay, value) lf_schedule_int((lf_action_base_t*)action, extra_delay, value)
 
+/**
+ * @brief Schedule an action to occur with the specified time offset with no payload (no value conveyed).
+ * 
+ * This is a thin wrapper around `lf_schedule()` that casts the action argument to a pointer
+ * to an `lf_action_base_t`.
+ *
+ * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
+ * @param offset The time offset over and above the minimum delay of the action.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ */
+#define lf_schedule(action, offset) lf_schedule((lf_action_base_t*)action, offset)
+
 #endif // REACTION_MACROS_H

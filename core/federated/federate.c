@@ -372,7 +372,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(
         LF_PRINT_LOG("Calling schedule with 0 delay and intended tag " PRINTF_TAG ".",
                     trigger->intended_tag.time - start_time,
                     trigger->intended_tag.microstep);
-        return_value = _lf_schedule(env, trigger, extra_delay, token);
+        return_value = lf_schedule_trigger(env, trigger, extra_delay, token);
 #endif
     } else {
         // In case the message is in the future, call

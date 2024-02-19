@@ -391,7 +391,7 @@ void _lf_process_mode_changes(
                     for (int j = 0; j < timer_triggers_size; j++) {
                         trigger_t* timer = timer_triggers[j];
                         if (timer->period == 0 && timer->mode == state->next_mode) {
-                            _lf_schedule(env, timer, timer->offset, NULL);
+                            lf_schedule_trigger(env, timer, timer->offset, NULL);
                         }
                     }
                 }
@@ -408,7 +408,7 @@ void _lf_process_mode_changes(
                                 LF_PRINT_DEBUG("Modes: Re-enqueuing reset timer.");
                                 // Reschedule the timer with no additional delay.
                                 // This will take care of super dense time when offset is 0.
-                                _lf_schedule(env, timer, event->trigger->offset, NULL);
+                                lf_schedule_trigger(env, timer, event->trigger->offset, NULL);
                             }
                             // No further processing; drops all events upon reset (timer event was recreated by schedule and original can be removed here)
                         } else if (state->next_mode != state->current_mode && event->trigger != NULL) { // History transition to a different mode

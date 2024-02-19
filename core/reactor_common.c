@@ -310,7 +310,7 @@ void _lf_pop_events(environment_t *env) {
         // If the trigger is a periodic timer, create a new event for its next execution.
         if (event->trigger->is_timer && event->trigger->period > 0LL) {
             // Reschedule the trigger.
-            _lf_schedule(env, event->trigger, event->trigger->period, NULL);
+            lf_schedule_trigger(env, event->trigger, event->trigger->period, NULL);
         }
 
         // Copy the token pointer into the trigger struct so that the
@@ -348,12 +348,7 @@ void _lf_pop_events(environment_t *env) {
     }
 }
 
-/**
- * Get a new event. If there is a recycled event available, use that.
- * If not, allocate a new one. In either case, all fields will be zero'ed out.
- * @param env Environment in which we are executing.
- */
-static event_t* _lf_get_new_event(environment_t* env) {
+event_t* lf_get_new_event(environment_t* env) {
     assert(env != GLOBAL_ENVIRONMENT);
     // Recycle event_t structs, if possible.
     event_t* e = (event_t*)pqueue_pop(env->recycle_q);
@@ -377,7 +372,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
         // FIXME: The following check might not be working as
         // intended
         // && (timer->offset != 0 || timer->period != 0)) {
-        event_t* e = _lf_get_new_event(env);
+        event_t* e = lf_get_new_event(env);
         e->trigger = timer;
         e->time = lf_time_logical(env) + timer->offset;
         _lf_add_suspended_event(e);
@@ -402,7 +397,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
 
     // Get an event_t struct to put on the event queue.
     // Recycle event_t structs, if possible.
-    event_t* e = _lf_get_new_event(env);
+    event_t* e = lf_get_new_event(env);
     e->trigger = timer;
     e->time = lf_time_logical(env) + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
@@ -421,7 +416,7 @@ void _lf_initialize_timers(environment_t* env) {
     // To avoid runtime memory allocations for timer-driven programs
     // the recycle queue is initialized with a single event.
     if (env->timer_triggers_size > 0) {
-        event_t *e = _lf_get_new_event(env);
+        event_t *e = lf_get_new_event(env);
         lf_recycle_event(env, e);
     }
 }
@@ -482,7 +477,7 @@ void lf_recycle_event(environment_t* env, event_t* e) {
 }
 
 event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant_t time, event_t* next, microstep_t offset) {
-    event_t* first_dummy = _lf_get_new_event(env);
+    event_t* first_dummy = lf_get_new_event(env);
     event_t* dummy = first_dummy;
     dummy->time = time;
     dummy->is_dummy = true;
@@ -492,7 +487,7 @@ event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant
             dummy->next = next;
             break;
         }
-        dummy->next = _lf_get_new_event(env);
+        dummy->next = lf_get_new_event(env);
         dummy = dummy->next;
         dummy->time = time;
         dummy->is_dummy = true;
@@ -502,13 +497,7 @@ event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant
     return first_dummy;
 }
 
-/**
- * Replace the token on the specified event with the specified
- * token and free the old token.
- * @param event The event.
- * @param token The token.
- */
-static void _lf_replace_token(event_t* event, lf_token_t* token) {
+void lf_replace_token(event_t* event, lf_token_t* token) {
     if (event->token != token) {
         // Free the existing token, if any.
         _lf_done_using(event->token);
@@ -543,7 +532,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
         return -1;
     }
 
-    event_t* e = _lf_get_new_event(env);
+    event_t* e = lf_get_new_event(env);
     // Set the event time
     e->time = tag.time;
 
@@ -581,7 +570,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
                     case replace:
                         // Replace the payload of the event at the head with our
                         // current payload.
-                        _lf_replace_token(found, token);
+                        lf_replace_token(found, token);
                         lf_recycle_event(env, e);
                         return 0;
                         break;
@@ -649,7 +638,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
                     case replace:
                         // Replace the payload of the event at the head with our
                         // current payload.
-                        _lf_replace_token(found->next, token);
+                        lf_replace_token(found->next, token);
                         lf_recycle_event(env, e);
                         return 0;
                         break;
@@ -688,268 +677,6 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
             pqueue_insert(env->event_q, _lf_create_dummy_events(env, trigger, tag.time, e, relative_microstep));
         }
     }
-    trigger_handle_t return_value = env->_lf_handle++;
-    if (env->_lf_handle < 0) {
-        env->_lf_handle = 1;
-    }
-    return return_value;
-}
-
-/**
- * Schedule the specified trigger at env->current_tag.time plus the offset of the
- * specified trigger plus the delay. See schedule_token() in reactor.h for details.
- * This is the internal implementation shared by both the threaded
- * and non-threaded versions.
- *
- * The value is required to be either
- * NULL or a pointer to a token wrapping the payload. The token carries
- * a reference count, and when the reference count decrements to 0,
- * the will be freed. Hence, it is essential that the payload be in
- * memory allocated using malloc.
- *
- * There are several conditions under which this function will not
- * actually put an event on the event queue and decrement the reference count
- * of the token (if there is one), which could result in the payload being
- * freed. In all cases, this function returns 0. Otherwise,
- * it returns a handle to the scheduled trigger, which is an integer
- * greater than 0.
- *
- * The first condition is that a stop has been requested and the trigger
- * offset plus the extra delay is greater than zero.
- * The second condition is that the trigger offset plus the extra delay
- * is greater that the requested stop time (timeout).
- * A third condition is that the trigger argument is null.
- * Also, an event might not be scheduled if the trigger is an action
- * with a `min_spacing` parameter.  See the documentation.
- *
- * @param env Environment in which we are executing.
- * @param trigger The trigger to be invoked at a later logical time.
- * @param extra_delay The logical time delay, which gets added to the
- *  trigger's minimum delay, if it has one. If this number is negative,
- *  then zero is used instead.
- * @param token The token wrapping the payload or NULL for no payload.
- * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
- */
-trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
-    assert(env != GLOBAL_ENVIRONMENT);
-    if (lf_is_tag_after_stop_tag(env, env->current_tag)) {
-        // If schedule is called after stop_tag
-        // This is a critical condition.
-        _lf_done_using(token);
-        lf_print_warning("lf_schedule() called after stop tag.");
-        return 0;
-    }
-
-    if (extra_delay < 0LL) {
-        lf_print_warning("schedule called with a negative extra_delay " PRINTF_TIME ". Replacing with zero.", extra_delay);
-        extra_delay = 0LL;
-    }
-
-    LF_PRINT_DEBUG("_lf_schedule: scheduling trigger %p with delay " PRINTF_TIME " and token %p.",
-            trigger, extra_delay, token);
-
-    // Increment the reference count of the token.
-    if (token != NULL) {
-        token->ref_count++;
-        LF_PRINT_DEBUG("_lf_schedule: Incremented ref_count of %p to %zu.",
-                token, token->ref_count);
-    }
-
-    // The trigger argument could be null, meaning that nothing is triggered.
-    // Doing this after incrementing the reference count ensures that the
-    // payload will be freed, if there is one.
-    if (trigger == NULL) {
-        _lf_done_using(token);
-        return 0;
-    }
-
-    // Compute the tag (the logical timestamp for the future event).
-    // We first do this assuming it is logical action and then, if it is a
-    // physical action, modify it if physical time exceeds the result.
-    interval_t delay = extra_delay;
-    // Add the offset if this is not a timer because, in that case,
-    // it is the minimum delay.
-    if (!trigger->is_timer) {
-        delay += trigger->offset;
-    }
-    tag_t intended_tag = (tag_t){.time = env->current_tag.time + delay, .microstep = 0};
-    
-    LF_PRINT_DEBUG("_lf_schedule: env->current_tag.time = " PRINTF_TIME ". Total logical delay = " PRINTF_TIME "",
-            env->current_tag.time, delay);
-    interval_t min_spacing = trigger->period;
-
-    event_t* e = _lf_get_new_event(env);
-
-    // Initialize the next pointer.
-    e->next = NULL;
-
-    // Set the payload.
-    e->token = token;
-
-    // Make sure the event points to this trigger so when it is
-    // dequeued, it will trigger this trigger.
-    e->trigger = trigger;
-
-    // If the trigger is physical, then we need to check whether
-    // physical time is larger than the intended time and, if so,
-    // modify the intended time.
-    if (trigger->is_physical) {
-        // Get the current physical time and assign it as the intended time.
-        intended_tag.time = lf_time_physical() + delay;
-    } else {
-        // FIXME: We need to verify that we are executing within a reaction?
-        // See reactor_threaded.
-        // If a logical action is scheduled asynchronously (which should never be
-        // done) the computed tag can be smaller than the current tag, in which case
-        // it needs to be adjusted.
-        // FIXME: This can go away once:
-        // - we have eliminated the possibility to have a negative additional delay; and
-        // - we detect the asynchronous use of logical actions
-        #ifndef NDEBUG
-        if (intended_tag.time < env->current_tag.time) {
-            lf_print_warning("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
-                    "Revising to the current time " PRINTF_TIME ".",
-                    env->current_tag.time - intended_tag.time, env->current_tag.time);
-            intended_tag.time = env->current_tag.time;
-        }
-        #endif
-    }
-
-#ifdef FEDERATED_DECENTRALIZED
-    // Event inherits the original intended_tag of the trigger
-    // set by the network stack (or the default, which is (NEVER,0))
-    e->intended_tag = trigger->intended_tag;
-#endif
-
-    // Check for conflicts (a queued event with the same trigger and time).
-    if (min_spacing <= 0) {
-        // No minimum spacing defined.
-        e->time = intended_tag.time;
-        event_t* found = (event_t *)pqueue_find_equal_same_priority(env->event_q, e);
-        // Check for conflicts. Let events pile up in super dense time.
-        if (found != NULL) {
-            intended_tag.microstep++;
-            // Skip to the last node in the linked list.
-            while(found->next != NULL) {
-                found = found->next;
-                intended_tag.microstep++;
-            }
-            if (lf_is_tag_after_stop_tag(env, intended_tag)) {
-                LF_PRINT_DEBUG("Attempt to schedule an event after stop_tag was rejected.");
-                // Scheduling an event will incur a microstep
-                // after the stop tag.
-                lf_recycle_event(env, e);
-                return 0;
-            }
-            // Hook the event into the list.
-            found->next = e;
-            trigger->last_tag = intended_tag;
-            return(0); // FIXME: return value
-        }
-        // If there are not conflicts, schedule as usual. If intended time is
-        // equal to the current logical time, the event will effectively be
-        // scheduled at the next microstep.
-    } else if (!trigger->is_timer && trigger->last_tag.time != NEVER) {
-        // There is a min_spacing and there exists a previously
-        // scheduled event. It determines the
-        // earliest time at which the new event can be scheduled.
-        // Check to see whether the event is too early.
-        instant_t earliest_time = trigger->last_tag.time + min_spacing;
-        LF_PRINT_DEBUG("There is a previously scheduled event; earliest possible time "
-                "with min spacing: " PRINTF_TIME,
-                earliest_time);
-        // If the event is early, see which policy applies.
-        if (earliest_time > intended_tag.time) {
-            LF_PRINT_DEBUG("Event is early.");
-            switch(trigger->policy) {
-                case drop:
-                    LF_PRINT_DEBUG("Policy is drop. Dropping the event.");
-                    // Recycle the new event and decrement the
-                    // reference count of the token.
-                    _lf_done_using(token);
-                    lf_recycle_event(env, e);
-                    return(0);
-                case replace:
-                    LF_PRINT_DEBUG("Policy is replace. Replacing the previous event.");
-                    // If the event with the previous time is still on the event
-                    // queue, then replace the token.  To find this event, we have
-                    // to construct a dummy event_t struct.
-                    event_t* dummy = _lf_get_new_event(env);
-                    dummy->next = NULL;
-                    dummy->trigger = trigger;
-                    dummy->time = trigger->last_tag.time;
-                    event_t* found = (event_t *)pqueue_find_equal_same_priority(env->event_q, dummy);
-
-                    if (found != NULL) {
-                        // Recycle the existing token and the new event
-                        // and update the token of the existing event.
-                        _lf_replace_token(found, token);
-                        lf_recycle_event(env, e);
-                        lf_recycle_event(env, dummy);
-                        // Leave the last_tag the same.
-                        return(0);
-                    }
-                    lf_recycle_event(env, dummy);
-
-                    // If the preceding event _has_ been handled, then adjust
-                    // the tag to defer the event.
-                    intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
-                    break;
-                default:
-                    // Default policy is defer
-                    intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
-                    break;
-            }
-        }
-    }
-
-    // Check if the intended time is in the future
-    // This is a sanity check for the logic above
-    // FIXME: This is a development assertion and might
-    // not be necessary for end-user LF programs
-    #ifndef NDEBUG
-    if (intended_tag.time < env->current_tag.time) {
-        lf_print_error("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
-                "Revising to the current time " PRINTF_TIME ".",
-                env->current_tag.time - intended_tag.time, env->current_tag.time);
-        intended_tag.time = env->current_tag.time;
-    }
-    #endif
-
-    // Set the tag of the event.
-    e->time = intended_tag.time;
-
-    // Do not schedule events if if the event time is past the stop time
-    // (current microsteps are checked earlier).
-    LF_PRINT_DEBUG("Comparing event with elapsed time " PRINTF_TIME " against stop time " PRINTF_TIME ".", e->time - start_time, env->stop_tag.time - start_time);
-    if (e->time > env->stop_tag.time) {
-        LF_PRINT_DEBUG("_lf_schedule: event time is past the timeout. Discarding event.");
-        _lf_done_using(token);
-        lf_recycle_event(env, e);
-        return(0);
-    }
-
-    // Store the time in order to check the min spacing
-    // between this and any following event.
-    trigger->last_tag = intended_tag;
-
-    // Queue the event.
-    // NOTE: There is no need for an explicit microstep because
-    // when this is called, all events at the current tag
-    // (time and microstep) have been pulled from the queue,
-    // and any new events added at this tag will go into the reaction_q
-    // rather than the event_q, so anything put in the event_q with this
-    // same time will automatically be executed at the next microstep.
-    LF_PRINT_LOG("Inserting event in the event queue with elapsed time " PRINTF_TIME ".",
-            e->time - start_time);
-    pqueue_insert(env->event_q, e);
-
-    tracepoint_schedule(env->trace, trigger, e->time - env->current_tag.time);
-
-    // FIXME: make a record of handle and implement unschedule.
-    // NOTE: Rather than wrapping around to get a negative number,
-    // we reset the handle on the assumption that much earlier
-    // handles are irrelevant.
     trigger_handle_t return_value = env->_lf_handle++;
     if (env->_lf_handle < 0) {
         env->_lf_handle = 1;

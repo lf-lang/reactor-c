@@ -62,7 +62,14 @@ extern interval_t lf_fed_STA_offset;
 // The following is defined by the code generator.
 extern struct allocation_record_t* _lf_reactors_to_free;
 
-//////////////////////  Private Functions  //////////////////////
+//////////////////////  Functions  //////////////////////
+
+/**
+ * Get a new event. If there is a recycled event available, use that.
+ * If not, allocate a new one. In either case, all fields will be zero'ed out.
+ * @param env Environment in which we are executing.
+ */
+event_t* lf_get_new_event(environment_t* env);
 
 /**
  * @brief Recycle the given event.
@@ -72,6 +79,14 @@ extern struct allocation_record_t* _lf_reactors_to_free;
  * @param e The event to recycle.
  */
 void lf_recycle_event(environment_t* env, event_t* e);
+
+/**
+ * Replace the token on the specified event with the specified
+ * token and free the old token.
+ * @param event The event.
+ * @param token The token.
+ */
+void lf_replace_token(event_t* event, lf_token_t* token);
 
 /**
  * @brief Perform whatever is needed to start a time step.

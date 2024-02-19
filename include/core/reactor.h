@@ -139,17 +139,6 @@ void lf_free_all_reactors(void);
 void lf_free_reactor(self_base_t *self);
 
 /**
- * Internal version of the lf_schedule() function, used by generated
- * _lf_start_timers() function.
- * @param env The environment in which we are executing
- * @param trigger The action or timer to be triggered.
- * @param delay Offset of the event release.
- * @param token The token payload.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
- */
-trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
-
-/**
  * Function to initialize mutexes for watchdogs
  */
 void _lf_initialize_watchdogs(environment_t *env);

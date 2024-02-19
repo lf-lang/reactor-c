@@ -27,11 +27,11 @@
  *
  * See lf_schedule_token(), which this uses, for details.
  *
- * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
+ * @param action The action to be triggered.
  * @param offset The time offset over and above the minimum delay of the action.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule(void* action, interval_t offset);
+trigger_handle_t lf_schedule(lf_action_base_t* action, interval_t offset);
 
 /**
  * @brief Schedule the specified action with an integer value at a later logical time.
@@ -152,6 +152,42 @@ trigger_handle_t lf_schedule_copy(
  *  error.
  */
 trigger_handle_t lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, int length);
+
+/**
+ * @brief Schedule the specified trigger to execute in the specified environment with given delay and token.
+ * 
+ * This is the most flexible version of the schedule functions and is used in the implementation
+ * of many of the others. End users would rarely use it.
+ * 
+ * This will schedule the specified trigger at env->current_tag.time plus the offset of the
+ * specified trigger plus the delay. The value is required to be either
+ * NULL or a pointer to a token wrapping the payload. The token carries
+ * a reference count, and when the reference count decrements to 0,
+ * the will be freed. Hence, it is essential that the payload be in
+ * memory allocated using malloc.
+ *
+ * There are several conditions under which this function will not
+ * actually put an event on the event queue and decrement the reference count
+ * of the token (if there is one), which could result in the payload being
+ * freed. In all cases, this function returns 0. Otherwise,
+ * it returns a handle to the scheduled trigger, which is an integer
+ * greater than 0.
+ *
+ * The first condition is that a stop has been requested and the trigger
+ * offset plus the extra delay is greater than zero.
+ * The second condition is that the trigger offset plus the extra delay
+ * is greater that the requested stop time (timeout).
+ * A third condition is that the trigger argument is null.
+ * Also, an event might not be scheduled if the trigger is an action
+ * with a `min_spacing` parameter.  See the documentation.
+
+ * @param env The environment in which to schedule the event.
+ * @param trigger The action or timer to be triggered.
+ * @param delay Offset of the event release.
+ * @param token The token payload.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ */
+trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
 /**
  * Check the deadline of the currently executing reaction against the
