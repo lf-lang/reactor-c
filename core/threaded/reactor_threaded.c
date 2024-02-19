@@ -616,13 +616,13 @@ void _lf_initialize_start_tag(environment_t* env) {
 
   _lf_initialize_timers(env);
 
-  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
-
 #if defined FEDERATED_DECENTRALIZED
   // If we have a non-zero STA offset, then we need to allow messages to arrive
   // prior to the start time.  To avoid spurious STP violations, we temporarily
   // set the current time back by the STA offset.
-  env->current_tag.time -= lf_fed_STA_offset;
+  env->current_tag =
+      (tag_t){.time = effective_start_tag.time - lf_fed_STA_offset, .microstep = effective_start_tag.microstep};
+
   LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".", start_time, lf_fed_STA_offset);
 #else
   // For other than federated decentralized execution, there is no lf_fed_STA_offset variable defined.
@@ -644,7 +644,7 @@ void _lf_initialize_start_tag(environment_t* env) {
   // from other federates) to hold the lock and possibly raise a tag barrier. This is
   // especially useful if an STA is set properly because the federate will get
   // a chance to process incoming messages while utilizing the STA.
-  LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".", start_time, _lf_fed_STA_offset);
+
   // Here we wait until the start time and also release the environment mutex.
   // this means that the other worker threads will be allowed to start. We need
   // this to avoid potential deadlock in federated startup.

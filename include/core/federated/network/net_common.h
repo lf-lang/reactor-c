@@ -674,9 +674,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_FAILED 25
 
 /**
- * As an answer to MSG_TYPE_TIMESTAMP, the RTI broadcasts to all persistent 
- * federates, or sends to newly joining transient federate, a message of 
- * MSG_TYPE_STIMESTAMP_START. It includes the starting time of the federation, 
+ * As an answer to MSG_TYPE_TIMESTAMP, the RTI broadcasts to all persistent
+ * federates, or sends to newly joining transient federate, a message of
+ * MSG_TYPE_STIMESTAMP_START. It includes the starting time of the federation,
  * together with the effective starting logical tag. The latter is useful for
  * transient federates.
  */
