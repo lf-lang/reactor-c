@@ -237,7 +237,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
  * @param sending_federate The sending federate.
  * @param buffer The buffer to read into (the first byte is already there).
  */
-void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer, size_t buffer_length);
+void handle_timed_message(federate_info_t *sending_federate, unsigned char *buffer, size_t buffer_length, ssize_t bytes_read);
 
 /**
  * Handle a latest tag complete (LTC) message. @see

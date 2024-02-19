@@ -88,7 +88,7 @@ int netdrv_write(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
 /**
  * Mutex protecting socket close operations.
  */
-extern lf_mutex_t socket_mutex;
+extern lf_mutex_t netdrv_mutex;
 
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled

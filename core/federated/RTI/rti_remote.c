@@ -80,7 +80,7 @@ void notify_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
     // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
-    if (write_to_netdrv(((federate_info_t *)e)->fed_netdrv, message_length, buffer)) {
+    if (write_to_netdrv(((federate_info_t *)e)->fed_netdrv, message_length, buffer) <= 0) {
         lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         e->state = NOT_CONNECTED;
     } else {
@@ -114,7 +114,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
     // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
-    if (write_to_netdrv(((federate_info_t *)e)->fed_netdrv, message_length, buffer)) {
+    if (write_to_netdrv(((federate_info_t *)e)->fed_netdrv, message_length, buffer) <= 0) {
         lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         e->state = NOT_CONNECTED;
     } else {
@@ -220,7 +220,7 @@ void handle_port_absent_message(federate_info_t *sending_federate, unsigned char
     LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
-void handle_timed_message(federate_info_t *sending_federate, unsigned char *buffer, size_t buffer_length) {
+void handle_timed_message(federate_info_t *sending_federate, unsigned char *buffer, size_t buffer_length, ssize_t bytes_read) {
     size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
             + sizeof(int64_t) + sizeof(uint32_t);
     // Extract the header information. of the sender
@@ -301,12 +301,12 @@ void handle_timed_message(federate_info_t *sending_federate, unsigned char *buff
         tracepoint_rti_to_federate(rti_remote->base.trace, send_TAGGED_MSG, federate_id, &intended_tag);
     }
 
-    write_to_netdrv_fail_on_error(fed->fed_netdrv, length + header_size, buffer, &rti_mutex,
+    write_to_netdrv_fail_on_error(fed->fed_netdrv, bytes_read, buffer, &rti_mutex,
             "RTI failed to forward message to federate %d.", federate_id);
     
     while (sending_federate->fed_netdrv->read_remaining_bytes > 0) {
-        ssize_t num_bytes = read_from_netdrv(sending_federate->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
-        write_to_netdrv_fail_on_error(fed->fed_netdrv, num_bytes, buffer, &rti_mutex,
+        ssize_t bytes_read_again = read_from_netdrv(sending_federate->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
+        write_to_netdrv_fail_on_error(fed->fed_netdrv, bytes_read_again, buffer, &rti_mutex,
             "RTI failed to forward message to federate %d.", federate_id);
     } 
 
@@ -637,7 +637,7 @@ void handle_address_ad(uint16_t federate_id, unsigned char *buffer) {
     assert(server_port < 65536);
 
     LF_MUTEX_LOCK(&rti_mutex);
-    get_port(fed->fed_netdrv) = server_port;
+    set_port(fed->fed_netdrv, server_port);
     LF_MUTEX_UNLOCK(&rti_mutex);
 
     LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);
@@ -685,7 +685,7 @@ void handle_timestamp(federate_info_t *my_fed, unsigned char *buffer) {
         tag_t tag = {.time = start_time, .microstep = 0};
         tracepoint_rti_to_federate(rti_remote->base.trace, send_TIMESTAMP, my_fed->enclave.id, &tag);
     }
-    if (write_to_netdrv(my_fed->fed_netdrv, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
+    if (write_to_netdrv(my_fed->fed_netdrv, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer) <= 0) {
         lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
     }
 
@@ -975,7 +975,7 @@ void *federate_info_thread_TCP(void *fed) {
             handle_address_ad(my_fed->enclave.id, buffer + 1);
             break;
         case MSG_TYPE_TAGGED_MESSAGE:
-            handle_timed_message(my_fed, buffer, FED_COM_BUFFER_SIZE);
+            handle_timed_message(my_fed, buffer, FED_COM_BUFFER_SIZE, bytes_read);
             break;
         case MSG_TYPE_RESIGN:
             handle_federate_resign(my_fed);
@@ -1020,7 +1020,7 @@ void send_reject(netdrv_t *netdrv, unsigned char error_code) {
     response[1] = error_code;
     LF_MUTEX_LOCK(&rti_mutex);
     // NOTE: Ignore errors on this response.
-    if (write_to_netdrv(netdrv, 2, response)) {
+    if (write_to_netdrv(netdrv, 2, response) <= 0) {
         lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
     }
     // Shutdown and close the netdrv.
@@ -1145,7 +1145,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t *netdrv) {
         tracepoint_rti_to_federate(rti_remote->base.trace, send_ACK, fed_id, NULL);
     }
     LF_MUTEX_LOCK(&rti_mutex);
-    if (write_to_netdrv_close_on_error(netdrv, 1, &ack_message)) {
+    if (write_to_netdrv_close_on_error(netdrv, 1, &ack_message) <= 0) {
         LF_MUTEX_UNLOCK(&rti_mutex);
         lf_print_error("RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
         return -1;
@@ -1360,7 +1360,7 @@ static bool authenticate_federate(netdrv_t *fed_netdrv) {
     RAND_bytes(rti_nonce, NONCE_LENGTH);
     memcpy(&sender[1], rti_nonce, NONCE_LENGTH);
     memcpy(&sender[1 + NONCE_LENGTH], hmac_tag, hmac_length);
-    if (write_to_netdrv(fed_netdrv, 1 + NONCE_LENGTH + hmac_length, sender)) {
+    if (write_to_netdrv(fed_netdrv, 1 + NONCE_LENGTH + hmac_length, sender) <= 0) {
         lf_print_error("Failed to send nonce to federate.");
     }
 
@@ -1472,7 +1472,7 @@ void *respond_to_erroneous_connections(void *nothing) {
         response[0] = MSG_TYPE_REJECT;
         response[1] = FEDERATION_ID_DOES_NOT_MATCH;
         // Ignore errors on this response.
-        if (write_to_netdrv(fed_netdrv, 2, response)) {
+        if (write_to_netdrv(fed_netdrv, 2, response) <= 0) {
             lf_print_warning("RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
         }
         // Close the netdriver.

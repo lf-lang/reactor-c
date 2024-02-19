@@ -401,21 +401,23 @@ static trigger_handle_t schedule_message_received_from_network_locked(
  *  federate.
  * @param flag 0 if an EOF was received, -1 if a socket error occurred, 1 otherwise.
  */
-static void close_inbound_socket(int fed_id, int flag) {
-    LF_MUTEX_LOCK(&socket_mutex);
-    if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-        if (flag >= 0) {
-            if (flag > 0) {
-                shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
-            } else {
-                // Have received EOF from the other end. Send EOF to the other end.
-                shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_WR);
-            }
-        }
-        close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
-        _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+static void close_inbound_netdrv(int fed_id, int flag) {
+    LF_MUTEX_LOCK(&netdrv_mutex);
+    if (_fed.netdrv_for_inbound_p2p_connections[fed_id] != NULL) {
+        // if (flag >= 0) {
+        //     if (flag > 0) {
+        //         shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
+        //     } else {
+        //         // Have received EOF from the other end. Send EOF to the other end.
+        //         shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_WR);
+        //     }
+        // }
+        // close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
+        // _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+        _fed.netdrv_for_inbound_p2p_connections[fed_id]->close(_fed.netdrv_for_inbound_p2p_connections[fed_id]);
+        _fed.netdrv_for_inbound_p2p_connections[fed_id] = NULL;
     }
-    LF_MUTEX_UNLOCK(&socket_mutex);
+    LF_MUTEX_UNLOCK(&netdrv_mutex);
 }
 
 /**
@@ -471,15 +473,7 @@ static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t int
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure.
  */
-static int handle_message(int* socket, int fed_id) {
-    // Read the header.
-    size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
-    unsigned char buffer[bytes_to_read];
-    if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
-        // Read failed, which means the socket has been closed between reading the
-        // message ID byte and here.
-        return -1;
-    }
+static int handle_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, ssize_t bytes_read) {
 
     // Extract the header information.
     unsigned short port_id;
@@ -496,8 +490,14 @@ static int handle_message(int* socket, int fed_id) {
     // Read the payload.
     // Allocate memory for the message contents.
     unsigned char* message_contents = (unsigned char*)malloc(length);
-    if (read_from_socket_close_on_error(socket, length, message_contents)) {
-        return -1;
+    memcpy(message_contents, buffer, bytes_read);
+    int buf_count = bytes_read;
+    while(netdrv->read_remaining_bytes > 0) {
+        ssize_t bytes_read_again = read_from_netdrv_close_on_error(netdrv, message_contents + buf_count, length - buf_count);
+        if (bytes_read_again <= 0) {
+            return -1;
+        }
+        buf_count += bytes_read_again;
     }
     // Trace the event when tracing is enabled
     tracepoint_federate_from_federate(_fed.trace, receive_P2P_MSG, _lf_my_fed_id, federate_id, NULL);
@@ -524,18 +524,10 @@ static int handle_message(int* socket, int fed_id) {
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 on successfully reading the message, -1 on failure (e.g. due to socket closed).
  */
-static int handle_tagged_message(int* socket, int fed_id) {
+static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, ssize_t bytes_read) {
     // Environment is always the one corresponding to the top-level scheduling enclave.
     environment_t *env;
     _lf_get_environments(&env);
-
-    // Read the header which contains the timestamp.
-    size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
-            + sizeof(instant_t) + sizeof(microstep_t);
-    unsigned char buffer[bytes_to_read];
-    if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
-        return -1;  // Read failed.
-    }
 
     // Extract the header information.
     unsigned short port_id;
@@ -582,11 +574,17 @@ static int handle_tagged_message(int* socket, int fed_id) {
     // Read the payload.
     // Allocate memory for the message contents.
     unsigned char* message_contents = (unsigned char*)malloc(length);
-    if (read_from_socket_close_on_error(socket, length, message_contents)) {
+    memcpy(message_contents, buffer, bytes_read);
+    int buf_count = bytes_read;
+    while(netdrv->read_remaining_bytes > 0) {
+        ssize_t bytes_read_again = read_from_netdrv_close_on_error(netdrv, message_contents + buf_count, length - buf_count);
+        if (bytes_read_again <= 0) {
 #ifdef FEDERATED_DECENTRALIZED 
-        _lf_decrement_tag_barrier_locked(env);
+            _lf_decrement_tag_barrier_locked(env);
 #endif
-        return -1; // Read failed.
+            return -1;
+        }
+        buf_count += bytes_read_again;
     }
 
     // The following is only valid for string messages.
@@ -659,7 +657,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
 					env->current_tag.time - start_time, env->current_tag.microstep,
 					intended_tag.time - start_time, intended_tag.microstep);
             // Close socket, reading any incoming data and discarding it.
-            close_inbound_socket(fed_id, 1);
+            close_inbound_netdrv(fed_id, 1);
         } else {
             // Need to use intended_tag here, not actual_tag, so that STP violations are detected.
             // It will become actual_tag (that is when the reactions will be invoked).
@@ -741,7 +739,8 @@ static void* listen_to_federates(void* _args) {
 
     LF_PRINT_LOG("Listening to federate %d.", fed_id);
 
-    int* socket_id = &_fed.sockets_for_inbound_p2p_connections[fed_id];
+    // int* socket_id = &_fed.sockets_for_inbound_p2p_connections[fed_id];
+    netdrv_t* netdrv = _fed.netdrv_for_inbound_p2p_connections[fed_id];
 
     // Buffer for incoming messages.
     // This does not constrain the message size
@@ -752,21 +751,21 @@ static void* listen_to_federates(void* _args) {
     while (1) {
         bool socket_closed = false;
         // Read one byte to get the message type.
-        LF_PRINT_DEBUG("Waiting for a P2P message on socket %d.", *socket_id);
-        if (read_from_netdrv_close_on_error(socket_id, buffer, FED_COM_BUFFER_SIZE)) {
+        LF_PRINT_DEBUG("Waiting for a P2P message on netdrv");
+        ssize_t bytes_read = read_from_netdrv_close_on_error(netdrv, buffer, FED_COM_BUFFER_SIZE);
+        if (bytes_read <= 0) {
             // Socket has been closed.
             lf_print("Socket from federate %d is closed.", fed_id);
             // Stop listening to this federate.
             socket_closed = true;
             break;
         }
-        LF_PRINT_DEBUG("Received a P2P message on socket %d of type %d.",
-                *socket_id, buffer[0]);
+        LF_PRINT_DEBUG("Received a P2P message on netdrv of type %d.", buffer[0]);
         bool bad_message = false;
         switch (buffer[0]) {
             case MSG_TYPE_P2P_MESSAGE:
                 LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
-                if (handle_message(socket_id, fed_id)) {
+                if (handle_message(netdrv, fed_id, buffer + 1, bytes_read - 1)) {
                     // Failed to complete the reading of a message on a physical connection.
                     lf_print_warning("Failed to complete reading of message on physical connection.");
                     socket_closed = true;
@@ -774,7 +773,7 @@ static void* listen_to_federates(void* _args) {
                 break;
             case MSG_TYPE_P2P_TAGGED_MESSAGE:
                 LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
-                if (handle_tagged_message(socket_id, fed_id)) {
+                if (handle_tagged_message(netdrv, fed_id, buffer + 1, bytes_read - 1)) {
                     // P2P tagged messages are only used in decentralized coordination, and
                     // it is not a fatal error if the socket is closed before the whole message is read.
                     // But this thread should exit.
@@ -823,27 +822,30 @@ static void* listen_to_federates(void* _args) {
  *  federate, or -1 if the RTI (centralized coordination).
  * @param flag 0 if the socket has received EOF, 1 if not, -1 if abnormal termination.
  */
-static void close_outbound_socket(int fed_id, int flag) {
+//TODO: DONGHA: NEED TO FIX
+static void close_outbound_netdrv(int fed_id, int flag) {
     assert (fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
     if (_lf_normal_termination) {
         LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
     }
-    if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
-        // Close the socket by sending a FIN packet indicating that no further writes
-        // are expected.  Then read until we get an EOF indication.
-        if (flag >= 0) {
-            // SHUT_WR indicates no further outgoing messages.
-            shutdown(_fed.sockets_for_outbound_p2p_connections[fed_id], SHUT_WR);
-            if (flag > 0) {
-                // Have not received EOF yet. read until we get an EOF or error indication.
-                // This compensates for delayed ACKs and disabling of Nagles algorithm
-                // by delaying exiting until the shutdown is complete.
-                unsigned char message[32];
-                while (read(_fed.sockets_for_outbound_p2p_connections[fed_id], &message, 32) > 0);
-            }
-        }
-        close(_fed.sockets_for_outbound_p2p_connections[fed_id]);
-        _fed.sockets_for_outbound_p2p_connections[fed_id] = -1;
+    if (_fed.netdrv_for_outbound_p2p_connections[fed_id] != NULL) {
+        // // Close the socket by sending a FIN packet indicating that no further writes
+        // // are expected.  Then read until we get an EOF indication.
+        // if (flag >= 0) {
+        //     // SHUT_WR indicates no further outgoing messages.
+        //     shutdown(_fed.sockets_for_outbound_p2p_connections[fed_id], SHUT_WR);
+        //     if (flag > 0) {
+        //         // Have not received EOF yet. read until we get an EOF or error indication.
+        //         // This compensates for delayed ACKs and disabling of Nagles algorithm
+        //         // by delaying exiting until the shutdown is complete.
+        //         unsigned char message[32];
+        //         while (read(_fed.sockets_for_outbound_p2p_connections[fed_id], &message, 32) > 0);
+        //     }
+        // }
+        // close(_fed.sockets_for_outbound_p2p_connections[fed_id]);
+        // _fed.sockets_for_outbound_p2p_connections[fed_id] = -1;
+        _fed.netdrv_for_outbound_p2p_connections[fed_id]->close(_fed.netdrv_for_outbound_p2p_connections[fed_id]);
+        _fed.netdrv_for_outbound_p2p_connections[fed_id] = NULL;
     }
     if (_lf_normal_termination) {
         LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
@@ -1505,7 +1507,7 @@ static void* listen_to_rti_TCP(void* args) {
         }
         switch (buffer[0]) {
             case MSG_TYPE_TAGGED_MESSAGE:
-                if (handle_tagged_message(&_fed.socket_TCP_RTI, -1)) {
+                if (handle_tagged_message(_fed.netdrv_to_rti, -1, buffer + 1, bytes_read - 1)) {
                     // Failures to complete the read of messages from the RTI are fatal.
                     lf_print_error_and_exit("Failed to complete the reading of a message from the RTI.");
                 }
@@ -1626,7 +1628,7 @@ void terminate_execution(environment_t* env) {
     LF_PRINT_DEBUG("Closing incoming P2P sockets.");
     // Close any incoming P2P sockets that are still open.
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
-        close_inbound_socket(i, 1);
+        close_inbound_netdrv(i, 1);
         // Ignore errors. Mark the socket closed.
         _fed.sockets_for_inbound_p2p_connections[i] = -1;
     }
@@ -1641,7 +1643,7 @@ void terminate_execution(environment_t* env) {
         // This will result in EOF being sent to the remote federate, except for
         // abnormal termination, in which case it will just close the socket.
         int flag = _lf_normal_termination? 1 : -1;
-        close_outbound_socket(i, flag);
+        close_outbound_netdrv(i, flag);
     }
 
     LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
@@ -1916,7 +1918,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
         tracepoint_federate_to_rti(_fed.trace, send_FED_ID, _lf_my_fed_id, NULL);
 
         // No need for a mutex here because no other threads are writing to this socket.
-        if (write_to_netdrv(_fed.netdrv_to_rti, 2 + sizeof(uint16_t) + federation_id_length, buffer)) {
+        if (write_to_netdrv(_fed.netdrv_to_rti, 2 + sizeof(uint16_t) + federation_id_length, buffer) <= 0) {
             continue; // Try again, possibly on a new port.
         }
         free(buffer);
@@ -2102,7 +2104,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         tracepoint_federate_to_federate(_fed.trace, receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
 
         // Once we record the socket_id here, all future calls to close() on
-        // the socket should be done while holding the socket_mutex, and this array
+        // the socket should be done while holding the netdrv_mutex, and this array
         // element should be reset to -1 during that critical section.
         // Otherwise, there can be race condition where, during termination,
         // two threads attempt to simultaneously close the socket.
@@ -2132,12 +2134,12 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
                 fed_id_arg);
         if (result != 0) {
             // Failed to create a listening thread.
-            LF_MUTEX_LOCK(&socket_mutex);
+            LF_MUTEX_LOCK(&netdrv_mutex);
             if (_fed.netdrv_for_inbound_p2p_connections[remote_fed_id] != NULL) {
                 _fed.netdrv_for_inbound_p2p_connections[remote_fed_id]->close(_fed.netdrv_for_inbound_p2p_connections[remote_fed_id]);
                 _fed.netdrv_for_inbound_p2p_connections[remote_fed_id] = NULL;
             }
-            LF_MUTEX_UNLOCK(&socket_mutex);
+            LF_MUTEX_UNLOCK(&netdrv_mutex);
             lf_print_error_and_exit(
                     "Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                     result
@@ -2250,18 +2252,19 @@ int lf_send_message(int message_type,
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(_fed.trace, send_P2P_MSG, _lf_my_fed_id, federate, NULL);
 
-    //TODO: Need to fix in future.
-    int result = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
-    if (result == 0) {
+    //TODO: DONGHA: Need to fix in future.
+    int bytes_written = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
+    if (bytes_written > 0) {
         // Header sent successfully. Send the body.
-        result = write_to_netdrv_close_on_error(netdrv, length, message);
+        bytes_written = write_to_netdrv_close_on_error(netdrv, length, message);
     }
-    if (result != 0) {
+    if (bytes_written <= 0) {
         // Message did not send. Since this is used for physical connections, this is not critical.
         lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
     }
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
-    return result;
+    // TODO: DONGHA: Check result!
+    return bytes_written;
 }
 
 tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
@@ -2450,10 +2453,10 @@ void lf_send_port_absent_to_federate(
     }
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    int result = write_to_netdrv_close_on_error(netdrv, message_length, buffer);
+    int bytes_written = write_to_netdrv_close_on_error(netdrv, message_length, buffer);
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
-    if (result != 0) {
+    if (bytes_written <= 0) {
         // Write failed. Response depends on whether coordination is centralized.
         if (netdrv == _fed.netdrv_to_rti) {
             // Centralized coordination. This is a critical error.
@@ -2564,21 +2567,22 @@ int lf_send_tagged_message(environment_t* env,
     // Use a mutex lock to prevent multiple threads from simultaneously sending.
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
 
-    int* socket;
+    netdrv_t* netdrv;
+    // int* socket;
     if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
-        socket = &_fed.sockets_for_outbound_p2p_connections[federate];
+        netdrv = _fed.netdrv_for_outbound_p2p_connections[federate];
         tracepoint_federate_to_federate(_fed.trace, send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
     } else {
-        socket = &_fed.socket_TCP_RTI;
+        netdrv = _fed.netdrv_to_rti;
         tracepoint_federate_to_rti(_fed.trace, send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
     }
 
-    int result = write_to_socket_close_on_error(socket, header_length, header_buffer);
-    if (result == 0) {
+    int bytes_written = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
+    if (bytes_written > 0) {
         // Header sent successfully. Send the body.
-        result = write_to_socket_close_on_error(socket, length, message);
+        bytes_written = write_to_netdrv_close_on_error(netdrv, length, message);
     }
-    if (result != 0) {
+    if (bytes_written <= 0) {
         // Message did not send. Handling depends on message type.
         if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
             lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
@@ -2588,7 +2592,8 @@ int lf_send_tagged_message(environment_t* env,
         }
     }
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
-    return result;
+    //TODO: Check result
+    return bytes_written;
 }
 
 void lf_set_federation_id(const char* fid) {

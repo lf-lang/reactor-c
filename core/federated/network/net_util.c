@@ -58,7 +58,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Mutex lock held while performing socket close operations.
 // A deadlock can occur if two threads simulataneously attempt to close the same socket.
-lf_mutex_t socket_mutex;
+lf_mutex_t netdrv_mutex;
 
 int netdrv_open(netdrv_t *drv) {
 	if (!drv) {

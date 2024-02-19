@@ -503,20 +503,20 @@ int write_to_netdrv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
         }
         bytes_written += more;
     }
-    return 0;
+    return bytes_written;
 }
 
 int write_to_netdrv_close_on_error(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
     socket_priv_t *priv = get_priv(drv);
     assert(&priv->socket_descriptor);
-    int result = write_to_netdrv(drv, num_bytes, buffer);
-    if (result) {
+    int bytes_written = write_to_netdrv(drv, num_bytes, buffer);
+    if (bytes_written <= 0) {
         // Write failed.
         // Netdrv has probably been closed from the other side.
         // Shut down and close the netdrv from this side.
         drv->close(drv);
     }
-    return result;
+    return bytes_written;
 }
 
 void write_to_netdrv_fail_on_error(
@@ -528,8 +528,8 @@ void write_to_netdrv_fail_on_error(
     va_list args;
     socket_priv_t *priv = get_priv(drv);
     assert(&priv->socket_descriptor);
-    int result = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
-    if (result) {
+    int bytes_written = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
+    if (bytes_written <= 0) {
         // Write failed.
         if (mutex != NULL) {
             lf_mutex_unlock(mutex);
@@ -660,24 +660,14 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
             break;
         // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
         //     break;   
-        //     case MSG_TYPE_P2P_MESSAGE:
-        //         LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
-        //         if (handle_message(socket_id, fed_id)) {
-        //             // Failed to complete the reading of a message on a physical connection.
-        //             lf_print_warning("Failed to complete reading of message on physical connection.");
-        //             socket_closed = true;
-        //         }
-        //         break;
-        //     case MSG_TYPE_P2P_TAGGED_MESSAGE:
-        //         LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
-        //         if (handle_tagged_message(socket_id, fed_id)) {
-        //             // P2P tagged messages are only used in decentralized coordination, and
-        //             // it is not a fatal error if the socket is closed before the whole message is read.
-        //             // But this thread should exit.
-        //             lf_print_warning("Failed to complete reading of tagged message.");
-        //             socket_closed = true;
-        //         }
-        //         break;
+        case MSG_TYPE_P2P_MESSAGE:
+            *bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
+            *state = READ_MSG_TYPE_TAGGED_MESSAGE;
+            break;
+        case MSG_TYPE_P2P_TAGGED_MESSAGE:
+            *bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(instant_t) + sizeof(microstep_t);
+            *state = READ_MSG_TYPE_TAGGED_MESSAGE;
+            break;
         case MSG_TYPE_CLOCK_SYNC_T1:
             *bytes_to_read = sizeof(instant_t);
             *state = FINISH_READ;
