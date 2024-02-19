@@ -129,17 +129,6 @@ void lf_free_all_reactors(void);
 void lf_free_reactor(self_base_t *self);
 
 /**
- * @brief Get the array of ids of enclaves directly upstream of the specified enclave.
- * This updates the specified result pointer to point to a statically allocated array of IDs
- * and returns the length of the array. The implementation is code-generated.
- * 
- * @param enclave_id The enclave for which to report upstream IDs.
- * @param result The pointer to dereference and update to point to the resulting array.
- * @return The number of direct upstream enclaves.
- */
-int _lf_get_upstream_of(int enclave_id, int** result);
-
-/**
  * @brief Get the array of ids of enclaves directly downstream of the specified enclave.
  * This updates the specified result pointer to point to a statically allocated array of IDs
  * and returns the length of the array. The implementation is code-generated.
