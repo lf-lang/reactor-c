@@ -968,7 +968,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // Send the timestamp marker first.
   send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
 
-  // Read bytes from the socket. We need 17 (1 + 8 + 8) bytes.
+  // Read bytes from the socket. We need 21 (1 + 8 + 8 + 4) bytes.
   // Buffer for message ID plus timestamp.
   size_t buffer_length = MSG_TYPE_TIMESTAMP_START_LENGTH;
   unsigned char buffer[buffer_length];
