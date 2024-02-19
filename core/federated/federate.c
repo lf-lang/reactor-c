@@ -986,14 +986,14 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
     // Send the timestamp marker first.
     send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
 
-    // Read bytes from the socket. We need 17 (1 + 8 + 8) bytes.
+    // Read bytes from the socket. We need 21 (1 + 8 + 8 + 4) bytes.
     // Buffer for message ID plus timestamp.
     size_t buffer_length = MSG_TYPE_TIMESTAMP_START_LENGTH;
     unsigned char buffer[buffer_length];
 
     read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, buffer_length, buffer, NULL,
             "Failed to read MSG_TYPE_TIMESTAMP_START message from RTI.");
-    LF_PRINT_DEBUG("Read 9 bytes.");
+    LF_PRINT_DEBUG("Read 21 bytes.");
 
     // First byte received is the message ID.
     if (buffer[0] != MSG_TYPE_TIMESTAMP_START) {

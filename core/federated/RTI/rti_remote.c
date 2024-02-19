@@ -1035,15 +1035,15 @@ void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, ta
     // message.
     // In the startup phase, federates will receive identical start_time and 
     // effective_start_tag
-    unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
-    start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
+    unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_START_LENGTH];
+    start_time_buffer[0] = MSG_TYPE_TIMESTAMP_START;
     encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+    encode_tag(&(start_time_buffer[1 + sizeof(instant_t)]), federate_start_tag);
 
     if (rti_remote->base.tracing_enabled) {
-        tag_t tag = {.time = start_time, .microstep = 0};
-        tracepoint_rti_to_federate(rti_remote->base.trace, send_TIMESTAMP, my_fed->enclave.id, &tag);
+        tracepoint_rti_to_federate(rti_remote->base.trace, send_TIMESTAMP, my_fed->enclave.id, &federate_start_tag);
     }
-    if (write_to_socket(my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
+    if (write_to_socket(my_fed->socket, MSG_TYPE_TIMESTAMP_START_LENGTH, start_time_buffer)) {
         lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
     }
 
@@ -1106,7 +1106,7 @@ void handle_timestamp(federate_info_t *my_fed) {
     } else if (rti_remote->phase == shutdown_phase) {
         // Do not answer the federate if the federation is in hsutdown phase
         // Or maybe send and error message?
-        LF_MUTEX_LOCK(&rti_mutex);
+        LF_MUTEX_UNLOCK(&rti_mutex);
         return;
     } else {    // The federation is the execution phase
         // A transient has joined after the startup phase
