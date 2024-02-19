@@ -454,31 +454,28 @@ void update_all_downstreams(scheduling_node_t* node) {
 }
 
 tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay) {
-    // FIXME: Overflow is not handled.
-    // (a.t, a.m) - (b.t - b.m)
-    // The least b is (0, 0) which indicates NEVER delay.
-    // 1) If a.t = NEVER, return NEVER. 
-    // 2) IF a.t = FOREVER, return FOREVER.
-    // 3) a.t is not NEVER neither FOREVER
-    //   a) b.t = 0
-    //     i) b.
-    //   b) a.t >= b.t
-    //     If b is ZERO, the result is a itself. Otherwise, the result is (a.t - b.t, 0)
-    if (received_tag.time == NEVER || received_tag.time > minimum_delay.time) return NEVER_TAG;
+    // FIXME: FOREVER - FOREVER is not handled.
+    // (A.t, A.m) - (B.t - B.m)
+    // The least B is (0, 0) which indicates NEVER delay.
+    // 1) If A.t = NEVER, return NEVER. 
+    // 2) If A.t = FOREVER, return FOREVER.
+    // 3) A.t is not NEVER neither FOREVER
+    //   a) If A < B (A.t < B.t or A.t == B.t and A.m < B.m) return NEVER
+    //   b) A >= B
+    //     i)  If A.m < B.m return (A.t - B.t - 1, UINT_MAX)
+    //     ii) If A.m >= B.m
+    //         If B.t is 0 return (A.t, A.m - B.m)
+    //         Else, return (A.t - B.t, UINT_MAX)
+    if (received_tag.time == NEVER || lf_tag_compare(received_tag, minimum_delay) < 0) return NEVER_TAG;
     if (received_tag.time == FOREVER) return FOREVER_TAG;
     tag_t result = {.time = received_tag.time - minimum_delay.time, .microstep = received_tag.microstep - minimum_delay.microstep};
-    if (minimum_delay.time == 0) {
-        if (received_tag.microstep >= minimum_delay.microstep) {
+    if (received_tag.microstep < minimum_delay.microstep) {
+        result.time -= 1;
+        result.microstep = UINT_MAX;
+    } else {
+        if (minimum_delay.time == 0) {
             //
         } else {
-            result.time = received_tag.time -1;
-            result.microstep = UINT_MAX;
-        }
-    } else {
-        if (received_tag.microstep >= minimum_delay.microstep) {
-            result.microstep = UINT_MAX;
-        } else {
-            result.time = result.time -1;
             result.microstep = UINT_MAX;
         }
     }
@@ -519,11 +516,12 @@ void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t 
                 DNET = DNET_candidate;
             }
         }
-        if (DNET.time < start_time) {
-            // DNET is NEVER.
-            DNET = NEVER_TAG;
-        }
     }
+    if (DNET.time < start_time) {
+        // DNET is NEVER.
+        DNET = NEVER_TAG;
+    }
+
     if (lf_tag_compare(node->last_DNET, DNET) != 0
     && lf_tag_compare(node->completed, DNET) < 0
     && lf_tag_compare(node->next_event, DNET) <= 0) {
