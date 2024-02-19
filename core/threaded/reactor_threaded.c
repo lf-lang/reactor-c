@@ -658,7 +658,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     // If we have a non-zero STA offset, then we need to allow messages to arrive
     // prior to the start time.  To avoid spurious STP violations, we temporarily
     // set the current time back by the STA offset.
-    env->current_tag = (tag_t){.time = start_time - _lf_fed_STA_offset, .microstep = 0u};
+    env->current_tag = (tag_t){.time = effective_start_tag.time - _lf_fed_STA_offset, .microstep = effective_start_tag.microstep};
 
     // Call wait_until if federated. This is required because the startup procedure
     // in lf_synchronize_with_other_federates() can decide on a new start_time that is

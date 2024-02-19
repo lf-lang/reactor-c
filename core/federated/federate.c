@@ -1381,28 +1381,6 @@ static void handle_stop_granted_message() {
 }
 
 /**
- * @brief Stop the execution of a federate.
- * Every enclave within the federate will stop at one microstep later than its
- * current tag. Unlike lf_request_stop(), this process does not require any 
- * involvement from the RTI, nor does it necessitate any consensus.
- * 
- * This function is particularly useful for testing transient federates.
- */
-void lf_stop() {
-    environment_t *env;
-    int num_env = _lf_get_environments(&env);
-
-    for (int i = 0 ; i < num_env ; i++) {
-        tag_t new_stop_tag;
-        new_stop_tag.time = env[i].current_tag.time;
-        new_stop_tag.microstep = env[i].current_tag.microstep + 1;
-        _lf_set_stop_tag(&env[i], new_stop_tag);
-    }
-
-    LF_PRINT_LOG("Federate is stopping.");
-}
-
-/**
  * Handle a MSG_TYPE_STOP message from the RTI.
  *
  * This function simply calls lf_stop().
@@ -2873,6 +2851,20 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
         lf_time_logical_elapsed(env)
     );
     return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
+}
+
+void lf_stop() {
+    environment_t *env;
+    int num_env = _lf_get_environments(&env);
+
+    for (int i = 0 ; i < num_env ; i++) {
+        tag_t new_stop_tag;
+        new_stop_tag.time = env[i].current_tag.time;
+        new_stop_tag.microstep = env[i].current_tag.microstep + 1;
+        _lf_set_stop_tag(&env[i], new_stop_tag);
+    }
+
+    LF_PRINT_LOG("Federate is stopping.");
 }
 
 char* lf_get_federates_bin_directory() {
