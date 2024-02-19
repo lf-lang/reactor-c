@@ -97,12 +97,6 @@ tag_t lf_tag(void* env);
 tag_t lf_tag_add(tag_t a, tag_t b);
 
 /**
- * Subtract the tag a from the tag b.
- * FIXME: This function if for DNET, move to rti_common.c.
-*/
-tag_t lf_tag_subtract(tag_t a, tag_t b);
-
-/**
  * Compare two tags. Return -1 if the first is less than
  * the second, 0 if they are equal, and +1 if the first is
  * greater than the second. A tag is greater than another if

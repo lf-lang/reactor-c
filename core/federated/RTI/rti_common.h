@@ -288,6 +288,14 @@ void update_min_delays_upstream(scheduling_node_t* node);
 void update_all_downstreams(scheduling_node_t* node);
 
 /**
+ * Subtract the tag a from the tag b.
+ * minimum_delay cannot be NEVER.
+ * @param received_tag
+ * @param minimum_delay
+*/
+tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay);
+
+/**
  * FIXME: Add this function to rti_local either.
  * @param e The target node.
  * @param tag The downstream next event tag for e.
