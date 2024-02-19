@@ -109,7 +109,6 @@ federate_instance_t _fed = {.socket_TCP_RTI = -1,
                             .last_sent_NET = (tag_t){.time = NEVER, .microstep = 0u},
                             .min_delay_from_physical_action_to_federate_output = NEVER,
                             .is_transient = false};
->>>>>>> 6fbf4094 (Start on adding federate type (transient or not))
 
 federation_metadata_t federation_metadata = {
     .federation_id = "Unidentified Federation", .rti_host = NULL, .rti_port = -1, .rti_user = NULL};
@@ -2694,16 +2693,10 @@ instant_t lf_wait_until_time(tag_t tag) {
 }
 #endif // FEDERATED_DECENTRALIZED
 
-char* lf_get_federation_id() {
-    return federation_metadata.federation_id;
-}
+char* lf_get_federation_id() { return federation_metadata.federation_id; }
 
-instant_t lf_get_effective_start_time() {
-    return effective_start_tag.time;
-}
+instant_t lf_get_effective_start_time() { return effective_start_tag.time; }
 
-instant_t lf_get_start_time() {
-    return start_time;
-}
+instant_t lf_get_start_time() { return start_time; }
 
 #endif
