@@ -12,6 +12,7 @@
 
 #include "lf_types.h"
 #include "environment.h"
+#include "platform.h"
 
 #ifdef __cplusplus
 extern "C" {
