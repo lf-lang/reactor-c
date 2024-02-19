@@ -1214,7 +1214,7 @@ void termination(void) {
     int num_envs = _lf_get_environments(&env);
     // Invoke the code generated termination function. It terminates the federated related services. 
     // It should only be called for the top-level environment, which, by convention, is the first environment.
-    terminate_execution(env);
+    lf_terminate_execution(env);
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
     for (int i = 0; i < num_envs; i++) {

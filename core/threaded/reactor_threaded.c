@@ -1054,7 +1054,7 @@ void determine_number_of_workers(void) {
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
-    _lf_set_default_command_line_options();
+    lf_set_default_command_line_options();
 
     // Parse command line arguments. Sets global variables like duration, fast, number_of_workers.
     if (!(process_args(default_argc, default_argv)
@@ -1094,7 +1094,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
     
     // Create and initialize the environments for each enclave
-    _lf_create_environments();
+    lf_create_environments();
 
     // Initialize the one global mutex
     LF_MUTEX_INIT(&global_mutex);

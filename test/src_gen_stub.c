@@ -13,8 +13,8 @@
 environment_t _env;
 
 void _lf_initialize_trigger_objects(void) {}
-void terminate_execution(void) {}
-void _lf_set_default_command_line_options(void) {}
+void lf_terminate_execution(void) {}
+void lf_set_default_command_line_options(void) {}
 void _lf_initialize_watchdogs() {}
 void logical_tag_complete(tag_t tag_to_send) {}
 int _lf_get_environments(environment_t ** envs) {

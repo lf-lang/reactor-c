@@ -1663,7 +1663,7 @@ static bool bounded_NET(tag_t* tag) {
  * generates an empty implementation.
  * @param env The environment of the federate
  */
-void terminate_execution(environment_t* env) {
+void lf_terminate_execution(environment_t* env) {
     assert(env != GLOBAL_ENVIRONMENT);
 
     // For an abnormal termination (e.g. a SIGINT), we need to send a
