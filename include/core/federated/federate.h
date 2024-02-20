@@ -43,7 +43,7 @@ typedef struct federate_instance_t {
      * This is set by lf_connect_to_rti(), which must be called before other
      * functions that communicate with the rti are called.
      */
-    int socket_TCP_RTI;
+    // int socket_TCP_RTI;
 
     /**
      * Thread listening for incoming TCP messages from the RTI.
@@ -84,7 +84,7 @@ typedef struct federate_instance_t {
      * federate is the destination. Multiple incoming p2p connections from the
      * same remote federate will use the same socket.
      */
-    int sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+    // int sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
     /**
      * An array that holds the socket descriptors for outbound direct
@@ -99,7 +99,7 @@ typedef struct federate_instance_t {
      * program where this federate acts as the source. Multiple outgoing p2p
      * connections to the same remote federate will use the same socket.
      */
-    int sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+    // int sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
     /**
      * Thread ID for a thread that accepts sockets and then supervises
