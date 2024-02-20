@@ -679,10 +679,10 @@ void _lf_initialize_start_tag(environment_t *env) {
     // this means that the other worker threads will be allowed to start. We need
     // this to avoid potential deadlock in federated startup.
     while(!wait_until(env, effective_start_tag.time  + _lf_fed_STA_offset, &env->event_q_changed)) {};
-    LF_PRINT_DEBUG("Done waiting for start time + STA offset " PRINTF_TIME ".", start_time + _lf_fed_STA_offset);
+    LF_PRINT_DEBUG("Done waiting for effective start time + STA offset " PRINTF_TIME ".", effective_start_tag.time + _lf_fed_STA_offset);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME 
             ". This should be close to the STA offset.",
-            lf_time_physical() - start_time);
+            lf_time_physical() - effective_start_tag.time);
 
     // Restore the current tag to match the effective start time.
     env->current_tag = (tag_t){.time = effective_start_tag.time, .microstep = effective_start_tag.microstep};
