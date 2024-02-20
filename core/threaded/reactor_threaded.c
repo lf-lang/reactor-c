@@ -684,7 +684,7 @@ void _lf_initialize_start_tag(environment_t *env) {
             ". This should be close to the STA offset.",
             lf_time_physical() - start_time);
 
-    // Restore the current tag to match the start time.
+    // Restore the current tag to match the effective start time.
     env->current_tag = (tag_t){.time = effective_start_tag.time, .microstep = effective_start_tag.microstep};
 
     // If the stop_tag is (0,0), also insert the shutdown
