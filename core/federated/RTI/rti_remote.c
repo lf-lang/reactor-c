@@ -2041,9 +2041,8 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         shutdown(socket_id, SHUT_RDWR);
         close(socket_id);
         socket_id = -1;
-        socket_descriptor
-            // Ignore the federate that failed authentication.
-            i--;
+        // Ignore the federate that failed authentication.
+        i--;
         continue;
       }
     }
