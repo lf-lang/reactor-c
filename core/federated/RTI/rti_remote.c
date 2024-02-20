@@ -1543,7 +1543,7 @@ void send_reject(int *socket_id, unsigned char error_code) {
     close(*socket_id);
     *socket_id = -1;
     LF_MUTEX_UNLOCK(&rti_mutex);
-}        lf_print("handle_timestamp for transient 1157");
+}
 
 
 /**
