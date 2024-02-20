@@ -116,7 +116,8 @@ void* pending_grant_thread(void* federate) {
     notify_tag_advance_grant_immediate(&(fed->enclave), fed->pending_grant);
     fed->pending_grant = NEVER_TAG;
   }
-  lf_mutex_unlock(&rti_mutex);
+  LF_MUTEX_UNLOCK(&rti_mutex);
+  return NULL;
 }
 
 /**
