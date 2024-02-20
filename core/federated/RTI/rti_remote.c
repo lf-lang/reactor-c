@@ -1399,7 +1399,7 @@ void* federate_info_thread_TCP(void* fed) {
       break;
     case MSG_TYPE_RESIGN:
       handle_federate_resign(my_fed);
-      return NULL;
+      break;
     case MSG_TYPE_NEXT_EVENT_TAG:
       handle_next_event_tag(my_fed);
       break;
@@ -1470,6 +1470,7 @@ void send_reject(int* socket_id, unsigned char error_code) {
   *socket_id = -1;
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
+lf_print("handle_timestamp for transient 1157");
 
 /**
  * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
@@ -2054,7 +2055,7 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
 
     if (fed_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
         receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
-      lf_mutex_lock(&rti_mutex);
+      LF_MUTEX_LOCK(&rti_mutex);
       if (hot_swap_in_progress) {
         lf_print("RTI: Hot swap confirmed for federate %d.", fed_id);
 
@@ -2064,7 +2065,7 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
 
         LF_PRINT_LOG("RTI: Send MSG_TYPE_STOP to old federate %d.", fed_id);
         send_stop(fed_old);
-        lf_mutex_unlock(&rti_mutex);
+        LF_MUTEX_UNLOCK(&rti_mutex);
 
         // Wait for the old federate to send MSG_TYPE_RESIGN
         LF_PRINT_LOG("RTI: Waiting for old federate %d to send resign.", fed_id);

@@ -2666,32 +2666,31 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
   return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
 }
 
-char* lf_get_federates_bin_directory() { return LF_FEDERATES_BIN_DIRECTORY; }
+void lf_stop() {
+  environment_t* env;
+  int num_env = _lf_get_environments(&env);
 
-#ifdef FEDERATED_DECENTRALIZED
-instant_t lf_wait_until_time(tag_t tag) {
-  instant_t result = tag.time; // Default.
+  for (int i = 0; i < num_env; i++) {
+    LF_MUTEX_LOCK(&env[i].mutex);
 
-  // Do not add the STA if the tag is the starting tag.
-  if (tag.time != start_time || tag.microstep != 0u) {
+    tag_t new_stop_tag;
+    new_stop_tag.time = env[i].current_tag.time;
+    new_stop_tag.microstep = env[i].current_tag.microstep + 1;
 
-    // Apply the STA to the logical time, but only if at least one network input port is not known up to this tag.
-    // Subtract one microstep because it is sufficient to commit to a tag if the input ports are known
-    // up to one microstep earlier.
-    if (tag.microstep > 0) {
-      tag.microstep--;
-    } else {
-      tag.microstep = UINT_MAX;
-      tag.time -= 1;
-    }
+    _lf_set_stop_tag(&env[i], new_stop_tag);
 
-    if (!inputs_known_to(tag)) {
-      result = lf_time_add(result, lf_fed_STA_offset);
-    }
+    lf_print("Setting the stop tag of env %d to " PRINTF_TAG ".", i, env[i].stop_tag.time - start_time,
+             env[i].stop_tag.microstep);
+
+    if (env[i].barrier.requestors)
+      _lf_decrement_tag_barrier_locked(&env[i]);
+    lf_cond_broadcast(&env[i].event_q_changed);
+    LF_MUTEX_UNLOCK(&env[i].mutex);
   }
-  return result;
+  LF_PRINT_LOG("Federate is stopping.");
 }
-#endif // FEDERATED_DECENTRALIZED
+
+char* lf_get_federates_bin_directory() { return LF_FEDERATES_BIN_DIRECTORY; }
 
 char* lf_get_federation_id() { return federation_metadata.federation_id; }
 
