@@ -2118,8 +2118,6 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
             if (socket_id >= 0) {
                 // Got a socket
                 break;
-            } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-                lf_print_error_system_failure("RTI failed to accept the socket.");
             } else {
                 // Try again
                 lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
@@ -2137,7 +2135,6 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
                 close(socket_id);
                 socket_id = -1;
                 // Ignore the federate that failed authentication.
-                i--;
                 continue;
             }
         }

@@ -1014,7 +1014,10 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
     // Note that we report in the trace the effective_start_tag.
     // This is rather a choice. To be changed, if needed, of course.
     tracepoint_federate_from_rti(_fed.trace, receive_TIMESTAMP, _lf_my_fed_id, &effective_start_tag);
-    lf_print("Starting timestamp is: " PRINTF_TIME " and effectve start tag is: " PRINTF_TAG ".", timestamp, effective_start_tag);
+    lf_print("Starting timestamp is: " PRINTF_TIME " and effectve start tag is: " PRINTF_TAG ".", 
+                timestamp, 
+                effective_start_tag.time - start_time,
+                effective_start_tag.microstep);
     LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
     return timestamp;
