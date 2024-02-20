@@ -1470,7 +1470,6 @@ void send_reject(int* socket_id, unsigned char error_code) {
   *socket_id = -1;
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
-lf_print("handle_timestamp for transient 1157");
 
 /**
  * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
