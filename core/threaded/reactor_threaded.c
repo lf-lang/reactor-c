@@ -642,7 +642,7 @@ void _lf_initialize_start_tag(environment_t *env) {
         // statuses to unknown
         lf_reset_status_fields_on_input_port_triggers();
 
-        // Get a start_time from the RTI
+        // Get a start_time and effective_start_tag from the RTI
         lf_synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
     }
 
@@ -685,7 +685,7 @@ void _lf_initialize_start_tag(environment_t *env) {
             lf_time_physical() - start_time);
 
     // Restore the current tag to match the start time.
-    env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+    env->current_tag = (tag_t){.time = effective_start_tag.time, .microstep = effective_start_tag.microstep};
 
     // If the stop_tag is (0,0), also insert the shutdown
     // reactions. This can only happen if the timeout time
