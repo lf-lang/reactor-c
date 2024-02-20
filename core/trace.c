@@ -243,9 +243,62 @@ void flush_trace(trace_t* trace, int worker) {
     LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
 }
 
+/**
+ * This utility function helps creating a new file trace, if already one exists.
+ * This is particularly useful for transient federates, since each joining one will
+ * have a different trace file.
+ * @param n the integer to convert into a string
+ * @return the converted string
+ */
+char * convert_int_to_string(int n) {
+    // Count the number of digits in n
+    int n_ = n;
+    int number_of_digits = 0;
+    while (n_) {
+        number_of_digits++;
+        n_ /= 10;
+    }
+
+    // Construct the array of chars to return
+    char *string_of_int;
+    string_of_int = (char *)malloc(number_of_digits + 1);
+
+    // Extract the digits and convert them into chars
+    int index = 0;
+    for (int i = 0; i < number_of_digits ; i++) {
+        string_of_int[number_of_digits - i - 1] = n % 10 + '0';
+        n /= 10;
+    }
+    // Add the null character and return
+    string_of_int[number_of_digits] = '\0';
+    return (char *)string_of_int;
+}
+
 void start_trace(trace_t* trace) {
     // FIXME: location of trace file should be customizable.
-    trace->_lf_trace_file = fopen(trace->filename, "w");
+
+    // Do not override the existing .lft file, and create a new one instead.
+    char filename_[100];
+    strcpy(filename_, trace->filename);
+    int i = 0;
+    FILE *test_file_exists;
+    while (true) {
+        test_file_exists = fopen(filename_, "r");
+        if (test_file_exists == NULL) {
+            break;
+        }
+        fclose(test_file_exists);
+        // Get the root of the original file name
+        memset(filename_, '\0', sizeof(filename_));
+        strncpy(filename_, trace->filename, strlen(trace->filename) - 4);
+        // Add an index
+        char *ind = convert_int_to_string(i++);
+        strcat(filename_, ind);
+        // Add the file extension
+        strcat(filename_, ".lft");
+    }
+
+    trace->_lf_trace_file = fopen(filename_, "w");
     if (trace->_lf_trace_file == NULL) {
         fprintf(stderr, "WARNING: Failed to open log file with error code %d."
                 "No log will be written.\n", errno);
