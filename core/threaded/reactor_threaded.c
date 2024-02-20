@@ -673,8 +673,8 @@ void _lf_initialize_start_tag(environment_t *env) {
     // from other federates) to hold the lock and possibly raise a tag barrier. This is
     // especially useful if an STA is set properly because the federate will get
     // a chance to process incoming messages while utilizing the STA.
-    LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
-            start_time, _lf_fed_STA_offset);
+    LF_PRINT_LOG("Waiting for effective start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
+            effective_start_tag.time, _lf_fed_STA_offset);
     // Here we wait until the start time and also release the environment mutex.
     // this means that the other worker threads will be allowed to start. We need
     // this to avoid potential deadlock in federated startup.
@@ -702,7 +702,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     // from exceeding the timestamp of the message. It will remove that barrier
     // once the complete message has been read. Here, we wait for that barrier
     // to be removed, if appropriate before proceeding to executing tag (0,0).
-    _lf_wait_on_tag_barrier(env, (tag_t){.time=start_time,.microstep=0});
+    _lf_wait_on_tag_barrier(env, effective_start_tag);
     lf_spawn_staa_thread();
 
 #else // NOT FEDERATED_DECENTRALIZED

@@ -2858,12 +2858,23 @@ void lf_stop() {
     int num_env = _lf_get_environments(&env);
 
     for (int i = 0 ; i < num_env ; i++) {
+        LF_MUTEX_LOCK(&env[i].mutex);
+
         tag_t new_stop_tag;
         new_stop_tag.time = env[i].current_tag.time;
         new_stop_tag.microstep = env[i].current_tag.microstep + 1;
-        _lf_set_stop_tag(&env[i], new_stop_tag);
-    }
 
+        _lf_set_stop_tag(&env[i], new_stop_tag);
+
+        lf_print("Setting the stop tag of env %d to " PRINTF_TAG ".",
+                    i,
+                    env[i].stop_tag.time - start_time,
+                    env[i].stop_tag.microstep);
+
+        if (env[i].barrier.requestors) _lf_decrement_tag_barrier_locked(&env[i]);
+        lf_cond_broadcast(&env[i].event_q_changed);
+        LF_MUTEX_UNLOCK(&env[i].mutex);
+    }
     LF_PRINT_LOG("Federate is stopping.");
 }
 
