@@ -58,16 +58,20 @@ void set_ip_addr(netdrv_t *drv, struct in_addr ip_addr){
 
 // create_real_time_tcp_socket_errexit
 static int socket_open(netdrv_t *drv) {
-    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sock < 0) {
-        lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
+    if (!drv){
+        return -1;
+    }
+    socket_priv_t *priv = get_priv(drv);
+    priv->socket_descriptor = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (priv->socket_descriptor < 0) {
+        lf_print_error_and_exit("Could not open TCP socket. Err=%d", priv->socket_descriptor);
     }
     // Disable Nagle's algorithm which bundles together small TCP messages to
     //  reduce network traffic
     // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
     //  is enough.
     int flag = 1;
-    int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+    int result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
 
     if (result < 0) {
         lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
@@ -75,19 +79,19 @@ static int socket_open(netdrv_t *drv) {
 
 // Disable delayed ACKs. Only possible on Linux
 #if defined(PLATFORM_Linux)
-    result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+    result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
 
     if (result < 0) {
         lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
     }
 #endif
 
-    return sock;
+    return priv->socket_descriptor;
 }
 
 void netdrv_free(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
-    free(priv);
+    // free(priv); // Already freed on socket close()
     free(drv);
 }
 
@@ -457,7 +461,7 @@ int netdrv_connect(netdrv_t *drv) {
 
     // Convert port number to string.
     char str[6];
-    sprintf(str, "%u", priv->port);
+    sprintf(str, "%u", priv->server_port);
 
     // Get address structure matching hostname and hints criteria, and
     // set port to the port number provided in str. There should only 
@@ -589,6 +593,7 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
             *state = FINISH_READ;
             break;
         case MSG_TYPE_ACK: // 1
+            *bytes_to_read = 0;
             *state = FINISH_READ;
             break;
         case MSG_TYPE_UDP_PORT: // 1 + sizeof(uint16_t) = 3
@@ -616,6 +621,7 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
             *state = FINISH_READ;
             break;
         case MSG_TYPE_RESIGN:
+            *bytes_to_read = 0;
             *state = FINISH_READ;
             break;          
         case MSG_TYPE_TAGGED_MESSAGE:
@@ -691,10 +697,13 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
             *state = READ_MSG_TYPE_NEIGHBOR_STRUCTURE;
             break;
         case MSG_TYPE_FAILED:
+            *bytes_to_read = 0;
             *state = FINISH_READ;
         default:
+            *bytes_to_read = 0;
             // Error handling?
             *state = FINISH_READ;
+            lf_print_error_system_failure("Undefined message header. Terminating system.");
         }
 }
 
