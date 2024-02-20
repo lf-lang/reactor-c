@@ -78,7 +78,7 @@ int max_level_allowed_to_advance;
 
 //TODO: DONGHA: Need to change socket_related. socket_TCP_RTI, server_socket, server_port
 federate_instance_t _fed = {
-        .socket_TCP_RTI = -1,
+        // .socket_TCP_RTI = -1,
         .number_of_inbound_p2p_connections = 0,
         .inbound_netdriv_listeners = NULL,
         .number_of_outbound_p2p_connections = 0,
@@ -143,7 +143,7 @@ static void send_tag(unsigned char type, tag_t tag) {
     encode_tag(&(buffer[1]), tag);
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    if (_fed.socket_TCP_RTI < 0) {
+    if (_fed.netdrv_to_rti == NULL) {
         lf_print_warning("Socket is no longer connected. Dropping message.");
         LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
         return;
@@ -480,6 +480,7 @@ static int handle_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, s
     unsigned short federate_id;
     size_t length;
     extract_header(buffer, &port_id, &federate_id, &length);
+    size_t header_length = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
     // Check if the message is intended for this federate
     assert(_lf_my_fed_id == federate_id);
     LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
@@ -490,7 +491,7 @@ static int handle_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, s
     // Read the payload.
     // Allocate memory for the message contents.
     unsigned char* message_contents = (unsigned char*)malloc(length);
-    memcpy(message_contents, buffer, bytes_read);
+    memcpy(message_contents, buffer + header_length, bytes_read);
     int buf_count = bytes_read;
     while(netdrv->read_remaining_bytes > 0) {
         ssize_t bytes_read_again = read_from_netdrv_close_on_error(netdrv, message_contents + buf_count, length - buf_count);
@@ -535,6 +536,8 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
     size_t length;
     tag_t intended_tag;
     extract_timed_header(buffer, &port_id, &federate_id, &length, &intended_tag);
+    size_t header_length = sizeof(uint16_t) + sizeof(uint16_t)
+            + sizeof(int32_t) + sizeof(instant_t) + sizeof(microstep_t);
     // Trace the event when tracing is enabled
     if (fed_id == -1) {
         tracepoint_federate_from_rti(_fed.trace, receive_TAGGED_MSG, _lf_my_fed_id, &intended_tag);
@@ -574,7 +577,7 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
     // Read the payload.
     // Allocate memory for the message contents.
     unsigned char* message_contents = (unsigned char*)malloc(length);
-    memcpy(message_contents, buffer, bytes_read);
+    memcpy(message_contents, buffer + header_length, bytes_read);
     int buf_count = bytes_read;
     while(netdrv->read_remaining_bytes > 0) {
         ssize_t bytes_read_again = read_from_netdrv_close_on_error(netdrv, message_contents + buf_count, length - buf_count);
@@ -879,7 +882,7 @@ static int perform_hmac_authentication() {
     size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
 
     unsigned char received[1 + NONCE_LENGTH + hmac_length];
-    if (read_from_netdrv_close_on_error(_fed.netdrv_to_rti, received, 1 + NONCE_LENGTH + hmac_length)) {
+    if (read_from_netdrv_close_on_error(_fed.netdrv_to_rti, received, 1 + NONCE_LENGTH + hmac_length) <= 0) {
         lf_print_warning("Failed to read RTI response.");
         return -1;
     }
@@ -933,12 +936,6 @@ static int perform_hmac_authentication() {
     return 0;
 }
 #endif
-
-static void close_rti_socket() {
-    shutdown(_fed.socket_TCP_RTI, SHUT_RDWR);
-    close(_fed.socket_TCP_RTI);
-    _fed.socket_TCP_RTI = -1;
-}
 
 /**
  * Send the specified timestamp to the RTI and wait for a response.
@@ -1615,7 +1612,7 @@ void terminate_execution(environment_t* env) {
 
     // For an abnormal termination (e.g. a SIGINT), we need to send a
     // MSG_TYPE_FAILED message to the RTI, but we should not acquire a mutex.
-    if (_fed.socket_TCP_RTI >= 0) {
+    if (_fed.netdrv_to_rti != 0) {
         if (_lf_normal_termination) {
             tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &env->current_tag);
             send_resign_signal(env);
@@ -1630,7 +1627,7 @@ void terminate_execution(environment_t* env) {
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
         close_inbound_netdrv(i, 1);
         // Ignore errors. Mark the socket closed.
-        _fed.sockets_for_inbound_p2p_connections[i] = -1;
+        _fed.netdrv_for_inbound_p2p_connections[i] = NULL;
     }
 
     // Check for all outgoing physical connections in
@@ -1864,11 +1861,11 @@ void lf_connect_to_rti(const char* hostname, int port) {
     // Connect
     int result = -1;
     int count_retries = 0;
-    struct addrinfo* res = NULL;
 //TODO: DONGHA: count_retries not being updated for the authentication process?
     while (count_retries++ < CONNECT_MAX_RETRIES && !_lf_termination_executed) {
         // TODO: DONGHA: Connecting phase. Let's just make a netdrv_connect() api first.
-        if (netdrv_connect(_fed.netdrv_to_rti) < 0) {
+        result = netdrv_connect(_fed.netdrv_to_rti);
+        if (result < 0) {
             _fed.netdrv_to_rti->close(_fed.netdrv_to_rti);
             netdrv_free(_fed.netdrv_to_rti);
             _fed.netdrv_to_rti = netdrv_init();
@@ -1893,7 +1890,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
                 continue; // Try again with a new port.
             } else {
                 // No point in trying again because it will be the same port.
-                // close_rti_socket();
                 _fed.netdrv_to_rti->close(_fed.netdrv_to_rti);
                 lf_print_error_and_exit("Authentication failed.");
             }
@@ -1931,7 +1927,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
         LF_PRINT_DEBUG("Waiting for response to federation ID from the RTI.");
 
-        if (read_from_netdrv(_fed.netdrv_to_rti, response, 2)) {
+        if (read_from_netdrv(_fed.netdrv_to_rti, response, 2) <= 0) {
             continue; // Try again.
         }
         if (response[0] == MSG_TYPE_REJECT) {
@@ -2485,7 +2481,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
                 stop_tag.time - start_time,
                 stop_tag.microstep);
 
-        if (_fed.socket_TCP_RTI < 0) {
+        if (_fed.netdrv_to_rti == NULL) {
             lf_print_warning("Socket is no longer connected. Dropping message.");
             LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
             return -1;
