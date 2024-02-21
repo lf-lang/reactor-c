@@ -6,7 +6,14 @@
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  *
- * This file declares the API functions for scheduling actions.
+ * @brief API functions for scheduling actions.
+ * 
+ * Most of these functions take a `void*` pointer to an action, which will be internally cast to
+ * a `lf_action_base_t*` pointer. The cast could be done by macros in reaction_macros.h, but unlike
+ * the macros defined there, it is common for `lf_schedule` functions to be invoked outside of reaction
+ * bodies.  This means that users writing code in separate library files are responsible for ensuring that
+ * the `void*` pointer is indeed a valid `lf_action_base_t*` pointer before passing it to `lf_schedule`.
+ * The compiler will not check this.
  */
 
 #ifndef API_H
@@ -27,11 +34,11 @@
  *
  * See lf_schedule_token(), which this uses, for details.
  *
- * @param action The action to be triggered.
+ * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
  * @param offset The time offset over and above the minimum delay of the action.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule(lf_action_base_t* action, interval_t offset);
+trigger_handle_t lf_schedule(void* action, interval_t offset);
 
 /**
  * @brief Schedule the specified action with an integer value at a later logical time.
@@ -50,7 +57,7 @@ trigger_handle_t lf_schedule(lf_action_base_t* action, interval_t offset);
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
+trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value);
 
 /**
  * @brief Schedule the specified action at a later tag with the specified token as a payload.
@@ -99,12 +106,12 @@ trigger_handle_t lf_schedule_int(lf_action_base_t* action, interval_t extra_dela
  * properties or on the command line.
  * The third condition is that the trigger argument is null.
  *
- * @param action The action to be triggered.
+ * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
  * @param extra_delay Extra offset of the event release above that in the action.
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token);
+trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token);
 
 /**
  * @brief Schedule an action to occur with the specified value and time offset with a
@@ -132,7 +139,7 @@ trigger_handle_t lf_schedule_token(lf_action_base_t* action, interval_t extra_de
  *  error.
  */
 trigger_handle_t lf_schedule_copy(
-        lf_action_base_t* action, interval_t offset, void* value, size_t length);
+        void* action, interval_t offset, void* value, size_t length);
 
 /**
  * @brief Variant of lf_schedule_token that creates a token to carry the specified value.
@@ -151,7 +158,7 @@ trigger_handle_t lf_schedule_copy(
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, int length);
+trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length);
 
 /**
  * @brief Schedule the specified trigger to execute in the specified environment with given delay and token.

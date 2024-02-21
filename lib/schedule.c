@@ -14,11 +14,11 @@
 #include <assert.h>
 #include <string.h> // Defines memcpy.
 
-trigger_handle_t lf_schedule(lf_action_base_t* action, interval_t offset) {
+trigger_handle_t lf_schedule(void* action, interval_t offset) {
     return lf_schedule_token((lf_action_base_t*)action, offset, NULL);
 }
 
-trigger_handle_t lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value) {
+trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value) {
     token_template_t* template = (token_template_t*)action;
 
     // NOTE: This doesn't acquire the mutex lock in the multithreaded version
@@ -33,20 +33,18 @@ trigger_handle_t lf_schedule_int(lf_action_base_t* action, interval_t extra_dela
     return lf_schedule_value(action, extra_delay, container, 1);
 }
 
-trigger_handle_t lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token) {
-    environment_t* env = action->parent->environment;
+trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
+    environment_t* env = ((lf_action_base_t*)action)->parent->environment;
     
     LF_CRITICAL_SECTION_ENTER(env);
-    int return_value = lf_schedule_trigger(env, action->trigger, extra_delay, token);
+    int return_value = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
     LF_CRITICAL_SECTION_EXIT(env);
     return return_value;
 }
 
-trigger_handle_t lf_schedule_copy(
-        lf_action_base_t* action, interval_t offset, void* value, size_t length
-) {
+trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
     if (length < 0) {
         lf_print_error(
             "schedule_copy():"
@@ -58,7 +56,7 @@ trigger_handle_t lf_schedule_copy(
     if (value == NULL) {
         return lf_schedule_token(action, offset, NULL);
     }
-    environment_t* env = action->parent->environment;
+    environment_t* env = ((lf_action_base_t*)action)->parent->environment;
     token_template_t* template = (token_template_t*)action;
     if (action == NULL || template->type.element_size <= 0) {
         lf_print_error("schedule: Invalid element size.");
@@ -70,14 +68,14 @@ trigger_handle_t lf_schedule_copy(
     // Copy the value into the newly allocated memory.
     memcpy(token->value, value, template->type.element_size * length);
     // The schedule function will increment the reference count.
-    trigger_handle_t result = lf_schedule_trigger(env, action->trigger, offset, token);
+    trigger_handle_t result = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, offset, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
     LF_CRITICAL_SECTION_EXIT(env);
     return result;
 }
 
-trigger_handle_t lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, int length) {
+trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length) {
     if (length < 0) {
         lf_print_error(
             "schedule_value():"
@@ -87,10 +85,10 @@ trigger_handle_t lf_schedule_value(lf_action_base_t* action, interval_t extra_de
         return -1;
     }
     token_template_t* template = (token_template_t*)action;
-    environment_t* env = action->parent->environment;
+    environment_t* env = ((lf_action_base_t*)action)->parent->environment;
     LF_CRITICAL_SECTION_ENTER(env);
     lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
-    int return_value = lf_schedule_trigger(env, action->trigger, extra_delay, token);
+    int return_value = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
     LF_CRITICAL_SECTION_EXIT(env);
