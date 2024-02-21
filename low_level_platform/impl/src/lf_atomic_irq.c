@@ -1,4 +1,4 @@
-#if defined(PLATFORM_ARDUINO) || defined(PLATFORM_NRF52) || defined(PLATFORM_ZEPHYR) || defined(PLATFORM_RP2040)
+#if defined(PLATFORM_ARDUINO) || defined(PLATFORM_NRF52) || defined(PLATFORM_ZEPHYR) || defined(PLATFORM_RP2040) || defined(PLATFORM_PATMOS)
 /**
  * @author Erling Rennemo Jellum
  * @copyright (c) 2023
