@@ -38,54 +38,53 @@ foreach(FILE ${TEST_FILES})
 endforeach(FILE ${TEST_FILES})
 
 # Add the test for the RTI.
-# FIXME: Comment out the tests for the RTI until the tests are aligned to the new RTI.
-# if (NOT DEFINED LF_SINGLE_THREADED)
-#     # Check which system we are running on to select the correct platform support
-#     # file and assign the file's path to LF_PLATFORM_FILE
-#     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-#       set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_linux_support.c)
-#     elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-#       set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_macos_support.c)
-#     else()
-#       message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
-#     endif()
+if (NOT DEFINED LF_SINGLE_THREADED)
+    # Check which system we are running on to select the correct platform support
+    # file and assign the file's path to LF_PLATFORM_FILE
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+      set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_linux_support.c)
+    elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+      set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_macos_support.c)
+    else()
+      message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
+    endif()
 
-#     set(IncludeDir include/core)
+    set(IncludeDir include/core)
 
-#     set(RTI_DIR ${CoreLibPath}/federated/RTI)
-#     add_executable(
-#       rti_common_test
-#       ${TEST_DIR}/RTI/rti_common_test.c
-#       ${RTI_DIR}/rti_common.c
-#       ${RTI_DIR}/rti_remote.c
-#       ${CoreLibPath}/trace.c
-#       ${LF_PLATFORM_FILE}
-#       ${CoreLibPath}/platform/lf_atomic_gcc_clang.c
-#       ${CoreLibPath}/platform/lf_unix_clock_support.c
-#       ${CoreLibPath}/utils/util.c
-#       ${CoreLibPath}/tag.c
-#       ${CoreLibPath}/clock.c
-#       ${CoreLibPath}/federated/network/net_util.c
-#       ${CoreLibPath}/utils/pqueue_base.c
-#       ${CoreLibPath}/utils/pqueue_tag.c
-#       ${CoreLibPath}/utils/pqueue.c
-#     )
-#     add_test(NAME rti_common_test COMMAND rti_common_test)
-#     target_include_directories(rti_common_test PUBLIC ${RTI_DIR})
-#     target_include_directories(rti_common_test PUBLIC ${IncludeDir})
-#     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/federated)
-#     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/modal_models)
-#     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/platform)
-#     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/utils)
-#     # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
-#     target_compile_definitions(rti_common_test PUBLIC STANDALONE_RTI=1)
+    set(RTI_DIR ${CoreLibPath}/federated/RTI)
+    add_executable(
+      rti_common_test
+      ${TEST_DIR}/RTI/rti_common_test.c
+      ${RTI_DIR}/rti_common.c
+      ${RTI_DIR}/rti_remote.c
+      ${CoreLibPath}/trace.c
+      ${LF_PLATFORM_FILE}
+      ${CoreLibPath}/platform/lf_atomic_gcc_clang.c
+      ${CoreLibPath}/platform/lf_unix_clock_support.c
+      ${CoreLibPath}/utils/util.c
+      ${CoreLibPath}/tag.c
+      ${CoreLibPath}/clock.c
+      ${CoreLibPath}/federated/network/net_util.c
+      ${CoreLibPath}/utils/pqueue_base.c
+      ${CoreLibPath}/utils/pqueue_tag.c
+      ${CoreLibPath}/utils/pqueue.c
+    )
+    add_test(NAME rti_common_test COMMAND rti_common_test)
+    target_include_directories(rti_common_test PUBLIC ${RTI_DIR})
+    target_include_directories(rti_common_test PUBLIC ${IncludeDir})
+    target_include_directories(rti_common_test PUBLIC ${IncludeDir}/federated)
+    target_include_directories(rti_common_test PUBLIC ${IncludeDir}/modal_models)
+    target_include_directories(rti_common_test PUBLIC ${IncludeDir}/platform)
+    target_include_directories(rti_common_test PUBLIC ${IncludeDir}/utils)
+    # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
+    target_compile_definitions(rti_common_test PUBLIC STANDALONE_RTI=1)
 
-#     # Set FEDERATED to get federated compilation support
-#     target_compile_definitions(rti_common_test PUBLIC FEDERATED=1)
+    # Set FEDERATED to get federated compilation support
+    target_compile_definitions(rti_common_test PUBLIC FEDERATED=1)
 
-#     target_compile_definitions(rti_common_test PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
+    target_compile_definitions(rti_common_test PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
-#     # Find threads and link to it
-#     find_package(Threads REQUIRED)
-#     target_link_libraries(rti_common_test Threads::Threads)
-# endif()
+    # Find threads and link to it
+    find_package(Threads REQUIRED)
+    target_link_libraries(rti_common_test Threads::Threads)
+endif()
