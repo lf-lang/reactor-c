@@ -4,6 +4,7 @@ include(CTest)
 set(TestLib test-lib)
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
 set(TEST_SUFFIX test.c)  # Files that are tests must have names ending with TEST_SUFFIX.
+set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
 # Add the test files found in DIR to TEST_FILES.
 function(add_test_dir DIR)
@@ -30,6 +31,7 @@ foreach(FILE ${TEST_FILES})
     string(REGEX REPLACE "[./]" "_" NAME ${FILE})
     add_executable(${NAME} ${TEST_DIR}/${FILE})
     add_test(NAME ${NAME} COMMAND ${NAME})
+    # include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
     target_link_libraries(
         ${NAME} PUBLIC
         ${CoreLib} ${Lib} ${TestLib}
@@ -41,10 +43,12 @@ endforeach(FILE ${TEST_FILES})
 if (NOT DEFINED LF_SINGLE_THREADED)
     # Check which system we are running on to select the correct platform support
     # file and assign the file's path to LF_PLATFORM_FILE
+    # FIXME: This is effectively a second build script for the RTI that we have to maintain. This is code duplication.
+    # FIXME: We should not be reaching into the platform directory and bypassing its CMake build.
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-      set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_linux_support.c)
+      set(LF_PLATFORM_FILE ${LF_ROOT}/low_level_platform/impl/src/lf_linux_support.c)
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-      set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_macos_support.c)
+      set(LF_PLATFORM_FILE ${LF_ROOT}/low_level_platform/impl/src/lf_macos_support.c)
     else()
       message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
     endif()
@@ -59,8 +63,8 @@ if (NOT DEFINED LF_SINGLE_THREADED)
       ${RTI_DIR}/rti_remote.c
       ${CoreLibPath}/trace.c
       ${LF_PLATFORM_FILE}
-      ${CoreLibPath}/platform/lf_atomic_gcc_clang.c
-      ${CoreLibPath}/platform/lf_unix_clock_support.c
+      ${LF_ROOT}/low_level_platform/impl/src/lf_atomic_gcc_clang.c
+      ${LF_ROOT}/low_level_platform/impl/src/lf_unix_clock_support.c
       ${CoreLibPath}/utils/util.c
       ${CoreLibPath}/tag.c
       ${CoreLibPath}/clock.c

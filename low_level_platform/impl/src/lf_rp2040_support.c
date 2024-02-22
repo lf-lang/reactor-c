@@ -35,8 +35,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "Only the single-threaded runtime has support for RP2040"
 #endif
 
-#include "lf_rp2040_support.h"
-#include "platform.h"
+#include "platform/lf_rp2040_support.h"
+#include "low_level_platform.h"
 #include "utils/util.h"
 #include "tag.h"
 

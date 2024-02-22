@@ -32,7 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <assert.h>
 
-#include "lf_arduino_support.h"
+#include "platform/lf_arduino_support.h"
 #include "../platform.h"
 #include "Arduino.h"
 

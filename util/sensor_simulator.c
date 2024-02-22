@@ -16,7 +16,7 @@
 #include "sensor_simulator.h"
 #include "include/api/schedule.h"
 #include "util.h"
-#include "platform.h"
+#include "low_level_platform.h"
 
 // Maximum number of milliseconds that wgetchr will block for.
 #define WGETCHR_TIMEOUT 1000

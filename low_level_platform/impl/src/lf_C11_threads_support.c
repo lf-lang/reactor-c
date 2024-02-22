@@ -1,6 +1,6 @@
 #if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
-#include "platform.h"
-#include "lf_C11_threads_support.h"
+#include "low_level_platform.h"
+#include "platform/lf_C11_threads_support.h"
 #include <threads.h>
 #include <stdlib.h>
 #include <stdint.h> // For fixed-width integral types

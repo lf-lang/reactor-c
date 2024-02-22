@@ -1,4 +1,4 @@
-#include "platform.h"
+#include "low_level_platform.h"
 
 #ifndef PLATFORM_ZEPHYR  // on Zephyr, this is handled separately
 #ifndef LF_SINGLE_THREADED

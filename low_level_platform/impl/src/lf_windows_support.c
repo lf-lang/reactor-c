@@ -40,8 +40,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sysinfoapi.h>
 #include <time.h>
 
-#include "lf_windows_support.h"
-#include "platform.h"
+#include "platform/lf_windows_support.h"
+#include "low_level_platform.h"
 #include "tag.h"
 #include "util.h"
 

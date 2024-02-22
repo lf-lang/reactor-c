@@ -42,7 +42,7 @@ extern "C" {
 
 #include "tag.h"
 #include <assert.h>
-#include "lf_atomic.h"
+#include "platform/lf_atomic.h"
 
 // Forward declarations
 typedef struct environment_t environment_t;
@@ -77,19 +77,19 @@ int lf_critical_section_exit(environment_t* env);
     #include "platform/lf_rp2040_support.h"
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    // Windows platforms
-   #include "lf_windows_support.h"
+   #include "platform/lf_windows_support.h"
 #elif __APPLE__
     // Apple platforms
-    #include "lf_macos_support.h"
+    #include "platform/lf_macos_support.h"
 #elif __linux__
     // Linux
-    #include "lf_linux_support.h"
+    #include "platform/lf_linux_support.h"
 #elif __unix__ // all unices not caught above
     // Unix
-    #include "lf_POSIX_threads_support.h"
+    #include "platform/lf_POSIX_threads_support.h"
 #elif defined(_POSIX_VERSION)
     // POSIX
-    #include "lf_POSIX_threads_support.h"
+    #include "platform/lf_POSIX_threads_support.h"
 #elif defined(__riscv) || defined(__riscv__)
     // RISC-V (see https://github.com/riscv/riscv-toolchain-conventions)
     #error "RISC-V not supported"

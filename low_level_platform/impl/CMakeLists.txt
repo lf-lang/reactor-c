@@ -1,47 +1,51 @@
 # Check which system we are running on to select the correct platform support
 # file and assign the file's path to LF_PLATFORM_FILE
-
+set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
 set(LF_PLATFORM_FILES
-    ${CMAKE_CURRENT_LIST_DIR}/lf_unix_clock_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_unix_syscall_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_linux_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_macos_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_windows_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_nrf52_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_zephyr_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_zephyr_clock_counter.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_zephyr_clock_kernel.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_rp2040_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_atomic_windows.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_atomic_gcc_clang.c
-    ${CMAKE_CURRENT_LIST_DIR}/lf_atomic_irq.c
-    # ${CMAKE_CURRENT_LIST_DIR}/platform.c
-    ${CMAKE_CURRENT_LIST_DIR}/platform_internal.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_clock_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_syscall_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_linux_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_macos_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_windows_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_nrf52_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_zephyr_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_zephyr_clock_counter.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_zephyr_clock_kernel.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_rp2040_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_windows.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_gcc_clang.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/platform_internal.c
 )
 if(PLATFORM_ZEPHYR)
     message("--- Building Zephyr library")
-    zephyr_library_named(LfPlatform)
+    zephyr_library_named(lf-low-level-platform-impl)
     zephyr_library_sources(${LF_PLATFORM_FILES})
     zephyr_library_link_libraries(kernel)
 else()
 message("--- Building non-Zephyr library")
-    add_library(LfPlatform STATIC ${LF_PLATFORM_FILES})
+    add_library(lf-low-level-platform-impl STATIC ${LF_PLATFORM_FILES})
 endif()
+
+# include(${CMAKE_CURRENT_LIST_DIR}/../api/CMakeLists.txt)
+target_link_libraries(lf-low-level-platform-impl PRIVATE lf-low-level-platform-api)
+include(${LF_ROOT}/logging/api/CMakeLists.txt)
+target_link_libraries(lf-low-level-platform-impl PUBLIC lf-logging-api)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
-    target_compile_definitions(LfPlatform PUBLIC PLATFORM_NRF52)
+    target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_NRF52)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
-    target_compile_definitions(LfPlatform PUBLIC PLATFORM_ZEPHYR)
+    target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_ZEPHYR)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
-    target_compile_definitions(LfPlatform PUBLIC PLATFORM_RP2040)
+    target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_RP2040)
 endif()
 
-target_compile_definitions(LfPlatform PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
+target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 message(STATUS "Applying preprocessor definitions to platform...")
 macro(platform_define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
-        target_compile_definitions(LfPlatform PUBLIC ${X}=${${X}})
+        target_compile_definitions(lf-low-level-platform-impl PUBLIC ${X}=${${X}})
     endif(DEFINED ${X})
 endmacro()
 platform_define(LF_SINGLE_THREADED)
@@ -51,7 +55,7 @@ platform_define(USER_THREADS)
 platform_define(NUMBER_OF_WORKERS)
 platform_define(NUMBER_OF_WATCHDOGS)
 
-target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include)
-target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core)
-target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core/platform)
-target_include_directories(LfPlatform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core/utils)
+# target_include_directories(lf-low-level-platform-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include)
+# target_include_directories(lf-low-level-platform-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core)
+# target_include_directories(lf-low-level-platform-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core/platform)
+# target_include_directories(lf-low-level-platform-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core/utils)

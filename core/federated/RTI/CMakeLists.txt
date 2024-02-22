@@ -89,10 +89,10 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 target_compile_definitions(RTI PUBLIC LOG_LEVEL=${LOG_LEVEL})
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../../plugin-defaults/trace/CMakeLists.txt)
-target_link_libraries(RTI DefaultTracing)
+target_link_libraries(RTI lf-trace-impl)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../platform/CMakeLists.txt)
-target_link_libraries(RTI LfPlatform)
+target_link_libraries(RTI lf-low-level-platform-impl)
 
 # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
 target_compile_definitions(RTI PUBLIC STANDALONE_RTI=1)

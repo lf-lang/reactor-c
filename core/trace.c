@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <string.h>
 
-#include "platform.h"
+#include "low_level_platform.h"
 
 #ifdef RTI_TRACE
 #include "net_common.h"  // Defines message types

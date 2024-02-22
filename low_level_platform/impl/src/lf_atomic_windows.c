@@ -7,7 +7,7 @@
  * @brief Implements the atomic API for Windows machines.
  */
 
-#include "lf_atomic.h"
+#include "platform/lf_atomic.h"
 #include <windows.h>
 
 int32_t lf_atomic_fetch_add32(int32_t *ptr, int32_t value) { 

@@ -1,7 +1,7 @@
 #if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
-#include "platform.h"
-#include "lf_POSIX_threads_support.h"
-#include "lf_unix_clock_support.h"
+#include "low_level_platform.h"
+#include "platform/lf_POSIX_threads_support.h"
+#include "platform/lf_unix_clock_support.h"
 
 #include <pthread.h>
 #include <errno.h>

@@ -2,9 +2,9 @@
 #include <time.h>
 #include <errno.h>
 
-#include "platform.h"
+#include "low_level_platform.h"
 #include "util.h"
-#include "lf_unix_clock_support.h"
+#include "platform/lf_unix_clock_support.h"
 
 
 instant_t convert_timespec_to_ns(struct timespec tp) {

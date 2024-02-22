@@ -1,4 +1,4 @@
-#ifdef PLATFORM_Darwin
+#ifdef PLATFORM_Linux
 /* MacOS API support for the C target of Lingua Franca. */
 
 /*************
@@ -25,13 +25,15 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** MacOS API support for the C target of Lingua Franca.
- *
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+/**
+ * @brief Platform support for the Linux operating system.
+ * 
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
-
-#include "lf_macos_support.h"
-#include "platform.h"
+ 
+#include "platform/lf_linux_support.h"
+#include "low_level_platform.h"
 #include "tag.h"
 
 #if defined LF_SINGLE_THREADED
@@ -47,11 +49,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #endif
 #endif
 
+#include "platform/lf_unix_clock_support.h"
 
-
-#include "lf_unix_clock_support.h"
-
-// See `man 2 clock_nanosleep` for return values
 int lf_sleep(interval_t sleep_duration) {
     const struct timespec tp = convert_ns_to_timespec(sleep_duration);
     struct timespec remaining;

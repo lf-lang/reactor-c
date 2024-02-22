@@ -1,5 +1,5 @@
 #if defined(PLATFORM_ZEPHYR)
-#include "lf_zephyr_board_support.h"
+#include "platform/lf_zephyr_board_support.h"
 #if defined(LF_ZEPHYR_CLOCK_KERNEL)
 
 /*************
@@ -37,8 +37,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <zephyr/kernel.h>
 
-#include "lf_zephyr_support.h"
-#include "platform.h"
+#include "platform/lf_zephyr_support.h"
+#include "low_level_platform.h"
 #include "util.h"
 
 static int64_t epoch_duration_nsec;

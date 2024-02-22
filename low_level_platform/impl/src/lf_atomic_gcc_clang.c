@@ -8,8 +8,8 @@
  * @brief Implements the atomics API using GCC/Clang APIs.
  */
 
-#include "lf_atomic.h"
-#include "platform.h"
+#include "platform/lf_atomic.h"
+#include "low_level_platform.h"
 
 int32_t lf_atomic_fetch_add32(int32_t *ptr, int32_t value) { 
     return __sync_fetch_and_add(ptr, value);

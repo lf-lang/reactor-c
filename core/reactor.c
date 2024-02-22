@@ -39,7 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "reactor.h"
 #include "lf_types.h"
-#include "platform.h"
+#include "low_level_platform.h"
 #include "reactor_common.h"
 #include "environment.h"
 

@@ -8,8 +8,8 @@
  * and `lf_disable_interrupts_nested`. 
  */
 
-#include "lf_atomic.h"
-#include "platform.h"
+#include "platform/lf_atomic.h"
+#include "low_level_platform.h"
 
 // Forward declare the functions for enabling/disabling interrupts. Must be
 // implemented in the platform support file of the target.

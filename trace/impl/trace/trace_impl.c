@@ -4,10 +4,10 @@
 #include <string.h>
 #include <assert.h>
 
-#include "impl-in-plugin/trace-abi.h"
-#include "impl-in-core/platform-abi.h"
-#include "impl-in-core/logging-abi.h"
-#include "default-trace.h"
+#include "trace.h"
+#include "platform.h"
+#include "logging.h"
+#include "trace_impl.h"
 
 /** Macro to use when access to trace file fails. */
 #define _LF_TRACE_FAILURE(trace) \
@@ -233,13 +233,15 @@ static void stop_trace(trace_t* trace) {
 
 version_t lf_version_tracing() {
     return (version_t) {
-        .single_threaded = TRIBOOL_DOES_NOT_MATTER,
+        .build_config = (build_config_t) {
+            .single_threaded = TRIBOOL_DOES_NOT_MATTER,
 #ifdef NDEBUG
-        .build_type_is_debug = TRIBOOL_FALSE,
+            .build_type_is_debug = TRIBOOL_FALSE,
 #else
-        .build_type_is_debug = TRIBOOL_TRUE,
+            .build_type_is_debug = TRIBOOL_TRUE,
 #endif
-        .log_level = LOG_LEVEL,
+            .log_level = LOG_LEVEL,
+        },
         .core_sha = NULL,
     };
 }

@@ -1,4 +1,5 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(CMAKE_SYSTEM_VERSION 10.0)
@@ -68,15 +69,20 @@ endif()
 
 if (DEFINED LF_TRACE)
     if(NOT LF_TRACE_PLUGIN)
-        set(LF_TRACE_PLUGIN DefaultTracing)
-        include(../plugin-defaults/trace/CMakeLists.txt)
+        set(LF_TRACE_PLUGIN lf-trace-impl)
+        include(../trace/impl/CMakeLists.txt)
     endif()
     message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
     target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN}")
 endif()
 
-include(platform/CMakeLists.txt)
-target_link_libraries(reactor-c PUBLIC LfPlatform)
+# include(${LF_ROOT}/logging/api/CMakeLists.txt)
+# target_link_libraries(reactor-c PUBLIC lf-logging)
+
+include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
+include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf-low-level-platform-api)
+target_link_libraries(reactor-c PUBLIC lf-low-level-platform-impl)
 
 # Apply compile definitions to the reactor-c library.
 target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})

@@ -43,7 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 
-#include "platform.h"
+#include "low_level_platform.h"
 #include "environment.h"
 #include "pqueue.h"
 #include "reactor_threaded.h"

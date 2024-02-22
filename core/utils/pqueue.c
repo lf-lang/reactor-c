@@ -8,7 +8,7 @@
  * @brief Priority queue definitions for the event queue and reaction queue.
  */
 
-#include "platform.h"
+#include "low_level_platform.h"
 #include "pqueue.h"
 #include "util.h"
 #include "lf_types.h"

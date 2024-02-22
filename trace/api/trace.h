@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "plugin-apis/version-abi.h"
+#include "version-abi.h"
 
 /**
  * @brief Return a description of the compile-time properties of the current

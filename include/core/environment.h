@@ -37,7 +37,7 @@
 #define ENVIRONMENT_H
 
 #include "lf_types.h"
-#include "platform.h"
+#include "low_level_platform.h"
 #include "trace.h"
 
 // Forward declarations so that a pointers can appear in the environment struct.

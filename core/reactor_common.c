@@ -41,7 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <time.h>
 
-#include "platform.h"
+#include "low_level_platform.h"
 #include "lf_types.h"
 #ifdef MODAL_REACTORS
 #include "modes.h"

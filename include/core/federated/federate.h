@@ -17,7 +17,7 @@
 #include "tag.h"
 #include "lf_types.h"
 #include "environment.h"
-#include "platform.h"
+#include "low_level_platform.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)

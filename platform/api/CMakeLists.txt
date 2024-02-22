@@ -1,2 +1,2 @@
-add_library(platform_api INTERFACE)
-target_include_directories(platform_api ${CMAKE_CURRENT_LIST_DIR})
+add_library(lf-platform-api INTERFACE)
+target_include_directories(lf-platform-api INTERFACE ${CMAKE_CURRENT_LIST_DIR})

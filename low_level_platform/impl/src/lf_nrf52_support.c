@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "lf_nrf52_support.h"
+#include "platform/lf_nrf52_support.h"
 #include "../platform.h"
 #include "../utils/util.h"
 #include "../tag.h"
