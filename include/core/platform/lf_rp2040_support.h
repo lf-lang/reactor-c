@@ -23,10 +23,10 @@
 #ifndef LF_SINGLE_THREADED
 #warning "Threaded support on rp2040 is still experimental"
 
-typedef mutex_t lf_mutex_t;
+typedef recursive_mutex_t lf_mutex_t;
 typedef struct {
     semaphore_t sema;
-    mutex_t* mutex;
+    lf_mutex_t* mutex;
 } lf_cond_t;
 typedef int lf_thread_t;
 

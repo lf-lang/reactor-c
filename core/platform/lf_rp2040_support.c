@@ -302,9 +302,9 @@ int lf_cond_signal(lf_cond_t* cond) {
 }
 
 int lf_cond_wait(lf_cond_t* cond) {
-    mutex_exit(cond->mutex);
+    lf_mutex_unlock(cond->mutex);
     sem_acquire_blocking(&(cond->sema));
-    mutex_enter_blocking(cond->mutex);
+    lf_mutex_lock(cond->mutex);
     return 0;
 }
 
