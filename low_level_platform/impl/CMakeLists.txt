@@ -26,9 +26,10 @@ else()
 message("--- Building non-Zephyr library")
     add_library(lf-low-level-platform-impl STATIC ${LF_PLATFORM_FILES})
 endif()
+add_library(lf::low-level-platform-impl ALIAS lf-low-level-platform-impl)
 
 # include(${CMAKE_CURRENT_LIST_DIR}/../api/CMakeLists.txt)
-target_link_libraries(lf-low-level-platform-impl PRIVATE lf-low-level-platform-api)
+target_link_libraries(lf-low-level-platform-impl PRIVATE lf::low-level-platform-api)
 include(${LF_ROOT}/logging/api/CMakeLists.txt)
 target_link_libraries(lf-low-level-platform-impl PUBLIC lf-logging-api)
 

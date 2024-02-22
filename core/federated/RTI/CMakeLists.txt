@@ -38,6 +38,7 @@ cmake_minimum_required(VERSION 3.12)
 project(RTI VERSION 1.0.0 LANGUAGES C)
 
 set(CoreLib ../../../core)
+set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
 
 # Check which system we are running on to select the correct platform support
 # file and assign the file's path to LF_PLATFORM_FILE
@@ -88,11 +89,14 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 target_compile_definitions(RTI PUBLIC LOG_LEVEL=${LOG_LEVEL})
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../../plugin-defaults/trace/CMakeLists.txt)
+include(${LF_ROOT}/trace/impl/CMakeLists.txt)
 target_link_libraries(RTI lf-trace-impl)
 
-include(${CMAKE_CURRENT_LIST_DIR}/../../platform/CMakeLists.txt)
-target_link_libraries(RTI lf-low-level-platform-impl)
+include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
+target_link_libraries(RTI lf::low-level-platform-impl)
+
+include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
+target_link_libraries(RTI lf::low-level-platform-api)
 
 # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
 target_compile_definitions(RTI PUBLIC STANDALONE_RTI=1)

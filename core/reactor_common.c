@@ -1710,16 +1710,16 @@ int process_args(int argc, const char* argv[]) {
  */
 static void check_version(version_t version) {
     #ifdef LF_SINGLE_THREADED
-    LF_ASSERT(version.single_threaded == TRIBOOL_TRUE || version.single_threaded == TRIBOOL_DOES_NOT_MATTER, "expected single-threaded version");
+    LF_ASSERT(version.build_config.single_threaded == TRIBOOL_TRUE || version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER, "expected single-threaded version");
     #else
-    LF_ASSERT(version.single_threaded == TRIBOOL_FALSE || version.single_threaded == TRIBOOL_DOES_NOT_MATTER, "expected multi-threaded version");
+    LF_ASSERT(version.build_config.single_threaded == TRIBOOL_FALSE || version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER, "expected multi-threaded version");
     #endif
     #ifdef NDEBUG
-    LF_ASSERT(version.build_type_is_debug == TRIBOOL_FALSE || version.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER, "expected release version");
+    LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_FALSE || version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER, "expected release version");
     #else
-    LF_ASSERT(version.build_type_is_debug == TRIBOOL_TRUE || version.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER, "expected debug version");
+    LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_TRUE || version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER, "expected debug version");
     #endif
-    LF_ASSERT(version.log_level == LOG_LEVEL, "expected log level %d", LOG_LEVEL);
+    LF_ASSERT(version.build_config.log_level == LOG_LEVEL, "expected log level %d", LOG_LEVEL);
     // assert(!version.core_sha || strcmp(version.core_sha, CORE_SHA) == 0); // TODO: provide CORE_SHA
 }
 

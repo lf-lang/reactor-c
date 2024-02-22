@@ -15,7 +15,7 @@
 
 #include <errno.h>      // Defines perror(), errno
 #include <assert.h>
-#include "platform.h"   // Platform-specific types and functions
+#include "low_level_platform.h"   // Platform-specific types and functions
 #include "util.h"       // Defines print functions (e.g., lf_print).
 #include "tag.h"        // Time-related types and functions.
 #include "trace.h"      // Tracing related functions

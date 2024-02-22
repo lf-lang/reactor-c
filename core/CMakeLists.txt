@@ -81,8 +81,8 @@ endif()
 
 include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
 include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
-target_link_libraries(reactor-c PUBLIC lf-low-level-platform-api)
-target_link_libraries(reactor-c PUBLIC lf-low-level-platform-impl)
+target_link_libraries(reactor-c PUBLIC lf::low-level-platform-api)
+target_link_libraries(reactor-c PUBLIC lf::low-level-platform-impl)
 
 # Apply compile definitions to the reactor-c library.
 target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})
