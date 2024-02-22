@@ -314,67 +314,6 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     return acquired_permit ? 0 : LF_TIMEOUT;
 }
 
-
-// Atomics
-//  Implemented by just entering a critical section and doing the arithmetic.
-//  This is somewhat inefficient considering enclaves. Since we get a critical
-//  section in between different enclaves
-
-
-/**
- * @brief Add `value` to `*ptr` and return original value of `*ptr`
- */
-int _rp2040_atomic_fetch_add(int *ptr, int value) {
-    critical_section_enter_blocking(&_lf_atomics_crit_sec);
-    int res = *ptr;
-    *ptr += value;
-    critical_section_exit(&_lf_atomics_crit_sec);
-    return res;
-}
-/**
- * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
- */
-int _rp2040_atomic_add_fetch(int *ptr, int value) {
-    critical_section_enter_blocking(&_lf_atomics_crit_sec);
-    int res = *ptr + value;
-    *ptr = res;
-    critical_section_exit(&_lf_atomics_crit_sec);
-    return res;
-}
-
-/**
- * @brief Compare and swap for boolaen value.
- * If `*ptr` is equal to `value` then overwrite it
- * with `newval`. If not do nothing. Retruns true on overwrite.
- */
-bool _rp2040_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
-    critical_section_enter_blocking(&_lf_atomics_crit_sec);
-    bool res = false;
-    if (*ptr == value) {
-        *ptr = newval;
-        res = true;
-    }
-    critical_section_exit(&_lf_atomics_crit_sec);
-    return res;
-}
-
-/**
- * @brief Compare and swap for integers. If `*ptr` is equal
- * to `value`, it is updated to `newval`. The function returns
- * the original value of `*ptr`.
- */
-int  _rp2040_val_compare_and_swap(int *ptr, int value, int newval) {
-    critical_section_enter_blocking(&_lf_atomics_crit_sec);
-    int res = *ptr;
-    if (*ptr == value) {
-        *ptr = newval;
-    }
-    critical_section_exit(&_lf_atomics_crit_sec);
-    return res;
-}
-
-
-
 #endif // LF_SINGLE_THREADED
 
 
