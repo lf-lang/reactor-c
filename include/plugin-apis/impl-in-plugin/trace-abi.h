@@ -34,7 +34,7 @@ struct object_description_t {
 
 typedef struct {
     int event_type;
-    void* pointer;
+    void* pointer;  // FIXME: find a better name
     int src_id;
     int dst_id;
     int64_t logical_time;
