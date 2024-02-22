@@ -308,7 +308,7 @@ int lf_cond_wait(lf_cond_t* cond) {
     return 0;
 }
 
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     absolute_time_t a = from_us_since_boot(absolute_time_ns / 1000);
     bool acquired_permit = sem_acquire_block_until(&(cond->sema), a);
     return acquired_permit ? 0 : LF_TIMEOUT;
