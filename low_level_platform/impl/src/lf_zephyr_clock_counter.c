@@ -39,7 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/lf_zephyr_support.h"
 #include "low_level_platform.h"
-#include "util.h"
+// #include "util.h"
 
 static int64_t epoch_duration_nsec;
 static int64_t epoch_duration_usec;
@@ -109,8 +109,8 @@ void _lf_initialize_clock() {
         lf_print_error_and_exit("ERROR: Timer couldnt set top value\n");
     }
 
-    LF_PRINT_LOG("--- Using LF Zephyr Counter Clock with a frequency of %u Hz and wraps every %u sec\n", 
-      counter_freq, counter_max_ticks/counter_freq);
+    // LF_PRINT_LOG("--- Using LF Zephyr Counter Clock with a frequency of %u Hz and wraps every %u sec\n",
+    //   counter_freq, counter_max_ticks/counter_freq);
     
     // Prepare the alarm config
     alarm_cfg.flags = 0;
