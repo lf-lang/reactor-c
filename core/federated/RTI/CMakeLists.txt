@@ -95,6 +95,9 @@ target_link_libraries(RTI lf::version-api)
 include(${LF_ROOT}/logging/api/CMakeLists.txt)
 target_link_libraries(RTI lf::logging-api)
 
+include(${LF_ROOT}/tag/api/CMakeLists.txt)
+target_link_libraries(RTI lf::tag-api)
+
 include(${LF_ROOT}/platform/api/CMakeLists.txt)
 target_link_libraries(RTI lf::platform-api)
 

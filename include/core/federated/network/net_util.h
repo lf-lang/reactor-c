@@ -49,7 +49,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdbool.h>
 
 #include "low_level_platform.h"
-#include "../../tag.h"
+#include "tag.h"
 
 #define NUM_SOCKET_RETRIES 10
 #define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
