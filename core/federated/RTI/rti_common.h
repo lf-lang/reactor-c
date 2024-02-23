@@ -18,7 +18,7 @@
 #include "low_level_platform.h"   // Platform-specific types and functions
 #include "util.h"       // Defines print functions (e.g., lf_print).
 #include "tag.h"        // Time-related types and functions.
-#include "trace.h"      // Tracing related functions
+#include "tracepoint.h"      // Tracing related functions
 
 /** Mode of execution of a federate. */
 typedef enum execution_mode_t {

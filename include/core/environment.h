@@ -38,7 +38,7 @@
 
 #include "lf_types.h"
 #include "low_level_platform.h"
-#include "trace.h"
+#include "tracepoint.h"
 
 // Forward declarations so that a pointers can appear in the environment struct.
 typedef struct lf_scheduler_t lf_scheduler_t;

@@ -34,7 +34,7 @@
 #include "reactor_common.h"
 #include "reactor_threaded.h"
 #include "scheduler.h"
-#include "trace.h"
+#include "tracepoint.h"
 
 #ifdef FEDERATED_AUTHENTICATED
 #include <openssl/rand.h> // For secure random number generation.

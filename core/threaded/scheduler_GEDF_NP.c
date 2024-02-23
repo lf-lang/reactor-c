@@ -51,7 +51,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
 #include "lf_semaphore.h"
-#include "trace.h"
+#include "tracepoint.h"
 #include "util.h"
 
 /////////////////// Scheduler Private API /////////////////////////

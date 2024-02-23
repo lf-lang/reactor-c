@@ -10,8 +10,8 @@
  */
 #include <stdlib.h>
 
-#include "core/platform.h"
-#include "plugin-apis/impl-in-core/platform-abi.h"
+#include "low_level_platform.h"
+#include "platform.h"
 
 // MUTEXES *********************************************************************
 

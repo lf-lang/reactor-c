@@ -76,8 +76,11 @@ if (DEFINED LF_TRACE)
     target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN}")
 endif()
 
-# include(${LF_ROOT}/logging/api/CMakeLists.txt)
-# target_link_libraries(reactor-c PUBLIC lf-logging)
+include(${LF_ROOT}/version/api/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::version-api)
+
+include(${LF_ROOT}/logging/api/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::logging-api)
 
 include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
 include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)

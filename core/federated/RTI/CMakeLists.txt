@@ -42,13 +42,13 @@ set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
 
 # Check which system we are running on to select the correct platform support
 # file and assign the file's path to LF_PLATFORM_FILE
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-  set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_linux_support.c)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-  set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_macos_support.c)
-else()
-  message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
-endif()
+# if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+#   set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_linux_support.c)
+# elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+#   set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_macos_support.c)
+# else()
+#   message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
+# endif()
 
 set(IncludeDir ../../../include/core)
 include_directories(../../../include)
@@ -56,7 +56,7 @@ include_directories(${IncludeDir})
 include_directories(${IncludeDir}/federated)
 include_directories(${IncludeDir}/federated/network)
 include_directories(${IncludeDir}/modal_models)
-include_directories(${IncludeDir}/platform)
+# include_directories(${IncludeDir}/platform)
 include_directories(${IncludeDir}/utils)
 
 
@@ -67,9 +67,9 @@ add_executable(
     rti_common.c
     rti_remote.c
     ${CoreLib}/trace.c
-    ${LF_PLATFORM_FILE}
-    ${CoreLib}/platform/lf_atomic_gcc_clang.c
-    ${CoreLib}/platform/lf_unix_clock_support.c
+    # ${LF_PLATFORM_FILE}
+    # ${CoreLib}/platform/lf_atomic_gcc_clang.c
+    # ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
     ${CoreLib}/clock.c
@@ -89,8 +89,23 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 target_compile_definitions(RTI PUBLIC LOG_LEVEL=${LOG_LEVEL})
 
+include(${LF_ROOT}/version/api/CMakeLists.txt)
+target_link_libraries(RTI lf::version-api)
+
+include(${LF_ROOT}/logging/api/CMakeLists.txt)
+target_link_libraries(RTI lf::logging-api)
+
+include(${LF_ROOT}/platform/api/CMakeLists.txt)
+target_link_libraries(RTI lf::platform-api)
+
+include(${LF_ROOT}/platform/impl/CMakeLists.txt)
+target_link_libraries(RTI lf::platform-impl)
+
+include(${LF_ROOT}/trace/api/CMakeLists.txt)
+target_link_libraries(RTI lf::trace-api)
+
 include(${LF_ROOT}/trace/impl/CMakeLists.txt)
-target_link_libraries(RTI lf-trace-impl)
+target_link_libraries(RTI lf::trace-impl)
 
 include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
 target_link_libraries(RTI lf::low-level-platform-impl)

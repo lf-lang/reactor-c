@@ -1,10 +1,10 @@
-#ifndef TRACE_ABI_H
-#define TRACE_ABI_H
+#ifndef TRACE_H
+#define TRACE_H
 
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "version-abi.h"
+#include "version.h"
 
 /**
  * @brief Return a description of the compile-time properties of the current
@@ -53,4 +53,4 @@ void tracepoint(
 );
 void lf_tracing_global_shutdown();
 
-#endif // TRACE_ABI_H
+#endif // TRACE_H

@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_sync_tag_advance.h"
 #include "rti_local.h"
 #include "environment.h"
-#include "trace.h"
+#include "tracepoint.h"
 #include "util.h"
 
 /////////////////// External Functions /////////////////////////

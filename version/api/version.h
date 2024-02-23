@@ -1,5 +1,5 @@
 /**
- * @file version-abi.h
+ * @file version.h
  * @author Peter Donovan (peter@xronos.com)
  * @brief API for runtime plugins to use to sanity-check compatibility with the
  * core. Plugins APIs can include a function to get information about the
@@ -10,8 +10,8 @@
  *
  * @copyright Copyright (c) 2024
  */
-#ifndef VERSION_ABI_H
-#define VERSION_ABI_H
+#ifndef VERSION_H
+#define VERSION_H
 
 typedef enum {
   TRIBOOL_FALSE = 0,
@@ -30,4 +30,4 @@ typedef struct {
   char* core_sha;  // FIXME: make name reflect that you can use a semver version number or any other string here since this is just fed into a strcmp
 } version_t;
 
-#endif // VERSION_ABI_H
+#endif // VERSION_H

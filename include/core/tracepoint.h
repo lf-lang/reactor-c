@@ -27,8 +27,8 @@
 #define LF_TRACE
 #endif
 
-#ifndef TRACE_H
-#define TRACE_H
+#ifndef TRACEPOINT_H
+#define TRACEPOINT_H
 
 #include "lf_types.h"
 #include <stdio.h>
@@ -104,7 +104,7 @@ typedef enum {
 
 #ifdef LF_TRACE
 
-#include "plugin-apis/impl-in-plugin/trace-abi.h"
+#include "trace.h"
 
 /**
  * String description of event types.
@@ -424,4 +424,4 @@ typedef struct trace_t trace_t;
 
 
 #endif // LF_TRACE
-#endif // TRACE_H
+#endif // TRACEPOINT_H

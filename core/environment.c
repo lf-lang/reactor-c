@@ -33,7 +33,7 @@
 #include "util.h"
 #include "lf_types.h"
 #include <string.h>
-#include "trace.h"
+#include "tracepoint.h"
 #if !defined(LF_SINGLE_THREADED)
 #include "scheduler.h"
 #endif

@@ -1,2 +1,5 @@
-add_library(platform_impl STATIC)
-target_sources(platform_impl ${CMAKE_CURRENT_LIST_DIR}/platform.c)
+add_library(lf-platform-impl STATIC)
+add_library(lf::platform-impl ALIAS lf-platform-impl)
+target_sources(lf-platform-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/platform.c)
+target_link_libraries(lf-platform-impl PRIVATE lf::low-level-platform-api)
+target_link_libraries(lf-platform-impl PRIVATE lf::platform-api)

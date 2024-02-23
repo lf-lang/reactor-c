@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * See trace.h file for instructions.
  */
 
-#include "trace.h"
+#include "tracepoint.h"
 
 #ifdef LF_TRACE
 

@@ -26,7 +26,7 @@
 #include "util.h"
 #include "platform.h"
 #include "environment.h"
-#include "trace.h"
+#include "tracepoint.h"
 #include "reactor.h"
 
 // Static global pointer to the RTI object.
