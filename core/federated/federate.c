@@ -1748,10 +1748,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     netdrv_t* netdrv = netdrv_init();
 
 
-    int socket_id = -1;
     while (result < 0 && !_lf_termination_executed) {
         // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-        socket_id = create_real_time_tcp_socket_errexit();
         netdrv->open(netdrv);
         set_host_name(netdrv, hostname);
         set_port(netdrv, uport);
@@ -1987,13 +1985,13 @@ void lf_create_server(int specified_port) {
     create_federate_server(my_netdrv, port, specified_port);
 
     //TODO: NEED to fix.
-    LF_PRINT_LOG("Server for communicating with other federates started using port %d.", get_my_port(_fed.my_netdrv));
+    LF_PRINT_LOG("Server for communicating with other federates started using port %d.", get_my_port(my_netdrv));
 
     // Send the server port number to the RTI
     // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
     unsigned char buffer[sizeof(int32_t) + 1];
     buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
-    encode_int32(get_my_port(_fed.my_netdrv), &(buffer[1]));
+    encode_int32(get_my_port(my_netdrv), &(buffer[1]));
 
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(_fed.trace, send_ADR_AD, _lf_my_fed_id, NULL);
@@ -2002,7 +2000,7 @@ void lf_create_server(int specified_port) {
     write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
                     "Failed to send address advertisement.");
 
-    LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(_fed.my_netdrv));
+    LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(my_netdrv));
 
     // Set the global server socket
     _fed.my_netdrv = my_netdrv;

@@ -63,6 +63,8 @@ typedef struct socket_priv_t {
                             // RTI has not been informed of the port number.
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
+
+    struct sockaddr_in UDP_addr;           // The UDP address for the federate.
 } socket_priv_t;
 
 char* get_host_name(netdrv_t *drv);
@@ -72,7 +74,9 @@ struct in_addr* get_ip_addr(netdrv_t *drv);
 
 void set_host_name(netdrv_t *drv, const char* hostname);
 void set_port(netdrv_t *drv, int port);
-// void set_ip_addr(netdrv_t *drv);
+void set_ip_addr(netdrv_t *drv, struct in_addr ip_addr);
+void set_clock_netdrv(netdrv_t *clock_drv, netdrv_t *rti_drv, uint16_t port_num);
+
 
 netdrv_t * netdrv_init();
 
@@ -101,7 +105,7 @@ int create_rti_server(netdrv_t *drv, netdrv_type_t netdrv_type);
 
 
 // int create_real_time_tcp_socket_errexit();
-void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv);
+// void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv);
 
 netdrv_t *netdrv_accept(netdrv_t *my_netdrv);
 
@@ -120,6 +124,8 @@ int netdrv_connect(netdrv_t *drv);
  * @param result Pointer to where to put the first byte available on the socket.
  */
 ssize_t peek_from_netdrv(netdrv_t *drv, unsigned char* result);
+
+int write_to_netdrv_UDP(netdrv_t *drv, netdrv_t *target, size_t num_bytes, unsigned char* buffer, int flags);
 
 /**
  * Write the specified number of bytes to the specified socket from the

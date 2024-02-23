@@ -19,6 +19,11 @@
 #include "util.h"
 #include "net_common.h"
 
+typedef enum {
+    TCP,
+    UDP
+} socket_type_t;
+
 static socket_priv_t *get_priv(netdrv_t *drv) {
     if (!drv) {
         lf_print_error_and_exit("Falied get socket_priv_t.");
@@ -56,6 +61,14 @@ void set_ip_addr(netdrv_t *drv, struct in_addr ip_addr){
     priv->server_ip_addr = ip_addr;
 }
 
+void set_clock_netdrv(netdrv_t *clock_drv, netdrv_t *rti_drv, uint16_t port_num) {
+    socket_priv_t *priv_clock = get_priv(clock_drv);
+    socket_priv_t *priv_rti = get_priv(rti_drv);
+    priv_clock->UDP_addr.sin_family = AF_INET;
+    priv_clock->UDP_addr.sin_port = htons(port_num);
+    priv_clock->UDP_addr.sin_addr = priv_rti->server_ip_addr;
+}
+
 // create_real_time_tcp_socket_errexit
 static int socket_open(netdrv_t *drv) {
     if (!drv){
@@ -63,6 +76,7 @@ static int socket_open(netdrv_t *drv) {
     }
     socket_priv_t *priv = get_priv(drv);
     priv->socket_descriptor = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    priv->proto = TCP;
     if (priv->socket_descriptor < 0) {
         lf_print_error_and_exit("Could not open TCP socket. Err=%d", priv->socket_descriptor);
     }
@@ -246,6 +260,7 @@ int create_rti_server(netdrv_t* drv, netdrv_type_t netdrv_type) {
     priv->socket_descriptor = -1;
     if (netdrv_type == RTI) {
         priv->socket_descriptor = net_create_real_time_tcp_socket_errexit();
+        priv->proto = TCP;
     } else if (netdrv_type == CLOCKSYNC) {
         priv->socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         // Set the appropriate timeout time
@@ -253,6 +268,7 @@ int create_rti_server(netdrv_t* drv, netdrv_type_t netdrv_type) {
                 .tv_sec = UDP_TIMEOUT_TIME / BILLION,
                 .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000
         };
+        priv->proto = UDP;
     }
     if (priv->socket_descriptor < 0) {
         lf_print_error_and_exit("Failed to create RTI socket.");
@@ -377,29 +393,29 @@ int create_rti_server(netdrv_t* drv, netdrv_type_t netdrv_type) {
     return priv->socket_descriptor;
 }
 
-void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
-    socket_priv_t *rti_priv = get_priv(rti_netdrv);
-    socket_priv_t *clock_priv = get_priv(clock_netdrv);
-    // Shutdown and close the socket that is listening for incoming connections
-    // so that the accept() call in respond_to_erroneous_connections returns.
-    // That thread should then check rti->all_federates_exited and it should exit.
-    if (shutdown(rti_priv->socket_descriptor, SHUT_RDWR)) {
-        LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
-    }
-    // NOTE: In all common TCP/IP stacks, there is a time period,
-    // typically between 30 and 120 seconds, called the TIME_WAIT period,
-    // before the port is released after this close. This is because
-    // the OS is preventing another program from accidentally receiving
-    // duplicated packets intended for this program.
-    close(rti_priv->socket_descriptor);
+// void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
+//     socket_priv_t *rti_priv = get_priv(rti_netdrv);
+//     socket_priv_t *clock_priv = get_priv(clock_netdrv);
+//     // Shutdown and close the socket that is listening for incoming connections
+//     // so that the accept() call in respond_to_erroneous_connections returns.
+//     // That thread should then check rti->all_federates_exited and it should exit.
+//     if (shutdown(rti_priv->socket_descriptor, SHUT_RDWR)) {
+//         LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
+//     }
+//     // NOTE: In all common TCP/IP stacks, there is a time period,
+//     // typically between 30 and 120 seconds, called the TIME_WAIT period,
+//     // before the port is released after this close. This is because
+//     // the OS is preventing another program from accidentally receiving
+//     // duplicated packets intended for this program.
+//     close(rti_priv->socket_descriptor);
 
-    if (clock_priv->socket_descriptor > 0) {
-        if (shutdown(clock_priv->socket_descriptor, SHUT_RDWR)) {
-            LF_PRINT_LOG("On shut down UDP socket, received reply: %s", strerror(errno));
-        }
-        close(clock_priv->socket_descriptor);
-    }
-}
+//     if (clock_priv->socket_descriptor > 0) {
+//         if (shutdown(clock_priv->socket_descriptor, SHUT_RDWR)) {
+//             LF_PRINT_LOG("On shut down UDP socket, received reply: %s", strerror(errno));
+//         }
+//         close(clock_priv->socket_descriptor);
+//     }
+// }
 
 netdrv_t *netdrv_accept(netdrv_t *my_netdrv) {
     netdrv_t *client_netdrv = netdrv_init();
@@ -424,7 +440,7 @@ netdrv_t *accept_connection(netdrv_t *rti_netdrv) {
     // The following blocks until a federate connects.
     while (1) {
         fed_priv->socket_descriptor = accept(rti_priv->socket_descriptor, &client_fd, &client_length);
-        if (fed_priv->socket_descriptor >= 0) {
+                if (fed_priv->socket_descriptor >= 0) {
             // Got a socket
             break;
         } else if (fed_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
@@ -481,6 +497,13 @@ ssize_t peek_from_netdrv(netdrv_t *drv, unsigned char* result) {
     ssize_t bytes_read = recv(priv->socket_descriptor, result, 1, MSG_DONTWAIT | MSG_PEEK);
     if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) return 0;
     else return bytes_read;
+}
+
+//Temporary function.
+int write_to_netdrv_UDP(netdrv_t *drv, netdrv_t *target, size_t num_bytes, unsigned char* buffer, int flags) {
+    socket_priv_t *priv_drv = get_priv(drv);
+    socket_priv_t *priv_target = get_priv(target);
+    return sendto(priv_drv->socket_descriptor, buffer, num_bytes, flags, (struct sockaddr *) &priv_target->UDP_addr, sizeof(priv_target->UDP_addr));
 }
 
 int write_to_netdrv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
@@ -707,89 +730,95 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
         }
 }
 
+static ssize_t read_UDP(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length) {
+    socket_priv_t *priv = get_priv(netdrv);
+    return read(priv->socket_descriptor, buffer, buffer_length);
+}
 
 //TODO: DONGHA: ADD buffer_length checking.
 // Returns the total bytes read.
 ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length) {
     socket_priv_t *priv = get_priv(netdrv);
-    size_t bytes_to_read; // The bytes to read in future.
-    ssize_t bytes_read = 0; // The bytes that was read by a single read() function.
-    size_t total_bytes_read = 0; // The total bytes that have been read, and will be the return of the read_from netdrv.
-    int retry_count;
-    int state;
-    // Check if socket_descriptor is open.
-    if (priv->socket_descriptor < 0) {
-        // Socket is not open.
-        errno = EBADF;
-        return -1;
-    }
-    // First, check if there are remaining bytes. 
-    // If there are remaining bytes, it reads as long as it can (buffer_length).
-    // Then it becomes KEEP_READING state.
-    if (netdrv->read_remaining_bytes > 0) {
-        bytes_to_read = (netdrv->read_remaining_bytes > buffer_length) ? buffer_length : netdrv->read_remaining_bytes;
-        state = KEEP_READING;
-    } else {
-        // If there are no left bytes to read, it reads the header byte.
-        bytes_to_read = 1; // read header
-        state = HEADER_READ;
-    }
-
-    for (;;) {
-        retry_count = 0;
-        while (bytes_to_read > 0) {
-            //TODO: Check buffer_length.
-            bytes_read = read(priv->socket_descriptor, buffer + total_bytes_read, bytes_to_read);
-            if (bytes_read < 0 &&  // If)  Error has occurred,
-                retry_count++ < NUM_SOCKET_RETRIES && // there are left retry counts,
-                (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) { // and the error code was these three,
-                // Print warning, sleep for a short time, and retry.
-                lf_print_warning("Reading from socket failed. Will try again.");
-                lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
-                continue;
-            } else if (bytes_read <= 0) {
-                // An error occurred without those three error codes.
-                // https://stackoverflow.com/questions/42188128/does-reading-from-a-socket-wait-or-get-eof
-                // bytes_read == 0 means disconnected.
-                return -1;
-            }
-            bytes_to_read -= bytes_read;
-            total_bytes_read += bytes_read;
+    if(priv->proto == TCP) {
+        size_t bytes_to_read; // The bytes to read in future.
+        ssize_t bytes_read = 0; // The bytes that was read by a single read() function.
+        size_t total_bytes_read = 0; // The total bytes that have been read, and will be the return of the read_from netdrv.
+        int retry_count;
+        int state;
+        // Check if socket_descriptor is open.
+        if (priv->socket_descriptor < 0) {
+            // Socket is not open.
+            errno = EBADF;
+            return -1;
+        }
+        // First, check if there are remaining bytes. 
+        // If there are remaining bytes, it reads as long as it can (buffer_length).
+        // Then it becomes KEEP_READING state.
+        if (netdrv->read_remaining_bytes > 0) {
+            bytes_to_read = (netdrv->read_remaining_bytes > buffer_length) ? buffer_length : netdrv->read_remaining_bytes;
+            state = KEEP_READING;
+        } else {
+            // If there are no left bytes to read, it reads the header byte.
+            bytes_to_read = 1; // read header
+            state = HEADER_READ;
         }
 
-        switch(state) {
-            case HEADER_READ:
-                handle_header_read(netdrv, buffer, &bytes_to_read, &state);
-                break;
-
-            case READ_MSG_TYPE_FED_IDS: ;
-                size_t federation_id_length = (size_t)buffer[1 + sizeof(uint16_t)];
-                bytes_to_read = federation_id_length;
-                state = FINISH_READ;
-                break;
-            case READ_MSG_TYPE_NEIGHBOR_STRUCTURE: ;
-                int num_upstream = extract_int32(buffer + 1);
-                int num_downstream = extract_int32(buffer + 1 + sizeof(int32_t));
-                bytes_to_read = ((sizeof(uint16_t) + sizeof(int64_t)) * num_upstream)+ (sizeof(uint16_t) * num_downstream);
-                state = FINISH_READ;
-                break;
-            case READ_MSG_TYPE_TAGGED_MESSAGE: ;
-                size_t length = (size_t) extract_int32(buffer + 1+ sizeof(uint16_t) + sizeof(uint16_t));
-                if(length > buffer_length - total_bytes_read) {
-                    bytes_to_read = buffer_length - total_bytes_read;
-                    netdrv->read_remaining_bytes = length - bytes_to_read;      
-                } else {
-                    bytes_to_read = length;
+        for (;;) {
+            retry_count = 0;
+            while (bytes_to_read > 0) {
+                //TODO: Check buffer_length.
+                bytes_read = read(priv->socket_descriptor, buffer + total_bytes_read, bytes_to_read);
+                if (bytes_read < 0 &&  // If)  Error has occurred,
+                    retry_count++ < NUM_SOCKET_RETRIES && // there are left retry counts,
+                    (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) { // and the error code was these three,
+                    // Print warning, sleep for a short time, and retry.
+                    lf_print_warning("Reading from socket failed. Will try again.");
+                    lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
+                    continue;
+                } else if (bytes_read <= 0) {
+                    // An error occurred without those three error codes.
+                    // https://stackoverflow.com/questions/42188128/does-reading-from-a-socket-wait-or-get-eof
+                    // bytes_read == 0 means disconnected.
+                    return -1;
                 }
-                state = FINISH_READ;
-                break;
-            case KEEP_READING:
-                 netdrv->read_remaining_bytes -= total_bytes_read;
-                return total_bytes_read;
-                // return 0;
-            case FINISH_READ:
-                return total_bytes_read;
-                // return 0;
+                bytes_to_read -= bytes_read;
+                total_bytes_read += bytes_read;
+            }
+
+            switch(state) {
+                case HEADER_READ:
+                    handle_header_read(netdrv, buffer, &bytes_to_read, &state);
+                    break;
+
+                case READ_MSG_TYPE_FED_IDS: ;
+                    size_t federation_id_length = (size_t)buffer[1 + sizeof(uint16_t)];
+                    bytes_to_read = federation_id_length;
+                    state = FINISH_READ;
+                    break;
+                case READ_MSG_TYPE_NEIGHBOR_STRUCTURE: ;
+                    int num_upstream = extract_int32(buffer + 1);
+                    int num_downstream = extract_int32(buffer + 1 + sizeof(int32_t));
+                    bytes_to_read = ((sizeof(uint16_t) + sizeof(int64_t)) * num_upstream)+ (sizeof(uint16_t) * num_downstream);
+                    state = FINISH_READ;
+                    break;
+                case READ_MSG_TYPE_TAGGED_MESSAGE: ;
+                    size_t length = (size_t) extract_int32(buffer + 1+ sizeof(uint16_t) + sizeof(uint16_t));
+                    if(length > buffer_length - total_bytes_read) {
+                        bytes_to_read = buffer_length - total_bytes_read;
+                        netdrv->read_remaining_bytes = length - bytes_to_read;      
+                    } else {
+                        bytes_to_read = length;
+                    }
+                    state = FINISH_READ;
+                    break;
+                case KEEP_READING:
+                     netdrv->read_remaining_bytes -= total_bytes_read;
+                    return total_bytes_read;
+                case FINISH_READ:
+                    return total_bytes_read;
+            }
         }
+    } else if (priv->proto == UDP) {
+        return read_UDP(netdrv, buffer, buffer_length);
     }
 }

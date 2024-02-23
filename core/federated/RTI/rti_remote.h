@@ -139,10 +139,10 @@ typedef struct rti_remote_t {
     uint16_t user_specified_port;
 
     /** The final port number that the TCP socket server ends up using. */
-    uint16_t final_port_TCP;
+    // uint16_t final_port_TCP;
 
-    /** The TCP socket descriptor for the socket server. */
-    int socket_descriptor_TCP;
+    // /** The TCP socket descriptor for the socket server. */
+    // int socket_descriptor_TCP;
 
     /************* UDP server information *************/
     /** The final port number that the UDP socket server ends up using. */
