@@ -39,6 +39,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/lf_zephyr_support.h"
 #include "low_level_platform.h"
+#include "logging.h"
+#include "logging_macros.h"
 // #include "util.h"
 
 static int64_t epoch_duration_nsec;
@@ -109,8 +111,8 @@ void _lf_initialize_clock() {
         lf_print_error_and_exit("ERROR: Timer couldnt set top value\n");
     }
 
-    // LF_PRINT_LOG("--- Using LF Zephyr Counter Clock with a frequency of %u Hz and wraps every %u sec\n",
-    //   counter_freq, counter_max_ticks/counter_freq);
+    LF_PRINT_LOG("--- Using LF Zephyr Counter Clock with a frequency of %u Hz and wraps every %u sec\n",
+      counter_freq, counter_max_ticks/counter_freq);
     
     // Prepare the alarm config
     alarm_cfg.flags = 0;
@@ -180,9 +182,13 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
             lf_print_error_and_exit("Could not setup alarm for sleeping. Errno %i", err);
         }
         
-        LF_CRITICAL_SECTION_EXIT(env);
+        if (lf_critical_section_exit(env)) {
+            lf_print_error_and_exit("failed to exit critical section");
+        }
         k_sem_take(&semaphore, K_FOREVER);
-        LF_CRITICAL_SECTION_ENTER(env);
+        if (lf_critical_section_enter(env)) {
+            lf_print_error_and_enter("failed to enter critical section");
+        }
 
         // Then calculating remaining sleep, unless we got woken up by an event
         if (!async_event) {

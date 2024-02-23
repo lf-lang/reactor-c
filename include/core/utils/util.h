@@ -38,6 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>   // Defines int64_t
 
 #include "logging.h"
+#include "logging_macros.h"
 
 /**
  * Holds generic statistical data

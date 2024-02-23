@@ -40,7 +40,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/lf_zephyr_support.h"
 #include "low_level_platform.h"
 // #include "util.h"
-// #include "logging.h"
+#include "logging.h"
+#include "logging_macros.h"
 
 static int64_t epoch_duration_nsec;
 static volatile int64_t last_epoch_nsec = 0;
@@ -49,7 +50,7 @@ static volatile bool async_event = false;
 
 void _lf_initialize_clock() {
     timer_freq = CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
-    // LF_PRINT_LOG("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz\n", timer_freq);
+    LF_PRINT_LOG("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz\n", timer_freq);
     last_epoch_nsec = 0;
     epoch_duration_nsec = ((1LL << 32) * SECONDS(1))/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
 }

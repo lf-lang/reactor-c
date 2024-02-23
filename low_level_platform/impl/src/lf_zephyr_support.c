@@ -211,7 +211,5 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     }
 }
 
-
-
 #endif // !LF_SINGLE_THREADED
 #endif
