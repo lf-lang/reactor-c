@@ -44,7 +44,7 @@ federate_info_t * hot_swap_federate;
 // Indicates if a hot swap process is in progress
 bool hot_swap_in_progress = false;
 
-// Indicates thatthe old federate has stopped
+// Indicates that the old federate has stopped.
 bool hot_swap_old_resigned = false; 
 
 bool _lf_federate_reports_error = false;
@@ -315,8 +315,8 @@ void notify_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
         lf_cond_wait(&sent_start_time);
     }
 
-    // Check if sending the tag advance grant needs to be delayed or not
-    // Delay is needed when a federate has, at least one, absent upstream transient
+    // Check if sending the tag advance grant needs to be delayed or not.
+    // Delay is needed when a federate has at least one absent upstream transient.
     int num_absent_upstram_transients = 0;
     for (int j = 0; j < e->num_upstream; j++) {
         federate_info_t *upstream = GET_FED_INFO(e->upstream[j]);
@@ -432,7 +432,7 @@ void* pending_provisional_grant_thread(void* federate) {
  * @param e The scheduling node.
  * @param tag The provisional tag to grant.
  */
-void notify_provisional_tag_advance_grant_delayed(scheduling_node_t* e, tag_t tag) {
+static void notify_provisional_tag_advance_grant_delayed(scheduling_node_t* e, tag_t tag) {
     federate_info_t* fed = (federate_info_t*)e;
 
     // Proceed with the delayed provisional tag grant notification only if 
@@ -1019,7 +1019,8 @@ void handle_address_ad(uint16_t federate_id) {
 }
 
 /**
- * Send to the start time to the federate my_fed.
+ * @brief Send to the start time to the federate my_fed.
+ *
  * This function assumes the caller does not hold the mutex.
  * 
  * If it is the startup phase, the start_time will be the maximum received timestamps
@@ -1032,7 +1033,7 @@ void handle_address_ad(uint16_t federate_id) {
  * @param federation_start_time the federation start_time
  * @param federate_start_tag the federate effective start tag
  */
-void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
+static void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
     // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
     // message.
     // In the startup phase, federates will receive identical start_time and 
