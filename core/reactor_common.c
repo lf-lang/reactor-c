@@ -29,7 +29,7 @@
 #include "tracepoint.h"
 #include "util.h"
 #include "vector.h"
-#include "version.h"
+#include "lf_core_version.h"
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
 #include "environment.h"

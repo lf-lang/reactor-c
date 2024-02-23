@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "version.h"
+#include "lf_core_version.h"
 
 /**
  * @brief Return a description of the compile-time properties of the current

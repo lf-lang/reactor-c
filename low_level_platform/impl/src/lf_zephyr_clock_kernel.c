@@ -39,7 +39,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/lf_zephyr_support.h"
 #include "low_level_platform.h"
-#include "util.h"
+// #include "util.h"
+// #include "logging.h"
 
 static int64_t epoch_duration_nsec;
 static volatile int64_t last_epoch_nsec = 0;
@@ -48,7 +49,7 @@ static volatile bool async_event = false;
 
 void _lf_initialize_clock() {
     timer_freq = CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
-    LF_PRINT_LOG("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz\n", timer_freq);
+    // LF_PRINT_LOG("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz\n", timer_freq);
     last_epoch_nsec = 0;
     epoch_duration_nsec = ((1LL << 32) * SECONDS(1))/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
 }
@@ -75,12 +76,16 @@ int _lf_clock_gettime(instant_t* t) {
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     async_event=false;    
 
-    LF_CRITICAL_SECTION_EXIT(env);
+    if (lf_critical_section_exit(env)) {
+        exit(1);
+    }
     instant_t now;
     do {
     _lf_clock_gettime(&now);
     } while ( (now<wakeup) && !async_event);
-    LF_CRITICAL_SECTION_ENTER(env);
+    if (lf_critical_section_enter(env)) {
+        exit(1);
+    }
 
     if (async_event) {
         async_event=false;

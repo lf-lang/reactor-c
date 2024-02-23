@@ -22,7 +22,6 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT
 STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
-// FIXME: Comment added to see if the Zephyr tests will run.
 /**
  * @brief Zephyr support for the C target of Lingua Franca.
  *
@@ -35,8 +34,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/lf_zephyr_support.h"
 #include "platform/lf_zephyr_board_support.h"
 #include "low_level_platform.h"
-#include "reactor.h"
-#include "utils/util.h"
+// #include "reactor.h"
+// #include "utils/util.h"
 #include "tag.h"
 
 #include <zephyr/kernel.h>
@@ -134,7 +133,7 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
         return -1;
     }
 
-    k_tid_t my_tid = k_thread_create(&threads[tid], &stacks[tid][0],
+    k_thread_create(&threads[tid], &stacks[tid][0],
                                     LF_ZEPHYR_STACK_SIZE, zephyr_worker_entry,
                                  (void *) lf_thread, arguments, NULL,
                                  LF_ZEPHYR_THREAD_PRIORITY, 0, K_NO_WAIT);
