@@ -33,14 +33,6 @@ target_link_libraries(lf-low-level-platform-impl PRIVATE lf::low-level-platform-
 # include(${LF_ROOT}/logging/api/CMakeLists.txt)
 target_link_libraries(lf-low-level-platform-impl PUBLIC lf-logging-api)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
-    target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_NRF52)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
-    target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_ZEPHYR)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
-    target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_RP2040)
-endif()
-
 target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 message(STATUS "Applying preprocessor definitions to platform...")
 macro(low_level_platform_define X)
