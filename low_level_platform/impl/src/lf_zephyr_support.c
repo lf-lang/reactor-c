@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/lf_zephyr_support.h"
 #include "platform/lf_zephyr_board_support.h"
 #include "low_level_platform.h"
+#include "reactor.h"
 #include "utils/util.h"
 #include "tag.h"
 

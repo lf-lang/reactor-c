@@ -1,39 +1,14 @@
-#if defined(LF_SINGLE_THREADED)
-/* Runtime infrastructure for the non-threaded version of the C target of Lingua Franca. */
-
-/*************
-Copyright (c) 2019, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
-
 /**
- * @brief Runtime implementation for the non-threaded version of the 
- * C target of Lingua Franca.
+ * @brief Runtime implementation for the single-threaded version of the C target of Lingua Franca.
  * 
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
+
+#if defined(LF_SINGLE_THREADED)
+
 #include <assert.h>
 #include <string.h>
 
@@ -64,13 +39,10 @@ int lf_mutex_lock(lf_mutex_t* mutex) {
     return 0;
 }
 
-/**
- * Mark the given port's is_present field as true. This is_present field
- * will later be cleaned up by _lf_start_time_step. If the port is unconnected,
- * do nothing.
- * @param env Environment in which we are executing
- * @param port A pointer to the port struct.
- */
+// Defined in reactor_common.c:
+extern bool fast;
+extern bool keepalive_specified;
+
 void lf_set_present(lf_port_base_t* port) {
     if (!port->source_reactor) return;
     environment_t *env = port->source_reactor->environment;
@@ -112,6 +84,7 @@ int wait_until(environment_t* env, instant_t wakeup_time) {
     return 0;
 }
 
+#ifndef NDEBUG
 void lf_print_snapshot(environment_t* env) {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
@@ -119,17 +92,12 @@ void lf_print_snapshot(environment_t* env) {
         LF_PRINT_DEBUG(">>> END Snapshot");
     }
 }
+#else // NDEBUG
+void lf_print_snapshot(environment_t* env) {
+    // Do nothing.
+}
+#endif // NDEBUG
 
-/**
- * Trigger 'reaction'.
- *
- * @param env Environment in which we are executing
- * @param reaction The reaction.
- * @param worker_number The ID of the worker that is making this call. 0 should be
- *  used if there is only one worker (e.g., when the program is using the
- *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
- *  worker number does not make sense (e.g., the caller is not a worker thread).
- */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
     assert(env != GLOBAL_ENVIRONMENT);
 
@@ -260,7 +228,7 @@ int next(environment_t* env) {
     if (event == NULL) {
         // No event in the queue.
         if (!keepalive_specified) {
-            _lf_set_stop_tag( env,
+            lf_set_stop_tag( env,
                 (tag_t){.time=env->current_tag.time, .microstep=env->current_tag.microstep+1}
             );
         }
@@ -274,7 +242,7 @@ int next(environment_t* env) {
         }
     }
 
-    if (_lf_is_tag_after_stop_tag(env, next_tag)) {
+    if (lf_is_tag_after_stop_tag(env, next_tag)) {
         // Cannot process events after the stop tag.
         next_tag = env->stop_tag;
     }
@@ -324,7 +292,7 @@ void lf_request_stop(void) {
 	tag_t new_stop_tag;
 	new_stop_tag.time = env->current_tag.time;
 	new_stop_tag.microstep = env->current_tag.microstep + 1;
-	_lf_set_stop_tag(env, new_stop_tag);
+	lf_set_stop_tag(env, new_stop_tag);
 }
 
 /**
@@ -349,7 +317,7 @@ bool _lf_is_blocked_by_executing_reaction(void) {
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
-    _lf_set_default_command_line_options();
+    lf_set_default_command_line_options();
     _lf_initialize_clock();
 
     LF_PRINT_DEBUG("Processing command line arguments.");
@@ -368,7 +336,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         signal(SIGINT, exit);
 #endif
         // Create and initialize the environment
-        _lf_create_environments();   // code-generated function
+        lf_create_environments();   // code-generated function
         environment_t *env;
         int num_environments = _lf_get_environments(&env);
         LF_ASSERT(num_environments == 1,

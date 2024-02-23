@@ -53,9 +53,9 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
         rti_local->base.scheduling_nodes[i] = (scheduling_node_t *) enclave_info;
 
         // Encode the connection topology into the enclave_info object.
-        enclave_info->base.num_downstream = _lf_get_downstream_of(i, &enclave_info->base.downstream);
-        enclave_info->base.num_upstream = _lf_get_upstream_of(i, &enclave_info->base.upstream);
-        _lf_get_upstream_delay_of(i, &enclave_info->base.upstream_delay);
+        enclave_info->base.num_downstream = lf_get_downstream_of(i, &enclave_info->base.downstream);
+        enclave_info->base.num_upstream = lf_get_upstream_of(i, &enclave_info->base.upstream);
+        lf_get_upstream_delay_of(i, &enclave_info->base.upstream_delay);
 
         enclave_info->base.state = GRANTED;
     }
