@@ -4,8 +4,8 @@ changes() {
   git diff --name-only HEAD $(git merge-base HEAD origin/main)
 }
 
-if changes | grep "$2" | grep -q -v "^.*md\|txt$"; then
-  echo "changed_$3=1" >> $GITHUB_OUTPUT
+if changes | grep "$1" | grep -q -v "^.*md\|txt$"; then
+  echo "changed_$2=1" >> $GITHUB_OUTPUT
 else
-  echo "changed_$3=0" >> $GITHUB_OUTPUT
+  echo "changed_$2=0" >> $GITHUB_OUTPUT
 fi
