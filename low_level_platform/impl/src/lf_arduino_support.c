@@ -33,7 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 
 #include "platform/lf_arduino_support.h"
-#include "../platform.h"
+#include "low_level_platform.h"
 #include "Arduino.h"
 
 // Combine 2 32bit values into a 64bit
