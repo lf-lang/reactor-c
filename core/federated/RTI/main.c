@@ -121,7 +121,7 @@ void usage(int argc, const char* argv[]) {
     lf_print("  -n, --number_of_federates <n>");
     lf_print("   The number of federates in the federation that this RTI will control.\n");
     lf_print("  -nt, --number_of_transient_federates <n>");
-    lf_print("   The number of transient federates in the federation that this RTI will control.\n");
+    lf_print("   The number of federates that are transient; this must be strictly less than the number of federates.\n");
     lf_print("  -p, --port <n>");
     lf_print("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n", UINT16_MAX, DEFAULT_PORT);
     lf_print("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]");
@@ -240,12 +240,12 @@ int process_args(int argc, const char* argv[]) {
             }
             i++;
             long num_transient_federates = strtol(argv[i], NULL, 10);
-            if (num_transient_federates == LONG_MAX ||  num_transient_federates == LONG_MIN) {
-                lf_print_error("--number_of_transient_federates needs a valid positive or null integer argument.");
+            if (num_transient_federates < 0 || num_transient_federates > INT32_MAX) {
+                lf_print_error("--number_of_transient_federates must be between 0 and INT32_MAX.");
                 usage(argc, argv);
                 return 0;
             }
-            rti.number_of_transient_federates = (int32_t)num_transient_federates; // FIXME: Loses numbers on 64-bit machines
+            rti.number_of_transient_federates = (int32_t)num_transient_federates;
             lf_print("RTI: Number of transient federates: %d", rti.number_of_transient_federates);
         } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
             if (argc < i + 2) {
