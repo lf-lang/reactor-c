@@ -3,18 +3,22 @@
 #include <errno.h>
 
 #include "low_level_platform.h"
-#include "util.h"
+// #include "util.h"
+#include "logging.h"
 #include "platform/lf_unix_clock_support.h"
 
+#ifndef LF_CLOCK_SUPPORT_BILLION
+#define LF_CLOCK_SUPPORT_BILLION ((instant_t) 1000000000LL)
+#endif
 
 instant_t convert_timespec_to_ns(struct timespec tp) {
-    return ((instant_t) tp.tv_sec) * BILLION + tp.tv_nsec;
+    return ((instant_t) tp.tv_sec) * LF_CLOCK_SUPPORT_BILLION + tp.tv_nsec;
 }
 
 struct timespec convert_ns_to_timespec(instant_t t) {
     struct timespec tp;
-    tp.tv_sec = t / BILLION;
-    tp.tv_nsec = (t % BILLION);
+    tp.tv_sec = t / LF_CLOCK_SUPPORT_BILLION;
+    tp.tv_nsec = (t % LF_CLOCK_SUPPORT_BILLION);
     return tp;
 }
 

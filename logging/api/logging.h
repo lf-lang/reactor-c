@@ -123,7 +123,7 @@
 #endif // NDEBUG
 
 // ABI ****************************************************************
-
+#include <stdarg.h>
 /**
  * Report an informational message on stdout with a newline appended at the end.
  * If this execution is federated, then the message will be prefaced by identifying

@@ -45,6 +45,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "util.h"
 
+#ifndef LF_CLOCK_SUPPORT_BILLION
+#define LF_CLOCK_SUPPORT_BILLION ((instant_t) 1000000000LL)
+#endif
+
 /**
  * Indicate whether or not the underlying hardware
  * supports Windows' high-resolution counter. It should
@@ -63,7 +67,7 @@ void _lf_initialize_clock() {
     LARGE_INTEGER performance_frequency;
     _lf_use_performance_counter = QueryPerformanceFrequency(&performance_frequency);
     if (_lf_use_performance_counter) {
-        _lf_frequency_to_ns = (double)performance_frequency.QuadPart / BILLION;
+        _lf_frequency_to_ns = (double)performance_frequency.QuadPart / LF_CLOCK_SUPPORT_BILLION;
     } else {
         lf_print_error(
             "High resolution performance counter is not supported on this machine.");

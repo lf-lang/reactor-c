@@ -44,6 +44,21 @@ extern "C" {
 #include <assert.h>
 #include "platform/lf_atomic.h"
 
+// The following two definitions are duplicated from tag.h to break a dependency
+// cycle. TODO: decide whether this (very small) duplication is the right
+// tradeoff.
+
+/**
+ * Time instant. Both physical and logical times are represented
+ * using this typedef.
+ */
+typedef int64_t instant_t;
+
+/**
+ * Interval of time.
+ */
+typedef int64_t interval_t;
+
 // Forward declarations
 typedef struct environment_t environment_t;
 

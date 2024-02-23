@@ -82,6 +82,9 @@ target_link_libraries(reactor-c PUBLIC lf::version-api)
 include(${LF_ROOT}/logging/api/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::logging-api)
 
+include(${LF_ROOT}/tag/api/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::tag-api)
+
 include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
 include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::low-level-platform-api)
