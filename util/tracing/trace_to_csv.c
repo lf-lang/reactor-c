@@ -35,7 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor.h"
 #include "trace.h"
 #include "trace_util.h"
-#include "default-trace.h"
+#include "trace_impl.h"
 
 #define MAX_NUM_REACTIONS 64  // Maximum number of reactions reported in summary stats.
 #define MAX_NUM_WORKERS 64
@@ -119,7 +119,7 @@ size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time
         }
         if ((trace[i].logical_time - start_time) >= trace_start_time
             && (trace[i].logical_time - start_time) < trace_end_time) {
-            fprintf(output_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld\n",
+            fprintf(output_file, "%s, %s, %d, %d, " PRINTF_TIME ", %d, " PRINTF_TIME ", %s, " PRINTF_TIME "\n",
                     trace_event_names[trace[i].event_type],
                     reactor_name,
                     trace[i].src_id,
@@ -282,9 +282,9 @@ size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time
  */
 void write_summary_file() {
     // Overall stats.
-    fprintf(summary_file, "Start time:, %lld\n", start_time);
-    fprintf(summary_file, "End time:, %lld\n", latest_time);
-    fprintf(summary_file, "Total time:, %lld\n", latest_time - start_time);
+    fprintf(summary_file, "Start time:, " PRINTF_TIME "\n", start_time);
+    fprintf(summary_file, "End time:, " PRINTF_TIME "\n", latest_time);
+    fprintf(summary_file, "Total time:, " PRINTF_TIME "\n", latest_time - start_time);
 
     fprintf(summary_file, "\nTotal Event Occurrences\n");
     for (int i = 0; i < NUM_EVENT_TYPES; i++) {
@@ -307,7 +307,7 @@ void write_summary_file() {
             for (int j = 0; j < stats->num_reactions_seen; j++) {
                 reaction_stats_t* rstats = &stats->reactions[j];
                 if (rstats->occurrences > 0) {
-                    fprintf(summary_file, "%s, %d, %d, %lld, %f, %lld, %lld, %lld\n",
+                    fprintf(summary_file, "%s, %d, %d, " PRINTF_TIME ", %f, " PRINTF_TIME ", " PRINTF_TIME ", " PRINTF_TIME "\n",
                             stats->description,
                             j, // Reaction number.
                             rstats->occurrences,
@@ -351,7 +351,7 @@ void write_summary_file() {
             fprintf(summary_file, "%s, %d", stats->description, stats->occurrences);
             if (stats->event_type == user_value && stats->reactions[0].occurrences > 0) {
                 // This assumes that the first "reactions" entry has been comandeered for this data.
-                fprintf(summary_file, ", %lld, %lld, %lld, %lld\n",
+                fprintf(summary_file, ", " PRINTF_TIME ", " PRINTF_TIME ", " PRINTF_TIME ", " PRINTF_TIME "\n",
                         stats->reactions[0].total_exec_time,
                         stats->reactions[0].total_exec_time / stats->reactions[0].occurrences,
                         stats->reactions[0].max_exec_time,
@@ -384,7 +384,7 @@ void write_summary_file() {
             for (int j = 0; j <= stats->num_reactions_seen; j++) {
                 reaction_stats_t* rstats = &stats->reactions[j];
                 if (rstats->occurrences > 0) {
-                    fprintf(summary_file, "%d, %s, %d, %lld, %f, %lld, %lld, %lld\n",
+                    fprintf(summary_file, "%d, %s, %d, " PRINTF_TIME ", %f, " PRINTF_TIME ", " PRINTF_TIME ", " PRINTF_TIME "\n",
                             j / 2,
                             waitee,
                             rstats->occurrences,

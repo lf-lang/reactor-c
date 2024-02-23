@@ -36,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor.h"
 #include "trace.h"
 #include "trace_util.h"
-#include "default-trace.h"
+#include "trace_impl.h"
 
 /** Buffer for reading object descriptions. Size limit is BUFFER_SIZE bytes. */
 char buffer[BUFFER_SIZE];
