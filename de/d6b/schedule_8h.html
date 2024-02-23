@@ -93,63 +93,52 @@ $(function(){initNavTree('de/d6b/schedule_8h.html','../../'); initResizable(); }
 
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">schedule.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
+
+<p>API functions for scheduling actions.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 </div>
 <p><a href="../../de/d6b/schedule_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a4625be3023ef492f25fd5193ef754774" id="r_a4625be3023ef492f25fd5193ef754774"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4625be3023ef492f25fd5193ef754774">SUPPRESS_UNUSED_WARNING</a>(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">x</a>)&#160;&#160;&#160;(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">x</a>)</td></tr>
-<tr class="separator:a4625be3023ef492f25fd5193ef754774"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a6778eef97447cf0ba1f0afa8ba3a8dca" id="r_a6778eef97447cf0ba1f0afa8ba3a8dca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6778eef97447cf0ba1f0afa8ba3a8dca">lf_schedule</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> offset)</td></tr>
+<tr class="memdesc:a6778eef97447cf0ba1f0afa8ba3a8dca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule an action to occur with the specified time offset with no payload (no value conveyed).  <br /></td></tr>
 <tr class="separator:a6778eef97447cf0ba1f0afa8ba3a8dca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a073ea4406a084a24e71b65936ba39e36" id="r_a073ea4406a084a24e71b65936ba39e36"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a073ea4406a084a24e71b65936ba39e36">lf_schedule_int</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">extra_delay</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> value)</td></tr>
+<tr class="memdesc:a073ea4406a084a24e71b65936ba39e36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule the specified action with an integer value at a later logical time.  <br /></td></tr>
 <tr class="separator:a073ea4406a084a24e71b65936ba39e36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe3fd30bf6a2689fdb3ec03b4e2f47d1" id="r_abe3fd30bf6a2689fdb3ec03b4e2f47d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abe3fd30bf6a2689fdb3ec03b4e2f47d1">lf_schedule_token</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">extra_delay</a>, <a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="memdesc:abe3fd30bf6a2689fdb3ec03b4e2f47d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule the specified action at a later tag with the specified token as a payload.  <br /></td></tr>
 <tr class="separator:abe3fd30bf6a2689fdb3ec03b4e2f47d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6121900834a3152ccd57fe3366a82d9a" id="r_a6121900834a3152ccd57fe3366a82d9a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6121900834a3152ccd57fe3366a82d9a">lf_schedule_copy</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> offset, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *value, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> length)</td></tr>
-<tr class="separator:a6121900834a3152ccd57fe3366a82d9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a747594e2d7264ae8b044a095eb92ba27" id="r_a747594e2d7264ae8b044a095eb92ba27"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a747594e2d7264ae8b044a095eb92ba27">lf_schedule_copy</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> offset, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *value, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> length)</td></tr>
+<tr class="memdesc:a747594e2d7264ae8b044a095eb92ba27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule an action to occur with the specified value and time offset with a copy of the specified value.  <br /></td></tr>
+<tr class="separator:a747594e2d7264ae8b044a095eb92ba27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a986bb1be3a9e4f71e5b5dde30d9dc6ad" id="r_a986bb1be3a9e4f71e5b5dde30d9dc6ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a986bb1be3a9e4f71e5b5dde30d9dc6ad">lf_schedule_value</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">extra_delay</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *value, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> length)</td></tr>
+<tr class="memdesc:a986bb1be3a9e4f71e5b5dde30d9dc6ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Variant of lf_schedule_token that creates a token to carry the specified value.  <br /></td></tr>
 <tr class="separator:a986bb1be3a9e4f71e5b5dde30d9dc6ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28927b8a184fe101ad414ed866c49148" id="r_a28927b8a184fe101ad414ed866c49148"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a28927b8a184fe101ad414ed866c49148">lf_schedule_trigger</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">delay</a>, <a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="memdesc:a28927b8a184fe101ad414ed866c49148"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule the specified trigger to execute in the specified environment with given delay and token.  <br /></td></tr>
+<tr class="separator:a28927b8a184fe101ad414ed866c49148"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3a04dd0a1581844829b28686b6b3c53" id="r_ab3a04dd0a1581844829b28686b6b3c53"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab3a04dd0a1581844829b28686b6b3c53">lf_check_deadline</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *self, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">invoke_deadline_handler</a>)</td></tr>
+<tr class="memdesc:ab3a04dd0a1581844829b28686b6b3c53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check the deadline of the currently executing reaction against the current physical time.  <br /></td></tr>
 <tr class="separator:ab3a04dd0a1581844829b28686b6b3c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd>
+<div class="textblock"><p>API functions for scheduling actions. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd>
 <dd>
-Hou Seng (Steven) Wong </dd></dl>
+Hou Seng (Steven) Wong </dd>
+<dd>
+Soroush Bateni </dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a></dd></dl>
-<p>This file is a translation layer that implements Lingua Franca APIs which interact with the internal _lf_SET and _lf_schedule APIs. </p>
-</div><h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a4625be3023ef492f25fd5193ef754774" name="a4625be3023ef492f25fd5193ef754774"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4625be3023ef492f25fd5193ef754774">&#9670;&#160;</a></span>SUPPRESS_UNUSED_WARNING</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> SUPPRESS_UNUSED_WARNING</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">x</a></span></td><td>)</td>
-          <td>&#160;&#160;&#160;(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">x</a>)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Define a macro to suppress warnings about unused variables. Apparently, it is sufficient to just cast to void. </p>
-
-</div>
-</div>
-<h2 class="groupheader">Function Documentation</h2>
+<p>Most of these functions take a <code>void*</code> pointer to an action, which will be internally cast to a <code>lf_action_base_t*</code> pointer. The cast could be done by macros in <a class="el" href="../../d1/ddd/reaction__macros_8h.html" title="Macros providing an API for use in inline reaction bodies.">reaction_macros.h</a>, but unlike the macros defined there, it is common for <code>lf_schedule</code> functions to be invoked outside of reaction bodies. This means that users writing code in separate library files are responsible for ensuring that the <code>void*</code> pointer is indeed a valid <code>lf_action_base_t*</code> pointer before passing it to <code>lf_schedule</code>. The compiler will not check this. </p>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="ab3a04dd0a1581844829b28686b6b3c53" name="ab3a04dd0a1581844829b28686b6b3c53"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab3a04dd0a1581844829b28686b6b3c53">&#9670;&#160;</a></span>lf_check_deadline()</h2>
 
@@ -168,6 +157,18 @@ Hou Seng (Steven) Wong </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Check the deadline of the currently executing reaction against the current physical time. </p>
+<p>If the deadline has passed, invoke the deadline handler (if invoke_deadline_handler parameter is set true) and return true. Otherwise, return false.</p>
+<p>This function is intended to be used within a reaction that has been invoked without a deadline violation, but that wishes to check whether the deadline gets violated <em>during</em> the execution of the reaction. This can be used, for example, to implement a timeout mechanism that bounds the execution time of a reaction, for example to realize an "anytime" computation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The self struct of the reactor. </td></tr>
+    <tr><td class="paramname">invoke_deadline_handler</td><td>When this is set true, also invoke deadline handler if the deadline has passed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the specified deadline has passed and false otherwise.</dd></dl>
 <p>Check the deadline of the currently executing reaction against the current physical time. If the deadline has passed, invoke the deadline handler (if invoke_deadline_handler parameter is set true) and return true. Otherwise, return false.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -198,20 +199,14 @@ Hou Seng (Steven) Wong </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Schedule an action to occur with the specified value and time offset with no payload (no value conveyed). See <a class="el" href="../../dd/deb/schedule_8c.html#abe3fd30bf6a2689fdb3ec03b4e2f47d1">lf_schedule_token()</a>, which this uses, for details.</p>
+
+<p>Schedule an action to occur with the specified time offset with no payload (no value conveyed). </p>
+<p>The later tag will depend on whether the action is logical or physical. If it is logical, the time of the event will be the current logical time of the environment associated with the action plus the minimum delay of the action plus the extra delay. If that time is equal to the current time, then the tag will be one microstep beyond the current tag. If the action is physical, the time will be the current physical time plus the extra delay, and the microstep will be zero.</p>
+<p>See <a class="el" href="#abe3fd30bf6a2689fdb3ec03b4e2f47d1" title="Schedule the specified action at a later tag with the specified token as a payload.">lf_schedule_token()</a>, which this uses, for details.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">action</td><td>Pointer to an action on the self struct. </td></tr>
-    <tr><td class="paramname">offset</td><td>The time offset over and above that in the action. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error.</dd></dl>
-<p>Schedule an action to occur with the specified value and time offset with no payload (no value conveyed). See <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">schedule_token()</a>, which this uses, for details.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">action</td><td>Pointer to an action on the self struct. </td></tr>
-    <tr><td class="paramname">offset</td><td>The time offset over and above that in the action. </td></tr>
+    <tr><td class="paramname">action</td><td>The action to be triggered (a pointer to an <code><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a></code>). </td></tr>
+    <tr><td class="paramname">offset</td><td>The time offset over and above the minimum delay of the action. </td></tr>
   </table>
   </dd>
 </dl>
@@ -219,8 +214,8 @@ Hou Seng (Steven) Wong </dd></dl>
 
 </div>
 </div>
-<a id="a6121900834a3152ccd57fe3366a82d9a" name="a6121900834a3152ccd57fe3366a82d9a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6121900834a3152ccd57fe3366a82d9a">&#9670;&#160;</a></span>lf_schedule_copy()</h2>
+<a id="a747594e2d7264ae8b044a095eb92ba27" name="a747594e2d7264ae8b044a095eb92ba27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a747594e2d7264ae8b044a095eb92ba27">&#9670;&#160;</a></span>lf_schedule_copy()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -243,27 +238,18 @@ Hou Seng (Steven) Wong </dd></dl>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>length</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>length</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Schedule an action to occur with the specified value and time offset with a copy of the specified value. If the value is non-null, then it will be copied into newly allocated memory under the assumption that its size is given in the trigger's token object's element_size field multiplied by the specified length.</p>
-<p>See <a class="el" href="../../dd/deb/schedule_8c.html#abe3fd30bf6a2689fdb3ec03b4e2f47d1">lf_schedule_token()</a>, which this uses, for details.</p>
+
+<p>Schedule an action to occur with the specified value and time offset with a copy of the specified value. </p>
+<p>If the value is non-null, then it will be copied into newly allocated memory under the assumption that its size is given in the trigger's token object's element_size field multiplied by the specified length.</p>
+<p>The later tag will depend on whether the action is logical or physical. If it is logical, the time of the event will be the current logical time of the environment associated with the action plus the minimum delay of the action plus the extra delay. If that time is equal to the current time, then the tag will be one microstep beyond the current tag. If the action is physical, the time will be the current physical time plus the extra delay, and the microstep will be zero.</p>
+<p>See <a class="el" href="#abe3fd30bf6a2689fdb3ec03b4e2f47d1" title="Schedule the specified action at a later tag with the specified token as a payload.">lf_schedule_token()</a>, which this uses, for details.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">action</td><td>Pointer to an action on a self struct. </td></tr>
-    <tr><td class="paramname">offset</td><td>The time offset over and above that in the action. </td></tr>
-    <tr><td class="paramname">value</td><td>A pointer to the value to copy. </td></tr>
-    <tr><td class="paramname">length</td><td>The length, if an array, 1 if a scalar, and 0 if value is NULL. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error.</dd></dl>
-<p>Schedule an action to occur with the specified value and time offset with a copy of the specified value. If the value is non-null, then it will be copied into newly allocated memory under the assumption that its size is given in the trigger's token object's element_size field multiplied by the specified length.</p>
-<p>See <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">schedule_token()</a>, which this uses, for details.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">action</td><td>Pointer to an action on a self struct. </td></tr>
+    <tr><td class="paramname">action</td><td>The action to be triggered (a pointer to an <code><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a></code>). </td></tr>
     <tr><td class="paramname">offset</td><td>The time offset over and above that in the action. </td></tr>
     <tr><td class="paramname">value</td><td>A pointer to the value to copy. </td></tr>
     <tr><td class="paramname">length</td><td>The length, if an array, 1 if a scalar, and 0 if value is NULL. </td></tr>
@@ -297,20 +283,13 @@ Hou Seng (Steven) Wong </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Schedule the specified action with an integer value at a later logical time that depends on whether the action is logical or physical and what its parameter values are. This wraps a copy of the integer value in a token. See <a class="el" href="../../dd/deb/schedule_8c.html#abe3fd30bf6a2689fdb3ec03b4e2f47d1">lf_schedule_token()</a> for more details.</p>
+
+<p>Schedule the specified action with an integer value at a later logical time. </p>
+<p>The later tag will depend on whether the action is logical or physical. If it is logical, the time of the event will be the current logical time of the environment associated with the action plus the minimum delay of the action plus the extra delay. If that time is equal to the current time, then the tag will be one microstep beyond the current tag. If the action is physical, the time will be the current physical time plus the extra delay, and the microstep will be zero.</p>
+<p>This wraps a copy of the integer value in a token. See <a class="el" href="#abe3fd30bf6a2689fdb3ec03b4e2f47d1" title="Schedule the specified action at a later tag with the specified token as a payload.">lf_schedule_token()</a> for more details.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
-    <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>
-    <tr><td class="paramname">value</td><td>The value to send. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error.</dd></dl>
-<p>Schedule the specified action with an integer value at a later logical time that depends on whether the action is logical or physical and what its parameter values are. This wraps a copy of the integer value in a token. See <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">schedule_token()</a> for more details.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
+    <tr><td class="paramname">action</td><td>The action to be triggered (a pointer to an <code><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a></code>). </td></tr>
     <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>
     <tr><td class="paramname">value</td><td>The value to send. </td></tr>
   </table>
@@ -343,17 +322,67 @@ Hou Seng (Steven) Wong </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Schedule the specified action with the specified token as a payload. This will trigger an event at a later logical time that depends on whether the action is logical or physical and what its parameter values are.</p>
-<p>logical action: A logical action has an offset (default is zero) and a minimum interarrival time (MIT), which also defaults to zero. The logical time at which this scheduled event will trigger is the current time plus the offset plus the delay argument given to this function. If, however, that time is not greater than a prior triggering of this logical action by at least the MIT, then the one of two things can happen depending on the policy specified for the action. If the action's policy is DROP (default), then the action is simply dropped and the memory pointed to by value argument is freed. If the policy is DEFER, then the time will be increased to equal the time of the most recent triggering plus the MIT.</p>
+
+<p>Schedule the specified action at a later tag with the specified token as a payload. </p>
+<p>The later tag will depend on whether the action is logical or physical. If it is logical, the time of the event will be the current logical time of the environment associated with the action plus the minimum delay of the action plus the extra delay. If that time is equal to the current time, then the tag will be one microstep beyond the current tag. If the action is physical, the time will be the current physical time plus the extra delay, and the microstep will be zero.</p>
+<p>For a logical action:</p>
+<p>A logical action has a minimum delay (default is zero) and a minimum spacing, which also defaults to zero. The logical time at which this scheduled event will trigger is the current time of the environment associated with the action plus the offset plus the delay argument given to this function. If, however, that time is not greater than a prior triggering of this logical action by at least the minimum spacing, then the one of two things can happen depending on the policy specified for the action. If the action's policy is DROP (default), then the action is simply dropped and the memory pointed to by value argument is freed. If the policy is DEFER, then the time will be increased to equal the time of the most recent triggering plus the minimum spacing.</p>
 <p>For the above, "current time" means the logical time of the reaction that is calling this function. Logical actions should always be scheduled within a reaction invocation, never asynchronously from the outside. FIXME: This needs to be checked.</p>
 <p>physical action: A physical action has all the same parameters as a logical action, but its timestamp will be the larger of the current physical time and the time it would be assigned if it were a logical action.</p>
 <p>There are three conditions under which this function will not actually put an event on the event queue and decrement the reference count of the token (if there is one), which could result in the payload being freed. In all three cases, this function returns 0. Otherwise, it returns a handle to the scheduled trigger, which is an integer greater than 0.</p>
 <p>The first condition is that <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">stop()</a> has been called and the time offset of this event is greater than zero. The second condition is that the logical time of the event is greater that the stop time (timeout) that is specified in the target properties or on the command line. The third condition is that the trigger argument is null.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
+    <tr><td class="paramname">action</td><td>The action to be triggered (a pointer to an <code><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a></code>). </td></tr>
     <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>
     <tr><td class="paramname">token</td><td>The token to carry the payload or null for no payload. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error. </dd></dl>
+
+</div>
+</div>
+<a id="a28927b8a184fe101ad414ed866c49148" name="a28927b8a184fe101ad414ed866c49148"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28927b8a184fe101ad414ed866c49148">&#9670;&#160;</a></span>lf_schedule_trigger()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> lf_schedule_trigger </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *</td>          <td class="paramname"><span class="paramname"><em>trigger</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>delay</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *</td>          <td class="paramname"><span class="paramname"><em>token</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Schedule the specified trigger to execute in the specified environment with given delay and token. </p>
+<p>This is the most flexible version of the schedule functions and is used in the implementation of many of the others. End users would rarely use it.</p>
+<p>This will schedule the specified trigger at env-&gt;current_tag.time plus the offset of the specified trigger plus the delay. The value is required to be either NULL or a pointer to a token wrapping the payload. The token carries a reference count, and when the reference count decrements to 0, the will be freed. Hence, it is essential that the payload be in memory allocated using malloc.</p>
+<p>There are several conditions under which this function will not actually put an event on the event queue and decrement the reference count of the token (if there is one), which could result in the payload being freed. In all cases, this function returns 0. Otherwise, it returns a handle to the scheduled trigger, which is an integer greater than 0.</p>
+<p>The first condition is that a stop has been requested and the trigger offset plus the extra delay is greater than zero. The second condition is that the trigger offset plus the extra delay is greater that the requested stop time (timeout). A third condition is that the trigger argument is null. Also, an event might not be scheduled if the trigger is an action with a <code>min_spacing</code> parameter. See the documentation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment in which to schedule the event. </td></tr>
+    <tr><td class="paramname">trigger</td><td>The action or timer to be triggered. </td></tr>
+    <tr><td class="paramname">delay</td><td>Offset of the event release. </td></tr>
+    <tr><td class="paramname">token</td><td>The token payload. </td></tr>
   </table>
   </dd>
 </dl>
@@ -389,23 +418,13 @@ Hou Seng (Steven) Wong </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Variant of lf_schedule_token that creates a token to carry the specified value. The value is required to be malloc'd memory with a size equal to the element_size of the specified action times the length parameter.</p>
-<p>See <a class="el" href="../../dd/deb/schedule_8c.html#abe3fd30bf6a2689fdb3ec03b4e2f47d1">lf_schedule_token()</a>, which this uses, for details.</p>
+
+<p>Variant of lf_schedule_token that creates a token to carry the specified value. </p>
+<p>The value is required to be malloc'd memory with a size equal to the element_size of the specified action times the length parameter.</p>
+<p>See <a class="el" href="#abe3fd30bf6a2689fdb3ec03b4e2f47d1" title="Schedule the specified action at a later tag with the specified token as a payload.">lf_schedule_token()</a>, which this uses, for details.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
-    <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>
-    <tr><td class="paramname">value</td><td>Dynamically allocated memory containing the value to send. </td></tr>
-    <tr><td class="paramname">length</td><td>The length of the array, if it is an array, or 1 for a scalar and 0 for no payload. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error.</dd></dl>
-<p>Variant of schedule_token that creates a token to carry the specified value. The value is required to be malloc'd memory with a size equal to the element_size of the specifies action times the length parameter.</p>
-<p>See <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">schedule_token()</a>, which this uses, for details.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
+    <tr><td class="paramname">action</td><td>The action to be triggered (a pointer to an <code><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a></code>). </td></tr>
     <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>
     <tr><td class="paramname">value</td><td>Dynamically allocated memory containing the value to send. </td></tr>
     <tr><td class="paramname">length</td><td>The length of the array, if it is an array, or 1 for a scalar and 0 for no payload. </td></tr>

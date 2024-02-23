@@ -100,46 +100,54 @@ $(function(){initNavTree('d3/d71/rti__local_8h_source.html','../../'); initResiz
   <div class="headertitle"><div class="title">rti_local.h</div></div>
 </div><!--header-->
 <div class="contents">
-<a href="../../d3/d71/rti__local_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef RTI_LOCAL_H</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define RTI_LOCAL_H</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#ifdef LF_ENCLAVES</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &quot;<a class="code" href="../../d6/d1d/lf__types_8h.html">lf_types.h</a>&quot;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &quot;<a class="code" href="../../dc/da9/rti__common_8h.html">rti_common.h</a>&quot;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a> {</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    scheduling_node_t base;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a> * env; <span class="comment">// A pointer to the environment of the enclave</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <a class="code hl_struct" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> next_event_condition; <span class="comment">// Condition variable used by scheduling_nodes to notify an enclave</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>                                    <span class="comment">// that it&#39;s call to next_event_tag() should unblock.</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>} <a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>;</div>
+<a href="../../d3/d71/rti__local_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span> </div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="preprocessor">#ifndef RTI_LOCAL_H</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#define RTI_LOCAL_H</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#ifdef LF_ENCLAVES</span></div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    rti_common_t base;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>} rti_local_t;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="keywordtype">void</span> initialize_local_rti(<a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a>* envs, <span class="keywordtype">int</span> num_envs);</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keywordtype">void</span> free_local_rti();</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="keywordtype">void</span> initialize_enclave_info(<a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* enclave, <span class="keywordtype">int</span> idx, <a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env);</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> rti_next_event_tag_locked(<a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* enclave, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event_tag);</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="keywordtype">void</span> rti_logical_tag_complete_locked(<a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* enclave, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> completed);</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span><span class="keywordtype">void</span> rti_update_other_net_locked(<a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* src, <a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* target, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> net);</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="preprocessor">#endif </span><span class="comment">// LF_ENCLAVES</span></div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="preprocessor">#endif </span><span class="comment">// RTI_LOCAL_H</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &quot;<a class="code" href="../../d6/d1d/lf__types_8h.html">lf_types.h</a>&quot;</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &quot;<a class="code" href="../../dc/da9/rti__common_8h.html">rti_common.h</a>&quot;</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a> {</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    scheduling_node_t base;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a> * env; <span class="comment">// A pointer to the environment of the enclave</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <a class="code hl_struct" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> next_event_condition; <span class="comment">// Condition variable used by scheduling_nodes to notify an enclave</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>                                    <span class="comment">// that it&#39;s call to next_event_tag() should unblock.</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>} <a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    rti_common_t base;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>} rti_local_t;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="keywordtype">void</span> initialize_local_rti(<a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a>* envs, <span class="keywordtype">int</span> num_envs);</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="keywordtype">void</span> free_local_rti();</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="keywordtype">void</span> initialize_enclave_info(<a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* enclave, <span class="keywordtype">int</span> idx, <a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env);</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> rti_next_event_tag_locked(<a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* enclave, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event_tag);</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="keywordtype">void</span> rti_logical_tag_complete_locked(<a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* enclave, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> completed);</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span><span class="keywordtype">void</span> rti_update_other_net_locked(<a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* src, <a class="code hl_typedef" href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a>* target, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> net);</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span> </div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span><span class="keywordtype">int</span> lf_get_upstream_of(<span class="keywordtype">int</span> enclave_id, <span class="keywordtype">int</span>** result);</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="keywordtype">int</span> lf_get_downstream_of(<span class="keywordtype">int</span> enclave_id, <span class="keywordtype">int</span>** result);</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span> </div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span><span class="keywordtype">int</span> lf_get_upstream_delay_of(<span class="keywordtype">int</span> enclave_id, <a class="code hl_typedef" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>** result);</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span> </div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span><span class="preprocessor">#endif </span><span class="comment">// LF_ENCLAVES</span></div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span><span class="preprocessor">#endif </span><span class="comment">// RTI_LOCAL_H</span></div>
 <div class="ttc" id="aenvironment_8h_html_a1567a1034e3b7c6528bc12fdc04a4c71"><div class="ttname"><a href="../../de/d26/environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a></div><div class="ttdeci">struct enclave_info_t enclave_info_t</div><div class="ttdef"><b>Definition</b> environment.h:46</div></div>
-<div class="ttc" id="alf__types_8h_html"><div class="ttname"><a href="../../d6/d1d/lf__types_8h.html">lf_types.h</a></div></div>
+<div class="ttc" id="alf__types_8h_html"><div class="ttname"><a href="../../d6/d1d/lf__types_8h.html">lf_types.h</a></div><div class="ttdoc">Type definitions that are widely used across different parts of the runtime.</div></div>
 <div class="ttc" id="arti__common_8h_html"><div class="ttname"><a href="../../dc/da9/rti__common_8h.html">rti_common.h</a></div><div class="ttdoc">Common declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua F...</div></div>
 <div class="ttc" id="astructenvironment__t_html"><div class="ttname"><a href="../../d2/d01/structenvironment__t.html">environment_t</a></div><div class="ttdoc">Execution environment. This struct contains information about the execution environment....</div><div class="ttdef"><b>Definition</b> environment.h:69</div></div>
 <div class="ttc" id="astructlf__cond__t_html"><div class="ttname"><a href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a></div><div class="ttdef"><b>Definition</b> lf_C11_threads_support.h:38</div></div>
 <div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="../../db/df7/structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition</b> tag.h:73</div></div>
+<div class="ttc" id="atag_8h_html_af5b4e62d03782997d813be6145316f4b"><div class="ttname"><a href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></div><div class="ttdeci">int64_t interval_t</div><div class="ttdef"><b>Definition</b> tag.h:63</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

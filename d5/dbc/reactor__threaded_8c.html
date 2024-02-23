@@ -99,19 +99,23 @@ $(function(){initNavTree('d5/dbc/reactor__threaded_8c.html','../../'); initResiz
   <div class="headertitle"><div class="title">reactor_threaded.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Runtime infrastructure for the threaded version of the C target of Lingua Franca.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;signal.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;time.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d7/d0e/reactor__common_8h_source.html">reactor_common.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d4/dd2/reactor__threaded_8h_source.html">reactor_threaded.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d85/reactor_8h_source.html">reactor.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/dd8/scheduler_8h_source.html">scheduler.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d26/environment_8h_source.html">environment.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d3/d71/rti__local_8h_source.html">rti_local.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d7/d0e/reactor__common_8h_source.html">reactor_common.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d9/da3/watchdog_8h_source.html">watchdog.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -132,6 +136,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a3d1cd5263a79c14e62a5fb34530a0a93" id="r_a3d1cd5263a79c14e62a5fb34530a0a93"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3d1cd5263a79c14e62a5fb34530a0a93">_lf_wait_on_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">proposed_tag</a>)</td></tr>
 <tr class="separator:a3d1cd5263a79c14e62a5fb34530a0a93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adaa6f5f1a265e7a37aeb3b6a0d101732" id="r_adaa6f5f1a265e7a37aeb3b6a0d101732"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adaa6f5f1a265e7a37aeb3b6a0d101732">lf_set_present</a> (<a class="el" href="../../da/de8/structlf__port__base__t.html">lf_port_base_t</a> *port)</td></tr>
+<tr class="memdesc:adaa6f5f1a265e7a37aeb3b6a0d101732"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark the given port's is_present field as true.  <br /></td></tr>
 <tr class="separator:adaa6f5f1a265e7a37aeb3b6a0d101732"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab769495d64de2c45344fad51a14d3db2" id="r_ab769495d64de2c45344fad51a14d3db2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab769495d64de2c45344fad51a14d3db2">wait_until</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> logical_time, <a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *condition)</td></tr>
 <tr class="separator:ab769495d64de2c45344fad51a14d3db2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -142,8 +147,10 @@ Functions</h2></td></tr>
 <tr class="memitem:ab9e357a21e338cd3719cdec409b9f7a6" id="r_ab9e357a21e338cd3719cdec409b9f7a6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab9e357a21e338cd3719cdec409b9f7a6">_lf_next_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="separator:ab9e357a21e338cd3719cdec409b9f7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab49affc958f705d9e33c5e3463848bda" id="r_ab49affc958f705d9e33c5e3463848bda"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab49affc958f705d9e33c5e3463848bda">lf_request_stop</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
+<tr class="memdesc:ab49affc958f705d9e33c5e3463848bda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request a stop to execution as soon as possible.  <br /></td></tr>
 <tr class="separator:ab49affc958f705d9e33c5e3463848bda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af31f8aca1b004a6e5e0e695063de1b47" id="r_af31f8aca1b004a6e5e0e695063de1b47"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af31f8aca1b004a6e5e0e695063de1b47">_lf_trigger_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>)</td></tr>
+<tr class="memdesc:af31f8aca1b004a6e5e0e695063de1b47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger the specified reaction on the specified worker in the specified environment.  <br /></td></tr>
 <tr class="separator:af31f8aca1b004a6e5e0e695063de1b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2e993d75ef5508ea9ab302f7aa3efdf" id="r_ab2e993d75ef5508ea9ab302f7aa3efdf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2e993d75ef5508ea9ab302f7aa3efdf">_lf_initialize_start_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="separator:ab2e993d75ef5508ea9ab302f7aa3efdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -163,6 +170,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a15b16453216ed29570af03009e7c7c63" id="r_a15b16453216ed29570af03009e7c7c63"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15b16453216ed29570af03009e7c7c63">worker</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">arg</a>)</td></tr>
 <tr class="separator:a15b16453216ed29570af03009e7c7c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae4a4a9ce970c18bff7785cf7863777c" id="r_aae4a4a9ce970c18bff7785cf7863777c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aae4a4a9ce970c18bff7785cf7863777c">lf_print_snapshot</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:aae4a4a9ce970c18bff7785cf7863777c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print a snapshot of the priority queues used during execution (for debugging).  <br /></td></tr>
 <tr class="separator:aae4a4a9ce970c18bff7785cf7863777c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aebbe83b2cb8e4ff5180c33eb8c8f9739" id="r_aebbe83b2cb8e4ff5180c33eb8c8f9739"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aebbe83b2cb8e4ff5180c33eb8c8f9739">start_threads</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="separator:aebbe83b2cb8e4ff5180c33eb8c8f9739"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -193,7 +201,15 @@ Variables</h2></td></tr>
 <tr class="memitem:a76d8bd3f166632ed8f2990a1f29852cd" id="r_a76d8bd3f166632ed8f2990a1f29852cd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a76d8bd3f166632ed8f2990a1f29852cd">worker_thread_count</a> = 0</td></tr>
 <tr class="separator:a76d8bd3f166632ed8f2990a1f29852cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Runtime infrastructure for the threaded version of the C target of Lingua Franca. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
+<dd>
+{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
+<dd>
+{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a2759df05e92b68f74325190e9a6aca13" name="a2759df05e92b68f74325190e9a6aca13"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2759df05e92b68f74325190e9a6aca13">&#9670;&#160;</a></span>MAX_STALL_INTERVAL</h2>
 
@@ -220,18 +236,6 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Copyright (c) 2019, The University of California at Berkeley.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. Runtime infrastructure for the threaded version of the C target of Lingua Franca.</p>
-<dl class="section author"><dt>Author</dt><dd>{Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
-<dd>
-{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
-<dd>
-{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd></dl>
 
 </div>
 </div>
@@ -364,7 +368,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>If there is at least one event in the event queue, then wait until physical time matches or exceeds the time of the least tag on the event queue; pop the next event(s) from the event queue that all have the same tag; extract from those events the reactions that are to be invoked at this logical time and insert them into the reaction queue. The event queue is sorted by time tag.</p>
-<p>If there is no event in the queue and the keepalive command-line option was not given, and this is not a federated execution with centralized coordination, set the stop tag to the current tag. If keepalive was given, then wait for either <a class="el" href="#ab49affc958f705d9e33c5e3463848bda">lf_request_stop()</a> to be called or an event appears in the event queue and then return.</p>
+<p>If there is no event in the queue and the keepalive command-line option was not given, and this is not a federated execution with centralized coordination, set the stop tag to the current tag. If keepalive was given, then wait for either <a class="el" href="#ab49affc958f705d9e33c5e3463848bda" title="Request a stop to execution as soon as possible.">lf_request_stop()</a> to be called or an event appears in the event queue and then return.</p>
 <p>Every time tag is advanced, it is checked against stop tag and if they are equal, shutdown reactions are triggered.</p>
 <p>This does not acquire the mutex lock. It assumes the lock is already held. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -398,10 +402,11 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Trigger 'reaction'.</p>
+
+<p>Trigger the specified reaction on the specified worker in the specified environment. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
     <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the single-threaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread). </td></tr>
   </table>
@@ -744,9 +749,11 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If DEBUG logging is enabled, prints the status of the event queue, the reaction queue, and the executing queue. </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>Print a snapshot of the priority queues used during execution (for debugging). </p>
+<p>This function implementation will be empty if the NDEBUG macro is defined; that macro is normally defined for release builds. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">env</td><td>The environment in which we are executing. </td></tr>
   </table>
   </dd>
 </dl>
@@ -791,7 +798,9 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Request a stop to execution as soon as possible. In a non-federated execution with only a single enclave, this will occur one microstep later than the current tag. In a federated execution or when there is more than one enclave, it will likely occur at a later tag determined by the RTI so that all federates and enclaves stop at the same tag. </p>
+
+<p>Request a stop to execution as soon as possible. </p>
+<p>In a non-federated execution with only a single enclave, this will occur one microstep later than the current tag. In a federated execution or when there is more than one enclave, it will likely occur at a later tag determined by the RTI so that all federates and enclaves stop at the same tag. </p>
 
 </div>
 </div>
@@ -809,6 +818,14 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Mark the given port's is_present field as true. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">port</td><td>A pointer to the port struct as an <code>lf_port_base_t*</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1007,24 +1024,6 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Copyright (c) 2019, The University of California at Berkeley.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. Runtime infrastructure for the C target of Lingua Franca. This file contains resources that are shared by the threaded and non-threaded versions of the C runtime.</p>
-<dl class="section author"><dt>Author</dt><dd>{Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
-<dd>
-{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
-<dd>
-{Mehrdad Niknami <a href="#" onclick="location.href='mai'+'lto:'+'mni'+'kn'+'ami'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">mnikn<span class="obfuscator">.nosp@m.</span>ami@<span class="obfuscator">.nosp@m.</span>berke<span class="obfuscator">.nosp@m.</span>ley.<span class="obfuscator">.nosp@m.</span>edu</a>} </dd>
-<dd>
-{Soroush Bateni &lt;<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
-<dd>
-{Alexander Schulz-Rosengarten <a href="#" onclick="location.href='mai'+'lto:'+'als'+'@i'+'nfo'+'rm'+'ati'+'k.'+'uni'+'-k'+'iel'+'.d'+'e'; return false;">als@i<span class="obfuscator">.nosp@m.</span>nfor<span class="obfuscator">.nosp@m.</span>matik<span class="obfuscator">.nosp@m.</span>.uni<span class="obfuscator">.nosp@m.</span>-kiel<span class="obfuscator">.nosp@m.</span>.de</a>} </dd>
-<dd>
-{Erling Rennemo Jellum <a href="#" onclick="location.href='mai'+'lto:'+'erl'+'in'+'g.r'+'.j'+'ell'+'um'+'0@n'+'tn'+'u.n'+'o'; return false;">erlin<span class="obfuscator">.nosp@m.</span>g.r.<span class="obfuscator">.nosp@m.</span>jellu<span class="obfuscator">.nosp@m.</span>m0@n<span class="obfuscator">.nosp@m.</span>tnu.n<span class="obfuscator">.nosp@m.</span>o</a>}</dd></dl>
 <p>The start time read from the trace file. </p>
 
 </div>

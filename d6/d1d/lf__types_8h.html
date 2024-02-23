@@ -100,6 +100,9 @@ $(function(){initNavTree('d6/d1d/lf__types_8h.html','../../'); initResizable(); 
   <div class="headertitle"><div class="title">lf_types.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Type definitions that are widely used across different parts of the runtime.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../d9/daa/modes_8h_source.html">modal_models/modes.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d66/pqueue_8h_source.html">utils/pqueue.h</a>&quot;</code><br />
@@ -122,6 +125,7 @@ Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">The base type for all reactor self structs.  <a href="../../d6/d8b/structself__base__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -165,6 +169,7 @@ Typedefs</h2></td></tr>
 <tr class="memitem:aa47b54e9e041dfe1b75fffceb1051466" id="r_aa47b54e9e041dfe1b75fffceb1051466"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> environment_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa47b54e9e041dfe1b75fffceb1051466">environment_t</a></td></tr>
 <tr class="separator:aa47b54e9e041dfe1b75fffceb1051466"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6202eb05c29c30bfd6a8fc203de6422f" id="r_a6202eb05c29c30bfd6a8fc203de6422f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> self_base_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6202eb05c29c30bfd6a8fc203de6422f">self_base_t</a></td></tr>
+<tr class="memdesc:a6202eb05c29c30bfd6a8fc203de6422f"><td class="mdescLeft">&#160;</td><td class="mdescRight">The base type for all reactor self structs.  <br /></td></tr>
 <tr class="separator:a6202eb05c29c30bfd6a8fc203de6422f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
@@ -186,25 +191,15 @@ Enumerations</h2></td></tr>
 <tr class="separator:a6e496c05213aa4bcbc0055ceee7808fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
+<div class="textblock"><p>Type definitions that are widely used across different parts of the runtime. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
 <dd>
 Marten Lohstroh (<a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>) </dd>
 <dd>
 Chris Gill (<a href="#" onclick="location.href='mai'+'lto:'+'cdg'+'il'+'l@w'+'us'+'tl.'+'ed'+'u'; return false;">cdgil<span class="obfuscator">.nosp@m.</span>l@wu<span class="obfuscator">.nosp@m.</span>stl.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
 <dd>
-Mehrdad Niknami (<a href="#" onclick="location.href='mai'+'lto:'+'mni'+'kn'+'ami'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">mnikn<span class="obfuscator">.nosp@m.</span>ami@<span class="obfuscator">.nosp@m.</span>berke<span class="obfuscator">.nosp@m.</span>ley.<span class="obfuscator">.nosp@m.</span>edu</a>)</dd></dl>
-<h1><a class="anchor" id="LICENSE"></a>
-LICENSE</h1>
-<p>Copyright (c) 2019, The University of California at Berkeley.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<h1><a class="anchor" id="DESCRIPTION"></a>
-Functions intitializing and freeing memory for environments.</h1>
-<p>Type definitions that are widely used across different parts of the runtime.</p>
+Mehrdad Niknami (<a href="#" onclick="location.href='mai'+'lto:'+'mni'+'kn'+'ami'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">mnikn<span class="obfuscator">.nosp@m.</span>ami@<span class="obfuscator">.nosp@m.</span>berke<span class="obfuscator">.nosp@m.</span>ley.<span class="obfuscator">.nosp@m.</span>edu</a>) </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
 <p><b>IMPORTANT:</b> Many of the structs defined here require matching layouts and, if changed, will require changes in the code generator. See <a href="https://github.com/lf-lang/reactor-c/wiki/Structs-in-the-Reactor-C-Runtime">Structs in the Reactor-C Runtime</a>. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a7516169f705d99222725e6970f0ec703" name="a7516169f705d99222725e6970f0ec703"></a>
@@ -218,7 +213,7 @@ Functions intitializing and freeing memory for environments.</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Define scheduler types as integers. This way we can conditionally include/exclude code with the preprocessor with <a class="el" href="../../d6/df3/hashmap_8h.html#a8e6b2068271907802fcd4b9b567adab1">if</a> SCHEDULER == SCHED_ADAPTIVE etc This means that <code><a class="el" href="../../d6/d1d/lf__types_8h.html">lf_types.h</a></code> MUST be included before doing any preprocessing on SCHEDULER compile def. </p>
+<p>Define scheduler types as integers. This way we can conditionally include/exclude code with the preprocessor with <a class="el" href="../../d6/df3/hashmap_8h.html#a8e6b2068271907802fcd4b9b567adab1">if</a> SCHEDULER == SCHED_ADAPTIVE etc This means that <code><a class="el" href="../../d6/d1d/lf__types_8h.html" title="Type definitions that are widely used across different parts of the runtime.">lf_types.h</a></code> MUST be included before doing any preprocessing on SCHEDULER compile def. </p>
 
 </div>
 </div>
@@ -365,7 +360,9 @@ Functions intitializing and freeing memory for environments.</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. Casting the self struct to this type enables access to this list by the function <code><a class="el" href="../../dd/d37/reactor__common_8c.html#a5ea59ff3ad866fbd13c0b641bf21fa2f">_lf_free_reactor(self_base_t*)</a></code>. To allocate memory for the reactor that will be freed by that function, allocate the memory using <code><a class="el" href="">_lf_allocate(size_t,size_t,self_base_t*)</a></code>. </p>
+
+<p>The base type for all reactor self structs. </p>
+<p>The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. This list is used to free memory that has been dynamically allocated. This struct also provides a pointer to the currently executing reaction, to the environment in which the reaction is executing, and to the mutex that is used to protect the reactor. If modal models are being used, it also records the current mode. </p>
 
 </div>
 </div>
@@ -395,7 +392,7 @@ Functions intitializing and freeing memory for environments.</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Handles for scheduled triggers. These handles are returned by <a class="el" href="../../de/d6b/schedule_8h.html#a6778eef97447cf0ba1f0afa8ba3a8dca">lf_schedule()</a> functions. The intent is that the handle can be used to cancel a future scheduled event, but this is not implemented yet. </p>
+<p>Handles for scheduled triggers. These handles are returned by <a class="el" href="../../de/d6b/schedule_8h.html#a6778eef97447cf0ba1f0afa8ba3a8dca" title="Schedule an action to occur with the specified time offset with no payload (no value conveyed).">lf_schedule()</a> functions. The intent is that the handle can be used to cancel a future scheduled event, but this is not implemented yet. </p>
 
 </div>
 </div>

@@ -148,7 +148,6 @@ Erling Jellum </dd></dl>
 </div><div class="memdoc">
 
 <p>Initialize watchdog mutexes. For any reactor with one or more watchdogs, the self struct should have a non-NULL <code>reactor_mutex</code> field which points to an instance of <code>lf_mutex_t</code>. This function initializes those mutexes. It also initializes the condition variable which enables the safe termination of a running watchdog. Finally it starts of a non-termminating thread for each watchdog. </p>
-<p>Function to initialize mutexes for watchdogs </p>
 
 </div>
 </div>
@@ -168,7 +167,6 @@ Erling Jellum </dd></dl>
 </div><div class="memdoc">
 
 <p>Terminate all watchdog threads. </p>
-<p>Terminates all watchdogs inside the environment. </p>
 
 </div>
 </div>

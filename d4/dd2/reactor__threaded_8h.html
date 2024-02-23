@@ -97,6 +97,9 @@ $(function(){initNavTree('d4/dd2/reactor__threaded_8h.html','../../'); initResiz
   <div class="headertitle"><div class="title">reactor_threaded.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Runtime infrastructure for the threaded version of the C target of Lingua Franca.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 </div>
 <p><a href="../../d4/dd2/reactor__threaded_8h_source.html">Go to the source code of this file.</a></p>
@@ -128,7 +131,15 @@ Functions</h2></td></tr>
 <tr class="memitem:ab9e357a21e338cd3719cdec409b9f7a6" id="r_ab9e357a21e338cd3719cdec409b9f7a6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab9e357a21e338cd3719cdec409b9f7a6">_lf_next_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="separator:ab9e357a21e338cd3719cdec409b9f7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Runtime infrastructure for the threaded version of the C target of Lingua Franca. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
+<dd>
+{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
+<dd>
+{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="a5a0540790dfc6d954fb443da3336ce27" name="a5a0540790dfc6d954fb443da3336ce27"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5a0540790dfc6d954fb443da3336ce27">&#9670;&#160;</a></span>_lf_decrement_tag_barrier_locked()</h2>
 
@@ -232,7 +243,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>If there is at least one event in the event queue, then wait until physical time matches or exceeds the time of the least tag on the event queue; pop the next event(s) from the event queue that all have the same tag; extract from those events the reactions that are to be invoked at this logical time and insert them into the reaction queue. The event queue is sorted by time tag.</p>
-<p>If there is no event in the queue and the keepalive command-line option was not given, and this is not a federated execution with centralized coordination, set the stop tag to the current tag. If keepalive was given, then wait for either <a class="el" href="../../d5/dbc/reactor__threaded_8c.html#ab49affc958f705d9e33c5e3463848bda">lf_request_stop()</a> to be called or an event appears in the event queue and then return.</p>
+<p>If there is no event in the queue and the keepalive command-line option was not given, and this is not a federated execution with centralized coordination, set the stop tag to the current tag. If keepalive was given, then wait for either <a class="el" href="../../d5/dbc/reactor__threaded_8c.html#ab49affc958f705d9e33c5e3463848bda" title="Request a stop to execution as soon as possible.">lf_request_stop()</a> to be called or an event appears in the event queue and then return.</p>
 <p>Every time tag is advanced, it is checked against stop tag and if they are equal, shutdown reactions are triggered.</p>
 <p>This does not acquire the mutex lock. It assumes the lock is already held. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

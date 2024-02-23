@@ -98,6 +98,9 @@ $(function(){initNavTree('d6/d8b/structself__base__t.html','../../'); initResiza
 </div><!--header-->
 <div class="contents">
 
+<p>The base type for all reactor self structs.  
+ <a href="#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
@@ -112,7 +115,8 @@ Data Fields</h2></td></tr>
 <tr class="separator:ad19c2e3ac3920c1244d81076ecbad2c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. Casting the self struct to this type enables access to this list by the function <code><a class="el" href="../../dd/d37/reactor__common_8c.html#a5ea59ff3ad866fbd13c0b641bf21fa2f">_lf_free_reactor(self_base_t*)</a></code>. To allocate memory for the reactor that will be freed by that function, allocate the memory using <code><a class="el" href="">_lf_allocate(size_t,size_t,self_base_t*)</a></code>. </p>
+<div class="textblock"><p>The base type for all reactor self structs. </p>
+<p>The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. This list is used to free memory that has been dynamically allocated. This struct also provides a pointer to the currently executing reaction, to the environment in which the reaction is executing, and to the mutex that is used to protect the reactor. If modal models are being used, it also records the current mode. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="a851c71d2d9ce4ca9c1811283bcf5f2f9" name="a851c71d2d9ce4ca9c1811283bcf5f2f9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a851c71d2d9ce4ca9c1811283bcf5f2f9">&#9670;&#160;</a></span>allocations</h2>

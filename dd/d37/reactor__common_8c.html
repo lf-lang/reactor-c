@@ -98,82 +98,85 @@ $(function(){initNavTree('dd/d37/reactor__common_8c.html','../../'); initResizab
   <div class="headertitle"><div class="title">reactor_common.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Runtime infrastructure common to the threaded and single-threaded versions of the C runtime.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;time.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../de/d6b/schedule_8h_source.html">api/schedule.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../da/d00/port_8h_source.html">port.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d66/pqueue_8h_source.html">pqueue.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d85/reactor_8h_source.html">reactor.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d7/d0e/reactor__common_8h_source.html">reactor_common.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d1/d1b/trace_8h_source.html">trace.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d8/d3c/util_8h_source.html">util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d68/vector_8h_source.html">vector.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d1/dcf/hashset_8h_source.html">hashset/hashset.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d0/d15/hashset__itr_8h_source.html">hashset/hashset_itr.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d26/environment_8h_source.html">environment.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d7/d0e/reactor__common_8h_source.html">reactor_common.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d9/da3/watchdog_8h_source.html">watchdog.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:afa9a756e5a6685531141bb4bfdc1f327" id="r_afa9a756e5a6685531141bb4bfdc1f327"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa9a756e5a6685531141bb4bfdc1f327">_lf_allocate</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> count, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> size, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">head</a>)</td></tr>
-<tr class="separator:afa9a756e5a6685531141bb4bfdc1f327"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a906a0d04740b6228fe3719624d11c14a" id="r_a906a0d04740b6228fe3719624d11c14a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a906a0d04740b6228fe3719624d11c14a">_lf_new_reactor</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> size)</td></tr>
-<tr class="separator:a906a0d04740b6228fe3719624d11c14a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abbc6bff98286fbe73dabb8900dfa9043" id="r_abbc6bff98286fbe73dabb8900dfa9043"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abbc6bff98286fbe73dabb8900dfa9043">_lf_free</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">head</a>)</td></tr>
-<tr class="separator:abbc6bff98286fbe73dabb8900dfa9043"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ea59ff3ad866fbd13c0b641bf21fa2f" id="r_a5ea59ff3ad866fbd13c0b641bf21fa2f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5ea59ff3ad866fbd13c0b641bf21fa2f">_lf_free_reactor</a> (<a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *self)</td></tr>
-<tr class="separator:a5ea59ff3ad866fbd13c0b641bf21fa2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae911181dab92c081386aae7addc645e7" id="r_ae911181dab92c081386aae7addc645e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae911181dab92c081386aae7addc645e7">_lf_free_all_reactors</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
-<tr class="separator:ae911181dab92c081386aae7addc645e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf463fd01f18f6f771f6d21b613fe35b" id="r_abf463fd01f18f6f771f6d21b613fe35b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abf463fd01f18f6f771f6d21b613fe35b">_lf_set_stop_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag)</td></tr>
-<tr class="separator:abf463fd01f18f6f771f6d21b613fe35b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01b4bb56c6e243d25b369211a4925b93" id="r_a01b4bb56c6e243d25b369211a4925b93"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a01b4bb56c6e243d25b369211a4925b93">lf_get_stp_offset</a> ()</td></tr>
-<tr class="separator:a01b4bb56c6e243d25b369211a4925b93"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7354a8f02313a836f25c9e76168991ab" id="r_a7354a8f02313a836f25c9e76168991ab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7354a8f02313a836f25c9e76168991ab">lf_set_stp_offset</a> (<a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> offset)</td></tr>
-<tr class="separator:a7354a8f02313a836f25c9e76168991ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af31f8aca1b004a6e5e0e695063de1b47" id="r_af31f8aca1b004a6e5e0e695063de1b47"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af31f8aca1b004a6e5e0e695063de1b47">_lf_trigger_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>)</td></tr>
-<tr class="separator:af31f8aca1b004a6e5e0e695063de1b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a5fdb69bc112879d4014bb0790e843c" id="r_a1a5fdb69bc112879d4014bb0790e843c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1a5fdb69bc112879d4014bb0790e843c">lf_allocate</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> count, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> size, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">head</a>)</td></tr>
+<tr class="memdesc:a1a5fdb69bc112879d4014bb0790e843c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate memory and record on the specified allocation record (a self struct).  <br /></td></tr>
+<tr class="separator:a1a5fdb69bc112879d4014bb0790e843c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a129c6df527165b2378d1dc4852411c35" id="r_a129c6df527165b2378d1dc4852411c35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a129c6df527165b2378d1dc4852411c35">lf_new_reactor</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> size)</td></tr>
+<tr class="memdesc:a129c6df527165b2378d1dc4852411c35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate memory for a new runtime instance of a reactor.  <br /></td></tr>
+<tr class="separator:a129c6df527165b2378d1dc4852411c35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa028b6b458854278bb2a2de486e40268" id="r_aa028b6b458854278bb2a2de486e40268"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa028b6b458854278bb2a2de486e40268">lf_free</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">head</a>)</td></tr>
+<tr class="memdesc:aa028b6b458854278bb2a2de486e40268"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free memory on the specified allocation record (a self struct).  <br /></td></tr>
+<tr class="separator:aa028b6b458854278bb2a2de486e40268"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f0b7c8d624c2da93012538bd93568ad" id="r_a2f0b7c8d624c2da93012538bd93568ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2f0b7c8d624c2da93012538bd93568ad">lf_free_reactor</a> (<a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *self)</td></tr>
+<tr class="memdesc:a2f0b7c8d624c2da93012538bd93568ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the specified reactor.  <br /></td></tr>
+<tr class="separator:a2f0b7c8d624c2da93012538bd93568ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf76c4fc43b07691236fa6a483762481" id="r_adf76c4fc43b07691236fa6a483762481"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adf76c4fc43b07691236fa6a483762481">lf_free_all_reactors</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
+<tr class="memdesc:adf76c4fc43b07691236fa6a483762481"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free all the reactors that are allocated with <code><a class="el" href="#a129c6df527165b2378d1dc4852411c35">lf_new_reactor(size_t)</a></code>.  <br /></td></tr>
+<tr class="separator:adf76c4fc43b07691236fa6a483762481"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07b2e94bcac5d7bcfd47d4eaf35a4977" id="r_a07b2e94bcac5d7bcfd47d4eaf35a4977"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a07b2e94bcac5d7bcfd47d4eaf35a4977">lf_set_stop_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag)</td></tr>
+<tr class="memdesc:a07b2e94bcac5d7bcfd47d4eaf35a4977"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the stop tag if it is less than the stop tag of the specified environment.  <br /></td></tr>
+<tr class="separator:a07b2e94bcac5d7bcfd47d4eaf35a4977"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab5d69d8631d56d64fb90547a8d6b10cd" id="r_ab5d69d8631d56d64fb90547a8d6b10cd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab5d69d8631d56d64fb90547a8d6b10cd">_lf_start_time_step</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:ab5d69d8631d56d64fb90547a8d6b10cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform whatever is needed to start a time step.  <br /></td></tr>
 <tr class="separator:ab5d69d8631d56d64fb90547a8d6b10cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70aa1225071913da79877e8fc051e9b5" id="r_a70aa1225071913da79877e8fc051e9b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a70aa1225071913da79877e8fc051e9b5">_lf_is_tag_after_stop_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag)</td></tr>
-<tr class="separator:a70aa1225071913da79877e8fc051e9b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4bdd144e6cc65dfa3b996d4bd82f83a" id="r_af4bdd144e6cc65dfa3b996d4bd82f83a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af4bdd144e6cc65dfa3b996d4bd82f83a">lf_is_tag_after_stop_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag)</td></tr>
+<tr class="memdesc:af4bdd144e6cc65dfa3b996d4bd82f83a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the provided tag is after stop tag.  <br /></td></tr>
+<tr class="separator:af4bdd144e6cc65dfa3b996d4bd82f83a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a41e1c14ed7c1ab5ab19b8b98d84006b6" id="r_a41e1c14ed7c1ab5ab19b8b98d84006b6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a41e1c14ed7c1ab5ab19b8b98d84006b6">_lf_pop_events</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:a41e1c14ed7c1ab5ab19b8b98d84006b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pop all events from event_q with tag equal to current tag.  <br /></td></tr>
 <tr class="separator:a41e1c14ed7c1ab5ab19b8b98d84006b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb163964110b0029fc4c460b2478ea4d" id="r_aeb163964110b0029fc4c460b2478ea4d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/d67/structevent__t.html">event_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeb163964110b0029fc4c460b2478ea4d">lf_get_new_event</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:aeb163964110b0029fc4c460b2478ea4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a680ad4849cdbbb46c3a8268663bd37dc" id="r_a680ad4849cdbbb46c3a8268663bd37dc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a680ad4849cdbbb46c3a8268663bd37dc">_lf_initialize_timer</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">timer</a>)</td></tr>
+<tr class="memdesc:a680ad4849cdbbb46c3a8268663bd37dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the given timer. If this timer has a zero offset, enqueue the reactions it triggers. If this timer is to trigger reactions at a <em>future</em> tag as well, schedule it accordingly.  <br /></td></tr>
 <tr class="separator:a680ad4849cdbbb46c3a8268663bd37dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61d27ca2e7a856120bff72150fdec9a4" id="r_a61d27ca2e7a856120bff72150fdec9a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a61d27ca2e7a856120bff72150fdec9a4">_lf_initialize_timers</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="memdesc:a61d27ca2e7a856120bff72150fdec9a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize all the timers in the environment.  <br /></td></tr>
 <tr class="separator:a61d27ca2e7a856120bff72150fdec9a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd3a0abded3adbc25ab7dbc261e7b16c" id="r_afd3a0abded3adbc25ab7dbc261e7b16c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afd3a0abded3adbc25ab7dbc261e7b16c">_lf_trigger_startup_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="memdesc:afd3a0abded3adbc25ab7dbc261e7b16c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger all the startup reactions in our environment.  <br /></td></tr>
+<tr class="memdesc:afd3a0abded3adbc25ab7dbc261e7b16c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger all the startup reactions in the specified environment.  <br /></td></tr>
 <tr class="separator:afd3a0abded3adbc25ab7dbc261e7b16c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a282a342efac4fc3e198fb9656f0a9adc" id="r_a282a342efac4fc3e198fb9656f0a9adc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a282a342efac4fc3e198fb9656f0a9adc">_lf_trigger_shutdown_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="memdesc:a282a342efac4fc3e198fb9656f0a9adc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger all the shutdown reactions in our environment.  <br /></td></tr>
+<tr class="memdesc:a282a342efac4fc3e198fb9656f0a9adc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger all the shutdown reactions in the specified environment.  <br /></td></tr>
 <tr class="separator:a282a342efac4fc3e198fb9656f0a9adc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09c9ff31293099899899b09041be5c9e" id="r_a09c9ff31293099899899b09041be5c9e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a09c9ff31293099899899b09041be5c9e">_lf_recycle_event</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../da/d67/structevent__t.html">event_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">e</a>)</td></tr>
-<tr class="separator:a09c9ff31293099899899b09041be5c9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0dbdf3a0cb8b0075acfc45437f4c7e27" id="r_a0dbdf3a0cb8b0075acfc45437f4c7e27"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0dbdf3a0cb8b0075acfc45437f4c7e27">lf_recycle_event</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../da/d67/structevent__t.html">event_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">e</a>)</td></tr>
+<tr class="memdesc:a0dbdf3a0cb8b0075acfc45437f4c7e27"><td class="mdescLeft">&#160;</td><td class="mdescRight">Recycle the given event.  <br /></td></tr>
+<tr class="separator:a0dbdf3a0cb8b0075acfc45437f4c7e27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad531827d1684e7b15d45e6669884083e" id="r_ad531827d1684e7b15d45e6669884083e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/d67/structevent__t.html">event_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad531827d1684e7b15d45e6669884083e">_lf_create_dummy_events</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> time, <a class="el" href="../../da/d67/structevent__t.html">event_t</a> *next, <a class="el" href="../../d2/dcd/tag_8h.html#ad88f1caa8b9c216404eb196cb1850213">microstep_t</a> offset)</td></tr>
 <tr class="separator:ad531827d1684e7b15d45e6669884083e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c0888056123fd1ef7c2fdd7a8081ddf" id="r_a3c0888056123fd1ef7c2fdd7a8081ddf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3c0888056123fd1ef7c2fdd7a8081ddf">lf_replace_token</a> (<a class="el" href="../../da/d67/structevent__t.html">event_t</a> *event, <a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="separator:a3c0888056123fd1ef7c2fdd7a8081ddf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d2634d70492498740984f320dffe8f0" id="r_a9d2634d70492498740984f320dffe8f0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag, <a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="memdesc:a9d2634d70492498740984f320dffe8f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule an event at a specific tag (time, microstep).  <br /></td></tr>
 <tr class="separator:a9d2634d70492498740984f320dffe8f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa84f7383f6f8866ddfeb1fbd9e913948" id="r_aa84f7383f6f8866ddfeb1fbd9e913948"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa84f7383f6f8866ddfeb1fbd9e913948">_lf_schedule</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">extra_delay</a>, <a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *token)</td></tr>
-<tr class="separator:aa84f7383f6f8866ddfeb1fbd9e913948"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeac3f6a2d15f30e3adecc9f431162bef" id="r_aeac3f6a2d15f30e3adecc9f431162bef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeac3f6a2d15f30e3adecc9f431162bef">_lf_insert_reactions_for_trigger</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="memdesc:aeac3f6a2d15f30e3adecc9f431162bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert reactions triggered by trigger to the reaction queue.  <br /></td></tr>
 <tr class="separator:aeac3f6a2d15f30e3adecc9f431162bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3abf7fed98b1e3578cffdd349a0ac227" id="r_a3abf7fed98b1e3578cffdd349a0ac227"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3abf7fed98b1e3578cffdd349a0ac227">_lf_schedule_token</a> (<a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">extra_delay</a>, <a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *token)</td></tr>
-<tr class="separator:a3abf7fed98b1e3578cffdd349a0ac227"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac45c3ce53ac9974a6a597cd36c9dc0cf" id="r_ac45c3ce53ac9974a6a597cd36c9dc0cf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac45c3ce53ac9974a6a597cd36c9dc0cf">_lf_schedule_copy</a> (<a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> offset, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *value, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> length)</td></tr>
-<tr class="separator:ac45c3ce53ac9974a6a597cd36c9dc0cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5cc341c9378cb224bb0657e49ea0f88f" id="r_a5cc341c9378cb224bb0657e49ea0f88f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5cc341c9378cb224bb0657e49ea0f88f">_lf_schedule_value</a> (<a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">extra_delay</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *value, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> length)</td></tr>
-<tr class="separator:a5cc341c9378cb224bb0657e49ea0f88f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6031638f0f22cf1763bbce3d31b4380" id="r_ad6031638f0f22cf1763bbce3d31b4380"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad6031638f0f22cf1763bbce3d31b4380">_lf_advance_logical_time</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">next_time</a>)</td></tr>
 <tr class="separator:ad6031638f0f22cf1763bbce3d31b4380"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf263557d88761d75b98bc6cc5226cb2" id="r_aaf263557d88761d75b98bc6cc5226cb2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aaf263557d88761d75b98bc6cc5226cb2">_lf_schedule_int</a> (<a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">extra_delay</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> value)</td></tr>
-<tr class="separator:aaf263557d88761d75b98bc6cc5226cb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7fe988f0eee005defaa2ad2c9f1f2fd8" id="r_a7fe988f0eee005defaa2ad2c9f1f2fd8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7fe988f0eee005defaa2ad2c9f1f2fd8">_lf_invoke_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a>)</td></tr>
 <tr class="separator:a7fe988f0eee005defaa2ad2c9f1f2fd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeaaa76aeb7d93efc4e0f0c484548af70" id="r_aeaaa76aeb7d93efc4e0f0c484548af70"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeaaa76aeb7d93efc4e0f0c484548af70">schedule_output_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a>)</td></tr>
@@ -183,8 +186,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a80aaf4eeed3e2902f8fe9de80b45777d" id="r_a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">argc</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">argv</a>[])</td></tr>
 <tr class="separator:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b9fe00b97fa37e9602b85b7086acec1" id="r_a4b9fe00b97fa37e9602b85b7086acec1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4b9fe00b97fa37e9602b85b7086acec1">initialize_global</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
+<tr class="memdesc:a4b9fe00b97fa37e9602b85b7086acec1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize global variables and start tracing before calling the <code>_lf_initialize_trigger_objects</code> function.  <br /></td></tr>
 <tr class="separator:a4b9fe00b97fa37e9602b85b7086acec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa329f59a16f5617b5195f2c05872c9e9" id="r_aa329f59a16f5617b5195f2c05872c9e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa329f59a16f5617b5195f2c05872c9e9">termination</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
+<tr class="memdesc:aa329f59a16f5617b5195f2c05872c9e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform final wrap-up on exit.  <br /></td></tr>
 <tr class="separator:aa329f59a16f5617b5195f2c05872c9e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
@@ -201,8 +206,6 @@ Variables</h2></td></tr>
 <tr class="separator:a8079fdfadf07cba8a660c9c25cb9dc77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e69bf5802b3968ed00af688cc7a8006" id="r_a3e69bf5802b3968ed00af688cc7a8006"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3e69bf5802b3968ed00af688cc7a8006">keepalive_specified</a> = <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">false</a></td></tr>
 <tr class="separator:a3e69bf5802b3968ed00af688cc7a8006"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48f58a9d22ac5303d3c0f0278c49e7ac" id="r_a48f58a9d22ac5303d3c0f0278c49e7ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48f58a9d22ac5303d3c0f0278c49e7ac">_lf_fed_STA_offset</a> = 0LL</td></tr>
-<tr class="separator:a48f58a9d22ac5303d3c0f0278c49e7ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af4b5bfd131da48f0fb95eab14e6e61c8" id="r_af4b5bfd131da48f0fb95eab14e6e61c8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af4b5bfd131da48f0fb95eab14e6e61c8">_lf_reactors_to_free</a> = <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">NULL</a></td></tr>
 <tr class="separator:af4b5bfd131da48f0fb95eab14e6e61c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab46895a3a4d1341a19b689a0ea902d1" id="r_aab46895a3a4d1341a19b689a0ea902d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aab46895a3a4d1341a19b689a0ea902d1">default_argc</a> = 0</td></tr>
@@ -214,7 +217,21 @@ Variables</h2></td></tr>
 <tr class="memitem:a30eba499960e8780d3746d3ad433c371" id="r_a30eba499960e8780d3746d3ad433c371"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a30eba499960e8780d3746d3ad433c371">_lf_normal_termination</a> = <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">false</a></td></tr>
 <tr class="separator:a30eba499960e8780d3746d3ad433c371"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Runtime infrastructure common to the threaded and single-threaded versions of the C runtime. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd>
+<dd>
+Marten Lohstroh </dd>
+<dd>
+Soroush Bateni </dd>
+<dd>
+Mehrdad Niknami </dd>
+<dd>
+Alexander Schulz-Rosengarten </dd>
+<dd>
+Erling Rennemo Jellum </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="ad6031638f0f22cf1763bbce3d31b4380" name="ad6031638f0f22cf1763bbce3d31b4380"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad6031638f0f22cf1763bbce3d31b4380">&#9670;&#160;</a></span>_lf_advance_logical_time()</h2>
 
@@ -240,41 +257,6 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="afa9a756e5a6685531141bb4bfdc1f327" name="afa9a756e5a6685531141bb4bfdc1f327"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa9a756e5a6685531141bb4bfdc1f327">&#9670;&#160;</a></span>_lf_allocate()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * _lf_allocate </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>count</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>size</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> **</td>          <td class="paramname"><span class="paramname"><em>head</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Allocate memory using calloc (so the allocated memory is zeroed out) and record the allocated memory on the specified self struct so that it will be freed when calling <code><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">free_reactor(self_base_t)</a></code>. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">count</td><td>The number of items of size 'size' to accomodate. </td></tr>
-    <tr><td class="paramname">size</td><td>The size of each item. </td></tr>
-    <tr><td class="paramname">head</td><td>Pointer to the head of a list on which to record the allocation, or NULL to not record it. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A pointer to the allocated memory. </dd></dl>
 
 </div>
 </div>
@@ -325,70 +307,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="abbc6bff98286fbe73dabb8900dfa9043" name="abbc6bff98286fbe73dabb8900dfa9043"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abbc6bff98286fbe73dabb8900dfa9043">&#9670;&#160;</a></span>_lf_free()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_free </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> **</td>          <td class="paramname"><span class="paramname"><em>head</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Free memory on the specified allocation record, e.g. allocated by <code><a class="el" href="#afa9a756e5a6685531141bb4bfdc1f327">_lf_allocate(size_t, size_t, allocation_record_t**)</a></code>. Mark the list empty by setting <code>*head</code> to NULL. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">head</td><td>Pointer to the head of a list on which to record the allocation, or NULL to not record it. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ae911181dab92c081386aae7addc645e7" name="ae911181dab92c081386aae7addc645e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae911181dab92c081386aae7addc645e7">&#9670;&#160;</a></span>_lf_free_all_reactors()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_free_all_reactors </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a></td>          <td class="paramname"><span class="paramname"></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Free all the reactors that are allocated with <code><a class="el" href="#a906a0d04740b6228fe3719624d11c14a">_lf_new_reactor(size_t)</a></code>. </p>
-
-</div>
-</div>
-<a id="a5ea59ff3ad866fbd13c0b641bf21fa2f" name="a5ea59ff3ad866fbd13c0b641bf21fa2f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ea59ff3ad866fbd13c0b641bf21fa2f">&#9670;&#160;</a></span>_lf_free_reactor()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_free_reactor </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *</td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Free memory recorded on the allocations list of the specified reactor and then free the specified self struct. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">self</td><td>The self struct of the reactor. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a680ad4849cdbbb46c3a8268663bd37dc" name="a680ad4849cdbbb46c3a8268663bd37dc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a680ad4849cdbbb46c3a8268663bd37dc">&#9670;&#160;</a></span>_lf_initialize_timer()</h2>
 
@@ -407,7 +325,9 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Initialize the given timer. If this timer has a zero offset, enqueue the reactions it triggers. If this timer is to trigger reactions at a <em>future</em> tag as well, schedule it accordingly. </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>Initialize the given timer. If this timer has a zero offset, enqueue the reactions it triggers. If this timer is to trigger reactions at a <em>future</em> tag as well, schedule it accordingly. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">timer</td><td>The timer to initialize. </td></tr>
@@ -465,11 +385,12 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Insert reactions triggered by trigger to the reaction queue...</p>
+
+<p>Insert reactions triggered by trigger to the reaction queue. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
-    <tr><td class="paramname">trigger</td><td>The trigger </td></tr>
+    <tr><td class="paramname">trigger</td><td>The trigger. </td></tr>
     <tr><td class="paramname">token</td><td>The token wrapping the payload or NULL for no payload. </td></tr>
   </table>
   </dd>
@@ -513,58 +434,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a70aa1225071913da79877e8fc051e9b5" name="a70aa1225071913da79877e8fc051e9b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a70aa1225071913da79877e8fc051e9b5">&#9670;&#160;</a></span>_lf_is_tag_after_stop_tag()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> _lf_is_tag_after_stop_tag </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>A helper function that returns true if the provided tag is after stop tag.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
-    <tr><td class="paramname">tag</td><td>The tag to check against stop tag </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a906a0d04740b6228fe3719624d11c14a" name="a906a0d04740b6228fe3719624d11c14a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a906a0d04740b6228fe3719624d11c14a">&#9670;&#160;</a></span>_lf_new_reactor()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * _lf_new_reactor </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>size</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Allocate memory for a new runtime instance of a reactor. This records the reactor on the list of reactors to be freed at termination of the program. If you plan to free the reactor before termination of the program, use calloc instead (which this uses). </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">size</td><td>The size of the self struct, obtained with <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">sizeof()</a>. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a41e1c14ed7c1ab5ab19b8b98d84006b6" name="a41e1c14ed7c1ab5ab19b8b98d84006b6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a41e1c14ed7c1ab5ab19b8b98d84006b6">&#9670;&#160;</a></span>_lf_pop_events()</h2>
 
@@ -579,85 +448,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Pop all events from event_q with timestamp equal to current_tag.time, extract all the reactions triggered by these events, and stick them into the reaction queue. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
-  </table>
-  </dd>
-</dl>
 
-</div>
-</div>
-<a id="a09c9ff31293099899899b09041be5c9e" name="a09c9ff31293099899899b09041be5c9e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09c9ff31293099899899b09041be5c9e">&#9670;&#160;</a></span>_lf_recycle_event()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_recycle_event </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../da/d67/structevent__t.html">event_t</a> *</td>          <td class="paramname"><span class="paramname"><em>e</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Recycle the given event. Zero it out and pushed it onto the recycle queue. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
-    <tr><td class="paramname">e</td><td>The event to recycle. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="aa84f7383f6f8866ddfeb1fbd9e913948" name="aa84f7383f6f8866ddfeb1fbd9e913948"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa84f7383f6f8866ddfeb1fbd9e913948">&#9670;&#160;</a></span>_lf_schedule()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *</td>          <td class="paramname"><span class="paramname"><em>trigger</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>extra_delay</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *</td>          <td class="paramname"><span class="paramname"><em>token</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Schedule the specified trigger at env-&gt;current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">schedule_token()</a> in <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for details. This is the internal implementation shared by both the threaded and non-threaded versions.</p>
-<p>The value is required to be either NULL or a pointer to a token wrapping the payload. The token carries a reference count, and when the reference count decrements to 0, the will be freed. Hence, it is essential that the payload be in memory allocated using malloc.</p>
-<p>There are several conditions under which this function will not actually put an event on the event queue and decrement the reference count of the token (if there is one), which could result in the payload being freed. In all cases, this function returns 0. Otherwise, it returns a handle to the scheduled trigger, which is an integer greater than 0.</p>
-<p>The first condition is that a stop has been requested and the trigger offset plus the extra delay is greater than zero. The second condition is that the trigger offset plus the extra delay is greater that the requested stop time (timeout). A third condition is that the trigger argument is null. Also, an event might not be scheduled if the trigger is an action with a <code>min_spacing</code> parameter. See the documentation.</p>
+<p>Pop all events from event_q with tag equal to current tag. </p>
+<p>This will extract all the reactions triggered by these events and stick them onto the reaction queue.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
-    <tr><td class="paramname">trigger</td><td>The trigger to be invoked at a later logical time. </td></tr>
-    <tr><td class="paramname">extra_delay</td><td>The logical time delay, which gets added to the trigger's minimum delay, if it has one. If this number is negative, then zero is used instead. </td></tr>
-    <tr><td class="paramname">token</td><td>The token wrapping the payload or NULL for no payload. </td></tr>
+    <tr><td class="paramname">env</td><td>The environment in which we are executing </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no new event was scheduled, or -1 for error. </dd></dl>
 
 </div>
 </div>
@@ -689,9 +488,14 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Schedule events at a specific tag (time, microstep), provided that the tag is in the future relative to the current tag (or the environment has not started executing). The input time values are absolute.</p>
+
+<p>Schedule an event at a specific tag (time, microstep). </p>
 <p>If there is an event found at the requested tag, the payload is replaced and 0 is returned.</p>
-<p>Note that this function is an internal API that must be called with tags that are in order for a given trigger. This means that the following order is illegal: _lf_schedule_at_tag(trigger1, bigger_tag, ...); _lf_schedule_at_tag(trigger1, smaller_tag, ...); where bigger_tag &gt; smaller_tag. This function is primarily used for network communication (which is assumed to be in order).</p>
+<p>Note that this function is an internal API that must be called with a tag that is in the future relative to the current tag (or the environment has not started executing). Also, it must be called with tags that are in order for a given trigger. This means that the following order is illegal: </p><div class="fragment"><div class="line"><a class="code hl_function" href="#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">trigger1</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bigger_tag</a>, ...);</div>
+<div class="line"><a class="code hl_function" href="#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">trigger1</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">smaller_tag</a>, ...);</div>
+<div class="ttc" id="ahashmap_8h_html_ad2c17ed7e0d4d65a63bf9002aba2016f"><div class="ttname"><a href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">address</a></div><div class="ttdeci">return address</div><div class="ttdef"><b>Definition</b> hashmap.h:74</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9d2634d70492498740984f320dffe8f0"><div class="ttname"><a href="#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_at_tag(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdoc">Schedule an event at a specific tag (time, microstep).</div><div class="ttdef"><b>Definition</b> reactor_common.c:509</div></div>
+</div><!-- fragment --><p> where <code>bigger_tag &gt; smaller_tag</code>. This function is primarily used for network communication (which is assumed to be in order).</p>
 <p>This function assumes the caller holds the mutex lock.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -703,153 +507,6 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A positive trigger handle for success, 0 if no new event was scheduled (instead, the payload was updated), or -1 for error (the tag is equal to or less than the current tag). </dd></dl>
-
-</div>
-</div>
-<a id="ac45c3ce53ac9974a6a597cd36c9dc0cf" name="ac45c3ce53ac9974a6a597cd36c9dc0cf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac45c3ce53ac9974a6a597cd36c9dc0cf">&#9670;&#160;</a></span>_lf_schedule_copy()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_copy </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> *</td>          <td class="paramname"><span class="paramname"><em>action</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>offset</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *</td>          <td class="paramname"><span class="paramname"><em>value</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>length</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Schedule an action to occur with the specified value and time offset with a copy of the specified value. See <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for documentation. </p>
-
-</div>
-</div>
-<a id="aaf263557d88761d75b98bc6cc5226cb2" name="aaf263557d88761d75b98bc6cc5226cb2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaf263557d88761d75b98bc6cc5226cb2">&#9670;&#160;</a></span>_lf_schedule_int()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_int </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> *</td>          <td class="paramname"><span class="paramname"><em>action</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>extra_delay</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Variant of schedule_value when the value is an integer. See <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for documentation. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">action</td><td>Pointer to an action on the self struct. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a3abf7fed98b1e3578cffdd349a0ac227" name="a3abf7fed98b1e3578cffdd349a0ac227"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3abf7fed98b1e3578cffdd349a0ac227">&#9670;&#160;</a></span>_lf_schedule_token()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_token </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> *</td>          <td class="paramname"><span class="paramname"><em>action</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>extra_delay</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *</td>          <td class="paramname"><span class="paramname"><em>token</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Schedule the specified trigger at env-&gt;current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for documentation. </p>
-
-</div>
-</div>
-<a id="a5cc341c9378cb224bb0657e49ea0f88f" name="a5cc341c9378cb224bb0657e49ea0f88f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5cc341c9378cb224bb0657e49ea0f88f">&#9670;&#160;</a></span>_lf_schedule_value()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_value </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> *</td>          <td class="paramname"><span class="paramname"><em>action</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>extra_delay</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *</td>          <td class="paramname"><span class="paramname"><em>value</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>length</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Variant of schedule_token that creates a token to carry the specified value. See <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for documentation. </p>
-
-</div>
-</div>
-<a id="abf463fd01f18f6f771f6d21b613fe35b" name="abf463fd01f18f6f771f6d21b613fe35b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf463fd01f18f6f771f6d21b613fe35b">&#9670;&#160;</a></span>_lf_set_stop_tag()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_set_stop_tag </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Set the stop tag.</p>
-<p>This function will always choose the minimum of the provided tag and stop_tag</p>
-<dl class="section note"><dt>Note</dt><dd>In threaded programs, the mutex must be locked before calling this function. </dd></dl>
 
 </div>
 </div>
@@ -867,48 +524,12 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Use tables to reset is_present fields to false, set intended_tag fields in federated execution to the current_tag, and decrement reference counts between time steps and at the end of execution. </p>
 
-</div>
-</div>
-<a id="af31f8aca1b004a6e5e0e695063de1b47" name="af31f8aca1b004a6e5e0e695063de1b47"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af31f8aca1b004a6e5e0e695063de1b47">&#9670;&#160;</a></span>_lf_trigger_reaction()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_trigger_reaction </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *</td>          <td class="paramname"><span class="paramname"><em>reaction</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>worker_number</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Trigger 'reaction'.</p>
+<p>Perform whatever is needed to start a time step. </p>
+<p>For example, this function resets outputs to be absent at the start of a new time step.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
-    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
-    <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the single-threaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread).</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Trigger 'reaction'.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
-    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
-    <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the single-threaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread). </td></tr>
+    <tr><td class="paramname">env</td><td>The environment in which we are executing </td></tr>
   </table>
   </dd>
 </dl>
@@ -930,7 +551,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Trigger all the shutdown reactions in our environment. </p>
+<p>Trigger all the shutdown reactions in the specified environment. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
@@ -955,7 +576,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Trigger all the startup reactions in our environment. </p>
+<p>Trigger all the startup reactions in the specified environment. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
@@ -979,49 +600,277 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Initialize global variables and start tracing before calling the <code>_lf_initialize_trigger_objects</code> function </p>
+
+<p>Initialize global variables and start tracing before calling the <code>_lf_initialize_trigger_objects</code> function. </p>
 
 </div>
 </div>
-<a id="a01b4bb56c6e243d25b369211a4925b93" name="a01b4bb56c6e243d25b369211a4925b93"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a01b4bb56c6e243d25b369211a4925b93">&#9670;&#160;</a></span>lf_get_stp_offset()</h2>
+<a id="a1a5fdb69bc112879d4014bb0790e843c" name="a1a5fdb69bc112879d4014bb0790e843c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a5fdb69bc112879d4014bb0790e843c">&#9670;&#160;</a></span>lf_allocate()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> lf_get_stp_offset </td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * lf_allocate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>count</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>size</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> **</td>          <td class="paramname"><span class="paramname"><em>head</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Allocate memory and record on the specified allocation record (a self struct). </p>
+<p>This will allocate memory using calloc (so the allocated memory is zeroed out) and record the allocated memory on the specified self struct so that it will be freed when calling <code><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">free_reactor(self_base_t)</a></code>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">count</td><td>The number of items of size 'size' to accomodate. </td></tr>
+    <tr><td class="paramname">size</td><td>The size of each item. </td></tr>
+    <tr><td class="paramname">head</td><td>Pointer to the head of a list on which to record the allocation, or NULL to not record it (an <code>allocation_record_t**</code>), </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer to the allocated memory. </dd></dl>
+
+</div>
+</div>
+<a id="aa028b6b458854278bb2a2de486e40268" name="aa028b6b458854278bb2a2de486e40268"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa028b6b458854278bb2a2de486e40268">&#9670;&#160;</a></span>lf_free()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_free </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a> **</td>          <td class="paramname"><span class="paramname"><em>head</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Free memory on the specified allocation record (a self struct). </p>
+<p>This will mark the allocation record empty by setting <code>*head</code> to NULL. If the argument is NULL, do nothing.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">head</td><td>Pointer to the head of a list on which allocations are recorded. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="adf76c4fc43b07691236fa6a483762481" name="adf76c4fc43b07691236fa6a483762481"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf76c4fc43b07691236fa6a483762481">&#9670;&#160;</a></span>lf_free_all_reactors()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_free_all_reactors </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a></td>          <td class="paramname"><span class="paramname"></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return the global STP offset on advancement of logical time for federated execution. </p>
+
+<p>Free all the reactors that are allocated with <code><a class="el" href="#a129c6df527165b2378d1dc4852411c35">lf_new_reactor(size_t)</a></code>. </p>
 
 </div>
 </div>
-<a id="a7354a8f02313a836f25c9e76168991ab" name="a7354a8f02313a836f25c9e76168991ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7354a8f02313a836f25c9e76168991ab">&#9670;&#160;</a></span>lf_set_stp_offset()</h2>
+<a id="a2f0b7c8d624c2da93012538bd93568ad" name="a2f0b7c8d624c2da93012538bd93568ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f0b7c8d624c2da93012538bd93568ad">&#9670;&#160;</a></span>lf_free_reactor()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_set_stp_offset </td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_free_reactor </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>offset</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *</td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set the global STP offset on advancement of logical time for federated execution.</p>
-<dl class="params"><dt>Parameters</dt><dd>
+
+<p>Free the specified reactor. </p>
+<p>This will free the memory recorded on the allocations list of the specified reactor and then free the specified self struct. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">offset</td><td>A positive time value to be applied as the STP offset. </td></tr>
+    <tr><td class="paramname">self</td><td>The self struct of the reactor. </td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="aeb163964110b0029fc4c460b2478ea4d" name="aeb163964110b0029fc4c460b2478ea4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb163964110b0029fc4c460b2478ea4d">&#9670;&#160;</a></span>lf_get_new_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../da/d67/structevent__t.html">event_t</a> * lf_get_new_event </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get a new event. If there is a recycled event available, use that. If not, allocate a new one. In either case, all fields will be zero'ed out. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af4bdd144e6cc65dfa3b996d4bd82f83a" name="af4bdd144e6cc65dfa3b996d4bd82f83a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4bdd144e6cc65dfa3b996d4bd82f83a">&#9670;&#160;</a></span>lf_is_tag_after_stop_tag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> lf_is_tag_after_stop_tag </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return true if the provided tag is after stop tag. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
+    <tr><td class="paramname">tag</td><td>The tag to check against stop tag </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a129c6df527165b2378d1dc4852411c35" name="a129c6df527165b2378d1dc4852411c35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a129c6df527165b2378d1dc4852411c35">&#9670;&#160;</a></span>lf_new_reactor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> * lf_new_reactor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>size</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Allocate memory for a new runtime instance of a reactor. </p>
+<p>This records the reactor on the list of reactors to be freed at termination of the program. If you plan to free the reactor before termination of the program, use <code><a class="el" href="#a1a5fdb69bc112879d4014bb0790e843c">lf_allocate(size_t, size_t, allocation_record_t**)</a></code> with a null last argument instead.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">size</td><td>The size of the self struct, obtained with <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">sizeof()</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a0dbdf3a0cb8b0075acfc45437f4c7e27" name="a0dbdf3a0cb8b0075acfc45437f4c7e27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0dbdf3a0cb8b0075acfc45437f4c7e27">&#9670;&#160;</a></span>lf_recycle_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_recycle_event </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../da/d67/structevent__t.html">event_t</a> *</td>          <td class="paramname"><span class="paramname"><em>e</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Recycle the given event. </p>
+<p>This will zero out the event and push it onto the recycle queue. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
+    <tr><td class="paramname">e</td><td>The event to recycle. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a3c0888056123fd1ef7c2fdd7a8081ddf" name="a3c0888056123fd1ef7c2fdd7a8081ddf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c0888056123fd1ef7c2fdd7a8081ddf">&#9670;&#160;</a></span>lf_replace_token()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_replace_token </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../da/d67/structevent__t.html">event_t</a> *</td>          <td class="paramname"><span class="paramname"><em>event</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *</td>          <td class="paramname"><span class="paramname"><em>token</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Replace the token on the specified event with the specified token and free the old token. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event</td><td>The event. </td></tr>
+    <tr><td class="paramname">token</td><td>The token. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a07b2e94bcac5d7bcfd47d4eaf35a4977" name="a07b2e94bcac5d7bcfd47d4eaf35a4977"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07b2e94bcac5d7bcfd47d4eaf35a4977">&#9670;&#160;</a></span>lf_set_stop_tag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_set_stop_tag </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the stop tag if it is less than the stop tag of the specified environment. </p>
+<dl class="section note"><dt>Note</dt><dd>In threaded programs, the environment's mutex must be locked before calling this function. </dd></dl>
 
 </div>
 </div>
@@ -1095,6 +944,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Perform final wrap-up on exit. </p>
 <p>Report elapsed logical and physical times and report if any memory allocated for tokens has not been freed. </p>
 
 </div>
@@ -1142,21 +993,6 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Counter used to issue a warning if memory is allocated for message payloads and never freed. </p>
-
-</div>
-</div>
-<a id="a48f58a9d22ac5303d3c0f0278c49e7ac" name="a48f58a9d22ac5303d3c0f0278c49e7ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a48f58a9d22ac5303d3c0f0278c49e7ac">&#9670;&#160;</a></span>_lf_fed_STA_offset</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> _lf_fed_STA_offset = 0LL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Global STP offset uniformly applied to advancement of each time step in federated execution. This can be retrieved in user code by calling <a class="el" href="#a01b4bb56c6e243d25b369211a4925b93">lf_get_stp_offset()</a> and adjusted by calling <a class="el" href="#a7354a8f02313a836f25c9e76168991ab">lf_set_stp_offset(interval_t offset)</a>. </p>
 
 </div>
 </div>
@@ -1313,24 +1149,6 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Copyright (c) 2019, The University of California at Berkeley.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. Runtime infrastructure for the C target of Lingua Franca. This file contains resources that are shared by the threaded and non-threaded versions of the C runtime.</p>
-<dl class="section author"><dt>Author</dt><dd>{Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
-<dd>
-{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
-<dd>
-{Mehrdad Niknami <a href="#" onclick="location.href='mai'+'lto:'+'mni'+'kn'+'ami'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">mnikn<span class="obfuscator">.nosp@m.</span>ami@<span class="obfuscator">.nosp@m.</span>berke<span class="obfuscator">.nosp@m.</span>ley.<span class="obfuscator">.nosp@m.</span>edu</a>} </dd>
-<dd>
-{Soroush Bateni &lt;<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
-<dd>
-{Alexander Schulz-Rosengarten <a href="#" onclick="location.href='mai'+'lto:'+'als'+'@i'+'nfo'+'rm'+'ati'+'k.'+'uni'+'-k'+'iel'+'.d'+'e'; return false;">als@i<span class="obfuscator">.nosp@m.</span>nfor<span class="obfuscator">.nosp@m.</span>matik<span class="obfuscator">.nosp@m.</span>.uni<span class="obfuscator">.nosp@m.</span>-kiel<span class="obfuscator">.nosp@m.</span>.de</a>} </dd>
-<dd>
-{Erling Rennemo Jellum <a href="#" onclick="location.href='mai'+'lto:'+'erl'+'in'+'g.r'+'.j'+'ell'+'um'+'0@n'+'tn'+'u.n'+'o'; return false;">erlin<span class="obfuscator">.nosp@m.</span>g.r.<span class="obfuscator">.nosp@m.</span>jellu<span class="obfuscator">.nosp@m.</span>m0@n<span class="obfuscator">.nosp@m.</span>tnu.n<span class="obfuscator">.nosp@m.</span>o</a>}</dd></dl>
 <p>The start time read from the trace file. </p>
 
 </div>
