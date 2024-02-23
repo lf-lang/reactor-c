@@ -42,7 +42,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "lf_types.h"
 #include "modes.h"
+#include "reactor.h"
 #include "reactor_common.h"
+#include "api/schedule.h"
 
 // Bit masks for the internally used flags on modes
 #define _LF_MODE_FLAG_MASK_ACTIVE        (1 << 0)
@@ -390,7 +392,7 @@ void _lf_process_mode_changes(
                     for (int j = 0; j < timer_triggers_size; j++) {
                         trigger_t* timer = timer_triggers[j];
                         if (timer->period == 0 && timer->mode == state->next_mode) {
-                            _lf_schedule(env, timer, timer->offset, NULL);
+                            lf_schedule_trigger(env, timer, timer->offset, NULL);
                         }
                     }
                 }
@@ -407,7 +409,7 @@ void _lf_process_mode_changes(
                                 LF_PRINT_DEBUG("Modes: Re-enqueuing reset timer.");
                                 // Reschedule the timer with no additional delay.
                                 // This will take care of super dense time when offset is 0.
-                                _lf_schedule(env, timer, event->trigger->offset, NULL);
+                                lf_schedule_trigger(env, timer, event->trigger->offset, NULL);
                             }
                             // No further processing; drops all events upon reset (timer event was recreated by schedule and original can be removed here)
                         } else if (state->next_mode != state->current_mode && event->trigger != NULL) { // History transition to a different mode
@@ -430,11 +432,11 @@ void _lf_process_mode_changes(
                                 event_t* tmp = e->next;
                                 e = tmp->next;
                                 // A fresh event was created by schedule, hence, recycle old one
-                                _lf_recycle_event(env, tmp);
+                                lf_recycle_event(env, tmp);
                             }
                         }
                         // A fresh event was created by schedule, hence, recycle old one
-                        _lf_recycle_event(env, event);
+                        lf_recycle_event(env, event);
 
                         // Remove suspended event and continue
                         suspended_event = _lf_remove_suspended_event(suspended_event);
@@ -541,7 +543,7 @@ void _lf_process_mode_changes(
 void _lf_terminate_modal_reactors(environment_t* env) {
     _lf_suspended_event_t* suspended_event = _lf_suspended_events_head;
     while(suspended_event != NULL) {
-        _lf_recycle_event(env, suspended_event->event);
+        lf_recycle_event(env, suspended_event->event);
         _lf_suspended_event_t* next = suspended_event->next;
         free(suspended_event);
         suspended_event = next;

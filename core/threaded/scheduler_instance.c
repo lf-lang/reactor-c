@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "scheduler_instance.h"
-#include "reactor_common.h"
+#include "environment.h"
+#include "reactor.h"
 #include "lf_types.h"
 #include "util.h"
 
