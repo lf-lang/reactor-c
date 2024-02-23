@@ -224,7 +224,7 @@ static int create_rti_server(uint16_t port, socket_type_t socket_type) {
  * @param e The enclave.
  * @param tag The tag to grant.
  */
-void notify_tag_advance_grant_immediate(scheduling_node_t *e, tag_t tag) {
+static void notify_tag_advance_grant_immediate(scheduling_node_t *e, tag_t tag) {
     size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
     unsigned char buffer[message_length];
     buffer[0] = MSG_TYPE_TAG_ADVANCE_GRANT;
@@ -249,12 +249,12 @@ void notify_tag_advance_grant_immediate(scheduling_node_t *e, tag_t tag) {
 
 /**
  * @brief Thread that sleeps for a period of time, and then wakes up to check if
- * a tag advance grant needs to be sent. That is, if the pending tag have not
+ * a tag advance grant needs to be sent. That is, if the pending tag has not
  * been reset to NEVER_TAG, the tag advance grant will be immediate.
  * 
- * @param federate the fedarate whose tag advance grant needs to be delayed. 
+ * @param federate the federate whose tag advance grant needs to be delayed. 
  */
-void* pending_grant_thread(void* federate) {
+static void* pending_grant_thread(void* federate) {
     federate_info_t* fed = (federate_info_t*)federate;
 
     interval_t sleep_interval = fed->pending_grant.time - lf_time_physical();
@@ -264,8 +264,8 @@ void* pending_grant_thread(void* federate) {
 
     lf_mutex_lock(&rti_mutex);
 
-    // If the pending grant becomes NEVER_TAG, then this means that it should 
-    // not be sent
+    // If the pending grant has become NEVER_TAG, then this means that it should 
+    // not be sent.
     if(lf_tag_compare(fed->pending_grant, NEVER_TAG) != 0) {
         notify_tag_advance_grant_immediate(&(fed->enclave), fed->pending_grant);
         fed->pending_grant = NEVER_TAG;
@@ -284,7 +284,7 @@ void* pending_grant_thread(void* federate) {
  * @param e The enclave.
  * @param tag The tag to grant.
  */
-void notify_tag_advance_grant_delayed(scheduling_node_t *e, tag_t tag) {
+static void notify_tag_advance_grant_delayed(scheduling_node_t *e, tag_t tag) {
     federate_info_t* fed = GET_FED_INFO(e->id);
 
     // Check wether there is already a pending grant
@@ -343,7 +343,7 @@ void notify_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
  * @param e The scheduling node.
  * @param tag The tag to grant.
  */
-void notify_provisional_tag_advance_grant_immediate(scheduling_node_t* e, tag_t tag) {
+static void notify_provisional_tag_advance_grant_immediate(scheduling_node_t* e, tag_t tag) {
     size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
     unsigned char buffer[message_length];
     buffer[0] = MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT;
@@ -402,7 +402,7 @@ void notify_provisional_tag_advance_grant_immediate(scheduling_node_t* e, tag_t 
  * 
  * @param federate the federate whose provisional tag advance grant needs to be delayed. 
  */
-void* pending_provisional_grant_thread(void* federate) {
+static void* pending_provisional_grant_thread(void* federate) {
     federate_info_t* fed = (federate_info_t*)federate;
 
     interval_t sleep_interval = fed->pending_provisional_grant.time - lf_time_physical();
