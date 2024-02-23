@@ -68,11 +68,13 @@ else()
 endif()
 
 if (DEFINED LF_TRACE)
+    include(${LF_ROOT}/trace/api/CMakeLists.txt)
     if(NOT LF_TRACE_PLUGIN)
-        set(LF_TRACE_PLUGIN lf-trace-impl)
-        include(../trace/impl/CMakeLists.txt)
+        set(LF_TRACE_PLUGIN lf::trace-impl)
+        include(${LF_ROOT}/trace/impl/CMakeLists.txt)
     endif()
     message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
+    target_link_libraries(reactor-c PUBLIC lf::trace-api)
     target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN}")
 endif()
 
@@ -89,6 +91,11 @@ include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
 include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::low-level-platform-api)
 target_link_libraries(reactor-c PUBLIC lf::low-level-platform-impl)
+
+include(${LF_ROOT}/platform/api/CMakeLists.txt)
+include(${LF_ROOT}/platform/impl/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::platform-api)
+target_link_libraries(reactor-c PUBLIC lf::platform-impl)
 
 # Apply compile definitions to the reactor-c library.
 target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})
