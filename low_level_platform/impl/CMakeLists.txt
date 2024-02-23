@@ -1,7 +1,7 @@
 # Check which system we are running on to select the correct platform support
 # file and assign the file's path to LF_PLATFORM_FILE
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
-set(LF_PLATFORM_FILES
+set(LF_LOW_LEVEL_PLATFORM_FILES
     ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_clock_support.c
     ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_syscall_support.c
     ${CMAKE_CURRENT_LIST_DIR}/src/lf_linux_support.c
@@ -20,11 +20,11 @@ set(LF_PLATFORM_FILES
 if(PLATFORM_ZEPHYR)
     message("--- Building Zephyr library")
     zephyr_library_named(lf-low-level-platform-impl)
-    zephyr_library_sources(${LF_PLATFORM_FILES})
+    zephyr_library_sources(${LF_LOW_LEVEL_PLATFORM_FILES})
     zephyr_library_link_libraries(kernel)
 else()
 message("--- Building non-Zephyr library")
-    add_library(lf-low-level-platform-impl STATIC ${LF_PLATFORM_FILES})
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
 endif()
 add_library(lf::low-level-platform-impl ALIAS lf-low-level-platform-impl)
 

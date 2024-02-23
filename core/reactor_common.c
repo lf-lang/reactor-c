@@ -1176,6 +1176,7 @@ int process_args(int argc, const char* argv[]) {
  * @brief Check that the provided version information is consistent with the
  * core runtime.
  */
+#ifdef LF_TRACE
 static void check_version(version_t version) {
     #ifdef LF_SINGLE_THREADED
     LF_ASSERT(version.build_config.single_threaded == TRIBOOL_TRUE || version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER, "expected single-threaded version");
@@ -1190,6 +1191,7 @@ static void check_version(version_t version) {
     LF_ASSERT(version.build_config.log_level == LOG_LEVEL, "expected log level %d", LOG_LEVEL);
     // assert(!version.core_sha || strcmp(version.core_sha, CORE_SHA) == 0); // TODO: provide CORE_SHA
 }
+#endif  // LF_TRACE
 
 void initialize_global(void) {
 #ifdef LF_TRACE
