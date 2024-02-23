@@ -139,6 +139,8 @@ netdrv_t *netdrv_init() {
     priv->server_port = -1;
     priv->server_ip_addr.s_addr = 0;
 
+    // priv->proto = -1;
+
     drv->read_remaining_bytes = 0;
 
     drv->open = socket_open;
@@ -440,7 +442,7 @@ netdrv_t *accept_connection(netdrv_t *rti_netdrv) {
     // The following blocks until a federate connects.
     while (1) {
         fed_priv->socket_descriptor = accept(rti_priv->socket_descriptor, &client_fd, &client_length);
-                if (fed_priv->socket_descriptor >= 0) {
+        if (fed_priv->socket_descriptor >= 0) {
             // Got a socket
             break;
         } else if (fed_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
@@ -534,8 +536,6 @@ int write_to_netdrv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
 }
 
 int write_to_netdrv_close_on_error(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
-    socket_priv_t *priv = get_priv(drv);
-    assert(&priv->socket_descriptor);
     int bytes_written = write_to_netdrv(drv, num_bytes, buffer);
     if (bytes_written <= 0) {
         // Write failed.
@@ -553,8 +553,6 @@ void write_to_netdrv_fail_on_error(
 		lf_mutex_t* mutex,
 		char* format, ...) {
     va_list args;
-    socket_priv_t *priv = get_priv(drv);
-    assert(&priv->socket_descriptor);
     int bytes_written = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
     if (bytes_written <= 0) {
         // Write failed.
