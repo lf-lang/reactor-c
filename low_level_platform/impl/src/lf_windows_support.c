@@ -43,7 +43,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/lf_windows_support.h"
 #include "low_level_platform.h"
 #include "tag.h"
-#include "util.h"
+// #include "util.h"
 
 #ifndef LF_CLOCK_SUPPORT_BILLION
 #define LF_CLOCK_SUPPORT_BILLION ((instant_t) 1000000000LL)
