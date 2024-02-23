@@ -38,12 +38,6 @@ typedef enum _lf_time_type {
 // Global variables declared in tag.h:
 instant_t start_time = NEVER;
 
-//////////////// Global variables not declared in tag.h (must be declared extern if used elsewhere):
-
-
-////////////////  Functions not declared in tag.h (local use only)
-
-
 ////////////////  Functions declared in tag.h
 
 tag_t lf_tag(void *env) {

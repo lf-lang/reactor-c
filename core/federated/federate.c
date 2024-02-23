@@ -33,6 +33,7 @@
 #include "reactor.h"
 #include "reactor_common.h"
 #include "reactor_threaded.h"
+#include "api/schedule.h"
 #include "scheduler.h"
 #include "trace.h"
 
@@ -371,7 +372,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(
         LF_PRINT_LOG("Calling schedule with 0 delay and intended tag " PRINTF_TAG ".",
                     trigger->intended_tag.time - start_time,
                     trigger->intended_tag.microstep);
-        return_value = _lf_schedule(env, trigger, extra_delay, token);
+        return_value = lf_schedule_trigger(env, trigger, extra_delay, token);
 #endif
     } else {
         // In case the message is in the future, call
@@ -501,7 +502,7 @@ static int handle_message(int* socket, int fed_id) {
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
-    _lf_schedule_value(action, 0, message_contents, length);
+    lf_schedule_value(action, 0, message_contents, length);
     return 0;
 }
 
@@ -1122,7 +1123,7 @@ static void* update_ports_from_staa_offsets(void* args) {
             staa_t* staa_elem = staa_lst[i];
             // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
             // The list is sorted in increasing order of adjusted STAA offsets.
-            // The wait_until function automatically adds the _lf_fed_STA_offset to the wait time.
+            // The wait_until function automatically adds the lf_fed_STA_offset to the wait time.
             interval_t wait_until_time = env->current_tag.time + staa_elem->STAA;
             LF_PRINT_DEBUG("**** (update thread) original wait_until_time: " PRINTF_TIME, wait_until_time - lf_time_start());
     
@@ -1136,7 +1137,7 @@ static void* update_ports_from_staa_offsets(void* args) {
             // block progress of any execution that is actually processing events.
             // It only slightly delays the decision that an event is absent, and only
             // if the STAA and STA are extremely small.
-            if (_lf_fed_STA_offset + staa_elem->STAA < 5 * MIN_SLEEP_DURATION) {
+            if (lf_fed_STA_offset + staa_elem->STAA < 5 * MIN_SLEEP_DURATION) {
                 wait_until_time += 5 * MIN_SLEEP_DURATION;
             }
             while (a_port_is_unknown(staa_elem)) {
@@ -1363,7 +1364,7 @@ static void handle_stop_granted_message() {
             received_stop_tag.microstep++;
         }
 
-        _lf_set_stop_tag(&env[i], received_stop_tag);
+        lf_set_stop_tag(&env[i], received_stop_tag);
         LF_PRINT_DEBUG("Setting the stop tag to " PRINTF_TAG ".",
                     env[i].stop_tag.time - start_time,
                     env[i].stop_tag.microstep);
@@ -1662,7 +1663,7 @@ static bool bounded_NET(tag_t* tag) {
  * generates an empty implementation.
  * @param env The environment of the federate
  */
-void terminate_execution(environment_t* env) {
+void lf_terminate_execution(environment_t* env) {
     assert(env != GLOBAL_ENVIRONMENT);
 
     // For an abnormal termination (e.g. a SIGINT), we need to send a
@@ -2668,7 +2669,7 @@ int lf_send_tagged_message(environment_t* env,
     // tag of the outgoing message.
     tag_t current_message_intended_tag = lf_delay_tag(env->current_tag, additional_delay);
 
-    if (_lf_is_tag_after_stop_tag(env, current_message_intended_tag)) {
+    if (lf_is_tag_after_stop_tag(env, current_message_intended_tag)) {
         // Message tag is past the timeout time (the stop time) so it should not be sent.
         LF_PRINT_LOG("Dropping message because it will be after the timeout time.");
         return -1;

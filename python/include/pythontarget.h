@@ -35,7 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Note for target language developers. This is one way of developing a target language where
  * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
+ * APIs which interact with the lf_set and lf_schedule APIs. This file can act as a
  * template for future runtime developement for target languages.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/PythonGenerator.xtend.
  */
