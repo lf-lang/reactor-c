@@ -55,7 +55,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_macos == 'true' }}
+      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
 
   lf-python:
     needs: [fetch-lf, check-diff]
@@ -72,7 +72,7 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: GEDF_NP
-      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_macos == 'true' }}
+      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
 
   lf-adaptive:
     needs: [fetch-lf, check-diff]
@@ -81,4 +81,4 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: ADAPTIVE
-      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_macos == 'true' }}
+      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
