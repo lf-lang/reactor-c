@@ -20,4 +20,16 @@
 #define LF_TIME_BUFFER_LENGTH 80
 #define _LF_TIMEOUT 1
 
+#ifndef LF_SINGLE_THREADED
+#warning "Threaded support on rp2040 is still experimental"
+
+typedef recursive_mutex_t lf_mutex_t;
+typedef struct {
+    semaphore_t sema;
+    lf_mutex_t* mutex;
+} lf_cond_t;
+typedef int lf_thread_t;
+
+#endif // LF_SINGLE_THREADED
+
 #endif // LF_PICO_SUPPORT_H
