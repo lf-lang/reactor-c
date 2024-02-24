@@ -26,7 +26,8 @@ typedef enum {
 
 static socket_priv_t *get_priv(netdrv_t *drv) {
     if (!drv) {
-        lf_print_error_and_exit("Falied get socket_priv_t.");
+        // lf_print_error_and_exit("Falied get socket_priv_t.");
+        // FIXME(Byeonggil): I commented out this because it shouldn't report error to send -1 port address.
         return NULL;
     }
     return (socket_priv_t *)(drv + 1);
@@ -42,7 +43,7 @@ int32_t get_my_port(netdrv_t *drv) {
 }
 int32_t get_port(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
-    return priv->server_port;
+    return (priv == NULL) ? -1 : priv->server_port;
 }
 struct in_addr* get_ip_addr(netdrv_t *drv) {
     socket_priv_t *priv = get_priv(drv);
