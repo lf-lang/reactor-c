@@ -676,17 +676,23 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
         case MSG_TYPE_STOP_GRANTED:
             *bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
             *state = FINISH_READ;
-            break;   
+            break;
         case MSG_TYPE_ADDRESS_QUERY:
             *bytes_to_read = sizeof(uint16_t);
+            *state = FINISH_READ;
+            break;
+        case MSG_TYPE_ADDRESS_QUERY_REPLY:
+            *bytes_to_read = sizeof(int32_t) + sizeof(struct in_addr);
             *state = FINISH_READ;
             break;
         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
             *bytes_to_read = sizeof(int32_t);
             *state = FINISH_READ;
             break;
-        // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
-        //     break;   
+        case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
+            *bytes_to_read = sizeof(uint16_t) + 1;
+            *state = READ_MSG_TYPE_FED_IDS;
+            break;
         case MSG_TYPE_P2P_MESSAGE:
             *bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
             *state = READ_MSG_TYPE_TAGGED_MESSAGE;

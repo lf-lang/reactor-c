@@ -1681,9 +1681,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // Ask the RTI for port number of the remote federate.
     // The buffer is used for both sending and receiving replies.
     // The size is what is needed for receiving replies.
-    unsigned char buffer[sizeof(int32_t) + INET_ADDRSTRLEN + 1];
+    unsigned char buffer[sizeof(int32_t) + sizeof(struct in_addr) + 1 ];
     int port = -1;
-    struct in_addr host_ip_addr;
     int count_tries = 0;
     while (port == -1 && !_lf_termination_executed) {
         buffer[0] = MSG_TYPE_ADDRESS_QUERY;
@@ -1703,11 +1702,12 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
         // Read RTI's response.
         //TODO: Fix two reads.
-        read_from_netdrv_fail_on_error(_fed.netdrv_to_rti, buffer, sizeof(int32_t) + INET_ADDRSTRLEN + 1, NULL,
-                "Failed to read the requested port number for federate %d from RTI.",
+        read_from_netdrv_fail_on_error(_fed.netdrv_to_rti, buffer, sizeof(int32_t) + sizeof(struct in_addr) + 1, NULL,
+                "Failed to read the requested port number and IP address for federate %d from RTI.",
                 remote_federate_id);
 
-        if (buffer[0] != MSG_TYPE_ADDRESS_QUERY) {
+        // Changed message type. Must check other targets.
+        if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
             // Unexpected reply.  Could be that RTI has failed and sent a resignation.
             if (buffer[0] == MSG_TYPE_FAILED) {
                 lf_print_error_and_exit("RTI has failed.");
@@ -1716,11 +1716,6 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
             }
         }
         port = extract_int32(&buffer[1]);
-
-        read_from_netdrv_fail_on_error(
-                _fed.netdrv_to_rti, (unsigned char*)&host_ip_addr, sizeof(host_ip_addr), NULL,
-                "Failed to read the IP address for federate %d from RTI.",
-                remote_federate_id);
 
         // A reply of -1 for the port means that the RTI does not know
         // the port number of the remote federate, presumably because the
@@ -1740,7 +1735,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     uint16_t uport = (uint16_t)port;
 
     char hostname[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, buffer + 1 + sizeof(int32_t), hostname, INET_ADDRSTRLEN);
     LF_PRINT_LOG("Received address %s port %d for federate %d from RTI.",
             hostname, uport, remote_federate_id);
 
@@ -2075,9 +2070,9 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 
         // Get the federation ID and check it.
         unsigned char federation_id_length = buffer[header_length - 1];
-        char remote_federation_id[federation_id_length];
-        bytes_read = read_from_netdrv(client_fed_netdrv, (unsigned char*)remote_federation_id, federation_id_length);
-        if (bytes_read <= 0 || (strncmp(federation_metadata.federation_id, remote_federation_id, strnlen(federation_metadata.federation_id, 255)) != 0)) {
+        // char remote_federation_id[federation_id_length];
+        // bytes_read = read_from_netdrv(client_fed_netdrv, (unsigned char*)remote_federation_id, federation_id_length);
+        if (bytes_read <= 0 || (strncmp(federation_metadata.federation_id, buffer + header_length, strnlen(federation_metadata.federation_id, 255)) != 0)) {
             lf_print_warning("Received invalid federation ID. Closing socket.");
             if (bytes_read > 0) {
                 unsigned char response[2];
