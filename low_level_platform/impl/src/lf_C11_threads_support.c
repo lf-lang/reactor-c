@@ -5,10 +5,6 @@
 #include <stdlib.h>
 #include <stdint.h> // For fixed-width integral types
 
-#ifndef LF_CLOCK_SUPPORT_BILLION
-#define LF_CLOCK_SUPPORT_BILLION ((instant_t) 1000000000LL)
-#endif
-
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     return thrd_create((thrd_t*)thread, (thrd_start_t)lf_thread, arguments);
 }
@@ -50,8 +46,8 @@ int lf_cond_wait(lf_cond_t* cond) {
 
 int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     struct timespec timespec_absolute_time = {
-        .tv_sec = wakeup_time / LF_CLOCK_SUPPORT_BILLION,
-        .tv_nsec = wakeup_time % LF_CLOCK_SUPPORT_BILLION
+        .tv_sec = wakeup_time / BILLION,
+        .tv_nsec = wakeup_time % BILLION
     };
     
     int return_value = cnd_timedwait(

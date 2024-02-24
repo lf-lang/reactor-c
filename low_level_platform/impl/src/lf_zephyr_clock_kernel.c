@@ -39,7 +39,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/lf_zephyr_support.h"
 #include "low_level_platform.h"
-// #include "util.h"
 #include "logging.h"
 #include "logging_macros.h"
 
@@ -78,14 +77,14 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     async_event=false;    
 
     if (lf_critical_section_exit(env)) {
-        exit(1);
+        lf_print_error_and_exit("Failed to exit critical section.");
     }
     instant_t now;
     do {
     _lf_clock_gettime(&now);
     } while ( (now<wakeup) && !async_event);
     if (lf_critical_section_enter(env)) {
-        exit(1);
+        lf_print_error_and_exit("Failed to exit critical section.");
     }
 
     if (async_event) {

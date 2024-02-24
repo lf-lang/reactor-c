@@ -41,7 +41,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "low_level_platform.h"
 #include "logging.h"
 #include "logging_macros.h"
-// #include "util.h"
 
 static int64_t epoch_duration_nsec;
 static int64_t epoch_duration_usec;
@@ -183,11 +182,11 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
         }
         
         if (lf_critical_section_exit(env)) {
-            lf_print_error_and_exit("failed to exit critical section");
+            lf_print_error_and_exit("Failed to exit critical section.");
         }
         k_sem_take(&semaphore, K_FOREVER);
         if (lf_critical_section_enter(env)) {
-            lf_print_error_and_exit("failed to enter critical section");
+            lf_print_error_and_exit("Failed to enter critical section.");
         }
 
         // Then calculating remaining sleep, unless we got woken up by an event

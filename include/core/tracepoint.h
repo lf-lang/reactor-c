@@ -183,6 +183,21 @@ typedef struct trace_record_t {
     interval_t extra_delay;
 } trace_record_t;
 
+/**
+ * @brief Pass the provided info to the tracing module.
+ *
+ * @param event_type The kind of tracepoint.
+ * @param reactor A pointer used as an opaque ID of the source reactor, if one exists.
+ * @param tag The tag associated with the tracepoint.
+ * @param worker The worker thread where the tracepoint was reached.
+ * @param src_id The ID of the source federate/enclave, if applicable.
+ * @param dst_id The ID of the destination federate/enclave, if applicable.
+ * @param physical_time The time at which the tracepoint was reached, or NULL if not applicable.
+ * @param trigger The trigger, if this tracepoint signifies scheduling of an event.
+ * @param extra_delay The delay passed to schedule(), if applicable.
+ * @param is_interval_start Whether this is the start of a time interval being measured (this
+ * argument is currently unused)
+ */
 void call_tracepoint(
         int event_type,
         void* reactor,

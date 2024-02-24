@@ -1,8 +1,6 @@
 #include <time.h>
 #include <errno.h>
 
-// #include "lf_types.h"
-
 /**
  * @brief Convert a _lf_time_spec_t ('tp') to an instant_t representation in
  * nanoseconds.

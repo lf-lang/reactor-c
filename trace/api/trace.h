@@ -26,7 +26,7 @@ typedef enum {
  */
 typedef struct object_description_t object_description_t;
 struct object_description_t {
-    void* pointer;      // Pointer to the reactor self struct or other identifying pointer.
+    void* pointer;      // Pointer-sized value that uniquely identifies the object.
     void* trigger;      // Pointer to the trigger (action or timer) or other secondary ID, if any.
     _lf_trace_object_t type;  // The type of trace object.
     char* description; // A NULL terminated string.
@@ -34,7 +34,7 @@ struct object_description_t {
 
 typedef struct {
     int event_type;
-    void* pointer;  // FIXME: find a better name
+    void* pointer;
     int src_id;
     int dst_id;
     int64_t logical_time;
@@ -44,13 +44,44 @@ typedef struct {
     int64_t extra_delay;
 } trace_record_nodeps_t;
 
+/**
+ * @brief Initialize the tracing module. Calling other API functions before
+ * calling this procedure is undefined behavior.
+ *
+ * @param file_name_prefix Prefix to attach to any files that may be produced by
+ * the tracing module.
+ * @param process_id The ID of the current federate, or -1 if this is the RTI. 0
+ * if unfederated.
+ * @param max_num_local_threads An upper bound on the number of threads created
+ * by this process.
+ */
 void lf_tracing_global_init(char* file_name_prefix, int process_id, int max_num_local_threads);
+/**
+ * @brief Register a kind of trace event. This should be called before
+ * tracepoints are reached.
+ *
+ * @param description A description of some trace events which may be received
+ * in the future. This may be invoked after many tracepoints have already been
+ * recorded but should be invoked early.
+ */
 void lf_tracing_register_trace_event(object_description_t description);
+/**
+ * @brief Give the tracing module access to the start time. This may be invoked
+ * after many tracepoints have already been recorded but should be invoked
+ * early.
+ */
 void lf_tracing_set_start_time(int64_t start_time);
+/**
+ * @brief Submit a tracepoint from the given worker to the tracing module.
+ */
 void tracepoint(
     int worker,
     trace_record_nodeps_t* tr
 );
+/**
+ * @brief Shut down the tracing module. Calling other API functions after
+ * calling this procedure is undefined behavior.
+ */
 void lf_tracing_global_shutdown();
 
 #endif // TRACE_H

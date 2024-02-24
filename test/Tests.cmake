@@ -31,7 +31,6 @@ foreach(FILE ${TEST_FILES})
     string(REGEX REPLACE "[./]" "_" NAME ${FILE})
     add_executable(${NAME} ${TEST_DIR}/${FILE})
     add_test(NAME ${NAME} COMMAND ${NAME})
-    # include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
     target_link_libraries(
         ${NAME} PUBLIC
         ${CoreLib} ${Lib} ${TestLib}
@@ -78,10 +77,8 @@ if (NOT DEFINED LF_SINGLE_THREADED)
     target_include_directories(rti_common_test PUBLIC ${IncludeDir})
     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/federated)
     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/modal_models)
-    # include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
     target_link_libraries(rti_common_test lf::low-level-platform-api)
     target_link_libraries(rti_common_test lf::logging-api)
-    # target_include_directories(rti_common_test PUBLIC ${IncludeDir}/platform)
     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/utils)
     # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
     target_compile_definitions(rti_common_test PUBLIC STANDALONE_RTI=1)

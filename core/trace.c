@@ -73,7 +73,7 @@ void call_tracepoint(
         instant_t* physical_time,
         trigger_t* trigger,
         interval_t extra_delay,
-        bool is_interval_start  // FIXME: Unused argument. It originally was a micro-optimization which I suspect is not needed, but if there is (statistically significant) empirical evidence that it is needed, then we should use it. Note that without a memory barrier, even its original use may have had no effect (i.e., it could have generated the same assembly code anyway).
+        bool is_interval_start
 ) {
     instant_t local_time;
     if (physical_time == NULL) {
@@ -135,9 +135,7 @@ void tracepoint_user_event(void* self, char* description) {
     // There will be a performance hit for this.
     LF_ASSERT(self, "A pointer to the self struct is needed to trace an event");
     environment_t *env = ((self_base_t *)self)->environment;
-    // lf_critical_section_enter(env); // FIXME: NOT NEEDED. SELF IS NOT NEEDED
     call_tracepoint(user_event, description, env->current_tag, -1, -1, -1, NULL, NULL, 0, false);
-    // lf_critical_section_exit(env);
 }
 
 /**
@@ -162,10 +160,7 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
     environment_t *env = ((self_base_t *)self)->environment;
-    // trace_t *trace = env->trace;  // FIXME
-    // lf_critical_section_enter(env);  // FIXME
     call_tracepoint(user_value, description, env->current_tag, -1, -1, -1, NULL, NULL, value, false);
-    // lf_critical_section_exit(env);
 }
 
 ////////////////////////////////////////////////////////////

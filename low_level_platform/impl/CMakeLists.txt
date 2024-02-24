@@ -28,9 +28,7 @@ message("--- Building non-Zephyr library")
 endif()
 add_library(lf::low-level-platform-impl ALIAS lf-low-level-platform-impl)
 
-# include(${CMAKE_CURRENT_LIST_DIR}/../api/CMakeLists.txt)
 target_link_libraries(lf-low-level-platform-impl PRIVATE lf::low-level-platform-api)
-# include(${LF_ROOT}/logging/api/CMakeLists.txt)
 target_link_libraries(lf-low-level-platform-impl PUBLIC lf-logging-api)
 
 target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
@@ -47,8 +45,3 @@ low_level_platform_define(MODAL_REACTORS)
 low_level_platform_define(USER_THREADS)
 low_level_platform_define(NUMBER_OF_WORKERS)
 low_level_platform_define(NUMBER_OF_WATCHDOGS)
-
-# target_include_directories(lf-low-level-platform-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include)
-# target_include_directories(lf-low-level-platform-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core)
-# target_include_directories(lf-low-level-platform-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core/platform)
-# target_include_directories(lf-low-level-platform-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core/utils)
