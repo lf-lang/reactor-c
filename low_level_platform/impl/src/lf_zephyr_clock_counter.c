@@ -187,7 +187,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
         }
         k_sem_take(&semaphore, K_FOREVER);
         if (lf_critical_section_enter(env)) {
-            lf_print_error_and_enter("failed to enter critical section");
+            lf_print_error_and_exit("failed to enter critical section");
         }
 
         // Then calculating remaining sleep, unless we got woken up by an event
