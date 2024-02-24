@@ -609,12 +609,21 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
     federate_info_t *remote_fed = GET_FED_INFO(remote_fed_id);
     unsigned char buf[1 + sizeof(int32_t) + sizeof(*get_ip_addr(remote_fed->fed_netdrv))];
     // Response message is also of type MSG_TYPE_ADDRESS_QUERY.
-    buf[0] = MSG_TYPE_ADDRESS_QUERY;
+    buf[0] = MSG_TYPE_ADDRESS_QUERY_REPLY;
 
     // Send the port number (which could be -1) and server IP address to federate.
     LF_MUTEX_LOCK(&rti_mutex);
-    encode_int32(get_port(remote_fed->fed_netdrv), (unsigned char *)&buf[1]);
-    memcpy(buf + 1 + sizeof(int32_t), (unsigned char *)get_ip_addr(remote_fed->fed_netdrv), sizeof(*get_ip_addr(remote_fed->fed_netdrv)));
+    int32_t server_port = get_port(remote_fed->fed_netdrv);
+    char* server_hostname;
+    encode_int32(server_port, (unsigned char *)&buf[1]);
+    if (server_port == -1){
+        // RTI does not know ip_address and port yet.
+        server_hostname = "localhost";
+        buf[1 + sizeof(int32_t)] = -1;
+    } else {
+        server_hostname = get_host_name(remote_fed->fed_netdrv);
+        memcpy(buf + 1 + sizeof(int32_t), (unsigned char *)get_ip_addr(remote_fed->fed_netdrv), sizeof(*get_ip_addr(remote_fed->fed_netdrv)));
+    }
     write_to_netdrv_fail_on_error(
             fed->fed_netdrv, sizeof(int32_t) + 1 + sizeof(*get_ip_addr(remote_fed->fed_netdrv)), (unsigned char *)buf, &rti_mutex,
             "Failed to write port number to netdrv of federate %d.", fed_id);
@@ -622,7 +631,7 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
     LF_MUTEX_UNLOCK(&rti_mutex);
 
     LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.",
-            fed_id, get_host_name(remote_fed->fed_netdrv), get_port(remote_fed->fed_netdrv));
+            fed_id, server_hostname, server_port);
 }
 
 //TODO: NEED to be fixed.
