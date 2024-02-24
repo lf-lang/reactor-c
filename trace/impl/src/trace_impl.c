@@ -7,6 +7,7 @@
 #include "trace.h"
 #include "platform.h"
 #include "logging.h"
+#include "logging_macros.h"
 #include "trace_impl.h"
 
 /** Macro to use when access to trace file fails. */
