@@ -262,20 +262,23 @@ void lf_tracing_register_trace_event(object_description_t description) {
 
 void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
     // Worker argument determines which buffer to write to.
-    int index = (worker >= 0) ? worker : 0;
+    int tid = lf_thread_id();
+    if (tid > trace._lf_number_of_trace_buffers) {
+        lf_print_error_and_exit("the thread id (%d) exceeds the number of trace buffers (%d)", tid, trace._lf_number_of_trace_buffers);
+    }
 
     // Flush the buffer if it is full.
-    if (trace._lf_trace_buffer_size[index] >= TRACE_BUFFER_CAPACITY) {
+    if (trace._lf_trace_buffer_size[tid] >= TRACE_BUFFER_CAPACITY) {
         // No more room in the buffer. Write the buffer to the file.
-        flush_trace(&trace, index);
+        flush_trace(&trace, tid);
     }
     // The above flush_trace resets the write pointer.
-    int i = trace._lf_trace_buffer_size[index];
+    int i = trace._lf_trace_buffer_size[tid];
     // Write to memory buffer.
     // Get the correct time of the event
 
-    trace._lf_trace_buffer[index][i] = *tr;
-    trace._lf_trace_buffer_size[index]++;
+    trace._lf_trace_buffer[tid][i] = *tr;
+    trace._lf_trace_buffer_size[tid]++;
 }
 
 void lf_tracing_global_init(char* file_name_prefix, int fedid, int max_num_local_threads) {

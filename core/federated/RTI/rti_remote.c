@@ -639,6 +639,7 @@ static int mark_federate_requesting_stop(federate_info_t *fed) {
  * Thread to time out if federates do not reply to stop request.
  */
 static void* wait_for_stop_request_reply(void* args) {
+    initialize_lf_thread_id();
     // Divide the time into small chunks and check periodically.
     interval_t chunk = MAX_TIME_FOR_REPLY_TO_STOP_REQUEST/30;
     int count = 0;
@@ -945,7 +946,7 @@ void handle_physical_clock_sync_message(federate_info_t *my_fed, socket_type_t s
 }
 
 void *clock_synchronization_thread(void *noargs) {
-
+    initialize_lf_thread_id();
     // Wait until all federates have been notified of the start time.
     // FIXME: Use lf_ version of this when merged with master.
     LF_MUTEX_LOCK(&rti_mutex);
@@ -1139,6 +1140,7 @@ static void handle_federate_resign(federate_info_t *my_fed) {
 }
 
 void *federate_info_thread_TCP(void *fed) {
+    initialize_lf_thread_id();
     federate_info_t *my_fed = (federate_info_t *)fed;
 
     // Buffer for incoming messages.
@@ -1695,6 +1697,7 @@ void lf_connect_to_federates(int socket_descriptor) {
 }
 
 void *respond_to_erroneous_connections(void *nothing) {
+    initialize_lf_thread_id();
     while (true) {
         // Wait for an incoming connection request.
         struct sockaddr client_fd;

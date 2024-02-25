@@ -1054,6 +1054,7 @@ void determine_number_of_workers(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
+    initialize_lf_thread_id();
     // Invoke the function that optionally provides default command-line options.
     lf_set_default_command_line_options();
 

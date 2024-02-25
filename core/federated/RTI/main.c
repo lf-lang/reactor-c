@@ -284,7 +284,7 @@ int process_args(int argc, const char* argv[]) {
     return 1;
 }
 int main(int argc, const char* argv[]) {
-
+    initialize_lf_thread_id();
     initialize_RTI(&rti);
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
