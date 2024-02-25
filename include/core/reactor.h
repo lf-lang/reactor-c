@@ -18,6 +18,7 @@
 #ifndef REACTOR_H
 #define REACTOR_H
 
+#include <string.h>    // memcpy
 #include "lf_types.h"
 #include "modes.h"     // Modal model support
 #include "port.h"

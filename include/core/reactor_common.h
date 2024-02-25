@@ -31,6 +31,12 @@
 
 //////////////////////  Constants & Macros  //////////////////////
 
+// FIXME (erj): Super hack to disable chain optimzation when we are using the SCHED_STATIC runtime.
+#if SCHEDULER == SCHED_STATIC
+#else
+#define REACTION_CHAIN_OPTIMIZATION
+#endif
+
 /**
  * @brief Constant giving the minimum amount of time to sleep to wait
  * for physical time to reach a logical time.

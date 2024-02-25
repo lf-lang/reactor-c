@@ -869,6 +869,8 @@ void schedule_output_reactions(environment_t *env, reaction_t* reaction, int wor
                                     downstream_reaction->is_STP_violated, downstream_reaction->name);
                         }
 #endif
+// FIXME (erj): This is super hacky and only a temporary fix. 
+#if defined REACTION_CHAIN_OPTIMIZATION
                         if (downstream_reaction != NULL && downstream_reaction != downstream_to_execute_now) {
                             num_downstream_reactions++;
                             // If there is exactly one downstream reaction that is enabled by this
@@ -897,6 +899,10 @@ void schedule_output_reactions(environment_t *env, reaction_t* reaction, int wor
                                 _lf_trigger_reaction(env, downstream_reaction, worker);
                             }
                         }
+#else
+                        // Queue the reaction.
+                        _lf_trigger_reaction(env, downstream_reaction, worker);
+#endif
                     }
                 }
             }

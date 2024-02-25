@@ -459,6 +459,126 @@ void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, i
     tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
 }
 
+/** Trace the start of the ADDI instruction */
+void tracepoint_static_scheduler_ADDI_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_ADDI_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the ADV instruction */
+void tracepoint_static_scheduler_ADV_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_ADV_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the ADVI instruction */
+void tracepoint_static_scheduler_ADVI_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_ADVI_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the BIT instruction */
+void tracepoint_static_scheduler_BIT_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_BIT_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the DU instruction */
+void tracepoint_static_scheduler_DU_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_DU_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the EIT instruction */
+void tracepoint_static_scheduler_EIT_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_EIT_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the EXE instruction */
+void tracepoint_static_scheduler_EXE_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_EXE_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the JAL instruction */
+void tracepoint_static_scheduler_JAL_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_JAL_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the JALR instruction */
+void tracepoint_static_scheduler_JALR_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_JALR_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the SAC instruction */
+void tracepoint_static_scheduler_SAC_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_SAC_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the STP instruction */
+void tracepoint_static_scheduler_STP_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_STP_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the start of the WU instruction */
+void tracepoint_static_scheduler_WU_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_WU_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the ADDI instruction */
+void tracepoint_static_scheduler_ADDI_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_ADDI_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the ADV instruction */
+void tracepoint_static_scheduler_ADV_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_ADV_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the ADVI instruction */
+void tracepoint_static_scheduler_ADVI_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_ADVI_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the BIT instruction */
+void tracepoint_static_scheduler_BIT_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_BIT_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the DU instruction */
+void tracepoint_static_scheduler_DU_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_DU_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the EIT instruction */
+void tracepoint_static_scheduler_EIT_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_EIT_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the EXE instruction */
+void tracepoint_static_scheduler_EXE_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_EXE_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the JAL instruction */
+void tracepoint_static_scheduler_JAL_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_JAL_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the JALR instruction */
+void tracepoint_static_scheduler_JALR_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_JALR_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the SAC instruction */
+void tracepoint_static_scheduler_SAC_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_SAC_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the STP instruction */
+void tracepoint_static_scheduler_STP_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_STP_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the WU instruction */
+void tracepoint_static_scheduler_WU_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_WU_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
 void stop_trace(trace_t* trace) {
     LF_CRITICAL_SECTION_ENTER(trace->env);
     stop_trace_locked(trace);

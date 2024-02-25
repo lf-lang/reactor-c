@@ -45,6 +45,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_semaphore.h"
 #include <stdbool.h>
 
+#if SCHEDULER == SCHED_STATIC
+#include "lf_types.h"
+#include "scheduler_instructions.h"
+#endif
+
 #define DEFAULT_MAX_REACTION_LEVEL 100
 
 // Forward declarations
@@ -58,7 +63,12 @@ typedef struct custom_scheduler_data_t custom_scheduler_data_t;
  *  These should be expanded to accommodate new schedulers.
  */
 typedef struct lf_scheduler_t { 
+    /**
+     * @brief Environment which the scheduler has access to.
+     * 
+     */
     struct environment_t * env;
+
     /**
      * @brief Maximum number of levels for reactions in the program.
      *
@@ -135,6 +145,47 @@ typedef struct lf_scheduler_t {
     // The type is forward declared here and must be declared again in the scheduler source file
     // Is not touched by `init_sched_instance` and must be initialized by each scheduler that needs it
     custom_scheduler_data_t * custom_data;
+
+#if SCHEDULER == SCHED_STATIC
+
+    /**
+     * @brief Points to an array of program counters for each worker.
+     * 
+     */
+    size_t* pc;
+
+    /**
+     * @brief Points to a read-only array of static schedules.
+     * 
+     */
+    const inst_t** static_schedules;
+
+    /**
+     * @brief Points to an array of pointers to reactor self instances.
+     * 
+     */
+    self_base_t** reactor_self_instances;
+
+    /**
+     * @brief The total number of reactor self instances.
+     * 
+     */
+    size_t num_reactor_self_instances;
+
+    /**
+     * @brief Points to an array of pointers to reaction instances.
+     * 
+     */
+    reaction_t** reaction_instances;
+
+    /**
+     * @brief Points to an array of integer counters.
+     * 
+     */
+    volatile uint32_t* counters;
+
+#endif
+
 } lf_scheduler_t;
 
 /**
@@ -175,5 +226,13 @@ bool init_sched_instance(
     lf_scheduler_t** instance,
     size_t number_of_workers,
     sched_params_t* params);
+
+#if SCHEDULER == SCHED_STATIC
+/**
+ * @brief Initialize the static schedule by filling in placeholders which are
+ * not considered "compile-time constants" by the compiler.
+ */
+void initialize_static_schedule();
+#endif
 
 #endif // LF_SCHEDULER_PARAMS_H
