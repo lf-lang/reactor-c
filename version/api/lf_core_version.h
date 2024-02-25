@@ -26,8 +26,8 @@ typedef struct {
 } build_config_t;
 
 typedef struct {
-  build_config_t build_config;
-  char* core_version_name;
+  const build_config_t build_config;
+  const char* core_version_name;
 } version_t;
 
 #endif // VERSION_H
