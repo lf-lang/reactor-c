@@ -140,7 +140,7 @@ netdrv_t *netdrv_init() {
     priv->server_port = -1;
     priv->server_ip_addr.s_addr = 0;
 
-    // priv->proto = -1;
+    priv->proto = TCP;
 
     drv->read_remaining_bytes = 0;
 
@@ -723,7 +723,7 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
         case MSG_TYPE_NEIGHBOR_STRUCTURE:
             *bytes_to_read = MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1;
             *state = READ_MSG_TYPE_NEIGHBOR_STRUCTURE;
-            break;
+            break; 
         case MSG_TYPE_FAILED:
             *bytes_to_read = 0;
             *state = FINISH_READ;
