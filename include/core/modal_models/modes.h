@@ -58,15 +58,6 @@ typedef struct trigger_t trigger_t;
 //// Macros for setting modes.
 
 /**
- * Sets the next mode of a modal reactor. Same as SET for outputs, only
- * the last value will have effect if invoked multiple times.
- * Works only in reactions with the target mode declared as effect.
- *
- * @param mode The target mode to set for activation.
- */
-#define _LF_SET_MODE(mode) _LF_SET_MODE_WITH_TYPE(mode, _lf_##mode##_change_type)
-
-/**
  * Sets the next mode of a modal reactor with an explicit change type
  * (reset or history, from the enum `lf_mode_change_type_t`).
  * This macro is not meant to be used by LF programmers.

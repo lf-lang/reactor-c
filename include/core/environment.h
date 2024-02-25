@@ -44,6 +44,7 @@
 typedef struct lf_scheduler_t lf_scheduler_t;
 typedef struct mode_environment_t mode_environment_t;
 typedef struct enclave_info_t enclave_info_t;
+typedef struct watchdog_t watchdog_t;
 
 /**
  * @brief The global environment.
@@ -90,6 +91,8 @@ typedef struct environment_t {
     reaction_t** reset_reactions;
     int reset_reactions_size;
     mode_environment_t* modes;
+    int watchdogs_size;
+    watchdog_t **watchdogs;
     trace_t* trace;
     int worker_thread_count;
 #if defined(LF_SINGLE_THREADED)
@@ -145,6 +148,7 @@ int environment_init(
     int num_is_present_fields,
     int num_modes,
     int num_state_resets,
+    int num_watchdogs,
     const char * trace_file_name
 );
 

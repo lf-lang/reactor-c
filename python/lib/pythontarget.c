@@ -38,10 +38,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "python_port.h"
 #include "python_tag.h"
 #include "python_time.h"
-#include "reactor_common.h"
+#include "reactor.h"
 #include "reactor.h"
 #include "tag.h"
 #include "util.h"
+#include "environment.h"
+#include "api/schedule.h"
 
 ////////////// Global variables ///////////////
 // The global Python object that holds the .py module that the
@@ -105,7 +107,7 @@ PyObject* py_schedule(PyObject *self, PyObject *args) {
 
 
     // Pass the token along
-    _lf_schedule_token(action, offset, t);
+    lf_schedule_token(action, offset, t);
 
     // FIXME: handle is not passed to the Python side
 
@@ -134,7 +136,7 @@ PyObject* py_schedule_copy(PyObject *self, PyObject *args) {
         exit(1);
     }
 
-    _lf_schedule_copy(action, offset, value, length);
+    lf_schedule_copy(action, offset, value, length);
 
     // FIXME: handle is not passed to the Python side
 

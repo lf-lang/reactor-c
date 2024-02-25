@@ -9,7 +9,7 @@ To generate and view documentation, see [docs/README.md](docs/README.md).
 ## Testing
 The Github Actions tests for this repo will automatically run all the C Lingua Franca tests with each of the available schedulers. The version of the lingua-franca repo that is used to do this is specified by the lingua-franca-ref.txt file in this directory.
 
-To create a new test, write a C program with a file name ending in "test.c"
+To create a new unit test, write a C program with a file name ending in "test.c"
 in a subdirectory of the `test` directory. That file should contain a main and should return 0 if the test succeeds.
 
 * Tests in the `general` subdirectory will always be run.

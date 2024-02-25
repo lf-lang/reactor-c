@@ -4,33 +4,9 @@
  * @author Marten Lohstroh (marten@berkeley.edu)
  * @author Chris Gill (cdgill@wustl.edu)
  * @author Mehrdad Niknami (mniknami@berkeley.edu)
- *
- * @section LICENSE
- * Copyright (c) 2019, The University of California at Berkeley.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * @section DESCRIPTION
- *
- * Type definitions that are widely used across different parts of the runtime.
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Type definitions that are widely used across different parts of the runtime.
  * 
  * <b>IMPORTANT:</b> Many of the structs defined here require matching layouts
  * and, if changed, will require changes in the code generator.
@@ -292,16 +268,19 @@ typedef struct allocation_record_t {
     struct allocation_record_t *next;
 } allocation_record_t;
 
-
 typedef struct environment_t environment_t;
+
 /**
+ * @brief The base type for all reactor self structs.
+ * 
  * The first element of every self struct defined in generated code
  * will be a pointer to an allocation record, which is either NULL
  * or the head of a NULL-terminated linked list of allocation records.
- * Casting the self struct to this type enables access to this list
- * by the function {@link _lf_free_reactor(self_base_t*)}. To allocate memory
- * for the reactor that will be freed by that function, allocate the
- * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
+ * This list is used to free memory that has been dynamically allocated.
+ * This struct also provides a pointer to the currently executing reaction,
+ * to the environment in which the reaction is executing, and to the mutex
+ * that is used to protect the reactor.  If modal models are being used,
+ * it also records the current mode.
  */
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
