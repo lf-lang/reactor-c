@@ -155,13 +155,12 @@ void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
-    LF_PRINT_DEBUG("Worker %zu: BEQ : operand 1 = %lld, operand 2 = %lld", worker_number, *_rs1, *_rs2);
     // These NULL checks allow _rs1 and _rs2 to be uninitialized in the static
     // schedule, which can save a few lines in the schedule. But it is debatable
     // whether this is good practice.
     // lf_print("_rs1 = %p, _rs2 = %p", _rs1, _rs2);
-    // if (_rs1 != NULL) printf("*_rs1 = %lld\n", *_rs1);
-    // if (_rs2 != NULL) printf("*_rs2 = %lld\n", *_rs2);
+    if (_rs1 != NULL) LF_PRINT_DEBUG("*_rs1 = %lld\n", *_rs1);
+    if (_rs2 != NULL) LF_PRINT_DEBUG("*_rs2 = %lld\n", *_rs2);
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 == *_rs2) *pc = op3.imm;
     else *pc += 1;
     // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
