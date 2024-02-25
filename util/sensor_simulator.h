@@ -94,7 +94,7 @@ void show_tick(const char* character);
  * (error code 3).
  * @param key The key to register.
  * @param action The action to trigger when the key is pressed
- *  (a pointer to a trigger_t struct).
+ *  (a pointer to an lf_action_based_t struct).
  * @return 0 for success, error code for failure.
  */
 int register_sensor_key(char key, void* action);

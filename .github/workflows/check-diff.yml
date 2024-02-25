@@ -1,0 +1,46 @@
+name: Check diff from main
+
+on:
+  workflow_call:
+    outputs:
+      run_arduino:
+        description: 'Return true if Arduino tests should be run'
+        value: ${{ jobs.check.outputs.run_arduino == 'true' }}
+      run_macos:
+        description: 'Return true if macOS tests should be run'
+        value: ${{ jobs.check.outputs.run_macos == 'true' }}
+      run_python:
+        description: 'Return true if Python tests should be run'
+        value: ${{ jobs.check.outputs.run_python == 'true' }}
+      run_windows:
+        description: 'Return true if Windows tests should be run'
+        value: ${{ jobs.check.outputs.run_windows == 'true' }}
+      run_zephyr:
+        description: 'Return true if Zephyr tests should be run'
+        value: ${{ jobs.check.outputs.run_zephyr == 'true' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      run_arduino: ${{ steps.do.outputs.changed_arduino == 1 || github.ref == 'refs/heads/main' }}
+      run_macos: ${{ steps.do.outputs.changed_macos == 1 || github.ref == 'refs/heads/main' }}
+      run_python: ${{ steps.do.outputs.changed_python == 1 || github.ref == 'refs/heads/main' }}
+      run_windows: ${{ steps.do.outputs.changed_windows == 1 || github.ref == 'refs/heads/main' }}
+      run_zephyr: ${{ steps.do.outputs.changed_zephyr == 1 || github.ref == 'refs/heads/main' }}
+      
+    steps:
+      - name: Check out reactor-c repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: do
+        name: Check which targets have changes
+        run: |
+          ./check-diff.sh "arduino" arduino
+          ./check-diff.sh "macos|unix" macos
+          ./check-diff.sh "python" python
+          ./check-diff.sh "windows" windows
+          ./check-diff.sh "zephyr" zephyr
+        shell: bash
+        working-directory: .github/scripts
