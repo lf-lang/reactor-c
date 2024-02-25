@@ -74,7 +74,7 @@ void lf_tracing_set_start_time(int64_t start_time);
 /**
  * @brief Submit a tracepoint from the given worker to the tracing module.
  */
-void tracepoint(
+void lf_tracing_tracepoint(
     int worker,
     trace_record_nodeps_t* tr
 );

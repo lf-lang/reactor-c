@@ -91,7 +91,7 @@ void call_tracepoint(
         .extra_delay = extra_delay,
         .physical_time = *physical_time
     };
-    tracepoint(worker, (trace_record_nodeps_t*) &tr);
+    lf_tracing_tracepoint(worker, (trace_record_nodeps_t*) &tr);
 }
 
 /**

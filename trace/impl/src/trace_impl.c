@@ -260,7 +260,7 @@ void lf_tracing_register_trace_event(object_description_t description) {
     lf_platform_mutex_unlock(trace_mutex);
 }
 
-void tracepoint(int worker, trace_record_nodeps_t* tr) {
+void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
     // Worker argument determines which buffer to write to.
     int index = (worker >= 0) ? worker : 0;
 
