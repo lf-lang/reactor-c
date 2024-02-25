@@ -965,7 +965,6 @@ void *federate_info_thread_TCP(void *fed) {
             // Socket is closed
             lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
             my_fed->enclave.state = NOT_CONNECTED;
-            my_fed->socket = -1;
             // FIXME: We need better error handling here, but do not stop execution here.
             break;
         }
@@ -1303,12 +1302,8 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t 
             }
             if (rti_remote->clock_sync_global_status >= clock_sync_on) {
                 // If no runtime clock sync, no need to set up the UDP port.
-                if (federate_UDP_port_number > 0) {
                     // TODO: DONGHA: NEED to be fixed.
                     // Initialize the UDP_addr field of the federate struct
-                    // fed->UDP_addr.sin_family = AF_INET;
-                    // fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
-                    // fed->UDP_addr.sin_addr = fed->server_ip_addr;
                     set_clock_netdrv(fed->clock_netdrv, netdrv, federate_UDP_port_number);
                 }
             } else {
@@ -1492,14 +1487,8 @@ void *respond_to_erroneous_connections(void *nothing) {
 void initialize_federate(federate_info_t *fed, uint16_t id) {
     initialize_scheduling_node(&(fed->enclave), id);
     fed->requested_stop = false;
-    fed->socket = -1; // No socket.
     fed->clock_synchronization_enabled = true;
     fed->in_transit_message_tags = pqueue_tag_init(10);
-    //TODO: Need to fix. This point, the fed_netdrv is not initialized. 
-    // strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
-    // fed->server_ip_addr.s_addr = 0;
-    // fed->server_port = -1;
-    // fed->fed_netdrv = netdrv_init();
     fed->clock_netdrv = netdrv_init();
 }
 
