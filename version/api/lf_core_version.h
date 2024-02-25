@@ -22,12 +22,12 @@ typedef enum {
 typedef struct {
   tribool_t single_threaded;
   tribool_t build_type_is_debug;
-  int log_level;  // FIXME: allow to specify this does not matter
+  int log_level;
 } build_config_t;
 
 typedef struct {
   build_config_t build_config;
-  char* core_sha;  // FIXME: make name reflect that you can use a semver version number or any other string here since this is just fed into a strcmp
+  char* core_version_name;
 } version_t;
 
 #endif // VERSION_H

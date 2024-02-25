@@ -243,7 +243,7 @@ version_t lf_version_tracing() {
 #endif
             .log_level = LOG_LEVEL,
         },
-        .core_sha = NULL,
+        .core_version_name = NULL,
     };
 }
 
