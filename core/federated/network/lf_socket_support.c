@@ -714,8 +714,10 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
             *bytes_to_read = sizeof(instant_t);
             *state = FINISH_READ;
             break;
-        // case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
-        //     break;
+        case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
+            *bytes_to_read = sizeof(int64_t);
+            *state = FINISH_READ;
+            break;
         case MSG_TYPE_PORT_ABSENT:
             *bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
             *state = FINISH_READ;
