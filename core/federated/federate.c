@@ -2662,7 +2662,7 @@ int lf_send_tagged_message(environment_t* env,
     buffer_head += sizeof(uint16_t);
 
     // The next four bytes are the message length.
-    encode_int32((int32_t)length, &(header_buffer[buffer_head]));
+    encode_uint32((uint32_t)length, &(header_buffer[buffer_head]));
     buffer_head += sizeof(int32_t);
 
     // Apply the additional delay to the current tag and use that as the intended
