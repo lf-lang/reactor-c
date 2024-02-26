@@ -231,7 +231,7 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time);
 # else
 #  error "Cannot define thread_local"
 # endif
-#endif
+#endif // thread_local
 
 /**
  * @brief The ID of the current thread. The only guarantee is that these IDs will be a contiguous range of numbers starting at 0.
@@ -242,7 +242,7 @@ int lf_thread_id();
  * @brief Initialize the thread ID for the current thread.
  */
 void initialize_lf_thread_id();
-#endif
+#endif  // !defined(LF_SINGLE_THREADED)
 
 /**
  * Initialize the LF clock. Must be called before using other clock-related APIs.

@@ -62,6 +62,7 @@ if (NOT DEFINED LF_SINGLE_THREADED)
       ${RTI_DIR}/rti_remote.c
       ${CoreLibPath}/trace.c
       ${LF_PLATFORM_FILE}
+      ${LF_ROOT}/low_level_platform/impl/src/platform_internal.c
       ${LF_ROOT}/low_level_platform/impl/src/lf_atomic_gcc_clang.c
       ${LF_ROOT}/low_level_platform/impl/src/lf_unix_clock_support.c
       ${CoreLibPath}/utils/util.c
