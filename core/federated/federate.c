@@ -528,7 +528,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
     _lf_get_environments(&env);
 
     // Read the header which contains the timestamp.
-    size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
+    size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t)
             + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
