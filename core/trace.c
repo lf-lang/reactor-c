@@ -331,8 +331,8 @@ void tracepoint(
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker) {
-    tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
-}
+        tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
+    }
 
 /**
  * Trace the end of a reaction execution.
@@ -490,8 +490,14 @@ void tracepoint_static_scheduler_EIT_starts(trace_t* trace, int worker, int pc) 
 }
 
 /** Trace the start of the EXE instruction */
-void tracepoint_static_scheduler_EXE_starts(trace_t* trace, int worker, int pc) {
-    tracepoint(trace, static_scheduler_EXE_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+void tracepoint_static_scheduler_EXE_starts(trace_t* trace, self_base_t *reactor, int worker, int pc) {
+    tag_t *tag = NULL;
+
+    if (reactor) {
+        tag = &reactor->tag;
+    }
+
+    tracepoint(trace, static_scheduler_EXE_starts, reactor, tag, worker, worker, pc, NULL, NULL, 0, false);
 }
 
 /** Trace the start of the JAL instruction */
@@ -550,8 +556,14 @@ void tracepoint_static_scheduler_EIT_ends(trace_t* trace, int worker, int pc) {
 }
 
 /** Trace the end of the EXE instruction */
-void tracepoint_static_scheduler_EXE_ends(trace_t* trace, int worker, int pc) {
-    tracepoint(trace, static_scheduler_EXE_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+void tracepoint_static_scheduler_EXE_ends(trace_t* trace, self_base_t *reactor, int worker, int pc) {
+    tag_t *tag = NULL;
+
+    if (reactor) {
+        tag = &reactor->tag;
+    }
+
+    tracepoint(trace, static_scheduler_EXE_ends, reactor, tag, worker, worker, pc, NULL, NULL, 0, false);
 }
 
 /** Trace the end of the JAL instruction */

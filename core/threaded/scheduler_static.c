@@ -230,13 +230,13 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
  */
 void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc);
     function_generic_t function = (function_generic_t)(uintptr_t)op1.reg;
     void *args = (void*)op2.reg;
     // Execute the function directly.
     function(args);
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc);
 }
 
 

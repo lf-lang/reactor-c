@@ -490,7 +490,6 @@ void tracepoint_static_scheduler_ADVI_starts(trace_t* trace, int worker, int pc)
 void tracepoint_static_scheduler_BIT_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_DU_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_EIT_starts(trace_t* trace, int worker, int pc);
-void tracepoint_static_scheduler_EXE_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_JAL_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_JALR_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_SAC_starts(trace_t* trace, int worker, int pc);
@@ -502,12 +501,14 @@ void tracepoint_static_scheduler_ADVI_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_BIT_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_DU_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_EIT_ends(trace_t* trace, int worker, int pc);
-void tracepoint_static_scheduler_EXE_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_JAL_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_JALR_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_SAC_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_STP_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_WU_ends(trace_t* trace, int worker, int pc);
+
+void tracepoint_static_scheduler_EXE_starts(trace_t* trace, self_base_t *reactor, int worker, int pc);
+void tracepoint_static_scheduler_EXE_ends(trace_t* trace, self_base_t *reactor, int worker, int pc);
 
 /**
  * Flush any buffered trace records to the trace file and
