@@ -44,7 +44,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <windows.h>
 
 #if !defined LF_SINGLE_THREADED
-    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
         /**
          * On Windows, one could use both a mutex or
          * a critical section for the same purpose. However,
@@ -62,9 +61,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             CONDITION_VARIABLE condition;
         } lf_cond_t;
         typedef HANDLE lf_thread_t;
-    #else
-        #include "lf_C11_threads_support.h"
-    #endif
 #endif
 
 // Use 64-bit times and 32-bit unsigned microsteps
