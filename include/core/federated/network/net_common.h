@@ -532,6 +532,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_ADDRESS_QUERY 13
 
+#define MSG_TYPE_ADDRESS_QUERY_REPLY 77
+
 /**
  * Byte identifying a message advertising the port for the TCP connection server
  * of a federate. This is utilized in decentralized coordination as well as for physical
