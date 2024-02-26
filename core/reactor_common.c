@@ -1188,7 +1188,7 @@ static void check_version(version_t version) {
     #else
     LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_TRUE || version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER, "expected debug version");
     #endif
-    LF_ASSERT(version.build_config.log_level == LOG_LEVEL, "expected log level %d", LOG_LEVEL);
+    LF_ASSERT(version.build_config.log_level == LOG_LEVEL || version.build_config.log_level == INT_MAX, "expected log level %d", LOG_LEVEL);
     // assert(!version.core_version_name || strcmp(version.core_version_name, CORE_SHA) == 0); // TODO: provide CORE_SHA
 }
 #endif  // LF_TRACE
