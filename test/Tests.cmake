@@ -60,7 +60,7 @@ if (NOT DEFINED LF_SINGLE_THREADED)
       ${TEST_DIR}/RTI/rti_common_test.c
       ${RTI_DIR}/rti_common.c
       ${RTI_DIR}/rti_remote.c
-      ${CoreLibPath}/trace.c
+      ${CoreLibPath}/tracepoint.c
       ${LF_PLATFORM_FILE}
       ${LF_ROOT}/low_level_platform/impl/src/platform_internal.c
       ${LF_ROOT}/low_level_platform/impl/src/lf_atomic_gcc_clang.c

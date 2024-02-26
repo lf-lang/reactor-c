@@ -19,7 +19,7 @@ list(APPEND GENERAL_SOURCES tag.c clock.c port.c mixed_radix.c reactor_common.c 
 # Add tracing support if requested
 if (DEFINED LF_TRACE)
     message(STATUS "Including sources specific to tracing.")
-    list(APPEND GENERAL_SOURCES trace.c)
+    list(APPEND GENERAL_SOURCES tracepoint.c)
 endif()
 
 # Add the general sources to the list of REACTORC_SOURCES

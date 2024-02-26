@@ -55,7 +55,7 @@ add_executable(
     main.c
     rti_common.c
     rti_remote.c
-    ${CoreLib}/trace.c
+    ${CoreLib}/tracepoint.c
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
     ${CoreLib}/clock.c
