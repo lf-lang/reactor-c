@@ -39,7 +39,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/lf_zephyr_support.h"
 #include "low_level_platform.h"
-#include "logging.h"
 #include "logging_macros.h"
 
 static int64_t epoch_duration_nsec;

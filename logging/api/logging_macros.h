@@ -1,3 +1,5 @@
+#include "logging.h"
+
 /**
  * Non-C implementations (which cannot benefit from the C preprocessor) should
  * ignore this file, or merely use it as a suggestion for similar behavior

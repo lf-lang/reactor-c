@@ -6,7 +6,6 @@
 
 #include "trace.h"
 #include "platform.h"
-#include "logging.h"
 #include "logging_macros.h"
 #include "trace_impl.h"
 
