@@ -174,7 +174,8 @@ static void start_trace(trace_t* trace, int max_num_local_threads) {
         trace->_lf_trace_buffer[i] = (trace_record_nodeps_t*)malloc(sizeof(trace_record_nodeps_t) * TRACE_BUFFER_CAPACITY);
     }
     // Array of counters that track the size of each trace record (per thread).
-    trace->_lf_trace_buffer_size = (int*)calloc(sizeof(int), trace->_lf_number_of_trace_buffers);
+    trace->_lf_trace_buffer_size = (int*)calloc(sizeof(int), trace->_lf_number_of_trace_buffers + 1);
+    trace->_lf_trace_buffer_size++;
 
     trace->_lf_trace_stop = 0;
     LF_PRINT_DEBUG("Started tracing.");
@@ -210,7 +211,7 @@ static void stop_trace_locked(trace_t* trace) {
         // Trace was already stopped. Nothing to do.
         return;
     }
-    for (int i = 0; i < trace->_lf_number_of_trace_buffers; i++) {
+    for (int i = -1; i < trace->_lf_number_of_trace_buffers; i++) {
         // Flush the buffer if it has data.
         LF_PRINT_DEBUG("Trace buffer %d has %d records.", i, trace->_lf_trace_buffer_size[i]);
         if (trace->_lf_trace_buffer_size && trace->_lf_trace_buffer_size[i] > 0) {
