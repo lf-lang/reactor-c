@@ -18,7 +18,7 @@
 #include <time.h>
 
 #include "lf_types.h"
-#include "platform.h"
+#include "low_level_platform.h"
 #include "reactor_threaded.h"
 #include "reactor.h"
 #include "scheduler.h"
@@ -736,7 +736,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t *env, int w
         // Check for deadline violation.
         if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.
-            tracepoint_reaction_deadline_missed(env->trace, reaction, worker_number);
+            tracepoint_reaction_deadline_missed(env, reaction, worker_number);
             violation_occurred = true;
             // Invoke the local handler, if there is one.
             reaction_function_t handler = reaction->deadline_violation_handler;
@@ -930,6 +930,7 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
  * @param arg Environment within which the worker should execute.
  */
 void* worker(void* arg) {
+    initialize_lf_thread_id();
     environment_t *env = (environment_t* ) arg;
     LF_MUTEX_LOCK(&env->mutex);
 
@@ -1053,6 +1054,7 @@ void determine_number_of_workers(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
+    initialize_lf_thread_id();
     // Invoke the function that optionally provides default command-line options.
     lf_set_default_command_line_options();
 
@@ -1087,6 +1089,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Initialize the clock through the platform API. No reading of physical time before this.
     _lf_initialize_clock();
     start_time = lf_time_physical();
+    #ifndef FEDERATED
+    lf_tracing_set_start_time(start_time);
+    #endif
 
     LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
     struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
@@ -1102,8 +1107,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Initialize the global payload and token allocation counts and the trigger table
     // as well as starting tracing subsystem
     initialize_global();
-        
-    
+
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
 

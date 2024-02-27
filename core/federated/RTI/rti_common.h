@@ -15,10 +15,10 @@
 
 #include <errno.h>      // Defines perror(), errno
 #include <assert.h>
-#include "platform.h"   // Platform-specific types and functions
+#include "low_level_platform.h"   // Platform-specific types and functions
 #include "util.h"       // Defines print functions (e.g., lf_print).
 #include "tag.h"        // Time-related types and functions.
-#include "trace.h"      // Tracing related functions
+#include "tracepoint.h"      // Tracing related functions
 
 /** Mode of execution of a federate. */
 typedef enum execution_mode_t {
@@ -89,9 +89,6 @@ typedef struct rti_common_t {
 
     // Boolean indicating that tracing is enabled.
     bool tracing_enabled;
-    
-    // Pointer to a tracing object
-    trace_t* trace;
 
     // The RTI mutex for making thread-safe access to the shared state.
     lf_mutex_t* mutex;
