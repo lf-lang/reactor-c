@@ -787,8 +787,8 @@ void handle_address_query(uint16_t fed_id) {
     // the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message
     // from this federate. In that case, it will respond by sending -1.
 
-    // Response message is also of type MSG_TYPE_ADDRESS_QUERY.
-    buffer[0] = MSG_TYPE_ADDRESS_QUERY;
+    // Response message is MSG_TYPE_ADDRESS_QUERY_REPLY.
+    buffer[0] = MSG_TYPE_ADDRESS_QUERY_REPLY;
 
     // Encode the port number.
     federate_info_t *remote_fed = GET_FED_INFO(remote_fed_id);
