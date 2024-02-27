@@ -529,8 +529,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_ADDRESS_QUERY 13
 
 /**
- * Byte identifying a address query message reply, sent by a RTI to federate
- * to reply for requested remote federate's address and port number.
+ * Byte identifying a address query message reply, sent by a RTI to a federate
+ * to reply with a remote federate's address and port number.
  * The reply from the RTI will be a port number (an int32_t), which is -1
  * if the RTI does not know yet (it has not received MSG_TYPE_ADDRESS_ADVERTISEMENT from
  * the other federate), followed by the IP address of the other
