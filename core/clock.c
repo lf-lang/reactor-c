@@ -6,7 +6,7 @@
  * @brief Implementations of functions in clock.h.
 */
 #include "clock.h"
-#include "platform.h"
+#include "low_level_platform.h"
 
 #if defined(_LF_CLOCK_SYNC_ON)
 #include "clock-sync.h"
