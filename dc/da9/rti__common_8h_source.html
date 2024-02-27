@@ -107,10 +107,10 @@ $(function(){initNavTree('dc/da9/rti__common_8h_source.html','../../'); initResi
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#include &lt;errno.h&gt;</span>      <span class="comment">// Defines perror(), errno</span></div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="preprocessor">#include &lt;assert.h&gt;</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &quot;<a class="code" href="../../de/d03/platform_8h.html">platform.h</a>&quot;</span>   <span class="comment">// Platform-specific types and functions</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &quot;<a class="code" href="../../da/dfb/low__level__platform_8h.html">low_level_platform.h</a>&quot;</span>   <span class="comment">// Platform-specific types and functions</span></div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &quot;<a class="code" href="../../d8/d3c/util_8h.html">util.h</a>&quot;</span>       <span class="comment">// Defines print functions (e.g., lf_print).</span></div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &quot;<a class="code" href="../../d2/dcd/tag_8h.html">tag.h</a>&quot;</span>        <span class="comment">// Time-related types and functions.</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &quot;<a class="code" href="../../d1/d1b/trace_8h.html">trace.h</a>&quot;</span>      <span class="comment">// Tracing related functions</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &quot;<a class="code" href="../../d6/db9/tracepoint_8h.html">tracepoint.h</a>&quot;</span>      <span class="comment">// Tracing related functions</span></div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">typedef</span> <span class="keyword">enum</span> execution_mode_t {</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    FAST,</div>
@@ -163,61 +163,56 @@ $(function(){initNavTree('dc/da9/rti__common_8h_source.html','../../'); initResi
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <span class="comment">// Boolean indicating that tracing is enabled.</span></div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordtype">bool</span> tracing_enabled;</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    </div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="comment">// Pointer to a tracing object</span></div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <a class="code hl_typedef" href="../../d1/d1b/trace_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a>* <a class="code hl_variable" href="../../d5/df4/trace__util_8c.html#acc1427f623068d0c5a2c307969e8a447">trace</a>;</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="comment">// The RTI mutex for making thread-safe access to the shared state.</span></div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <a class="code hl_typedef" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a>* mutex;</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>} rti_common_t;</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag;           <span class="comment">// NEVER if there is no tag advance grant.</span></div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    <span class="keywordtype">bool</span> is_provisional; <span class="comment">// True for PTAG, false for TAG.</span></div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>} tag_advance_grant_t;</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="keywordtype">void</span> initialize_rti_common(rti_common_t * rti_common);</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span> </div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="keywordtype">void</span> _logical_tag_complete(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> completed);</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> </div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><span class="keywordtype">void</span> initialize_scheduling_node(scheduling_node_t* e, uint16_t <span class="keywordtype">id</span>);</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span> </div>
-<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span><span class="keywordtype">void</span> notify_downstream_advance_grant_if_safe(scheduling_node_t* e, <span class="keywordtype">bool</span> visited[]);</div>
-<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span> </div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span><span class="keywordtype">void</span> notify_tag_advance_grant(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag);</div>
-<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span> </div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span><span class="keywordtype">void</span> notify_advance_grant_if_safe(scheduling_node_t* e);</div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span> </div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span><span class="keywordtype">void</span> notify_provisional_tag_advance_grant(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag);</div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span> </div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);</div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span> </div>
-<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span><span class="keywordtype">void</span> update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event_tag);</div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span> </div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span><a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> earliest_future_incoming_message_tag(scheduling_node_t* e);</div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span> </div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span><a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> eimt_strict(scheduling_node_t* e);</div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span> </div>
-<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span><span class="keywordtype">bool</span> is_in_zero_delay_cycle(scheduling_node_t* node);</div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span> </div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span><span class="keywordtype">bool</span> is_in_cycle(scheduling_node_t* node);</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span> </div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span><span class="keywordtype">void</span> update_min_delays_upstream(scheduling_node_t* node);</div>
-<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span> </div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span><span class="keywordtype">void</span> invalidate_min_delays_upstream(scheduling_node_t* node);</div>
-<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span> </div>
-<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span><span class="keywordtype">void</span> free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes);</div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span> </div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span><span class="preprocessor">#endif </span><span class="comment">// RTI_COMMON_H</span></div>
-<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span><span class="preprocessor">#endif </span><span class="comment">// STANDALONE_RTI || LF_ENCLAVES</span></div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="comment">// The RTI mutex for making thread-safe access to the shared state.</span></div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <a class="code hl_typedef" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a>* mutex;</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>} rti_common_t;</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag;           <span class="comment">// NEVER if there is no tag advance grant.</span></div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    <span class="keywordtype">bool</span> is_provisional; <span class="comment">// True for PTAG, false for TAG.</span></div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>} tag_advance_grant_t;</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span><span class="keywordtype">void</span> initialize_rti_common(rti_common_t * rti_common);</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="keywordtype">void</span> _logical_tag_complete(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> completed);</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span> </div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span><span class="keywordtype">void</span> initialize_scheduling_node(scheduling_node_t* e, uint16_t <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span> </div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span><span class="keywordtype">void</span> notify_downstream_advance_grant_if_safe(scheduling_node_t* e, <span class="keywordtype">bool</span> visited[]);</div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span> </div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span><span class="keywordtype">void</span> notify_tag_advance_grant(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag);</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span> </div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span><span class="keywordtype">void</span> notify_advance_grant_if_safe(scheduling_node_t* e);</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span> </div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span><span class="keywordtype">void</span> notify_provisional_tag_advance_grant(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag);</div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span> </div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);</div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span> </div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span><span class="keywordtype">void</span> update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event_tag);</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span> </div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span><a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> earliest_future_incoming_message_tag(scheduling_node_t* e);</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span> </div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span><a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> eimt_strict(scheduling_node_t* e);</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span> </div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span><span class="keywordtype">bool</span> is_in_zero_delay_cycle(scheduling_node_t* node);</div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span> </div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span><span class="keywordtype">bool</span> is_in_cycle(scheduling_node_t* node);</div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span> </div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span><span class="keywordtype">void</span> update_min_delays_upstream(scheduling_node_t* node);</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span><span class="keywordtype">void</span> invalidate_min_delays_upstream(scheduling_node_t* node);</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span> </div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span><span class="keywordtype">void</span> free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes);</div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span> </div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span><span class="preprocessor">#endif </span><span class="comment">// RTI_COMMON_H</span></div>
+<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span><span class="preprocessor">#endif </span><span class="comment">// STANDALONE_RTI || LF_ENCLAVES</span></div>
 <div class="ttc" id="alf__arduino__support_8h_html_a7f67574f8818b6b888aa06156db05a7f"><div class="ttname"><a href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a></div><div class="ttdeci">void * lf_mutex_t</div><div class="ttdef"><b>Definition</b> lf_arduino_support.h:118</div></div>
-<div class="ttc" id="aplatform_8h_html"><div class="ttname"><a href="../../de/d03/platform_8h.html">platform.h</a></div><div class="ttdoc">Platform API support for the C target of Lingua Franca.</div></div>
+<div class="ttc" id="alow__level__platform_8h_html"><div class="ttname"><a href="../../da/dfb/low__level__platform_8h.html">low_level_platform.h</a></div><div class="ttdoc">Platform API support for the C target of Lingua Franca.</div></div>
 <div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="../../db/df7/structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition</b> tag.h:73</div></div>
 <div class="ttc" id="atag_8h_html"><div class="ttname"><a href="../../d2/dcd/tag_8h.html">tag.h</a></div><div class="ttdoc">Time and tag definitions and functions for Lingua Franca.</div></div>
 <div class="ttc" id="atag_8h_html_af5b4e62d03782997d813be6145316f4b"><div class="ttname"><a href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></div><div class="ttdeci">int64_t interval_t</div><div class="ttdef"><b>Definition</b> tag.h:63</div></div>
-<div class="ttc" id="atrace_8h_html"><div class="ttname"><a href="../../d1/d1b/trace_8h.html">trace.h</a></div></div>
-<div class="ttc" id="atrace_8h_html_abec033e59d4add4aa6ec61a874d0d52d"><div class="ttname"><a href="../../d1/d1b/trace_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a></div><div class="ttdeci">struct trace_t trace_t</div><div class="ttdef"><b>Definition</b> trace.h:527</div></div>
-<div class="ttc" id="atrace__util_8c_html_acc1427f623068d0c5a2c307969e8a447"><div class="ttname"><a href="../../d5/df4/trace__util_8c.html#acc1427f623068d0c5a2c307969e8a447">trace</a></div><div class="ttdeci">trace_record_t trace[TRACE_BUFFER_CAPACITY]</div><div class="ttdef"><b>Definition</b> trace_util.c:44</div></div>
+<div class="ttc" id="atracepoint_8h_html"><div class="ttname"><a href="../../d6/db9/tracepoint_8h.html">tracepoint.h</a></div><div class="ttdoc">Definitions of tracepoint functions for use with the C code generator and any other code generator th...</div></div>
 <div class="ttc" id="autil_8h_html"><div class="ttname"><a href="../../d8/d3c/util_8h.html">util.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

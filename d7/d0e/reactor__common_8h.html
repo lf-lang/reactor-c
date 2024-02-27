@@ -519,7 +519,7 @@ Erling Rennemo Jellum </dd></dl>
 <p>Note that this function is an internal API that must be called with a tag that is in the future relative to the current tag (or the environment has not started executing). Also, it must be called with tags that are in order for a given trigger. This means that the following order is illegal: </p><div class="fragment"><div class="line"><a class="code hl_function" href="../../dd/d37/reactor__common_8c.html#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">trigger1</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bigger_tag</a>, ...);</div>
 <div class="line"><a class="code hl_function" href="../../dd/d37/reactor__common_8c.html#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">trigger1</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">smaller_tag</a>, ...);</div>
 <div class="ttc" id="ahashmap_8h_html_ad2c17ed7e0d4d65a63bf9002aba2016f"><div class="ttname"><a href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">address</a></div><div class="ttdeci">return address</div><div class="ttdef"><b>Definition</b> hashmap.h:74</div></div>
-<div class="ttc" id="areactor__common_8c_html_a9d2634d70492498740984f320dffe8f0"><div class="ttname"><a href="../../dd/d37/reactor__common_8c.html#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_at_tag(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdoc">Schedule an event at a specific tag (time, microstep).</div><div class="ttdef"><b>Definition</b> reactor_common.c:509</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9d2634d70492498740984f320dffe8f0"><div class="ttname"><a href="../../dd/d37/reactor__common_8c.html#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_at_tag(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdoc">Schedule an event at a specific tag (time, microstep).</div><div class="ttdef"><b>Definition</b> reactor_common.c:510</div></div>
 </div><!-- fragment --><p> where <code>bigger_tag &gt; smaller_tag</code>. This function is primarily used for network communication (which is assumed to be in order).</p>
 <p>This function assumes the caller holds the mutex lock.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -656,12 +656,13 @@ Erling Rennemo Jellum </dd></dl>
         <tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> initialize_global </td>
           <td>(</td>
-          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a></td>          <td class="paramname"><span class="paramname"></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
+<p>Initialize global variables and start tracing before calling the <code>_lf_initialize_trigger_objects</code> function. </p>
 <p>Initialize global variables and start tracing before calling the <code>_lf_initialize_trigger_objects</code> function. </p>
 
 </div>

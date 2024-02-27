@@ -31,7 +31,6 @@ var structenvironment__t =
     [ "thread_ids", "d2/d01/structenvironment__t.html#adf02bc4c7926af749b64b24a1d3be7a3", null ],
     [ "timer_triggers", "d2/d01/structenvironment__t.html#a5ec0f96f80f71a929bf3a150d70b5a67", null ],
     [ "timer_triggers_size", "d2/d01/structenvironment__t.html#a2e134fb4e7bafe271bed676dc4444d3e", null ],
-    [ "trace", "d2/d01/structenvironment__t.html#a4670353a561a50460a1dbd7817ad44cb", null ],
     [ "watchdogs", "d2/d01/structenvironment__t.html#abf04f0583f502d4ba1a8cac7c7967dd7", null ],
     [ "watchdogs_size", "d2/d01/structenvironment__t.html#a2f005119de69e43295b3d1566f0dc860", null ],
     [ "worker_thread_count", "d2/d01/structenvironment__t.html#a64c98375fa4b34629073863a9bcd6845", null ]

@@ -18,8 +18,9 @@ var searchData=
   ['vector_5ft_15',['vector_t',['../d3/d8b/structvector__t.html',1,'vector_t'],['../d6/d68/vector_8h.html#ac6a5b15223a2905669f2ee7377fd3dbd',1,'vector_t:&#160;vector.h']]],
   ['vector_5ftest_2ec_16',['vector_test.c',['../d1/d88/vector__test_8c.html',1,'']]],
   ['vector_5fvote_17',['vector_vote',['../df/dfa/vector_8c.html#a41e7b0b4a43deefd94df37fd128de0bb',1,'vector_vote(vector_t *v):&#160;vector.c'],['../d6/d68/vector_8h.html#a41e7b0b4a43deefd94df37fd128de0bb',1,'vector_vote(vector_t *v):&#160;vector.c']]],
-  ['visualizer_18',['Trace sequence diagram visualizer',['../dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html',1,'']]],
-  ['volume_19',['volume',['../da/d62/structnote.html#aa4319bcddbd921967134c6031b5a8276',1,'note']]],
-  ['votes_20',['votes',['../d3/d8b/structvector__t.html#a2dd65528257b283111eadc0500b93464',1,'vector_t']]],
-  ['votes_5frequired_21',['votes_required',['../d3/d8b/structvector__t.html#a4b68f14d631f8f4a8d16bd1aa36b3011',1,'vector_t']]]
+  ['version_5ft_18',['version_t',['../da/d9c/structversion__t.html',1,'']]],
+  ['visualizer_19',['Trace sequence diagram visualizer',['../dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html',1,'']]],
+  ['volume_20',['volume',['../da/d62/structnote.html#aa4319bcddbd921967134c6031b5a8276',1,'note']]],
+  ['votes_21',['votes',['../d3/d8b/structvector__t.html#a2dd65528257b283111eadc0500b93464',1,'vector_t']]],
+  ['votes_5frequired_22',['votes_required',['../d3/d8b/structvector__t.html#a4b68f14d631f8f4a8d16bd1aa36b3011',1,'vector_t']]]
 ];

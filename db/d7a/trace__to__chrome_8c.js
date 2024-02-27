@@ -1,5 +1,6 @@
 var trace__to__chrome_8c =
 [
+    [ "__STDC_WANT_LIB_EXT2", "db/d7a/trace__to__chrome_8c.html#abdbb6224dba97a0162e6a8525a5b2b96", null ],
     [ "LF_TRACE", "db/d7a/trace__to__chrome_8c.html#a3b6aa696de734ff8fa179a9349e14fe7", null ],
     [ "PID_FOR_UNKNOWN_EVENT", "db/d7a/trace__to__chrome_8c.html#a989cdd5c8f2865f73a49b47929c46307", null ],
     [ "PID_FOR_USER_EVENT", "db/d7a/trace__to__chrome_8c.html#ac49513631a6969fab7ae49da910ce0d2", null ],

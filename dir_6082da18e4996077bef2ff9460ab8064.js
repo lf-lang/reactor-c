@@ -1,6 +1,6 @@
-var dir_e013a6b3093d526b264ef8c8204162a6 =
+var dir_6082da18e4996077bef2ff9460ab8064 =
 [
-    [ "arduino_mbed", "dir_f0ec87b0636a298194ea3a9974e6da10.html", "dir_f0ec87b0636a298194ea3a9974e6da10" ],
+    [ "arduino_mbed", "dir_6f24c9ace66f90dc92219df8fab83338.html", "dir_6f24c9ace66f90dc92219df8fab83338" ],
     [ "lf_arduino_support.c", "d8/dd6/lf__arduino__support_8c.html", null ],
     [ "lf_atomic_gcc_clang.c", "d0/d8e/lf__atomic__gcc__clang_8c.html", null ],
     [ "lf_atomic_irq.c", "d6/d89/lf__atomic__irq_8c.html", null ],
@@ -17,5 +17,6 @@ var dir_e013a6b3093d526b264ef8c8204162a6 =
     [ "lf_windows_support.c", "de/d59/lf__windows__support_8c.html", null ],
     [ "lf_zephyr_clock_counter.c", "d9/daf/lf__zephyr__clock__counter_8c.html", null ],
     [ "lf_zephyr_clock_kernel.c", "df/d0e/lf__zephyr__clock__kernel_8c.html", null ],
-    [ "lf_zephyr_support.c", "df/d70/lf__zephyr__support_8c.html", null ]
+    [ "lf_zephyr_support.c", "df/d70/lf__zephyr__support_8c.html", null ],
+    [ "platform_internal.c", "d7/d98/platform__internal_8c.html", "d7/d98/platform__internal_8c" ]
 ];

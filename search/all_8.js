@@ -22,7 +22,7 @@ var searchData=
   ['args_19',['args',['../d6/d1e/namespacefedsd.html#ac2922b91dea303c728ad5b1e7e89758a',1,'fedsd']]],
   ['array_5fof_5fmutexes_20',['array_of_mutexes',['../da/d7a/structlf__scheduler__t.html#a9ab8fa3b3b1554eaa4101b8aaa167add',1,'lf_scheduler_t']]],
   ['assert_21',['assert',['../d6/df3/hashmap_8h.html#aba6a66e60b2db6671c7f4b720258488e',1,'assert(address &gt;=hashmap-&gt;entries):&#160;hashmap.h'],['../d6/df3/hashmap_8h.html#a7fc64372b2a7244859db773256c47a62',1,'assert(address&lt; hashmap-&gt;entries+hashmap-&gt;capacity):&#160;hashmap.h'],['../d6/df3/hashmap_8h.html#ae527e5a523417fce785f27645c2335b6',1,'assert(address-&gt;key==key||address-&gt;key==hashmap-&gt;nothing):&#160;hashmap.h']]],
-  ['attribute_5fformat_5fprintf_22',['ATTRIBUTE_FORMAT_PRINTF',['../d8/d3c/util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867',1,'util.h']]],
+  ['attribute_5fformat_5fprintf_22',['ATTRIBUTE_FORMAT_PRINTF',['../d5/d77/logging_8h.html#a1e753fbf3551d4a04cd45c04b5a90867',1,'logging.h']]],
   ['audio_5fbuffer_5fsize_23',['AUDIO_BUFFER_SIZE',['../d1/dcb/audio__loop_8h.html#a1d48237cb63c5ae67aab6d00cc64afb6',1,'audio_loop.h']]],
   ['audio_5fdevice_24',['AUDIO_DEVICE',['../da/d0e/audio__loop__linux_8c.html#ad4fb01232c5d7bf6036bb14780bfe09e',1,'audio_loop_linux.c']]],
   ['audio_5fformat_25',['audio_format',['../d1/d3f/structlf__wav__format__t.html#a52979bb4f51994d359760876aa1c9db8',1,'lf_wav_format_t']]],

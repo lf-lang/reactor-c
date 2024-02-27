@@ -11,11 +11,12 @@ var searchData=
   ['cond_8',['cond',['../d3/dc4/structwatchdog__t.html#a23d65cf0c4a3e97ec1168d6805a4aa00',1,'watchdog_t::cond'],['../de/dc8/structlf__semaphore__t.html#a37a3bc5a68d8a9245dbc59e6b9010f3b',1,'lf_semaphore_t::cond']]],
   ['condition_9',['condition',['../dd/d67/structlf__cond__t.html#a2171e29cd6253e57d9a0cf06cc88301c',1,'lf_cond_t::condition'],['../dd/d67/structlf__cond__t.html#a58ff28bfeabf02915ba23f2ad351b7d6',1,'lf_cond_t::condition'],['../dd/d67/structlf__cond__t.html#ab914e73ca3659803b5df2e408301bfb9',1,'lf_cond_t::condition'],['../dd/d67/structlf__cond__t.html#a0d4efe8c6390e564b57b4a58927ec93f',1,'lf_cond_t::condition']]],
   ['copy_5fconstructor_10',['copy_constructor',['../db/d12/structtoken__type__t.html#a4e5da2b59631b75ace560f9812a11824',1,'token_type_t::copy_constructor'],['../da/dc0/structgeneric__port__instance__struct.html#a91dc1a062dbad3a91c4b692c28308360',1,'generic_port_instance_struct::copy_constructor']]],
-  ['count_11',['count',['../de/dc8/structlf__semaphore__t.html#ac4c25407ad41a8e3e11c270637ef045c',1,'lf_semaphore_t']]],
-  ['cpt_12',['cpt',['../d6/d1e/namespacefedsd.html#af90671403aae1fbc8f6dedd5caef43e5',1,'fedsd']]],
-  ['critical_5fsection_13',['critical_section',['../dd/d67/structlf__cond__t.html#a82734d8a77e41947d56fa8ebf9366d65',1,'lf_cond_t']]],
-  ['css_5fstyle_14',['css_style',['../d6/d1e/namespacefedsd.html#a112610c17b25854fbe0f162fc4e08292',1,'fedsd']]],
-  ['current_5findex_15',['current_index',['../d2/dab/structgeneric__port__capsule__struct.html#a55922ea3069d765b5cc5c47d0369057a',1,'generic_port_capsule_struct']]],
-  ['current_5ftag_16',['current_tag',['../d2/d01/structenvironment__t.html#ac86519935540bf879f60baba5424bc0c',1,'environment_t']]],
-  ['custom_5fdata_17',['custom_data',['../da/d7a/structlf__scheduler__t.html#aef6ea4bec6ed373ca0007f6fb5175bd7',1,'lf_scheduler_t']]]
+  ['core_5fversion_5fname_11',['core_version_name',['../da/d9c/structversion__t.html#a1467912f280c86639da40fa0ce448147',1,'version_t']]],
+  ['count_12',['count',['../de/dc8/structlf__semaphore__t.html#ac4c25407ad41a8e3e11c270637ef045c',1,'lf_semaphore_t']]],
+  ['cpt_13',['cpt',['../d6/d1e/namespacefedsd.html#af90671403aae1fbc8f6dedd5caef43e5',1,'fedsd']]],
+  ['critical_5fsection_14',['critical_section',['../dd/d67/structlf__cond__t.html#a82734d8a77e41947d56fa8ebf9366d65',1,'lf_cond_t']]],
+  ['css_5fstyle_15',['css_style',['../d6/d1e/namespacefedsd.html#a112610c17b25854fbe0f162fc4e08292',1,'fedsd']]],
+  ['current_5findex_16',['current_index',['../d2/dab/structgeneric__port__capsule__struct.html#a55922ea3069d765b5cc5c47d0369057a',1,'generic_port_capsule_struct']]],
+  ['current_5ftag_17',['current_tag',['../d2/d01/structenvironment__t.html#ac86519935540bf879f60baba5424bc0c',1,'environment_t']]],
+  ['custom_5fdata_18',['custom_data',['../da/d7a/structlf__scheduler__t.html#aef6ea4bec6ed373ca0007f6fb5175bd7',1,'lf_scheduler_t']]]
 ];

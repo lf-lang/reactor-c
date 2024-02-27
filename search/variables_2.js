@@ -7,5 +7,7 @@ var searchData=
   ['blockalign_4',['BlockAlign',['../d1/d3f/structlf__wav__format__t.html#ade6b07a7115880ebae5f1bd89642a047',1,'lf_wav_format_t']]],
   ['bucket_5',['bucket',['../da/d55/struct__influx__v2__client__t.html#a7be09e9dfadbcada407fa53024d9bda5',1,'_influx_v2_client_t']]],
   ['buffer_6',['buffer',['../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62',1,'trace_util.c']]],
-  ['byte_5frate_7',['byte_rate',['../d1/d3f/structlf__wav__format__t.html#ae5f203a6ff05911332cfa0cbd6919f97',1,'lf_wav_format_t']]]
+  ['build_5fconfig_7',['build_config',['../da/d9c/structversion__t.html#acaa7fa2382cb8b32c455c202d3b7ec6d',1,'version_t']]],
+  ['build_5ftype_5fis_5fdebug_8',['build_type_is_debug',['../dc/d4f/structbuild__config__t.html#a870c8bef5e1969be2c0f39b2db1dc5a9',1,'build_config_t']]],
+  ['byte_5frate_9',['byte_rate',['../d1/d3f/structlf__wav__format__t.html#ae5f203a6ff05911332cfa0cbd6919f97',1,'lf_wav_format_t']]]
 ];

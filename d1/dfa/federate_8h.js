@@ -28,7 +28,6 @@ var federate_8h =
     [ "lf_send_stop_request_to_rti", "d1/dfa/federate_8h.html#ab4d7e691d4b52f2c0dac90e772d86dd5", null ],
     [ "lf_send_tagged_message", "d1/dfa/federate_8h.html#a0931fe1bb9eac2a9beebe0c0ed03408e", null ],
     [ "lf_set_federation_id", "d1/dfa/federate_8h.html#a032d945ee3fd6995a5f7bb15b57f2ddf", null ],
-    [ "lf_set_federation_trace_object", "d1/dfa/federate_8h.html#a1e68b5e49cfe308866e8fc3947172b8e", null ],
     [ "lf_stall_advance_level_federation", "d1/dfa/federate_8h.html#a971322f63f26490a27bdd9006c05b8fe", null ],
     [ "lf_synchronize_with_other_federates", "d1/dfa/federate_8h.html#a965db733286db780c46aef446cd5b040", null ],
     [ "lf_update_max_level", "d1/dfa/federate_8h.html#a84e5177d12e705274be1e6652b5d7c01", null ],

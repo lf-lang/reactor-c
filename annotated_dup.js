@@ -5,6 +5,7 @@ var annotated_dup =
     [ "_lf_sensor_message_t", "d7/dd0/struct__lf__sensor__message__t.html", "d7/dd0/struct__lf__sensor__message__t" ],
     [ "_lf_tag_advancement_barrier", "d7/dc7/struct__lf__tag__advancement__barrier.html", "d7/dc7/struct__lf__tag__advancement__barrier" ],
     [ "allocation_record_t", "d8/df0/structallocation__record__t.html", "d8/df0/structallocation__record__t" ],
+    [ "build_config_t", "dc/d4f/structbuild__config__t.html", "dc/d4f/structbuild__config__t" ],
     [ "deque_node_t", "db/dab/structdeque__node__t.html", "db/dab/structdeque__node__t" ],
     [ "deque_t", "da/df2/structdeque__t.html", "da/df2/structdeque__t" ],
     [ "environment_t", "d2/d01/structenvironment__t.html", "d2/d01/structenvironment__t" ],
@@ -35,6 +36,7 @@ var annotated_dup =
     [ "lf_waveform_t", "d7/dc9/structlf__waveform__t.html", "d7/dc9/structlf__waveform__t" ],
     [ "mixed_radix_int_t", "d6/da6/structmixed__radix__int__t.html", "d6/da6/structmixed__radix__int__t" ],
     [ "note", "da/d62/structnote.html", "da/d62/structnote" ],
+    [ "object_description_t", "df/d92/structobject__description__t.html", "df/d92/structobject__description__t" ],
     [ "open_file_t", "db/de2/structopen__file__t.html", "db/de2/structopen__file__t" ],
     [ "pqueue_t", "d5/d38/structpqueue__t.html", "d5/d38/structpqueue__t" ],
     [ "pqueue_tag_element_t", "d2/dce/structpqueue__tag__element__t.html", "d2/dce/structpqueue__tag__element__t" ],
@@ -49,7 +51,10 @@ var annotated_dup =
     [ "timespec", "da/d1c/structtimespec.html", "da/d1c/structtimespec" ],
     [ "token_template_t", "de/d6b/structtoken__template__t.html", "de/d6b/structtoken__template__t" ],
     [ "token_type_t", "db/d12/structtoken__type__t.html", "db/d12/structtoken__type__t" ],
+    [ "trace_record_nodeps_t", "d0/d8d/structtrace__record__nodeps__t.html", "d0/d8d/structtrace__record__nodeps__t" ],
+    [ "trace_t", "db/d93/structtrace__t.html", "db/d93/structtrace__t" ],
     [ "trigger_t", "d6/d13/structtrigger__t.html", "d6/d13/structtrigger__t" ],
     [ "vector_t", "d3/d8b/structvector__t.html", "d3/d8b/structvector__t" ],
+    [ "version_t", "da/d9c/structversion__t.html", "da/d9c/structversion__t" ],
     [ "watchdog_t", "d3/dc4/structwatchdog__t.html", "d3/dc4/structwatchdog__t" ]
 ];

@@ -14,5 +14,8 @@ var searchData=
   ['buffer_11',['buffer',['../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62',1,'trace_util.c']]],
   ['buffer_5fduration_5fns_12',['BUFFER_DURATION_NS',['../d1/dcb/audio__loop_8h.html#aaee12bd1b49481f758a5a3cf1876268c',1,'audio_loop.h']]],
   ['buffer_5fsize_13',['BUFFER_SIZE',['../d9/dc7/trace__util_8h.html#a6b20d41d6252e9871430c242cb1a56e7',1,'trace_util.h']]],
-  ['byte_5frate_14',['byte_rate',['../d1/d3f/structlf__wav__format__t.html#ae5f203a6ff05911332cfa0cbd6919f97',1,'lf_wav_format_t']]]
+  ['build_5fconfig_14',['build_config',['../da/d9c/structversion__t.html#acaa7fa2382cb8b32c455c202d3b7ec6d',1,'version_t']]],
+  ['build_5fconfig_5ft_15',['build_config_t',['../dc/d4f/structbuild__config__t.html',1,'']]],
+  ['build_5ftype_5fis_5fdebug_16',['build_type_is_debug',['../dc/d4f/structbuild__config__t.html#a870c8bef5e1969be2c0f39b2db1dc5a9',1,'build_config_t']]],
+  ['byte_5frate_17',['byte_rate',['../d1/d3f/structlf__wav__format__t.html#ae5f203a6ff05911332cfa0cbd6919f97',1,'lf_wav_format_t']]]
 ];

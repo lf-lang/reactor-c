@@ -1,25 +1,9 @@
 var platform_8h =
 [
-    [ "DEPRECATED", "de/d03/platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118", null ],
-    [ "LF_TIMEOUT", "de/d03/platform_8h.html#a2cb0837301dbf928d9e6a4753e0fb52e", null ],
-    [ "environment_t", "de/d03/platform_8h.html#aa47b54e9e041dfe1b75fffceb1051466", null ],
-    [ "_lf_clock_gettime", "de/d03/platform_8h.html#a843c12cfbc698883e96a0bfe23882a9e", null ],
-    [ "_lf_cond_timedwait", "de/d03/platform_8h.html#a0ed454c4a1b6eee6debe92efa433fb37", null ],
-    [ "_lf_initialize_clock", "de/d03/platform_8h.html#af5c7b68f137e69c4ad3734a42bcd0448", null ],
-    [ "_lf_interruptable_sleep_until_locked", "de/d03/platform_8h.html#a0b22a974cdd69f184735503b72597698", null ],
-    [ "DEPRECATED", "de/d03/platform_8h.html#ac59c4e7dcc349d97fe413dcb5cceafe3", null ],
-    [ "lf_available_cores", "de/d03/platform_8h.html#abe5a04985bd63ade71fc058f189d2545", null ],
-    [ "lf_cond_broadcast", "de/d03/platform_8h.html#a9ed434626733537f71c9b85e981109c7", null ],
-    [ "lf_cond_init", "de/d03/platform_8h.html#ab32dc7869dd4cf48bda70663f2591ae1", null ],
-    [ "lf_cond_signal", "de/d03/platform_8h.html#a7267ad6679b93c9a9f321cdf864e0092", null ],
-    [ "lf_cond_wait", "de/d03/platform_8h.html#aba6871b2088bcd86f973e0299cdd4ff8", null ],
-    [ "lf_critical_section_enter", "de/d03/platform_8h.html#ae0fda178667bc6cd94890a13316c285c", null ],
-    [ "lf_critical_section_exit", "de/d03/platform_8h.html#aed2c25495b50b46780c6288e4370541e", null ],
-    [ "lf_mutex_init", "de/d03/platform_8h.html#aa6f228487e6af38e496882f406aafaf6", null ],
-    [ "lf_mutex_lock", "de/d03/platform_8h.html#ac4c0721974b31d98f491be1febeb2c9a", null ],
-    [ "lf_mutex_unlock", "de/d03/platform_8h.html#a01c4d5070c8402d4713a3fcab5a46a9f", null ],
-    [ "lf_notify_of_event", "de/d03/platform_8h.html#a3ab5c60e67d36e2b26eccb884ed9f668", null ],
-    [ "lf_sleep", "de/d03/platform_8h.html#a9a43894d4caf7e2fc1e75b9b49d7285d", null ],
-    [ "lf_thread_create", "de/d03/platform_8h.html#a48fa558d833200b986c03bc8c12bbe77", null ],
-    [ "lf_thread_join", "de/d03/platform_8h.html#a652d8db6bafa59434d297216607266ed", null ]
+    [ "lf_platform_mutex_ptr_t", "de/d03/platform_8h.html#a8cb87ba531decc7a525fe20e8586e300", null ],
+    [ "lf_platform_mutex_free", "de/d03/platform_8h.html#a086b854690734be2e49391d6ca65e8ec", null ],
+    [ "lf_platform_mutex_lock", "de/d03/platform_8h.html#aa548193b346ebc70b6e6e3a5e87d5e2d", null ],
+    [ "lf_platform_mutex_new", "de/d03/platform_8h.html#a262864ffd60ec9491d6e6b278c58910c", null ],
+    [ "lf_platform_mutex_unlock", "de/d03/platform_8h.html#a0911d4e67c0a632343e7404115c88ca9", null ],
+    [ "lf_thread_id", "de/d03/platform_8h.html#a60ad13713bf64d0ce969c85944c78129", null ]
 ];

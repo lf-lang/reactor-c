@@ -8,9 +8,10 @@ var searchData=
   ['default_5fargc_5',['default_argc',['../dd/d37/reactor__common_8c.html#aab46895a3a4d1341a19b689a0ea902d1',1,'default_argc:&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#aab46895a3a4d1341a19b689a0ea902d1',1,'default_argc:&#160;reactor_common.c']]],
   ['default_5fargv_6',['default_argv',['../dd/d37/reactor__common_8c.html#ad0fd32b8326e2d630ee8f4a431ea2867',1,'default_argv:&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#ad0fd32b8326e2d630ee8f4a431ea2867',1,'default_argv:&#160;reactor_common.c']]],
   ['default_5fwindow_7',['default_window',['../d7/d58/sensor__simulator_8c.html#a9029bf378e52a9f85a25eb0ba9095fe3',1,'sensor_simulator.c']]],
-  ['description_8',['description',['../dc/dcc/structsummary__stats__t.html#a57385f105e3ecb3ffa1b02f142b4b55b',1,'summary_stats_t']]],
+  ['description_8',['description',['../df/d92/structobject__description__t.html#a8f7829cb65aea820db731eaf70c079fc',1,'object_description_t::description'],['../dc/dcc/structsummary__stats__t.html#a57385f105e3ecb3ffa1b02f142b4b55b',1,'summary_stats_t::description']]],
   ['destination_5fchannel_9',['destination_channel',['../da/de8/structlf__port__base__t.html#ab7734e3cdd562ad5f6ad94f97e095822',1,'lf_port_base_t::destination_channel'],['../d9/d8c/structlf__port__internal__t.html#a7c70e1156dfb93174d5af2175ba58191',1,'lf_port_internal_t::destination_channel']]],
   ['destructor_10',['destructor',['../db/d12/structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c',1,'token_type_t::destructor'],['../da/dc0/structgeneric__port__instance__struct.html#a26752c879bfe4b2fbbf8cd9cd632e216',1,'generic_port_instance_struct::destructor']]],
   ['digits_11',['digits',['../d6/da6/structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
-  ['duration_12',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c']]]
+  ['dst_5fid_12',['dst_id',['../d0/d8d/structtrace__record__nodeps__t.html#a594dcef3f6fe657e8c1c45dbac60e821',1,'trace_record_nodeps_t']]],
+  ['duration_13',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c']]]
 ];

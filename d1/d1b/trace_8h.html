@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.10.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: include/core/trace.h File Reference</title>
+<title>reactor-c: trace/api/trace.h File Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -93,681 +93,236 @@ $(function(){initNavTree('d1/d1b/trace_8h.html','../../'); initResizable(); });
 
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#enum-members">Enumerations</a>  </div>
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">trace.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
-<code>#include &lt;stdio.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="../../df/d4f/lf__core__version_8h_source.html">lf_core_version.h</a>&quot;</code><br />
 </div>
 <p><a href="../../d1/d1b/trace_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:ae594945e35ccf287b44f0de67d6194d1" id="r_ae594945e35ccf287b44f0de67d6194d1"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae594945e35ccf287b44f0de67d6194d1">TRACE_H</a></td></tr>
-<tr class="separator:ae594945e35ccf287b44f0de67d6194d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a706e8785112271e15dc95022b31c7a88" id="r_a706e8785112271e15dc95022b31c7a88"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a706e8785112271e15dc95022b31c7a88">_lf_register_trace_event</a>(...)</td></tr>
-<tr class="separator:a706e8785112271e15dc95022b31c7a88"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a93b33b5ac0d1091ac118ab464bf3a7d0" id="r_a93b33b5ac0d1091ac118ab464bf3a7d0"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a93b33b5ac0d1091ac118ab464bf3a7d0">register_user_trace_event</a>(...)</td></tr>
-<tr class="separator:a93b33b5ac0d1091ac118ab464bf3a7d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeae0efb071b08e657d36788eee20c1a7" id="r_aeae0efb071b08e657d36788eee20c1a7"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeae0efb071b08e657d36788eee20c1a7">tracepoint</a>(...)</td></tr>
-<tr class="separator:aeae0efb071b08e657d36788eee20c1a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a618fd3947984f4585e5071ec945f4908" id="r_a618fd3947984f4585e5071ec945f4908"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a618fd3947984f4585e5071ec945f4908">tracepoint_reaction_starts</a>(...)</td></tr>
-<tr class="separator:a618fd3947984f4585e5071ec945f4908"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6886c0b07fa8962e9e251bc5442fbae3" id="r_a6886c0b07fa8962e9e251bc5442fbae3"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6886c0b07fa8962e9e251bc5442fbae3">tracepoint_reaction_ends</a>(...)</td></tr>
-<tr class="separator:a6886c0b07fa8962e9e251bc5442fbae3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afce5f2514b7b2001611c45b2f0122cee" id="r_afce5f2514b7b2001611c45b2f0122cee"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afce5f2514b7b2001611c45b2f0122cee">tracepoint_schedule</a>(...)</td></tr>
-<tr class="separator:afce5f2514b7b2001611c45b2f0122cee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4eaa42638286bf2cfdfed4b45d4a1036" id="r_a4eaa42638286bf2cfdfed4b45d4a1036"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4eaa42638286bf2cfdfed4b45d4a1036">tracepoint_user_event</a>(...)</td></tr>
-<tr class="separator:a4eaa42638286bf2cfdfed4b45d4a1036"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc24126d062442704b43b2ea2f95042c" id="r_adc24126d062442704b43b2ea2f95042c"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc24126d062442704b43b2ea2f95042c">tracepoint_user_value</a>(...)</td></tr>
-<tr class="separator:adc24126d062442704b43b2ea2f95042c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00635edd06259391fe45fa81f2dd9cab" id="r_a00635edd06259391fe45fa81f2dd9cab"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a00635edd06259391fe45fa81f2dd9cab">tracepoint_worker_wait_starts</a>(...)</td></tr>
-<tr class="separator:a00635edd06259391fe45fa81f2dd9cab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9dc20d411fb600c803f04572bde501ff" id="r_a9dc20d411fb600c803f04572bde501ff"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9dc20d411fb600c803f04572bde501ff">tracepoint_worker_wait_ends</a>(...)</td></tr>
-<tr class="separator:a9dc20d411fb600c803f04572bde501ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2b43a4d257b235afe8066e4a3f1bfe7f" id="r_a2b43a4d257b235afe8066e4a3f1bfe7f"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2b43a4d257b235afe8066e4a3f1bfe7f">tracepoint_scheduler_advancing_time_starts</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:a2b43a4d257b235afe8066e4a3f1bfe7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac91dba72663dc0f17ce46d105ff3f511" id="r_ac91dba72663dc0f17ce46d105ff3f511"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac91dba72663dc0f17ce46d105ff3f511">tracepoint_scheduler_advancing_time_ends</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:ac91dba72663dc0f17ce46d105ff3f511"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa608d6a7b724896211cc9a279bacfbbf" id="r_aa608d6a7b724896211cc9a279bacfbbf"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa608d6a7b724896211cc9a279bacfbbf">tracepoint_reaction_deadline_missed</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:aa608d6a7b724896211cc9a279bacfbbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a014d5c8cd243f0904399838282c0ff2b" id="r_a014d5c8cd243f0904399838282c0ff2b"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a014d5c8cd243f0904399838282c0ff2b">tracepoint_federate_to_rti</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:a014d5c8cd243f0904399838282c0ff2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a510e2ff5a954e88b67de7440af749639" id="r_a510e2ff5a954e88b67de7440af749639"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a510e2ff5a954e88b67de7440af749639">tracepoint_federate_from_rti</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:a510e2ff5a954e88b67de7440af749639"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1465b810c5f6e6c5cdea5d9b29f5ac50" id="r_a1465b810c5f6e6c5cdea5d9b29f5ac50"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1465b810c5f6e6c5cdea5d9b29f5ac50">tracepoint_federate_to_federate</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:a1465b810c5f6e6c5cdea5d9b29f5ac50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af806014e6928610cb32caa7ab79e522b" id="r_af806014e6928610cb32caa7ab79e522b"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af806014e6928610cb32caa7ab79e522b">tracepoint_federate_from_federate</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:af806014e6928610cb32caa7ab79e522b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adaef0f227cc3d01789b10414e10e1b9c" id="r_adaef0f227cc3d01789b10414e10e1b9c"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adaef0f227cc3d01789b10414e10e1b9c">tracepoint_rti_to_federate</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:adaef0f227cc3d01789b10414e10e1b9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a611e5359d79e7405cb002b3df5fd1c7f" id="r_a611e5359d79e7405cb002b3df5fd1c7f"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a611e5359d79e7405cb002b3df5fd1c7f">tracepoint_rti_from_federate</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:a611e5359d79e7405cb002b3df5fd1c7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27e365336dc38cd3fec8741832c0e195" id="r_a27e365336dc38cd3fec8741832c0e195"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a27e365336dc38cd3fec8741832c0e195">start_trace</a>(...)</td></tr>
-<tr class="separator:a27e365336dc38cd3fec8741832c0e195"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9c54cf0034978f2dd5b3521fc522d237" id="r_a9c54cf0034978f2dd5b3521fc522d237"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9c54cf0034978f2dd5b3521fc522d237">stop_trace</a>(...)</td></tr>
-<tr class="separator:a9c54cf0034978f2dd5b3521fc522d237"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa8c7f01120c9a062093dd061bcc2fb1c" id="r_aa8c7f01120c9a062093dd061bcc2fb1c"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa8c7f01120c9a062093dd061bcc2fb1c">stop_trace_locked</a>(...)</td></tr>
-<tr class="separator:aa8c7f01120c9a062093dd061bcc2fb1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a25fefd425c9b8a91265c273dcffa793d" id="r_a25fefd425c9b8a91265c273dcffa793d"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a25fefd425c9b8a91265c273dcffa793d">trace_new</a>(...)&#160;&#160;&#160;<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">NULL</a></td></tr>
-<tr class="separator:a25fefd425c9b8a91265c273dcffa793d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b3f193c812fcc1b5b86a1578101d998" id="r_a4b3f193c812fcc1b5b86a1578101d998"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4b3f193c812fcc1b5b86a1578101d998">trace_free</a>(...)</td></tr>
-<tr class="separator:a4b3f193c812fcc1b5b86a1578101d998"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d92/structobject__description__t.html">object_description_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d8d/structtrace__record__nodeps__t.html">trace_record_nodeps_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:abec033e59d4add4aa6ec61a874d0d52d" id="r_abec033e59d4add4aa6ec61a874d0d52d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a></td></tr>
-<tr class="separator:abec033e59d4add4aa6ec61a874d0d52d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a027205fde7a6d8a5777059d6dc397050" id="r_a027205fde7a6d8a5777059d6dc397050"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> object_description_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a027205fde7a6d8a5777059d6dc397050">object_description_t</a></td></tr>
+<tr class="separator:a027205fde7a6d8a5777059d6dc397050"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:ab02e9e69539d60297cedb38c2193a453" id="r_ab02e9e69539d60297cedb38c2193a453"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab02e9e69539d60297cedb38c2193a453">trace_event_t</a> { <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453a7ca2fc1a301d8e66944fab471646728a">reaction_starts</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a79889b5c51ccdf63962a8ec230ff3f6b">reaction_ends</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a8dd4df4dfbe3f6fd12f454467d61cda0">reaction_deadline_missed</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a666fca0e7c44992277a6f47331b6ff49">schedule_called</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453aeba45bd40c043d7a65ac7c5d31b9e187">user_event</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1">user_value</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a9c6849445ded286ba9f914d3b1decd2a">worker_wait_starts</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453afa179671ba1508f1c16b10ffef3a17c6">worker_wait_ends</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453a79e198f97731e9ea1f982ccb8db8f5d0">scheduler_advancing_time_starts</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a0422fad861a51f83258d104e6b34fdad">scheduler_advancing_time_ends</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a9b673ff06b88b52089cafea62715f7c0">federated</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a359e8de71d77ef5495ec551054828a44">send_ACK</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453ad86a1396b6883943ef6f103f97897ba4">send_FAILED</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a58ad18e86ddd619e77a41305948c9343">send_TIMESTAMP</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a9e1be1b36d5d41388c1bc6496be1c5c6">send_NET</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a813a5c39f4659f6f4dc04cdf63a167df">send_LTC</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453a06e51ca4ea2dfc237aad447f5e92f4df">send_STOP_REQ</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a87da8a1b1ef9018c7f6959432d6cbc3d">send_STOP_REQ_REP</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a55634e907daa67db49886a1439ac9d16">send_STOP_GRN</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a68fe57f3b98b1046a20b96926d44d33f">send_FED_ID</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453af8e3e59ab52fdb846ef24dd8bff6fa7a">send_PTAG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a1d2d24b8faba6e105f3effdda0f30b45">send_TAG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a6debe1c504821e1b55ae91ba185ca768">send_REJECT</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453aaf479fd10fa46f06b11550611d3c610f">send_RESIGN</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453a1f1176e68caab2d18193117dec523864">send_PORT_ABS</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453afb7e97a3dfbc62462125e25024424ed0">send_CLOSE_RQ</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a813b0d7924cfa072765efc09614c2d81">send_TAGGED_MSG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a17e891ffbe84e2aadbdb405b47a5c09c">send_P2P_TAGGED_MSG</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453a22883b9d184199e94df0fa804fe23a89">send_MSG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453aa7a4fca7a8ef7dfde896701070fcfe6b">send_P2P_MSG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a787c95dd61408de4fcc85bdbb3bc6946">send_ADR_AD</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a4ebac2f241a667876f0a7ab20a8efdec">send_ADR_QR</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453a908926b0adde60c94d40c90fb4aa0221">receive_ACK</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a9fc739f4f25f7832d01711069eaf5004">receive_FAILED</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453ac8429797245197de5cb9f32c9dbe8539">receive_TIMESTAMP</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453ab3b8cb930ea4e1ebdb0d49fe287d9b8f">receive_NET</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453ab3ae4783b8e9be6cf326df41c3c08108">receive_LTC</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453abf340bb6735bbba6a645ad8e74958410">receive_STOP_REQ</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a1967b1b61bcc8cd7e7653fa8bab46e97">receive_STOP_REQ_REP</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453aeb7f596158f60ffaded5b6f76a4758a1">receive_STOP_GRN</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453acfd5cbf76eacc508d0e2e3ccad128b99">receive_FED_ID</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a3546557eebc5ad402b6783e25be9a468">receive_PTAG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453aa350fa2156010c04148e947826624831">receive_TAG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a675c6b9020b4996877a16de7efd91cf2">receive_REJECT</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453a2e2c7ec922abc6561e48520f2929af22">receive_RESIGN</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453af9c0ed69192d1a4cc7f1f0fda87c85fa">receive_PORT_ABS</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453aaeaec5a7cb114e56455f16069bf8f589">receive_CLOSE_RQ</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a17c1e79d4df8091f7279b5c042c2236a">receive_TAGGED_MSG</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453a720c7ea924889f0db7ed7df00eb9e65d">receive_P2P_TAGGED_MSG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a530cf0a58e28bc3a386e75565810b7f7">receive_MSG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453ae06a042ab87b41578d9adf1c95322475">receive_P2P_MSG</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a92c4ad633d4739f7ee1cd40fdaf8cc5e">receive_ADR_AD</a>
-, <br />
-&#160;&#160;<a class="el" href="#ab02e9e69539d60297cedb38c2193a453af6e18bcb48b442e2be5a898d60c3bdf2">receive_ADR_QR</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453a48fffa45ebf3f03caa2dc044af72349f">receive_UNIDENTIFIED</a>
-, <a class="el" href="#ab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134">NUM_EVENT_TYPES</a>
-<br />
+<tr class="memitem:aeec3d6d67240b942f12f5d8770698ae3" id="r_aeec3d6d67240b942f12f5d8770698ae3"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeec3d6d67240b942f12f5d8770698ae3">_lf_trace_object_t</a> { <a class="el" href="#aeec3d6d67240b942f12f5d8770698ae3ac970d1f28c60cf2b9de8353b284197b0">trace_reactor</a>
+, <a class="el" href="#aeec3d6d67240b942f12f5d8770698ae3a5c05f73b365f900def1359524b9ce5a0">trace_trigger</a>
+, <a class="el" href="#aeec3d6d67240b942f12f5d8770698ae3a8fa30d4c503d93cecf4234a4d648ed79">trace_user</a>
  }</td></tr>
-<tr class="separator:ab02e9e69539d60297cedb38c2193a453"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:aeec3d6d67240b942f12f5d8770698ae3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a2cfa1ddb7da69004049315e0b6b5d882" id="r_a2cfa1ddb7da69004049315e0b6b5d882"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/d9c/structversion__t.html">version_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2cfa1ddb7da69004049315e0b6b5d882">lf_version_tracing</a> ()</td></tr>
+<tr class="memdesc:a2cfa1ddb7da69004049315e0b6b5d882"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a description of the compile-time properties of the current plugin.  <br /></td></tr>
+<tr class="separator:a2cfa1ddb7da69004049315e0b6b5d882"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88f437f39d7522d245fd1bfe36aa2127" id="r_a88f437f39d7522d245fd1bfe36aa2127"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a88f437f39d7522d245fd1bfe36aa2127">lf_tracing_global_init</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">file_name_prefix</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> process_id, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">max_num_local_threads</a>)</td></tr>
+<tr class="memdesc:a88f437f39d7522d245fd1bfe36aa2127"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the tracing module. Calling other API functions before calling this procedure is undefined behavior.  <br /></td></tr>
+<tr class="separator:a88f437f39d7522d245fd1bfe36aa2127"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15969599d7817596e12dcceb8c145551" id="r_a15969599d7817596e12dcceb8c145551"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15969599d7817596e12dcceb8c145551">lf_tracing_register_trace_event</a> (<a class="el" href="../../df/d92/structobject__description__t.html">object_description_t</a> description)</td></tr>
+<tr class="memdesc:a15969599d7817596e12dcceb8c145551"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a kind of trace event. This should be called before tracepoints are reached.  <br /></td></tr>
+<tr class="separator:a15969599d7817596e12dcceb8c145551"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4270e37a116b1ebac46ad126b2fc277d" id="r_a4270e37a116b1ebac46ad126b2fc277d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4270e37a116b1ebac46ad126b2fc277d">lf_tracing_set_start_time</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int64_t</a> <a class="el" href="../../dd/d37/reactor__common_8c.html#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a>)</td></tr>
+<tr class="memdesc:a4270e37a116b1ebac46ad126b2fc277d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Give the tracing module access to the start time. This may be invoked after many tracepoints have already been recorded but should be invoked early.  <br /></td></tr>
+<tr class="separator:a4270e37a116b1ebac46ad126b2fc277d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6e591a66e342a77860e9d3050680446" id="r_aa6e591a66e342a77860e9d3050680446"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa6e591a66e342a77860e9d3050680446">lf_tracing_tracepoint</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a>, <a class="el" href="../../d0/d8d/structtrace__record__nodeps__t.html">trace_record_nodeps_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">tr</a>)</td></tr>
+<tr class="memdesc:aa6e591a66e342a77860e9d3050680446"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submit a tracepoint from the given worker to the tracing module.  <br /></td></tr>
+<tr class="separator:aa6e591a66e342a77860e9d3050680446"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a5d5ec80d2716ea7848193647cdadcd" id="r_a8a5d5ec80d2716ea7848193647cdadcd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8a5d5ec80d2716ea7848193647cdadcd">lf_tracing_global_shutdown</a> ()</td></tr>
+<tr class="memdesc:a8a5d5ec80d2716ea7848193647cdadcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shut down the tracing module. Calling other API functions after calling this procedure is undefined behavior.  <br /></td></tr>
+<tr class="separator:a8a5d5ec80d2716ea7848193647cdadcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee</dd></dl>
-<h1><a class="anchor" id="LICENSE"></a>
-LICENSE</h1>
-<p>Copyright (c) 2020, The University of California at Berkeley and TU Dresden</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<h1><a class="anchor" id="DESCRIPTION"></a>
-Functions intitializing and freeing memory for environments.</h1>
-<p>Definitions of tracepoint events for use with the C code generator and any other code generator that uses the C infrastructure (such as the Python code generator).</p>
-<p>See: <a href="https://www.lf-lang.org/docs/handbook/tracing?target=c">https://www.lf-lang.org/docs/handbook/tracing?target=c</a></p>
-<p>The trace file is named trace.lft and is a binary file with the following format:</p>
-<p>Header:</p><ul>
-<li>instant_t: The start time. This is both the starting physical time and the starting logical time.</li>
-<li>int: Size N of the table mapping pointers to descriptions. This is followed by N records each of which has:</li>
-<li>A pointer value (the key).</li>
-<li>A null-terminated string (the description).</li>
-</ul>
-<p>Traces: A sequence of traces, each of which begins with an int giving the length of the trace followed by binary representations of the trace_record struct written using <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">fwrite()</a>. </p>
-</div><h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a706e8785112271e15dc95022b31c7a88" name="a706e8785112271e15dc95022b31c7a88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a706e8785112271e15dc95022b31c7a88">&#9670;&#160;</a></span>_lf_register_trace_event</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> _lf_register_trace_event</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a93b33b5ac0d1091ac118ab464bf3a7d0" name="a93b33b5ac0d1091ac118ab464bf3a7d0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a93b33b5ac0d1091ac118ab464bf3a7d0">&#9670;&#160;</a></span>register_user_trace_event</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> register_user_trace_event</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a27e365336dc38cd3fec8741832c0e195" name="a27e365336dc38cd3fec8741832c0e195"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a27e365336dc38cd3fec8741832c0e195">&#9670;&#160;</a></span>start_trace</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> start_trace</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a9c54cf0034978f2dd5b3521fc522d237" name="a9c54cf0034978f2dd5b3521fc522d237"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c54cf0034978f2dd5b3521fc522d237">&#9670;&#160;</a></span>stop_trace</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> stop_trace</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aa8c7f01120c9a062093dd061bcc2fb1c" name="aa8c7f01120c9a062093dd061bcc2fb1c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa8c7f01120c9a062093dd061bcc2fb1c">&#9670;&#160;</a></span>stop_trace_locked</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> stop_trace_locked</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a4b3f193c812fcc1b5b86a1578101d998" name="a4b3f193c812fcc1b5b86a1578101d998"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4b3f193c812fcc1b5b86a1578101d998">&#9670;&#160;</a></span>trace_free</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> trace_free</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae594945e35ccf287b44f0de67d6194d1" name="ae594945e35ccf287b44f0de67d6194d1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae594945e35ccf287b44f0de67d6194d1">&#9670;&#160;</a></span>TRACE_H</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> TRACE_H</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a25fefd425c9b8a91265c273dcffa793d" name="a25fefd425c9b8a91265c273dcffa793d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a25fefd425c9b8a91265c273dcffa793d">&#9670;&#160;</a></span>trace_new</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> trace_new</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">NULL</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aeae0efb071b08e657d36788eee20c1a7" name="aeae0efb071b08e657d36788eee20c1a7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeae0efb071b08e657d36788eee20c1a7">&#9670;&#160;</a></span>tracepoint</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="af806014e6928610cb32caa7ab79e522b" name="af806014e6928610cb32caa7ab79e522b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af806014e6928610cb32caa7ab79e522b">&#9670;&#160;</a></span>tracepoint_federate_from_federate</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_federate_from_federate</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a510e2ff5a954e88b67de7440af749639" name="a510e2ff5a954e88b67de7440af749639"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a510e2ff5a954e88b67de7440af749639">&#9670;&#160;</a></span>tracepoint_federate_from_rti</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_federate_from_rti</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a1465b810c5f6e6c5cdea5d9b29f5ac50" name="a1465b810c5f6e6c5cdea5d9b29f5ac50"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1465b810c5f6e6c5cdea5d9b29f5ac50">&#9670;&#160;</a></span>tracepoint_federate_to_federate</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_federate_to_federate</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a014d5c8cd243f0904399838282c0ff2b" name="a014d5c8cd243f0904399838282c0ff2b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a014d5c8cd243f0904399838282c0ff2b">&#9670;&#160;</a></span>tracepoint_federate_to_rti</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_federate_to_rti</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aa608d6a7b724896211cc9a279bacfbbf" name="aa608d6a7b724896211cc9a279bacfbbf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa608d6a7b724896211cc9a279bacfbbf">&#9670;&#160;</a></span>tracepoint_reaction_deadline_missed</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_reaction_deadline_missed</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a6886c0b07fa8962e9e251bc5442fbae3" name="a6886c0b07fa8962e9e251bc5442fbae3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6886c0b07fa8962e9e251bc5442fbae3">&#9670;&#160;</a></span>tracepoint_reaction_ends</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_reaction_ends</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a618fd3947984f4585e5071ec945f4908" name="a618fd3947984f4585e5071ec945f4908"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a618fd3947984f4585e5071ec945f4908">&#9670;&#160;</a></span>tracepoint_reaction_starts</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_reaction_starts</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a611e5359d79e7405cb002b3df5fd1c7f" name="a611e5359d79e7405cb002b3df5fd1c7f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a611e5359d79e7405cb002b3df5fd1c7f">&#9670;&#160;</a></span>tracepoint_rti_from_federate</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_rti_from_federate</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="adaef0f227cc3d01789b10414e10e1b9c" name="adaef0f227cc3d01789b10414e10e1b9c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adaef0f227cc3d01789b10414e10e1b9c">&#9670;&#160;</a></span>tracepoint_rti_to_federate</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_rti_to_federate</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="afce5f2514b7b2001611c45b2f0122cee" name="afce5f2514b7b2001611c45b2f0122cee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afce5f2514b7b2001611c45b2f0122cee">&#9670;&#160;</a></span>tracepoint_schedule</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_schedule</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ac91dba72663dc0f17ce46d105ff3f511" name="ac91dba72663dc0f17ce46d105ff3f511"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac91dba72663dc0f17ce46d105ff3f511">&#9670;&#160;</a></span>tracepoint_scheduler_advancing_time_ends</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_scheduler_advancing_time_ends</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a2b43a4d257b235afe8066e4a3f1bfe7f" name="a2b43a4d257b235afe8066e4a3f1bfe7f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2b43a4d257b235afe8066e4a3f1bfe7f">&#9670;&#160;</a></span>tracepoint_scheduler_advancing_time_starts</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_scheduler_advancing_time_starts</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a4eaa42638286bf2cfdfed4b45d4a1036" name="a4eaa42638286bf2cfdfed4b45d4a1036"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4eaa42638286bf2cfdfed4b45d4a1036">&#9670;&#160;</a></span>tracepoint_user_event</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_user_event</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="adc24126d062442704b43b2ea2f95042c" name="adc24126d062442704b43b2ea2f95042c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adc24126d062442704b43b2ea2f95042c">&#9670;&#160;</a></span>tracepoint_user_value</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_user_value</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a9dc20d411fb600c803f04572bde501ff" name="a9dc20d411fb600c803f04572bde501ff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9dc20d411fb600c803f04572bde501ff">&#9670;&#160;</a></span>tracepoint_worker_wait_ends</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_worker_wait_ends</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a00635edd06259391fe45fa81f2dd9cab" name="a00635edd06259391fe45fa81f2dd9cab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a00635edd06259391fe45fa81f2dd9cab">&#9670;&#160;</a></span>tracepoint_worker_wait_starts</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> tracepoint_worker_wait_starts</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <h2 class="groupheader">Typedef Documentation</h2>
-<a id="abec033e59d4add4aa6ec61a874d0d52d" name="abec033e59d4add4aa6ec61a874d0d52d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abec033e59d4add4aa6ec61a874d0d52d">&#9670;&#160;</a></span>trace_t</h2>
+<a id="a027205fde7a6d8a5777059d6dc397050" name="a027205fde7a6d8a5777059d6dc397050"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a027205fde7a6d8a5777059d6dc397050">&#9670;&#160;</a></span>object_description_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a> <a class="el" href="#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a></td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> object_description_t object_description_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Struct for table of pointers to a description of the object. </p>
 
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
-<a id="ab02e9e69539d60297cedb38c2193a453" name="ab02e9e69539d60297cedb38c2193a453"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab02e9e69539d60297cedb38c2193a453">&#9670;&#160;</a></span>trace_event_t</h2>
+<a id="aeec3d6d67240b942f12f5d8770698ae3" name="aeec3d6d67240b942f12f5d8770698ae3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeec3d6d67240b942f12f5d8770698ae3">&#9670;&#160;</a></span>_lf_trace_object_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">enum</a> <a class="el" href="#ab02e9e69539d60297cedb38c2193a453">trace_event_t</a></td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">enum</a> <a class="el" href="#aeec3d6d67240b942f12f5d8770698ae3">_lf_trace_object_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Trace event types. If you update this, be sure to update the string representation below. Also, create a tracepoint function for each event type. </p>
+<p>Identifier for what is in the object table. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a7ca2fc1a301d8e66944fab471646728a" name="ab02e9e69539d60297cedb38c2193a453a7ca2fc1a301d8e66944fab471646728a"></a>reaction_starts&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a79889b5c51ccdf63962a8ec230ff3f6b" name="ab02e9e69539d60297cedb38c2193a453a79889b5c51ccdf63962a8ec230ff3f6b"></a>reaction_ends&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a8dd4df4dfbe3f6fd12f454467d61cda0" name="ab02e9e69539d60297cedb38c2193a453a8dd4df4dfbe3f6fd12f454467d61cda0"></a>reaction_deadline_missed&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a666fca0e7c44992277a6f47331b6ff49" name="ab02e9e69539d60297cedb38c2193a453a666fca0e7c44992277a6f47331b6ff49"></a>schedule_called&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453aeba45bd40c043d7a65ac7c5d31b9e187" name="ab02e9e69539d60297cedb38c2193a453aeba45bd40c043d7a65ac7c5d31b9e187"></a>user_event&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1" name="ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1"></a>user_value&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a9c6849445ded286ba9f914d3b1decd2a" name="ab02e9e69539d60297cedb38c2193a453a9c6849445ded286ba9f914d3b1decd2a"></a>worker_wait_starts&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453afa179671ba1508f1c16b10ffef3a17c6" name="ab02e9e69539d60297cedb38c2193a453afa179671ba1508f1c16b10ffef3a17c6"></a>worker_wait_ends&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a79e198f97731e9ea1f982ccb8db8f5d0" name="ab02e9e69539d60297cedb38c2193a453a79e198f97731e9ea1f982ccb8db8f5d0"></a>scheduler_advancing_time_starts&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a0422fad861a51f83258d104e6b34fdad" name="ab02e9e69539d60297cedb38c2193a453a0422fad861a51f83258d104e6b34fdad"></a>scheduler_advancing_time_ends&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a9b673ff06b88b52089cafea62715f7c0" name="ab02e9e69539d60297cedb38c2193a453a9b673ff06b88b52089cafea62715f7c0"></a>federated&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a359e8de71d77ef5495ec551054828a44" name="ab02e9e69539d60297cedb38c2193a453a359e8de71d77ef5495ec551054828a44"></a>send_ACK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453ad86a1396b6883943ef6f103f97897ba4" name="ab02e9e69539d60297cedb38c2193a453ad86a1396b6883943ef6f103f97897ba4"></a>send_FAILED&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a58ad18e86ddd619e77a41305948c9343" name="ab02e9e69539d60297cedb38c2193a453a58ad18e86ddd619e77a41305948c9343"></a>send_TIMESTAMP&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a9e1be1b36d5d41388c1bc6496be1c5c6" name="ab02e9e69539d60297cedb38c2193a453a9e1be1b36d5d41388c1bc6496be1c5c6"></a>send_NET&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a813a5c39f4659f6f4dc04cdf63a167df" name="ab02e9e69539d60297cedb38c2193a453a813a5c39f4659f6f4dc04cdf63a167df"></a>send_LTC&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a06e51ca4ea2dfc237aad447f5e92f4df" name="ab02e9e69539d60297cedb38c2193a453a06e51ca4ea2dfc237aad447f5e92f4df"></a>send_STOP_REQ&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a87da8a1b1ef9018c7f6959432d6cbc3d" name="ab02e9e69539d60297cedb38c2193a453a87da8a1b1ef9018c7f6959432d6cbc3d"></a>send_STOP_REQ_REP&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a55634e907daa67db49886a1439ac9d16" name="ab02e9e69539d60297cedb38c2193a453a55634e907daa67db49886a1439ac9d16"></a>send_STOP_GRN&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a68fe57f3b98b1046a20b96926d44d33f" name="ab02e9e69539d60297cedb38c2193a453a68fe57f3b98b1046a20b96926d44d33f"></a>send_FED_ID&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453af8e3e59ab52fdb846ef24dd8bff6fa7a" name="ab02e9e69539d60297cedb38c2193a453af8e3e59ab52fdb846ef24dd8bff6fa7a"></a>send_PTAG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a1d2d24b8faba6e105f3effdda0f30b45" name="ab02e9e69539d60297cedb38c2193a453a1d2d24b8faba6e105f3effdda0f30b45"></a>send_TAG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a6debe1c504821e1b55ae91ba185ca768" name="ab02e9e69539d60297cedb38c2193a453a6debe1c504821e1b55ae91ba185ca768"></a>send_REJECT&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453aaf479fd10fa46f06b11550611d3c610f" name="ab02e9e69539d60297cedb38c2193a453aaf479fd10fa46f06b11550611d3c610f"></a>send_RESIGN&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a1f1176e68caab2d18193117dec523864" name="ab02e9e69539d60297cedb38c2193a453a1f1176e68caab2d18193117dec523864"></a>send_PORT_ABS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453afb7e97a3dfbc62462125e25024424ed0" name="ab02e9e69539d60297cedb38c2193a453afb7e97a3dfbc62462125e25024424ed0"></a>send_CLOSE_RQ&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a813b0d7924cfa072765efc09614c2d81" name="ab02e9e69539d60297cedb38c2193a453a813b0d7924cfa072765efc09614c2d81"></a>send_TAGGED_MSG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a17e891ffbe84e2aadbdb405b47a5c09c" name="ab02e9e69539d60297cedb38c2193a453a17e891ffbe84e2aadbdb405b47a5c09c"></a>send_P2P_TAGGED_MSG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a22883b9d184199e94df0fa804fe23a89" name="ab02e9e69539d60297cedb38c2193a453a22883b9d184199e94df0fa804fe23a89"></a>send_MSG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453aa7a4fca7a8ef7dfde896701070fcfe6b" name="ab02e9e69539d60297cedb38c2193a453aa7a4fca7a8ef7dfde896701070fcfe6b"></a>send_P2P_MSG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a787c95dd61408de4fcc85bdbb3bc6946" name="ab02e9e69539d60297cedb38c2193a453a787c95dd61408de4fcc85bdbb3bc6946"></a>send_ADR_AD&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a4ebac2f241a667876f0a7ab20a8efdec" name="ab02e9e69539d60297cedb38c2193a453a4ebac2f241a667876f0a7ab20a8efdec"></a>send_ADR_QR&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a908926b0adde60c94d40c90fb4aa0221" name="ab02e9e69539d60297cedb38c2193a453a908926b0adde60c94d40c90fb4aa0221"></a>receive_ACK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a9fc739f4f25f7832d01711069eaf5004" name="ab02e9e69539d60297cedb38c2193a453a9fc739f4f25f7832d01711069eaf5004"></a>receive_FAILED&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453ac8429797245197de5cb9f32c9dbe8539" name="ab02e9e69539d60297cedb38c2193a453ac8429797245197de5cb9f32c9dbe8539"></a>receive_TIMESTAMP&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453ab3b8cb930ea4e1ebdb0d49fe287d9b8f" name="ab02e9e69539d60297cedb38c2193a453ab3b8cb930ea4e1ebdb0d49fe287d9b8f"></a>receive_NET&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453ab3ae4783b8e9be6cf326df41c3c08108" name="ab02e9e69539d60297cedb38c2193a453ab3ae4783b8e9be6cf326df41c3c08108"></a>receive_LTC&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453abf340bb6735bbba6a645ad8e74958410" name="ab02e9e69539d60297cedb38c2193a453abf340bb6735bbba6a645ad8e74958410"></a>receive_STOP_REQ&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a1967b1b61bcc8cd7e7653fa8bab46e97" name="ab02e9e69539d60297cedb38c2193a453a1967b1b61bcc8cd7e7653fa8bab46e97"></a>receive_STOP_REQ_REP&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453aeb7f596158f60ffaded5b6f76a4758a1" name="ab02e9e69539d60297cedb38c2193a453aeb7f596158f60ffaded5b6f76a4758a1"></a>receive_STOP_GRN&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453acfd5cbf76eacc508d0e2e3ccad128b99" name="ab02e9e69539d60297cedb38c2193a453acfd5cbf76eacc508d0e2e3ccad128b99"></a>receive_FED_ID&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a3546557eebc5ad402b6783e25be9a468" name="ab02e9e69539d60297cedb38c2193a453a3546557eebc5ad402b6783e25be9a468"></a>receive_PTAG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453aa350fa2156010c04148e947826624831" name="ab02e9e69539d60297cedb38c2193a453aa350fa2156010c04148e947826624831"></a>receive_TAG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a675c6b9020b4996877a16de7efd91cf2" name="ab02e9e69539d60297cedb38c2193a453a675c6b9020b4996877a16de7efd91cf2"></a>receive_REJECT&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a2e2c7ec922abc6561e48520f2929af22" name="ab02e9e69539d60297cedb38c2193a453a2e2c7ec922abc6561e48520f2929af22"></a>receive_RESIGN&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453af9c0ed69192d1a4cc7f1f0fda87c85fa" name="ab02e9e69539d60297cedb38c2193a453af9c0ed69192d1a4cc7f1f0fda87c85fa"></a>receive_PORT_ABS&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453aaeaec5a7cb114e56455f16069bf8f589" name="ab02e9e69539d60297cedb38c2193a453aaeaec5a7cb114e56455f16069bf8f589"></a>receive_CLOSE_RQ&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a17c1e79d4df8091f7279b5c042c2236a" name="ab02e9e69539d60297cedb38c2193a453a17c1e79d4df8091f7279b5c042c2236a"></a>receive_TAGGED_MSG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a720c7ea924889f0db7ed7df00eb9e65d" name="ab02e9e69539d60297cedb38c2193a453a720c7ea924889f0db7ed7df00eb9e65d"></a>receive_P2P_TAGGED_MSG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a530cf0a58e28bc3a386e75565810b7f7" name="ab02e9e69539d60297cedb38c2193a453a530cf0a58e28bc3a386e75565810b7f7"></a>receive_MSG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453ae06a042ab87b41578d9adf1c95322475" name="ab02e9e69539d60297cedb38c2193a453ae06a042ab87b41578d9adf1c95322475"></a>receive_P2P_MSG&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a92c4ad633d4739f7ee1cd40fdaf8cc5e" name="ab02e9e69539d60297cedb38c2193a453a92c4ad633d4739f7ee1cd40fdaf8cc5e"></a>receive_ADR_AD&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453af6e18bcb48b442e2be5a898d60c3bdf2" name="ab02e9e69539d60297cedb38c2193a453af6e18bcb48b442e2be5a898d60c3bdf2"></a>receive_ADR_QR&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a48fffa45ebf3f03caa2dc044af72349f" name="ab02e9e69539d60297cedb38c2193a453a48fffa45ebf3f03caa2dc044af72349f"></a>receive_UNIDENTIFIED&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134" name="ab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134"></a>NUM_EVENT_TYPES&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="aeec3d6d67240b942f12f5d8770698ae3ac970d1f28c60cf2b9de8353b284197b0" name="aeec3d6d67240b942f12f5d8770698ae3ac970d1f28c60cf2b9de8353b284197b0"></a>trace_reactor&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="aeec3d6d67240b942f12f5d8770698ae3a5c05f73b365f900def1359524b9ce5a0" name="aeec3d6d67240b942f12f5d8770698ae3a5c05f73b365f900def1359524b9ce5a0"></a>trace_trigger&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="aeec3d6d67240b942f12f5d8770698ae3a8fa30d4c503d93cecf4234a4d648ed79" name="aeec3d6d67240b942f12f5d8770698ae3a8fa30d4c503d93cecf4234a4d648ed79"></a>trace_user&#160;</td><td class="fielddoc"></td></tr>
 </table>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a88f437f39d7522d245fd1bfe36aa2127" name="a88f437f39d7522d245fd1bfe36aa2127"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88f437f39d7522d245fd1bfe36aa2127">&#9670;&#160;</a></span>lf_tracing_global_init()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_tracing_global_init </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *</td>          <td class="paramname"><span class="paramname"><em>file_name_prefix</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>process_id</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>max_num_local_threads</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initialize the tracing module. Calling other API functions before calling this procedure is undefined behavior. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">file_name_prefix</td><td>Prefix to attach to any files that may be produced by the tracing module. </td></tr>
+    <tr><td class="paramname">process_id</td><td>The ID of the current federate, or -1 if this is the RTI. 0 if unfederated. </td></tr>
+    <tr><td class="paramname">max_num_local_threads</td><td>An upper bound on the number of threads created by this process. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a8a5d5ec80d2716ea7848193647cdadcd" name="a8a5d5ec80d2716ea7848193647cdadcd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a5d5ec80d2716ea7848193647cdadcd">&#9670;&#160;</a></span>lf_tracing_global_shutdown()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_tracing_global_shutdown </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Shut down the tracing module. Calling other API functions after calling this procedure is undefined behavior. </p>
+
+</div>
+</div>
+<a id="a15969599d7817596e12dcceb8c145551" name="a15969599d7817596e12dcceb8c145551"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15969599d7817596e12dcceb8c145551">&#9670;&#160;</a></span>lf_tracing_register_trace_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_tracing_register_trace_event </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../df/d92/structobject__description__t.html">object_description_t</a></td>          <td class="paramname"><span class="paramname"><em>description</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Register a kind of trace event. This should be called before tracepoints are reached. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">description</td><td>A description of some trace events which may be received in the future. This may be invoked after many tracepoints have already been recorded but should be invoked early. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4270e37a116b1ebac46ad126b2fc277d" name="a4270e37a116b1ebac46ad126b2fc277d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4270e37a116b1ebac46ad126b2fc277d">&#9670;&#160;</a></span>lf_tracing_set_start_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_tracing_set_start_time </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int64_t</a></td>          <td class="paramname"><span class="paramname"><em>start_time</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Give the tracing module access to the start time. This may be invoked after many tracepoints have already been recorded but should be invoked early. </p>
+
+</div>
+</div>
+<a id="aa6e591a66e342a77860e9d3050680446" name="aa6e591a66e342a77860e9d3050680446"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa6e591a66e342a77860e9d3050680446">&#9670;&#160;</a></span>lf_tracing_tracepoint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_tracing_tracepoint </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>worker</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d0/d8d/structtrace__record__nodeps__t.html">trace_record_nodeps_t</a> *</td>          <td class="paramname"><span class="paramname"><em>tr</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Submit a tracepoint from the given worker to the tracing module. </p>
+
+</div>
+</div>
+<a id="a2cfa1ddb7da69004049315e0b6b5d882" name="a2cfa1ddb7da69004049315e0b6b5d882"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2cfa1ddb7da69004049315e0b6b5d882">&#9670;&#160;</a></span>lf_version_tracing()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../da/d9c/structversion__t.html">version_t</a> lf_version_tracing </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return a description of the compile-time properties of the current plugin. </p>
 
 </div>
 </div>
@@ -776,7 +331,7 @@ Functions intitializing and freeing memory for environments.</h1>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="../../dir_3d69f64eaf81436fe2b22361382717e5.html">core</a></li><li class="navelem"><a class="el" href="../../d1/d1b/trace_8h.html">trace.h</a></li>
+    <li class="navelem"><a class="el" href="../../dir_a011c6a84f70ad569c6a631ee6a319e8.html">trace</a></li><li class="navelem"><a class="el" href="../../dir_87651667a03b84f324c5d1d43dcea3cd.html">api</a></li><li class="navelem"><a class="el" href="../../d1/d1b/trace_8h.html">trace.h</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>

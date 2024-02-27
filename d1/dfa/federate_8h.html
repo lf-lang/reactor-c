@@ -109,7 +109,7 @@ $(function(){initNavTree('d1/dfa/federate_8h.html','../../'); initResizable(); }
 <code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d26/environment_8h_source.html">environment.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../da/dfb/low__level__platform_8h_source.html">low_level_platform.h</a>&quot;</code><br />
 </div>
 <p><a href="../../d1/dfa/federate_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -194,9 +194,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a032d945ee3fd6995a5f7bb15b57f2ddf" id="r_a032d945ee3fd6995a5f7bb15b57f2ddf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a032d945ee3fd6995a5f7bb15b57f2ddf">lf_set_federation_id</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">fid</a>)</td></tr>
 <tr class="memdesc:a032d945ee3fd6995a5f7bb15b57f2ddf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the federation_id of this federate.  <br /></td></tr>
 <tr class="separator:a032d945ee3fd6995a5f7bb15b57f2ddf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1e68b5e49cfe308866e8fc3947172b8e" id="r_a1e68b5e49cfe308866e8fc3947172b8e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1e68b5e49cfe308866e8fc3947172b8e">lf_set_federation_trace_object</a> (<a class="el" href="../../d1/d1b/trace_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a> *<a class="el" href="../../d5/df4/trace__util_8c.html#acc1427f623068d0c5a2c307969e8a447">trace</a>)</td></tr>
-<tr class="memdesc:a1e68b5e49cfe308866e8fc3947172b8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the trace object for this federate (used when tracing is enabled).  <br /></td></tr>
-<tr class="separator:a1e68b5e49cfe308866e8fc3947172b8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a971322f63f26490a27bdd9006c05b8fe" id="r_a971322f63f26490a27bdd9006c05b8fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a971322f63f26490a27bdd9006c05b8fe">lf_stall_advance_level_federation</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">level</a>)</td></tr>
 <tr class="memdesc:a971322f63f26490a27bdd9006c05b8fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait until inputs statuses are known up to and including the specified level.  <br /></td></tr>
 <tr class="separator:a971322f63f26490a27bdd9006c05b8fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -782,31 +779,6 @@ Anirudh Rengarajsm </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fid</td><td>The federation ID. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a1e68b5e49cfe308866e8fc3947172b8e" name="a1e68b5e49cfe308866e8fc3947172b8e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1e68b5e49cfe308866e8fc3947172b8e">&#9670;&#160;</a></span>lf_set_federation_trace_object()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_set_federation_trace_object </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d1/d1b/trace_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a> *</td>          <td class="paramname"><span class="paramname"><em>trace</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set the trace object for this federate (used when tracing is enabled). </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">The</td><td>trace object. </td></tr>
   </table>
   </dd>
 </dl>

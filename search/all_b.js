@@ -21,7 +21,7 @@ var searchData=
   ['definitions_2eh_18',['definitions.h',['../d6/dc2/definitions_8h.html',1,'']]],
   ['delay_5fbetween_5fsocket_5fretries_19',['DELAY_BETWEEN_SOCKET_RETRIES',['../dd/d97/net__util_8h.html#a7b7cd916c6c027dc9ebdff449fb6edad',1,'net_util.h']]],
   ['delay_5fstart_20',['DELAY_START',['../d9/da6/net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed',1,'net_common.h']]],
-  ['deprecated_21',['DEPRECATED',['../de/d03/platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118',1,'DEPRECATED:&#160;platform.h'],['../de/d03/platform_8h.html#ac59c4e7dcc349d97fe413dcb5cceafe3',1,'DEPRECATED(int lf_nanosleep(interval_t sleep_duration)):&#160;platform.h']]],
+  ['deprecated_21',['DEPRECATED',['../da/dfb/low__level__platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118',1,'DEPRECATED:&#160;low_level_platform.h'],['../da/dfb/low__level__platform_8h.html#ac59c4e7dcc349d97fe413dcb5cceafe3',1,'DEPRECATED(int lf_nanosleep(interval_t sleep_duration)):&#160;low_level_platform.h']]],
   ['deprecated_20list_22',['Deprecated List',['../da/d58/deprecated.html',1,'']]],
   ['deque_2ec_23',['deque.c',['../da/dcd/deque_8c.html',1,'']]],
   ['deque_2eh_24',['deque.h',['../dc/d44/deque_8h.html',1,'']]],
@@ -36,7 +36,7 @@ var searchData=
   ['deque_5fpush_5ffront_33',['deque_push_front',['../da/dcd/deque_8c.html#a19a0d218efcb14cc2c3d7b009a5d0f16',1,'deque_push_front(deque_t *d, void *value):&#160;deque.c'],['../dc/d44/deque_8h.html#a19a0d218efcb14cc2c3d7b009a5d0f16',1,'deque_push_front(deque_t *d, void *value):&#160;deque.c']]],
   ['deque_5fsize_34',['deque_size',['../da/dcd/deque_8c.html#ad7e6969a2e1a7e7529575558103d512d',1,'deque_size(deque_t *d):&#160;deque.c'],['../dc/d44/deque_8h.html#ad7e6969a2e1a7e7529575558103d512d',1,'deque_size(deque_t *d):&#160;deque.c']]],
   ['deque_5ft_35',['deque_t',['../da/df2/structdeque__t.html',1,'deque_t'],['../dc/d44/deque_8h.html#afc1887f5ebd7da3ce7dfc73beb195598',1,'deque_t:&#160;deque.h']]],
-  ['description_36',['description',['../dc/dcc/structsummary__stats__t.html#a57385f105e3ecb3ffa1b02f142b4b55b',1,'summary_stats_t']]],
+  ['description_36',['description',['../df/d92/structobject__description__t.html#a8f7829cb65aea820db731eaf70c079fc',1,'object_description_t::description'],['../dc/dcc/structsummary__stats__t.html#a57385f105e3ecb3ffa1b02f142b4b55b',1,'summary_stats_t::description']]],
   ['destination_5fchannel_37',['destination_channel',['../da/de8/structlf__port__base__t.html#ab7734e3cdd562ad5f6ad94f97e095822',1,'lf_port_base_t::destination_channel'],['../d9/d8c/structlf__port__internal__t.html#a7c70e1156dfb93174d5af2175ba58191',1,'lf_port_internal_t::destination_channel']]],
   ['destroy_5faction_5fcapsule_38',['destroy_action_capsule',['../db/df4/pythontarget_8c.html#ad52c5f970c1f6a4dde6f3457c92402ae',1,'pythontarget.c']]],
   ['destructor_39',['destructor',['../db/d12/structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c',1,'token_type_t::destructor'],['../da/dc0/structgeneric__port__instance__struct.html#a26752c879bfe4b2fbbf8cd9cd632e216',1,'generic_port_instance_struct::destructor']]],
@@ -48,5 +48,6 @@ var searchData=
   ['documentation_20comment_20format_45',['Documentation comment format',['../d6/dcd/md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md20',1,'']]],
   ['documentation_20comment_20placement_46',['Documentation comment placement',['../d6/dcd/md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md21',1,'']]],
   ['drop_47',['drop',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]],
-  ['duration_48',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c']]]
+  ['dst_5fid_48',['dst_id',['../d0/d8d/structtrace__record__nodeps__t.html#a594dcef3f6fe657e8c1c45dbac60e821',1,'trace_record_nodeps_t']]],
+  ['duration_49',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c']]]
 ];

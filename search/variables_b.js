@@ -18,7 +18,8 @@ var searchData=
   ['local_5fdelay_15',['local_delay',['../d9/d67/structsocket__stat__t.html#a645afb48648fcee15ce3625456eb5c21',1,'socket_stat_t']]],
   ['local_5fphysical_5fclock_5fsnapshot_5ft2_16',['local_physical_clock_snapshot_T2',['../d9/d67/structsocket__stat__t.html#af084180438ba84b4ec8e8fd873222605',1,'socket_stat_t']]],
   ['log_5ffile_17',['log_file',['../d7/d58/sensor__simulator_8c.html#ab936051f5aaca44c6c3c41dee0d19c36',1,'sensor_simulator.c']]],
-  ['logical_5ftime_18',['logical_time',['../d6/d1e/namespacefedsd.html#a1a9cd8ad04518662211e476f53b28e37',1,'fedsd']]],
-  ['loop_5fthread_5fid_19',['loop_thread_id',['../da/d0e/audio__loop__linux_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id:&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id:&#160;audio_loop_mac.c']]],
-  ['loop_5fthread_5fstarted_20',['loop_thread_started',['../da/d0e/audio__loop__linux_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started:&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started:&#160;audio_loop_mac.c']]]
+  ['log_5flevel_18',['log_level',['../dc/d4f/structbuild__config__t.html#ae157534091a9543d123bcebbfa7c1fb6',1,'build_config_t']]],
+  ['logical_5ftime_19',['logical_time',['../d0/d8d/structtrace__record__nodeps__t.html#abda0a12d07332a37b3249ebec1127077',1,'trace_record_nodeps_t::logical_time'],['../d6/d1e/namespacefedsd.html#a1a9cd8ad04518662211e476f53b28e37',1,'fedsd.logical_time']]],
+  ['loop_5fthread_5fid_20',['loop_thread_id',['../da/d0e/audio__loop__linux_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id:&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id:&#160;audio_loop_mac.c']]],
+  ['loop_5fthread_5fstarted_21',['loop_thread_started',['../da/d0e/audio__loop__linux_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started:&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started:&#160;audio_loop_mac.c']]]
 ];

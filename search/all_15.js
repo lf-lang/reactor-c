@@ -41,7 +41,7 @@ var searchData=
   ['num_5fchannels_38',['NUM_CHANNELS',['../d1/dcb/audio__loop_8h.html#ae5597ce31d23d11493e6e674fe257d73',1,'audio_loop.h']]],
   ['num_5fdestinations_39',['num_destinations',['../da/de8/structlf__port__base__t.html#abb1d021a0d2668988d927e9754b699dc',1,'lf_port_base_t::num_destinations'],['../d9/d8c/structlf__port__internal__t.html#a7948ecbc67381ccbe57c033272d6544f',1,'lf_port_internal_t::num_destinations']]],
   ['num_5fentries_40',['num_entries',['../d6/df3/hashmap_8h.html#abf777aba6f6200c8f2fe2b88d58208d8',1,'hashmap.h']]],
-  ['num_5fevent_5ftypes_41',['NUM_EVENT_TYPES',['../d1/d1b/trace_8h.html#ab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134',1,'trace.h']]],
+  ['num_5fevent_5ftypes_41',['NUM_EVENT_TYPES',['../d6/db9/tracepoint_8h.html#ab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134',1,'tracepoint.h']]],
   ['num_5fnotes_42',['NUM_NOTES',['../d1/dcb/audio__loop_8h.html#a5b0b677cb9527865430a9b3d7a71cb03',1,'audio_loop.h']]],
   ['num_5foutputs_43',['num_outputs',['../d2/d35/structreaction__t.html#ac0bd71c667c13a7d2f96cb856d297cc0',1,'reaction_t']]],
   ['num_5freactions_5fper_5flevel_44',['num_reactions_per_level',['../dc/da2/structsched__params__t.html#a826bb0752d0c9e915bf5abdefe9ee62d',1,'sched_params_t']]],

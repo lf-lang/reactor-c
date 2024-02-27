@@ -105,14 +105,15 @@ $(function(){initNavTree('dd/d37/reactor__common_8c.html','../../'); initResizab
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;time.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../da/dfb/low__level__platform_8h_source.html">low_level_platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d6b/schedule_8h_source.html">api/schedule.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../da/d00/port_8h_source.html">port.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d66/pqueue_8h_source.html">pqueue.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d85/reactor_8h_source.html">reactor.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d1/d1b/trace_8h_source.html">trace.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d6/db9/tracepoint_8h_source.html">tracepoint.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d8/d3c/util_8h_source.html">util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d68/vector_8h_source.html">vector.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../df/d4f/lf__core__version_8h_source.html">lf_core_version.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d1/dcf/hashset_8h_source.html">hashset/hashset.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d0/d15/hashset__itr_8h_source.html">hashset/hashset_itr.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d26/environment_8h_source.html">environment.h</a>&quot;</code><br />
@@ -186,7 +187,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a80aaf4eeed3e2902f8fe9de80b45777d" id="r_a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">argc</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">argv</a>[])</td></tr>
 <tr class="separator:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b9fe00b97fa37e9602b85b7086acec1" id="r_a4b9fe00b97fa37e9602b85b7086acec1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4b9fe00b97fa37e9602b85b7086acec1">initialize_global</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
-<tr class="memdesc:a4b9fe00b97fa37e9602b85b7086acec1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize global variables and start tracing before calling the <code>_lf_initialize_trigger_objects</code> function.  <br /></td></tr>
+<tr class="memdesc:a4b9fe00b97fa37e9602b85b7086acec1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check that the provided version information is consistent with the core runtime.  <br /></td></tr>
 <tr class="separator:a4b9fe00b97fa37e9602b85b7086acec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa329f59a16f5617b5195f2c05872c9e9" id="r_aa329f59a16f5617b5195f2c05872c9e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa329f59a16f5617b5195f2c05872c9e9">termination</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
 <tr class="memdesc:aa329f59a16f5617b5195f2c05872c9e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform final wrap-up on exit.  <br /></td></tr>
@@ -494,7 +495,7 @@ Erling Rennemo Jellum </dd></dl>
 <p>Note that this function is an internal API that must be called with a tag that is in the future relative to the current tag (or the environment has not started executing). Also, it must be called with tags that are in order for a given trigger. This means that the following order is illegal: </p><div class="fragment"><div class="line"><a class="code hl_function" href="#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">trigger1</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bigger_tag</a>, ...);</div>
 <div class="line"><a class="code hl_function" href="#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">trigger1</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">smaller_tag</a>, ...);</div>
 <div class="ttc" id="ahashmap_8h_html_ad2c17ed7e0d4d65a63bf9002aba2016f"><div class="ttname"><a href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">address</a></div><div class="ttdeci">return address</div><div class="ttdef"><b>Definition</b> hashmap.h:74</div></div>
-<div class="ttc" id="areactor__common_8c_html_a9d2634d70492498740984f320dffe8f0"><div class="ttname"><a href="#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_at_tag(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdoc">Schedule an event at a specific tag (time, microstep).</div><div class="ttdef"><b>Definition</b> reactor_common.c:509</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9d2634d70492498740984f320dffe8f0"><div class="ttname"><a href="#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_at_tag(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdoc">Schedule an event at a specific tag (time, microstep).</div><div class="ttdef"><b>Definition</b> reactor_common.c:510</div></div>
 </div><!-- fragment --><p> where <code>bigger_tag &gt; smaller_tag</code>. This function is primarily used for network communication (which is assumed to be in order).</p>
 <p>This function assumes the caller holds the mutex lock.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -601,6 +602,7 @@ Erling Rennemo Jellum </dd></dl>
       </table>
 </div><div class="memdoc">
 
+<p>Check that the provided version information is consistent with the core runtime. </p>
 <p>Initialize global variables and start tracing before calling the <code>_lf_initialize_trigger_objects</code> function. </p>
 
 </div>

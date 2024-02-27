@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.10.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/platform/lf_POSIX_threads_support.c File Reference</title>
+<title>reactor-c: low_level_platform/impl/src/lf_POSIX_threads_support.c File Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -97,9 +97,9 @@ $(function(){initNavTree('d5/df3/lf___p_o_s_i_x__threads__support_8c.html','../.
   <div class="headertitle"><div class="title">lf_POSIX_threads_support.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d6/d57/lf___p_o_s_i_x__threads__support_8h_source.html">lf_POSIX_threads_support.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d4/dac/lf__unix__clock__support_8h_source.html">lf_unix_clock_support.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="../../da/dfb/low__level__platform_8h_source.html">low_level_platform.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d6/d57/lf___p_o_s_i_x__threads__support_8h_source.html">platform/lf_POSIX_threads_support.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d4/dac/lf__unix__clock__support_8h_source.html">platform/lf_unix_clock_support.h</a>&quot;</code><br />
 <code>#include &lt;pthread.h&gt;</code><br />
 <code>#include &lt;errno.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
@@ -107,6 +107,7 @@ $(function(){initNavTree('d5/df3/lf___p_o_s_i_x__threads__support_8c.html','../.
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a48fa558d833200b986c03bc8c12bbe77" id="r_a48fa558d833200b986c03bc8c12bbe77"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48fa558d833200b986c03bc8c12bbe77">lf_thread_create</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *(*<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_thread</a>)(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *), <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">arguments</a>)</td></tr>
+<tr class="memdesc:a48fa558d833200b986c03bc8c12bbe77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function for creating a thread.  <br /></td></tr>
 <tr class="separator:a48fa558d833200b986c03bc8c12bbe77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a652d8db6bafa59434d297216607266ed" id="r_a652d8db6bafa59434d297216607266ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a652d8db6bafa59434d297216607266ed">lf_thread_join</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread_return</a>)</td></tr>
 <tr class="separator:a652d8db6bafa59434d297216607266ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -311,6 +312,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Helper function for creating a thread. </p>
 <p>Create a new thread, starting with execution of lf_thread getting passed arguments. The new handle is stored in thread_id.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
 
@@ -350,7 +353,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li><li class="navelem"><a class="el" href="../../dir_e013a6b3093d526b264ef8c8204162a6.html">platform</a></li><li class="navelem"><a class="el" href="../../d5/df3/lf___p_o_s_i_x__threads__support_8c.html">lf_POSIX_threads_support.c</a></li>
+    <li class="navelem"><a class="el" href="../../dir_5d71b60eb1655237b24e57fd9a435f82.html">low_level_platform</a></li><li class="navelem"><a class="el" href="../../dir_c7165e9a8c063aabad437f5d8ebb690d.html">impl</a></li><li class="navelem"><a class="el" href="../../dir_6082da18e4996077bef2ff9460ab8064.html">src</a></li><li class="navelem"><a class="el" href="../../d5/df3/lf___p_o_s_i_x__threads__support_8c.html">lf_POSIX_threads_support.c</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>
