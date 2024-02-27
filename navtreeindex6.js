@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"da/dfb/low__level__platform_8h.html#abe5a04985bd63ade71fc058f189d2545":[13,0,4,0,1,9],
 "da/dfb/low__level__platform_8h.html#ac4c0721974b31d98f491be1febeb2c9a":[13,0,4,0,1,17],
 "da/dfb/low__level__platform_8h.html#ac59c4e7dcc349d97fe413dcb5cceafe3":[13,0,4,0,1,7],
 "da/dfb/low__level__platform_8h.html#ae0fda178667bc6cd94890a13316c285c":[13,0,4,0,1,14],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "dc/d69/fedsd_8py.html#ae487dbfcf41215d81af8f1ed99298164":[13,0,10,0,0,0,36],
 "dc/d69/fedsd_8py.html#ae5ba8ed38b1b62ab3cce546f674a623f":[13,0,10,0,0,0,48],
 "dc/d69/fedsd_8py.html#aeb6bffa3287c668e8498bdc6295c0cd7":[13,0,10,0,0,0,51],
-"dc/d69/fedsd_8py.html#aef4d7fb4468ae45246f83a4db01ec4e2":[13,0,10,0,0,0,44],
-"dc/d69/fedsd_8py.html#af4bde7c69b0ef62a9c427feb6a4461d4":[13,0,10,0,0,0,2]
+"dc/d69/fedsd_8py.html#aef4d7fb4468ae45246f83a4db01ec4e2":[13,0,10,0,0,0,44]
 };
