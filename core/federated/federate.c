@@ -35,7 +35,7 @@
 #include "reactor_threaded.h"
 #include "api/schedule.h"
 #include "scheduler.h"
-#include "trace.h"
+#include "tracepoint.h"
 
 #ifdef FEDERATED_AUTHENTICATED
 #include <openssl/rand.h> // For secure random number generation.
@@ -122,7 +122,7 @@ static void send_time(unsigned char type, instant_t time) {
 
     // Trace the event when tracing is enabled
     tag_t tag = {.time = time, .microstep = 0};
-    tracepoint_federate_to_rti(_fed.trace, send_TIMESTAMP, _lf_my_fed_id, &tag);
+    tracepoint_federate_to_rti(send_TIMESTAMP, _lf_my_fed_id, &tag);
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
     write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
@@ -151,7 +151,8 @@ static void send_tag(unsigned char type, tag_t tag) {
     }
     trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_rti(_fed.trace, event_type, _lf_my_fed_id, &tag);
+
+    tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
     write_to_netdrv_fail_on_error(
             _fed.netdrv_to_rti, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
             "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
@@ -502,7 +503,7 @@ static int handle_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, s
         buf_count += bytes_read_again;
     }
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_federate(_fed.trace, receive_P2P_MSG, _lf_my_fed_id, federate_id, NULL);
+    tracepoint_federate_from_federate(receive_P2P_MSG, _lf_my_fed_id, federate_id, NULL);
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
@@ -530,7 +531,6 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
     // Environment is always the one corresponding to the top-level scheduling enclave.
     environment_t *env;
     _lf_get_environments(&env);
-
     // Extract the header information.
     unsigned short port_id;
     unsigned short federate_id;
@@ -541,9 +541,9 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
             + sizeof(int32_t) + sizeof(instant_t) + sizeof(microstep_t);
     // Trace the event when tracing is enabled
     if (fed_id == -1) {
-        tracepoint_federate_from_rti(_fed.trace, receive_TAGGED_MSG, _lf_my_fed_id, &intended_tag);
+        tracepoint_federate_from_rti(receive_TAGGED_MSG, _lf_my_fed_id, &intended_tag);
     } else {
-        tracepoint_federate_from_federate(_fed.trace, receive_P2P_TAGGED_MSG, _lf_my_fed_id, fed_id, &intended_tag);
+        tracepoint_federate_from_federate(receive_P2P_TAGGED_MSG, _lf_my_fed_id, fed_id, &intended_tag);
     }
     // Check if the message is intended for this federate
     assert(_lf_my_fed_id == federate_id);
@@ -703,9 +703,9 @@ static int handle_port_absent_message(unsigned char* buffer, int fed_id) {
 
     // Trace the event when tracing is enabled
     if (fed_id == -1) {
-        tracepoint_federate_from_rti(_fed.trace, receive_PORT_ABS, _lf_my_fed_id, &intended_tag);
+        tracepoint_federate_from_rti(receive_PORT_ABS, _lf_my_fed_id, &intended_tag);
     } else {
-        tracepoint_federate_from_federate(_fed.trace, receive_PORT_ABS, _lf_my_fed_id, fed_id, &intended_tag);
+        tracepoint_federate_from_federate(receive_PORT_ABS, _lf_my_fed_id, fed_id, &intended_tag);
     }
     LF_PRINT_LOG("Handling port absent for tag " PRINTF_TAG " for port %hu of fed %d.",
             intended_tag.time - lf_time_start(),
@@ -739,6 +739,7 @@ static int handle_port_absent_message(unsigned char* buffer, int fed_id) {
  *  This procedure frees the memory pointed to before returning.
  */
 static void* listen_to_federates(void* _args) {
+    initialize_lf_thread_id();
     uint16_t fed_id = (uint16_t)(uintptr_t)_args;
 
     LF_PRINT_LOG("Listening to federate %d.", fed_id);
@@ -801,7 +802,7 @@ static void* listen_to_federates(void* _args) {
         if (bad_message) {
             lf_print_error("Received erroneous message type: %d. Closing the socket.", buffer[0]);
             // Trace the event when tracing is enabled
-            tracepoint_federate_from_federate(_fed.trace, receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
+            tracepoint_federate_from_federate(receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
             break; // while loop
         }
         if (socket_closed) {
@@ -974,7 +975,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
     tag_t tag = {.time = timestamp, .microstep = 0};
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_rti(_fed.trace, receive_TIMESTAMP, _lf_my_fed_id, &tag);
+    tracepoint_federate_from_rti(receive_TIMESTAMP, _lf_my_fed_id, &tag);
     lf_print("Starting timestamp is: " PRINTF_TIME ".", timestamp);
     LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
@@ -1002,7 +1003,7 @@ static void handle_tag_advance_grant(unsigned char* buffer) {
     tag_t TAG = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_rti(_fed.trace, receive_TAG, _lf_my_fed_id, &TAG);
+    tracepoint_federate_from_rti(receive_TAG, _lf_my_fed_id, &TAG);
 
     LF_MUTEX_LOCK(&env->mutex);
 
@@ -1072,6 +1073,7 @@ static int id_of_action(lf_action_base_t* input_port_action) {
  */
 #ifdef FEDERATED_DECENTRALIZED
 static void* update_ports_from_staa_offsets(void* args) {
+    initialize_lf_thread_id();
     if (staa_lst_size == 0) return NULL; // Nothing to do.
     // NOTE: Using only the top-level environment, which is the one that deals with network
     // input ports.
@@ -1201,7 +1203,7 @@ static void handle_provisional_tag_advance_grant(unsigned char* buffer) {
     tag_t PTAG = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_rti(_fed.trace, receive_PTAG, _lf_my_fed_id, &PTAG);
+    tracepoint_federate_from_rti(receive_PTAG, _lf_my_fed_id, &PTAG);
 
     // Note: it is important that last_known_status_tag of ports does not
     // get updated to a PTAG value because a PTAG does not indicate that
@@ -1295,7 +1297,7 @@ static void handle_stop_granted_message(unsigned char* buffer) {
     tag_t received_stop_tag = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_rti(_fed.trace, receive_STOP_GRN, _lf_my_fed_id, &received_stop_tag);
+    tracepoint_federate_from_rti(receive_STOP_GRN, _lf_my_fed_id, &received_stop_tag);
 
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_GRANTED message with elapsed tag " PRINTF_TAG ".",
             received_stop_tag.time - start_time, received_stop_tag.microstep);
@@ -1333,7 +1335,7 @@ static void handle_stop_request_message(unsigned char* buffer) {
     tag_t tag_to_stop = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_rti(_fed.trace, receive_STOP_REQ, _lf_my_fed_id, &tag_to_stop);
+    tracepoint_federate_from_rti(receive_STOP_REQ, _lf_my_fed_id, &tag_to_stop);
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_REQUEST signal with tag " PRINTF_TAG ".",
              tag_to_stop.time - start_time,
              tag_to_stop.microstep);
@@ -1398,7 +1400,7 @@ static void handle_stop_request_message(unsigned char* buffer) {
     ENCODE_STOP_REQUEST_REPLY(outgoing_buffer, tag_to_stop.time, tag_to_stop.microstep);
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
+    tracepoint_federate_to_rti(send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
 
     // Send the current logical time to the RTI.
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
@@ -1440,17 +1442,6 @@ static void send_failed_signal(environment_t* env) {
 }
 
 /**
- * @brief Stop the traces associated with all environments in the program.
- */
-static void stop_all_traces() {
-    environment_t *env;
-    int num_envs = _lf_get_environments(&env);
-    for (int i = 0; i < num_envs; i++) {
-        stop_trace(env[i].trace);
-    }
-}
-
-/**
  * Handle a failed signal from the RTI. The RTI will only fail
  * if it is forced to exit, e.g. by a SIG_INT. Hence, this federate
  * will exit immediately with an error condition, counting on the
@@ -1466,6 +1457,7 @@ static void handle_rti_failed_message(void) {
  * @param args Ignored
  */
 static void* listen_to_rti_TCP(void* args) {
+    initialize_lf_thread_id();
     // Buffer for incoming messages.
     // This does not constrain the message size
     // because the message will be put into malloc'd memory.
@@ -1497,9 +1489,6 @@ static void* listen_to_rti_TCP(void* args) {
         //     // EOF received.
         //     lf_print("Connection to the RTI closed with an EOF.");
         //     _fed.socket_TCP_RTI = -1;
-        //     stop_all_traces();
-        //     return NULL;
-        // }
         if (bytes_read <= 0) {
             return NULL;
         }
@@ -1539,7 +1528,7 @@ static void* listen_to_rti_TCP(void* args) {
             default:
                 lf_print_error_and_exit("Received from RTI an unrecognized TCP message type: %hhx.", buffer[0]);
                 // Trace the event when tracing is enabled
-                tracepoint_federate_from_rti(_fed.trace, receive_UNIDENTIFIED, _lf_my_fed_id, NULL);
+                tracepoint_federate_from_rti(receive_UNIDENTIFIED, _lf_my_fed_id, NULL);
             }
     }
     return NULL;
@@ -1615,10 +1604,10 @@ void lf_terminate_execution(environment_t* env) {
     // MSG_TYPE_FAILED message to the RTI, but we should not acquire a mutex.
     if (_fed.netdrv_to_rti != 0) {
         if (_lf_normal_termination) {
-            tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &env->current_tag);
+            tracepoint_federate_to_rti(send_RESIGN, _lf_my_fed_id, &env->current_tag);
             send_resign_signal(env);
         } else {
-            tracepoint_federate_to_rti(_fed.trace, send_FAILED, _lf_my_fed_id, &env->current_tag);
+            tracepoint_federate_to_rti(send_FAILED, _lf_my_fed_id, &env->current_tag);
             send_failed_signal(env);
         }
     }
@@ -1691,7 +1680,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
         LF_PRINT_DEBUG("Sending address query for federate %d.", remote_federate_id);
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_rti(_fed.trace, send_ADR_QR, _lf_my_fed_id, NULL);
+        tracepoint_federate_to_rti(send_ADR_QR, _lf_my_fed_id, NULL);
 
         LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
         write_to_netdrv_fail_on_error(
@@ -1706,7 +1695,6 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                 "Failed to read the requested port number and IP address for federate %d from RTI.",
                 remote_federate_id);
 
-        // Changed message type. Must check other targets.
         if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
             // Unexpected reply.  Could be that RTI has failed and sent a resignation.
             if (buffer[0] == MSG_TYPE_FAILED) {
@@ -1792,7 +1780,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
             memcpy(buffer + 2 + sizeof(uint16_t), (unsigned char*)federation_metadata.federation_id, federation_id_length);
             // Trace the event when tracing is enabled
-            tracepoint_federate_to_federate(_fed.trace, send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
+            tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
 
             // No need for a mutex because we have the only handle on the socket.
             write_to_netdrv_fail_on_error(netdrv, 2 + sizeof(uint16_t) + federation_id_length, buffer, NULL,
@@ -1810,8 +1798,9 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
             } else {
                 lf_print("Connected to federate %d, port %d.", remote_federate_id, port);
                 // Trace the event when tracing is enabled
-                tracepoint_federate_to_federate(_fed.trace, receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
+                tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
                 free(buffer);
+
             }
         }
     }
@@ -1906,7 +1895,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
         buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
         memcpy(buffer + 2 + sizeof(uint16_t), (unsigned char*)federation_metadata.federation_id, federation_id_length);
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_rti(_fed.trace, send_FED_ID, _lf_my_fed_id, NULL);
+        tracepoint_federate_to_rti(send_FED_ID, _lf_my_fed_id, NULL);
 
         // No need for a mutex here because no other threads are writing to this socket.
         if (write_to_netdrv(_fed.netdrv_to_rti, 2 + sizeof(uint16_t) + federation_id_length, buffer) <= 0) {
@@ -1927,7 +1916,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
         }
         if (response[0] == MSG_TYPE_REJECT) {
             // Trace the event when tracing is enabled
-            tracepoint_federate_from_rti(_fed.trace, receive_REJECT, _lf_my_fed_id, NULL);
+            tracepoint_federate_from_rti(receive_REJECT, _lf_my_fed_id, NULL);
             // Read one more byte to determine the cause of rejection.
             unsigned char cause = response[1];
             if (cause == FEDERATION_ID_DOES_NOT_MATCH || cause == WRONG_SERVER) {
@@ -1936,7 +1925,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
             }
         } else if (response[0] == MSG_TYPE_ACK) {
             // Trace the event when tracing is enabled
-            tracepoint_federate_from_rti(_fed.trace, receive_ACK, _lf_my_fed_id, NULL);
+            tracepoint_federate_from_rti(receive_ACK, _lf_my_fed_id, NULL);
             LF_PRINT_LOG("Received acknowledgment from the RTI.");
             break;
         } else if (response[0] == MSG_TYPE_RESIGN) {
@@ -1991,7 +1980,7 @@ void lf_create_server(int specified_port) {
     encode_int32(get_my_port(my_netdrv), &(buffer[1]));
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_rti(_fed.trace, send_ADR_AD, _lf_my_fed_id, NULL);
+    tracepoint_federate_to_rti(send_ADR_AD, _lf_my_fed_id, NULL);
 
     // No need for a mutex because we have the only handle on this socket.
     write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
@@ -2060,7 +2049,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
                 response[0] = MSG_TYPE_REJECT;
                 response[1] = WRONG_SERVER;
                 // Trace the event when tracing is enabled
-                tracepoint_federate_to_federate(_fed.trace, send_REJECT, _lf_my_fed_id, -3, NULL);
+                tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
                 // Ignore errors on this response.
                 write_to_netdrv(client_fed_netdrv, 2, response);
             }
@@ -2079,7 +2068,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
                 response[0] = MSG_TYPE_REJECT;
                 response[1] = FEDERATION_ID_DOES_NOT_MATCH;
                 // Trace the event when tracing is enabled
-                tracepoint_federate_to_federate(_fed.trace, send_REJECT, _lf_my_fed_id, -3, NULL);
+                tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
                 // Ignore errors on this response.
                 write_to_netdrv(client_fed_netdrv, 2, response);
             }
@@ -2092,7 +2081,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         LF_PRINT_DEBUG("Received sending federate ID %d.", remote_fed_id);
 
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_federate(_fed.trace, receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
+        tracepoint_federate_to_federate(receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
 
         // Once we record the socket_id here, all future calls to close() on
         // the socket should be done while holding the netdrv_mutex, and this array
@@ -2105,7 +2094,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         unsigned char response = MSG_TYPE_ACK;
 
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_federate(_fed.trace, send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
+        tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
 
         LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
         write_to_netdrv_fail_on_error(
@@ -2241,7 +2230,7 @@ int lf_send_message(int message_type,
     netdrv_t* netdrv = _fed.netdrv_for_outbound_p2p_connections[federate];
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_federate(_fed.trace, send_P2P_MSG, _lf_my_fed_id, federate, NULL);
+    tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
 
     //TODO: DONGHA: Need to fix in future.
     int bytes_written = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
@@ -2437,10 +2426,10 @@ void lf_send_port_absent_to_federate(
 
     if (netdrv == _fed.netdrv_to_rti) {
         tracepoint_federate_to_rti(
-                _fed.trace, send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
+                send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
     } else {
         tracepoint_federate_to_federate(
-                _fed.trace, send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
+                send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
     }
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
@@ -2482,7 +2471,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
             return -1;
         }
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
+        tracepoint_federate_to_rti(send_STOP_REQ, _lf_my_fed_id, &stop_tag);
 
         write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, MSG_TYPE_STOP_REQUEST_LENGTH,
                 buffer, &lf_outbound_netdrv_mutex,
@@ -2531,7 +2520,7 @@ int lf_send_tagged_message(environment_t* env,
     buffer_head += sizeof(uint16_t);
 
     // The next four bytes are the message length.
-    encode_int32((int32_t)length, &(header_buffer[buffer_head]));
+    encode_uint32((uint32_t)length, &(header_buffer[buffer_head]));
     buffer_head += sizeof(int32_t);
 
     // Apply the additional delay to the current tag and use that as the intended
@@ -2562,10 +2551,10 @@ int lf_send_tagged_message(environment_t* env,
     // int* socket;
     if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
         netdrv = _fed.netdrv_for_outbound_p2p_connections[federate];
-        tracepoint_federate_to_federate(_fed.trace, send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
+        tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
     } else {
         netdrv = _fed.netdrv_to_rti;
-        tracepoint_federate_to_rti(_fed.trace, send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
+        tracepoint_federate_to_rti(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
     }
 
     int bytes_written = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
@@ -2578,8 +2567,8 @@ int lf_send_tagged_message(environment_t* env,
         if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
             lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
         } else {
-            lf_print_error_system_failure("Failed to send message to %s. Connection lost to the RTI.",
-                    next_destination_str);
+            lf_print_error_system_failure("Failed to send message to %s with error code %d (%s). Connection lost to the RTI.",
+                    next_destination_str, errno, strerror(errno));
         }
     }
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
@@ -2589,10 +2578,6 @@ int lf_send_tagged_message(environment_t* env,
 
 void lf_set_federation_id(const char* fid) {
     federation_metadata.federation_id = fid;
-}
-
-void lf_set_federation_trace_object(trace_t * trace) {
-    _fed.trace = trace;
 }
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -2619,6 +2604,7 @@ void lf_synchronize_with_other_federates(void) {
     // Reset the start time to the coordinated start time for all federates.
     // Note that this does not grant execution to this federate.
     start_time = get_start_time_from_rti(lf_time_physical());
+    lf_tracing_set_start_time(start_time);
 
     // Start a thread to listen for incoming TCP messages from the RTI.
     // @note Up until this point, the federate has been listening for messages

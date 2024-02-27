@@ -809,7 +809,7 @@ ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_
                     state = FINISH_READ;
                     break;
                 case READ_MSG_TYPE_TAGGED_MESSAGE: ;
-                    size_t length = (size_t) extract_int32(buffer + 1+ sizeof(uint16_t) + sizeof(uint16_t));
+                    size_t length = (size_t) extract_uint32(buffer + 1+ sizeof(uint16_t) + sizeof(uint16_t));
                     if(length > buffer_length - total_bytes_read) {
                         bytes_to_read = buffer_length - total_bytes_read;
                         netdrv->read_remaining_bytes = length - bytes_to_read;      

@@ -85,6 +85,7 @@ void watchdog_wait(watchdog_t *watchdog) {
  * @return NULL
  */
 static void* watchdog_thread_main(void* arg) {
+    initialize_lf_thread_id();
     watchdog_t* watchdog = (watchdog_t*)arg;
     self_base_t* base = watchdog->base;
     LF_PRINT_DEBUG("Starting Watchdog %p", (void *) watchdog);

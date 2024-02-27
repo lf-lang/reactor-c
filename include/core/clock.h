@@ -13,7 +13,7 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#include "platform.h"
+#include "low_level_platform.h"
 
 /**
  * Block the calling thread until wakeup_time is reached or the thread is

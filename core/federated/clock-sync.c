@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "platform.h"
+#include "low_level_platform.h"
 #include "clock-sync.h"
 #include "net_common.h"
 #include "net_util.h"
@@ -461,6 +461,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, netdrv_t* netdrv, insta
  * Thread that listens for UDP inputs from the RTI.
  */
 void* listen_to_rti_UDP_thread(void* args) {
+    initialize_lf_thread_id();
     // Listen for UDP messages from the RTI.
     // The only expected messages are T1 and T4, which have
     // a payload of a time value.

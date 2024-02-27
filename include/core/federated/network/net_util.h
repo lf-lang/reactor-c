@@ -48,8 +48,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 #include <stdbool.h>
 
-#include "../../platform.h"
-#include "../../tag.h"
+#include "low_level_platform.h"
+#include "tag.h"
 
 #define NUM_SOCKET_RETRIES 10
 //TODO: Copied at lf_socket_support.h. Erase after finished.
@@ -311,6 +311,13 @@ int64_t extract_int64(unsigned char* bytes);
  * @param bytes The address of the start of the sequence of bytes.
  */
 uint16_t extract_uint16(unsigned char* bytes);
+
+/** 
+ * Extract an uint32_t from the specified byte sequence.
+ * This will swap the order of the bytes if this machine is big endian.
+ * @param bytes The address of the start of the sequence of bytes.
+ */
+uint32_t extract_uint32(unsigned char* bytes);
 
 #ifdef FEDERATED
 
