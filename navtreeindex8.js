@@ -1,6 +1,5 @@
 var NAVTREEINDEX8 =
 {
-"de/dcd/influxdb_8h.html#a3ad762f5dcd5acda26a5750e91b6f965":[13,0,10,0,1,21],
 "de/dcd/influxdb_8h.html#a437443d0f707af6a79b24573c3ec58a6":[13,0,10,0,1,23],
 "de/dcd/influxdb_8h.html#a442325f8443dadd92b1a1a82526de4c5":[13,0,10,0,1,8],
 "de/dcd/influxdb_8h.html#a49f65e2120cd077ee205fefbcd5bdc50":[13,0,10,0,1,4],
@@ -147,8 +146,8 @@ var NAVTREEINDEX8 =
 "dir_f67f2fda652a616eb7541825d20f0d9a.html":[13,0,8,1],
 "dir_fdacdff5c3e9d6e52f439c05e95a860d.html":[13,0,1,1,0],
 "files.html":[13,0],
-"functions.html":[12,2,0,0],
 "functions.html":[12,2,0],
+"functions.html":[12,2,0,0],
 "functions_a.html":[12,2,0,1],
 "functions_b.html":[12,2,0,2],
 "functions_c.html":[12,2,0,3],
@@ -168,8 +167,8 @@ var NAVTREEINDEX8 =
 "functions_t.html":[12,2,0,17],
 "functions_u.html":[12,2,0,18],
 "functions_v.html":[12,2,0,19],
-"functions_vars.html":[12,2,1,0],
 "functions_vars.html":[12,2,1],
+"functions_vars.html":[12,2,1,0],
 "functions_vars_a.html":[12,2,1,1],
 "functions_vars_b.html":[12,2,1,2],
 "functions_vars_c.html":[12,2,1,3],
@@ -224,8 +223,8 @@ var NAVTREEINDEX8 =
 "globals_enum.html":[13,1,4],
 "globals_eval.html":[13,1,5],
 "globals_f.html":[13,1,0,6],
-"globals_func.html":[13,1,1,0],
 "globals_func.html":[13,1,1],
+"globals_func.html":[13,1,1,0],
 "globals_func_a.html":[13,1,1,1],
 "globals_func_c.html":[13,1,1,2],
 "globals_func_d.html":[13,1,1,3],
@@ -249,5 +248,6 @@ var NAVTREEINDEX8 =
 "globals_i.html":[13,1,0,9],
 "globals_k.html":[13,1,0,10],
 "globals_l.html":[13,1,0,11],
-"globals_m.html":[13,1,0,12]
+"globals_m.html":[13,1,0,12],
+"globals_n.html":[13,1,0,13]
 };
