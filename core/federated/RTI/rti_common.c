@@ -156,34 +156,34 @@ tag_t eimt_strict(scheduling_node_t* e) {
 tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     tag_advance_grant_t result = {.tag = NEVER_TAG, .is_provisional = false};
 
-    // Find the earliest LTC of upstream scheduling_nodes (M).
-    tag_t min_upstream_completed = FOREVER_TAG;
+    // // Find the earliest LTC of upstream scheduling_nodes (M).
+    // tag_t min_upstream_completed = FOREVER_TAG;
 
-    for (int j = 0; j < e->num_upstream; j++) {
-        scheduling_node_t *upstream = rti_common->scheduling_nodes[e->upstream[j]];
+    // for (int j = 0; j < e->num_upstream; j++) {
+    //     scheduling_node_t *upstream = rti_common->scheduling_nodes[e->upstream[j]];
 
-        // Ignore this enclave/federate if it is not connected.
-        if (upstream->state == NOT_CONNECTED) continue;
+    //     // Ignore this enclave/federate if it is not connected.
+    //     if (upstream->state == NOT_CONNECTED) continue;
 
-        // Adjust by the "after" delay.
-        // Note that "no delay" is encoded as NEVER,
-        // whereas one microstep delay is encoded as 0LL.
-        tag_t candidate = lf_delay_strict(upstream->completed, e->upstream_delay[j]);
+    //     // Adjust by the "after" delay.
+    //     // Note that "no delay" is encoded as NEVER,
+    //     // whereas one microstep delay is encoded as 0LL.
+    //     tag_t candidate = lf_delay_strict(upstream->completed, e->upstream_delay[j]);
 
-        if (lf_tag_compare(candidate, min_upstream_completed) < 0) {
-            min_upstream_completed = candidate;
-        }
-    }
-    LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is " PRINTF_TAG 
-            "(adjusted by after delay).",
-            e->id,
-            min_upstream_completed.time - start_time, min_upstream_completed.microstep);
-    if (lf_tag_compare(min_upstream_completed, e->last_granted) > 0
-        && lf_tag_compare(min_upstream_completed, e->next_event) >= 0 // The enclave has to advance its tag
-    ) {
-        result.tag = min_upstream_completed;
-        return result;
-    }
+    //     if (lf_tag_compare(candidate, min_upstream_completed) < 0) {
+    //         min_upstream_completed = candidate;
+    //     }
+    // }
+    // LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is " PRINTF_TAG 
+    //         "(adjusted by after delay).",
+    //         e->id,
+    //         min_upstream_completed.time - start_time, min_upstream_completed.microstep);
+    // if (lf_tag_compare(min_upstream_completed, e->last_granted) > 0
+    //     && lf_tag_compare(min_upstream_completed, e->next_event) >= 0 // The enclave has to advance its tag
+    // ) {
+    //     result.tag = min_upstream_completed;
+    //     return result;
+    // }
 
     // Can't make progress based only on upstream LTCs.
     // If all (transitive) upstream scheduling_nodes of the enclave

@@ -304,10 +304,10 @@ void notify_provisional_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
 
 void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_event_tag) {
     federate_info_t *fed = GET_FED_INFO(federate_id);
-    tag_t min_in_transit_tag = pqueue_tag_peek_tag(fed->in_transit_message_tags);
-    if (lf_tag_compare(min_in_transit_tag, next_event_tag) < 0) {
-        next_event_tag = min_in_transit_tag;
-    }
+    // tag_t min_in_transit_tag = pqueue_tag_peek_tag(fed->in_transit_message_tags);
+    // if (lf_tag_compare(min_in_transit_tag, next_event_tag) < 0) {
+    //     next_event_tag = min_in_transit_tag;
+    // }
     update_scheduling_node_next_event_tag_locked(&(fed->enclave), next_event_tag);
 }
 
