@@ -528,7 +528,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
     _lf_get_environments(&env);
 
     // Read the header which contains the timestamp.
-    size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t)
+    size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
             + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
@@ -2653,7 +2653,7 @@ int lf_send_tagged_message(environment_t* env,
     buffer_head += sizeof(uint16_t);
 
     // The next four bytes are the message length.
-    encode_uint32((uint32_t)length, &(header_buffer[buffer_head]));
+    encode_int32((int32_t)length, &(header_buffer[buffer_head]));
     buffer_head += sizeof(int32_t);
 
     // Apply the additional delay to the current tag and use that as the intended

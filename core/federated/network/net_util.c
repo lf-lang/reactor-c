@@ -403,7 +403,7 @@ void extract_header(
     // printf("DEBUG: Message for port %d of federate %d.\n", *port_id, *federate_id);
 
     // The next four bytes are the message length.
-    uint32_t local_length_signed = extract_uint32(&(buffer[sizeof(uint16_t) + sizeof(uint16_t)]));
+    int32_t local_length_signed = extract_int32(&(buffer[sizeof(uint16_t) + sizeof(uint16_t)]));
     if (local_length_signed < 0) {
         lf_print_error_and_exit(
             "Received an invalid message length (%d) from federate %d.",
