@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor.h"
 #include "trace.h"
 #include "trace_util.h"
+#include "trace_impl.h"
 
 /** Buffer for reading object descriptions. Size limit is BUFFER_SIZE bytes. */
 char buffer[BUFFER_SIZE];
@@ -204,7 +205,7 @@ size_t read_header() {
     int items_read = fread(&start_time, sizeof(instant_t), 1, trace_file);
     if (items_read != 1) _LF_TRACE_FAILURE(trace_file);
 
-    printf("Start time is %lld.\n", start_time);
+    printf("Start time is %lld.\n", (long long int) start_time);
 
     // Read the table mapping pointers to descriptions.
     // First read its length.

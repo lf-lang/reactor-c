@@ -33,7 +33,7 @@
 #include "util.h"
 #include "lf_types.h"
 #include <string.h>
-#include "trace.h"
+#include "tracepoint.h"
 #if !defined(LF_SINGLE_THREADED)
 #include "scheduler.h"
 #endif
@@ -172,7 +172,6 @@ void environment_free(environment_t* env) {
     environment_free_single_threaded(env);
     environment_free_modes(env);
     environment_free_federated(env);
-    trace_free(env->trace);
 }
 
 
@@ -259,9 +258,6 @@ int environment_init(
             get_event_position, set_event_position, event_matches, print_event);
     env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
-
-    // If tracing is enabled. Initialize a tracing struct on the env struct.
-    env->trace = trace_new(env, trace_file_name);
 
     // Initialize functionality depending on target properties.
     environment_init_threaded(env, num_workers);
