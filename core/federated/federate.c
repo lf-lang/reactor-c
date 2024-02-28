@@ -2276,7 +2276,7 @@ void lf_latest_tag_complete(tag_t tag_to_send) {
     LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.",
             tag_to_send.time - start_time,
             tag_to_send.microstep);
-    // send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, tag_to_send);
+    send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, tag_to_send);
     _fed.last_sent_LTC = tag_to_send;
 }
 
