@@ -1751,7 +1751,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                 "Failed to read the requested port number for federate %d from RTI.",
                 remote_federate_id);
 
-        if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
+        if (buffer[0] != MSG_TYPE_ADDRESS_QUERY) {
             // Unexpected reply.  Could be that RTI has failed and sent a resignation.
             if (buffer[0] == MSG_TYPE_FAILED) {
                 lf_print_error_and_exit("RTI has failed.");
@@ -2699,8 +2699,8 @@ int lf_send_tagged_message(environment_t* env,
         if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
             lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
         } else {
-            lf_print_error_system_failure("Failed to send message to %s with error code %d (%s). Connection lost to the RTI.",
-                    next_destination_str, errno, strerror(errno));
+            lf_print_error_system_failure("Failed to send message to %s. Connection lost to the RTI.",
+                    next_destination_str);
         }
     }
     LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);

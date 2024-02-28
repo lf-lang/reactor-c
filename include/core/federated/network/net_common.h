@@ -525,20 +525,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Byte identifying a address query message, sent by a federate to RTI
  * to ask for another federate's address and port number.
  * The next two bytes are the other federate's ID.
- */
-#define MSG_TYPE_ADDRESS_QUERY 13
-
-/**
- * Byte identifying a address query message reply, sent by a RTI to a federate
- * to reply with a remote federate's address and port number.
- * The reply from the RTI will be a port number (an int32_t), which is -1
+ * The reply from the RTI will a port number (an int32_t), which is -1
  * if the RTI does not know yet (it has not received MSG_TYPE_ADDRESS_ADVERTISEMENT from
  * the other federate), followed by the IP address of the other
  * federate (an IPV4 address, which has length INET_ADDRSTRLEN).
- * The next four bytes (or sizeof(int32_t)) will be the port number.
- * The next four bytes (or sizeof(in_addr), which is uint32_t) will be the ip address.
  */
-#define MSG_TYPE_ADDRESS_QUERY_REPLY 14
+#define MSG_TYPE_ADDRESS_QUERY 13
 
 /**
  * Byte identifying a message advertising the port for the TCP connection server
@@ -548,7 +540,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The sending federate will not wait for a response from the RTI and assumes its
  * request will be processed eventually by the RTI.
  */
-#define MSG_TYPE_ADDRESS_ADVERTISEMENT 15
+#define MSG_TYPE_ADDRESS_ADVERTISEMENT 14
 
 /**
  * Byte identifying a first message that is sent by a federate directly to another federate
@@ -559,7 +551,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * federate does not expect this federate or federation to connect, it will respond
  * instead with MSG_TYPE_REJECT.
  */
-#define MSG_TYPE_P2P_SENDING_FED_ID 16
+#define MSG_TYPE_P2P_SENDING_FED_ID 15
 
 /**
  * Byte identifying a message to send directly to another federate.
@@ -570,7 +562,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The four bytes after will be the length of the message.
  * The ramaining bytes are the message.
  */
-#define MSG_TYPE_P2P_MESSAGE 17
+#define MSG_TYPE_P2P_MESSAGE 16
 
 /**
  * Byte identifying a timestamped message to send directly to another federate.
@@ -587,7 +579,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The next four bytes will be the microstep of the sender.
  * The ramaining bytes are the message.
  */
-#define MSG_TYPE_P2P_TAGGED_MESSAGE 18
+#define MSG_TYPE_P2P_TAGGED_MESSAGE 17
 
 ////////////////////////////////////////////////
 /**
