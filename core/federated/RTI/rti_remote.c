@@ -188,6 +188,23 @@ static int create_rti_server(uint16_t port, socket_type_t socket_type) {
 }
 
 /**
+ * Find the number of non connected upstream transients
+ * @param fed The federate
+ * @return the number of non connected upstream transients
+ */
+static int get_num_absent_upstream_transients(federate_info_t* fed) {
+  int num_absent_upstream_transients = 0;
+  for (int j = 0; j < fed->enclave.num_upstream; j++) {
+    federate_info_t* upstream = GET_FED_INFO(fed->enclave.upstream[j]);
+    // Do Ignore this enclave if it no longer connected.
+    if ((upstream->enclave.state == NOT_CONNECTED) && (upstream->is_transient)) {
+      num_absent_upstream_transients++;
+    }
+  }
+  return num_absent_upstream_transients;
+}
+
+/**
  * Notify a tag advance grant (TAG) message to the specified federate immediately.
  *
  * This function will keep a record of this TAG in the enclave's last_granted
@@ -253,11 +270,11 @@ static void* pending_grant_thread(void* federate) {
  * If a provisionl tag advance grant is pending, cancel it. If there is another
  * pending tag advance grant, do not proceed with the thread creation.
  *
- * @param e The enclave.
+ * @param fed The federate.
  * @param tag The tag to grant.
  */
 static void notify_tag_advance_grant_delayed(scheduling_node_t* e, tag_t tag) {
-  federate_info_t* fed = GET_FED_INFO(e->id);
+  federate_info_t* fed = (federate_info_t*)GET_FED_INFO(e->id);
 
   // Check wether there is already a pending grant
   // And check the pending provisional grant as well
@@ -286,21 +303,20 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     lf_cond_wait(&sent_start_time);
   }
 
+  // Check if sending the tag advance grant needs to be delayed or not.
+  // Delay is needed when a federate has at least one absent upstream transient.
+
   // Check if sending the tag advance grant needs to be delayed or not
   // Delay is needed when a federate has, at least one, absent upstream transient
-  int num_absent_upstram_transients = 0;
-  for (int j = 0; j < e->num_upstream; j++) {
-    federate_info_t* upstream = GET_FED_INFO(e->upstream[j]);
-    // Do Ignore this enclave if it no longer connected.
-    if ((upstream->enclave.state == NOT_CONNECTED) && (upstream->is_transient)) {
-      num_absent_upstram_transients++;
-      break;
-    }
-  }
-  if (num_absent_upstram_transients > 0) {
-    notify_tag_advance_grant_delayed(e, tag);
-  } else {
+  federate_info_t* fed = GET_FED_INFO(e->id);
+  if (!fed->has_upstream_transient_federates) {
     notify_tag_advance_grant_immediate(e, tag);
+  } else {
+    if (get_num_absent_upstream_transients(fed) > 0) {
+      notify_tag_advance_grant_delayed(fed, tag);
+    } else {
+      notify_tag_advance_grant_immediate(e, tag);
+    }
   }
 }
 
@@ -399,7 +415,7 @@ static void* pending_provisional_grant_thread(void* federate) {
  * If a tag advance grant or a provisional one is pending, then do not proceed
  * with the thread creation.
  *
- * @param e The scheduling node.
+ * @param fed The federate.
  * @param tag The provisional tag to grant.
  */
 static void notify_provisional_tag_advance_grant_delayed(scheduling_node_t* e, tag_t tag) {
@@ -407,13 +423,13 @@ static void notify_provisional_tag_advance_grant_delayed(scheduling_node_t* e, t
 
   // Proceed with the delayed provisional tag grant notification only if
   // there is no pending grant and no provisional pending grant
-  lf_mutex_lock(&rti_mutex);
+  LF_MUTEX_LOCK(&rti_mutex);
   if ((lf_tag_compare(fed->pending_grant, NEVER_TAG) == 0) &&
       (lf_tag_compare(fed->pending_provisional_grant, NEVER_TAG) >= 0)) {
     fed->pending_provisional_grant = tag;
     lf_thread_create(&(fed->pending_provisional_grant_thread_id), pending_provisional_grant_thread, fed);
   }
-  lf_mutex_unlock(&rti_mutex);
+  LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
 void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
@@ -430,98 +446,15 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
 
   // Check if sending the tag advance grant needs to be delayed or not
   // Delay is needed when a federate has, at least one, absent upstream transient
-  int num_absent_upstram_transients = 0;
-  for (int j = 0; j < e->num_upstream; j++) {
-    federate_info_t* upstream = GET_FED_INFO(e->upstream[j]);
-    // Do Ignore this enclave if it no longer connected.
-    if ((upstream->enclave.state == NOT_CONNECTED) && (upstream->is_transient)) {
-      num_absent_upstram_transients++;
-    }
-  }
-  if (num_absent_upstram_transients > 0) {
-    notify_provisional_tag_advance_grant_delayed(e, tag);
-  } else {
+  federate_info_t* fed = GET_FED_INFO(e->id);
+  if (!fed->has_upstream_transient_federates) {
     notify_provisional_tag_advance_grant_immediate(e, tag);
-  }
-}
-
-/**
- * Thread that sleeps for a period of time, and then wakes up to check if
- * a provisional tag advance grant needs to be sent. That is, if the pending
- * provisional tag have not been reset to NEVER_TAG, the provisional tag advance
- * grant will be immediate.
- *
- * @param federate the federate whose provisional tag advance grant needs to be delayed.
- */
-void* pending_provisional_grant_thread(void* federate) {
-  federate_info_t* fed = (federate_info_t*)federate;
-
-  interval_t sleep_interval = fed->pending_provisional_grant.time - lf_time_physical();
-  if (sleep_interval > 0) {
-    lf_sleep(sleep_interval);
-  }
-
-  lf_mutex_lock(&rti_mutex);
-
-  // If the pending grant becomes NEVER_TAG, then this means that it should
-  // not be sent
-  if (lf_tag_compare(fed->pending_provisional_grant, NEVER_TAG) != 0) {
-    notify_provisional_tag_advance_grant_immediate(&(fed->enclave), fed->pending_provisional_grant);
-    fed->pending_provisional_grant = NEVER_TAG;
-  }
-  lf_mutex_unlock(&rti_mutex);
-}
-
-/**
- * Notify a provisional tag advance grant (PTAG) message to the specified federate
- * after the physical time reaches the tag. A thread is created to this end.
- *
- * If a tag advance grant or a provisional one is pending, then do not proceed
- * with the thread creation.
- *
- * @param e The scheduling node.
- * @param tag The provisional tag to grant.
- */
-void notify_provisional_tag_advance_grant_delayed(scheduling_node_t* e, tag_t tag) {
-  federate_info_t* fed = (federate_info_t*)e;
-
-  // Proceed with the delayed provisional tag grant notification only if
-  // there is no pending grant and no provisional pending grant
-  lf_mutex_lock(&rti_mutex);
-  if ((lf_tag_compare(fed->pending_grant, NEVER_TAG) == 0) &&
-      (lf_tag_compare(fed->pending_provisional_grant, NEVER_TAG) >= 0)) {
-    fed->pending_provisional_grant = tag;
-    lf_thread_create(&(fed->pending_provisional_grant_thread_id), pending_provisional_grant_thread, fed);
-  }
-  lf_mutex_unlock(&rti_mutex);
-}
-
-void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
-  if (e->state == NOT_CONNECTED || lf_tag_compare(tag, e->last_granted) <= 0 ||
-      lf_tag_compare(tag, e->last_provisionally_granted) <= 0) {
-    return;
-  }
-  // Need to make sure that the destination federate's thread has already
-  // sent the starting MSG_TYPE_TIMESTAMP message.
-  while (e->state == PENDING) {
-    // Need to wait here.
-    lf_cond_wait(&sent_start_time);
-  }
-
-  // Check if sending the tag advance grant needs to be delayed or not
-  // Delay is needed when a federate has, at least one, absent upstream transient
-  int num_absent_upstram_transients = 0;
-  for (int j = 0; j < e->num_upstream; j++) {
-    federate_info_t* upstream = GET_FED_INFO(e->upstream[j]);
-    // Do Ignore this enclave if it no longer connected.
-    if ((upstream->enclave.state == NOT_CONNECTED) && (upstream->is_transient)) {
-      num_absent_upstram_transients++;
-    }
-  }
-  if (num_absent_upstram_transients > 0) {
-    notify_provisional_tag_advance_grant_delayed(e, tag);
   } else {
-    notify_provisional_tag_advance_grant_immediate(e, tag);
+    if (get_num_absent_upstream_transients(fed) > 0) {
+      notify_provisional_tag_advance_grant_delayed(fed, tag);
+    } else {
+      notify_provisional_tag_advance_grant_immediate(e, tag);
+    }
   }
 }
 
@@ -2272,9 +2205,47 @@ int32_t start_rti_server(uint16_t port) {
   return rti_remote->socket_descriptor_TCP;
 }
 
+/**
+ * Iterate over the federates and sets 'has_upstream_transient_federates'.
+ * Once done, check that no transient federate has an upstream transient federate.
+
+ * @return true for success, false for failure.
+ */
+static bool set_has_upstream_transient_federates_parameter_and_check() {
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+    federate_info_t* fed = GET_FED_INFO(i);
+    for (int j = 0; j < fed->enclave.num_upstream; j++) {
+      federate_info_t* upstream_fed = GET_FED_INFO(fed->enclave.upstream[j]);
+      if (upstream_fed->is_transient) {
+        fed->has_upstream_transient_federates = true;
+        break;
+      }
+    }
+  }
+
+  // Now check that no transient has an upstream transient
+  // FIXME: Do we really need this? Or should it be the job of the validator?
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+    federate_info_t* fed = GET_FED_INFO(i);
+    if (fed->is_transient && fed->has_upstream_transient_federates) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 void wait_for_federates(int socket_descriptor) {
   // Wait for connections from persistent federates and create a thread for each.
   lf_connect_to_persistent_federates(socket_descriptor);
+
+  // Set has_upstream_transient_federates parameter in all federates and check
+  // that is no more than one level of transiency
+  if (rti_remote->number_of_transient_federates > 0) {
+    if (!set_has_upstream_transient_federates_parameter_and_check()) {
+      lf_print_error_and_exit("RTI: Transient federates cannot have transient upstreams!");
+    }
+  }
 
   // All persistent federates have connected.
   lf_print("RTI: All expected persistent federates have connected. Starting execution.");
