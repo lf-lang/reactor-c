@@ -1026,17 +1026,6 @@ void lf_print_snapshot(environment_t* env) {
     }
 }
 
-// Start threads in the thread pool.
-void start_threads(environment_t* env) {
-    assert(env != GLOBAL_ENVIRONMENT);
-
-    LF_PRINT_LOG("Starting %u worker threads in environment", env->num_workers);
-    for (unsigned int i = 0; i < env->num_workers; i++) {
-        if (lf_thread_create(&env->thread_ids[i], worker, env) != 0) {
-            lf_print_error_and_exit("Could not start thread-%u", i);
-        }
-    }
-}
 
 /**
  * @brief Determine the number of workers.
@@ -1161,9 +1150,29 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_initialize_start_tag(env);
 
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
-        start_threads(env);
+
+        for (unsigned int j = 0; j < env->num_workers; j++) {
+            if (i == 0 && j == 0) {
+                // The first worker thread of the first environment will be
+                // run on the main thread, rather than creating a new thread.
+                // This is important for bare-metal platforms, who can't
+                // afford to have the main thread sit idle.
+                continue;
+            }
+            if (lf_thread_create(&env->thread_ids[j], worker, env) != 0) {
+                lf_print_error_and_exit("Could not start thread-%u", j);
+            }
+        }
+
         // Unlock mutex and allow threads proceed
         LF_MUTEX_UNLOCK(&env->mutex);
+    }
+
+    // main thread worker (first worker thread of first environment)
+    void* main_thread_exit_status = NULL;
+    if (num_envs > 0 && envs[0].num_workers > 0) {
+        environment_t *env = &envs[0];
+        main_thread_exit_status = worker(env);
     }
     
     for (int i = 0; i<num_envs; i++) {
@@ -1171,13 +1180,18 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         environment_t* env = &envs[i];
         void* worker_thread_exit_status = NULL;
         int ret = 0;
-        for (int i = 0; i < env->num_workers; i++) {
-        	int failure = lf_thread_join(env->thread_ids[i], &worker_thread_exit_status);
-        	if (failure) {
-        		lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
-        	}
+        for (int j = 0; j < env->num_workers; j++) {
+            if (i == 0 && j == 0) {
+                // main thread worker
+                worker_thread_exit_status = main_thread_exit_status;
+            } else {
+                int failure = lf_thread_join(env->thread_ids[j], &worker_thread_exit_status);
+                if (failure) {
+                    lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
+                }
+            }
         	if (worker_thread_exit_status != NULL) {
-                lf_print_error("---- Worker %d reports error code %p", i, worker_thread_exit_status);
+                lf_print_error("---- Worker %d reports error code %p", j, worker_thread_exit_status);
                 ret = 1;
         	}
         }
