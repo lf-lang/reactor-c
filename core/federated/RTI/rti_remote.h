@@ -71,6 +71,8 @@ typedef struct federate_info_t {
                             // RTI has not been informed of the port number.
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
+    bool has_upstream_transient_federates; // Indicates whether the federate has uptream
+                                           // transient federates
     bool is_transient;      // Indicates whether the federate is transient or persistent.
     tag_t effective_start_tag;  // Records the start time of the federate, which is 
                                 // mainly useful for transient federates  
