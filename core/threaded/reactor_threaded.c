@@ -651,12 +651,12 @@ void _lf_initialize_start_tag(environment_t *env) {
     // especially useful if an STA is set properly because the federate will get
     // a chance to process incoming messages while utilizing the STA.
     LF_PRINT_LOG("Waiting for effective start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
-            effective_start_tag.time, _lf_fed_STA_offset);
+            effective_start_tag.time, lf_fed_STA_offset);
     // Here we wait until the start time and also release the environment mutex.
     // this means that the other worker threads will be allowed to start. We need
     // this to avoid potential deadlock in federated startup.
-    while(!wait_until(env, effective_start_tag.time  + _lf_fed_STA_offset, &env->event_q_changed)) {};
-    LF_PRINT_DEBUG("Done waiting for effective start time + STA offset " PRINTF_TIME ".", effective_start_tag.time + _lf_fed_STA_offset);
+    while(!wait_until(env, effective_start_tag.time  + lf_fed_STA_offset, &env->event_q_changed)) {};
+    LF_PRINT_DEBUG("Done waiting for effective start time + STA offset " PRINTF_TIME ".", effective_start_tag.time + lf_fed_STA_offset);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME 
             ". This should be close to the STA offset.",
             lf_time_physical() - effective_start_tag.time);

@@ -2856,7 +2856,7 @@ void lf_stop() {
         new_stop_tag.time = env[i].current_tag.time;
         new_stop_tag.microstep = env[i].current_tag.microstep + 1;
 
-        _lf_set_stop_tag(&env[i], new_stop_tag);
+        lf_set_stop_tag(&env[i], new_stop_tag);
 
         lf_print("Setting the stop tag of env %d to " PRINTF_TAG ".",
                     i,
