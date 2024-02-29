@@ -1362,7 +1362,7 @@ static void handle_stop_granted_message() {
  */
 void handle_stop() {
   // Trace the event when tracing is enabled
-  tracepoint_federate_from_rti(_fed.trace, receive_STOP, _lf_my_fed_id, NULL);
+  tracepoint_federate_from_rti(receive_STOP, _lf_my_fed_id, NULL);
 
   lf_print("Received from RTI a MSG_TYPE_STOP at physical time " PRINTF_TIME ".", lf_time_physical());
 
