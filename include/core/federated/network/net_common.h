@@ -434,7 +434,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT 8
 
 /** 
- * Byte identifying a latest tag complete (LTC) message sent by a federate30
+ * Byte identifying a latest tag complete (LTC) message sent by a federate
  * to the RTI.
  * The next eight bytes will be the timestep of the completed tag.
  * The next four bytes will be the microsteps of the completed tag.
