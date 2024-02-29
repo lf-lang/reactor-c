@@ -921,7 +921,7 @@ void handle_stop_request_message(federate_info_t *fed) {
                 continue;
             }
             if (rti_remote->base.tracing_enabled) {
-                (send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
+                tracepoint_rti_to_federate(send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
             }
             write_to_socket_fail_on_error(&f->socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", f->enclave.id);
