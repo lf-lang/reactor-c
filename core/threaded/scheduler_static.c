@@ -152,7 +152,6 @@ void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_
  */
 void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     // These NULL checks allow _rs1 and _rs2 to be uninitialized in the static
@@ -163,7 +162,6 @@ void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     if (_rs2 != NULL) LF_PRINT_DEBUG("*_rs2 = %lld\n", *_rs2);
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 == *_rs2) *pc = op3.imm;
     else *pc += 1;
-    // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -171,13 +169,11 @@ void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     LF_PRINT_DEBUG("Worker %zu: BGE : operand 1 = %lld, operand 2 = %lld", worker_number, *_rs1, *_rs2);
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 >= *_rs2) *pc = op3.imm;
     else *pc += 1;
-    tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -185,12 +181,10 @@ void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_BLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 < *_rs2) *pc = op3.imm;
     else *pc += 1;
-    // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -198,12 +192,10 @@ void execute_inst_BLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_BNE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 != *_rs2) *pc = op3.imm;
     else *pc += 1;
-    // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -230,13 +222,23 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
  */
 void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, worker_number, (int) *pc);
+    if (op3.imm == ULLONG_MAX) {
+        tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc);
+    }
+    else {
+        tracepoint_static_scheduler_EXE_reaction_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc, (int) op3.imm);
+    }
     function_generic_t function = (function_generic_t)(uintptr_t)op1.reg;
     void *args = (void*)op2.reg;
     // Execute the function directly.
     function(args);
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, worker_number, (int) *pc);
+    if (op3.imm == ULLONG_MAX) {
+        tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc);
+    }
+    else {
+        tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc, (int) op3.imm);
+    }
 }
 
 
