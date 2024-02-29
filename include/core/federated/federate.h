@@ -17,7 +17,7 @@
 #include "tag.h"
 #include "lf_types.h"
 #include "environment.h"
-#include "platform.h"
+#include "low_level_platform.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)
@@ -181,11 +181,6 @@ typedef struct federate_instance_t {
      * The default value of false may be overridden in _lf_initialize_trigger_objects.
      */
     bool is_transient;
-
-    /**
-     * Trace object for this federate, used if tracing is enabled.
-     */
-    trace_t* trace;
 
     #ifdef FEDERATED_DECENTRALIZED
     /**
@@ -505,13 +500,6 @@ int lf_send_tagged_message(
  * @param fid The federation ID.
  */
 void lf_set_federation_id(const char* fid);
-
-/**
- * @brief Set the trace object for this federate (used when tracing is enabled).
- * 
- * @param The trace object.
- */
-void lf_set_federation_trace_object(trace_t * trace);
 
 #ifdef FEDERATED_DECENTRALIZED
 /**

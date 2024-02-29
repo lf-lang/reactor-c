@@ -15,7 +15,7 @@
 
 #include "tag.h"
 #include "util.h"
-#include "platform.h"
+#include "low_level_platform.h"
 #include "environment.h"
 #include "reactor.h"
 #include "util.h"
@@ -43,12 +43,6 @@ instant_t start_time = NEVER;
  * be used at startup. Elapsed logical time calculations will use start_time. 
  */
 tag_t effective_start_tag = {.time = 0LL, .microstep = 0};
-
-//////////////// Global variables not declared in tag.h (must be declared extern if used elsewhere):
-
-
-////////////////  Functions not declared in tag.h (local use only)
-
 
 ////////////////  Functions declared in tag.h
 

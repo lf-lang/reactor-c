@@ -4,6 +4,7 @@ include(CTest)
 set(TestLib test-lib)
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
 set(TEST_SUFFIX test.c)  # Files that are tests must have names ending with TEST_SUFFIX.
+set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
 # Add the test files found in DIR to TEST_FILES.
 function(add_test_dir DIR)
@@ -41,10 +42,12 @@ endforeach(FILE ${TEST_FILES})
 if (NOT DEFINED LF_SINGLE_THREADED)
     # Check which system we are running on to select the correct platform support
     # file and assign the file's path to LF_PLATFORM_FILE
+    # FIXME: This is effectively a second build script for the RTI that we have to maintain. This is code duplication.
+    # FIXME: We should not be reaching into the platform directory and bypassing its CMake build.
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-      set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_linux_support.c)
+      set(LF_PLATFORM_FILE ${LF_ROOT}/low_level_platform/impl/src/lf_linux_support.c)
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-      set(LF_PLATFORM_FILE ${CoreLibPath}/platform/lf_macos_support.c)
+      set(LF_PLATFORM_FILE ${LF_ROOT}/low_level_platform/impl/src/lf_macos_support.c)
     else()
       message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
     endif()
@@ -57,10 +60,11 @@ if (NOT DEFINED LF_SINGLE_THREADED)
       ${TEST_DIR}/RTI/rti_common_test.c
       ${RTI_DIR}/rti_common.c
       ${RTI_DIR}/rti_remote.c
-      ${CoreLibPath}/trace.c
+      ${CoreLibPath}/tracepoint.c
       ${LF_PLATFORM_FILE}
-      ${CoreLibPath}/platform/lf_atomic_gcc_clang.c
-      ${CoreLibPath}/platform/lf_unix_clock_support.c
+      ${LF_ROOT}/low_level_platform/impl/src/platform_internal.c
+      ${LF_ROOT}/low_level_platform/impl/src/lf_atomic_gcc_clang.c
+      ${LF_ROOT}/low_level_platform/impl/src/lf_unix_clock_support.c
       ${CoreLibPath}/utils/util.c
       ${CoreLibPath}/tag.c
       ${CoreLibPath}/clock.c
@@ -74,7 +78,8 @@ if (NOT DEFINED LF_SINGLE_THREADED)
     target_include_directories(rti_common_test PUBLIC ${IncludeDir})
     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/federated)
     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/modal_models)
-    target_include_directories(rti_common_test PUBLIC ${IncludeDir}/platform)
+    target_link_libraries(rti_common_test lf::low-level-platform-api)
+    target_link_libraries(rti_common_test lf::logging-api)
     target_include_directories(rti_common_test PUBLIC ${IncludeDir}/utils)
     # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
     target_compile_definitions(rti_common_test PUBLIC STANDALONE_RTI=1)

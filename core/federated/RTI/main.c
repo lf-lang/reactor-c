@@ -79,7 +79,7 @@ static void send_failed_signal(federate_info_t* fed) {
     unsigned char buffer[bytes_to_write];
     buffer[0] = MSG_TYPE_FAILED;
     if (rti.base.tracing_enabled) {
-        tracepoint_rti_to_federate(rti.base.trace, send_FAILED, fed->enclave.id, NULL);
+        tracepoint_rti_to_federate(send_FAILED, fed->enclave.id, NULL);
     }
     int failed = write_to_socket(fed->socket, bytes_to_write, &(buffer[0]));
     if (failed == 0) {
@@ -91,6 +91,7 @@ static void send_failed_signal(federate_info_t* fed) {
 
 /**
  * @brief Function to run upon termination.
+ * 
  * This function will be invoked both after main() returns and when a signal
  * that results in terminating the process, such as SIGINT.  In the former
  * case, it should do nothing.  In the latter case, it will send a MSG_TYPE_FAILED
@@ -107,7 +108,7 @@ void termination() {
             send_failed_signal(f);
         }
         if (rti.base.tracing_enabled) {
-            stop_trace_locked(rti.base.trace);
+            lf_tracing_global_shutdown();
             lf_print("RTI trace file saved.");
         }
         lf_print("RTI is exiting abnormally.");
@@ -306,7 +307,7 @@ int process_args(int argc, const char* argv[]) {
     return 1;
 }
 int main(int argc, const char* argv[]) {
-
+    initialize_lf_thread_id();
     initialize_RTI(&rti);
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
@@ -332,9 +333,13 @@ int main(int argc, const char* argv[]) {
 
     if (rti.base.tracing_enabled) {
         _lf_number_of_workers = rti.base.number_of_scheduling_nodes;
-        rti.base.trace = trace_new(NULL, rti_trace_file_name);
-        LF_ASSERT_NON_NULL(rti.base.trace);
-        start_trace(rti.base.trace);
+        // One thread communicating to each federate. Add 1 for 1 ephemeral
+        // timeout thread for each federate (this should be created only once
+        // per federate because shutdown only occurs once). Add 1 for the clock
+        // sync thread. Add 1 for the thread that responds to erroneous
+        // connections attempted after initialization phase has completed. Add 1
+        // for the main thread.
+        lf_tracing_global_init("rti", -1, _lf_number_of_workers * 2 + 3);
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
 
@@ -359,7 +364,7 @@ int main(int argc, const char* argv[]) {
         normal_termination = true;
         if (rti.base.tracing_enabled) {
             // No need for a mutex lock because all threads have exited.
-            stop_trace_locked(rti.base.trace);
+            lf_tracing_global_shutdown();
             lf_print("RTI trace file saved.");
         }
     }

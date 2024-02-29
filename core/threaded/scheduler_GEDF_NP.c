@@ -1,49 +1,24 @@
-/* Global Earliest Deadline First (GEDF) non-preemptive scheduler for the
-threaded runtime of the C target of Lingua Franca. */
-
-/*************
-Copyright (c) 2022, The University of Texas at Dallas.
-Copyright (c) 2022, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
-
 /**
- * Global Earliest Deadline First (GEDF) non-preemptive scheduler for the
- * threaded runtime of the C target of Lingua Franca.
- *
+ * @file
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Global Earliest Deadline First (GEDF) non-preemptive scheduler for the
+ * threaded runtime of the C target of Lingua Franca.
  */
 #include "lf_types.h"
+
 #if SCHEDULER == SCHED_GEDF_NP
+
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
 
 #include <assert.h>
 
-#include "platform.h"
+#include "low_level_platform.h"
 #include "environment.h"
 #include "pqueue.h"
 #include "reactor_threaded.h"
@@ -51,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
 #include "lf_semaphore.h"
-#include "trace.h"
+#include "tracepoint.h"
 #include "util.h"
 
 /////////////////// Scheduler Private API /////////////////////////
@@ -313,9 +288,9 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
-        tracepoint_worker_wait_starts(scheduler->env->trace, worker_number);
+        tracepoint_worker_wait_starts(scheduler->env, worker_number);
         _lf_sched_wait_for_work(scheduler, worker_number);
-        tracepoint_worker_wait_ends(scheduler->env->trace, worker_number);
+        tracepoint_worker_wait_ends(scheduler->env, worker_number);
     }
 
     // It's time for the worker thread to stop and exit.
@@ -362,4 +337,4 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
             reaction->name, LF_LEVEL(reaction->index));
     _lf_sched_insert_reaction(scheduler, reaction);
 }
-#endif
+#endif // SCHEDULER == SCHED_GEDF_NP

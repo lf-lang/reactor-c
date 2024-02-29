@@ -16,7 +16,7 @@
 #include "sensor_simulator.h"
 #include "include/api/schedule.h"
 #include "util.h"
-#include "platform.h"
+#include "low_level_platform.h"
 
 // Maximum number of milliseconds that wgetchr will block for.
 #define WGETCHR_TIMEOUT 1000
@@ -25,13 +25,13 @@
 #define LF_SENSOR_TRIGGER_TABLE_SIZE 96
 
 /** Table of Lingua Franca trigger objects to schedule in response to keypresses. */
-trigger_t* _lf_sensor_trigger_table[LF_SENSOR_TRIGGER_TABLE_SIZE];
+lf_action_base_t* _lf_sensor_trigger_table[LF_SENSOR_TRIGGER_TABLE_SIZE];
 
 /** Trigger for the newline character '\n', which is platform dependent. */
-trigger_t* _lf_sensor_sensor_newline_trigger = NULL;
+lf_action_base_t* _lf_sensor_sensor_newline_trigger = NULL;
 
 /** Trigger for any key. */
-trigger_t* _lf_sensor_any_key_trigger = NULL;
+lf_action_base_t* _lf_sensor_any_key_trigger = NULL;
 
 lf_mutex_t _lf_sensor_mutex;
 lf_cond_t _lf_sensor_simulator_cond_var;
@@ -432,19 +432,19 @@ int register_sensor_key(char key, void* action) {
         if (_lf_sensor_sensor_newline_trigger != NULL) {
             result = 1;
         } else {
-            _lf_sensor_sensor_newline_trigger = action;
+            _lf_sensor_sensor_newline_trigger = (lf_action_base_t*)action;
         }
     } else if (key == '\0') {
         // Any key trigger.
         if (_lf_sensor_any_key_trigger != NULL) {
             result = 1;
         } else {
-            _lf_sensor_any_key_trigger = action;
+            _lf_sensor_any_key_trigger = (lf_action_base_t*)action;
         }
     } else if (_lf_sensor_trigger_table[index] != NULL) {
         result = 1;
     } else {
-        _lf_sensor_trigger_table[index] = action;
+        _lf_sensor_trigger_table[index] = (lf_action_base_t*)action;
     }
     LF_MUTEX_UNLOCK(&_lf_sensor_mutex);
     return result;

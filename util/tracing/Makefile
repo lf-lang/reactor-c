@@ -6,8 +6,14 @@ CURRENT_PATH=$(shell pwd)
 CC=gcc
 CFLAGS=	-I$(REACTOR_C)/include/core/ \
 		-I$(REACTOR_C)/include/core/modal_models \
-		-I$(REACTOR_C)/include/core/platform \
 		-I$(REACTOR_C)/include/core/utils \
+		-I$(REACTOR_C)/include \
+		-I$(REACTOR_C)/low_level_platform/api \
+		-I$(REACTOR_C)/tag/api \
+		-I$(REACTOR_C)/trace/api \
+		-I$(REACTOR_C)/version/api \
+		-I$(REACTOR_C)/logging/api \
+		-I$(REACTOR_C)/trace/impl/include \
 		-DLF_SINGLE_THREADED=1 \
 		-Wall
 DEPS=

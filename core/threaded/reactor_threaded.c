@@ -1,34 +1,11 @@
-/* Runtime infrastructure for the threaded version of the C target of Lingua Franca. */
-
-/*************
-Copyright (c) 2019, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
-
-/** Runtime infrastructure for the threaded version of the C target of Lingua Franca.
- *
- *  @author{Edward A. Lee <eal@berkeley.edu>}
- *  @author{Marten Lohstroh <marten@berkeley.edu>}
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+/**
+ * @file
+ * @author Edward A. Lee (eal@berkeley.edu)
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca. 
  */
 #if !defined LF_SINGLE_THREADED
 #ifndef NUMBER_OF_WORKERS
@@ -41,14 +18,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>
 
 #include "lf_types.h"
-#include "platform.h"
-#include "reactor_common.h"
+#include "low_level_platform.h"
 #include "reactor_threaded.h"
 #include "reactor.h"
 #include "scheduler.h"
 #include "tag.h"
 #include "environment.h"
 #include "rti_local.h"
+#include "reactor_common.h"
+#include "watchdog.h"
 
 #ifdef FEDERATED
 #include "federate.h"
@@ -70,14 +48,13 @@ extern tag_t effective_start_tag;
 */
 lf_mutex_t global_mutex;
 
-
 void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
     assert(env != GLOBAL_ENVIRONMENT);
 
     // Check if future_tag is after stop tag.
     // This will only occur when a federate receives a timed message with
     // a tag that is after the stop tag
-    if (_lf_is_tag_after_stop_tag(env, future_tag)) {
+    if (lf_is_tag_after_stop_tag(env, future_tag)) {
         lf_print_warning("Attempting to raise a barrier after the stop tag.");
         future_tag = env->stop_tag;
     }
@@ -171,7 +148,7 @@ int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
     if (env->barrier.requestors == 0) return 0;
 
     // Do not wait for tags after the stop tag
-    if (_lf_is_tag_after_stop_tag(env, proposed_tag)) {
+    if (lf_is_tag_after_stop_tag(env, proposed_tag)) {
         proposed_tag = env->stop_tag;
     }
     // Do not wait forever
@@ -191,7 +168,7 @@ int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
         lf_cond_wait(&env->global_tag_barrier_requestors_reached_zero);
 
         // The stop tag may have changed during the wait.
-        if (_lf_is_tag_after_stop_tag(env, proposed_tag)) {
+        if (lf_is_tag_after_stop_tag(env, proposed_tag)) {
             proposed_tag = env->stop_tag;
         }
     }
@@ -256,12 +233,12 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
     // Apply the STA to the logical time
     // Prevent an overflow
-    if (start_time != logical_time && wait_until_time < FOREVER - _lf_fed_STA_offset) {
+    if (start_time != logical_time && wait_until_time < FOREVER - lf_fed_STA_offset) {
         // If wait_time is not forever
         LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".",
-                _lf_fed_STA_offset,
+                lf_fed_STA_offset,
                 wait_until_time - start_time);
-        wait_until_time += _lf_fed_STA_offset;
+        wait_until_time += lf_fed_STA_offset;
     }
 #endif
     if (!fast) {
@@ -330,7 +307,7 @@ tag_t get_next_event_tag(environment_t *env) {
 
     // If a timeout tag was given, adjust the next_tag from the
     // event tag to that timeout tag.
-    if (_lf_is_tag_after_stop_tag(env, next_tag)) {
+    if (lf_is_tag_after_stop_tag(env, next_tag)) {
         next_tag = env->stop_tag;
     }
     LF_PRINT_LOG("Earliest event on the event queue (or stop time if empty) is " PRINTF_TAG ". Event queue has size %zu.",
@@ -410,7 +387,7 @@ void _lf_next_locked(environment_t *env) {
     // to advance to FOREVER. I.e. all upstream enclaves have terminated and sent
     // an LTC for FOREVER. We can, in this case, terminate the current enclave.
     if(!keepalive_specified && lf_tag_compare(next_tag, FOREVER_TAG) == 0) {
-        _lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
+        lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
         next_tag = get_next_event_tag(env);
     }
 #elif defined FEDERATED_CENTRALIZED
@@ -445,7 +422,7 @@ void _lf_next_locked(environment_t *env) {
         // keepalive is not set so we should stop.
         // Note that federated programs with decentralized coordination always have
         // keepalive = true
-        _lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
+        lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
 
         // Stop tag has changed. Need to check next_tag again.
         next_tag = get_next_event_tag(env);
@@ -463,7 +440,7 @@ void _lf_next_locked(environment_t *env) {
         next_tag = get_next_event_tag(env);
 
         // If this (possibly new) next tag is past the stop time, return.
-        if (_lf_is_tag_after_stop_tag(env, next_tag)) {
+        if (lf_is_tag_after_stop_tag(env, next_tag)) {
             return;
         }
     }
@@ -472,7 +449,7 @@ void _lf_next_locked(environment_t *env) {
     next_tag = get_next_event_tag(env);
 
     // If this (possibly new) next tag is past the stop time, return.
-    if (_lf_is_tag_after_stop_tag(env, next_tag)) { // lf_tag_compare(tag, stop_tag) > 0
+    if (lf_is_tag_after_stop_tag(env, next_tag)) { // lf_tag_compare(tag, stop_tag) > 0
         return;
     }
 
@@ -579,7 +556,7 @@ void lf_request_stop(void) {
     // Iterate over environments to set their stop tag and release their barrier.
     for (int i = 0; i < num_environments; i++) {
         LF_MUTEX_LOCK(&env[i].mutex);
-        _lf_set_stop_tag(&env[i], (tag_t) {.time = max_current_tag.time, .microstep = max_current_tag.microstep+1});
+        lf_set_stop_tag(&env[i], (tag_t) {.time = max_current_tag.time, .microstep = max_current_tag.microstep+1});
         // Release the barrier on tag advancement.
         _lf_decrement_tag_barrier_locked(&env[i]);
 
@@ -592,16 +569,6 @@ void lf_request_stop(void) {
 #endif
 }
 
-/**
- * Trigger 'reaction'.
- *
- * @param env Environment within which we are executing.
- * @param reaction The reaction.
- * @param worker_number The ID of the worker that is making this call. 0 should be
- *  used if there is only one worker (e.g., when the program is using the
- *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
- *  worker number does not make sense (e.g., the caller is not a worker thread).
- */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
     assert(env != GLOBAL_ENVIRONMENT);
 
@@ -647,7 +614,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     }
 
     // The start time will likely have changed. Adjust the current tag and stop tag.
-    env->current_tag = effective_start_tag;
+    env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
     if (duration >= 0LL) {
         // A duration has been specified. Recalculate the stop time.
        env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
@@ -655,10 +622,20 @@ void _lf_initialize_start_tag(environment_t *env) {
 
     _lf_initialize_timers(env);
 
+    env->current_tag = effective_start_tag;
+
+#if defined FEDERATED_DECENTRALIZED
     // If we have a non-zero STA offset, then we need to allow messages to arrive
     // prior to the start time.  To avoid spurious STP violations, we temporarily
     // set the current time back by the STA offset.
-    env->current_tag = (tag_t){.time = effective_start_tag.time - _lf_fed_STA_offset, .microstep = effective_start_tag.microstep};
+    env->current_tag.time -= lf_fed_STA_offset;
+    LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
+            start_time, lf_fed_STA_offset);
+#else
+    instant_t lf_fed_STA_offset = 0;
+    LF_PRINT_LOG("Waiting for start time " PRINTF_TIME ".",
+            start_time);
+#endif
 
     // Call wait_until if federated. This is required because the startup procedure
     // in lf_synchronize_with_other_federates() can decide on a new start_time that is
@@ -761,7 +738,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t *env, int w
         // Check for deadline violation.
         if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.
-            tracepoint_reaction_deadline_missed(env->trace, reaction, worker_number);
+            tracepoint_reaction_deadline_missed(env, reaction, worker_number);
             violation_occurred = true;
             // Invoke the local handler, if there is one.
             reaction_function_t handler = reaction->deadline_violation_handler;
@@ -955,6 +932,7 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
  * @param arg Environment within which the worker should execute.
  */
 void* worker(void* arg) {
+    initialize_lf_thread_id();
     environment_t *env = (environment_t* ) arg;
     LF_MUTEX_LOCK(&env->mutex);
 
@@ -1007,11 +985,7 @@ void* worker(void* arg) {
     return NULL;
 }
 
-/**
- * If DEBUG logging is enabled, prints the status of the event queue,
- * the reaction queue, and the executing queue.
- * @param env Environment within which we are executing.
- */
+#ifndef NDEBUG
 void lf_print_snapshot(environment_t* env) {
     assert(env != GLOBAL_ENVIRONMENT);
 
@@ -1026,6 +1000,11 @@ void lf_print_snapshot(environment_t* env) {
         LF_PRINT_DEBUG(">>> END Snapshot");
     }
 }
+#else // NDEBUG
+void lf_print_snapshot(environment_t* env) {
+    // Do nothing.
+}
+#endif // NDEBUG
 
 // Start threads in the thread pool.
 void start_threads(environment_t* env) {
@@ -1077,8 +1056,9 @@ void determine_number_of_workers(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
+    initialize_lf_thread_id();
     // Invoke the function that optionally provides default command-line options.
-    _lf_set_default_command_line_options();
+    lf_set_default_command_line_options();
 
     // Parse command line arguments. Sets global variables like duration, fast, number_of_workers.
     if (!(process_args(default_argc, default_argv)
@@ -1111,6 +1091,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Initialize the clock through the platform API. No reading of physical time before this.
     _lf_initialize_clock();
     start_time = lf_time_physical();
+    #ifndef FEDERATED
+    lf_tracing_set_start_time(start_time);
+    #endif
 
     LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
     struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
@@ -1118,7 +1101,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
     
     // Create and initialize the environments for each enclave
-    _lf_create_environments();
+    lf_create_environments();
 
     // Initialize the one global mutex
     LF_MUTEX_INIT(&global_mutex);
@@ -1126,8 +1109,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Initialize the global payload and token allocation counts and the trigger table
     // as well as starting tracing subsystem
     initialize_global();
-        
-    
+
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
 

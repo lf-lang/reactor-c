@@ -26,7 +26,7 @@
 #include "util.h"
 #include "platform.h"
 #include "environment.h"
-#include "trace.h"
+#include "tracepoint.h"
 #include "reactor.h"
 
 // Static global pointer to the RTI object.
@@ -53,9 +53,9 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
         rti_local->base.scheduling_nodes[i] = (scheduling_node_t *) enclave_info;
 
         // Encode the connection topology into the enclave_info object.
-        enclave_info->base.num_downstream = _lf_get_downstream_of(i, &enclave_info->base.downstream);
-        enclave_info->base.num_upstream = _lf_get_upstream_of(i, &enclave_info->base.upstream);
-        _lf_get_upstream_delay_of(i, &enclave_info->base.upstream_delay);
+        enclave_info->base.num_downstream = lf_get_downstream_of(i, &enclave_info->base.downstream);
+        enclave_info->base.num_upstream = lf_get_upstream_of(i, &enclave_info->base.upstream);
+        lf_get_upstream_delay_of(i, &enclave_info->base.upstream_delay);
 
         enclave_info->base.state = GRANTED;
     }
@@ -88,7 +88,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     // this critical section and acquire the RTI mutex.
     LF_MUTEX_UNLOCK(&e->env->mutex);
     LF_MUTEX_LOCK(rti_local->base.mutex);
-    tracepoint_federate_to_rti(e->env->trace, send_NET, e->base.id, &next_event_tag);
+    tracepoint_federate_to_rti(send_NET, e->base.id, &next_event_tag);
     // First, update the enclave data structure to record this next_event_tag,
     // and notify any downstream scheduling_nodes, and unblock them if appropriate.
     tag_advance_grant_t result;
@@ -103,7 +103,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
         LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to" PRINTF_TAG ". Returning with a TAG to" PRINTF_TAG " ",
         e->base.id, e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep,
         next_event_tag.time - lf_time_start(), next_event_tag.microstep);
-        tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &next_event_tag);
+        tracepoint_federate_from_rti(receive_TAG, e->base.id, &next_event_tag);
         // Release RTI mutex and re-enter the critical section of the source enclave before returning.
         LF_MUTEX_UNLOCK(rti_local->base.mutex);
         LF_MUTEX_LOCK(&e->env->mutex);
@@ -134,7 +134,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     // At this point we have gotten a new TAG.
     LF_PRINT_LOG("RTI: enclave %u returns with TAG to" PRINTF_TAG " ",
         e->base.id, e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
-    tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &result.tag);
+    tracepoint_federate_from_rti(receive_TAG, e->base.id, &result.tag);
     // Release RTI mutex and re-enter the critical section of the source enclave.
     LF_MUTEX_UNLOCK(rti_local->base.mutex);
     LF_MUTEX_LOCK(&e->env->mutex);
@@ -147,7 +147,7 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed) {
     }
     // Release the enclave mutex while doing the local RTI work.
     LF_MUTEX_UNLOCK(&enclave->env->mutex);
-    tracepoint_federate_to_rti(enclave->env->trace, send_LTC, enclave->base.id, &completed);
+    tracepoint_federate_to_rti(send_LTC, enclave->base.id, &completed);
     _logical_tag_complete(&enclave->base, completed);
     // Acquire the enclave mutex again before returning.
     LF_MUTEX_LOCK(&enclave->env->mutex);
@@ -157,7 +157,7 @@ void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t * target, t
     // Here we do NOT leave the critical section of the target enclave before we
     // acquire the RTI mutex. This means that we cannot block within this function.
     LF_MUTEX_LOCK(rti_local->base.mutex);
-    tracepoint_federate_to_federate(src->env->trace, send_TAGGED_MSG, src->base.id, target->base.id, &net);
+    tracepoint_federate_to_federate(send_TAGGED_MSG, src->base.id, target->base.id, &net);
 
     // If our proposed NET is less than the current NET, update it.
     if (lf_tag_compare(net, target->base.next_event) < 0) {
@@ -178,7 +178,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         return;
     }
     if (rti_local->base.tracing_enabled) {
-        tracepoint_rti_to_federate(e->env->trace, send_TAG, e->id, &tag);
+        tracepoint_rti_to_federate(send_TAG, e->id, &tag);
     }
     e->last_granted = tag;
     // TODO: Here we can consider adding a flag to the RTI struct and only signal the cond var if we have
