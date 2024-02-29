@@ -610,7 +610,7 @@ void _lf_initialize_start_tag(environment_t* env) {
   while (!wait_until(effective_start_tag.time + _lf_fed_STA_offset, &env->event_q_changed)) {
   };
   LF_PRINT_DEBUG("Done waiting for effective start time + STA offset " PRINTF_TIME ".",
-                 effective_start_tag.time + _lf_fed_STA_offset);
+                 effective_start_tag.time + lf_fed_STA_offset);
   LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be close to the STA offset.",
                  lf_time_physical() - effective_start_tag.time);
 
