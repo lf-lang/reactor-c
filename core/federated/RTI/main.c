@@ -299,8 +299,8 @@ int process_args(int argc, const char* argv[]) {
         usage(argc, argv);
         return 0;
     }
-    if (rti.number_of_transient_federates > rti.base.number_of_scheduling_nodes) {
-        lf_print_error("--number_of_transient_federates cannot be higher than the number of federates.");
+    if (rti.number_of_transient_federates >= rti.base.number_of_scheduling_nodes) {
+        lf_print_error("--number_of_transient_federates cannot be higher or equal to the number of federates.");
         usage(argc, argv);
         return 0;
     }
