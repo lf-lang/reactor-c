@@ -1034,49 +1034,6 @@ void handle_address_ad(uint16_t federate_id) {
  * @param federation_start_time the federation start_time
  * @param federate_start_tag the federate effective start tag
  */
-static void  (federate_info_t* my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
-    lf_tracing_set_start_time(federate_start_tag.time);
-    // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
-    // message.
-    // In the startup phase, federates will receive identical start_time and 
-    // effective_start_tag
-    unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_START_LENGTH];
-    start_time_buffer[0] = MSG_TYPE_TIMESTAMP_START;
-    encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
-    encode_tag(&(start_time_buffer[1 + sizeof(instant_t)]), federate_start_tag);
-
-    if (rti_remote->base.tracing_enabled) {
-        tracepoint_rti_to_federate(rti_remote->base.trace, send_TIMESTAMP, my_fed->enclave.id, &federate_start_tag);
-    }
-    if (write_to_socket(my_fed->socket, MSG_TYPE_TIMESTAMP_START_LENGTH, start_time_buffer)) {
-        lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
-    }
-
-    LF_MUTEX_LOCK(&rti_mutex);
-    // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
-    // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
-    // the federate to the start time.
-    my_fed->enclave.state = GRANTED;
-    lf_cond_broadcast(&sent_start_time);
-    LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
-    LF_MUTEX_UNLOCK(&rti_mutex);
-}
-
-/**
- * @brief Send to the start time to the federate my_fed.
- *
- * This function assumes the caller does not hold the mutex.
- * 
- * If it is the startup phase, the start_time will be the maximum received timestamps
- * plus an offset. The federate will then receive identical federation_start_time 
- * and federate_start_tag.time (the federate_start_tag.microstep will be 0).
- * If, however, the startup phase is passed, the federate will receive different 
- * values than sateted above.
- * 
- * @param my_fed the federate to send the start time to.
- * @param federation_start_time the federation start_time
- * @param federate_start_tag the federate effective start tag
- */
 static void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
     lf_tracing_set_start_time(federate_start_tag.time);
     // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
