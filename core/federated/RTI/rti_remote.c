@@ -921,7 +921,7 @@ void handle_stop_request_message(federate_info_t *fed) {
                 continue;
             }
             if (rti_remote->base.tracing_enabled) {
-                tracepoint_rti_to_federate(send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
+                (send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
             }
             write_to_socket_fail_on_error(&f->socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", f->enclave.id);
@@ -1055,7 +1055,7 @@ static void send_start_tag(federate_info_t* my_fed, instant_t federation_start_t
     encode_tag(&(start_time_buffer[1 + sizeof(instant_t)]), federate_start_tag);
 
     if (rti_remote->base.tracing_enabled) {
-        tracepoint_rti_to_federate(rti_remote->base.trace, send_TIMESTAMP, my_fed->enclave.id, &federate_start_tag);
+        tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &federate_start_tag);
     }
     if (write_to_socket(my_fed->socket, MSG_TYPE_TIMESTAMP_START_LENGTH, start_time_buffer)) {
         lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
@@ -1662,7 +1662,7 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
                     if (!is_transient) {
                         lf_print_error("RTI received duplicate federate ID: %d.", fed_id);
                         if (rti_remote->base.tracing_enabled) {
-                            tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
+                            tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
                         }
                         send_reject(socket_id, FEDERATE_ID_IN_USE);
                         return -1;
@@ -1672,7 +1672,7 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
                                         Only one hot swap operation is allowed at a time.",
                                         fed_id, hot_swap_federate->enclave.id);
                         if (rti_remote->base.tracing_enabled) {
-                            tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
+                            tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
                         }
                         send_reject(socket_id, FEDERATE_ID_IN_USE);
                         return -1;
@@ -2108,7 +2108,7 @@ void send_stop(federate_info_t * fed) {
     lf_print("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
 
     if (rti_remote->base.tracing_enabled) {
-        tracepoint_rti_to_federate(rti_remote->base.trace, send_STOP, fed->enclave.id, NULL);
+        tracepoint_rti_to_federate(send_STOP, fed->enclave.id, NULL);
     }
     write_to_socket_fail_on_error(&(fed->socket), MSG_TYPE_STOP_LENGTH, outgoing_buffer, NULL,
         "RTI failed to send MSG_TYPE_STOP message to federate %d.", fed->enclave.id);
@@ -2270,6 +2270,7 @@ void initialize_federate(federate_info_t *fed, uint16_t id) {
     strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
+    fed->has_upstream_transient_federates = false;
     fed->is_transient = true;
     fed->effective_start_tag = NEVER_TAG;
     fed->pending_grant = NEVER_TAG;
