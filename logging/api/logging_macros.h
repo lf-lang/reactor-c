@@ -77,20 +77,23 @@
 #else
 #define LF_ASSERT(condition, format, ...) \
 	do { \
-		if (!(condition)) { \
-				lf_print_error_and_exit(format, ##__VA_ARGS__); \
+		if (!condition) { \
+            lf_print_error_and_exit("`"format "`. Failed assertion in %s:%d(%s):`" #condition \
+            " != true`", ##__VA_ARGS__, __FILE__, __LINE__, __func__); \
 		} \
 	} while(0)
 #define LF_ASSERTN(condition, format, ...) \
 	do { \
 		if (condition) { \
-				lf_print_error_and_exit(format, ##__VA_ARGS__); \
+            lf_print_error_and_exit("`"format "`. Failed assertion in %s:%d(%s):`" #condition \
+            " != false`", ##__VA_ARGS__, __FILE__, __LINE__, __func__); \
 		} \
 	} while(0)
 #define LF_ASSERT_NON_NULL(pointer) \
     do { \
         if (!(pointer)) { \
-            lf_print_error_and_exit("Assertion failed: pointer is NULL Out of memory?."); \
+            lf_print_error_and_exit("`Out of memory?` Assertion failed in %s:%d(%s):`" #pointer " == NULL`",\
+            __FILE__, __LINE__, __func__); \
         } \
     } while(0)
 #endif // NDEBUG
