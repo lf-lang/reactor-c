@@ -377,7 +377,7 @@ void handle_port_absent_message(federate_info_t *sending_federate, unsigned char
 }
 
 void handle_timed_message(federate_info_t *sending_federate, unsigned char *buffer) {
-    size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t)
+    size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
             + sizeof(int64_t) + sizeof(uint32_t);
     // Read the header, minus the first byte which has already been read.
     read_from_socket_fail_on_error(
@@ -787,8 +787,8 @@ void handle_address_query(uint16_t fed_id) {
     // the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message
     // from this federate. In that case, it will respond by sending -1.
 
-    // Response message is MSG_TYPE_ADDRESS_QUERY_REPLY.
-    buffer[0] = MSG_TYPE_ADDRESS_QUERY_REPLY;
+    // Response message is also of type MSG_TYPE_ADDRESS_QUERY.
+    buffer[0] = MSG_TYPE_ADDRESS_QUERY;
 
     // Encode the port number.
     federate_info_t *remote_fed = GET_FED_INFO(remote_fed_id);

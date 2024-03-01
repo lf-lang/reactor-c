@@ -528,7 +528,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
     _lf_get_environments(&env);
 
     // Read the header which contains the timestamp.
-    size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t)
+    size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
             + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
@@ -1751,7 +1751,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                 "Failed to read the requested port number for federate %d from RTI.",
                 remote_federate_id);
 
-        if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
+        if (buffer[0] != MSG_TYPE_ADDRESS_QUERY) {
             // Unexpected reply.  Could be that RTI has failed and sent a resignation.
             if (buffer[0] == MSG_TYPE_FAILED) {
                 lf_print_error_and_exit("RTI has failed.");
@@ -2653,7 +2653,7 @@ int lf_send_tagged_message(environment_t* env,
     buffer_head += sizeof(uint16_t);
 
     // The next four bytes are the message length.
-    encode_uint32((uint32_t)length, &(header_buffer[buffer_head]));
+    encode_int32((int32_t)length, &(header_buffer[buffer_head]));
     buffer_head += sizeof(int32_t);
 
     // Apply the additional delay to the current tag and use that as the intended
@@ -2699,8 +2699,8 @@ int lf_send_tagged_message(environment_t* env,
         if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
             lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
         } else {
-            lf_print_error_system_failure("Failed to send message to %s with error code %d (%s). Connection lost to the RTI.",
-                    next_destination_str, errno, strerror(errno));
+            lf_print_error_system_failure("Failed to send message to %s. Connection lost to the RTI.",
+                    next_destination_str);
         }
     }
     LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);

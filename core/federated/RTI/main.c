@@ -108,6 +108,7 @@ void termination() {
             send_failed_signal(f);
         }
         if (rti.base.tracing_enabled) {
+            lf_tracing_global_shutdown();
             lf_print("RTI trace file saved.");
         }
         lf_print("RTI is exiting abnormally.");
