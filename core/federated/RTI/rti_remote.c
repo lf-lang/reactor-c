@@ -304,10 +304,10 @@ void notify_provisional_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
 
 void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_event_tag) {
     federate_info_t *fed = GET_FED_INFO(federate_id);
-    tag_t min_in_transit_tag = pqueue_tag_peek_tag(fed->in_transit_message_tags);
-    if (lf_tag_compare(min_in_transit_tag, next_event_tag) < 0) {
-        next_event_tag = min_in_transit_tag;
-    }
+    // tag_t min_in_transit_tag = pqueue_tag_peek_tag(fed->in_transit_message_tags);
+    // if (lf_tag_compare(min_in_transit_tag, next_event_tag) < 0) {
+    //     next_event_tag = min_in_transit_tag;
+    // }
     update_scheduling_node_next_event_tag_locked(&(fed->enclave), next_event_tag);
 }
 
@@ -488,30 +488,30 @@ void handle_timed_message(federate_info_t *sending_federate, unsigned char *buff
                                       "RTI failed to send message chunks.");
     }
 
-    // Record this in-transit message in federate's in-transit message queue.
-    if (lf_tag_compare(fed->enclave.completed, intended_tag) < 0) {
-        // Add a record of this message to the list of in-transit messages to this federate.
-        pqueue_tag_insert_if_no_match(
-            fed->in_transit_message_tags,
-            intended_tag);
-        LF_PRINT_DEBUG(
-            "RTI: Adding a message with tag " PRINTF_TAG " to the list of in-transit messages for federate %d.",
-            intended_tag.time - lf_time_start(),
-            intended_tag.microstep,
-            federate_id);
-    } else {
-        lf_print_error(
-            "RTI: Federate %d has already completed tag " PRINTF_TAG
-            ", but there is an in-transit message with tag " PRINTF_TAG " from federate %hu. "
-            "This is going to cause an STP violation under centralized coordination.",
-            federate_id,
-            fed->enclave.completed.time - lf_time_start(),
-            fed->enclave.completed.microstep,
-            intended_tag.time - lf_time_start(),
-            intended_tag.microstep,
-            sending_federate->enclave.id);
-        // FIXME: Drop the federate?
-    }
+    // // Record this in-transit message in federate's in-transit message queue.
+    // if (lf_tag_compare(fed->enclave.completed, intended_tag) < 0) {
+    //     // Add a record of this message to the list of in-transit messages to this federate.
+    //     pqueue_tag_insert_if_no_match(
+    //         fed->in_transit_message_tags,
+    //         intended_tag);
+    //     LF_PRINT_DEBUG(
+    //         "RTI: Adding a message with tag " PRINTF_TAG " to the list of in-transit messages for federate %d.",
+    //         intended_tag.time - lf_time_start(),
+    //         intended_tag.microstep,
+    //         federate_id);
+    // } else {
+    //     lf_print_error(
+    //         "RTI: Federate %d has already completed tag " PRINTF_TAG
+    //         ", but there is an in-transit message with tag " PRINTF_TAG " from federate %hu. "
+    //         "This is going to cause an STP violation under centralized coordination.",
+    //         federate_id,
+    //         fed->enclave.completed.time - lf_time_start(),
+    //         fed->enclave.completed.microstep,
+    //         intended_tag.time - lf_time_start(),
+    //         intended_tag.microstep,
+    //         sending_federate->enclave.id);
+    //     // FIXME: Drop the federate?
+    // }
 
     // If the message tag is less than the most recently received NET from the federate,
     // then update the federate's next event tag to match the message tag.
