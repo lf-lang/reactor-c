@@ -142,7 +142,8 @@ Macros</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
 <div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">		if</a> (!(condition)) { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
-<div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">				lf_print_error_and_exit</a>(format, ##<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__VA_ARGS__</a>); \</div>
+<div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">            lf_print_error_and_exit</a>(<span class="stringliteral">&quot;`&quot;</span>format <span class="stringliteral">&quot;`. Failed assertion in %s:%d(%s):(&quot;</span> #condition \</div>
+<div class="line">            <span class="stringliteral">&quot;) != true`&quot;</span>, ##<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__VA_ARGS__</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__FILE__</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__LINE__</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__func__</a>); \</div>
 <div class="line">        } \</div>
 <div class="line">    } <span class="keywordflow">while</span>(0)</div>
 <div class="ttc" id="ahashmap_8h_html_ad2c17ed7e0d4d65a63bf9002aba2016f"><div class="ttname"><a href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">address</a></div><div class="ttdeci">return address</div><div class="ttdef"><b>Definition</b> hashmap.h:74</div></div>
@@ -167,7 +168,8 @@ Macros</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
 <div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">        if</a> (!(pointer)) { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
-<div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">            lf_print_error_and_exit</a>(<span class="stringliteral">&quot;Assertion failed: pointer is NULL Out of memory?.&quot;</span>); \</div>
+<div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">            lf_print_error_and_exit</a>(<span class="stringliteral">&quot;`Out of memory?` Assertion failed in %s:%d(%s):`&quot;</span> #pointer <span class="stringliteral">&quot; == NULL`&quot;</span>,\</div>
+<div class="line">            <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__FILE__</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__LINE__</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__func__</a>); \</div>
 <div class="line">        } \</div>
 <div class="line">    } <span class="keywordflow">while</span>(0)</div>
 </div><!-- fragment -->
@@ -198,7 +200,8 @@ Macros</h2></td></tr>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
 <div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">		if</a> (condition) { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
-<div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">				lf_print_error_and_exit</a>(format, ##<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__VA_ARGS__</a>); \</div>
+<div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">            lf_print_error_and_exit</a>(<span class="stringliteral">&quot;`&quot;</span>format <span class="stringliteral">&quot;`. Failed assertion in %s:%d(%s):(&quot;</span> #condition \</div>
+<div class="line">            <span class="stringliteral">&quot;) != false`&quot;</span>, ##<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__VA_ARGS__</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__FILE__</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__LINE__</a>, <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__func__</a>); \</div>
 <div class="line">        } \</div>
 <div class="line">    } <span class="keywordflow">while</span>(0)</div>
 </div><!-- fragment -->
