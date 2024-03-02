@@ -30,60 +30,57 @@ jobs:
   build-trace-tools:
     uses: ./.github/workflows/build-trace-tools.yml
 
-  check-diff:
-    uses: ./.github/workflows/check-diff.yml
-
   fetch-lf:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
       file: 'lingua-franca-ref.txt'
 
   lf-default-arduino:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-arduino-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_arduino == 'true' }}
+    if: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'arduino') }}
 
   lf-default-zephyr:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-zephyr-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_zephyr == 'true' }}
+    if: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
 
   lf-default:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      all-platforms: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' || contains( github.event.pull_request.labels.*.name, 'mac') }}
+      all-platforms: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
 
   lf-python:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/py-tests.yml@master
     with:
       reactor-c-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_python == 'true' }}
+    if: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' ||contains( github.event.pull_request.labels.*.name, 'python') }}
 
   lf-gedf-np:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: GEDF_NP
-      all-platforms: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' || contains( github.event.pull_request.labels.*.name, 'mac')}}
+      all-platforms: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
 
   lf-adaptive:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: ADAPTIVE
-      all-platforms: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' || contains( github.event.pull_request.labels.*.name, 'mac' )}}
+      all-platforms: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
