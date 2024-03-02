@@ -110,7 +110,7 @@ parser.add_argument('-e', '--end', type=str, nargs=2,
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
 # Set of tagged events (messages)
-non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}
+non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_AD', 'MSG', 'P2P_MSG'}
 
 
 ################################################################################
@@ -672,7 +672,7 @@ if __name__ == '__main__':
             # FIXME: Using microseconds is hardwired here.
             physical_time = f'{int(row["physical_time"]/1000):,}'
 
-            if (row['event'] in {'FED_ID', 'ACK', 'FAILED', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}):
+            if (row['event'] in {'FED_ID', 'ACK', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_AD', 'MSG', 'P2P_MSG'}):
                 label = row['event']
             else:
                 label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
