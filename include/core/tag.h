@@ -199,21 +199,22 @@ instant_t lf_time_start(void);
  * Maximum number of nanoseconds is 999,999,999
  * Maximum number of microsteps is 4,294,967,295
  * Total number of characters for the above is 24.
- * Text descriptions and spaces add an additional 55,
- * for a total of 79. One more allows for a null terminator.
+ * Text descriptions and spaces add an additional 30,
+ * for a total of 54. One more allows for a null terminator.
+ * Round up to a power of two.
  */
-#define LF_TIME_BUFFER_LENGTH 80
+#define LF_TIME_BUFFER_LENGTH 64
 
 /**
  * Store into the specified buffer a string giving a human-readable
  * rendition of the specified time. The buffer must have length at least
  * equal to LF_TIME_BUFFER_LENGTH. The format is:
  * ```
- *    x weeks, x days, x hours, x minutes, x seconds, x unit
+ *    x weeks, x d, x hr, x min, x s, x unit
  * ```
  * where each `x` is a string of numbers with commas inserted if needed
- * every three numbers and `unit` is nanoseconds, microseconds, or
- * milliseconds.
+ * every three numbers and `unit` is ns, us, or
+ * ms.
  * @param buffer The buffer into which to write the string.
  * @param time The time to write.
  * @return The number of characters written (not counting the null terminator).

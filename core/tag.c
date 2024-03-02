@@ -122,6 +122,10 @@ instant_t lf_time_start(void) {
 }
 
 size_t lf_readable_time(char* buffer, instant_t time) {
+    if (time <= (instant_t)0) {
+        snprintf(buffer, 2, "0");
+        return 1;
+    }
     char* original_buffer = buffer;
     bool lead = false; // Set to true when first clause has been printed.
     if (time > WEEKS(1)) {
@@ -141,8 +145,8 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         size_t printed = lf_comma_separated_time(buffer, time / DAYS(1));
         time = time % DAYS(1);
         buffer += printed;
-        snprintf(buffer, 6, " days");
-        buffer += 5;
+        snprintf(buffer, 3, " d");
+        buffer += 2;
     }
     if (time > HOURS(1)) {
         if (lead == true) {
@@ -153,8 +157,8 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         size_t printed = lf_comma_separated_time(buffer, time / HOURS(1));
         time = time % HOURS(1);
         buffer += printed;
-        snprintf(buffer, 7, " hours");
-        buffer += 6;
+        snprintf(buffer, 4, " hr");
+        buffer += 3;
     }
     if (time > MINUTES(1)) {
         if (lead == true) {
@@ -165,8 +169,8 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         size_t printed = lf_comma_separated_time(buffer, time / MINUTES(1));
         time = time % MINUTES(1);
         buffer += printed;
-        snprintf(buffer, 9, " minutes");
-        buffer += 8;
+        snprintf(buffer, 5, " min");
+        buffer += 4;
     }
     if (time > SECONDS(1)) {
         if (lead == true) {
@@ -177,28 +181,26 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         size_t printed = lf_comma_separated_time(buffer, time / SECONDS(1));
         time = time % SECONDS(1);
         buffer += printed;
-        snprintf(buffer, 9, " seconds");
-        buffer += 8;
+        snprintf(buffer, 3, " s");
+        buffer += 2;
     }
     if (time > (instant_t)0) {
         if (lead == true) {
             snprintf(buffer, 3, ", ");
             buffer += 2;
         }
-        const char* units = "nanoseconds";
+        const char* units = "ns";
         if (time % MSEC(1) == (instant_t) 0) {
-            units = "milliseconds";
+            units = "ms";
             time = time / MSEC(1);
         } else if (time % USEC(1) == (instant_t) 0) {
-            units = "microseconds";
+            units = "us";
             time = time / USEC(1);
         }
         size_t printed = lf_comma_separated_time(buffer, time);
         buffer += printed;
-        snprintf(buffer, 14, " %s", units);
+        snprintf(buffer, 3, " %s", units);
         buffer += strlen(units) + 1;
-    } else {
-        snprintf(buffer, 2, "0");
     }
     return (buffer - original_buffer);
 }
