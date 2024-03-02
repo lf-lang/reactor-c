@@ -7,6 +7,11 @@ on:
   pull_request:
   # Also allow running this workflow manually from the Actions tab.
   workflow_dispatch:
+  merge_group:
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_path }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
   unit-tests-single:
@@ -39,7 +44,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ needs.check-diff.outputs.run_arduino == 'true' }}
+    if: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_arduino == 'true' }}
 
   lf-default-zephyr:
     needs: [fetch-lf, check-diff]
@@ -47,7 +52,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ needs.check-diff.outputs.run_zephyr == 'true' }}
+    if: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_zephyr == 'true' }}
 
   lf-default:
     needs: [fetch-lf, check-diff]
@@ -55,7 +60,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
+      all-platforms: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
 
   lf-python:
     needs: [fetch-lf, check-diff]
@@ -63,7 +68,7 @@ jobs:
     with:
       reactor-c-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ needs.check-diff.outputs.run_python == 'true' }}
+    if: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_python == 'true' }}
 
   lf-gedf-np:
     needs: [fetch-lf, check-diff]
@@ -72,7 +77,7 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: GEDF_NP
-      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
+      all-platforms: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
 
   lf-adaptive:
     needs: [fetch-lf, check-diff]
@@ -81,4 +86,4 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: ADAPTIVE
-      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
+      all-platforms: ${{ github.event_name == 'merge_group' || needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
