@@ -185,9 +185,10 @@ void notify_advance_grant_if_safe(scheduling_node_t* e);
 void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag);
 
 /**
- * Determine whether the specified scheduling node is eligible for a tag advance grant,
- * (TAG) and, if so, return the details. This is called upon receiving a LTC, NET
- * or resign from an upstream node.
+ * @brief Determine whether the specified scheduling node is eligible for a tag advance grant,
+ * (TAG) and, if so, return the details.
+ * 
+ * This is called upon receiving a LTC, NET or resign from an upstream node.
  *
  * This function calculates the minimum M over
  * all upstream scheduling nodes of the "after" delay plus the most recently
