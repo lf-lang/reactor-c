@@ -2708,8 +2708,8 @@ int lf_send_tagged_message(environment_t* env,
         if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
             lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
         } else {
-            lf_print_error_system_failure("Failed to send message to %s. Connection lost to the RTI.",
-                    next_destination_str);
+            lf_print_error_system_failure("Failed to send message to %s with error code %d (%s). Connection lost to the RTI.",
+                    next_destination_str, errno, strerror(errno));
         }
     }
     LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
