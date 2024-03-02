@@ -15,7 +15,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "platform.h"
+#include "low_level_platform.h"
 #include "api/schedule.h"
 #ifdef MODAL_REACTORS
 #include "modes.h"
@@ -26,9 +26,10 @@
 #include "port.h"
 #include "pqueue.h"
 #include "reactor.h"
-#include "trace.h"
+#include "tracepoint.h"
 #include "util.h"
 #include "vector.h"
+#include "lf_core_version.h"
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
 #include "environment.h"
@@ -382,7 +383,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     if (timer->offset == 0) {
         for (int i = 0; i < timer->number_of_reactions; i++) {
             _lf_trigger_reaction(env, timer->reactions[i], -1);
-            tracepoint_schedule(env->trace, timer, 0LL); // Trace even though schedule is not called.
+            tracepoint_schedule(env, timer, 0LL); // Trace even though schedule is not called.
         }
         if (timer->period == 0) {
             return;
@@ -402,7 +403,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     e->time = lf_time_logical(env) + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(env->event_q, e);
-    tracepoint_schedule(env->trace, timer, delay); // Trace even though schedule is not called.
+    tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
 }
 
 void _lf_initialize_timers(environment_t* env) {
@@ -536,7 +537,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
     // Set the event time
     e->time = tag.time;
 
-    tracepoint_schedule(env->trace, trigger, tag.time - current_logical_tag.time);
+    tracepoint_schedule(env, trigger, tag.time - current_logical_tag.time);
 
     // Make sure the event points to this trigger so when it is
     // dequeued, it will trigger this trigger.
@@ -810,11 +811,11 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
     }
 #endif
 
-    tracepoint_reaction_starts(env->trace, reaction, worker);
+    tracepoint_reaction_starts(env, reaction, worker);
     ((self_base_t*) reaction->self)->executing_reaction = reaction;
     reaction->function(reaction->self);
     ((self_base_t*) reaction->self)->executing_reaction = NULL;
-    tracepoint_reaction_ends(env->trace, reaction, worker);
+    tracepoint_reaction_ends(env, reaction, worker);
 
 
 #if !defined(LF_SINGLE_THREADED)
@@ -953,7 +954,7 @@ void schedule_output_reactions(environment_t *env, reaction_t* reaction, int wor
             // Check for deadline violation.
             if (downstream_to_execute_now->deadline == 0 || physical_time > env->current_tag.time + downstream_to_execute_now->deadline) {
                 // Deadline violation has occurred.
-                tracepoint_reaction_deadline_missed(env->trace, downstream_to_execute_now, worker);
+                tracepoint_reaction_deadline_missed(env, downstream_to_execute_now, worker);
                 violation = true;
                 // Invoke the local handler, if there is one.
                 reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;
@@ -1171,7 +1172,31 @@ int process_args(int argc, const char* argv[]) {
     return 1;
 }
 
+/**
+ * @brief Check that the provided version information is consistent with the
+ * core runtime.
+ */
+#ifdef LF_TRACE
+static void check_version(version_t version) {
+    #ifdef LF_SINGLE_THREADED
+    LF_ASSERT(version.build_config.single_threaded == TRIBOOL_TRUE || version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER, "expected single-threaded version");
+    #else
+    LF_ASSERT(version.build_config.single_threaded == TRIBOOL_FALSE || version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER, "expected multi-threaded version");
+    #endif
+    #ifdef NDEBUG
+    LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_FALSE || version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER, "expected release version");
+    #else
+    LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_TRUE || version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER, "expected debug version");
+    #endif
+    LF_ASSERT(version.build_config.log_level == LOG_LEVEL || version.build_config.log_level == INT_MAX, "expected log level %d", LOG_LEVEL);
+    // assert(!version.core_version_name || strcmp(version.core_version_name, CORE_SHA) == 0); // TODO: provide CORE_SHA
+}
+#endif  // LF_TRACE
+
 void initialize_global(void) {
+#ifdef LF_TRACE
+    check_version(lf_version_tracing());
+#endif
     #if !defined NDEBUG
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
@@ -1179,15 +1204,20 @@ void initialize_global(void) {
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
-    for (int i = 0; i<num_envs; i++) {
-        start_trace(envs[i].trace);
-    }
-
-    // Federation trace object must be set before `initialize_trigger_objects` is called because it
-    //  uses tracing functionality depending on that pointer being set.
-    #ifdef FEDERATED
-    lf_set_federation_trace_object(envs->trace);
-    #endif
+#if defined(LF_SINGLE_THREADED)
+    int max_threads_tracing = 1;
+#else
+    int max_threads_tracing = envs[0].num_workers * num_envs + 1; // add 1 for the main thread
+#endif
+#if defined(FEDERATED)
+    // NUMBER_OF_FEDERATES is an upper bound on the number of upstream federates
+    // -- threads are spawned to listen to upstream federates. Add 1 for the
+    // clock sync thread and add 1 for the staa thread
+    max_threads_tracing += NUMBER_OF_FEDERATES + 2;
+    lf_tracing_global_init("federate__", FEDERATE_ID, max_threads_tracing);
+#else
+    lf_tracing_global_init("trace_", 0, max_threads_tracing);
+#endif
     // Call the code-generated function to initialize all actions, timers, and ports
     // This is done for all environments/enclaves at the same time.
     _lf_initialize_trigger_objects() ;
@@ -1223,11 +1253,6 @@ void termination(void) {
             continue;
         }
         LF_PRINT_LOG("---- Terminating environment %u, normal termination: %d", env[i].id, _lf_normal_termination);
-        // Stop any tracing, if it is running.
-        // No need to acquire a mutex because if this is normal termination, all
-        // other threads have stopped, and if it's not, then acquiring a mutex could
-        // lead to a deadlock.
-        stop_trace_locked(env[i].trace);
 
     #if !defined(LF_SINGLE_THREADED)
         // Make sure all watchdog threads have stopped
@@ -1298,4 +1323,5 @@ void termination(void) {
         free_local_rti();
 #endif
     }
+    lf_tracing_global_shutdown();
 }

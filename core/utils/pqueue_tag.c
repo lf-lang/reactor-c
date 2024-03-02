@@ -12,7 +12,7 @@
 
 #include "pqueue_tag.h"
 #include "util.h"     // For lf_print
-#include "platform.h" // For PRINTF_TAG
+#include "low_level_platform.h" // For PRINTF_TAG
 
 //////////////////
 // Local functions, not intended for use outside this file.

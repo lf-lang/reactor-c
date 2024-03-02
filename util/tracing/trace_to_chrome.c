@@ -31,6 +31,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * point your chrome browser to chrome://tracing/ and the load the .json file.
  */
 #define LF_TRACE
+#define __STDC_WANT_LIB_EXT2 1  // needed for asprintf
 #include <stdio.h>
 #include <string.h>
 #include "reactor.h"
@@ -116,11 +117,11 @@ size_t read_and_write_trace() {
         interval_t elapsed_logical_time = (trace[i].logical_time - start_time)/1000;
 
         if (elapsed_physical_time < 0) {
-            fprintf(stderr, "WARNING: Negative elapsed physical time %lld. Skipping trace entry.\n", elapsed_physical_time);
+            fprintf(stderr, "WARNING: Negative elapsed physical time %lld. Skipping trace entry.\n", (long long int) elapsed_physical_time);
             continue;
         }
         if (elapsed_logical_time < 0) {
-            fprintf(stderr, "WARNING: Negative elapsed logical time %lld. Skipping trace entry.\n", elapsed_logical_time);
+            fprintf(stderr, "WARNING: Negative elapsed logical time %lld. Skipping trace entry.\n", (long long int) elapsed_logical_time);
             continue;
         }
 
@@ -213,7 +214,7 @@ size_t read_and_write_trace() {
                 phase,
                 thread_id,
                 pid,
-                timestamp,
+                (long long int) timestamp,
                 args
         );
         free(args);
@@ -254,9 +255,9 @@ size_t read_and_write_trace() {
                 phase,
                 thread_id,
                 pid,
-                elapsed_logical_time,
+                (long long int) elapsed_logical_time,
                 trace[i].microstep,
-                elapsed_physical_time
+                (long long int) elapsed_physical_time
             );
         }
     }

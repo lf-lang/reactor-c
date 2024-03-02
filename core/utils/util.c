@@ -44,7 +44,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>     // Defines memcpy()
 #include <stdarg.h>     // Defines va_list
 #include <time.h>       // Defines nanosleep()
-#include <stdbool.h>      
+#include <stdbool.h>
 
 #ifndef NUMBER_OF_FEDERATES
 #define NUMBER_OF_FEDERATES 1

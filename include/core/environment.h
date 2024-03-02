@@ -37,8 +37,8 @@
 #define ENVIRONMENT_H
 
 #include "lf_types.h"
-#include "platform.h"
-#include "trace.h"
+#include "low_level_platform.h"
+#include "tracepoint.h"
 
 // Forward declarations so that a pointers can appear in the environment struct.
 typedef struct lf_scheduler_t lf_scheduler_t;
@@ -93,7 +93,6 @@ typedef struct environment_t {
     mode_environment_t* modes;
     int watchdogs_size;
     watchdog_t **watchdogs;
-    trace_t* trace;
     int worker_thread_count;
 #if defined(LF_SINGLE_THREADED)
     pqueue_t *reaction_q;

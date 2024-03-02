@@ -1,0 +1,12 @@
+add_library(lf-low-level-platform-api INTERFACE)
+target_include_directories(lf-low-level-platform-api INTERFACE ${CMAKE_CURRENT_LIST_DIR})
+add_library(lf::low-level-platform-api ALIAS lf-low-level-platform-api)
+target_link_libraries(lf-low-level-platform-api INTERFACE lf::tag-api)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
+    target_compile_definitions(lf-low-level-platform-api INTERFACE PLATFORM_NRF52)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
+    target_compile_definitions(lf-low-level-platform-api INTERFACE PLATFORM_ZEPHYR)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
+    target_compile_definitions(lf-low-level-platform-api INTERFACE PLATFORM_RP2040)
+endif()

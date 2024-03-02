@@ -15,7 +15,7 @@
 #ifdef MODAL_REACTORS
 #include <Python.h>
 #include <structmember.h>
-#include "../include/core/tag.h"
+#include "tag.h"
 #include "../include/api/schedule.h"
 
 /**

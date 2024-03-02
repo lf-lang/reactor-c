@@ -43,6 +43,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "util.h"
 #include "environment.h"
+#include "api/schedule.h"
 
 ////////////// Global variables ///////////////
 // The global Python object that holds the .py module that the

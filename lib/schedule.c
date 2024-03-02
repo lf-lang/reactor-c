@@ -331,7 +331,7 @@ trigger_handle_t lf_schedule_trigger(environment_t *env, trigger_t* trigger, int
             e->time - lf_time_start());
     pqueue_insert(env->event_q, e);
 
-    tracepoint_schedule(env->trace, trigger, e->time - env->current_tag.time);
+    tracepoint_schedule(env, trigger, e->time - env->current_tag.time);
 
     // FIXME: make a record of handle and implement unschedule.
     // NOTE: Rather than wrapping around to get a negative number,

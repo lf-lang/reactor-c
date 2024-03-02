@@ -14,7 +14,7 @@
 
 #include "reactor.h"
 #include "lf_types.h"
-#include "platform.h"
+#include "low_level_platform.h"
 #include "reactor_common.h"
 #include "environment.h"
 
@@ -25,6 +25,19 @@
 
 // Global variable defined in tag.c:
 extern instant_t start_time;
+
+int lf_thread_id() {
+    return 0;
+}
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+    return 0;
+}
+int lf_mutex_init(lf_mutex_t* mutex) {
+    return 0;
+}
+int lf_mutex_lock(lf_mutex_t* mutex) {
+    return 0;
+}
 
 // Defined in reactor_common.c:
 extern bool fast;
@@ -147,7 +160,7 @@ int _lf_do_step(environment_t* env) {
             // Handle the local deadline first.
             if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
                 LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
-                tracepoint_reaction_deadline_missed(env->trace, reaction, 0);
+                tracepoint_reaction_deadline_missed(env, reaction, 0);
                 // Deadline violation has occurred.
                 violation = true;
                 // Invoke the local handler, if there is one.
@@ -328,19 +341,20 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         int num_environments = _lf_get_environments(&env);
         LF_ASSERT(num_environments == 1,
             "Found %d environments. Only 1 can be used with the single-threaded runtime", num_environments);
-        
+
         LF_PRINT_DEBUG("Initializing.");
         initialize_global();
         // Set start time
         start_time = lf_time_physical();
+        #ifndef FEDERATED
+        lf_tracing_set_start_time(start_time);
+        #endif
 
         LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
                 FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
                 NEVER_TAG.time - start_time, 0);
 
         environment_init_tags(env, start_time, duration);
-        // Start tracing if enabled.
-        start_trace(env->trace);
 #ifdef MODAL_REACTORS
         // Set up modal infrastructure
         _lf_initialize_modes(env);
