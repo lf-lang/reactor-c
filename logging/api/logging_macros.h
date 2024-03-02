@@ -78,14 +78,14 @@
 #define LF_ASSERT(condition, format, ...) \
 	do { \
 		if (!(condition)) { \
-            lf_print_error_and_exit("`"format "`. Failed assertion in %s:%d(%s):(" #condition \
+            lf_print_error_and_exit("`" format "`. Failed assertion in %s:%d(%s):(" #condition \
             ") != true`", ##__VA_ARGS__, __FILE__, __LINE__, __func__); \
 		} \
 	} while(0)
 #define LF_ASSERTN(condition, format, ...) \
 	do { \
 		if (condition) { \
-            lf_print_error_and_exit("`"format "`. Failed assertion in %s:%d(%s):(" #condition \
+            lf_print_error_and_exit("`" format "`. Failed assertion in %s:%d(%s):(" #condition \
             ") != false`", ##__VA_ARGS__, __FILE__, __LINE__, __func__); \
 		} \
 	} while(0)
