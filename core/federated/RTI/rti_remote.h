@@ -73,12 +73,6 @@ typedef struct federate_info_t {
   bool is_transient;                     // Indicates whether the federate is transient or persistent.
   tag_t effective_start_tag;             // Records the start time of the federate, which is
                                          // mainly useful for transient federates
-  tag_t pending_grant;                   // The pending tag advance grant
-  tag_t pending_provisional_grant;       // The pending provisional tag advance grant
-  lf_thread_t pending_grant_thread_id;   // The ID of the thread handling the pending
-                                         // tag grant
-  lf_thread_t pending_provisional_grant_thread_id; // The ID of the thread handling
-                                                   // the pending provitional tag grant
 } federate_info_t;
 
 /**
