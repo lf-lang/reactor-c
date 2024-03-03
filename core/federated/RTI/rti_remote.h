@@ -76,13 +76,6 @@ typedef struct federate_info_t {
     bool is_transient;      // Indicates whether the federate is transient or persistent.
     tag_t effective_start_tag;  // Records the start time of the federate, which is 
                                 // mainly useful for transient federates  
-    tag_t pending_grant;    // The pending tag advance grant
-    tag_t pending_provisional_grant;        // The pending provisional tag advance grant
-    lf_thread_t pending_grant_thread_id;    // The ID of the thread handling the pending
-                                            // tag grant 
-    lf_thread_t pending_provisional_grant_thread_id;    // The ID of the thread handling
-                                            // the pending provitional tag grant 
-
 } federate_info_t;
 
 
@@ -104,6 +97,20 @@ typedef enum federation_life_cycle_phase {
     execution_phase,
     shutdown_phase
 } federation_life_cycle_phase;
+
+/**
+ * @brief The type for an element in a delayed grants priority queue that is sorted by tag.
+ */
+typedef struct pqueue_delayed_grant_element_t  { 
+    pqueue_tag_element_t base;
+    uint16_t fed_id;      // Id of the federate with delayed grant of tag (in base)
+    bool is_provisional;   // Boolean recoding if the delayed grant is provisional
+} pqueue_delayed_grant_element_t;
+
+/**
+ * @brief Type of a delayed grants queue sorted by tags.
+ */
+typedef pqueue_tag_t pqueue_delayed_grants_t;
 
 /**
  * Structure that an RTI instance uses to keep track of its own and its
@@ -201,9 +208,15 @@ typedef struct rti_remote_t {
     int32_t number_of_connected_transient_federates;
 
     /**
-     * 
+     * The federate life cycle phase
      */
     federation_life_cycle_phase phase;
+
+    /**
+     * Queue of the pending grants, in case transient federates are absent and
+     * issuing grants to their downstreams need to be delayed.    
+     */
+    pqueue_delayed_grants_t  *delayed_grants;
 } rti_remote_t;
 
 /**
