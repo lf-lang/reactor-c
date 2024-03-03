@@ -30,6 +30,7 @@
 #include "net_util.h"
 #include <string.h>
 #include "clock.h" // For lf_clock_cond_timedwait()
+#include "clock.h" // For lf_clock_cond_timedwait()
 
 // Global variables defined in tag.c:
 extern instant_t start_time;
@@ -194,48 +195,6 @@ static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provis
 }
 
 /**
- * @brief Cancel a delayed grant by removing it from delayed_grants queue.
- *
- * The removal will cause the broadcast to cause the delayed_grants_thread to
- * account for the update.
- *
- * In case there is already a grant for that federte, keep the soonest one.
- * FIXME: Is that correct?
- *
- * @param fed The federate.
- */
-
-void notify_grant_canceled(federate_info_t* fed) {
-  LF_MUTEX_LOCK(&rti_mutex);
-  pqueue_delayed_grant_element_t* dge =
-      pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, fed->enclave.id);
-  if (dge != NULL) {
-    pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
-    LF_PRINT_LOG("RTI: Canceling the delayed grant of " PRINTF_TAG " for federate %d.", dge->base.tag.time - start_time,
-                 dge->base.tag.microstep, dge->fed_id);
-    lf_cond_signal(&updated_delayed_grants);
-  }
-  LF_MUTEX_UNLOCK(&rti_mutex);
-}
-
-/**
- * Find the number of non connected upstream transients
- * @param fed The federate
- * @return the number of non connected upstream transients
- */
-static int get_num_absent_upstream_transients(federate_info_t* fed) {
-  int num_absent_upstream_transients = 0;
-  for (int j = 0; j < fed->enclave.num_upstream; j++) {
-    federate_info_t* upstream = GET_FED_INFO(fed->enclave.upstream[j]);
-    // Do Ignore this enclave if it no longer connected.
-    if ((upstream->enclave.state == NOT_CONNECTED) && (upstream->is_transient)) {
-      num_absent_upstream_transients++;
-    }
-  }
-  return num_absent_upstream_transients;
-}
-
-/**
  * Find the number of non connected upstream transients
  * @param fed The federate
  * @return the number of non connected upstream transients
@@ -349,7 +308,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     notify_tag_advance_grant_immediate(e, tag);
   } else {
     if (get_num_absent_upstream_transients(fed) > 0) {
-      notify_tag_advance_grant_delayed(fed, tag);
+      notify_grant_delayed(fed, tag, false);
     } else {
       notify_tag_advance_grant_immediate(e, tag);
     }
@@ -2268,10 +2227,9 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
+    fed->has_upstream_transient_federates = false;
     fed->is_transient = true;
     fed->effective_start_tag = NEVER_TAG;
-    fed->pending_grant = NEVER_TAG;
-    fed->pending_provisional_grant = NEVER_TAG;
   }
 
   void reset_transient_federate(federate_info_t * fed) {
@@ -2287,9 +2245,6 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     fed->requested_stop = false;
     fed->is_transient = true;
     fed->effective_start_tag = NEVER_TAG;
-    fed->pending_grant = NEVER_TAG;
-    fed->pending_provisional_grant = NEVER_TAG;
-    // FIXME: There is room though to check if the interface has changed??? Do we allow this?
   }
 
   int32_t start_rti_server(uint16_t port) {
@@ -2312,7 +2267,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
 
   /**
    * Iterate over the federates and sets 'has_upstream_transient_federates'.
-   * Once done, check that no transient federate has an upstream transient federate,
+   * Once done, check that no transient federate has an upstream transient federate.
    * and compute the number of persistent federates that do have upstream transients,
    * which is the maximun number of delayed grants that can be pending at the same time.
    * This is useful for initialyzing the queue of delayed grants.
@@ -2344,144 +2299,156 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         max_number_of_delayed_grants++;
       }
     }
+    // Now check that no transient has an upstream transient
+    // FIXME: Do we really need this? Or should it be the job of the validator?
+    uint16_t max_number_of_delayed_grants = 0;
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+      federate_info_t* fed = GET_FED_INFO(i);
+      if (fed->is_transient && fed->has_upstream_transient_federates) {
+        return -1;
+      }
+      if (!fed->is_transient && fed->has_upstream_transient_federates) {
+        max_number_of_delayed_grants++;
+      }
+    }
 
     return max_number_of_delayed_grants;
   }
+  return max_number_of_delayed_grants;
+}
 
-  void wait_for_federates(int socket_descriptor) {
-    // Wait for connections from persistent federates and create a thread for each.
-    lf_connect_to_persistent_federates(socket_descriptor);
-    // Wait for connections from persistent federates and create a thread for each.
-    lf_connect_to_persistent_federates(socket_descriptor);
+void wait_for_federates(int socket_descriptor) {
+  // Wait for connections from persistent federates and create a thread for each.
+  lf_connect_to_persistent_federates(socket_descriptor);
 
-    // Set has_upstream_transient_federates parameter in all federates and check
-    // that there is no more than one level of transiency
-    if (rti_remote->number_of_transient_federates > 0) {
-      int max_number_of_pending_grants = set_has_upstream_transient_federates_parameter_and_check();
-      if (max_number_of_pending_grants == -1) {
-        lf_print_error_and_exit("RTI: Transient federates cannot have transient upstreams!");
-      }
-      rti_remote->delayed_grants = pqueue_delayed_grants_init(max_number_of_pending_grants);
+  // Set has_upstream_transient_federates parameter in all federates and check
+  // that there is no more than one level of transiency
+  if (rti_remote->number_of_transient_federates > 0) {
+    int max_number_of_pending_grants = set_has_upstream_transient_federates_parameter_and_check();
+    if (max_number_of_pending_grants == -1) {
+      lf_print_error_and_exit("RTI: Transient federates cannot have transient upstreams!");
     }
+    rti_remote->delayed_grants = pqueue_delayed_grants_init(max_number_of_pending_grants);
+  }
 
-    // All persistent federates have connected.
-    lf_print("RTI: All expected persistent federates have connected. Starting execution.");
-    if (rti_remote->number_of_transient_federates > 0) {
-      lf_print("RTI: Transient Federates can join and leave the federation at anytime.");
+  // All persistent federates have connected.
+  lf_print("RTI: All expected persistent federates have connected. Starting execution.");
+  if (rti_remote->number_of_transient_federates > 0) {
+    lf_print("RTI: Transient Federates can join and leave the federation at anytime.");
+  }
+
+  // The socket server will only continue to accept connections from transient
+  // federates.
+  // In case some other federation's federates are trying to join the wrong
+  // federation, need to respond. Start a separate thread to do that.
+  lf_thread_t responder_thread;
+  lf_thread_t transient_thread;
+  lf_thread_t delayed_grants_thread;
+
+  // If the federation does not include transient federates, then respond to
+  // erronous connections. Otherwise, continue to accept transients joining and
+  // respond to duplicate joing requests.
+  if (rti_remote->number_of_transient_federates == 0) {
+    lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
+  } else if (rti_remote->number_of_transient_federates > 0) {
+    lf_thread_create(&transient_thread, lf_connect_to_transient_federates_thread, NULL);
+    lf_thread_create(&delayed_grants_thread, lf_delayed_grants_thread, NULL);
+  }
+
+  // Wait for persistent federate threads to exit.
+  void* thread_exit_status;
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+    federate_info_t* fed = GET_FED_INFO(i);
+    if (!fed->is_transient) {
+      lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
+      lf_thread_join(fed->thread_id, &thread_exit_status);
+      pqueue_tag_free(fed->in_transit_message_tags);
+      lf_print("RTI: Persistent federate %d thread exited.", fed->enclave.id);
     }
+  }
 
-    // The socket server will only continue to accept connections from transient
-    // federates.
-    // In case some other federation's federates are trying to join the wrong
-    // federation, need to respond. Start a separate thread to do that.
-    lf_thread_t responder_thread;
-    lf_thread_t transient_thread;
-    lf_thread_t delayed_grants_thread;
+  rti_remote->all_persistent_federates_exited = true;
+  rti_remote->phase = shutdown_phase;
+  lf_print("RTI: All persistent threads exited.");
 
-    // If the federation does not include transient federates, then respond to
-    // erronous connections. Otherwise, continue to accept transients joining and
-    // respond to duplicate joing requests.
-    if (rti_remote->number_of_transient_federates == 0) {
-      lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
-    } else if (rti_remote->number_of_transient_federates > 0) {
-      lf_thread_create(&transient_thread, lf_connect_to_transient_federates_thread, NULL);
-      lf_thread_create(&delayed_grants_thread, lf_delayed_grants_thread, NULL);
-    }
-
-    // Wait for persistent federate threads to exit.
-    void* thread_exit_status;
+  // Wait for transient federate threads to exit, if any.
+  if (rti_remote->number_of_transient_federates > 0) {
     for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
       federate_info_t* fed = GET_FED_INFO(i);
-      if (!fed->is_transient) {
+      if (fed->is_transient) {
         lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
         lf_thread_join(fed->thread_id, &thread_exit_status);
         pqueue_tag_free(fed->in_transit_message_tags);
-        lf_print("RTI: Persistent federate %d thread exited.", fed->enclave.id);
+        lf_print("RTI: Transient federate %d thread exited.", fed->enclave.id);
       }
-    }
-
-    rti_remote->all_persistent_federates_exited = true;
-    rti_remote->phase = shutdown_phase;
-    lf_print("RTI: All persistent threads exited.");
-
-    // Wait for transient federate threads to exit, if any.
-    if (rti_remote->number_of_transient_federates > 0) {
-      for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-        federate_info_t* fed = GET_FED_INFO(i);
-        if (fed->is_transient) {
-          lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
-          lf_thread_join(fed->thread_id, &thread_exit_status);
-          pqueue_tag_free(fed->in_transit_message_tags);
-          lf_print("RTI: Transient federate %d thread exited.", fed->enclave.id);
-        }
-      }
-    }
-
-    rti_remote->all_federates_exited = true;
-
-    // Shutdown and close the socket that is listening for incoming connections
-    // so that the accept() call in respond_to_erroneous_connections returns.
-    // That thread should then check rti->all_federates_exited and it should exit.
-    if (shutdown(socket_descriptor, SHUT_RDWR)) {
-      LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
-    }
-    // NOTE: In all common TCP/IP stacks, there is a time period,
-    // typically between 30 and 120 seconds, called the TIME_WAIT period,
-    // before the port is released after this close. This is because
-    // the OS is preventing another program from accidentally receiving
-    // duplicated packets intended for this program.
-    close(socket_descriptor);
-
-    if (rti_remote->socket_descriptor_UDP > 0) {
-      if (shutdown(rti_remote->socket_descriptor_UDP, SHUT_RDWR)) {
-        LF_PRINT_LOG("On shut down UDP socket, received reply: %s", strerror(errno));
-      }
-      close(rti_remote->socket_descriptor_UDP);
     }
   }
 
-  void initialize_RTI(rti_remote_t * rti) {
-    rti_remote = rti;
+  rti_remote->all_federates_exited = true;
 
-    // Initialize thread synchronization primitives
-    LF_MUTEX_INIT(&rti_mutex);
-    LF_COND_INIT(&received_start_times, &rti_mutex);
-    LF_COND_INIT(&sent_start_time, &rti_mutex);
-    LF_COND_INIT(&updated_delayed_grants, &rti_mutex);
-
-    initialize_rti_common(&rti_remote->base);
-    rti_remote->base.mutex = &rti_mutex;
-
-    // federation_rti related initializations
-    rti_remote->max_start_time = 0LL;
-    rti_remote->num_feds_proposed_start = 0;
-    rti_remote->all_federates_exited = false;
-    rti_remote->federation_id = "Unidentified Federation";
-    rti_remote->user_specified_port = 0;
-    rti_remote->final_port_TCP = 0;
-    rti_remote->socket_descriptor_TCP = -1;
-    rti_remote->final_port_UDP = UINT16_MAX;
-    rti_remote->socket_descriptor_UDP = -1;
-    rti_remote->clock_sync_global_status = clock_sync_init;
-    rti_remote->clock_sync_period_ns = MSEC(10);
-    rti_remote->clock_sync_exchanges_per_interval = 10;
-    rti_remote->authentication_enabled = false;
-    rti_remote->base.tracing_enabled = false;
-    rti_remote->stop_in_progress = false;
-    rti_remote->number_of_transient_federates = 0;
-    rti_remote->phase = startup_phase;
+  // Shutdown and close the socket that is listening for incoming connections
+  // so that the accept() call in respond_to_erroneous_connections returns.
+  // That thread should then check rti->all_federates_exited and it should exit.
+  if (shutdown(socket_descriptor, SHUT_RDWR)) {
+    LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
   }
+  // NOTE: In all common TCP/IP stacks, there is a time period,
+  // typically between 30 and 120 seconds, called the TIME_WAIT period,
+  // before the port is released after this close. This is because
+  // the OS is preventing another program from accidentally receiving
+  // duplicated packets intended for this program.
+  close(socket_descriptor);
 
-  void free_scheduling_nodes(scheduling_node_t * *scheduling_nodes, uint16_t number_of_scheduling_nodes) {
-    for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
-      // FIXME: Gives error freeing memory not allocated!!!!
-      scheduling_node_t* node = scheduling_nodes[i];
-      if (node->upstream != NULL)
-        free(node->upstream);
-      if (node->downstream != NULL)
-        free(node->downstream);
+  if (rti_remote->socket_descriptor_UDP > 0) {
+    if (shutdown(rti_remote->socket_descriptor_UDP, SHUT_RDWR)) {
+      LF_PRINT_LOG("On shut down UDP socket, received reply: %s", strerror(errno));
     }
-    free(scheduling_nodes);
+    close(rti_remote->socket_descriptor_UDP);
   }
+}
+
+void initialize_RTI(rti_remote_t* rti) {
+  rti_remote = rti;
+
+  // Initialize thread synchronization primitives
+  LF_MUTEX_INIT(&rti_mutex);
+  LF_COND_INIT(&received_start_times, &rti_mutex);
+  LF_COND_INIT(&sent_start_time, &rti_mutex);
+  LF_COND_INIT(&updated_delayed_grants, &rti_mutex);
+
+  initialize_rti_common(&rti_remote->base);
+  rti_remote->base.mutex = &rti_mutex;
+
+  // federation_rti related initializations
+  rti_remote->max_start_time = 0LL;
+  rti_remote->num_feds_proposed_start = 0;
+  rti_remote->all_federates_exited = false;
+  rti_remote->federation_id = "Unidentified Federation";
+  rti_remote->user_specified_port = 0;
+  rti_remote->final_port_TCP = 0;
+  rti_remote->socket_descriptor_TCP = -1;
+  rti_remote->final_port_UDP = UINT16_MAX;
+  rti_remote->socket_descriptor_UDP = -1;
+  rti_remote->clock_sync_global_status = clock_sync_init;
+  rti_remote->clock_sync_period_ns = MSEC(10);
+  rti_remote->clock_sync_exchanges_per_interval = 10;
+  rti_remote->authentication_enabled = false;
+  rti_remote->base.tracing_enabled = false;
+  rti_remote->stop_in_progress = false;
+  rti_remote->number_of_transient_federates = 0;
+  rti_remote->phase = startup_phase;
+}
+
+void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
+  for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
+    // FIXME: Gives error freeing memory not allocated!!!!
+    scheduling_node_t* node = scheduling_nodes[i];
+    if (node->upstream != NULL)
+      free(node->upstream);
+    if (node->downstream != NULL)
+      free(node->downstream);
+  }
+  free(scheduling_nodes);
+}
 
 #endif // STANDALONE_RTI
