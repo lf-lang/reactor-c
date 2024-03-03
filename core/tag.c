@@ -157,8 +157,8 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         size_t printed = lf_comma_separated_time(buffer, time / HOURS(1));
         time = time % HOURS(1);
         buffer += printed;
-        snprintf(buffer, 4, " hr");
-        buffer += 3;
+        snprintf(buffer, 3, " h");
+        buffer += 2;
     }
     if (time > MINUTES(1)) {
         if (lead == true) {
