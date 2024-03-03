@@ -294,7 +294,10 @@ static int create_rti_server(uint16_t port, socket_type_t socket_type) {
 /**
  * @brief Insert the delayed grant into the delayed_grants queue.
  *
- * In case there is already a grant for that federte, keep the soonest one.
+ * The insertion will cause the broadcast to cause the delayed_grants_thread to
+ * account for the update.
+ *
+ * In case there is already a grant for that federate, keep the soonest one.
  * FIXME: Is that correct?
  *
  * @param fed The federate.
@@ -325,10 +328,17 @@ static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provis
 }
 
 /**
- * @brief Cancels the delayed grants of a federate by deleting then from the delayed_grants queue.
- * *
+ * @brief Cancel a delayed grant by removing it from delayed_grants queue.
+ *
+ * The removal will cause the broadcast to cause the delayed_grants_thread to
+ * account for the update.
+ *
+ * In case there is already a grant for that federte, keep the soonest one.
+ * FIXME: Is that correct?
+ *
  * @param fed The federate.
  */
+
 void notify_grant_canceled(federate_info_t* fed) {
   LF_MUTEX_LOCK(&rti_mutex);
   pqueue_delayed_grant_element_t* dge =
@@ -2171,6 +2181,9 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
   return NULL;
 }
 
+/**
+ *
+ */
 void* lf_delayed_grants_thread(void* nothing) {
   initialize_lf_thread_id();
   while (rti_remote->phase == execution_phase) {
@@ -2310,7 +2323,7 @@ static int set_has_upstream_transient_federates_parameter_and_check() {
 
   // Now check that no transient has an upstream transient
   // FIXME: Do we really need this? Or should it be the job of the validator?
-  uint16_t max_number_of_delayed_grants = 0;
+  int max_number_of_delayed_grants = 0;
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
     if (fed->is_transient && fed->has_upstream_transient_federates) {
@@ -2331,7 +2344,7 @@ void wait_for_federates(int socket_descriptor) {
   // Set has_upstream_transient_federates parameter in all federates and check
   // that is no more than one level of transiency
   if (rti_remote->number_of_transient_federates > 0) {
-    uint16_t max_number_of_pending_grants = set_has_upstream_transient_federates_parameter_and_check();
+    int max_number_of_pending_grants = set_has_upstream_transient_federates_parameter_and_check();
     if (max_number_of_pending_grants == -1) {
       lf_print_error_and_exit("RTI: Transient federates cannot have transient upstreams!");
     }
