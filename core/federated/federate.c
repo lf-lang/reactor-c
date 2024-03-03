@@ -592,6 +592,9 @@ static int handle_tagged_message(int* socket, int fed_id) {
 
     LF_MUTEX_LOCK(&env->mutex);
 
+#ifdef FEDERATED_CENTRALIZED
+    pqueue_tag_insert_if_no_match(env->delivered_message_tag_q, intended_tag);
+#endif
     action->trigger->physical_time_of_arrival = time_of_arrival;
 
     // Create a token for the message
@@ -2269,15 +2272,24 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 }
 
 void lf_latest_tag_complete(tag_t tag_to_send) {
+    environment_t *env;
+    _lf_get_environments(&env);
+    LF_MUTEX_LOCK(&env->mutex);
+    tag_t earliest_delievered_message_tag = pqueue_tag_peek_tag(env->delivered_message_tag_q);
+    pqueue_tag_remove_up_to(env->delivered_message_tag_q, tag_to_send);
+    LF_MUTEX_UNLOCK(&env->mutex);
+    int compare_with_earliest_delievered_message_tag = lf_tag_compare(earliest_delievered_message_tag, tag_to_send);
     int compare_with_last_tag = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
-    if (compare_with_last_tag >= 0) {
+    if (compare_with_last_tag >= 0 || compare_with_earliest_delievered_message_tag > 0) {
         return;
     }
+
     LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.",
             tag_to_send.time - start_time,
             tag_to_send.microstep);
     send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, tag_to_send);
     _fed.last_sent_LTC = tag_to_send;
+
 }
 
 parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
