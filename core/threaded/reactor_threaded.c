@@ -631,6 +631,8 @@ void _lf_initialize_start_tag(environment_t *env) {
     LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
             start_time, lf_fed_STA_offset);
 #else
+    // For other than federated decentralized execution, there is no lf_fed_STA_offset variable defined.
+    // To use uniform code below, we define it here as a local variable.
     instant_t lf_fed_STA_offset = 0;
     LF_PRINT_LOG("Waiting for start time " PRINTF_TIME ".",
             start_time);
