@@ -1325,3 +1325,8 @@ void termination(void) {
     }
     lf_tracing_global_shutdown();
 }
+
+index_t lf_combine_deadline_and_level(interval_t deadline, int level) {
+    if (deadline > ULLONG_MAX >> 16) return ((ULLONG_MAX >> 16) << 16) | level;
+    else return (deadline << 16) | level;
+}
