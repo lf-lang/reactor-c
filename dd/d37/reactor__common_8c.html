@@ -192,6 +192,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aa329f59a16f5617b5195f2c05872c9e9" id="r_aa329f59a16f5617b5195f2c05872c9e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa329f59a16f5617b5195f2c05872c9e9">termination</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
 <tr class="memdesc:aa329f59a16f5617b5195f2c05872c9e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform final wrap-up on exit.  <br /></td></tr>
 <tr class="separator:aa329f59a16f5617b5195f2c05872c9e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6876ddf559d9ecf14ae78f76e6ff2045" id="r_a6876ddf559d9ecf14ae78f76e6ff2045"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a4448d06be794d3f5412d0edb412dc00e">index_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6876ddf559d9ecf14ae78f76e6ff2045">lf_combine_deadline_and_level</a> (<a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> deadline, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">level</a>)</td></tr>
+<tr class="memdesc:a6876ddf559d9ecf14ae78f76e6ff2045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine a deadline and a level into a single index for sorting in the reaction queue.  <br /></td></tr>
+<tr class="separator:a6876ddf559d9ecf14ae78f76e6ff2045"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -642,6 +645,35 @@ Erling Rennemo Jellum </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A pointer to the allocated memory. </dd></dl>
+
+</div>
+</div>
+<a id="a6876ddf559d9ecf14ae78f76e6ff2045" name="a6876ddf559d9ecf14ae78f76e6ff2045"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6876ddf559d9ecf14ae78f76e6ff2045">&#9670;&#160;</a></span>lf_combine_deadline_and_level()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/d1d/lf__types_8h.html#a4448d06be794d3f5412d0edb412dc00e">index_t</a> lf_combine_deadline_and_level </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>deadline</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>level</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Combine a deadline and a level into a single index for sorting in the reaction queue. </p>
+<p>This shifts the deadline right by 16 bits and inserts the level in the low-order 16 bits. If the deadline is larger than <code>ULLONG_MAX &gt;&gt; 16</code>, then it is treated as the largest possible deadline. @oaran deadline THe deadline. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">level</td><td>The level in the reaction graph. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

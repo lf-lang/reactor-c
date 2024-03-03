@@ -13,6 +13,7 @@ var reactor__common_8c =
     [ "_lf_trigger_startup_reactions", "dd/d37/reactor__common_8c.html#afd3a0abded3adbc25ab7dbc261e7b16c", null ],
     [ "initialize_global", "dd/d37/reactor__common_8c.html#a4b9fe00b97fa37e9602b85b7086acec1", null ],
     [ "lf_allocate", "dd/d37/reactor__common_8c.html#a1a5fdb69bc112879d4014bb0790e843c", null ],
+    [ "lf_combine_deadline_and_level", "dd/d37/reactor__common_8c.html#a6876ddf559d9ecf14ae78f76e6ff2045", null ],
     [ "lf_free", "dd/d37/reactor__common_8c.html#aa028b6b458854278bb2a2de486e40268", null ],
     [ "lf_free_all_reactors", "dd/d37/reactor__common_8c.html#adf76c4fc43b07691236fa6a483762481", null ],
     [ "lf_free_reactor", "dd/d37/reactor__common_8c.html#a2f0b7c8d624c2da93012538bd93568ad", null ],
