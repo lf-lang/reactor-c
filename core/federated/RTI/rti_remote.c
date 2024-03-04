@@ -2068,7 +2068,11 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
 }
 
 /**
- *
+ * This thread is responsible for managing the priority queue of delayed grants to be issued.
+ * It waits until the current time matches the highest priority tag time in the queue.
+ * If reached, it notifies the grant immediately. If, however, the current time has not yet
+ * reached the highest priority tag and the queue has been updated (either by inserting or
+ * canceling an entry), the thread stops waiting and restarts the process again.
  */
 void* lf_delayed_grants_thread(void* nothing) {
   initialize_lf_thread_id();
@@ -2076,7 +2080,10 @@ void* lf_delayed_grants_thread(void* nothing) {
   // Wait for the first condition signal
   lf_cond_wait(&updated_delayed_grants);
 
-  while (rti_remote->phase == execution_phase) {
+  while (true) {
+    if (rti_remote->all_federates_exited) {
+      break;
+    }
     if (pqueue_delayed_grants_size(rti_remote->delayed_grants) != 0) {
       pqueue_delayed_grant_element_t* next;
       // Do not pop, but rather read
