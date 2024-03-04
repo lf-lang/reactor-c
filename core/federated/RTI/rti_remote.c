@@ -319,10 +319,10 @@ static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provis
     dge->fed_id = fed->enclave.id;
     dge->is_provisional = is_provisional;
     pqueue_delayed_grants_insert(rti_remote->delayed_grants, dge);
-    lf_cond_broadcast(&updated_delayed_grants);
+    lf_cond_signal(&updated_delayed_grants);
   } else {
     // FIXME: Decide what to do in this case...
-    // TODO: to do!
+    // TODO: do it!
   }
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -345,7 +345,7 @@ void notify_grant_canceled(federate_info_t* fed) {
       pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, fed->enclave.id);
   if (dge != NULL) {
     pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
-    lf_cond_broadcast(&updated_delayed_grants);
+    lf_cond_signal(&updated_delayed_grants);
   }
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -2186,6 +2186,10 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
  */
 void* lf_delayed_grants_thread(void* nothing) {
   initialize_lf_thread_id();
+
+  // Wait for the first condition signal
+  lf_cond_wait(&updated_delayed_grants);
+
   while (rti_remote->phase == execution_phase) {
     if (pqueue_delayed_grants_size(rti_remote->delayed_grants) != 0) {
       pqueue_delayed_grant_element_t* next;
@@ -2193,7 +2197,7 @@ void* lf_delayed_grants_thread(void* nothing) {
       next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
       instant_t next_time = next->base.tag.time;
       // Wait for expiration, or a signal to stop or terminate.
-      if (lf_clock_cond_timedwait(&updated_delayed_grants, next_time) == LF_TIMEOUT) {
+      if (lf_clock_cond_timedwait(&updated_delayed_grants, next_time) != LF_TIMEOUT) {
         lf_print("RTI: lf_delayed_grants_thread() is sending grant to %d at " PRINTF_TIME ".", next->fed_id,
                  next_time - start_time);
         // Time reached to send the grant. Do it for delayed grants with
@@ -2343,7 +2347,7 @@ void wait_for_federates(int socket_descriptor) {
   lf_connect_to_persistent_federates(socket_descriptor);
 
   // Set has_upstream_transient_federates parameter in all federates and check
-  // that is no more than one level of transiency
+  // that there is no more than one level of transiency
   if (rti_remote->number_of_transient_federates > 0) {
     int max_number_of_pending_grants = set_has_upstream_transient_federates_parameter_and_check();
     if (max_number_of_pending_grants == -1) {
