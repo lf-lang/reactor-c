@@ -2223,6 +2223,7 @@ void* lf_delayed_grants_thread(void* nothing) {
   //        federation stopped after a request to stop (not a timeout). Therefore, we need
   //        cleanup, and free the memory...
   // TODO: do it!
+  return NULL;
 }
 
 void* respond_to_erroneous_connections(void* nothing) {
