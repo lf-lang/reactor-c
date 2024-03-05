@@ -11,39 +11,44 @@
 #ifndef TAG_H
 #define TAG_H
 
-#define NSEC(t)     ((interval_t) (t * 1LL))
-#define NSECS(t)    ((interval_t) (t * 1LL))
-#define USEC(t)     ((interval_t) (t * 1000LL))
-#define USECS(t)    ((interval_t) (t * 1000LL))
-#define MSEC(t)     ((interval_t) (t * 1000000LL))
-#define MSECS(t)    ((interval_t) (t * 1000000LL))
-#define SEC(t)      ((interval_t) (t * 1000000000LL))
-#define SECS(t)     ((interval_t) (t * 1000000000LL))
-#define SECOND(t)   ((interval_t) (t * 1000000000LL))
-#define SECONDS(t)  ((interval_t) (t * 1000000000LL))
-#define MINUTE(t)   ((interval_t) (t * 60000000000LL))
-#define MINUTES(t)  ((interval_t) (t * 60000000000LL))
-#define HOUR(t)     ((interval_t) (t * 3600000000000LL))
-#define HOURS(t)    ((interval_t) (t * 3600000000000LL))
-#define DAY(t)      ((interval_t) (t * 86400000000000LL))
-#define DAYS(t)     ((interval_t) (t * 86400000000000LL))
-#define WEEK(t)     ((interval_t) (t * 604800000000000LL))
-#define WEEKS(t)    ((interval_t) (t * 604800000000000LL))
+#define NSEC(t) ((interval_t)(t * 1LL))
+#define NSECS(t) ((interval_t)(t * 1LL))
+#define USEC(t) ((interval_t)(t * 1000LL))
+#define USECS(t) ((interval_t)(t * 1000LL))
+#define MSEC(t) ((interval_t)(t * 1000000LL))
+#define MSECS(t) ((interval_t)(t * 1000000LL))
+#define SEC(t) ((interval_t)(t * 1000000000LL))
+#define SECS(t) ((interval_t)(t * 1000000000LL))
+#define SECOND(t) ((interval_t)(t * 1000000000LL))
+#define SECONDS(t) ((interval_t)(t * 1000000000LL))
+#define MINUTE(t) ((interval_t)(t * 60000000000LL))
+#define MINUTES(t) ((interval_t)(t * 60000000000LL))
+#define HOUR(t) ((interval_t)(t * 3600000000000LL))
+#define HOURS(t) ((interval_t)(t * 3600000000000LL))
+#define DAY(t) ((interval_t)(t * 86400000000000LL))
+#define DAYS(t) ((interval_t)(t * 86400000000000LL))
+#define WEEK(t) ((interval_t)(t * 604800000000000LL))
+#define WEEKS(t) ((interval_t)(t * 604800000000000LL))
 
-#define NEVER ((interval_t) LLONG_MIN)
+#define NEVER ((interval_t)LLONG_MIN)
 #define NEVER_MICROSTEP 0u
-#define FOREVER ((interval_t) LLONG_MAX)
+#define FOREVER ((interval_t)LLONG_MAX)
 #define FOREVER_MICROSTEP UINT_MAX
-#define NEVER_TAG (tag_t) { .time = NEVER, .microstep = NEVER_MICROSTEP }
+#define NEVER_TAG                                                                                                      \
+  (tag_t) { .time = NEVER, .microstep = NEVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define NEVER_TAG_INITIALIZER { NEVER,  NEVER_MICROSTEP }
-#define FOREVER_TAG (tag_t) { .time = FOREVER, .microstep = FOREVER_MICROSTEP }
+#define NEVER_TAG_INITIALIZER                                                                                          \
+  { NEVER, NEVER_MICROSTEP }
+#define FOREVER_TAG                                                                                                    \
+  (tag_t) { .time = FOREVER, .microstep = FOREVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define FOREVER_TAG_INITIALIZER { FOREVER,  FOREVER_MICROSTEP }
-#define ZERO_TAG (tag_t) { .time = 0LL, .microstep = 0u }
+#define FOREVER_TAG_INITIALIZER                                                                                        \
+  { FOREVER, FOREVER_MICROSTEP }
+#define ZERO_TAG                                                                                                       \
+  (tag_t) { .time = 0LL, .microstep = 0u }
 
 // Convenience for converting times
-#define BILLION ((instant_t) 1000000000LL)
+#define BILLION ((instant_t)1000000000LL)
 
 #include <stdint.h>
 #include <stddef.h>
@@ -71,8 +76,8 @@ typedef uint32_t microstep_t;
  * A tag is a time, microstep pair.
  */
 typedef struct {
-    instant_t time;
-    microstep_t microstep;
+  instant_t time;
+  microstep_t microstep;
 } tag_t;
 
 ////////////////  Functions
@@ -161,7 +166,7 @@ instant_t lf_time_logical(void* env);
  * @param env The environment from which we want the elapsed logical time.
  * @return A time interval.
  */
-interval_t lf_time_logical_elapsed(void *env);
+interval_t lf_time_logical_elapsed(void* env);
 
 /**
  * Return the current physical time in nanoseconds.
@@ -186,7 +191,6 @@ instant_t lf_time_physical_elapsed(void);
  * @return A time instant.
  */
 instant_t lf_time_start(void);
-
 
 /**
  * For user-friendly reporting of time values, the buffer length required.

@@ -27,46 +27,44 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * @brief Platform support for the Linux operating system.
- * 
+ *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
- 
+
 #include "platform/lf_linux_support.h"
 #include "low_level_platform.h"
 
 #if defined LF_SINGLE_THREADED
-    #include "lf_os_single_threaded_support.c"
+#include "lf_os_single_threaded_support.c"
 #endif
 
 #if !defined LF_SINGLE_THREADED
-    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
-        // (Not C++11 or later) or no threads support
-        #include "lf_POSIX_threads_support.c"
-    #else
-        #include "lf_C11_threads_support.c"
-    #endif
+#if __STDC_VERSION__ < 201112L || defined(__STDC_NO_THREADS__)
+// (Not C++11 or later) or no threads support
+#include "lf_POSIX_threads_support.c"
+#else
+#include "lf_C11_threads_support.c"
+#endif
 #endif
 
 #include "platform/lf_unix_clock_support.h"
 
 int lf_sleep(interval_t sleep_duration) {
-    const struct timespec tp = convert_ns_to_timespec(sleep_duration);
-    struct timespec remaining;
-    return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
+  const struct timespec tp = convert_ns_to_timespec(sleep_duration);
+  struct timespec remaining;
+  return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
 }
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
-    interval_t sleep_duration = wakeup_time - lf_time_physical();
+  interval_t sleep_duration = wakeup_time - lf_time_physical();
 
-    if (sleep_duration <= 0) {
-        return 0;
-    } else {
-        return lf_sleep(sleep_duration);
-    }
-}
-
-int lf_nanosleep(interval_t sleep_duration) {
+  if (sleep_duration <= 0) {
+    return 0;
+  } else {
     return lf_sleep(sleep_duration);
+  }
 }
+
+int lf_nanosleep(interval_t sleep_duration) { return lf_sleep(sleep_duration); }
 #endif

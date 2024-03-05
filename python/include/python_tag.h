@@ -41,8 +41,7 @@ extern PyTypeObject PyTagType;
  * Python wrapper for the tag_t struct in the C target.
  **/
 typedef struct {
-    PyObject_HEAD
-    tag_t tag;
+  PyObject_HEAD tag_t tag;
 } py_tag_t;
 
 /**
@@ -53,7 +52,7 @@ typedef struct {
  */
 py_tag_t* convert_C_tag_to_py(tag_t c_tag);
 
-PyObject* py_lf_tag(PyObject *self, PyObject *args);
-PyObject* py_tag_compare(PyObject *self, PyObject *args);
+PyObject* py_lf_tag(PyObject* self, PyObject* args);
+PyObject* py_tag_compare(PyObject* self, PyObject* args);
 
 #endif

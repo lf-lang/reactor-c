@@ -55,15 +55,15 @@ extern PyTypeObject py_port_capsule_t;
  * as its first element a token_type_t.
  */
 typedef struct {
-    size_t element_size;                     // token_type_t
-    void (*destructor) (void* value);        // token_type_t
-    void* (*copy_constructor) (void* value); // token_type_t
-    lf_token_t* token;                       // token_template_t
-    size_t length;                           // token_template_t
-    bool is_present;                         // lf_port_base_t
-    lf_port_internal_t _base;                // lf_port_internal_t
-    PyObject* value;
-    FEDERATED_GENERIC_EXTENSION
+  size_t element_size;                    // token_type_t
+  void (*destructor)(void* value);        // token_type_t
+  void* (*copy_constructor)(void* value); // token_type_t
+  lf_token_t* token;                      // token_template_t
+  size_t length;                          // token_template_t
+  bool is_present;                        // lf_port_base_t
+  lf_port_internal_t _base;               // lf_port_internal_t
+  PyObject* value;
+  FEDERATED_GENERIC_EXTENSION
 } generic_port_instance_struct;
 
 /**
@@ -89,13 +89,12 @@ typedef struct {
  * current_index: Used to facilitate iterative functions (@see port_iter)
  **/
 typedef struct {
-    PyObject_HEAD
-    PyObject* port;
-    PyObject* value;
-    bool is_present;
-    int width;
-    long current_index;
-    FEDERATED_CAPSULE_EXTENSION
+  PyObject_HEAD PyObject* port;
+  PyObject* value;
+  bool is_present;
+  int width;
+  long current_index;
+  FEDERATED_CAPSULE_EXTENSION
 } generic_port_capsule_struct;
 
 void python_count_decrement(void* py_object);

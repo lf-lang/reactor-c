@@ -32,11 +32,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 ///////// Time-keeping functions //////////
-PyObject* py_lf_time_logical(PyObject *self, PyObject *args);
-PyObject* py_lf_time_logical_elapsed(PyObject *self, PyObject *args);
-PyObject* py_lf_time_physical(PyObject *self, PyObject *args);
-PyObject* py_lf_time_physical_elapsed(PyObject *self, PyObject *args);
-PyObject* py_lf_time_start(PyObject *self, PyObject *args);
+PyObject* py_lf_time_logical(PyObject* self, PyObject* args);
+PyObject* py_lf_time_logical_elapsed(PyObject* self, PyObject* args);
+PyObject* py_lf_time_physical(PyObject* self, PyObject* args);
+PyObject* py_lf_time_physical_elapsed(PyObject* self, PyObject* args);
+PyObject* py_lf_time_start(PyObject* self, PyObject* args);
 
 extern PyTypeObject PyTimeType;
 

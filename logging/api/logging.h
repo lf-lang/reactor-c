@@ -5,7 +5,7 @@
 // The arguments are the position of the format string (starting with 1)
 // and the start of the remaining arguments, or 0 for vprintf style functions.
 #if defined(__GNUC__)
-#define ATTRIBUTE_FORMAT_PRINTF(f, s) __attribute__((format (printf, f, s)))
+#define ATTRIBUTE_FORMAT_PRINTF(f, s) __attribute__((format(printf, f, s)))
 #else
 #define ATTRIBUTE_FORMAT_PRINTF(f, s)
 #endif

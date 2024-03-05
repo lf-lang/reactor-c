@@ -33,9 +33,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <stdarg.h>   // Defines va_list
+#include <stdarg.h> // Defines va_list
 #include <stdbool.h>
-#include <stdint.h>   // Defines int64_t
+#include <stdint.h> // Defines int64_t
 
 #include "logging_macros.h"
 
@@ -43,10 +43,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Holds generic statistical data
  */
 typedef struct lf_stat_ll {
-    int64_t average;
-    int64_t standard_deviation;
-    int64_t variance;
-    int64_t max;
+  int64_t average;
+  int64_t standard_deviation;
+  int64_t variance;
+  int64_t max;
 } lf_stat_ll;
 
 /**
@@ -96,7 +96,7 @@ int lf_fed_id(void);
 /**
  * varargs alternative of "lf_print"
  */
-void lf_vprint(const char* format, va_list args)  ATTRIBUTE_FORMAT_PRINTF(1, 0);
+void lf_vprint(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * varargs alternative of "lf_print_log"
@@ -113,7 +113,7 @@ void lf_vprint_debug(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1
  * specified message as a prefix, then exit with error code 1.
  * @param msg The prefix to the message.
  */
-void error(const char *msg);
+void error(const char* msg);
 
 /**
  * varargs alternative of "lf_print_error"
@@ -128,8 +128,7 @@ void lf_vprint_warning(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF
 /**
  * varargs alternative of "lf_print_error_and_exit"
  */
-void lf_vprint_error_and_exit(const char* format, va_list args)
-		ATTRIBUTE_FORMAT_PRINTF(1, 0);
+void lf_vprint_error_and_exit(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * Initialize mutex with error checking.

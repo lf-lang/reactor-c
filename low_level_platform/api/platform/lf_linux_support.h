@@ -40,16 +40,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_tag_64_32.h"
 
 #if !defined LF_SINGLE_THREADED
-    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
-        // (Not C++11 or later) or no threads support
-        #include "lf_POSIX_threads_support.h"
-    #else
-        #include "lf_C11_threads_support.h"
-    #endif
+#if __STDC_VERSION__ < 201112L || defined(__STDC_NO_THREADS__)
+// (Not C++11 or later) or no threads support
+#include "lf_POSIX_threads_support.h"
+#else
+#include "lf_C11_threads_support.h"
+#endif
 #endif
 
 #if !defined(_POSIX_TIMERS) || _POSIX_TIMERS <= 0
-    #error Linux platform misses clock support
+#error Linux platform misses clock support
 #endif
 
 #endif // LF_LINUX_SUPPORT_H

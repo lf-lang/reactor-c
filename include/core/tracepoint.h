@@ -43,63 +43,63 @@
  * for each event type.
  */
 typedef enum {
-    reaction_starts,
-    reaction_ends,
-    reaction_deadline_missed,
-    schedule_called,
-    user_event,
-    user_value,
-    worker_wait_starts,
-    worker_wait_ends,
-    scheduler_advancing_time_starts,
-    scheduler_advancing_time_ends,
-    federated, // Everything below this is for tracing federated interactions.
-    // Sending messages
-    send_ACK,
-    send_FAILED,
-    send_TIMESTAMP,
-    send_NET,
-    send_LTC,
-    send_STOP_REQ,
-    send_STOP_REQ_REP,
-    send_STOP_GRN,
-    send_FED_ID,
-    send_PTAG,
-    send_TAG,
-    send_REJECT,
-    send_RESIGN,
-    send_PORT_ABS,
-    send_CLOSE_RQ,
-    send_TAGGED_MSG,
-    send_P2P_TAGGED_MSG,
-    send_MSG,
-    send_P2P_MSG,
-    send_ADR_AD,
-    send_ADR_QR,
-    // Receiving messages
-    receive_ACK,
-    receive_FAILED,
-    receive_TIMESTAMP,
-    receive_NET,
-    receive_LTC,
-    receive_STOP_REQ,
-    receive_STOP_REQ_REP,
-    receive_STOP_GRN,
-    receive_FED_ID,
-    receive_PTAG,
-    receive_TAG,
-    receive_REJECT,
-    receive_RESIGN,
-    receive_PORT_ABS,
-    receive_CLOSE_RQ,
-    receive_TAGGED_MSG,
-    receive_P2P_TAGGED_MSG,
-    receive_MSG,
-    receive_P2P_MSG,
-    receive_ADR_AD,
-    receive_ADR_QR,
-    receive_UNIDENTIFIED,
-    NUM_EVENT_TYPES
+  reaction_starts,
+  reaction_ends,
+  reaction_deadline_missed,
+  schedule_called,
+  user_event,
+  user_value,
+  worker_wait_starts,
+  worker_wait_ends,
+  scheduler_advancing_time_starts,
+  scheduler_advancing_time_ends,
+  federated, // Everything below this is for tracing federated interactions.
+  // Sending messages
+  send_ACK,
+  send_FAILED,
+  send_TIMESTAMP,
+  send_NET,
+  send_LTC,
+  send_STOP_REQ,
+  send_STOP_REQ_REP,
+  send_STOP_GRN,
+  send_FED_ID,
+  send_PTAG,
+  send_TAG,
+  send_REJECT,
+  send_RESIGN,
+  send_PORT_ABS,
+  send_CLOSE_RQ,
+  send_TAGGED_MSG,
+  send_P2P_TAGGED_MSG,
+  send_MSG,
+  send_P2P_MSG,
+  send_ADR_AD,
+  send_ADR_QR,
+  // Receiving messages
+  receive_ACK,
+  receive_FAILED,
+  receive_TIMESTAMP,
+  receive_NET,
+  receive_LTC,
+  receive_STOP_REQ,
+  receive_STOP_REQ_REP,
+  receive_STOP_GRN,
+  receive_FED_ID,
+  receive_PTAG,
+  receive_TAG,
+  receive_REJECT,
+  receive_RESIGN,
+  receive_PORT_ABS,
+  receive_CLOSE_RQ,
+  receive_TAGGED_MSG,
+  receive_P2P_TAGGED_MSG,
+  receive_MSG,
+  receive_P2P_MSG,
+  receive_ADR_AD,
+  receive_ADR_QR,
+  receive_UNIDENTIFIED,
+  NUM_EVENT_TYPES
 } trace_event_t;
 
 #ifdef LF_TRACE
@@ -109,7 +109,7 @@ typedef enum {
 /**
  * String description of event types.
  */
-static const char *trace_event_names[] = {
+static const char* trace_event_names[] = {
     "Reaction starts",
     "Reaction ends",
     "Reaction deadline missed",
@@ -172,15 +172,15 @@ static const char *trace_event_names[] = {
  * @brief A trace record that gets written in binary to the trace file in the default implementation.
  */
 typedef struct trace_record_t {
-    trace_event_t event_type;
-    void* pointer;  // pointer identifying the record, e.g. to self struct for a reactor.
-    int src_id;     // The ID number of the source (e.g. worker or federate) or -1 for no ID number.
-    int dst_id;     // The ID number of the destination (e.g. reaction or federate) or -1 for no ID number.
-    instant_t logical_time;
-    microstep_t microstep;
-    instant_t physical_time;
-    trigger_t* trigger;
-    interval_t extra_delay;
+  trace_event_t event_type;
+  void* pointer; // pointer identifying the record, e.g. to self struct for a reactor.
+  int src_id;    // The ID number of the source (e.g. worker or federate) or -1 for no ID number.
+  int dst_id;    // The ID number of the destination (e.g. reaction or federate) or -1 for no ID number.
+  instant_t logical_time;
+  microstep_t microstep;
+  instant_t physical_time;
+  trigger_t* trigger;
+  interval_t extra_delay;
 } trace_record_t;
 
 /**
@@ -198,18 +198,8 @@ typedef struct trace_record_t {
  * @param is_interval_start Whether this is the start of a time interval being measured (this
  * argument is currently unused)
  */
-void call_tracepoint(
-        int event_type,
-        void* reactor,
-        tag_t tag,
-        int worker,
-        int src_id,
-        int dst_id,
-        instant_t* physical_time,
-        trigger_t* trigger,
-        interval_t extra_delay,
-        bool is_interval_start
-);
+void call_tracepoint(int event_type, void* reactor, tag_t tag, int worker, int src_id, int dst_id,
+                     instant_t* physical_time, trigger_t* trigger, interval_t extra_delay, bool is_interval_start);
 
 /**
  * Register a trace object.
@@ -237,8 +227,9 @@ int register_user_trace_event(void* self, char* description);
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-#define tracepoint_reaction_starts(env, reaction, worker) \
-    call_tracepoint(reaction_starts, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0, true)
+#define tracepoint_reaction_starts(env, reaction, worker)                                                              \
+  call_tracepoint(reaction_starts, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0,  \
+                  true)
 
 /**
  * Trace the end of a reaction execution.
@@ -246,8 +237,9 @@ int register_user_trace_event(void* self, char* description);
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-#define tracepoint_reaction_ends(env, reaction, worker) \
-    call_tracepoint(reaction_ends, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0, false)
+#define tracepoint_reaction_ends(env, reaction, worker)                                                                \
+  call_tracepoint(reaction_ends, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0,    \
+                  false)
 
 /**
  * Trace a call to schedule.
@@ -262,7 +254,7 @@ void tracepoint_schedule(environment_t* env, trigger_t* trigger, interval_t extr
  * register_user_trace_event() with a pointer to the same string
  * or else the event will not be recognized.
  * @param self Pointer to the self struct of the reactor from which we want
- * to trace this event. This pointer is used to get the correct environment and 
+ * to trace this event. This pointer is used to get the correct environment and
  * thus the correct logical tag of the event.
  * @param description Pointer to the description string.
  */
@@ -274,7 +266,7 @@ void tracepoint_user_event(void* self, char* description);
  * register_user_trace_event() with a pointer to the same string
  * or else the event will not be recognized.
  * @param self Pointer to the self struct of the reactor from which we want
- * to trace this event. This pointer is used to get the correct environment and 
+ * to trace this event. This pointer is used to get the correct environment and
  * thus the correct logical tag of the event.
  * @param description Pointer to the description string.
  * @param value The value of the event. This is a long long for
@@ -288,32 +280,32 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param trace The trace object.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-#define tracepoint_worker_wait_starts(env, worker) \
-    call_tracepoint(worker_wait_starts, NULL, env->current_tag, worker, worker, -1, NULL, NULL, 0, true)
+#define tracepoint_worker_wait_starts(env, worker)                                                                     \
+  call_tracepoint(worker_wait_starts, NULL, env->current_tag, worker, worker, -1, NULL, NULL, 0, true)
 
 /**
  * Trace the end of a worker waiting for something to change on the event or reaction queue.
  * @param trace The trace object.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-#define tracepoint_worker_wait_ends(env, worker) \
-    call_tracepoint(worker_wait_ends, NULL, env->current_tag, worker, worker, -1, NULL, NULL, 0, false)
+#define tracepoint_worker_wait_ends(env, worker)                                                                       \
+  call_tracepoint(worker_wait_ends, NULL, env->current_tag, worker, worker, -1, NULL, NULL, 0, false)
 
 /**
  * Trace the start of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
  * @param trace The trace object.
  */
-#define tracepoint_scheduler_advancing_time_starts(env) \
-    call_tracepoint(scheduler_advancing_time_starts, NULL, env->current_tag, -1, -1, -1, NULL, NULL, 0, true);
+#define tracepoint_scheduler_advancing_time_starts(env)                                                                \
+  call_tracepoint(scheduler_advancing_time_starts, NULL, env->current_tag, -1, -1, -1, NULL, NULL, 0, true);
 
 /**
  * Trace the end of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
  * @param trace The trace object.
  */
-#define tracepoint_scheduler_advancing_time_ends(env) \
-    call_tracepoint(scheduler_advancing_time_ends, NULL, env->current_tag, -1, -1, -1, NULL, NULL, 0, false)
+#define tracepoint_scheduler_advancing_time_ends(env)                                                                  \
+  call_tracepoint(scheduler_advancing_time_ends, NULL, env->current_tag, -1, -1, -1, NULL, NULL, 0, false)
 
 /**
  * Trace the occurrence of a deadline miss.
@@ -321,8 +313,9 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-#define tracepoint_reaction_deadline_missed(env, reaction, worker) \
-    call_tracepoint(reaction_deadline_missed, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0, false)
+#define tracepoint_reaction_deadline_missed(env, reaction, worker)                                                     \
+  call_tracepoint(reaction_deadline_missed, reaction->self, env->current_tag, worker, worker, reaction->number, NULL,  \
+                  NULL, 0, false)
 
 /**
  * @brief Check if the tracing library is compatible with the current version
@@ -338,7 +331,7 @@ void lf_tracing_check_version();
 /**
  * Trace federate sending a message to the RTI.
  * @param event_type The type of event. Possible values are:
- * 
+ *
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
@@ -347,7 +340,7 @@ void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag
 /**
  * Trace federate receiving a message from the RTI.
  * @param event_type The type of event. Possible values are:
- * 
+ *
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
  */
@@ -361,7 +354,7 @@ void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* t
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag);
+void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag);
 
 /**
  * Trace federate receiving a message from another federate.
@@ -371,13 +364,13 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
  */
-void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag);
+void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag);
 
 #else
-#define tracepoint_federate_to_rti(...);
-#define tracepoint_federate_from_rti(...);
-#define tracepoint_federate_to_federate(...);
-#define tracepoint_federate_from_federate(...);
+#define tracepoint_federate_to_rti(...) ;
+#define tracepoint_federate_from_rti(...) ;
+#define tracepoint_federate_to_federate(...) ;
+#define tracepoint_federate_from_federate(...) ;
 #endif // FEDERATED
 
 ////////////////////////////////////////////////////////////
@@ -397,14 +390,14 @@ void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
 /**
  * Trace RTI receiving a message from a federate.
  * @param event_type The type of event. Possible values are:
- * 
+ *
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 
 #else
-#define tracepoint_rti_to_federate(...);
+#define tracepoint_rti_to_federate(...) ;
 #define tracepoint_rti_from_federate(...) ;
 #endif // RTI_TRACE
 
@@ -421,22 +414,21 @@ typedef struct trace_t trace_t;
 #define tracepoint_user_value(...)
 #define tracepoint_worker_wait_starts(...)
 #define tracepoint_worker_wait_ends(...)
-#define tracepoint_scheduler_advancing_time_starts(...);
-#define tracepoint_scheduler_advancing_time_ends(...);
-#define tracepoint_reaction_deadline_missed(...);
-#define tracepoint_federate_to_rti(...);
-#define tracepoint_federate_from_rti(...);
+#define tracepoint_scheduler_advancing_time_starts(...) ;
+#define tracepoint_scheduler_advancing_time_ends(...) ;
+#define tracepoint_reaction_deadline_missed(...) ;
+#define tracepoint_federate_to_rti(...) ;
+#define tracepoint_federate_from_rti(...) ;
 #define tracepoint_federate_to_federate(...) ;
 #define tracepoint_federate_from_federate(...) ;
-#define tracepoint_rti_to_federate(...);
+#define tracepoint_rti_to_federate(...) ;
 #define tracepoint_rti_from_federate(...) ;
 
-#define lf_tracing_register_trace_event(...);
-#define lf_tracing_set_start_time(...);
-#define tracepoint(...);
-#define lf_tracing_global_init(...);
-#define lf_tracing_global_shutdown(...);
-
+#define lf_tracing_register_trace_event(...) ;
+#define lf_tracing_set_start_time(...) ;
+#define tracepoint(...) ;
+#define lf_tracing_global_init(...) ;
+#define lf_tracing_global_shutdown(...) ;
 
 #endif // LF_TRACE
 #endif // TRACEPOINT_H

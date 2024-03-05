@@ -41,9 +41,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 
 typedef struct {
-    int count;
-    lf_mutex_t mutex;
-    lf_cond_t cond;
+  int count;
+  lf_mutex_t mutex;
+  lf_cond_t cond;
 } lf_semaphore_t;
 
 /**
