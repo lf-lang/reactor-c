@@ -258,6 +258,9 @@ int environment_init(
             get_event_position, set_event_position, event_matches, print_event);
     env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
+#ifdef FEDERATED_CENTRALIZED
+    env->delivered_message_tag_q = pqueue_tag_init(INITIAL_EVENT_QUEUE_SIZE);
+#endif
 
     // Initialize functionality depending on target properties.
     environment_init_threaded(env, num_workers);

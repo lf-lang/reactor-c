@@ -21,6 +21,7 @@
 
 #include "modal_models/modes.h" // Modal model support
 #include "utils/pqueue.h"
+#include "utils/pqueue_tag.h"
 #include "lf_token.h"
 #include "tag.h"
 #include "vector.h"
