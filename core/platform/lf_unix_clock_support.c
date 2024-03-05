@@ -24,7 +24,6 @@ void _lf_initialize_clock() {
     if (return_value < 0) {
         lf_print_error_and_exit("Could not obtain resolution for CLOCK_REALTIME");
     }
-
     lf_print("---- System clock resolution: %ld nsec", res.tv_nsec);
 }
 
