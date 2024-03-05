@@ -1012,6 +1012,22 @@ void start_threads(environment_t* env) {
         if (lf_thread_create(&env->thread_ids[i], worker, env) != 0) {
             lf_print_error_and_exit("Could not start thread-%u", i);
         }
+
+        // Set scheduling policy to priority-based (i.e. SCHED_FIFO)
+        // with priority of 85.
+        lf_scheduling_policy_priority_t policy = {
+            .base.policy = LF_SCHED_PRIORITY,
+            .priority = 85
+        };
+        
+        if (lf_thread_set_scheduling_policy(env->thread_ids[i], &policy) != 0) {
+            lf_print_error_and_exit("Could not set scheduling policy for thread-%u", i);
+        }
+
+        // Set CPU affinity of the worker. This requires that num_workers <= num_cores
+        if (lf_thread_set_cpu(env->thread_ids[i], i) != 0) {
+            lf_print_error_and_exit("Could not set cpu affinity for thread-%u", i);
+        }
     }
 }
 
