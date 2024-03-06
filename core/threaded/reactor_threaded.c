@@ -1190,10 +1190,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
                     lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
                 }
             }
-        	if (worker_thread_exit_status != NULL) {
+            if (worker_thread_exit_status != NULL) {
                 lf_print_error("---- Worker %d reports error code %p", j, worker_thread_exit_status);
                 ret = 1;
-        	}
+            }
         }
         
         if (ret == 0) {
