@@ -53,4 +53,5 @@ typedef struct inst_t {
     operand_t op1;
     operand_t op2;
     operand_t op3;
+    bool debug;
 } inst_t;

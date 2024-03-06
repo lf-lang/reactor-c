@@ -459,6 +459,8 @@ void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, i
     tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
 }
 
+#if SCHEDULER == SCHED_STATIC
+
 /** Trace the start of the ADDI instruction */
 void tracepoint_static_scheduler_ADDI_starts(trace_t* trace, int worker, int pc) {
     tracepoint(trace, static_scheduler_ADDI_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, true);
@@ -566,6 +568,8 @@ void tracepoint_static_scheduler_STP_ends(trace_t* trace, int worker, int pc) {
 void tracepoint_static_scheduler_WU_ends(trace_t* trace, int worker, int pc) {
     tracepoint(trace, static_scheduler_WU_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
+
+#endif
 
 void stop_trace(trace_t* trace) {
     LF_CRITICAL_SECTION_ENTER(trace->env);
