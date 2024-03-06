@@ -891,11 +891,6 @@ void* clock_synchronization_thread(void* noargs) {
   }
 
   // Initiate a clock synchronization every rti->clock_sync_period_ns
-  // Initiate a clock synchronization every rti->clock_sync_period_ns
-  struct timespec sleep_time = {(time_t)rti_remote->clock_sync_period_ns / BILLION,
-                                rti_remote->clock_sync_period_ns % BILLION};
-  struct timespec remaining_time;
-
   bool any_federates_connected = true;
   while (any_federates_connected) {
     // Sleep

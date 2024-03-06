@@ -165,7 +165,6 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
     return -1;
   }
   ssize_t bytes_written = 0;
-  va_list args;
   while (bytes_written < (ssize_t)num_bytes) {
     ssize_t more = write(socket, buffer + bytes_written, num_bytes - (size_t)bytes_written);
     if (more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
@@ -492,7 +491,7 @@ bool validate_user(const char* user) {
   return match_regex(user, username_regex);
 }
 
-bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len,
+bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, size_t max_len, size_t min_len,
                          const char* err_msg) {
   size_t size = group.rm_eo - group.rm_so;
   if (size > max_len || size < min_len) {
@@ -505,7 +504,7 @@ bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int
 }
 
 bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array,
-                          int* gids, int* max_lens, int* min_lens, const char** err_msgs) {
+                          int* gids, size_t* max_lens, size_t* min_lens, const char** err_msgs) {
   for (int i = 0; i < 3; i++) {
     if (group_array[gids[i]].rm_so != -1) {
       if (!extract_match_group(rti_addr, rti_addr_strs[i], group_array[gids[i]], max_lens[i], min_lens[i],
@@ -527,8 +526,8 @@ void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info)
   int gids[3] = {user_gid, host_gid, port_gid};
   char* rti_addr_strs[3] = {rti_addr_info->rti_user_str, rti_addr_info->rti_host_str, rti_addr_info->rti_port_str};
   bool* rti_addr_flags[3] = {&rti_addr_info->has_user, &rti_addr_info->has_host, &rti_addr_info->has_port};
-  int max_lens[3] = {255, 255, 5};
-  int min_lens[3] = {1, 1, 1};
+  size_t max_lens[3] = {255, 255, 5};
+  size_t min_lens[3] = {1, 1, 1};
   const char* err_msgs[3] = {"User name must be between 1 to 255 characters long.",
                              "Host must be between 1 to 255 characters long.",
                              "Port must be between 1 to 5 characters long."};
@@ -543,7 +542,7 @@ void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info)
 
   if (regexec(&regex_compiled, rti_addr, max_groups, group_array, 0) == 0) {
     // Check for matched username. group_array[0] is the entire matched string.
-    for (int i = 1; i < max_groups; i++) {
+    for (size_t i = 1; i < max_groups; i++) {
       // Annoyingly, the rm_so and rm_eo fields are long long on some platforms and int on others.
       // To suppress warnings, cast to long long
       LF_PRINT_DEBUG("runtime rti_addr regex: so: %lld   eo: %lld\n", (long long)group_array[i].rm_so,

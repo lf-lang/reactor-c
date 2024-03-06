@@ -367,10 +367,11 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
 void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag);
 
 #else
-#define tracepoint_federate_to_rti(...) ;
-#define tracepoint_federate_from_rti(...) ;
-#define tracepoint_federate_to_federate(...) ;
-#define tracepoint_federate_from_federate(...) ;
+static inline void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag) {}
+static inline void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* tag) {}
+static inline void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag) {}
+static inline void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag) {
+}
 #endif // FEDERATED
 
 ////////////////////////////////////////////////////////////
@@ -397,38 +398,107 @@ void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
 void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 
 #else
-#define tracepoint_rti_to_federate(...) ;
-#define tracepoint_rti_from_federate(...) ;
+static inline void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {}
+static inline void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {}
 #endif // RTI_TRACE
 
 #else
 typedef struct trace_t trace_t;
+static inline int register_user_trace_event(void* self, char* description) {
+  (void)self;
+  (void)description;
+  return 0;
+}
+static inline void tracepoint_schedule(environment_t* env, trigger_t* trigger, interval_t extra_delay) {
+  (void)env;
+  (void)trigger;
+  (void)extra_delay;
+}
+static inline void tracepoint_user_event(void* self, char* description) {
+  (void)self;
+  (void)description;
+}
+static inline void tracepoint_user_value(void* self, char* description, long long value) {
+  (void)self;
+  (void)description;
+  (void)value;
+}
+static inline void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)tag;
+}
+static inline void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)tag;
+}
+static inline void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)tag;
+}
+static inline void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)tag;
+}
+static inline void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)partner_id;
+  (void)tag;
+}
+static inline void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)partner_id;
+  (void)tag;
+}
+static inline void lf_tracing_global_init(char* file_name_prefix, int process_id, int max_num_local_threads) {
+  (void)file_name_prefix;
+  (void)process_id;
+  (void)max_num_local_threads;
+}
+static inline void lf_tracing_global_shutdown() {}
+static inline void lf_tracing_set_start_time(int64_t start_time) { (void)start_time; }
 
-// empty definition in case we compile without tracing
-#define _lf_register_trace_event(...) 1
-#define register_user_trace_event(...) 1
-#define tracepoint_reaction_starts(...)
-#define tracepoint_reaction_ends(...)
-#define tracepoint_schedule(...)
-#define tracepoint_user_event(...)
-#define tracepoint_user_value(...)
-#define tracepoint_worker_wait_starts(...)
-#define tracepoint_worker_wait_ends(...)
-#define tracepoint_scheduler_advancing_time_starts(...) ;
-#define tracepoint_scheduler_advancing_time_ends(...) ;
-#define tracepoint_reaction_deadline_missed(...) ;
-#define tracepoint_federate_to_rti(...) ;
-#define tracepoint_federate_from_rti(...) ;
-#define tracepoint_federate_to_federate(...) ;
-#define tracepoint_federate_from_federate(...) ;
-#define tracepoint_rti_to_federate(...) ;
-#define tracepoint_rti_from_federate(...) ;
-
-#define lf_tracing_register_trace_event(...) ;
-#define lf_tracing_set_start_time(...) ;
-#define tracepoint(...) ;
-#define lf_tracing_global_init(...) ;
-#define lf_tracing_global_shutdown(...) ;
+#define tracepoint_reaction_starts(env, reaction, worker)                                                              \
+  while (0) {                                                                                                          \
+    (void)env;                                                                                                         \
+    (void)reaction;                                                                                                    \
+    (void)worker;                                                                                                      \
+  }
+#define tracepoint_reaction_ends(env, reaction, worker)                                                                \
+  while (0) {                                                                                                          \
+    (void)env;                                                                                                         \
+    (void)reaction;                                                                                                    \
+    (void)worker;                                                                                                      \
+  }
+#define tracepoint_worker_wait_starts(env, worker)                                                                     \
+  while (0) {                                                                                                          \
+    (void)env;                                                                                                         \
+    (void)worker;                                                                                                      \
+  }
+#define tracepoint_worker_wait_ends(env, worker)                                                                       \
+  while (0) {                                                                                                          \
+    (void)env;                                                                                                         \
+    (void)worker;                                                                                                      \
+  }
+#define tracepoint_scheduler_advancing_time_starts(env)                                                                \
+  while (0) {                                                                                                          \
+    (void)env;                                                                                                         \
+  }
+#define tracepoint_scheduler_advancing_time_ends(env)                                                                  \
+  while (0) {                                                                                                          \
+    (void)env;                                                                                                         \
+  }
+#define tracepoint_reaction_deadline_missed(env, reaction, worker)                                                     \
+  while (0) {                                                                                                          \
+    (void)env;                                                                                                         \
+    (void)reaction;                                                                                                    \
+    (void)worker;                                                                                                      \
+  }
 
 #endif // LF_TRACE
 #endif // TRACEPOINT_H

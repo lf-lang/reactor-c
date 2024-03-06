@@ -54,7 +54,6 @@ void test_get(hashmap_object2int_t* h) {
  * which each of two actions are performed, expressed as percents.
  */
 void run_test(hashmap_object2int_t* h, int* distribution) {
-  int result = 1;
   int r = rand();
   int choice = (r < 0 ? -r : r) % 100;
   if ((choice = choice - distribution[0]) < 0) {

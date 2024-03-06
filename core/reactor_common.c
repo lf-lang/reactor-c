@@ -119,7 +119,7 @@ void lf_free(struct allocation_record_t** head) {
     LF_PRINT_DEBUG("Freeing memory at %p", record->allocated);
     free(record->allocated);
     struct allocation_record_t* tmp = record->next;
-    LF_PRINT_DEBUG("Freeing allocation record at %p", record);
+    LF_PRINT_DEBUG("Freeing allocation record at %p", (void*)record);
     free(record);
     record = tmp;
   }
@@ -171,7 +171,7 @@ void _lf_start_time_step(environment_t* env) {
   LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", env->current_tag.time - start_time,
                env->current_tag.microstep);
   // Handle dynamically created tokens for mutable inputs.
-  _lf_free_token_copies(env);
+  _lf_free_token_copies();
 
   bool** is_present_fields = env->is_present_fields_abbreviated;
   int size = env->is_present_fields_abbreviated_size;
@@ -199,7 +199,7 @@ void _lf_start_time_step(environment_t* env) {
 #ifdef FEDERATED
   // If the environment is the top-level one, we have some work to do.
   environment_t* envs;
-  int num_envs = _lf_get_environments(&envs);
+  _lf_get_environments(&envs);
   if (env == envs) {
     // This is the top-level environment.
 
@@ -278,7 +278,7 @@ void _lf_pop_events(environment_t* env) {
             reaction->is_STP_violated = true;
             LF_PRINT_LOG("Trigger %p has violated the reaction's STP offset. Intended tag: " PRINTF_TAG
                          ". Current tag: " PRINTF_TAG,
-                         event->trigger, event->intended_tag.time - start_time, event->intended_tag.microstep,
+                         (void*)event->trigger, event->intended_tag.time - start_time, event->intended_tag.microstep,
                          env->current_tag.time - start_time, env->current_tag.microstep);
             // Need to update the last_known_status_tag of the port because otherwise,
             // the MLAA could get stuck, causing the program to lock up.
@@ -519,7 +519,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
   // Increment the reference count of the token.
   if (token != NULL) {
     token->ref_count++;
-    LF_PRINT_DEBUG("_lf_schedule_at_tag: Incremented ref_count of %p to %zu.", token, token->ref_count);
+    LF_PRINT_DEBUG("_lf_schedule_at_tag: Incremented ref_count of %p to %zu.", (void*)token, token->ref_count);
   }
 
   // Do not schedule events if the tag is after the stop tag
@@ -854,7 +854,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
       for (int j = 0; j < reaction->triggered_sizes[i]; j++) {
         trigger_t* trigger = triggerArray[j];
         if (trigger != NULL) {
-          LF_PRINT_DEBUG("Trigger %p lists %d reactions.", trigger, trigger->number_of_reactions);
+          LF_PRINT_DEBUG("Trigger %p lists %d reactions.", (void*)trigger, trigger->number_of_reactions);
           for (int k = 0; k < trigger->number_of_reactions; k++) {
             reaction_t* downstream_reaction = trigger->reactions[k];
 #ifdef FEDERATED_DECENTRALIZED // Only pass down tardiness for federated LF programs
@@ -1202,11 +1202,11 @@ void initialize_global(void) {
   _lf_count_token_allocations = 0;
 #endif
 
-  environment_t* envs;
-  int num_envs = _lf_get_environments(&envs);
 #if defined(LF_SINGLE_THREADED)
   int max_threads_tracing = 1;
 #else
+  environment_t* envs;
+  int num_envs = _lf_get_environments(&envs);
   int max_threads_tracing = envs[0].num_workers * num_envs + 1; // add 1 for the main thread
 #endif
 #if defined(FEDERATED)
@@ -1329,7 +1329,7 @@ void termination(void) {
 }
 
 index_t lf_combine_deadline_and_level(interval_t deadline, int level) {
-  if (deadline > ULLONG_MAX >> 16)
+  if (deadline > ((interval_t)ULLONG_MAX >> 16))
     return ((ULLONG_MAX >> 16) << 16) | level;
   else
     return (deadline << 16) | level;
