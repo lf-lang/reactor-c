@@ -1,6 +1,8 @@
 function(lf_enable_compiler_warnings target)
     if(MSVC)
         target_compile_options(${target} PRIVATE /W4 /WX)
+    elseif(APPLE)
+        target_compile_options(${target} PRIVATE -Wall -Werror)
     else()
         target_compile_options(${target} PRIVATE -Wall -Wextra -pedantic -Werror)
     endif()
