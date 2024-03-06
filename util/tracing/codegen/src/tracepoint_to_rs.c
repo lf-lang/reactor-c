@@ -31,7 +31,7 @@ void to_camel_case(char *s) {
 typedef void (*string_consumer_t)(int, const char *, const char *);
 
 void print_enum_variant(int idx, const char* camel_case, const char* description) {
-    printf("    %s,\n", camel_case);
+    printf("    %s = %d,\n", camel_case, idx);
 }
 
 void print_match_case(int idx, const char* camel_case, const char* description) {
