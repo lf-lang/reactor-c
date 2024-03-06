@@ -1,7 +1,7 @@
 # Check which system we are running on to select the correct platform support
 # file and assign the file's path to LF_PLATFORM_FILE
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
-include(${LF_ROOT}/lf_utils.cmake)
+include(${LF_ROOT}/core/lf_utils.cmake)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(CMAKE_SYSTEM_VERSION 10.0)

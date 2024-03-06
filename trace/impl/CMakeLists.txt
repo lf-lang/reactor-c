@@ -1,5 +1,5 @@
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
-include(${LF_ROOT}/lf_utils.cmake)
+include(${LF_ROOT}/core/lf_utils.cmake)
 
 add_library(lf-trace-impl STATIC)
 add_library(lf::trace-impl ALIAS lf-trace-impl)

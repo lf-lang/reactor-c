@@ -1,7 +1,7 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
-include(${LF_ROOT}/lf_utils.cmake)
+include(${LF_ROOT}/core/lf_utils.cmake)
 
 # Get the general common sources for reactor-c
 list(APPEND GENERAL_SOURCES tag.c clock.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
