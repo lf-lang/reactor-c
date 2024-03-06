@@ -1,3 +1,8 @@
+set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
+include(${LF_ROOT}/lf_utils.cmake)
+
 add_library(lib schedule.c)
 target_link_libraries(lib PRIVATE lf::low-level-platform-api)
 target_link_libraries(lib PRIVATE lf::logging-api)
+
+lf_enable_compiler_warnings(lib)

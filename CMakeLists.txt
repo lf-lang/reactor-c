@@ -23,7 +23,7 @@ if(DEFINED LF_SINGLE_THREADED)
 endif()
 
 # Warnings as errors
-add_compile_options(-Werror)
+add_compile_options(-Wall -Wpedantic -Werror)
 
 set(Test test)
 set(Lib lib)

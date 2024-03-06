@@ -1,9 +1,13 @@
+set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
+include(${LF_ROOT}/lf_utils.cmake)
+
 add_library(lf-trace-impl STATIC)
 add_library(lf::trace-impl ALIAS lf-trace-impl)
 target_link_libraries(lf-trace-impl PRIVATE lf::trace-api)
 target_link_libraries(lf-trace-impl PRIVATE lf::platform-api)
 target_link_libraries(lf-trace-impl PRIVATE lf::logging-api)
 target_link_libraries(lf-trace-impl PRIVATE lf::version-api)
+lf_enable_compiler_warnings(lf-trace-impl)
 
 target_sources(lf-trace-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/trace_impl.c)
 
