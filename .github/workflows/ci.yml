@@ -5,7 +5,7 @@ on:
     branches:
       - main
   pull_request:
-  # Also allow running this workflow manually from the Actions tab.
+    types: [synchronize, opened, reopened, ready_for_review, converted_to_draft]
   workflow_dispatch:
   merge_group:
 
@@ -14,23 +14,31 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
+  check-labels:
+    uses: lf-lang/lingua-franca/.github/workflows/check-labels.yml@master
+
   unit-tests-single:
+    needs: check-labels
     uses: ./.github/workflows/unit-tests.yml
     with:
       cmake-args: '-UNUMBER_OF_WORKERS -DLF_SINGLE_THREADED=1'
 
   unit-tests-multi:
+    needs: check-labels
     uses: ./.github/workflows/unit-tests.yml
     with:
       cmake-args: '-DNUMBER_OF_WORKERS=4 -ULF_SINGLE_THREADED'
 
   build-rti:
+    needs: check-labels
     uses: ./.github/workflows/build-rti.yml
 
   build-trace-tools:
+    needs: check-labels
     uses: ./.github/workflows/build-trace-tools.yml
 
   fetch-lf:
+    needs: check-labels
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
       file: 'lingua-franca-ref.txt'
@@ -41,7 +49,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'arduino') }}
+    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'arduino') }}
 
   lf-default-zephyr:
     needs: [fetch-lf]
@@ -49,7 +57,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
+    if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
 
   lf-default:
     needs: [fetch-lf]
@@ -57,7 +65,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      all-platforms: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
 
   lf-python:
     needs: [fetch-lf]
@@ -65,7 +73,7 @@ jobs:
     with:
       reactor-c-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' ||contains( github.event.pull_request.labels.*.name, 'python') }}
+    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'python') }}
 
   lf-gedf-np:
     needs: [fetch-lf]
@@ -74,7 +82,8 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: GEDF_NP
-      all-platforms: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
 
   lf-adaptive:
     needs: [fetch-lf]
@@ -83,4 +92,5 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: ADAPTIVE
-      all-platforms: ${{ github.event_name == 'merge_group' || github.ref == 'refs/heads/main' || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
