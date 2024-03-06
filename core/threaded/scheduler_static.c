@@ -72,13 +72,14 @@ extern volatile reg_t binary_sema[];
  */
 void execute_inst_ADD(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_ADD_starts(scheduler->env->trace, worker_number, pc_orig);
     reg_t *dst = op1.reg;
     reg_t *src = op2.reg;
     reg_t *src2 = op3.reg;
     *dst = *src + *src2;
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADD_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -86,13 +87,14 @@ void execute_inst_ADD(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_ADDI(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, pc_orig);
     reg_t *dst = op1.reg;
     reg_t *src = op2.reg;
     // FIXME: Will there be problems if instant_t adds reg_t?
     *dst = *src + op3.imm;
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -100,7 +102,8 @@ void execute_inst_ADDI(lf_scheduler_t* scheduler, size_t worker_number, operand_
  */
 void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_ADV_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_ADV_starts(scheduler->env->trace, worker_number, pc_orig);
 
     reg_t *base = op2.reg;
     reg_t *inc  = op3.reg;
@@ -118,8 +121,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     }
 
     *pc += 1; // Increment pc.
-
-    tracepoint_static_scheduler_ADV_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADV_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -127,7 +129,8 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_ADVI_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_ADVI_starts(scheduler->env->trace, worker_number, pc_orig);
 
     self_base_t *reactor = (self_base_t*) op1.reg;
     reg_t *base = op2.reg;
@@ -141,10 +144,8 @@ void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_
     for (int i = 0; i < reactor->num_output_ports; i++) {
         reactor->output_ports[i]->is_present = false;
     }
-   
     *pc += 1; // Increment pc.
-
-    tracepoint_static_scheduler_ADVI_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADVI_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -152,6 +153,8 @@ void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_
  */
 void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_BEQ_starts(scheduler->env->trace, worker_number, pc_orig);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     // These NULL checks allow _rs1 and _rs2 to be uninitialized in the static
@@ -164,6 +167,7 @@ void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     }
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 == *_rs2) *pc = op3.imm;
     else *pc += 1;
+    tracepoint_static_scheduler_BEQ_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -171,11 +175,14 @@ void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_BGE_starts(scheduler->env->trace, worker_number, pc_orig);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     LF_PRINT_DEBUG("Worker %zu: BGE : operand 1 = %lld, operand 2 = %lld", worker_number, *_rs1, *_rs2);
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 >= *_rs2) *pc = op3.imm;
     else *pc += 1;
+    tracepoint_static_scheduler_BGE_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -183,10 +190,13 @@ void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_BLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_BLT_starts(scheduler->env->trace, worker_number, pc_orig);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 < *_rs2) *pc = op3.imm;
     else *pc += 1;
+    tracepoint_static_scheduler_BLT_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -194,10 +204,13 @@ void execute_inst_BLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_BNE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_BNE_starts(scheduler->env->trace, worker_number, pc_orig);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 != *_rs2) *pc = op3.imm;
     else *pc += 1;
+    tracepoint_static_scheduler_BNE_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -205,7 +218,8 @@ void execute_inst_BNE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_DU_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_DU_starts(scheduler->env->trace, worker_number, pc_orig);
     // FIXME: There seems to be an overflow problem.
     // When wakeup_time overflows but lf_time_physical() doesn't,
     // _lf_interruptable_sleep_until_locked() terminates immediately.
@@ -216,7 +230,7 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
     _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
     LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -224,23 +238,20 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
  */
 void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    if (op3.imm == ULLONG_MAX) {
-        tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc);
-    }
-    else {
-        tracepoint_static_scheduler_EXE_reaction_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc, (int) op3.imm);
-    }
+    int pc_orig = (int) *pc;
+    if (op3.imm == ULLONG_MAX)
+        tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);
+    else
+        tracepoint_static_scheduler_EXE_reaction_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);
     function_generic_t function = (function_generic_t)(uintptr_t)op1.reg;
     void *args = (void*)op2.reg;
     // Execute the function directly.
     function(args);
     *pc += 1; // Increment pc.
-    if (op3.imm == ULLONG_MAX) {
-        tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc);
-    }
-    else {
-        tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc, (int) op3.imm);
-    }
+    if (op3.imm == ULLONG_MAX)
+        tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);
+    else
+        tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);
 }
 
 
@@ -249,13 +260,14 @@ void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_WLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_WLT_starts(scheduler->env->trace, worker_number, pc_orig);
     LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
     reg_t *var = op1.reg;
     while(*var >= op2.imm);
     LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
     *pc += 1; // Increment pc.
-    // tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_WLT_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -263,13 +275,14 @@ void execute_inst_WLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, pc_orig);
     LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
     reg_t *var = op1.reg;
     while(*var < op2.imm);
     LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -277,13 +290,14 @@ void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
  */
 void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_JAL_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_JAL_starts(scheduler->env->trace, worker_number, pc_orig);
     // Use the destination register as the return address and, if the
     // destination register is not the zero register, store pc+1 in it.
     reg_t *destReg = op1.reg;
     if (destReg != &zero) *destReg = *pc + 1;
     *pc = op2.imm;
-    tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -291,7 +305,8 @@ void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_JALR_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_JALR_starts(scheduler->env->trace, worker_number, pc_orig);
     // Use the destination register as the return address and, if the
     // destination register is not the zero register, store pc+1 in it.
     reg_t *destReg = op1.reg;
@@ -299,7 +314,7 @@ void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_
     // Set pc to base addr + immediate.
     reg_t *baseAddr = op2.reg;
     *pc = *baseAddr + op3.imm;
-    tracepoint_static_scheduler_JALR_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JALR_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
@@ -307,9 +322,10 @@ void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_
  */
 void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_STP_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_STP_starts(scheduler->env->trace, worker_number, pc_orig);
     *exit_loop = true;
-    tracepoint_static_scheduler_STP_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_STP_ends(scheduler->env->trace, worker_number, pc_orig);
 }
 
 /**
