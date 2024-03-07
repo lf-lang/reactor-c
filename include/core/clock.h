@@ -13,7 +13,7 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
-#include "platform.h"
+#include "low_level_platform.h"
 
 /**
  * Block the calling thread until wakeup_time is reached or the thread is
@@ -24,8 +24,7 @@
 
  * @return 0 on success or -1 if interrupted.
  */
-int lf_clock_interruptable_sleep_until_locked(environment_t *env, instant_t wakeup_time);
-
+int lf_clock_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time);
 
 /**
  * Retrieve the current physical time from the platform API. This adds any clock synchronization offset
@@ -34,7 +33,7 @@ int lf_clock_interruptable_sleep_until_locked(environment_t *env, instant_t wake
  * @param now A pointer to the location in which to store the result.
  * @return 0 on success, -1 on failure to read the platform clock.
  */
-int lf_clock_gettime(instant_t *now);
+int lf_clock_gettime(instant_t* now);
 
 #if !defined(LF_SINGLE_THREADED)
 /**
@@ -46,7 +45,7 @@ int lf_clock_gettime(instant_t *now);
  * @return 0 on success, LF_TIMEOUT on timeout, platform-specific error
  * otherwise.
  */
-int lf_clock_cond_timedwait(lf_cond_t *cond, instant_t wakeup_time);
+int lf_clock_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time);
 #endif
 
 #endif

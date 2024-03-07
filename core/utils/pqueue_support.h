@@ -32,7 +32,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PQUEUE_SUPPORT_H
 #define PQUEUE_SUPPORT_H
 
-
 #include "../reactor.h"
 
 // ********** Priority Queue Support Start
@@ -40,97 +39,75 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Return whether the first and second argument are given in reverse order.
  */
-static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return (thiz > that);
-}
+static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) { return (thiz > that); }
 
 /**
  * Return false (0) regardless of reaction order.
  */
-static int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return false;
-}
+static int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) { return false; }
 
 /**
  * Return whether or not the given events have matching triggers.
  */
-static int event_matches(void* next, void* curr) {
-    return (((event_t*)next)->trigger == ((event_t*)curr)->trigger);
-}
+static int event_matches(void* next, void* curr) { return (((event_t*)next)->trigger == ((event_t*)curr)->trigger); }
 
 /**
- * Return whether or not the given reaction_t pointers 
+ * Return whether or not the given reaction_t pointers
  * point to the same struct.
  */
-static int reaction_matches(void* next, void* curr) {
-    return (next == curr);
-}
+static int reaction_matches(void* next, void* curr) { return (next == curr); }
 
 /**
  * Report a priority equal to the time of the given event.
  * Used for sorting pointers to event_t structs in the event queue.
  */
-static pqueue_pri_t get_event_time(void *a) {
-    return (pqueue_pri_t)(((event_t*) a)->time);
-}
+static pqueue_pri_t get_event_time(void* a) { return (pqueue_pri_t)(((event_t*)a)->time); }
 
 /**
  * Report a priority equal to the index of the given reaction.
- * Used for sorting pointers to reaction_t structs in the 
+ * Used for sorting pointers to reaction_t structs in the
  * blocked and executing queues.
  */
-static pqueue_pri_t get_reaction_index(void *a) {
-    return ((reaction_t*) a)->index;
-}
+static pqueue_pri_t get_reaction_index(void* a) { return ((reaction_t*)a)->index; }
 
 /**
  * Return the given event's position in the queue.
  */
-static size_t get_event_position(void *a) {
-    return ((event_t*) a)->pos;
-}
+static size_t get_event_position(void* a) { return ((event_t*)a)->pos; }
 
 /**
  * Return the given reaction's position in the queue.
  */
-static size_t get_reaction_position(void *a) {
-    return ((reaction_t*) a)->pos;
-}
+static size_t get_reaction_position(void* a) { return ((reaction_t*)a)->pos; }
 
 /**
  * Set the given event's position in the queue.
  */
-static void set_event_position(void *a, size_t pos) {
-    ((event_t*) a)->pos = pos;
-}
+static void set_event_position(void* a, size_t pos) { ((event_t*)a)->pos = pos; }
 
 /**
  * Return the given reaction's position in the queue.
  */
-static void set_reaction_position(void *a, size_t pos) {
-    ((reaction_t*) a)->pos = pos;
-}
+static void set_reaction_position(void* a, size_t pos) { ((reaction_t*)a)->pos = pos; }
 
 /**
  * Print some information about the given reaction.
- * 
+ *
  * DEBUG function only.
  */
-static void print_reaction(void *reaction) {
-	reaction_t *r = (reaction_t*)reaction;
-    LF_PRINT_DEBUG("%s: chain_id:%llu, index: %llx, reaction: %p",
-    		r->name, r->chain_id, r->index, r);
+static void print_reaction(void* reaction) {
+  reaction_t* r = (reaction_t*)reaction;
+  LF_PRINT_DEBUG("%s: chain_id:%llu, index: %llx, reaction: %p", r->name, r->chain_id, r->index, r);
 }
 
 /**
  * Print some information about the given event.
- * 
+ *
  * DEBUG function only.
  */
-static void print_event(void *event) {
-	event_t *e = (event_t*)event;
-    LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p",
-			e->time, e->trigger, e->token);
+static void print_event(void* event) {
+  event_t* e = (event_t*)event;
+  LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p", e->time, e->trigger, e->token);
 }
 
 // ********** Priority Queue Support End

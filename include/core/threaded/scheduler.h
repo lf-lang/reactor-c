@@ -48,7 +48,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * `lf_sched_init`.
  */
 
-
 /**
  * @brief Initialize the scheduler.
  *
@@ -61,11 +60,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param option Pointer to a `sched_params_t` struct containing additional
  *  scheduler parameters. Can be NULL.
  */
-void lf_sched_init(
-    environment_t* env,
-    size_t number_of_workers,
-    sched_params_t* parameters
-);
+void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t* parameters);
 
 /**
  * @brief Free the memory used by the scheduler.
@@ -99,7 +94,6 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
  * @param done_reaction The reaction that is done.
  */
 void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction);
-
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' would like to

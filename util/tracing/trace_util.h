@@ -34,13 +34,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 
 /** Macro to use when access to trace file fails. */
-#define _LF_TRACE_FAILURE(trace_file) \
-    do { \
-        fprintf(stderr, "ERROR: Access to trace file failed.\n"); \
-        fclose(trace_file); \
-        trace_file = NULL; \
-        exit(1); \
-    } while(0)
+#define _LF_TRACE_FAILURE(trace_file)                                                                                  \
+  do {                                                                                                                 \
+    fprintf(stderr, "ERROR: Access to trace file failed.\n");                                                          \
+    fclose(trace_file);                                                                                                \
+    trace_file = NULL;                                                                                                 \
+    exit(1);                                                                                                           \
+  } while (0)
 
 /** Buffer for reading object descriptions. Size limit is BUFFER_SIZE bytes. */
 #define BUFFER_SIZE 1024
@@ -77,7 +77,7 @@ extern char* top_level;
  * Given a path to a file, this function returns a dynamically
  * allocated string (which you must free) that points to the root
  * filename without the preceding path and without the file extension.
- * @param path The path including the full filename. 
+ * @param path The path including the full filename.
  * @return The root name of the file or NULL for failure.
  */
 char* root_name(const char* path);

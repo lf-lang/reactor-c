@@ -8,7 +8,7 @@
  * This header file supports token objects, which are reference-counted wrappers
  * around values that are carried by events scheduled on the event queue and held
  * in ports and actions when the type is not a primitive type.
- * 
+ *
  * A token has type lf_token_t. It points to a value, a dynamically allocated
  * chunk of memory on the heap. It has a length field, which enables its value
  * to be interpreted as an array of the given length. It has a pointer to type
@@ -18,13 +18,13 @@
  * and copy constructor. These must be specified if the payload (value) is a complex
  * struct that cannot be freed by a simple call to free() or copied by a call
  * to memcpy().
- * 
+ *
  * An instance of a port struct and trigger_t struct (an action or an input port)
  * can be cast to token_template_t, which has a token_type_t field called type
  * and a pointer to a token (which may be NULL).  The same instance can also be
  * cast to token_type_t, which has an element_size field and (possibly) function
  * pointers to a destructor and a copy constructor.
- * 
+ *
  * A "template token" is one pointed to by a token_template_t (an action or a port).
  * This template token ensures that port an action values persist until they are
  * overwritten, and hence they can be read at a tag even if not present.
@@ -50,10 +50,10 @@ struct environment_t;
 
 /** Possible return values for _lf_done_using and _lf_free_token. */
 typedef enum token_freed {
-    NOT_FREED = 0, // Nothing was freed.
-    VALUE_FREED,   // The value (payload) was freed.
-    TOKEN_FREED,    // The token was freed but not the value.
-    TOKEN_AND_VALUE_FREED // Both were freed
+  NOT_FREED = 0,        // Nothing was freed.
+  VALUE_FREED,          // The value (payload) was freed.
+  TOKEN_FREED,          // The token was freed but not the value.
+  TOKEN_AND_VALUE_FREED // Both were freed
 } token_freed;
 
 //////////////////////////////////////////////////////////
@@ -65,12 +65,12 @@ typedef enum token_freed {
  * token types, which carry dynamically allocated data.
  */
 typedef struct token_type_t {
-    /** Size of the struct or array element. */
-    size_t element_size;
-    /** The destructor or NULL to use the default free(). */
-    void (*destructor) (void* value);
-    /** The copy constructor or NULL to use memcpy. */
-    void* (*copy_constructor) (void* value);
+  /** Size of the struct or array element. */
+  size_t element_size;
+  /** The destructor or NULL to use the default free(). */
+  void (*destructor)(void* value);
+  /** The copy constructor or NULL to use memcpy. */
+  void* (*copy_constructor)(void* value);
 } token_type_t;
 
 /**
@@ -92,25 +92,25 @@ typedef struct token_type_t {
  * in the preamble that masks the trailing *.
  */
 typedef struct lf_token_t {
-    /** Pointer to dynamically allocated memory containing a message. */
-    void* value;
-    /** Length of the array or 1 for a non-array. */
-    size_t length;
-    /** Pointer to the port or action defining the type of the data carried. */
-    token_type_t* type;
-    /** The number of times this token is on the event queue. */
-    size_t ref_count;
-    /** Convenience for constructing a temporary list of tokens. */
-    struct lf_token_t* next;
+  /** Pointer to dynamically allocated memory containing a message. */
+  void* value;
+  /** Length of the array or 1 for a non-array. */
+  size_t length;
+  /** Pointer to the port or action defining the type of the data carried. */
+  token_type_t* type;
+  /** The number of times this token is on the event queue. */
+  size_t ref_count;
+  /** Convenience for constructing a temporary list of tokens. */
+  struct lf_token_t* next;
 } lf_token_t;
 
 /**
  * A record of the subset of channels of a multiport that have present inputs.
  */
 typedef struct lf_sparse_io_record_t {
-	int size;  			// -1 if overflowed. 0 if empty.
-	size_t capacity;    // Max number of writes to be considered sparse.
-	size_t present_channels[];  // Array of channel indices that are present.
+  int size;                  // -1 if overflowed. 0 if empty.
+  size_t capacity;           // Max number of writes to be considered sparse.
+  size_t present_channels[]; // Array of channel indices that are present.
 } lf_sparse_io_record_t;
 
 /**
@@ -119,10 +119,10 @@ typedef struct lf_sparse_io_record_t {
  * so that they can be cast to this struct to access these fields in a uniform way.
  */
 typedef struct token_template_t {
-	/** Instances of this struct can be cast to token_type_t. */
-	token_type_t type;
-	lf_token_t* token;
-    size_t length;       // The token's length, for convenient access in reactions.
+  /** Instances of this struct can be cast to token_type_t. */
+  token_type_t type;
+  lf_token_t* token;
+  size_t length; // The token's length, for convenient access in reactions.
 } token_template_t;
 
 // Forward declaration for self_base_t
@@ -138,14 +138,14 @@ typedef struct self_base_t self_base_t;
  * CPortGenerator.java generateAuxiliaryStruct().
  */
 typedef struct lf_port_base_t {
-	token_template_t tmplt;               // Type and token information (template is a C++ keyword).
-	bool is_present;
-	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
-	int destination_channel;              // -1 if there is no destination.
-    int num_destinations;                 // The number of destination reactors this port writes to.
-    self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
-                                          // If this is an input, that reactor will normally be the container of the
-                                          // output port that sends it data.
+  token_template_t tmplt; // Type and token information (template is a C++ keyword).
+  bool is_present;
+  lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
+  int destination_channel;              // -1 if there is no destination.
+  int num_destinations;                 // The number of destination reactors this port writes to.
+  self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
+                                        // If this is an input, that reactor will normally be the container of the
+                                        // output port that sends it data.
 } lf_port_base_t;
 
 //////////////////////////////////////////////////////////
@@ -193,7 +193,7 @@ extern int _lf_count_token_allocations;
  * @param port_or_action A port or action.
  * @param val The value.
  * @param len The length, or 1 if it not an array.
- * @return A pointer to a lf_token_t struct. 
+ * @return A pointer to a lf_token_t struct.
  */
 lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
 
@@ -218,7 +218,7 @@ lf_token_t* lf_writable_copy(lf_port_base_t* port);
 
 /**
  * @brief Free the specified token, if appropriate.
- * If the reference count is greater than 0, then do not free 
+ * If the reference count is greater than 0, then do not free
  * anything. Otherwise, the token value (payload) will be freed,
  * if there is one. Then the token itself will be freed.
  * The freed token will be put on the recycling bin unless that
@@ -243,7 +243,7 @@ token_freed _lf_free_token(lf_token_t* token);
  * @param value The value, or NULL to have no value.
  * @param length The array length of the value, 1 to not be an array,
  *  or 0 to have no value.
- * @return lf_token_t* 
+ * @return lf_token_t*
  */
 lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length);
 

@@ -4,7 +4,7 @@
  * @author Soroush Bateni
  * @copyright (c) 2020-2023, The University of California at Berkeley and UT Dallas.
  * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
- * 
+ *
  * @brief Utility function for playing audio on Linux or MacOS.
  *
  * Audio functions for Linux or MacOS. To start an audio loop, call
@@ -38,17 +38,17 @@
 #define AUDIO_LOOP_H
 
 #include "wave_file_reader.h" // Defines lf_waveform_t.
-#include "tag.h"         // Defines instant_t.
+#include "tag.h"              // Defines instant_t.
 
 // Constants for playback. These are all coupled.
 #define SAMPLE_RATE 44100
-#define AUDIO_BUFFER_SIZE  4410  // 1/10 second, 100 msec
+#define AUDIO_BUFFER_SIZE 4410 // 1/10 second, 100 msec
 #define BUFFER_DURATION_NS 100000000LL
 #define NUM_CHANNELS 1 // 2 for stereo
 
 #define MAX_AMPLITUDE 32765
 
-#define NUM_NOTES 8  // Maximum number of notes that can play simultaneously.
+#define NUM_NOTES 8 // Maximum number of notes that can play simultaneously.
 
 /**
  * Start an audio loop thread that becomes ready to receive

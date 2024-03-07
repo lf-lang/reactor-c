@@ -35,14 +35,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Note for target language developers. This is one way of developing a target language where
  * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
+ * APIs which interact with the lf_set and lf_schedule APIs. This file can act as a
  * template for future runtime developement for target languages.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/PythonGenerator.xtend.
  */
 
 #ifndef PYTHON_TARGET_H
 #define PYTHON_TARGET_H
-
 
 #define PY_SSIZE_T_CLEAN
 
@@ -64,15 +63,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "MODULE_NAME is undefined"
 #endif
 
-#define CONCAT(x,y) x##y
-#define GEN_NAME(x,y) CONCAT(x,y)
+#define CONCAT(x, y) x##y
+#define GEN_NAME(x, y) CONCAT(x, y)
 #define STRINGIFY(X) #X
 #define TOSTRING(x) STRINGIFY(x)
 
-
 ////////////// Global variables ///////////////
-extern PyObject *globalPythonModule;
-extern PyObject *globalPythonModuleDict;
+extern PyObject* globalPythonModule;
+extern PyObject* globalPythonModuleDict;
 extern PyObject* global_pickler;
 extern environment_t* top_level_environment;
 
@@ -87,15 +85,14 @@ extern environment_t* top_level_environment;
  *      - action: Pointer to an action on the self struct.
  *      - offset: The time offset over and above that in the action.
  **/
-PyObject* py_schedule(PyObject *self, PyObject *args);
+PyObject* py_schedule(PyObject* self, PyObject* args);
 
 /**
  * Schedule an action to occur with the specified value and time offset
  * with a copy of the specified value.
  * See reactor.h for documentation.
  */
-PyObject* py_schedule_copy(PyObject *self, PyObject *args);
-
+PyObject* py_schedule_copy(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 /////////////  Python Helper Functions (called from Python code)
@@ -103,11 +100,11 @@ PyObject* py_schedule_copy(PyObject *self, PyObject *args);
 /**
  * Stop execution at the conclusion of the current logical time.
  */
-PyObject* py_request_stop(PyObject *self, PyObject *args);
+PyObject* py_request_stop(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
-PyObject* py_main(PyObject *self, PyObject *args);
+PyObject* py_main(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 /////////////  Python Helper Functions
@@ -143,13 +140,12 @@ PyObject* convert_C_port_to_py(void* port, int width);
  * made by this function, the "value" and "is_present" are passed to the function
  * instead of expecting them to exist.
  *
- * The void* pointer to the C action instance is encapsulated in a PyCapsule instead of passing an exposed pointer through
- * Python. @see https://docs.python.org/3/c-api/capsule.html
- * This encapsulation is done by calling PyCapsule_New(action, "name_of_the_container_in_the_capsule", NULL),
- * where "name_of_the_container_in_the_capsule" is an agreed-upon container name inside the capsule. This
- * capsule can then be treated as a PyObject* and safely passed through Python code. On the other end
- * (which is in schedule functions), PyCapsule_GetPointer(recieved_action,"action") can be called to retrieve
- * the void* pointer into recieved_action.
+ * The void* pointer to the C action instance is encapsulated in a PyCapsule instead of passing an exposed pointer
+ *through Python. @see https://docs.python.org/3/c-api/capsule.html This encapsulation is done by calling
+ *PyCapsule_New(action, "name_of_the_container_in_the_capsule", NULL), where "name_of_the_container_in_the_capsule" is
+ *an agreed-upon container name inside the capsule. This capsule can then be treated as a PyObject* and safely passed
+ *through Python code. On the other end (which is in schedule functions), PyCapsule_GetPointer(recieved_action,"action")
+ *can be called to retrieve the void* pointer into recieved_action.
  **/
 PyObject* convert_C_action_to_py(void* action);
 
@@ -182,7 +178,6 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
  * For example for a module named LinguaFrancaFoo, this function
  * will be called PyInit_LinguaFrancaFoo
  */
-PyMODINIT_FUNC
-GEN_NAME(PyInit_,MODULE_NAME)(void);
+PyMODINIT_FUNC GEN_NAME(PyInit_, MODULE_NAME)(void);
 
 #endif // PYTHON_TARGET_H

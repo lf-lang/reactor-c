@@ -31,7 +31,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <assert.h>
-#include <stdlib.h>  // defines NULL
+#include <stdlib.h> // defines NULL
 
 #include "mixed_radix.h"
 
@@ -40,22 +40,22 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param mixed A pointer to the mixed-radix number.
  */
 void mixed_radix_incr(mixed_radix_int_t* mixed) {
-	int i = 0;
-	assert(mixed != NULL);
-	assert(mixed->size > 0);
-	while (i < mixed->size) {
-		int digit_to_increment = mixed->permutation[i];
-		assert(digit_to_increment >= 0);
-		mixed->digits[digit_to_increment]++;
-		if (mixed->digits[digit_to_increment] >= mixed->radixes[digit_to_increment]) {
-			mixed->digits[digit_to_increment] = 0;
-			i++;
-		} else {
-			return; // All done.
-		}
-	}
-	// If we get here, the number has overflowed. Wrap to zero.
-	mixed->digits[i - 1] = 0;
+  int i = 0;
+  assert(mixed != NULL);
+  assert(mixed->size > 0);
+  while (i < mixed->size) {
+    int digit_to_increment = mixed->permutation[i];
+    assert(digit_to_increment >= 0);
+    mixed->digits[digit_to_increment]++;
+    if (mixed->digits[digit_to_increment] >= mixed->radixes[digit_to_increment]) {
+      mixed->digits[digit_to_increment] = 0;
+      i++;
+    } else {
+      return; // All done.
+    }
+  }
+  // If we get here, the number has overflowed. Wrap to zero.
+  mixed->digits[i - 1] = 0;
 }
 
 /**
@@ -67,23 +67,20 @@ void mixed_radix_incr(mixed_radix_int_t* mixed) {
  *  be greater than or equal to 0.
  */
 int mixed_radix_parent(mixed_radix_int_t* mixed, int n) {
-	assert(mixed != NULL);
-	assert(mixed->size > 0);
-	assert(n >= 0);
-	int result = 0;
-	int factor = 1;
-	for (int i = n; i < mixed->size; i++) {
-		result += factor * mixed->digits[i];
-		factor *= mixed->radixes[i];
-	}
-	return result;
+  assert(mixed != NULL);
+  assert(mixed->size > 0);
+  assert(n >= 0);
+  int result = 0;
+  int factor = 1;
+  for (int i = n; i < mixed->size; i++) {
+    result += factor * mixed->digits[i];
+    factor *= mixed->radixes[i];
+  }
+  return result;
 }
 
 /**
  * Return the int value of a mixed-radix number.
  * @param mixed A pointer to the mixed-radix number.
  */
-int mixed_radix_to_int(mixed_radix_int_t* mixed) {
-	return mixed_radix_parent(mixed, 0);
-}
-
+int mixed_radix_to_int(mixed_radix_int_t* mixed) { return mixed_radix_parent(mixed, 0); }

@@ -67,7 +67,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include "lf_token.h"     // Defines token types and lf_port_base_t, lf_sparse_io_record
+#include "lf_token.h" // Defines token types and lf_port_base_t, lf_sparse_io_record
 
 /** Threshold for width of multiport s.t. sparse reading is supported. */
 #define LF_SPARSE_WIDTH_THRESHOLD 10
@@ -86,10 +86,10 @@
  * number of a present input (or -1 if there is no next present input).
  */
 typedef struct lf_multiport_iterator_t {
-	int next;
-	int idx; // Index in the record of next or -1 if lf_multiport_next has not been called.
-	lf_port_base_t** port;
-	int width;
+  int next;
+  int idx; // Index in the record of next or -1 if lf_multiport_next has not been called.
+  lf_port_base_t** port;
+  int width;
 } lf_multiport_iterator_t;
 
 /**
@@ -107,9 +107,8 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
  * lf_multiport_iterator_t on the stack, a pointer to which should be
  * passed to lf_multiport_iterator_next() to advance.
  */
-#define lf_multiport_iterator(in) (_lf_multiport_iterator_impl( \
-               (lf_port_base_t**)self->_lf_ ## in, \
-               self->_lf_ ## in ## _width))
+#define lf_multiport_iterator(in)                                                                                      \
+  (_lf_multiport_iterator_impl((lf_port_base_t**)self->_lf_##in, self->_lf_##in##_width))
 
 /**
  * Return the channel number of the next present input on the multiport

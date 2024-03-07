@@ -42,7 +42,7 @@ void _lf_next_locked(struct environment_t* env);
  * @param tag_to_send The tag to send.
  */
 void logical_tag_complete(tag_t tag_to_send);
-bool should_stop_locked(lf_scheduler_t * sched);
-bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched);
+bool should_stop_locked(lf_scheduler_t* sched);
+bool _lf_sched_advance_tag_locked(lf_scheduler_t* sched);
 
 #endif // LF_C11_THREADS_SUPPORT_H

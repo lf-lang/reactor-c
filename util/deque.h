@@ -67,9 +67,9 @@ Alternatively, you can call initialize:
  * A double-ended queue data structure.
  */
 typedef struct deque_t {
-    struct deque_node_t* front;
-    struct deque_node_t* back;
-    size_t size;
+  struct deque_node_t* front;
+  struct deque_node_t* back;
+  size_t size;
 } deque_t;
 
 /**

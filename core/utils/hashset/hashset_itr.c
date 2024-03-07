@@ -43,9 +43,9 @@ int hashset_iterator_has_next(hashset_itr_t itr) {
     return 0;
   }
   /* peek to find another entry */
-  while(index < itr->set->capacity) {
+  while (index < itr->set->capacity) {
     void* value = itr->set->items[index++];
-    if(value != 0 && value != (void*)1)
+    if (value != 0 && value != (void*)1)
       return 1;
   }
 
@@ -82,4 +82,3 @@ void* hashset_iterator_value(hashset_itr_t itr) {
 
   return itr->set->items[itr->index];
 }
-
