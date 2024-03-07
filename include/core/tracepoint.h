@@ -107,68 +107,6 @@ typedef enum {
 #include "trace.h"
 
 /**
- * String description of event types.
- */
-static const char* trace_event_names[] = {
-    "Reaction starts",
-    "Reaction ends",
-    "Reaction deadline missed",
-    "Schedule called",
-    "User-defined event",
-    "User-defined valued event",
-    "Worker wait starts",
-    "Worker wait ends",
-    "Scheduler advancing time starts",
-    "Scheduler advancing time ends",
-    "Federated marker",
-    // Sending messages
-    "Sending ACK",
-    "Sending FAILED",
-    "Sending TIMESTAMP",
-    "Sending NET",
-    "Sending LTC",
-    "Sending STOP_REQ",
-    "Sending STOP_REQ_REP",
-    "Sending STOP_GRN",
-    "Sending FED_ID",
-    "Sending PTAG",
-    "Sending TAG",
-    "Sending REJECT",
-    "Sending RESIGN",
-    "Sending PORT_ABS",
-    "Sending CLOSE_RQ",
-    "Sending TAGGED_MSG",
-    "Sending P2P_TAGGED_MSG",
-    "Sending MSG",
-    "Sending P2P_MSG",
-    "Sending ADR_AD",
-    "Sending ADR_QR",
-    // Receiving messages
-    "Receiving ACK",
-    "Receiving FAILED",
-    "Receiving TIMESTAMP",
-    "Receiving NET",
-    "Receiving LTC",
-    "Receiving STOP_REQ",
-    "Receiving STOP_REQ_REP",
-    "Receiving STOP_GRN",
-    "Receiving FED_ID",
-    "Receiving PTAG",
-    "Receiving TAG",
-    "Receiving REJECT",
-    "Receiving RESIGN",
-    "Receiving PORT_ABS",
-    "Receiving CLOSE_RQ",
-    "Receiving TAGGED_MSG",
-    "Receiving P2P_TAGGED_MSG",
-    "Receiving MSG",
-    "Receiving P2P_MSG",
-    "Receiving ADR_AD",
-    "Receiving ADR_QR",
-    "Receiving UNIDENTIFIED",
-};
-
-/**
  * @brief A trace record that gets written in binary to the trace file in the default implementation.
  */
 typedef struct trace_record_t {
@@ -367,10 +305,27 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
 void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag);
 
 #else
-static inline void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag) {}
-static inline void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* tag) {}
-static inline void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag) {}
+static inline void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)tag;
+}
+static inline void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)tag;
+}
+static inline void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)partner_id;
+  (void)tag;
+}
 static inline void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)partner_id;
+  (void)tag;
 }
 #endif // FEDERATED
 
@@ -398,8 +353,16 @@ void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
 void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 
 #else
-static inline void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {}
-static inline void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {}
+static inline void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)tag;
+}
+static inline void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
+  (void)event_type;
+  (void)fed_id;
+  (void)tag;
+}
 #endif // RTI_TRACE
 
 #else

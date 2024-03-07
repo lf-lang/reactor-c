@@ -6,6 +6,9 @@
 /** Size of the table of trace objects. */
 #define TRACE_OBJECT_TABLE_SIZE 1024
 
+/** Max length of trace file name*/
+#define TRACE_MAX_FILENAME_LENGTH 128
+
 // TYPE DEFINITIONS **********************************************************
 
 /**
@@ -32,7 +35,7 @@ typedef struct trace_t {
   FILE* _lf_trace_file;
 
   /** The file name where the traces are written*/
-  char* filename;
+  char filename[TRACE_MAX_FILENAME_LENGTH];
 
   /** Table of pointers to a description of the object. */
   object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];

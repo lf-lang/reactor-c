@@ -982,6 +982,7 @@ void lf_print_snapshot(environment_t* env) {
 }
 #else  // NDEBUG
 void lf_print_snapshot(environment_t* env) {
+  (void)env;
   // Do nothing.
 }
 #endif // NDEBUG
