@@ -39,8 +39,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 typedef pthread_mutex_t lf_mutex_t;
 typedef struct {
-    lf_mutex_t* mutex;
-    pthread_cond_t condition;
+  lf_mutex_t* mutex;
+  pthread_cond_t condition;
 } lf_cond_t;
 typedef pthread_t lf_thread_t;
 

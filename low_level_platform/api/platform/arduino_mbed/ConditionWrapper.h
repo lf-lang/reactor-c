@@ -23,7 +23,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /* Adds condition variable support in RTOS-enabled Arduino Boards (MBED)
- *  
+ *
  *  @author{Anirudh Rengarajan <arengarajan@berkeley.edu>}
  */
 
@@ -36,12 +36,12 @@ struct condition;
 extern "C" {
 #endif
 
-    void* condition_new(void*);
-    void condition_delete(void*);
-    int condition_wait_for(void*, uint64_t);
-    int condition_wait(void*);
-    void condition_notify_one(void*);
-    void condition_notify_all(void*);
+void* condition_new(void*);
+void condition_delete(void*);
+int condition_wait_for(void*, uint64_t);
+int condition_wait(void*);
+void condition_notify_one(void*);
+void condition_notify_all(void*);
 
 #ifdef __cplusplus
 }

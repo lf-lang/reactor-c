@@ -63,9 +63,9 @@ Alternatively, you can call initialize:
  * A node in the queue.
  */
 typedef struct deque_node_t {
-    struct deque_node_t *next;
-    struct deque_node_t *prev;
-    void* value;
+  struct deque_node_t* next;
+  struct deque_node_t* prev;
+  void* value;
 } deque_node_t;
 
 /**
@@ -73,11 +73,11 @@ typedef struct deque_node_t {
  * @param d The deque.
  */
 void deque_initialize(deque_t* d) {
-    if (d != NULL) {
-        d->front = NULL;
-        d->back = NULL;
-        d->size = 0;
-    }
+  if (d != NULL) {
+    d->front = NULL;
+    d->back = NULL;
+    d->size = 0;
+  }
 }
 
 /**
@@ -85,10 +85,10 @@ void deque_initialize(deque_t* d) {
  * @param d The deque.
  */
 bool deque_is_empty(deque_t* d) {
-    if (d != NULL) {
-        return (d->front == NULL);
-    }
-    return true;
+  if (d != NULL) {
+    return (d->front == NULL);
+  }
+  return true;
 }
 
 /**
@@ -96,9 +96,7 @@ bool deque_is_empty(deque_t* d) {
  * @param d The deque.
  * @return The size of the queue.
  */
-size_t deque_size(deque_t* d) {
-	return d->size;
-}
+size_t deque_size(deque_t* d) { return d->size; }
 
 /**
  * Internal function to create a node to insert in the deque.
@@ -108,9 +106,9 @@ size_t deque_size(deque_t* d) {
  * @param value The payload of the node.
  */
 deque_node_t* _deque_create_node(void* value) {
-    deque_node_t *new_node = (deque_node_t *) calloc(1, sizeof(deque_node_t));
-    new_node->value = value;
-    return new_node;
+  deque_node_t* new_node = (deque_node_t*)calloc(1, sizeof(deque_node_t));
+  new_node->value = value;
+  return new_node;
 }
 
 /**
@@ -119,16 +117,16 @@ deque_node_t* _deque_create_node(void* value) {
  * @param value The value to push.
  */
 void deque_push_front(deque_t* d, void* value) {
-    deque_node_t *n = _deque_create_node(value);
-    if (d->front == NULL) {
-    	d->back = d->front = n;
-        d->size = 1;
-    } else {
-        d->front->prev = n;
-        n->next = d->front;
-        d->front = n;
-        d->size++;
-    }
+  deque_node_t* n = _deque_create_node(value);
+  if (d->front == NULL) {
+    d->back = d->front = n;
+    d->size = 1;
+  } else {
+    d->front->prev = n;
+    n->next = d->front;
+    d->front = n;
+    d->size++;
+  }
 }
 
 /**
@@ -137,16 +135,16 @@ void deque_push_front(deque_t* d, void* value) {
  * @param value The value to push.
  */
 void deque_push_back(deque_t* d, void* value) {
-    deque_node_t *n = _deque_create_node(value);
-    if (d->back == NULL) {
-        d->back = d->front = n;
-        d->size++;
-    } else {
-        d->back->next = n;
-        n->prev = d->back;
-        d->back = n;
-        d->size++;
-    }
+  deque_node_t* n = _deque_create_node(value);
+  if (d->back == NULL) {
+    d->back = d->front = n;
+    d->size++;
+  } else {
+    d->back->next = n;
+    n->prev = d->back;
+    d->back = n;
+    d->size++;
+  }
 }
 
 /**
@@ -155,22 +153,22 @@ void deque_push_back(deque_t* d, void* value) {
  * @return The value on the front of the queue or NULL if the queue is empty.
  */
 void* deque_pop_front(deque_t* d) {
-    if (d == NULL || d->front == NULL) {
-        return NULL;
-    }
+  if (d == NULL || d->front == NULL) {
+    return NULL;
+  }
 
-    void* value = d->front->value;
-    deque_node_t *temp = d->front; // temporary pointer for freeing up memory
+  void* value = d->front->value;
+  deque_node_t* temp = d->front; // temporary pointer for freeing up memory
 
-    if (d->front == d->back) {
-        // popping last element in deque
-        d->front = d->back = NULL;
-    } else {
-        d->front = d->front->next;
-    }
-    free(temp); // free memory for popped node
-    d->size--;
-    return value;
+  if (d->front == d->back) {
+    // popping last element in deque
+    d->front = d->back = NULL;
+  } else {
+    d->front = d->front->next;
+  }
+  free(temp); // free memory for popped node
+  d->size--;
+  return value;
 }
 
 /**
@@ -179,21 +177,21 @@ void* deque_pop_front(deque_t* d) {
  * @return The value on the back of the queue or NULL if the queue is empty.
  */
 void* deque_pop_back(deque_t* d) {
-    if (d == NULL || d->back == NULL) {
-        return NULL;
-    }
+  if (d == NULL || d->back == NULL) {
+    return NULL;
+  }
 
-    void* value = d->back->value;
-    deque_node_t *temp = d->back; // temporary pointer for freeing up memory
-    if (d->front == d->back) {
-        // popping last element in deque
-        d->front = d->back = NULL;
-    } else {
-        d->back = d->back->prev;
-    }
-    free(temp);
-    d->size--;
-    return value;
+  void* value = d->back->value;
+  deque_node_t* temp = d->back; // temporary pointer for freeing up memory
+  if (d->front == d->back) {
+    // popping last element in deque
+    d->front = d->back = NULL;
+  } else {
+    d->back = d->back->prev;
+  }
+  free(temp);
+  d->size--;
+  return value;
 }
 
 /**
@@ -202,10 +200,10 @@ void* deque_pop_back(deque_t* d) {
  * @return The value on the front of the queue or NULL if the queue is empty.
  */
 void* deque_peek_back(deque_t* d) {
-    if (d == NULL || d->back == NULL) {
-        return NULL;
-    }
-    return d->back->value;
+  if (d == NULL || d->back == NULL) {
+    return NULL;
+  }
+  return d->back->value;
 }
 
 /**
@@ -214,8 +212,8 @@ void* deque_peek_back(deque_t* d) {
  * @return The value on the back of the queue or NULL if the queue is empty.
  */
 void* deque_peek_front(deque_t* d) {
-    if (d == NULL || d->front == NULL) {
-        return NULL;
-    }
-    return d->front->value;
+  if (d == NULL || d->front == NULL) {
+    return NULL;
+  }
+  return d->front->value;
 }

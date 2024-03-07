@@ -23,7 +23,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /* Adds threading support in RTOS-enabled Arduino Boards (MBED)
- *  
+ *
  *  @author{Anirudh Rengarajan <arengarajan@berkeley.edu>}
  */
 
@@ -34,11 +34,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
-    void *thread_new();
-    void thread_delete(void* thread);
-    int thread_start(void* thread, void *(*function) (void *), void* arguments);
-    int thread_join(void* thread, int* thread_return);
-    int thread_terminate(void* thread);
+void* thread_new();
+void thread_delete(void* thread);
+int thread_start(void* thread, void* (*function)(void*), void* arguments);
+int thread_join(void* thread, int* thread_return);
+int thread_terminate(void* thread);
 
 #ifdef __cplusplus
 }

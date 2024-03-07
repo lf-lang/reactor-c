@@ -7,7 +7,7 @@
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  *
  * @brief API functions for scheduling actions.
- * 
+ *
  * Most of these functions take a `void*` pointer to an action, which will be internally cast to
  * a `lf_action_base_t*` pointer. The cast could be done by macros in reaction_macros.h, but unlike
  * the macros defined there, it is common for `lf_schedule` functions to be invoked outside of reaction
@@ -24,7 +24,7 @@
 
 /**
  * @brief Schedule an action to occur with the specified time offset with no payload (no value conveyed).
- * 
+ *
  * The later tag will depend on whether the action is logical or physical. If it is logical,
  * the time of the event will be the current logical time of the environment associated with
  * the action plus the minimum delay of the action plus the extra delay. If that time is equal
@@ -42,14 +42,14 @@ trigger_handle_t lf_schedule(void* action, interval_t offset);
 
 /**
  * @brief Schedule the specified action with an integer value at a later logical time.
- * 
+ *
  * The later tag will depend on whether the action is logical or physical. If it is logical,
  * the time of the event will be the current logical time of the environment associated with
  * the action plus the minimum delay of the action plus the extra delay. If that time is equal
  * to the current time, then the tag will be one microstep beyond the current tag.
  * If the action is physical, the time will be the current physical time plus the extra delay,
  * and the microstep will be zero.
- * 
+ *
  * This wraps a copy of the integer value in a token. See lf_schedule_token() for more details.
  *
  * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
@@ -61,16 +61,16 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
 
 /**
  * @brief Schedule the specified action at a later tag with the specified token as a payload.
- * 
+ *
  * The later tag will depend on whether the action is logical or physical. If it is logical,
  * the time of the event will be the current logical time of the environment associated with
  * the action plus the minimum delay of the action plus the extra delay. If that time is equal
  * to the current time, then the tag will be one microstep beyond the current tag.
  * If the action is physical, the time will be the current physical time plus the extra delay,
  * and the microstep will be zero.
- * 
+ *
  * For a logical action:
- * 
+ *
  * A logical action has a minimum delay (default is zero) and a minimum spacing, which also
  * defaults to zero. The logical time at which this scheduled event will trigger is the current time
  * of the environment associated with the action plus the offset plus the delay argument given to
@@ -116,7 +116,7 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
 /**
  * @brief Schedule an action to occur with the specified value and time offset with a
  * copy of the specified value.
- * 
+ *
  * If the value is non-null, then it will be copied
  * into newly allocated memory under the assumption that its size is given in
  * the trigger's token object's element_size field multiplied by the specified
@@ -138,12 +138,11 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_copy(
-        void* action, interval_t offset, void* value, size_t length);
+trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, size_t length);
 
 /**
  * @brief Variant of lf_schedule_token that creates a token to carry the specified value.
- * 
+ *
  * The value is required to be malloc'd memory with a size equal to the
  * element_size of the specified action times the length parameter.
  *
@@ -162,10 +161,10 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
 
 /**
  * @brief Schedule the specified trigger to execute in the specified environment with given delay and token.
- * 
+ *
  * This is the most flexible version of the schedule functions and is used in the implementation
  * of many of the others. End users would rarely use it.
- * 
+ *
  * This will schedule the specified trigger at env->current_tag.time plus the offset of the
  * specified trigger plus the delay. The value is required to be either
  * NULL or a pointer to a token wrapping the payload. The token carries
@@ -199,11 +198,11 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
 /**
  * @brief Check the deadline of the currently executing reaction against the
  * current physical time.
- * 
+ *
  * If the deadline has passed, invoke the deadline
  * handler (if invoke_deadline_handler parameter is set true) and return true.
  * Otherwise, return false.
- * 
+ *
  * This function is intended to be used within a reaction that has been invoked without a deadline
  * violation, but that wishes to check whether the deadline gets violated _during_ the execution of
  * the reaction. This can be used, for example, to implement a timeout mechanism that bounds the

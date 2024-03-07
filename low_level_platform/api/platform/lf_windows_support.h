@@ -28,10 +28,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  *  @author{Erling Jellum <erling.r.jellum@ntnu>}
- *  
+ *
  * The API is implemented in the header files. This is also the case for Linux
- * and macos. 
- *  
+ * and macos.
+ *
  * All functions return 0 on success.
  *
  * @see https://gist.github.com/Soroosh129/127d1893fa4c1da6d3e1db33381bb273
@@ -44,27 +44,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <windows.h>
 
 #if !defined LF_SINGLE_THREADED
-        /**
-         * On Windows, one could use both a mutex or
-         * a critical section for the same purpose. However,
-         * critical sections are lighter and limited to one process
-         * and thus fit the requirements of Lingua Franca.
-         */
-        typedef CRITICAL_SECTION lf_mutex_t;
-        /**
-         * For compatibility with other platform APIs, we assume
-         * that mutex is analogous to critical section.
-         */
-        typedef lf_mutex_t _lf_critical_section_t;
-        typedef struct {
-            _lf_critical_section_t* critical_section;
-            CONDITION_VARIABLE condition;
-        } lf_cond_t;
-        typedef HANDLE lf_thread_t;
+/**
+ * On Windows, one could use both a mutex or
+ * a critical section for the same purpose. However,
+ * critical sections are lighter and limited to one process
+ * and thus fit the requirements of Lingua Franca.
+ */
+typedef CRITICAL_SECTION lf_mutex_t;
+/**
+ * For compatibility with other platform APIs, we assume
+ * that mutex is analogous to critical section.
+ */
+typedef lf_mutex_t _lf_critical_section_t;
+typedef struct {
+  _lf_critical_section_t* critical_section;
+  CONDITION_VARIABLE condition;
+} lf_cond_t;
+typedef HANDLE lf_thread_t;
 #endif
 
 // Use 64-bit times and 32-bit unsigned microsteps
 #include "lf_tag_64_32.h"
 
 #endif // LF_WINDOWS_SUPPORT_H
-

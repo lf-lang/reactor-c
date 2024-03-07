@@ -23,7 +23,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /* Adds mutex support in RTOS-enabled Arduino Boards (MBED)
- *  
+ *
  *  @author{Anirudh Rengarajan <arengarajan@berkeley.edu>}
  */
 
@@ -34,12 +34,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
-    void *mutex_new();
-    void mutex_delete();
-    void mutex_lock();
-    bool mutex_trylock();
-    void mutex_unlock();
-    void *mutex_get_owner();
+void* mutex_new();
+void mutex_delete();
+void mutex_lock();
+bool mutex_trylock();
+void mutex_unlock();
+void* mutex_get_owner();
 
 #ifdef __cplusplus
 }
