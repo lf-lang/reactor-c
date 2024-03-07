@@ -1047,7 +1047,7 @@ static void handle_tag_advance_grant(void) {
  */
 static bool a_port_is_unknown(staa_t* staa_elem) {
   bool do_wait = false;
-  for (int j = 0; j < staa_elem->num_actions; ++j) {
+  for (size_t j = 0; j < staa_elem->num_actions; ++j) {
     if (staa_elem->actions[j]->trigger->status == unknown) {
       do_wait = true;
       break;
@@ -1079,18 +1079,19 @@ static int id_of_action(lf_action_base_t* input_port_action) {
  */
 #ifdef FEDERATED_DECENTRALIZED
 static void* update_ports_from_staa_offsets(void* args) {
+  (void)args;
   initialize_lf_thread_id();
   if (staa_lst_size == 0)
     return NULL; // Nothing to do.
   // NOTE: Using only the top-level environment, which is the one that deals with network
   // input ports.
   environment_t* env;
-  int num_envs = _lf_get_environments(&env);
+  _lf_get_environments(&env);
   LF_MUTEX_LOCK(&env->mutex);
   while (1) {
     LF_PRINT_DEBUG("**** (update thread) starting");
     tag_t tag_when_started_waiting = lf_tag(env);
-    for (int i = 0; i < staa_lst_size; ++i) {
+    for (size_t i = 0; i < staa_lst_size; ++i) {
       staa_t* staa_elem = staa_lst[i];
       // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
       // The list is sorted in increasing order of adjusted STAA offsets.
@@ -1125,7 +1126,7 @@ static void* update_ports_from_staa_offsets(void* args) {
           lf_time_start());
           */
 
-          for (int j = 0; j < staa_elem->num_actions; ++j) {
+          for (size_t j = 0; j < staa_elem->num_actions; ++j) {
             lf_action_base_t* input_port_action = staa_elem->actions[j];
             if (input_port_action->trigger->status == unknown) {
               input_port_action->trigger->status = absent;
@@ -1157,7 +1158,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       // it would be huge mistake to enter the wait for a new tag below because the
       // program will freeze.  First, check whether any ports are unknown:
       bool port_unkonwn = false;
-      for (int i = 0; i < staa_lst_size; ++i) {
+      for (size_t i = 0; i < staa_lst_size; ++i) {
         staa_t* staa_elem = staa_lst[i];
         if (a_port_is_unknown(staa_elem)) {
           port_unkonwn = true;
@@ -2095,7 +2096,7 @@ void lf_enqueue_port_absent_reactions(environment_t* env) {
 }
 
 void* lf_handle_p2p_connections_from_federates(void* env_arg) {
-  assert(env_arg);
+  LF_ASSERT_NON_NULL(env_arg);
   size_t received_federates = 0;
   // Allocate memory to store thread IDs.
   _fed.inbound_socket_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
@@ -2226,8 +2227,8 @@ parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
   }
   if (rti_addr_info.has_host) {
     if (validate_host(rti_addr_info.rti_host_str)) {
-      char* rti_host = (char*)calloc(256, sizeof(char));
-      strncpy(rti_host, rti_addr_info.rti_host_str, 255);
+      char* rti_host = (char*)calloc(257, sizeof(char));
+      strncpy(rti_host, rti_addr_info.rti_host_str, 256);
       federation_metadata.rti_host = rti_host;
     } else {
       return INVALID_HOST;
@@ -2242,8 +2243,8 @@ parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
   }
   if (rti_addr_info.has_user) {
     if (validate_user(rti_addr_info.rti_user_str)) {
-      char* rti_user = (char*)calloc(256, sizeof(char));
-      strncpy(rti_user, rti_addr_info.rti_user_str, 255);
+      char* rti_user = (char*)calloc(257, sizeof(char));
+      strncpy(rti_user, rti_addr_info.rti_user_str, 256);
       federation_metadata.rti_user = rti_user;
     } else {
       return INVALID_USER;
@@ -2656,6 +2657,8 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
   int prev_max_level_allowed_to_advance = max_level_allowed_to_advance;
   max_level_allowed_to_advance = INT_MAX;
 #ifdef FEDERATED_DECENTRALIZED
+  (void)tag;
+  (void)is_provisional;
   size_t action_table_size = _lf_action_table_size;
   lf_action_base_t** action_table = _lf_action_table;
 #else
