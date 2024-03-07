@@ -16,29 +16,25 @@ concurrency:
 jobs:
   check-labels:
     uses: lf-lang/lingua-franca/.github/workflows/check-labels.yml@master
+    if:  ${{ github.event_name == 'pull_request' }}
 
   unit-tests-single:
-    needs: check-labels
     uses: ./.github/workflows/unit-tests.yml
     with:
       cmake-args: '-UNUMBER_OF_WORKERS -DLF_SINGLE_THREADED=1'
 
   unit-tests-multi:
-    needs: check-labels
     uses: ./.github/workflows/unit-tests.yml
     with:
       cmake-args: '-DNUMBER_OF_WORKERS=4 -ULF_SINGLE_THREADED'
 
   build-rti:
-    needs: check-labels
     uses: ./.github/workflows/build-rti.yml
 
   build-trace-tools:
-    needs: check-labels
     uses: ./.github/workflows/build-trace-tools.yml
 
   fetch-lf:
-    needs: check-labels
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
       file: 'lingua-franca-ref.txt'
