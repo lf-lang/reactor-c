@@ -96,12 +96,21 @@ $(function(){initNavTree('d3/dcc/md__r_e_a_d_m_e.html','../../'); initResizable(
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a href="https://github.com/lf-lang/reactor-c/actions/workflows/ci.yml"><img src="https://github.com/lf-lang/reactor-c/actions/workflows/ci.yml/badge.svg" alt="CI" style="pointer-events: none;" class="inline"/></a> <a href="https://github.com/lf-lang/reactor-c/actions/workflows/api-docs.yml"><img src="https://github.com/lf-lang/reactor-c/actions/workflows/api-docs.yml/badge.svg" alt="API docs" style="pointer-events: none;" class="inline"/></a></p>
-<h1><a class="anchor" id="autotoc_md29"></a>
+<h1><a class="anchor" id="autotoc_md4"></a>
 Reactor-C: A reactor runtime implementation in C</h1>
-<h2><a class="anchor" id="autotoc_md30"></a>
+<h2><a class="anchor" id="autotoc_md5"></a>
 Documentation</h2>
 <p>To generate and view documentation, see docs/README.md.</p>
-<h2><a class="anchor" id="autotoc_md31"></a>
+<h2><a class="anchor" id="autotoc_md6"></a>
+Code-formatting</h2>
+<p>We use clang-format to format our codebase. To run the formatter on all source and header files in reactor-c: </p><div class="fragment"><div class="line">make format</div>
+</div><!-- fragment --><p> The CI will do a "dry-run" of the formatter to verify that all files are correctly formatted.</p>
+<p>VSCode can be configured to run clang-format on files as they are saved. To achieve this set the following settings:</p><ul>
+<li>editor.formatOnSave: true</li>
+<li>C_Cpp.formatting: clang-format</li>
+<li>C_Cpp.clang_format_style: file</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md7"></a>
 Testing</h2>
 <p>The Github Actions tests for this repo will automatically run all the C Lingua Franca tests with each of the available schedulers. The version of the lingua-franca repo that is used to do this is specified by the lingua-franca-ref.txt file in this directory.</p>
 <p>To create a new unit test, write a C program with a file name ending in "test.c" in a subdirectory of the <code>test</code> directory. That file should contain a main and should return 0 if the test succeeds.</p>

@@ -113,31 +113,33 @@ $(function(){initNavTree('dd/d70/generics_8h_source.html','../../'); initResizab
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#define lf_is_type_equal(typename_a, typename_b) __builtin_types_compatible_p(typename_a, typename_b)</span></div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#define lf_is_pointer_or_array(p)  (__builtin_classify_type(p) == 5)</span></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#define lf_is_pointer_or_array(p) (__builtin_classify_type(p) == 5)</span></div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="preprocessor">#define lf_decay(p)  (&amp;*__builtin_choose_expr(lf_is_pointer_or_array(p), p, NULL))</span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="preprocessor">#define lf_decay(p) (&amp;*__builtin_choose_expr(lf_is_pointer_or_array(p), p, NULL))</span></div>
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">#define lf_is_pointer(p)  lf_is_same_type(p, lf_decay(p))</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">#define lf_is_pointer(p) lf_is_same_type(p, lf_decay(p))</span></div>
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="preprocessor">#define lf_get_pointer(p) __builtin_choose_expr(lf_is_pointer(p), p, &amp;p)</span></div>
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#define lf_to_left_type(left, right) __builtin_choose_expr(lf_is_pointer_or_array(left), __builtin_choose_expr(lf_is_pointer_or_array(right), (right), &amp;(right)), __builtin_choose_expr(lf_is_pointer_or_array(right), *(right), (right)))</span></div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">#else </span><span class="comment">// buitin are not available</span></div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a1b0936415a643c88ce543099c10e0d7f">   68</a></span><span class="preprocessor">#define var</span></div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a886f2df25fcc1b16e512d6143e910b6f">   69</a></span><span class="preprocessor">#define lf_is_same_type(a, b)</span></div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a785378b93bab907d10fee21425a292e5">   70</a></span><span class="preprocessor">#define lf_is_same(typename, b)</span></div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a271f353ddab44fb05a4b0f8627904fbe">   71</a></span><span class="preprocessor">#define lf_is_pointer_or_array(p)</span></div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a9505134796fc957eb9fedf172cab3527">   72</a></span><span class="preprocessor">#define lf_decay(p)</span></div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a9edb07d852ce1b4e090b36f8683c8017">   73</a></span><span class="preprocessor">#define lf_is_pointer(p)</span></div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#afe05484f1ece6fa30ba7b3bcf33f03b9">   74</a></span><span class="preprocessor">#define lf_get_pointer(p)</span></div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a99938402e4e9202fe51e67f6e916f0f5">   75</a></span><span class="preprocessor">#define lf_to_left_type(left, right)</span></div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">#endif </span><span class="comment">// __has_builtin</span></div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="preprocessor">#endif </span><span class="comment">// GENERICS_H</span></div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#define lf_to_left_type(left, right)                                                                                   \</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">  __builtin_choose_expr(lf_is_pointer_or_array(left),                                                                  \</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">                        __builtin_choose_expr(lf_is_pointer_or_array(right), (right), &amp;(right)),                       \</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">                        __builtin_choose_expr(lf_is_pointer_or_array(right), *(right), (right)))</span></div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">#else </span><span class="comment">// buitin are not available</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a1b0936415a643c88ce543099c10e0d7f">   71</a></span><span class="preprocessor">#define var</span></div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a886f2df25fcc1b16e512d6143e910b6f">   72</a></span><span class="preprocessor">#define lf_is_same_type(a, b)</span></div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a785378b93bab907d10fee21425a292e5">   73</a></span><span class="preprocessor">#define lf_is_same(typename, b)</span></div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a271f353ddab44fb05a4b0f8627904fbe">   74</a></span><span class="preprocessor">#define lf_is_pointer_or_array(p)</span></div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a9505134796fc957eb9fedf172cab3527">   75</a></span><span class="preprocessor">#define lf_decay(p)</span></div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a9edb07d852ce1b4e090b36f8683c8017">   76</a></span><span class="preprocessor">#define lf_is_pointer(p)</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#afe05484f1ece6fa30ba7b3bcf33f03b9">   77</a></span><span class="preprocessor">#define lf_get_pointer(p)</span></div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno"><a class="line" href="../../dd/d70/generics_8h.html#a99938402e4e9202fe51e67f6e916f0f5">   78</a></span><span class="preprocessor">#define lf_to_left_type(left, right)</span></div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span><span class="preprocessor">#endif </span><span class="comment">// __has_builtin</span></div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="preprocessor">#endif </span><span class="comment">// GENERICS_H</span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

@@ -25,33 +25,29 @@
 var NAVTREE =
 [
   [ "reactor-c", "index.html", [
-    [ "Style guidelines", "d6/dcd/md__c_o_n_t_r_i_b_u_t_i_n_g.html", [
-      [ "Abbreviations", "d6/dcd/md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md22", null ],
-      [ "Source file template", "d6/dcd/md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md23", null ],
-      [ "Header file template", "d6/dcd/md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md24", null ]
-    ] ],
     [ "README", "d8/d7b/md_core_2federated_2_r_t_i_2_r_e_a_d_m_e.html", null ],
     [ "hashset.c", "d7/dd5/md_core_2utils_2hashset_2_r_e_a_d_m_e.html", [
-      [ "Example", "d7/dd5/md_core_2utils_2hashset_2_r_e_a_d_m_e.html#autotoc_md26", null ]
+      [ "Example", "d7/dd5/md_core_2utils_2hashset_2_r_e_a_d_m_e.html#autotoc_md1", null ]
     ] ],
     [ "hashset.c", "d2/de9/md_include_2core_2utils_2hashset_2_r_e_a_d_m_e.html", [
-      [ "Example", "d2/de9/md_include_2core_2utils_2hashset_2_r_e_a_d_m_e.html#autotoc_md28", null ]
+      [ "Example", "d2/de9/md_include_2core_2utils_2hashset_2_r_e_a_d_m_e.html#autotoc_md3", null ]
     ] ],
     [ "LICENSE", "d2/d35/md__l_i_c_e_n_s_e.html", null ],
     [ "README", "d0/d05/md_low__level__platform_2_r_e_a_d_m_e.html", null ],
     [ "README", "d3/dcc/md__r_e_a_d_m_e.html", [
-      [ "Reactor-C: A reactor runtime implementation in C", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md29", [
-        [ "Documentation", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md30", null ],
-        [ "Testing", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md31", null ]
+      [ "Reactor-C: A reactor runtime implementation in C", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md4", [
+        [ "Documentation", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md5", null ],
+        [ "Code-formatting", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md6", null ],
+        [ "Testing", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md7", null ]
       ] ]
     ] ],
     [ "/lib/C/util/", "dc/d6e/md_util_2_r_e_a_d_m_e.html", null ],
     [ "util/tracing", "d2/da5/md_util_2tracing_2_r_e_a_d_m_e.html", [
-      [ "Installing", "d2/da5/md_util_2tracing_2_r_e_a_d_m_e.html#autotoc_md34", null ]
+      [ "Installing", "d2/da5/md_util_2tracing_2_r_e_a_d_m_e.html#autotoc_md10", null ]
     ] ],
     [ "Trace sequence diagram visualizer", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html", [
-      [ "Installing", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md39", null ],
-      [ "Running", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md40", null ]
+      [ "Installing", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md15", null ],
+      [ "Running", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md16", null ]
     ] ],
     [ "Deprecated List", "da/d58/deprecated.html", null ],
     [ "Namespaces", "namespaces.html", [
@@ -89,14 +85,14 @@ var NAVTREEINDEX =
 [
 "annotated.html",
 "d2/dcd/tag_8h.html#a3cf238d5a1a842131a5adf916d571d12",
-"d5/d38/structpqueue__t.html#ae1c098eb8c14bdfbce6797ede3f0c387",
-"d6/d68/vector_8h.html#aaa8f4318bf03a7886169e85c151b6903",
-"d7/d58/sensor__simulator_8c.html#a8f5bc282c0405791a6bf0c02abe54df9",
-"d9/da6/net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35",
-"da/dfb/low__level__platform_8h.html#abe5a04985bd63ade71fc058f189d2545",
-"dc/d69/fedsd_8py.html#af4bde7c69b0ef62a9c427feb6a4461d4",
-"de/dcd/influxdb_8h.html#a38f08188614a07aa8c0cbe4f99c020b7",
-"globals_m.html"
+"d5/d38/structpqueue__t.html#ab405fbb415065192ce9a1a39b5f45978",
+"d6/d68/vector_8h.html#a85cdea38a35554168aa2277d83f5a957",
+"d7/d58/sensor__simulator_8c.html#a8f5bc282c0405791a6bf0c02abe54df9a930e1fe9adfb52706ff51c4dd2833dcb",
+"d9/da6/net__common_8h.html#ae17d641bfe8dcd23091a4cfbae028660",
+"da/dfb/low__level__platform_8h.html#ae0fda178667bc6cd94890a13316c285c",
+"dc/d69/fedsd_8py.html#afbeb6e2d356f9a2bc070fa88a997d810",
+"de/dcd/influxdb_8h.html#a442325f8443dadd92b1a1a82526de4c5",
+"globals_p.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

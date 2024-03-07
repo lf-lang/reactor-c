@@ -150,12 +150,12 @@ LICENSE</h1>
 <h1><a class="anchor" id="DESCRIPTION"></a>
 Functions intitializing and freeing memory for environments.</h1>
 <p>Standalone program to send a Lingua Franca trace file to InfluxDB. InfluxDB is a database server to which data can be posted using HTTP or sent as a UDP datagram.</p>
-<h2><a class="anchor" id="autotoc_md35"></a>
+<h2><a class="anchor" id="autotoc_md11"></a>
 Compiling this Program</h2>
 <p>To compile this program, simply do this in this source directory: </p><div class="fragment"><div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">sudo</a> <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">make</a> <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">install</a></div>
 <div class="ttc" id="ahashmap_8h_html_ad2c17ed7e0d4d65a63bf9002aba2016f"><div class="ttname"><a href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">address</a></div><div class="ttdeci">return address</div><div class="ttdef"><b>Definition</b> hashmap.h:74</div></div>
 </div><!-- fragment --><p> This will place an executable program <code>trace_to_influxdb</code> in the directory <code>usr/local/bin</code>.</p>
-<h2><a class="anchor" id="autotoc_md36"></a>
+<h2><a class="anchor" id="autotoc_md12"></a>
 Setting up InfluxDB</h2>
 <p>To set up InfluxDB, see:</p>
 <p><a href="https://docs.influxdata.com/influxdb/v2.0/get-started/">https://docs.influxdata.com/influxdb/v2.0/get-started/</a></p>
@@ -170,7 +170,7 @@ Setting up InfluxDB</h2>
 <div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">Organization</a>: <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">iCyPhy</a></div>
 <div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">Bucket</a>: <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">test</a></div>
 </div><!-- fragment --><p> The UI in the browser will then give you the options Quick Start or Advanced, either of which you can select. If you select "Data" on the left, you can browse Buckets to verify that your test bucket was created.</p>
-<h2><a class="anchor" id="autotoc_md37"></a>
+<h2><a class="anchor" id="autotoc_md13"></a>
 Uploading Trace Data to InfluxDB</h2>
 <p>First, generate a trace file by setting a target parameter in a Lingua Franca program: </p><div class="fragment"><div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">target</a> <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">C</a> {</div>
 <div class="line">    <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">tracing</a>: <span class="keyword">true</span></div>
