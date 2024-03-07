@@ -231,7 +231,7 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
     // Therefore we should fall back to using a mutex.
     lf_platform_mutex_lock(trace_mutex);
   }
-  if (((size_t)tid) > trace._lf_number_of_trace_buffers) {
+  if (tid > (int)trace._lf_number_of_trace_buffers) {
     lf_print_error_and_exit("the thread id (%d) exceeds the number of trace buffers (%zu)", tid,
                             trace._lf_number_of_trace_buffers);
   }
