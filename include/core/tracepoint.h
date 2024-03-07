@@ -137,7 +137,7 @@ typedef struct trace_record_t {
  * argument is currently unused)
  */
 void call_tracepoint(int event_type, void* reactor, tag_t tag, int worker, int src_id, int dst_id,
-                     instant_t* physical_time, trigger_t* trigger, interval_t extra_delay, bool is_interval_start);
+                     instant_t* physical_time, trigger_t* trigger, interval_t extra_delay);
 
 /**
  * Register a trace object.
@@ -166,8 +166,7 @@ int register_user_trace_event(void* self, char* description);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_reaction_starts(env, reaction, worker)                                                              \
-  call_tracepoint(reaction_starts, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0,  \
-                  true)
+  call_tracepoint(reaction_starts, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0)
 
 /**
  * Trace the end of a reaction execution.
@@ -176,8 +175,7 @@ int register_user_trace_event(void* self, char* description);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_reaction_ends(env, reaction, worker)                                                                \
-  call_tracepoint(reaction_ends, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0,    \
-                  false)
+  call_tracepoint(reaction_ends, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0)
 
 /**
  * Trace a call to schedule.
@@ -219,7 +217,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_worker_wait_starts(env, worker)                                                                     \
-  call_tracepoint(worker_wait_starts, NULL, env->current_tag, worker, worker, -1, NULL, NULL, 0, true)
+  call_tracepoint(worker_wait_starts, NULL, env->current_tag, worker, worker, -1, NULL, NULL, 0)
 
 /**
  * Trace the end of a worker waiting for something to change on the event or reaction queue.
@@ -227,7 +225,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_worker_wait_ends(env, worker)                                                                       \
-  call_tracepoint(worker_wait_ends, NULL, env->current_tag, worker, worker, -1, NULL, NULL, 0, false)
+  call_tracepoint(worker_wait_ends, NULL, env->current_tag, worker, worker, -1, NULL, NULL, 0)
 
 /**
  * Trace the start of the scheduler waiting for logical time to advance or an event to
@@ -235,7 +233,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param trace The trace object.
  */
 #define tracepoint_scheduler_advancing_time_starts(env)                                                                \
-  call_tracepoint(scheduler_advancing_time_starts, NULL, env->current_tag, -1, -1, -1, NULL, NULL, 0, true);
+  call_tracepoint(scheduler_advancing_time_starts, NULL, env->current_tag, -1, -1, -1, NULL, NULL, 0);
 
 /**
  * Trace the end of the scheduler waiting for logical time to advance or an event to
@@ -243,7 +241,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param trace The trace object.
  */
 #define tracepoint_scheduler_advancing_time_ends(env)                                                                  \
-  call_tracepoint(scheduler_advancing_time_ends, NULL, env->current_tag, -1, -1, -1, NULL, NULL, 0, false)
+  call_tracepoint(scheduler_advancing_time_ends, NULL, env->current_tag, -1, -1, -1, NULL, NULL, 0)
 
 /**
  * Trace the occurrence of a deadline miss.
@@ -253,7 +251,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  */
 #define tracepoint_reaction_deadline_missed(env, reaction, worker)                                                     \
   call_tracepoint(reaction_deadline_missed, reaction->self, env->current_tag, worker, worker, reaction->number, NULL,  \
-                  NULL, 0, false)
+                  NULL, 0)
 
 /**
  * @brief Check if the tracing library is compatible with the current version
