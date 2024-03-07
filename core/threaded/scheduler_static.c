@@ -227,7 +227,8 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
     instant_t wakeup_time = *src + op2.imm;
     LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, op1: %lld, op2: %lld, current_physical_time: %lld\n", start_time, wakeup_time, *src, op2.imm, lf_time_physical());
     LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
-    _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
+    // _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
+    while (lf_time_physical() < wakeup_time);
     LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
     *pc += 1; // Increment pc.
     tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, pc_orig);
@@ -239,19 +240,15 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
 void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
     int pc_orig = (int) *pc;
-    if (op3.imm == ULLONG_MAX)
-        tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);
-    else
-        tracepoint_static_scheduler_EXE_reaction_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);
+    if (op3.imm == ULLONG_MAX) {tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);}
+    else {tracepoint_static_scheduler_EXE_reaction_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);}
     function_generic_t function = (function_generic_t)(uintptr_t)op1.reg;
     void *args = (void*)op2.reg;
     // Execute the function directly.
     function(args);
     *pc += 1; // Increment pc.
-    if (op3.imm == ULLONG_MAX)
-        tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);
-    else
-        tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);
+    if (op3.imm == ULLONG_MAX) {tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);}
+    else {tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);}
 }
 
 
