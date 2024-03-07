@@ -23,7 +23,7 @@ typedef struct trace_t {
    * which will create a significant pause in the calling thread.
    */
   trace_record_nodeps_t** _lf_trace_buffer;
-  size_t * _lf_trace_buffer_size;
+  size_t* _lf_trace_buffer_size;
 
   /** The number of trace buffers allocated when tracing starts. */
   size_t _lf_number_of_trace_buffers;

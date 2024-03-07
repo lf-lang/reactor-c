@@ -38,7 +38,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 extern const char* trace_event_names[];
 
-
 /** Macro to use when access to trace file fails. */
 #define _LF_TRACE_FAILURE(trace_file)                                                                                  \
   do {                                                                                                                 \
