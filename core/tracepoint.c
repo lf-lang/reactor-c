@@ -168,7 +168,7 @@ void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag
                   -1,                     // int dst_id,
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
+                  0                       // interval_t extra_delay
   );
 }
 
@@ -189,7 +189,7 @@ void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* t
                   -1,                     // int dst_id,
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
+                  0                       // interval_t extra_delay
   );
 }
 
@@ -210,7 +210,7 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
                   partner_id,             // int dst_id,
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
+                  0                       // interval_t extra_delay
   );
 }
 
@@ -231,7 +231,7 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
                   partner_id,             // int dst_id,
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
+                  0                       // interval_t extra_delay
   );
 }
 #endif // FEDERATED
@@ -257,7 +257,7 @@ void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
                   fed_id,                 // int dst_id
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
+                  0                       // interval_t extra_delay
   );
 }
 
@@ -277,7 +277,7 @@ void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* t
                   fed_id,                 // int dst_id
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
+                  0                       // interval_t extra_delay
   );
 }
 
