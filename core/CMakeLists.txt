@@ -49,18 +49,8 @@ endif()
 list(JOIN REACTORC_SOURCES ", " PRINTABLE_SOURCE_LIST)
 message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 
-# Create the reactor-c library. If we are targeting Zephyr we have to use the
-# Zephyr Cmake extension to create the library and add the sources.
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
-    message("--- Building Zephyr library")
-    zephyr_library_named(reactor-c)
-    zephyr_library_sources(${REACTORC_SOURCES})
-    zephyr_library_link_libraries(kernel)
-else()
-    add_library(reactor-c)
-    target_sources(reactor-c PRIVATE ${REACTORC_SOURCES})
-endif()
-
+add_library(reactor-c)
+target_sources(reactor-c PRIVATE ${REACTORC_SOURCES})
 lf_enable_compiler_warnings(reactor-c)
 
 if (DEFINED LF_TRACE)
