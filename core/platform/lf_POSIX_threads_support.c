@@ -1,11 +1,18 @@
 #if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
 #include "platform.h"
+#include "util.h"
 #include "lf_POSIX_threads_support.h"
 #include "lf_unix_clock_support.h"
 
 #include <pthread.h>
+#include <sched.h>
 #include <errno.h>
 #include <stdint.h> // For fixed-width integral types
+#include <unistd.h>
+
+int lf_available_cores() {
+    return (int)sysconf(_SC_NPROCESSORS_ONLN);
+}
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
@@ -32,6 +39,10 @@ int lf_mutex_init(lf_mutex_t* mutex) {
     // pthreads. Maybe it has been fixed?
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
     return pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
+}
+
+lf_thread_t lf_thread_self() {
+    return pthread_self();
 }
 
 int lf_mutex_lock(lf_mutex_t* mutex) {
