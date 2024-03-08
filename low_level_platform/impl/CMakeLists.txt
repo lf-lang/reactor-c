@@ -3,7 +3,6 @@
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
 set(LF_LOW_LEVEL_PLATFORM_FILES
     ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_clock_support.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_syscall_support.c
     ${CMAKE_CURRENT_LIST_DIR}/src/lf_linux_support.c
     ${CMAKE_CURRENT_LIST_DIR}/src/lf_macos_support.c
     ${CMAKE_CURRENT_LIST_DIR}/src/lf_windows_support.c

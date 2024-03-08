@@ -154,6 +154,37 @@ void initialize_lf_thread_id() {
 
 int lf_thread_id() { return *((int*)k_thread_custom_data_get()); }
 
+lf_thread_t lf_thread_self() { return k_current_get(); }
+
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) { return k_thread_cpu_pin(thread, cpu_number); }
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
+  k_thread_priority_set(thread, LF_SCHED_MAX_PRIORITY - priority);
+  return 0;
+}
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
+  // Update the policy
+  switch (policy->policy) {
+  case LF_SCHED_FAIR:
+    break;
+  case LF_SCHED_TIMESLICE: {
+    k_thread_priority_set(thread, LF_SCHED_MAX_PRIORITY - policy->priority);
+    k_sched_time_slice_set(0, policy->time_slice / 1000000);
+    break;
+  }
+  case LF_SCHED_PRIORITY: {
+    k_thread_priority_set(thread, 99 - policy->priority);
+    break;
+  }
+  default:
+    return -1;
+    break;
+  }
+
+  return 0;
+}
+
 int lf_mutex_init(lf_mutex_t* mutex) { return k_mutex_init(mutex); }
 
 int lf_mutex_lock(lf_mutex_t* mutex) {

@@ -108,6 +108,12 @@ int lf_mutex_lock(lf_mutex_t* mutex);
 int lf_available_cores();
 
 /**
+ * Returns the thread ID of the calling thread
+ *
+ */
+lf_thread_t lf_thread_self();
+
+/**
  * Create a new thread, starting with execution of lf_thread
  * getting passed arguments. The new handle is stored in thread_id.
  *
@@ -131,6 +137,55 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return);
+
+// The following API introduce the ability to change how the LF workers are sheduled
+// by the underlying thread scheduling. This API is still experimental and future
+// changes are expected.
+
+#define LF_SCHED_MAX_PRIORITY 99
+#define LF_SCHED_MIN_PRIORITY 0
+/**
+ * @brief The thread scheduling policies.
+ *
+ */
+typedef enum {
+  LF_SCHED_FAIR,      // Non real-time scheduling policy. Corresponds to SCHED_OTHER
+  LF_SCHED_TIMESLICE, // Real-time, time-slicing priority-based policty. Corresponds to SCHED_RR.
+  LF_SCHED_PRIORITY,  // Real-time, priority-only based scheduling. Corresponds to SCHED_FIFO.
+} lf_scheduling_policy_type_t;
+
+typedef struct {
+  lf_scheduling_policy_type_t policy; // The scheduling policy
+  int priority;                       // The priority, if applicable
+  interval_t time_slice;              // The time-slice allocated, if applicable.
+} lf_scheduling_policy_t;
+
+/**
+ * This pins a lf_thread to a specific CPU
+ *
+ * @param thread The thread
+ * @param cpu_number the CPU ID
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
+
+/**
+ * Sets the priority of a thread. Priority ranges from 0 to 99 where a higher
+ * number indicates higher priority. Setting the priority of a thread only
+ * makes sense if the thread is scheduled with LF_SCHED_TIMESLICE or LF_THREAD_PRIORITY
+ *
+ * @param thread The thread.
+ * @param priority The priority.
+ * @return int 0 on success, platform-specific error otherwise
+ */
+int lf_thread_set_priority(lf_thread_t thread, int priority);
+
+/**
+ * Sets the scheduling policy of a thread.
+ *
+ * @return int 0 on success, platform-specific error number otherwise.
+ */
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy);
 
 /**
  * Initialize a mutex.
