@@ -46,7 +46,6 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) { return -1; }
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) { return -1; }
 #endif
 
-#include "lf_unix_clock_support.h"
 #include "platform/lf_unix_clock_support.h"
 
 // See `man 2 clock_nanosleep` for return values
