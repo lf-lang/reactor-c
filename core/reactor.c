@@ -92,6 +92,7 @@ void lf_print_snapshot(environment_t* env) {
 }
 #else  // NDEBUG
 void lf_print_snapshot(environment_t* env) {
+  (void)env;
   // Do nothing.
 }
 #endif // NDEBUG
@@ -283,8 +284,7 @@ int next(environment_t* env) {
 void lf_request_stop(void) {
   // There is only one enclave, so get its environment.
   environment_t* env;
-  int num_environments = _lf_get_environments(&env);
-  assert(num_environments == 1);
+  _lf_get_environments(&env);
 
   tag_t new_stop_tag;
   new_stop_tag.time = env->current_tag.time;

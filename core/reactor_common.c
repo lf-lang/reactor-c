@@ -1329,7 +1329,7 @@ void termination(void) {
 }
 
 index_t lf_combine_deadline_and_level(interval_t deadline, int level) {
-  if (deadline > ((interval_t)ULLONG_MAX >> 16))
+  if (deadline > (interval_t)(ULLONG_MAX >> 16))
     return ((ULLONG_MAX >> 16) << 16) | level;
   else
     return (deadline << 16) | level;
