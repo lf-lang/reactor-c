@@ -169,15 +169,12 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
   case LF_SCHED_FAIR:
     break;
   case LF_SCHED_TIMESLICE: {
-    int priority = ((lf_scheduling_policy_timeslice_t*)policy)->priority;
-    interval_t slice = ((lf_scheduling_policy_timeslice_t*)policy)->time_slice;
-    k_thread_priority_set(thread, LF_SCHED_MAX_PRIORITY - priority);
-    k_sched_time_slice_set(0, slice / 1000000);
+    k_thread_priority_set(thread, LF_SCHED_MAX_PRIORITY - policy->priority);
+    k_sched_time_slice_set(0, policy->time_slice / 1000000);
     break;
   }
   case LF_SCHED_PRIORITY: {
-    int priority = ((lf_scheduling_policy_timeslice_t*)policy)->priority;
-    k_thread_priority_set(thread, 99 - priority);
+    k_thread_priority_set(thread, 99 - policy->priority);
     break;
   }
   default:

@@ -155,19 +155,10 @@ typedef enum {
 } lf_scheduling_policy_type_t;
 
 typedef struct {
-  lf_scheduling_policy_type_t policy;
+  lf_scheduling_policy_type_t policy; // The scheduling policy
+  int priority;                       // The priority, if applicable
+  interval_t time_slice;              // The time-slice allocated, if applicable.
 } lf_scheduling_policy_t;
-
-typedef struct {
-  lf_scheduling_policy_t base;
-  int priority;
-  interval_t time_slice;
-} lf_scheduling_policy_timeslice_t;
-
-typedef struct {
-  lf_scheduling_policy_t base;
-  int priority;
-} lf_scheduling_policy_priority_t;
 
 /**
  * This pins a lf_thread to a specific CPU

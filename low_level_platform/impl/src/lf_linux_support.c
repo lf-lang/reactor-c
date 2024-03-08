@@ -75,11 +75,11 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
     break;
   case LF_SCHED_TIMESLICE:
     posix_policy = SCHED_RR;
-    schedparam.sched_priority = ((lf_scheduling_policy_timeslice_t*)policy)->priority;
+    schedparam.sched_priority = policy->priority;
     break;
   case LF_SCHED_PRIORITY:
     posix_policy = SCHED_FIFO;
-    schedparam.sched_priority = ((lf_scheduling_policy_priority_t*)policy)->priority;
+    schedparam.sched_priority = policy->priority;
     break;
   default:
     return -1;
