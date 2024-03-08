@@ -141,7 +141,7 @@ static void start_trace(trace_t* trace, int max_num_local_threads) {
     trace->_lf_trace_buffer[i] = (trace_record_nodeps_t*)malloc(sizeof(trace_record_nodeps_t) * TRACE_BUFFER_CAPACITY);
   }
   // Array of counters that track the size of each trace record (per thread).
-  trace->_lf_trace_buffer_size = (size_t*)calloc(sizeof(int), trace->_lf_number_of_trace_buffers + 1);
+  trace->_lf_trace_buffer_size = (size_t*)calloc(sizeof(size_t), trace->_lf_number_of_trace_buffers + 1);
   trace->_lf_trace_buffer_size++;
 
   trace->_lf_trace_stop = 0;
@@ -231,7 +231,7 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
     // Therefore we should fall back to using a mutex.
     lf_platform_mutex_lock(trace_mutex);
   }
-  if (tid > (int)trace._lf_number_of_trace_buffers) {
+  if (((size_t)tid) > trace._lf_number_of_trace_buffers) {
     lf_print_error_and_exit("the thread id (%d) exceeds the number of trace buffers (%zu)", tid,
                             trace._lf_number_of_trace_buffers);
   }

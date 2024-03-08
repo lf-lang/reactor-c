@@ -1318,6 +1318,7 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
 
     // Allocate memory for the upstream and downstream pointers
     if (fed->enclave.num_upstream > 0) {
+      // FIXME: This looks wrong. We are casting an array of uint16_ts to an int*?
       fed->enclave.upstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
       // Allocate memory for the upstream delay pointers
       fed->enclave.upstream_delay = (interval_t*)malloc(sizeof(interval_t) * fed->enclave.num_upstream);
@@ -1326,6 +1327,7 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
       fed->enclave.upstream_delay = (interval_t*)NULL;
     }
     if (fed->enclave.num_downstream > 0) {
+      // FIXME: This looks wrong. We are casting an array of uint16_ts to an int*?
       fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
     } else {
       fed->enclave.downstream = (int*)NULL;
