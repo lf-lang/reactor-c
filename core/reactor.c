@@ -209,7 +209,7 @@ int next(environment_t* env) {
   // Enter the critical section and do not leave until we have
   // determined which tag to commit to and start invoking reactions for.
   LF_CRITICAL_SECTION_ENTER(env);
-  event_t* event = (event_t*)pqueue_peek(env->event_q);
+  event_t* event = (event_t*)pqueue_tag_peek(env->event_q);
   // pqueue_dump(event_q, event_q->prt);
   // If there is no next event and -keepalive has been specified
   // on the command line, then we will wait the maximum time possible.
@@ -220,13 +220,13 @@ int next(environment_t* env) {
       lf_set_stop_tag(env, (tag_t){.time = env->current_tag.time, .microstep = env->current_tag.microstep + 1});
     }
   } else {
-    next_tag.time = event->time;
-    // Deduce the microstep
-    if (next_tag.time == env->current_tag.time) {
-      next_tag.microstep = env->current_tag.microstep + 1;
-    } else {
-      next_tag.microstep = 0;
-    }
+    next_tag = event->base.tag;
+    // // Deduce the microstep
+    // if (next_tag.time == env->current_tag.time) {
+    //   next_tag.microstep = env->current_tag.microstep + 1;
+    // } else {
+    //   next_tag.microstep = 0;
+    // }
   }
 
   if (lf_is_tag_after_stop_tag(env, next_tag)) {
@@ -234,10 +234,10 @@ int next(environment_t* env) {
     next_tag = env->stop_tag;
   }
 
-  LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
+  LF_PRINT_LOG("Next event (elapsed) tag is " PRINTF_TAG ".", next_tag.time - start_time, next_tag.microstep);
   // Wait until physical time >= event.time.
   int finished_sleep = wait_until(env, next_tag.time);
-  LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
+ LF_PRINT_LOG("Next event (elapsed) tag is " PRINTF_TAG ".", next_tag.time - start_time, next_tag.microstep);
   if (finished_sleep != 0) {
     LF_PRINT_DEBUG("***** wait_until was interrupted.");
     // Sleep was interrupted. This could happen when a physical action
@@ -247,10 +247,10 @@ int next(environment_t* env) {
     LF_CRITICAL_SECTION_EXIT(env);
     return 1;
   }
-  // Advance current time to match that of the first event on the queue.
+  // Advance current tag to match that of the first event on the queue.
   // We can now leave the critical section. Any events that will be added
   // to the queue asynchronously will have a later tag than the current one.
-  _lf_advance_logical_time(env, next_tag.time);
+  _lf_advance_logical_tag(env, next_tag);
 
   // Trigger shutdown reactions if appropriate.
   if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {

@@ -164,7 +164,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   event_t* e = lf_get_new_event(env);
 
   // Initialize the next pointer.
-  e->next = NULL;
+//   e->next = NULL;
 
   // Set the payload.
   e->token = token;
@@ -207,16 +207,16 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   // Check for conflicts (a queued event with the same trigger and time).
   if (min_spacing <= 0) {
     // No minimum spacing defined.
-    e->time = intended_tag.time;
+    e->base.tag = intended_tag;
     event_t* found = (event_t*)pqueue_find_equal_same_priority(env->event_q, e);
     // Check for conflicts. Let events pile up in super dense time.
     if (found != NULL) {
       intended_tag.microstep++;
-      // Skip to the last node in the linked list.
-      while (found->next != NULL) {
-        found = found->next;
-        intended_tag.microstep++;
-      }
+    //   // Skip to the last node in the linked list.
+    //   while (found->next != NULL) {
+    //     found = found->next;
+    //     intended_tag.microstep++;
+    //   }
       if (lf_is_tag_after_stop_tag(env, intended_tag)) {
         LF_PRINT_DEBUG("Attempt to schedule an event after stop_tag was rejected.");
         // Scheduling an event will incur a microstep
@@ -224,8 +224,8 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         lf_recycle_event(env, e);
         return 0;
       }
-      // Hook the event into the list.
-      found->next = e;
+    //   // Hook the event into the list.
+    //   found->next = e;
       trigger->last_tag = intended_tag;
       return (0); // FIXME: return value
     }
@@ -254,13 +254,13 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         return (0);
       case replace:
         LF_PRINT_DEBUG("Policy is replace. Replacing the previous event.");
-        // If the event with the previous time is still on the event
+        // If the event with the previous tag is still on the event
         // queue, then replace the token.  To find this event, we have
         // to construct a dummy event_t struct.
         event_t* dummy = lf_get_new_event(env);
-        dummy->next = NULL;
+        // dummy->next = NULL;
         dummy->trigger = trigger;
-        dummy->time = trigger->last_tag.time;
+        dummy->base.tag = trigger->last_tag;
         event_t* found = (event_t*)pqueue_find_equal_same_priority(env->event_q, dummy);
 
         if (found != NULL) {
@@ -300,13 +300,14 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
 #endif
 
   // Set the tag of the event.
-  e->time = intended_tag.time;
+  e->base.tag = intended_tag;
 
   // Do not schedule events if if the event time is past the stop time
   // (current microsteps are checked earlier).
+  // FIXME: Maybe this tag itself should be compared?
   LF_PRINT_DEBUG("Comparing event with elapsed time " PRINTF_TIME " against stop time " PRINTF_TIME ".",
-                 e->time - lf_time_start(), env->stop_tag.time - lf_time_start());
-  if (e->time > env->stop_tag.time) {
+                 e->base.tag.time - lf_time_start(), env->stop_tag.time - lf_time_start());
+  if (e->base.tag.time > env->stop_tag.time) {
     LF_PRINT_DEBUG("lf_schedule_trigger: event time is past the timeout. Discarding event.");
     _lf_done_using(token);
     lf_recycle_event(env, e);
@@ -324,8 +325,8 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   // and any new events added at this tag will go into the reaction_q
   // rather than the event_q, so anything put in the event_q with this
   // same time will automatically be executed at the next microstep.
-  LF_PRINT_LOG("Inserting event in the event queue with elapsed time " PRINTF_TIME ".", e->time - lf_time_start());
-  pqueue_insert(env->event_q, e);
+  LF_PRINT_LOG("Inserting event in the event queue with elapsed time " PRINTF_TIME ".", e->base.tag.time - lf_time_start());
+  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*) e);
 
   tracepoint_schedule(env, trigger, e->time - env->current_tag.time);
 

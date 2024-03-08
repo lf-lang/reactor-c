@@ -21,15 +21,15 @@ int event_matches(void* event1, void* event2) { return (((event_t*)event1)->trig
 
 int reaction_matches(void* a, void* b) { return (a == b); }
 
-pqueue_pri_t get_event_time(void* event) { return (pqueue_pri_t)(((event_t*)event)->time); }
+pqueue_pri_t get_event_time(void* event) { return (pqueue_pri_t)(((event_t*)event)->base.tag.time); }
 
 pqueue_pri_t get_reaction_index(void* reaction) { return ((reaction_t*)reaction)->index; }
 
-size_t get_event_position(void* event) { return ((event_t*)event)->pos; }
+size_t get_event_position(void* event) { return ((event_t*)event)->base.pos; }
 
 size_t get_reaction_position(void* reaction) { return ((reaction_t*)reaction)->pos; }
 
-void set_event_position(void* event, size_t pos) { ((event_t*)event)->pos = pos; }
+void set_event_position(void* event, size_t pos) { ((event_t*)event)->base.pos = pos; }
 
 void set_reaction_position(void* reaction, size_t pos) { ((reaction_t*)reaction)->pos = pos; }
 
@@ -40,5 +40,5 @@ void print_reaction(void* reaction) {
 
 void print_event(void* event) {
   event_t* e = (event_t*)event;
-  LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p", e->time, e->trigger, e->token);
+  LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p", e->base.tag.time, e->trigger, e->token);
 }
