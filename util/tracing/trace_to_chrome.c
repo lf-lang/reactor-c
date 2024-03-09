@@ -51,6 +51,15 @@ FILE* trace_file = NULL;
 /** File for writing the output data. */
 FILE* output_file = NULL;
 
+/** 
+ * By default, the Chrome tracing displays events in us granularity. So
+ * timestamps by default are divided by scaling=1000 to show correct units in
+ * the GUI. However, for sub-us events, it is preferable to set scaling=1 so
+ * that the execution time of events are not abstracted to 0.
+ */
+int scaling_factor = 1000;
+// double scaling_factor = 1; // For seeing sub-us events.
+
 /**
  * Print a usage message.
  */
@@ -67,6 +76,76 @@ int max_reaction_number = 0;
 
 /** Indicator to plot vs. physical time only. */
 bool physical_time_only = false;
+
+/** A helper function for retriving virtual instruction name from event type */
+char* get_instruction_name(trace_event_t event_type) {
+    switch(event_type) {
+        case static_scheduler_ADD_starts:
+        case static_scheduler_ADD_ends:
+            return "ADD";
+            break;
+        case static_scheduler_ADDI_starts:
+        case static_scheduler_ADDI_ends:
+            return "ADDI";
+            break;
+        case static_scheduler_ADV_starts:
+        case static_scheduler_ADV_ends:
+            return "ADV";
+            break;
+        case static_scheduler_ADVI_starts:
+        case static_scheduler_ADVI_ends:
+            return "ADVI";
+            break;
+        case static_scheduler_BEQ_starts:
+        case static_scheduler_BEQ_ends:
+            return "BEQ";
+            break;
+        case static_scheduler_BGE_starts:
+        case static_scheduler_BGE_ends:
+            return "BGE";
+            break;
+        case static_scheduler_BLT_starts:
+        case static_scheduler_BLT_ends:
+            return "BLT";
+            break;
+        case static_scheduler_BNE_starts:
+        case static_scheduler_BNE_ends:
+            return "BNE";
+            break;
+        case static_scheduler_DU_starts:
+        case static_scheduler_DU_ends:
+            return "DU";
+            break;
+        case static_scheduler_EXE_starts:
+        case static_scheduler_EXE_ends:
+            return "EXE";
+            break;
+        case static_scheduler_JAL_starts:
+        case static_scheduler_JAL_ends:
+            return "JAL";
+            break;
+        case static_scheduler_JALR_starts:
+        case static_scheduler_JALR_ends:
+            return "JALR";
+            break;
+        case static_scheduler_STP_starts:
+        case static_scheduler_STP_ends:
+            return "STP";
+            break;
+        case static_scheduler_WLT_starts:
+        case static_scheduler_WLT_ends:
+            return "WLT";
+            break;
+        case static_scheduler_WU_starts:
+        case static_scheduler_WU_ends:
+            return "WU";
+            break;
+        default:
+            fprintf(stderr, "WARNING: Unrecognized virtual instruction detected: %s\n",
+                        trace_event_names[event_type]);
+            return "UNKNOWN";
+    }
+}
 
 /**
  * Read a trace in the trace_file and write it to the output_file in json.
@@ -95,6 +174,13 @@ size_t read_and_write_trace() {
             } else if (trace[i].event_type == scheduler_advancing_time_starts
                     || trace[i].event_type == scheduler_advancing_time_starts) {
                 reactor_name = "ADVANCE TIME";
+            } else if (trace[i].event_type >= static_scheduler_ADD_starts
+                    || trace[i].event_type <= static_scheduler_WU_ends) {
+                int pc = trace[i].dst_id;
+                char *inst_name = get_instruction_name(trace[i].event_type);
+                char str[20];
+                sprintf(str, "%d: %s", pc, inst_name);
+                reactor_name = str;
             } else {
                 reactor_name = "NO REACTOR";
             }
@@ -111,9 +197,9 @@ size_t read_and_write_trace() {
         // physical time in microseconds.  But for schedule_called events,
         // it will instead be the logical time at which the action or timer
         // is to be scheduled.
-        interval_t elapsed_physical_time = (trace[i].physical_time - start_time)/1000;
+        interval_t elapsed_physical_time = (trace[i].physical_time - start_time)/scaling_factor;
         interval_t timestamp = elapsed_physical_time;
-        interval_t elapsed_logical_time = (trace[i].logical_time - start_time)/1000;
+        interval_t elapsed_logical_time = (trace[i].logical_time - start_time)/scaling_factor;
 
         if (elapsed_physical_time < 0) {
             fprintf(stderr, "WARNING: Negative elapsed physical time %lld. Skipping trace entry.\n", elapsed_physical_time);
@@ -154,7 +240,7 @@ size_t read_and_write_trace() {
                 phase = "i";
                 pid = reactor_index + 1; // One pid per reactor.
                 if (!physical_time_only) {
-                    timestamp = elapsed_logical_time + trace[i].extra_delay/1000;
+                    timestamp = elapsed_logical_time + trace[i].extra_delay/scaling_factor;
                 }
                 thread_id = trigger_index;
                 name = trigger_name;
@@ -191,6 +277,126 @@ size_t read_and_write_trace() {
                 break;
             case scheduler_advancing_time_ends:
                 pid = PID_FOR_WORKER_ADVANCING_TIME;
+                phase = "E";
+                break;
+            case static_scheduler_ADD_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_ADDI_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_ADV_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_ADVI_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_BEQ_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_BGE_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_BLT_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_BNE_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_DU_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_EXE_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_JAL_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_JALR_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_STP_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_WLT_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_WU_starts:
+                pid = 0;
+                phase = "B";
+                break;
+            case static_scheduler_ADD_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_ADDI_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_ADV_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_ADVI_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_BEQ_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_BGE_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_BLT_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_BNE_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_DU_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_EXE_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_JAL_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_JALR_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_STP_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_WLT_ends:
+                pid = 0;
+                phase = "E";
+                break;
+            case static_scheduler_WU_ends:
+                pid = 0;
                 phase = "E";
                 break;
             default:
