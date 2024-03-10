@@ -26,6 +26,7 @@
 #include "clock.h"       // Time-related functions.
 #include "trace.h"
 #include "util.h"
+#include "circular_buffer.h" // HACK: So that circular buffer is visible in all user-facing reactor header files.
 
 /**
  * @brief Macro to suppress warnings about unused variables.

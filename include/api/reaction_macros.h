@@ -69,30 +69,30 @@
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
  */
-#if SCHEDULER == SCHED_STATIC
-#define lf_set(out, val) \
-do { \
-    /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
-    /* even if it is a literal */ \
-    out->value = val; \
-    /* DEBUG: lf_print("lf_set value = %d", (int)val); */ \
-    lf_set_present((lf_port_base_t*)out); \
-    /* Create a token for the literal based on the token element_size. */ \
-    size_t payload_size = ((token_type_t*)out)->element_size; \
-    /* DEBUG: lf_print("payload_size = %zu", payload_size); */ \
-    /* Put the literal in the payload using memcpy. */ \
-    void *payload = malloc(payload_size); \
-    memcpy(payload, &val, payload_size); \
-    /* Create a new token and put it in the port. */ \
-    lf_token_t* newtoken = _lf_new_token((token_type_t*)out, payload, 1); \
-    _lf_replace_template_token((token_template_t*)out, newtoken); \
-    /* VERY IMPORTANT: Increment reference count > 1 so that it does NOT get reused right away */ \
-    /* FIXME: I still don't fully understand this. */ \
-    newtoken->ref_count = 2; \
-    /* DEBUG: The token address should be distinct. */ \
-    /* DEBUG: lf_print("Token address = %p", newtoken); */ \
-} while(0)
-#else
+// #if SCHEDULER == SCHED_STATIC
+// #define lf_set(out, val) \
+// do { \
+//     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
+//     /* even if it is a literal */ \
+//     out->value = val; \
+//     /* DEBUG: lf_print("lf_set value = %d", (int)val); */ \
+//     lf_set_present((lf_port_base_t*)out); \
+//     /* Create a token for the literal based on the token element_size. */ \
+//     size_t payload_size = ((token_type_t*)out)->element_size; \
+//     /* DEBUG: lf_print("payload_size = %zu", payload_size); */ \
+//     /* Put the literal in the payload using memcpy. */ \
+//     void *payload = malloc(payload_size); \
+//     memcpy(payload, &val, payload_size); \
+//     /* Create a new token and put it in the port. */ \
+//     lf_token_t* newtoken = _lf_new_token((token_type_t*)out, payload, 1); \
+//     _lf_replace_template_token((token_template_t*)out, newtoken); \
+//     /* VERY IMPORTANT: Increment reference count > 1 so that it does NOT get reused right away */ \
+//     /* FIXME: I still don't fully understand this. */ \
+//     newtoken->ref_count = 2; \
+//     /* DEBUG: The token address should be distinct. */ \
+//     /* DEBUG: lf_print("Token address = %p", newtoken); */ \
+// } while(0)
+// #else
 #define lf_set(out, val) \
 do { \
     out->value = val; \
@@ -103,7 +103,7 @@ do { \
         lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
     } \
 } while(0)
-#endif
+// #endif
 
 /**
  * @brief Set the specified output (or input of a contained reactor)

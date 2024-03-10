@@ -1,4 +1,4 @@
-set(UTIL_SOURCES vector.c pqueue_base.c pqueue_tag.c pqueue.c util.c lf_semaphore.c)
+set(UTIL_SOURCES vector.c pqueue_base.c pqueue_tag.c pqueue.c util.c lf_semaphore.c circular_buffer.c)
 
 
 list(TRANSFORM UTIL_SOURCES PREPEND utils/)
