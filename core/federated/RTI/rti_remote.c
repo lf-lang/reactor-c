@@ -2140,16 +2140,17 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // synchronization messages.
         lf_thread_create(&(hot_swap_federate->thread_id), federate_info_thread_TCP, hot_swap_federate);
 
+        LF_MUTEX_LOCK(&rti_mutex);
         // Redirect the federate in rti_remote
         rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*)hot_swap_federate;
 
         // Free the old federate memory and reset the Hot wap indicators
         // FIXME: Is this enough to free the memory allocated to the federate?
         free(fed_old);
-        lf_mutex_lock(&rti_mutex);
+        hot_swap_federate = NULL;
         hot_swap_in_progress = false;
-        lf_mutex_unlock(&rti_mutex);
-
+        hot_swap_old_resigned = false;
+        LF_MUTEX_UNLOCK(&rti_mutex);
         lf_print("RTI: Hot swap succeeded for federate %d.", fed_id);
       } else {
         lf_mutex_unlock(&rti_mutex);
