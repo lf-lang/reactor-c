@@ -386,7 +386,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Byte identifying a timestamped message to forward to another federate.
  * The next two bytes will be the ID of the destination reactor port.
  * The next two bytes are the destination federate ID.
- * The four bytes after that will be the length of the message.
+ * The four bytes after that will be the length of the message (as an unsigned 32-bit int).
  * The next eight bytes will be the timestamp of the message.
  * The next four bytes will be the microstep of the message.
  * The remaining bytes are the message.
