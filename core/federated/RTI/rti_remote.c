@@ -1577,8 +1577,6 @@ void *federate_info_thread_TCP(void *fed) {
     close(my_fed->socket); //  from unistd.h
     // Manual clean, in case of a transient federate 
     if (my_fed->is_transient) {
-        // FIXME: Aren't there transit messages anymore??? 
-        // free_in_transit_message_q(my_fed->in_transit_message_tags);
         lf_print("RTI: Transient Federate %d thread exited.", my_fed->enclave.id);
 
         // Update the number of connected transient federates
@@ -2223,8 +2221,6 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
 
                 // Then send STOP
                 federate_info_t *fed_old = GET_FED_INFO(fed_id);
-                hot_swap_federate->enclave.completed = fed_old->enclave.completed;
-
                 LF_PRINT_LOG("RTI: Send MSG_TYPE_STOP to old federate %d.", fed_id);
                 send_stop(fed_old);
                 LF_MUTEX_UNLOCK(&rti_mutex);
@@ -2247,9 +2243,9 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
                 LF_MUTEX_LOCK(&rti_mutex);
                 // Redirect the federate in rti_remote              
                 rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*) hot_swap_federate;
-
+                
                 // Free the old federate memory and reset the Hot wap indicators 
-                // FIXME: Is this enough to free the memory allocated to the federate?
+                pqueue_tag_free(fed_old->in_transit_message_tags);
                 free(fed_old);
                 hot_swap_federate = NULL;
                 hot_swap_in_progress = false;
@@ -2391,19 +2387,16 @@ void initialize_federate(federate_info_t *fed, uint16_t id) {
 }
 
 void reset_transient_federate(federate_info_t* fed) {
-    fed->enclave.next_event = NEVER_TAG;
-    fed->enclave.state = NOT_CONNECTED;
     // Reset of the federate-related attributes
     fed->socket = -1;      // No socket.
     fed->clock_synchronization_enabled = true;
+    // FIXME: The following two lines can be improved?
+    pqueue_tag_free(fed->in_transit_message_tags);
     fed->in_transit_message_tags = pqueue_tag_init(10);
     strncpy(fed->server_hostname ,"localhost", INET_ADDRSTRLEN);
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
     fed->requested_stop = false;
-    fed->is_transient = true;
-    fed->effective_start_tag = NEVER_TAG;
-    // FIXME: There is room though to check if the interface has changed??? Do we allow this?
 }
 
 int32_t start_rti_server(uint16_t port) {
