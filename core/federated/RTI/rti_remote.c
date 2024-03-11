@@ -1739,11 +1739,18 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
     send_reject(socket_id, UNEXPECTED_MESSAGE);
     return 0;
   } else {
-    federate_info_t* fed;
-    if (hot_swap_in_progress) {
-      fed = hot_swap_federate;
-    } else {
-      fed = GET_FED_INFO(fed_id);
+    // In case of a transient federate that is joining again, or a hot swap, then
+    // check that the connection information did not change.
+    federate_info_t* fed = GET_FED_INFO(fed_id);
+    federate_info_t* temp_fed = NULL;
+    if (lf_tag_compare(fed->effective_start_tag, NEVER_TAG) != 0) {
+      if (hot_swap_in_progress) {
+        fed = hot_swap_federate;
+      } else {
+        temp_fed = (federate_info_t*)calloc(1, sizeof(federate_info_t));
+        initialize_federate(temp_fed, fed_id);
+        fed = temp_fed;
+      }
     }
     // Read the number of upstream and downstream connections
     fed->enclave.num_upstream = extract_int32(&(connection_info_header[1]));
@@ -1791,6 +1798,46 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
       }
 
       free(connections_info_body);
+    }
+
+    // NOTE: In this design, changes in the connections are not allowed. This means that the first
+    //       instance to join __is__ the reference. If this policy is to be changed, then it is in
+    //       the following lines will be updated accordingly.
+    if (hot_swap_in_progress || temp_fed != NULL) {
+      if (temp_fed == NULL) {
+        temp_fed = hot_swap_federate;
+      }
+      // Now, compare the previous and the new neighberhood structure
+      // Start with the number of upstreams and downstreams
+      bool reject = false;
+      if ((fed->enclave.num_upstream != temp_fed->enclave.num_upstream) ||
+          (fed->enclave.num_downstream != temp_fed->enclave.num_downstream)) {
+        reject = true;
+      } else {
+        // Then check all upstreams and their delays
+        for (int i = 0; i < fed->enclave.num_upstream; i++) {
+          if ((fed->enclave.upstream[i] != temp_fed->enclave.upstream[i]) ||
+              (fed->enclave.upstream_delay[i] != temp_fed->enclave.upstream_delay[i])) {
+            reject = true;
+            break;
+          }
+        }
+        if (!reject) {
+          // Finally, check all downstream federates
+          for (int i = 0; i < fed->enclave.num_downstream; i++) {
+            if (fed->enclave.downstream[i] != temp_fed->enclave.downstream[i]) {
+              reject = true;
+              break;
+            }
+          }
+        }
+      }
+      if (reject) {
+        if (temp_fed != hot_swap_federate) {
+          free(temp_fed);
+        }
+        return 0;
+      }
     }
   }
   LF_PRINT_DEBUG("RTI received neighbor structure from federate %d.", fed_id);
