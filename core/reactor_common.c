@@ -1181,8 +1181,8 @@ void termination(void) {
         lf_print_warning("---- There are %zu unprocessed future events on the event queue.",
                          pqueue_tag_size(env[i].event_q));
         event_t* event = (event_t*)pqueue_tag_peek(env[i].event_q);
-        interval_t event_time = event->base.tag.time - start_time;
-        lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
+        lf_print_warning("---- The first future event has timestamp " PRINTF_TAG " after start tag.",
+                         event->base.tag.time - start_time, event->base.tag.microstep);
       }
       // Print elapsed times.
       // If these are negative, then the program failed to start up.

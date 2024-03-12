@@ -207,15 +207,11 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   // Check for conflicts (a queued event with the same trigger and tag).
   if (min_spacing <= 0) {
     // No minimum spacing defined.
+    e->base.tag = intended_tag;
     event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)e);
     // Check for conflicts. Let events pile up in super dense time.
     if (found != NULL) {
       intended_tag.microstep++;
-      //   // Skip to the last node in the linked list.
-      //   while (found->next != NULL) {
-      //     found = found->next;
-      //     intended_tag.microstep++;
-      //   }
       if (lf_is_tag_after_stop_tag(env, intended_tag)) {
         LF_PRINT_DEBUG("Attempt to schedule an event after stop_tag was rejected.");
         // Scheduling an event will incur a microstep
@@ -223,8 +219,6 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         lf_recycle_event(env, e);
         return 0;
       }
-      //   // Hook the event into the list.
-      //   found->next = e;
       e->base.tag = intended_tag;
       trigger->last_tag = intended_tag;
       pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
@@ -255,26 +249,24 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         return (0);
       case replace:
         LF_PRINT_DEBUG("Policy is replace. Replacing the previous event.");
-        // // If the event with the previous tag is still on the event
-        // // queue, then replace the token.  To find this event, we have
-        // // to construct a dummy event_t struct.
-        // event_t* dummy = lf_get_new_event(env);
-        // // dummy->next = NULL;
-        // dummy->trigger = trigger;
-        // dummy->base.tag = trigger->last_tag;
-        // event_t* found = (event_t*)pqueue_find_equal_same_priority(env->event_q, dummy);
-        event_t* found = (event_t*)pqueue_tag_find_with_tag(env->event_q, trigger->last_tag);
+        // If the event with the previous tag is still on the event
+        // queue, then replace the token.  To find this event, we have
+        // to construct a dummy event_t struct.
+        event_t* dummy = lf_get_new_event(env);
+        dummy->trigger = trigger;
+        dummy->base.tag = trigger->last_tag;
+        event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)dummy);
 
         if (found != NULL) {
           // Recycle the existing token and the new event
           // and update the token of the existing event.
           lf_replace_token(found, token);
           lf_recycle_event(env, e);
-          // lf_recycle_event(env, dummy);
+          lf_recycle_event(env, dummy);
           // Leave the last_tag the same.
           return (0);
         }
-        // lf_recycle_event(env, dummy);
+        lf_recycle_event(env, dummy);
 
         // If the preceding event _has_ been handled, then adjust
         // the tag to defer the event.
@@ -308,12 +300,12 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   // Set the tag of the event.
   e->base.tag = intended_tag;
 
-  // Do not schedule events if if the event time is past the stop time
-  // (current microsteps are checked earlier).
-  LF_PRINT_DEBUG("Comparing event with elapsed time " PRINTF_TIME " against stop time " PRINTF_TIME ".",
-                 e->base.tag.time - lf_time_start(), env->stop_tag.time - lf_time_start());
-  if (e->base.tag.time > env->stop_tag.time) {
-    LF_PRINT_DEBUG("lf_schedule_trigger: event time is past the timeout. Discarding event.");
+  // Do not schedule events if if the event time is past the stop tag.
+  LF_PRINT_DEBUG("Comparing event with elapsed tag " PRINTF_TAG " against stop tag " PRINTF_TAG ".",
+                 e->base.tag.time - lf_time_start(), e->base.tag.microstep, env->stop_tag.time - lf_time_start(),
+                 env->stop_tag.microstep);
+  if (lf_is_tag_after_stop_tag(env, intended_tag)) {
+    LF_PRINT_DEBUG("lf_schedule_trigger: event tag is past the timeout. Discarding event.");
     _lf_done_using(token);
     lf_recycle_event(env, e);
     return (0);
@@ -324,13 +316,6 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   trigger->last_tag = intended_tag;
 
   // Queue the event.
-  // FIXME: Modify the comment below.
-  // NOTE: There is no need for an explicit microstep because
-  // when this is called, all events at the current tag
-  // (time and microstep) have been pulled from the queue,
-  // and any new events added at this tag will go into the reaction_q
-  // rather than the event_q, so anything put in the event_q with this
-  // same time will automatically be executed at the next microstep.
   LF_PRINT_LOG("Inserting event in the event queue with elapsed tag " PRINTF_TAG ".",
                e->base.tag.time - lf_time_start(), e->base.tag.microstep);
   pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);

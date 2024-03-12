@@ -81,7 +81,7 @@ typedef struct pqueue_t {
  * @param n the initial estimate of the number of queue items for which memory
  *     should be preallocated
  * @param cmppri The callback function to run to compare two elements
- *     This callback should return 0 for 'lower' and non-zero
+ *     This callback should return -1 for 'lower', 0 for 'same', and 1
  *     for 'higher', or vice versa if reverse priority is desired
  * @param getpri the callback function to run to set a score to an element
  * @param getpos the callback function to get the current element's position

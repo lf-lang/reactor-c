@@ -33,7 +33,7 @@ static pqueue_pri_t pqueue_tag_get_priority(void* element) { return (pqueue_pri_
  * @param priority2 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
  */
 static int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2) {
-  return (lf_tag_compare(((pqueue_tag_element_t*)priority1)->tag, ((pqueue_tag_element_t*)priority2)->tag) > 0);
+  return (lf_tag_compare(((pqueue_tag_element_t*)priority1)->tag, ((pqueue_tag_element_t*)priority2)->tag));
 }
 
 /**

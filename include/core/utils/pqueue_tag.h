@@ -71,7 +71,7 @@ pqueue_tag_t* pqueue_tag_init(size_t initial_size);
 
 /**
  * @brief Create a priority queue sorted by tags and has a customized payload.
- * 
+ *
  * @param eqelem the callback function to check equivalence of entries
  *
  * The elements of the priority queue will be of type pqueue_tag_element_t.

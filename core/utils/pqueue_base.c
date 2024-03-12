@@ -60,7 +60,7 @@ void* find_equal(pqueue_t* q, void* e, int pos, pqueue_pri_t max) {
   void* curr = q->d[pos];
 
   // Stop the recursion when we've surpassed the maximum priority.
-  if (!curr || q->cmppri(q->getpri(curr), max)) {
+  if (!curr || q->cmppri(q->getpri(curr), max) == 1) {
     return NULL;
   }
 
@@ -93,11 +93,11 @@ void* find_equal_same_priority(pqueue_t* q, void* e, int pos) {
 
   // Stop the recursion once we've surpassed the priority of the element
   // we're looking for.
-  if (!curr || q->cmppri(q->getpri(curr), q->getpri(e))) {
+  if (!curr || q->cmppri(q->getpri(curr), q->getpri(e)) == 1) {
     return NULL;
   }
 
-  if (q->getpri(curr) == q->getpri(e) && q->eqelem(curr, e)) {
+  if (q->cmppri(q->getpri(curr), q->getpri(e)) == 0 && q->eqelem(curr, e)) {
     return curr;
   } else {
     rval = find_equal_same_priority(q, e, LF_LEFT(pos));
@@ -157,7 +157,7 @@ static size_t maxchild(pqueue_t* q, size_t i) {
   if (child_node >= q->size)
     return 0;
 
-  if ((child_node + 1) < q->size && (q->cmppri(q->getpri(q->d[child_node]), q->getpri(q->d[child_node + 1]))))
+  if ((child_node + 1) < q->size && (q->cmppri(q->getpri(q->d[child_node]), q->getpri(q->d[child_node + 1])) == 1))
     child_node++; /* use right child instead of left */
 
   return child_node;
@@ -168,7 +168,7 @@ static size_t bubble_up(pqueue_t* q, size_t i) {
   void* moving_node = q->d[i];
   pqueue_pri_t moving_pri = q->getpri(moving_node);
 
-  for (parent_node = LF_PARENT(i); ((i > 1) && q->cmppri(q->getpri(q->d[parent_node]), moving_pri));
+  for (parent_node = LF_PARENT(i); ((i > 1) && q->cmppri(q->getpri(q->d[parent_node]), moving_pri) == 1);
        i = parent_node, parent_node = LF_PARENT(i)) {
     q->d[i] = q->d[parent_node];
     q->setpos(q->d[i], i);
@@ -184,7 +184,7 @@ static void percolate_down(pqueue_t* q, size_t i) {
   void* moving_node = q->d[i];
   pqueue_pri_t moving_pri = q->getpri(moving_node);
 
-  while ((child_node = maxchild(q, i)) && q->cmppri(moving_pri, q->getpri(q->d[child_node]))) {
+  while ((child_node = maxchild(q, i)) && (q->cmppri(moving_pri, q->getpri(q->d[child_node])) == 1)) {
     q->d[i] = q->d[child_node];
     q->setpos(q->d[i], i);
     i = child_node;
@@ -227,7 +227,7 @@ int pqueue_remove(pqueue_t* q, void* d) {
     return 0; // Nothing to remove
   size_t posn = q->getpos(d);
   q->d[posn] = q->d[--q->size];
-  if (q->cmppri(q->getpri(d), q->getpri(q->d[posn])))
+  if (q->cmppri(q->getpri(d), q->getpri(q->d[posn])) == 1)
     bubble_up(q, posn);
   else
     percolate_down(q, posn);
@@ -320,7 +320,7 @@ static int subtree_is_valid(pqueue_t* q, int pos) {
 
   if ((size_t)left_pos < q->size) {
     /* has a left child */
-    if (q->cmppri(q->getpri(q->d[pos]), q->getpri(q->d[LF_LEFT(pos)])))
+    if (q->cmppri(q->getpri(q->d[pos]), q->getpri(q->d[LF_LEFT(pos)])) == 1)
       return 0;
     if (!subtree_is_valid(q, LF_LEFT(pos)))
       return 0;
@@ -332,7 +332,7 @@ static int subtree_is_valid(pqueue_t* q, int pos) {
   }
   if ((size_t)right_pos < q->size) {
     /* has a right child */
-    if (q->cmppri(q->getpri(q->d[pos]), q->getpri(q->d[LF_RIGHT(pos)])))
+    if (q->cmppri(q->getpri(q->d[pos]), q->getpri(q->d[LF_RIGHT(pos)])) == 1)
       return 0;
     if (!subtree_is_valid(q, LF_RIGHT(pos)))
       return 0;
