@@ -1319,14 +1319,17 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
     // Allocate memory for the upstream and downstream pointers
     if (fed->enclave.num_upstream > 0) {
       fed->enclave.upstream = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
+      LF_ASSERT_NON_NULL(fed->enclave.upstream);
       // Allocate memory for the upstream delay pointers
       fed->enclave.upstream_delay = (interval_t*)malloc(sizeof(interval_t) * fed->enclave.num_upstream);
+      LF_ASSERT_NON_NULL(fed->enclave.upstream_delay);
     } else {
       fed->enclave.upstream = (uint16_t*)NULL;
       fed->enclave.upstream_delay = (interval_t*)NULL;
     }
     if (fed->enclave.num_downstream > 0) {
       fed->enclave.downstream = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
+      LF_ASSERT_NON_NULL(fed->enclave.downstream);
     } else {
       fed->enclave.downstream = (uint16_t*)NULL;
     }
@@ -1336,6 +1339,7 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
     unsigned char* connections_info_body = NULL;
     if (connections_info_body_size > 0) {
       connections_info_body = (unsigned char*)malloc(connections_info_body_size);
+      LF_ASSERT_NON_NULL(connections_info_body);
       read_from_socket_fail_on_error(socket_id, connections_info_body_size, connections_info_body, NULL,
                                      "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
                                      fed_id);
