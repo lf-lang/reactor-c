@@ -109,8 +109,9 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
  */
 void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
   // Calculate the number of workers that we need to wake up, which is the
-  // Note: All threads are idle. Therefore, there is no need to lock the mutex
-  // while accessing the index for the current level.
+  // number of reactions enabled at this level.
+  // Note: All threads are idle. Therefore, there is no need to lock the mutex while accessing the index for the
+  // current level.
   size_t workers_to_awaken =
       LF_MIN(scheduler->number_of_idle_workers, (size_t)(scheduler->indexes[scheduler->next_reaction_level - 1]));
   LF_PRINT_DEBUG("Scheduler: Notifying %zu workers.", workers_to_awaken);
