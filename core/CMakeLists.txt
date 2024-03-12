@@ -116,13 +116,17 @@ if(DEFINED _LF_CLOCK_SYNC_ON)
   endif()
 endif()
 
+# Unless specified otherwise initial event queue and reaction queue to size 10
+if (NOT DEFINED INITIAL_EVENT_QUEUE_SIZE)
+    set(INITIAL_EVENT_QUEUE_SIZE 10)
+endif()
+if (NOT DEFINED INITIAL_REACT_QUEUE_SIZE)
+    set(INITIAL_REACT_QUEUE_SIZE 10)
+endif()
 
-# FIXME: May want these to be application dependent, hence passed as
-# parameters to Cmake.
-target_compile_definitions(reactor-c PRIVATE INITIAL_EVENT_QUEUE_SIZE=10)
-target_compile_definitions(reactor-c PRIVATE INITIAL_REACT_QUEUE_SIZE=10)
+target_compile_definitions(reactor-c PRIVATE INITIAL_EVENT_QUEUE_SIZE=${INITIAL_EVENT_QUEUE_SIZE})
+target_compile_definitions(reactor-c PRIVATE INITIAL_REACT_QUEUE_SIZE=${INITIAL_REACT_QUEUE_SIZE})
 target_compile_definitions(reactor-c PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
-
 
 # Macro for translating a command-line argument into compile definition for
 # reactor-c lib
