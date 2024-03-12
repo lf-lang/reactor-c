@@ -243,7 +243,7 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
   // Initialize our priority queues.
   // env->event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time, get_event_position,
   //                            set_event_position, event_matches, print_event);
-  env->event_q = pqueue_tag_init(INITIAL_EVENT_QUEUE_SIZE);
+  env->event_q = pqueue_tag_init_customize(INITIAL_EVENT_QUEUE_SIZE, event_matches);
   env->recycle_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time, get_event_position,
                                set_event_position, event_matches, print_event);
   // env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time, get_event_position,

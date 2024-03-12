@@ -207,7 +207,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   // Check for conflicts (a queued event with the same trigger and tag).
   if (min_spacing <= 0) {
     // No minimum spacing defined.
-    event_t* found = (event_t*)pqueue_tag_find_with_tag(env->event_q, intended_tag);
+    event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)e);
     // Check for conflicts. Let events pile up in super dense time.
     if (found != NULL) {
       intended_tag.microstep++;

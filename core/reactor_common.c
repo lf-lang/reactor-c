@@ -233,7 +233,6 @@ void _lf_pop_events(environment_t* env) {
   event_t* event = (event_t*)pqueue_tag_peek(env->event_q);
   while (event != NULL && lf_tag_compare(event->base.tag, env->current_tag) == 0) {
     event = (event_t*)pqueue_tag_pop(env->event_q);
-    printf("pop events: event's reaction = %s.\n", event->trigger->reactions[0]->name);
 
     if (event->is_dummy) {
       LF_PRINT_DEBUG("Popped dummy event from the event queue.");

@@ -80,6 +80,11 @@ pqueue_tag_t* pqueue_tag_init(size_t initial_size) {
                                     pqueue_tag_set_position, pqueue_tag_matches, pqueue_tag_print_element);
 }
 
+pqueue_tag_t* pqueue_tag_init_customize(size_t initial_size, pqueue_eq_elem_f eqelem) {
+  return (pqueue_tag_t*)pqueue_init(initial_size, pqueue_tag_compare, pqueue_tag_get_priority, pqueue_tag_get_position,
+                                    pqueue_tag_set_position, eqelem, pqueue_tag_print_element);
+}
+
 void pqueue_tag_free(pqueue_tag_t* q) {
   for (int i = 1; i < q->size; i++) {
     if (q->d[i] != NULL && ((pqueue_tag_element_t*)q->d[i])->is_dynamic) {
@@ -106,6 +111,10 @@ pqueue_tag_element_t* pqueue_tag_find_with_tag(pqueue_tag_t* q, tag_t t) {
   pqueue_tag_element_t element = {.tag = t, .pos = 0, .is_dynamic = false};
   pqueue_tag_element_t forever = {.tag = FOREVER_TAG, .pos = 0, .is_dynamic = false};
   return pqueue_find_equal((pqueue_t*)q, (void*)&element, (pqueue_pri_t)&forever);
+}
+
+pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t* q, pqueue_tag_element_t* e) {
+  return pqueue_find_equal_same_priority((pqueue_t*)q, (void*)e);
 }
 
 int pqueue_tag_insert_if_no_match(pqueue_tag_t* q, tag_t t) {
