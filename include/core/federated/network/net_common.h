@@ -483,6 +483,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   do {                                                                                                                 \
     buffer[0] = MSG_TYPE_STOP_REQUEST;                                                                                 \
     encode_int64(time, &(buffer[1]));                                                                                  \
+    assert(microstep >= 0);                                                                                            \
     encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)]));                                                \
   } while (0)
 
@@ -500,6 +501,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   do {                                                                                                                 \
     buffer[0] = MSG_TYPE_STOP_REQUEST_REPLY;                                                                           \
     encode_int64(time, &(buffer[1]));                                                                                  \
+    assert(microstep >= 0);                                                                                            \
     encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)]));                                                \
   } while (0)
 
