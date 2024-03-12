@@ -61,7 +61,7 @@ static int reaction_matches(void* next, void* curr) { return (next == curr); }
  * Report a priority equal to the time of the given event.
  * Used for sorting pointers to event_t structs in the event queue.
  */
-static pqueue_pri_t get_event_time(void* a) { return (pqueue_pri_t)(((event_t*)a)->time); }
+static pqueue_pri_t get_event_time(void* a) { return (pqueue_pri_t)(((event_t*)a)->base.tag.time); }
 
 /**
  * Report a priority equal to the index of the given reaction.
@@ -107,7 +107,7 @@ static void print_reaction(void* reaction) {
  */
 static void print_event(void* event) {
   event_t* e = (event_t*)event;
-  LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p", e->time, e->trigger, e->token);
+  LF_PRINT_DEBUG("tag: " PRINTF_TAG ", trigger: %p, token: %p", e->base.tag.time, e->base.tag.microstep, e->trigger, e->token);
 }
 
 // ********** Priority Queue Support End

@@ -250,7 +250,7 @@ int next(environment_t* env) {
   // Advance current tag to match that of the first event on the queue.
   // We can now leave the critical section. Any events that will be added
   // to the queue asynchronously will have a later tag than the current one.
-  _lf_advance_logical_tag(env, next_tag);
+  _lf_advance_tag(env, next_tag);
 
   // Trigger shutdown reactions if appropriate.
   if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {

@@ -233,6 +233,7 @@ void _lf_pop_events(environment_t* env) {
   event_t* event = (event_t*)pqueue_tag_peek(env->event_q);
   while (event != NULL && lf_tag_compare(event->base.tag, env->current_tag) == 0) {
     event = (event_t*)pqueue_tag_pop(env->event_q);
+    printf("pop events: event's reaction = %s.\n", event->trigger->reactions[0]->name);
 
     if (event->is_dummy) {
       LF_PRINT_DEBUG("Popped dummy event from the event queue.");
@@ -336,8 +337,8 @@ void _lf_pop_events(environment_t* env) {
 
     lf_recycle_event(env, event);
 
-    // // Peek at the next event in the event queue.
-    // event = (event_t*)pqueue_tag_peek(env->event_q);
+    // Peek at the next event in the event queue.
+    event = (event_t*)pqueue_tag_peek(env->event_q);
   };
 
   // LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(env->next_q));
@@ -376,7 +377,8 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     // && (timer->offset != 0 || timer->period != 0)) {
     event_t* e = lf_get_new_event(env);
     e->trigger = timer;
-    e->time = lf_time_logical(env) + timer->offset;
+    // e->time = lf_time_logical(env) + timer->offset;
+    e->base.tag = (tag_t) {.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
     return;
   }
@@ -507,6 +509,7 @@ void lf_replace_token(event_t* event, lf_token_t* token) {
 
 trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token) {
   assert(env != GLOBAL_ENVIRONMENT);
+  printf("In _lf_schedule_at_tag\n");
   tag_t current_logical_tag = env->current_tag;
 
   LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".", tag.time - start_time,
@@ -547,135 +550,38 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
   e->intended_tag = trigger->intended_tag;
 #endif
 
+  event_t* found = (event_t*)pqueue_tag_find_with_tag(env->event_q, tag);
+  if (found != NULL) {
+    switch (trigger->policy) {
+    case drop:
+      if (found->token != token) {
+        _lf_done_using(token);
+      }
+      lf_recycle_event(env, e);
+      return (0);
+      break;
+    case replace:
+      // Replace the payload of the event at the head with our
+      // current payload.
+      found->is_dummy = false;
+      lf_replace_token(found, token);
+      lf_recycle_event(env, e);
+      return 0;
+      break;
+    default:
+      // Adding a microstep to the original
+      // intended tag.
+      tag.microstep++;
+      e->base.tag = tag;
+      if (lf_is_tag_after_stop_tag(env, (tag_t){.time = tag.time, .microstep = tag.microstep})) {
+        // Scheduling e will incur a microstep after the stop tag,
+        // which is illegal.
+        lf_recycle_event(env, e);
+        return 0;
+      }
+    }
+  }
   pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*) e);
-
-  // event_t* found = (event_t*)pqueue_find_equal_same_priority(env->event_q, e);
-  // if (found != NULL) {
-  //   if (tag.microstep == 0u) {
-  //     // The microstep is 0, which means that the event is being scheduled
-  //     // at a future time and at the beginning of the skip list of events
-  //     // at that time.
-  //     // In case the event is a dummy event
-  //     // convert it to a real event.
-  //     found->is_dummy = false;
-  //     switch (trigger->policy) {
-  //     case drop:
-  //       if (found->token != token) {
-  //         _lf_done_using(token);
-  //       }
-  //       lf_recycle_event(env, e);
-  //       return (0);
-  //       break;
-  //     case replace:
-  //       // Replace the payload of the event at the head with our
-  //       // current payload.
-  //       lf_replace_token(found, token);
-  //       lf_recycle_event(env, e);
-  //       return 0;
-  //       break;
-  //     default:
-  //       // Adding a microstep to the original
-  //       // intended tag.
-  //       if (lf_is_tag_after_stop_tag(env, (tag_t){.time = found->time, .microstep = 1})) {
-  //         // Scheduling e will incur a microstep after the stop tag,
-  //         // which is illegal.
-  //         lf_recycle_event(env, e);
-  //         return 0;
-  //       }
-  //       if (found->next != NULL) {
-  //         lf_print_error("_lf_schedule_at_tag: in-order contract violated.");
-  //         return -1;
-  //       }
-  //       found->next = e;
-  //     }
-  //   } else {
-  //     // We are requesting a microstep greater than 0
-  //     // where there is already an event for this trigger on the event queue.
-  //     // That event may itself be a dummy event for a real event that is
-  //     // also at a microstep greater than 0.
-  //     // We have to insert our event into the chain or append it
-  //     // to the end of the chain, depending on which microstep is lesser.
-  //     microstep_t microstep_of_found = 0;
-  //     if (tag.time == current_logical_tag.time) {
-  //       // This is a situation where the head of the queue
-  //       // is an event with microstep == current_microstep + 1
-  //       // which should be reflected in our steps calculation.
-  //       microstep_of_found += current_logical_tag.microstep + 1; // Indicating that
-  //                                                                // the found event
-  //                                                                // is at this microstep.
-  //     }
-  //     // Follow the chain of events until the right point
-  //     // to insert the new event.
-  //     while (microstep_of_found < tag.microstep - 1) {
-  //       if (found->next == NULL) {
-  //         // The chain stops short of where we want to be.
-  //         // If it exactly one microstep short of where we want to be,
-  //         // then we don't need a dummy. Otherwise, we do.
-  //         microstep_t undershot_by = (tag.microstep - 1) - microstep_of_found;
-  //         if (undershot_by > 0) {
-  //           found->next = _lf_create_dummy_events(env, trigger, tag.time, e, undershot_by);
-  //         } else {
-  //           found->next = e;
-  //         }
-  //         return 1;
-  //       }
-  //       found = found->next;
-  //       microstep_of_found++;
-  //     }
-  //     // At this point, microstep_of_found == tag.microstep - 1.
-  //     if (found->next == NULL) {
-  //       found->next = e;
-  //     } else {
-  //       switch (trigger->policy) {
-  //       case drop:
-  //         if (found->next->token != token) {
-  //           _lf_done_using(token);
-  //         }
-  //         lf_recycle_event(env, e);
-  //         return 0;
-  //         break;
-  //       case replace:
-  //         // Replace the payload of the event at the head with our
-  //         // current payload.
-  //         lf_replace_token(found->next, token);
-  //         lf_recycle_event(env, e);
-  //         return 0;
-  //         break;
-  //       default:
-  //         // Adding a microstep to the original
-  //         // intended tag.
-  //         if (lf_is_tag_after_stop_tag(env, (tag_t){.time = found->time, .microstep = microstep_of_found + 1})) {
-  //           // Scheduling e will incur a microstep at timeout,
-  //           // which is illegal.
-  //           lf_recycle_event(env, e);
-  //           return 0;
-  //         }
-  //         if (found->next->next != NULL) {
-  //           lf_print_error("_lf_schedule_at_tag: in-order contract violated.");
-  //           return -1;
-  //         }
-  //         found->next->next = e;
-  //       }
-      // }
-  //   }
-  // } else {
-  //   // No existing event queued.
-  //   microstep_t relative_microstep = tag.microstep;
-  //   if (tag.time == current_logical_tag.time) {
-  //     relative_microstep -= current_logical_tag.microstep;
-  //   }
-  //   if ((tag.time == current_logical_tag.time && relative_microstep == 1 && env->execution_started) ||
-  //       tag.microstep == 0) {
-  //     // Do not need a dummy event if we are scheduling at 1 microstep
-  //     // in the future at current time or at microstep 0 in a future time.
-  //     // Note that if execution hasn't started, then we have to insert dummy events.
-  //     pqueue_insert(env->event_q, e);
-  //   } else {
-  //     // Create a dummy event. Insert it into the queue, and let its next
-  //     // pointer point to the actual event.
-  //     pqueue_insert(env->event_q, _lf_create_dummy_events(env, trigger, tag.time, e, relative_microstep));
-  //   }
-  // }
   trigger_handle_t return_value = env->_lf_handle++;
   if (env->_lf_handle < 0) {
     env->_lf_handle = 1;
@@ -759,13 +665,13 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   return 1;
 }
 
-void _lf_advance_logical_tag(environment_t* env, tag_t next_tag) {
+void _lf_advance_tag(environment_t* env, tag_t next_tag) {
   assert(env != GLOBAL_ENVIRONMENT);
 
-// FIXME: The following checks that _lf_advance_logical_tag()
+// FIXME: The following checks that _lf_advance_tag()
 // is being called correctly. Namely, check if logical time
 // is being pushed past the head of the event queue. This should
-// never happen if _lf_advance_logical_tag() is called correctly.
+// never happen if _lf_advance_tag() is called correctly.
 // This is commented out because it will add considerable overhead
 // to the ordinary execution of LF programs. Instead, there might
 // be a need for a target property that enables these kinds of logic
@@ -774,17 +680,20 @@ void _lf_advance_logical_tag(environment_t* env, tag_t next_tag) {
   event_t* next_event = (event_t*)pqueue_tag_peek(env->event_q);
   if (next_event != NULL) {
     if (lf_tag_compare(next_tag, next_event->base.tag) > 0) {
-      lf_print_error_and_exit("_lf_advance_logical_tag(): Attempted to move time to " PRINTF_TAG ", which is "
+      lf_print_error_and_exit("_lf_advance_tag(): Attempted to move tag to " PRINTF_TAG ", which is "
                               "past the head of the event queue, " PRINTF_TAG ".",
                               next_tag.time - start_time, next_tag.microstep, next_event->base.tag.time - start_time,
                               next_event->base.tag.microstep);
     }
   }
 #endif
-  if (lf_tag_compare(env->current_tag, next_tag) <= 0) {
+  if (lf_tag_compare(env->current_tag, next_tag) < 0) {
     env->current_tag = next_tag;
   } else {
-    lf_print_error_and_exit("_lf_advance_logical_tag(): Attempted to move tag back in tag.");
+    lf_print_error_and_exit("_lf_advance_tag(): Attempted to move (elapsed) tag to " PRINTF_TAG ", which is "
+                            "earlier than or equal to the (elapsed) current tag, " PRINTF_TAG ".",
+                            next_tag.time - start_time, next_tag.microstep,
+                            env->current_tag.time - start_time, env->current_tag.microstep);
   }
   LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG " at physical time " PRINTF_TIME, next_tag.time - start_time,
                env->current_tag.microstep, lf_time_physical_elapsed());
@@ -1269,10 +1178,10 @@ void termination(void) {
       _lf_terminate_modal_reactors(&env[i]);
 #endif
       // If the event queue still has events on it, report that.
-      if (env[i].event_q != NULL && pqueue_size(env[i].event_q) > 0) {
+      if (env[i].event_q != NULL && pqueue_tag_size(env[i].event_q) > 0) {
         lf_print_warning("---- There are %zu unprocessed future events on the event queue.",
-                         pqueue_size(env[i].event_q));
-        event_t* event = (event_t*)pqueue_peek(env[i].event_q);
+                         pqueue_tag_size(env[i].event_q));
+        event_t* event = (event_t*)pqueue_tag_peek(env[i].event_q);
         interval_t event_time = event->base.tag.time - start_time;
         lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
       }

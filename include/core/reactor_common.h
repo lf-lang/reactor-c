@@ -249,7 +249,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
  * @param env The environment in which we are executing
  * @param next_tag The tag step to advance to.
  */
-void _lf_advance_logical_tag(environment_t* env, tag_t next_tag);
+void _lf_advance_tag(environment_t* env, tag_t next_tag);
 
 /**
  * @brief Pop all events from event_q with tag equal to current tag.

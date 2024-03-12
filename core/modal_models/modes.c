@@ -399,14 +399,14 @@ void _lf_process_mode_changes(environment_t* env, reactor_mode_state_t* states[]
                        event->trigger != NULL) { // History transition to a different mode
               // Remaining time that the event would have been waiting before mode was left
               instant_t local_remaining_delay =
-                  event->time -
+                  event->base.tag.time -
                   (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : lf_time_start());
               tag_t current_logical_tag = env->current_tag;
 
               // Reschedule event with original local delay
               LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of " PRINTF_TIME
                              " (previous TTH: " PRINTF_TIME ", Mode suspended at: " PRINTF_TIME ").",
-                             local_remaining_delay, event->time, state->next_mode->deactivation_time);
+                             local_remaining_delay, event->base.tag.time, state->next_mode->deactivation_time);
               tag_t schedule_tag = {.time = current_logical_tag.time + local_remaining_delay,
                                     .microstep = (local_remaining_delay == 0 ? current_logical_tag.microstep + 1 : 0)};
               _lf_schedule_at_tag(env, event->trigger, schedule_tag, event->token);

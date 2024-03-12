@@ -477,7 +477,7 @@ void _lf_next_locked(environment_t* env) {
   }
 
   // At this point, finally, we have an event to process.
-  _lf_advance_logical_tag(env, next_tag);
+  _lf_advance_tag(env, next_tag);
 
   _lf_start_time_step(env);
 
@@ -487,7 +487,7 @@ void _lf_next_locked(environment_t* env) {
     _lf_trigger_shutdown_reactions(env);
   }
 
-  // Pop all events from event_q with timestamp equal to env->current_tag.time,
+  // Pop all events from event_q with timestamp equal to env->current_tag,
   // extract all the reactions triggered by these events, and
   // stick them into the reaction queue.
   _lf_pop_events(env);
