@@ -53,11 +53,13 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     else()
         message(STATUS "Building Zephyr library with Kernel clock ")
     endif()
+
     zephyr_library_named(lf-low-level-platform-impl)
     zephyr_library_sources(${LF_LOW_LEVEL_PLATFORM_FILES})
     zephyr_library_link_libraries(kernel)
 else()
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+
     # Link the platform to a threading library
     if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
         find_package(Threads REQUIRED)
@@ -73,12 +75,14 @@ target_link_libraries(lf-low-level-platform-impl PUBLIC lf-logging-api)
 
 target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 message(STATUS "Applying preprocessor definitions to platform...")
+
 macro(low_level_platform_define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
         target_compile_definitions(lf-low-level-platform-impl PUBLIC ${X}=${${X}})
     endif(DEFINED ${X})
 endmacro()
+
 low_level_platform_define(LF_SINGLE_THREADED)
 low_level_platform_define(LOG_LEVEL)
 low_level_platform_define(MODAL_REACTORS)

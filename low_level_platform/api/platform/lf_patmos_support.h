@@ -30,20 +30,18 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * This is based on lf_nrf_support.h in icyphy/lf-buckler.
  *  
- * @author{Soroush Bateni <soroush@utdallas.edu>}
- * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
- * @author{Shaokai Lin <shaokai@berkeley.edu>} 
+ * @author{Ehsan Khodadad <ehkh@dtu.dk>}
+ * @author{Luca Pezzarossa <lpez@dtu.dk>} 
+ * @author{Martin Schoeberl <masca@dtu.dk>}
  */
 
 #ifndef LF_PATMOS_SUPPORT_H
 #define LF_PATMOS_SUPPORT_H
 
-#define LOG_LEVEL 2
 // This embedded platform has no TTY suport
 #define NO_TTY 
 
 #include <stdint.h> // For fixed-width integral types
-#include <time.h>   // For CLOCK_MONOTONIC
 #include <stdbool.h>
 
 #include <inttypes.h>  // Needed to define PRId64 and PRIu32

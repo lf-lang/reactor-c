@@ -9,7 +9,8 @@
 
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
-
+// Keep track of whether we are in a critical section or not
+static volatile int _lf_num_nested_critical_sections = 0;
 /**
  * @brief Sleep until an absolute time.
  * TODO: For improved power consumption this should be implemented with a HW timer and interrupts.
@@ -63,25 +64,22 @@ int _lf_clock_gettime(instant_t* t) {
 
 #if defined(LF_SINGLE_THREADED)
 
-int lf_enable_interrupts_nested() {
-    intr_enable();
+int lf_disable_interrupts_nested() {
+    if (_lf_num_nested_critical_sections++ == 0) {
+        intr_disable();
+    }
     return 0;
 }
-int lf_disable_interrupts_nested() {
-    intr_disable();
-   return 0;
+
+int lf_enable_interrupts_nested() {
+    if (_lf_num_nested_critical_sections <= 0) {
+        return 1;
+    }
+    
+    if (--_lf_num_nested_critical_sections == 0) {
+        intr_enable();
+    }
+    return 0;
 }
-
-#endif
-// Overwrite print functions with NoOp.
-int puts(const char *str) {}
-
-#if 0
-
-int printf(const char *format, ...) {}
-int sprintf(char *str, const char *format, ...) {}
-int snprintf(char *str, size_t size, const char *format, ...) {}
-int vprintf(const char *format, va_list ap) {}
-int vfprintf(FILE *stream, const char *format, va_list arg) {}
 
 #endif
