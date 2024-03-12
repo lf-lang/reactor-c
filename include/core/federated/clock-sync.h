@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CLOCK_SYNC_H
 
 #include "low_level_platform.h"
+#include "net_util.h"
 
 /**
  * Number of required clock sync T4 messages per synchronization
