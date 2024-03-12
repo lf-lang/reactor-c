@@ -49,7 +49,8 @@ void set_scheduling_node(int id, int num_upstream, int num_downstream, int* upst
 
   // If there is any upstream nodes, store IDs and delays from the upstream nodes into the structure.
   if (test_rti.scheduling_nodes[id]->num_upstream > 0) {
-    test_rti.scheduling_nodes[id]->upstream = (int*)calloc(test_rti.scheduling_nodes[id]->num_upstream, sizeof(int));
+    test_rti.scheduling_nodes[id]->upstream =
+        (uint16_t*)calloc(test_rti.scheduling_nodes[id]->num_upstream, sizeof(uint16_t));
     test_rti.scheduling_nodes[id]->upstream_delay =
         (interval_t*)calloc(test_rti.scheduling_nodes[id]->num_upstream, sizeof(interval_t));
     for (int i = 0; i < test_rti.scheduling_nodes[id]->num_upstream; i++) {
@@ -60,7 +61,7 @@ void set_scheduling_node(int id, int num_upstream, int num_downstream, int* upst
   // If there is any downstream nodes, store IDs of the downstream nodes into the structure.
   if (test_rti.scheduling_nodes[id]->num_downstream > 0) {
     test_rti.scheduling_nodes[id]->downstream =
-        (int*)calloc(test_rti.scheduling_nodes[id]->num_downstream, sizeof(int));
+        (uint16_t*)calloc(test_rti.scheduling_nodes[id]->num_downstream, sizeof(uint16_t));
     for (int i = 0; i < test_rti.scheduling_nodes[id]->num_downstream; i++) {
       test_rti.scheduling_nodes[id]->downstream[i] = downstream[i];
     }
