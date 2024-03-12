@@ -236,10 +236,6 @@ void _lf_pop_events(environment_t* env) {
 
     if (event->is_dummy) {
       LF_PRINT_DEBUG("Popped dummy event from the event queue.");
-      // if (event->next != NULL) {
-      //   LF_PRINT_DEBUG("Putting event from the event queue for the next microstep.");
-      //   pqueue_insert(env->next_q, event->next);
-      // }
       lf_recycle_event(env, event);
       // Peek at the next event in the event queue.
       event = (event_t*)pqueue_tag_peek(env->event_q);
@@ -328,25 +324,11 @@ void _lf_pop_events(environment_t* env) {
     // Mark the trigger present.
     event->trigger->status = present;
 
-    // // If this event points to a next event, insert it into the next queue.
-    // if (event->next != NULL) {
-    //   // Insert the next event into the next queue.
-    //   pqueue_insert(env->next_q, event->next);
-    // }
-
     lf_recycle_event(env, event);
 
     // Peek at the next event in the event queue.
     event = (event_t*)pqueue_tag_peek(env->event_q);
   };
-
-  // LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(env->next_q));
-
-  // // After populating the reaction queue, see if there are things on the
-  // // next queue to put back into the event queue.
-  // while (pqueue_peek(env->next_q) != NULL) {
-  //   pqueue_insert(env->event_q, pqueue_pop(env->next_q));
-  // }
 }
 
 event_t* lf_get_new_event(environment_t* env) {
@@ -376,7 +358,6 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     // && (timer->offset != 0 || timer->period != 0)) {
     event_t* e = lf_get_new_event(env);
     e->trigger = timer;
-    // e->time = lf_time_logical(env) + timer->offset;
     e->base.tag = (tag_t){.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
     return;
@@ -464,15 +445,12 @@ void _lf_trigger_shutdown_reactions(environment_t* env) {
 void lf_recycle_event(environment_t* env, event_t* e) {
   assert(env != GLOBAL_ENVIRONMENT);
   e->base.tag = (tag_t){.time = 0LL, .microstep = 0};
-  // e->time = 0LL;
   e->trigger = NULL;
-  // e->pos = 0;
   e->token = NULL;
   e->is_dummy = false;
 #ifdef FEDERATED_DECENTRALIZED
   e->intended_tag = (tag_t){.time = NEVER, .microstep = 0u};
 #endif
-  // e->next = NULL;
   pqueue_insert(env->recycle_q, e);
 }
 
@@ -482,18 +460,6 @@ event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, tag_t t
 
   dummy->is_dummy = true;
   dummy->trigger = trigger;
-  // while (offset > 0) {
-  //   if (offset == 1) {
-  //     dummy->next = next;
-  //     break;
-  //   }
-  //   dummy->next = lf_get_new_event(env);
-  //   dummy = dummy->next;
-  //   dummy->time = time;
-  //   dummy->is_dummy = true;
-  //   dummy->trigger = trigger;
-  //   offset--;
-  // }
   return dummy;
 }
 
@@ -508,7 +474,6 @@ void lf_replace_token(event_t* event, lf_token_t* token) {
 
 trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token) {
   assert(env != GLOBAL_ENVIRONMENT);
-  printf("In _lf_schedule_at_tag\n");
   tag_t current_logical_tag = env->current_tag;
 
   LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".", tag.time - start_time,
@@ -549,7 +514,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
   e->intended_tag = trigger->intended_tag;
 #endif
 
-  event_t* found = (event_t*)pqueue_tag_find_with_tag(env->event_q, tag);
+  event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)e);
   if (found != NULL) {
     switch (trigger->policy) {
     case drop:

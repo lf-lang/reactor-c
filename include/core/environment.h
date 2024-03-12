@@ -73,9 +73,8 @@ typedef struct environment_t {
   int id;
   tag_t current_tag;
   tag_t stop_tag;
-  pqueue_t* event_q;
+  pqueue_tag_t* event_q;
   pqueue_t* recycle_q;
-  // pqueue_t* next_q;
   bool** is_present_fields;
   int is_present_fields_size;
   bool** is_present_fields_abbreviated;

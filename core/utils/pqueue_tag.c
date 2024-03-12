@@ -158,3 +158,5 @@ void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t) {
     head = pqueue_tag_peek_tag(q);
   }
 }
+
+void pqueue_tag_dump(pqueue_tag_t* q) { pqueue_dump((pqueue_t*)q, pqueue_tag_print_element); }

@@ -196,16 +196,13 @@ typedef struct event_t event_t;
 
 /** Event activation record to push onto the event queue. */
 struct event_t {
-  pqueue_tag_element_t base; // Elements of pqueue_tag
-  // instant_t time;     // Time of release.
-  trigger_t* trigger; // Associated trigger, NULL if this is a dummy event.
-  // size_t pos;         // Position in the priority queue.
-  lf_token_t* token; // Pointer to the token wrapping the value.
-  bool is_dummy;     // Flag to indicate whether this event is merely a placeholder or an actual event.
+  pqueue_tag_element_t base; // Elements of pqueue_tag. It contains tag of release and position in the priority queue.
+  trigger_t* trigger;        // Associated trigger, NULL if this is a dummy event.
+  lf_token_t* token;         // Pointer to the token wrapping the value.
+  bool is_dummy;             // Flag to indicate whether this event is merely a placeholder or an actual event.
 #ifdef FEDERATED
   tag_t intended_tag; // The intended tag.
 #endif
-  // event_t* next; // Pointer to the next event lined up in superdense time.
 };
 
 /**

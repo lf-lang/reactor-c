@@ -70,9 +70,9 @@ typedef pqueue_t pqueue_tag_t;
 pqueue_tag_t* pqueue_tag_init(size_t initial_size);
 
 /**
- * @brief Create a priority queue sorted by tags and has a customized payload.
+ * @brief Create a priority queue sorted by tags and has a payload that requires a particular comparison function.
  *
- * @param eqelem the callback function to check equivalence of entries
+ * @param eqelem the callback function to check equivalence of payloads.
  *
  * The elements of the priority queue will be of type pqueue_tag_element_t.
  * The caller should call pqueue_tag_free() when finished with the queue.
@@ -193,5 +193,13 @@ void pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e);
  * @param t The specified tag.
  */
 void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t);
+
+/**
+ * Dump the queue and it's internal structure.
+ * @internal
+ * debug function only
+ * @param q the queue
+ */
+void pqueue_tag_dump(pqueue_tag_t* q);
 
 #endif // PQUEUE_TAG_H

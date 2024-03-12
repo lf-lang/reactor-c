@@ -221,12 +221,6 @@ int next(environment_t* env) {
     }
   } else {
     next_tag = event->base.tag;
-    // // Deduce the microstep
-    // if (next_tag.time == env->current_tag.time) {
-    //   next_tag.microstep = env->current_tag.microstep + 1;
-    // } else {
-    //   next_tag.microstep = 0;
-    // }
   }
 
   if (lf_is_tag_after_stop_tag(env, next_tag)) {

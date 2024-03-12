@@ -288,13 +288,6 @@ tag_t get_next_event_tag(environment_t* env) {
     }
 
     next_tag = event->base.tag;
-    // if (next_tag.time == env->current_tag.time) {
-    //   LF_PRINT_DEBUG("Earliest event matches current time. Incrementing microstep. Event is dummy: %d.",
-    //                  event->is_dummy);
-    //   next_tag.microstep = env->current_tag.microstep + 1;
-    // } else {
-    //   next_tag.microstep = 0;
-    // }
   }
 
   // If a timeout tag was given, adjust the next_tag from the
@@ -974,7 +967,7 @@ void lf_print_snapshot(environment_t* env) {
     // accessible here
     LF_PRINT_DEBUG("Event queue size: %zu. Contents:", pqueue_tag_size(env->event_q));
     // FIXME: There is no pqueue_tag_dump now
-    // pqueue_dump(env->event_q, print_reaction);
+    pqueue_tag_dump(env->event_q);
     LF_PRINT_DEBUG(">>> END Snapshot");
   }
 }
