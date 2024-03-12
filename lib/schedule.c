@@ -164,7 +164,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   event_t* e = lf_get_new_event(env);
 
   // Initialize the next pointer.
-//   e->next = NULL;
+  //   e->next = NULL;
 
   // Set the payload.
   e->token = token;
@@ -211,11 +211,11 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
     // Check for conflicts. Let events pile up in super dense time.
     if (found != NULL) {
       intended_tag.microstep++;
-    //   // Skip to the last node in the linked list.
-    //   while (found->next != NULL) {
-    //     found = found->next;
-    //     intended_tag.microstep++;
-    //   }
+      //   // Skip to the last node in the linked list.
+      //   while (found->next != NULL) {
+      //     found = found->next;
+      //     intended_tag.microstep++;
+      //   }
       if (lf_is_tag_after_stop_tag(env, intended_tag)) {
         LF_PRINT_DEBUG("Attempt to schedule an event after stop_tag was rejected.");
         // Scheduling an event will incur a microstep
@@ -223,11 +223,11 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         lf_recycle_event(env, e);
         return 0;
       }
-    //   // Hook the event into the list.
-    //   found->next = e;
+      //   // Hook the event into the list.
+      //   found->next = e;
       e->base.tag = intended_tag;
       trigger->last_tag = intended_tag;
-      pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*) e);
+      pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
       return (0); // FIXME: return value
     }
     // If there are not conflicts, schedule as usual. If intended time is
@@ -331,8 +331,9 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   // and any new events added at this tag will go into the reaction_q
   // rather than the event_q, so anything put in the event_q with this
   // same time will automatically be executed at the next microstep.
-  LF_PRINT_LOG("Inserting event in the event queue with elapsed tag " PRINTF_TAG ".", e->base.tag.time - lf_time_start(), e->base.tag.microstep);
-  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*) e);
+  LF_PRINT_LOG("Inserting event in the event queue with elapsed tag " PRINTF_TAG ".",
+               e->base.tag.time - lf_time_start(), e->base.tag.microstep);
+  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
 
   tracepoint_schedule(env, trigger, e->base.tag.time - env->current_tag.time);
 

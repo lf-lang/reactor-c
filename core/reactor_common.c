@@ -378,7 +378,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     event_t* e = lf_get_new_event(env);
     e->trigger = timer;
     // e->time = lf_time_logical(env) + timer->offset;
-    e->base.tag = (tag_t) {.time = lf_time_logical(env) + timer->offset, .microstep = 0};
+    e->base.tag = (tag_t){.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
     return;
   }
@@ -403,9 +403,9 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
   // Recycle event_t structs, if possible.
   event_t* e = lf_get_new_event(env);
   e->trigger = timer;
-  e->base.tag = (tag_t) {.time = lf_time_logical(env) + delay, .microstep = 0};
+  e->base.tag = (tag_t){.time = lf_time_logical(env) + delay, .microstep = 0};
   // NOTE: No lock is being held. Assuming this only happens at startup.
-  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*) e);
+  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
   tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
 }
 
@@ -464,7 +464,7 @@ void _lf_trigger_shutdown_reactions(environment_t* env) {
 
 void lf_recycle_event(environment_t* env, event_t* e) {
   assert(env != GLOBAL_ENVIRONMENT);
-  e->base.tag = (tag_t) {.time = 0LL, .microstep = 0};
+  e->base.tag = (tag_t){.time = 0LL, .microstep = 0};
   // e->time = 0LL;
   e->trigger = NULL;
   // e->pos = 0;
@@ -581,7 +581,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
       }
     }
   }
-  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*) e);
+  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
   trigger_handle_t return_value = env->_lf_handle++;
   if (env->_lf_handle < 0) {
     env->_lf_handle = 1;
@@ -692,8 +692,8 @@ void _lf_advance_tag(environment_t* env, tag_t next_tag) {
   } else {
     lf_print_error_and_exit("_lf_advance_tag(): Attempted to move (elapsed) tag to " PRINTF_TAG ", which is "
                             "earlier than or equal to the (elapsed) current tag, " PRINTF_TAG ".",
-                            next_tag.time - start_time, next_tag.microstep,
-                            env->current_tag.time - start_time, env->current_tag.microstep);
+                            next_tag.time - start_time, next_tag.microstep, env->current_tag.time - start_time,
+                            env->current_tag.microstep);
   }
   LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG " at physical time " PRINTF_TIME, next_tag.time - start_time,
                env->current_tag.microstep, lf_time_physical_elapsed());

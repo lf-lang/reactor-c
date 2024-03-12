@@ -107,7 +107,8 @@ static void print_reaction(void* reaction) {
  */
 static void print_event(void* event) {
   event_t* e = (event_t*)event;
-  LF_PRINT_DEBUG("tag: " PRINTF_TAG ", trigger: %p, token: %p", e->base.tag.time, e->base.tag.microstep, e->trigger, e->token);
+  LF_PRINT_DEBUG("tag: " PRINTF_TAG ", trigger: %p, token: %p", e->base.tag.time, e->base.tag.microstep, e->trigger,
+                 e->token);
 }
 
 // ********** Priority Queue Support End

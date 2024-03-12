@@ -237,7 +237,7 @@ int next(environment_t* env) {
   LF_PRINT_LOG("Next event (elapsed) tag is " PRINTF_TAG ".", next_tag.time - start_time, next_tag.microstep);
   // Wait until physical time >= event.time.
   int finished_sleep = wait_until(env, next_tag.time);
- LF_PRINT_LOG("Next event (elapsed) tag is " PRINTF_TAG ".", next_tag.time - start_time, next_tag.microstep);
+  LF_PRINT_LOG("Next event (elapsed) tag is " PRINTF_TAG ".", next_tag.time - start_time, next_tag.microstep);
   if (finished_sleep != 0) {
     LF_PRINT_DEBUG("***** wait_until was interrupted.");
     // Sleep was interrupted. This could happen when a physical action
