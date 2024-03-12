@@ -340,7 +340,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
 }
 
 void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer) {
-  size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
+  size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(int64_t) + sizeof(uint32_t);
   // Read the header, minus the first byte which has already been read.
   read_from_socket_fail_on_error(&sending_federate->socket, header_size - 1, &(buffer[1]), NULL,
                                  "RTI failed to read the timed message header from remote federate.");
