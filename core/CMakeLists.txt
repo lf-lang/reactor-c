@@ -11,6 +11,9 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     set(PLATFORM_ZEPHYR true)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
     list(APPEND REACTORC_COMPILE_DEFS PLATFORM_RP2040)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Patmos")
+    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_PATMOS)
+    set(PLATFORM_PATMOS true)
 endif()
 
 # Get the general common sources for reactor-c
