@@ -1702,8 +1702,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                                    "Failed to read the requested port number for federate %d from RTI.",
                                    remote_federate_id);
 
-    if (buffer[0] != MSG_TYPE_ADDRESS_QUERY) {
-      // Unexpected reply.  Could be that RTI has failed and sent a resignation.
+    if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
+      // Unexpected reply. Could be that RTI has failed and sent a resignation.
       if (buffer[0] == MSG_TYPE_FAILED) {
         lf_print_error_and_exit("RTI has failed.");
       } else {
