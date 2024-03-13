@@ -70,6 +70,17 @@ typedef pqueue_t pqueue_tag_t;
 pqueue_tag_t* pqueue_tag_init(size_t initial_size);
 
 /**
+ * @brief Create a priority queue sorted by tags and has a payload that requires a particular comparison function.
+ *
+ * @param eqelem the callback function to check equivalence of payloads.
+ *
+ * The elements of the priority queue will be of type pqueue_tag_element_t.
+ * The caller should call pqueue_tag_free() when finished with the queue.
+ * @return A dynamically allocated priority queue or NULL if memory allocation fails.
+ */
+pqueue_tag_t* pqueue_tag_init_customize(size_t initial_size, pqueue_eq_elem_f eqelem);
+
+/**
  * @brief Free all memory used by the queue including elements that are marked dynamic.
  *
  * @param q The queue.
@@ -125,6 +136,14 @@ int pqueue_tag_insert_if_no_match(pqueue_tag_t* q, tag_t t);
 pqueue_tag_element_t* pqueue_tag_find_with_tag(pqueue_tag_t* q, tag_t t);
 
 /**
+ * @brief Return the first item with the same tag that matches the supplied element or NULL if there is none.
+ * @param q The queue.
+ * @param e The element.
+ * @return An entry with the specified tag or NULL if there isn't one.
+ */
+pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t* q, pqueue_tag_element_t* e);
+
+/**
  * @brief Return highest-ranking item (the one with the least tag) without removing it.
  * @param q The queue.
  * @return NULL on if the queue is empty, otherwise the entry.
@@ -174,5 +193,13 @@ void pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e);
  * @param t The specified tag.
  */
 void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t);
+
+/**
+ * Dump the queue and it's internal structure.
+ * @internal
+ * debug function only
+ * @param q the queue
+ */
+void pqueue_tag_dump(pqueue_tag_t* q);
 
 #endif // PQUEUE_TAG_H

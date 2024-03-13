@@ -81,7 +81,7 @@ typedef struct pqueue_t {
  * @param n the initial estimate of the number of queue items for which memory
  *     should be preallocated
  * @param cmppri The callback function to run to compare two elements
- *     This callback should return 0 for 'lower' and non-zero
+ *     This callback should return -1 for 'lower', 0 for 'same', and 1
  *     for 'higher', or vice versa if reverse priority is desired
  * @param getpri the callback function to run to set a score to an element
  * @param getpos the callback function to get the current element's position
@@ -140,15 +140,6 @@ void* pqueue_pop(pqueue_t* q);
 void pqueue_empty_into(pqueue_t** dest, pqueue_t** src);
 
 /**
- * Find the highest-ranking item with the same priority that matches the
- * supplied entry.
- * @param q the queue
- * @param e the entry to compare against
- * @return NULL if no matching event has been found, otherwise the entry
- */
-void* pqueue_find_equal_same_priority(pqueue_t* q, void* e);
-
-/**
  * Find the highest-ranking item with priority up to and including the given
  * maximum priority that matches the supplied entry.
  * @param q the queue
@@ -157,6 +148,23 @@ void* pqueue_find_equal_same_priority(pqueue_t* q, void* e);
  * @return NULL if no matching event has been found, otherwise the entry
  */
 void* pqueue_find_equal(pqueue_t* q, void* e, pqueue_pri_t max_priority);
+
+/**
+ * Find the highest-ranking item with the same priority.
+ * @param q the queue
+ * @param e the entry to compare against
+ * @return NULL if no matching event has been found, otherwise the entry
+ */
+void* pqueue_find_same_priority(pqueue_t* q, void* e);
+
+/**
+ * Find the highest-ranking item with the same priority that matches the
+ * supplied entry.
+ * @param q the queue
+ * @param e the entry to compare against
+ * @return NULL if no matching event has been found, otherwise the entry
+ */
+void* pqueue_find_equal_same_priority(pqueue_t* q, void* e);
 
 /**
  * Remove an item from the queue.
