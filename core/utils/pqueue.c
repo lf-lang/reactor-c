@@ -13,7 +13,7 @@
 #include "util.h"
 #include "lf_types.h"
 
-int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) { return 1 ? (thiz > that) : 0 ? (thiz == that) : -1; }
+int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) { return (thiz > that) ? 1 : (thiz < that) ? -1 : 0; }
 
 int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) { return 0; }
 

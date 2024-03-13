@@ -106,11 +106,10 @@ int pqueue_tag_insert_tag(pqueue_tag_t* q, tag_t t) {
 }
 
 pqueue_tag_element_t* pqueue_tag_find_with_tag(pqueue_tag_t* q, tag_t t) {
-  // Create elements on the stack. These elements are only needed during
-  // the duration of this function call, so putting them on the stack is OK.
+  // Create an element on the stack. This element is only needed during
+  // the duration of this function call, so putting it on the stack is OK.
   pqueue_tag_element_t element = {.tag = t, .pos = 0, .is_dynamic = false};
-  pqueue_tag_element_t forever = {.tag = FOREVER_TAG, .pos = 0, .is_dynamic = false};
-  return pqueue_find_equal((pqueue_t*)q, (void*)&element, (pqueue_pri_t)&forever);
+  return pqueue_find_same_priority((pqueue_t*)q, (void*)&element);
 }
 
 pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t* q, pqueue_tag_element_t* e) {

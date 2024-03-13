@@ -140,15 +140,6 @@ void* pqueue_pop(pqueue_t* q);
 void pqueue_empty_into(pqueue_t** dest, pqueue_t** src);
 
 /**
- * Find the highest-ranking item with the same priority that matches the
- * supplied entry.
- * @param q the queue
- * @param e the entry to compare against
- * @return NULL if no matching event has been found, otherwise the entry
- */
-void* pqueue_find_equal_same_priority(pqueue_t* q, void* e);
-
-/**
  * Find the highest-ranking item with priority up to and including the given
  * maximum priority that matches the supplied entry.
  * @param q the queue
@@ -157,6 +148,23 @@ void* pqueue_find_equal_same_priority(pqueue_t* q, void* e);
  * @return NULL if no matching event has been found, otherwise the entry
  */
 void* pqueue_find_equal(pqueue_t* q, void* e, pqueue_pri_t max_priority);
+
+/**
+ * Find the highest-ranking item with the same priority.
+ * @param q the queue
+ * @param e the entry to compare against
+ * @return NULL if no matching event has been found, otherwise the entry
+ */
+void* pqueue_find_same_priority(pqueue_t* q, void* e);
+
+/**
+ * Find the highest-ranking item with the same priority that matches the
+ * supplied entry.
+ * @param q the queue
+ * @param e the entry to compare against
+ * @return NULL if no matching event has been found, otherwise the entry
+ */
+void* pqueue_find_equal_same_priority(pqueue_t* q, void* e);
 
 /**
  * Remove an item from the queue.

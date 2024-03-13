@@ -410,17 +410,6 @@ void _lf_process_mode_changes(environment_t* env, reactor_mode_state_t* states[]
               tag_t schedule_tag = {.time = current_logical_tag.time + local_remaining_delay,
                                     .microstep = (local_remaining_delay == 0 ? current_logical_tag.microstep + 1 : 0)};
               _lf_schedule_at_tag(env, event->trigger, schedule_tag, event->token);
-
-              // Also schedule events stacked up in super dense time.
-              event_t* e = event;
-              while (e->next != NULL) {
-                schedule_tag.microstep++;
-                _lf_schedule_at_tag(env, e->next->trigger, schedule_tag, e->next->token);
-                event_t* tmp = e->next;
-                e = tmp->next;
-                // A fresh event was created by schedule, hence, recycle old one
-                lf_recycle_event(env, tmp);
-              }
             }
             // A fresh event was created by schedule, hence, recycle old one
             lf_recycle_event(env, event);

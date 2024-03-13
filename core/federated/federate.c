@@ -1252,9 +1252,6 @@ static void handle_provisional_tag_advance_grant() {
   // (which it should be). Do not do this if the federate has not fully
   // started yet.
 
-  // instant_t dummy_event_time = PTAG.time;
-  // microstep_t dummy_event_microstep = PTAG.microstep;
-
   if (lf_tag_compare(env->current_tag, PTAG) == 0) {
     // The current tag can equal the PTAG if we are at the start time
     // or if this federate has been able to advance time to the current

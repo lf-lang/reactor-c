@@ -76,6 +76,39 @@ void* find_equal(pqueue_t* q, void* e, int pos, pqueue_pri_t max) {
   return NULL;
 }
 
+void* find_same_priority(pqueue_t* q, void* e, int pos) {
+  if (pos < 0) {
+    lf_print_error_and_exit("find_same_priority() called with a negative pos index.");
+  }
+
+  // Stop the recursion when we've reached the end of the
+  // queue. This has to be done before accessing the queue
+  // to avoid segmentation fault.
+  if (!q || (size_t)pos >= q->size) {
+    return NULL;
+  }
+
+  void* rval;
+  void* curr = q->d[pos];
+
+  // Stop the recursion once we've surpassed the priority of the element
+  // we're looking for.
+  if (!curr || q->cmppri(q->getpri(curr), q->getpri(e)) == 1) {
+    return NULL;
+  }
+
+  if (q->cmppri(q->getpri(curr), q->getpri(e)) == 0) {
+    return curr;
+  } else {
+    rval = find_same_priority(q, e, LF_LEFT(pos));
+    if (rval)
+      return rval;
+    else
+      return find_same_priority(q, e, LF_RIGHT(pos));
+  }
+  return NULL;
+}
+
 void* find_equal_same_priority(pqueue_t* q, void* e, int pos) {
   if (pos < 0) {
     lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
@@ -194,9 +227,11 @@ static void percolate_down(pqueue_t* q, size_t i) {
   q->setpos(moving_node, i);
 }
 
-void* pqueue_find_equal_same_priority(pqueue_t* q, void* e) { return find_equal_same_priority(q, e, 1); }
-
 void* pqueue_find_equal(pqueue_t* q, void* e, pqueue_pri_t max) { return find_equal(q, e, 1, max); }
+
+void* pqueue_find_same_priority(pqueue_t* q, void* e) { return find_same_priority(q, e, 1); }
+
+void* pqueue_find_equal_same_priority(pqueue_t* q, void* e) { return find_equal_same_priority(q, e, 1); }
 
 int pqueue_insert(pqueue_t* q, void* d) {
   void** tmp;
