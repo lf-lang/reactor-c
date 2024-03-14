@@ -339,10 +339,7 @@ int main(int argc, const char* argv[]) {
   }
 
   lf_print("Starting RTI for a total of %d federates, with %d being transient, in federation ID %s",
-           rti.base.number_of_scheduling_nodes, rti.number_of_transient_federates,
-
-           rti.federation_id);
-
+           rti.base.number_of_scheduling_nodes, rti.number_of_transient_federates, rti.federation_id);
   assert(rti.base.number_of_scheduling_nodes < UINT16_MAX);
 
   // Allocate memory for the federates

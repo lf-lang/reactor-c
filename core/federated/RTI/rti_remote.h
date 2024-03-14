@@ -78,7 +78,6 @@ typedef struct federate_info_t {
                                          // tag grant
   lf_thread_t pending_provisional_grant_thread_id; // The ID of the thread handling
                                                    // the pending provitional tag grant
-
 } federate_info_t;
 
 /**
@@ -187,7 +186,7 @@ typedef struct rti_remote_t {
   int32_t number_of_connected_transient_federates;
 
   /**
-   *
+   * Indicates the life cycle phase of the federation.
    */
   federation_life_cycle_phase phase;
 } rti_remote_t;
