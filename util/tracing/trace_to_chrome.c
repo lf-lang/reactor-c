@@ -175,7 +175,7 @@ size_t read_and_write_trace() {
                     || trace[i].event_type == scheduler_advancing_time_starts) {
                 reactor_name = "ADVANCE TIME";
             } else if (trace[i].event_type >= static_scheduler_ADD_starts
-                    || trace[i].event_type <= static_scheduler_WU_ends) {
+                    && trace[i].event_type <= static_scheduler_WU_ends) {
                 int pc = trace[i].dst_id;
                 char *inst_name = get_instruction_name(trace[i].event_type);
                 char str[20];
