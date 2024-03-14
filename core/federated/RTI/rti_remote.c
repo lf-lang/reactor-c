@@ -404,6 +404,7 @@ static void* pending_provisional_grant_thread(void* federate) {
     fed->pending_provisional_grant = NEVER_TAG;
   }
   lf_mutex_unlock(&rti_mutex);
+  return NULL;
 }
 
 /**
@@ -2120,6 +2121,7 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
       }
     }
   }
+  return NULL;
 }
 
 void* respond_to_erroneous_connections(void* nothing) {
