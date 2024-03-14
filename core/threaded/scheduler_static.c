@@ -261,8 +261,16 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
     instant_t wakeup_time = *src + op2.imm;
     LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, op1: %lld, op2: %lld, current_physical_time: %lld\n", start_time, wakeup_time, *src, op2.imm, lf_time_physical());
     LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
-    // _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
-    while (lf_time_physical() < wakeup_time);
+    instant_t wait_interval = wakeup_time - lf_time_physical();
+    if (wait_interval > 0) {
+        if (wait_interval < MSEC(1)) {
+            // Spin wait if the wait interval is less than 1 ms.
+            while (lf_time_physical() < wakeup_time);
+        } else if (wait_interval >= MSEC(1)) {
+            // Otherwise sleep.
+            _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
+        }
+    }
     LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
     *pc += 1; // Increment pc.
 #if TRACE_ALL_INSTRUCTIONS
