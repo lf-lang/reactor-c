@@ -130,9 +130,7 @@ static void* pending_grant_thread(void* federate) {
  * @param fed The federate.
  * @param tag The tag to grant.
  */
-static void notify_tag_advance_grant_delayed(scheduling_node_t* e, tag_t tag) {
-  federate_info_t* fed = (federate_info_t*)GET_FED_INFO(e->id);
-
+static void notify_tag_advance_grant_delayed(federate_info_t* fed, tag_t tag) {
   // Check wether there is already a pending grant
   // And check the pending provisional grant as well
   lf_mutex_lock(&rti_mutex);
@@ -275,9 +273,7 @@ static void* pending_provisional_grant_thread(void* federate) {
  * @param fed The federate.
  * @param tag The provisional tag to grant.
  */
-static void notify_provisional_tag_advance_grant_delayed(scheduling_node_t* e, tag_t tag) {
-  federate_info_t* fed = (federate_info_t*)e;
-
+static void notify_provisional_tag_advance_grant_delayed(federate_info_t* fed, tag_t tag) {
   // Proceed with the delayed provisional tag grant notification only if
   // there is no pending grant and no provisional pending grant
   LF_MUTEX_LOCK(&rti_mutex);
@@ -849,9 +845,10 @@ void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, ta
   // message.
   // In the startup phase, federates will receive identical start_time and
   // effective_start_tag
-  unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
-  start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
+  unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_START_LENGTH];
+  start_time_buffer[0] = MSG_TYPE_TIMESTAMP_START;
   encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+  encode_tag(&(start_time_buffer[1 + sizeof(instant_t)]), federate_start_tag);
 
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &federate_start_tag);
@@ -1372,7 +1369,7 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
   // First byte received is the message type.
   if (buffer[0] != MSG_TYPE_FED_IDS) {
     if (rti_remote->base.tracing_enabled) {
-      tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
+      tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
     }
     if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       // The federate is trying to connect to a peer, not to the RTI.
@@ -1891,15 +1888,13 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
     // The following blocks until a federate connects.
     int socket_id = -1;
     while (1) {
-      if (!rti_remote->all_persistent_federates_exited) {
-        return NULL;
-      }
+      // if (!rti_remote->all_persistent_federates_exited) {
+      //   return NULL;
+      // }
       socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
       if (socket_id >= 0) {
         // Got a socket
         break;
-      } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-        lf_print_error_system_failure("RTI failed to accept the socket.");
       } else {
         // Try again
         lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
