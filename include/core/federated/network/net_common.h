@@ -44,10 +44,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * When it has successfully opened a TCP connection, the first message it sends
  * to the RTI is a MSG_TYPE_FED_IDS message, which contains the ID of this federate
  * within the federation, contained in the global variable _lf_my_fed_id
- * in the federate code
- * (which is initialized by the code generator) and the unique ID of
- * the federation, a GUID that is created at run time by the generated script
- * that launches the federation.
+ * in the federate code (which is initialized by the code generator),
+ * the type of this federate (persistent (0) or transient (1)),
+ * and the unique ID of the federation, a GUID that is created at run time by the
+ * generated script that launches the federation.
  * If you launch the federates and the RTI manually, rather than using the script,
  * then the federation ID is a string that is optionally given to the federate
  * on the command line when it is launched. The federate will connect
