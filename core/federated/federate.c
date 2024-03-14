@@ -1356,7 +1356,7 @@ static void handle_stop_granted_message() {
 }
 
 /**
- * Handle a MSG_TYPE_STOP message from the RTI.
+ * @brief Handle a MSG_TYPE_STOP message from the RTI.
  *
  * This function simply calls lf_stop().
  */
