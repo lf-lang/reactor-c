@@ -68,6 +68,17 @@ typedef struct federate_info_t {
                                          // RTI has not been informed of the port number.
   struct in_addr server_ip_addr;         // Information about the IP address of the socket
                                          // server of the federate.
+  bool has_upstream_transient_federates; // Indicates whether the federate has uptream
+                                         // transient federates
+  bool is_transient;                     // Indicates whether the federate is transient or persistent.
+  tag_t effective_start_tag;             // Records the start time of the federate, which is
+                                         // mainly useful for transient federates
+  tag_t pending_grant;                   // The pending tag advance grant
+  tag_t pending_provisional_grant;       // The pending provisional tag advance grant
+  lf_thread_t pending_grant_thread_id;   // The ID of the thread handling the pending
+                                         // tag grant
+  lf_thread_t pending_provisional_grant_thread_id; // The ID of the thread handling
+                                                   // the pending provitional tag grant
 } federate_info_t;
 
 /**
@@ -76,17 +87,13 @@ typedef struct federate_info_t {
 typedef enum clock_sync_stat { clock_sync_off, clock_sync_init, clock_sync_on } clock_sync_stat;
 
 /**
+ * The federation life cycle phases.
+ */
+typedef enum federation_life_cycle_phase { startup_phase, execution_phase, shutdown_phase } federation_life_cycle_phase;
+
+/**
  * Structure that an RTI instance uses to keep track of its own and its
  * corresponding federates' state.
- * It is a special case of `rti_common_t` (declared in enclave.h). Inheritence
- * is mimicked by having the first attributes to be the same as of rti_common_t,
- * except that scheduling_nodes attribute here is of type `federate_info_t**`, while it
- * is of type `scheduling_node_t**` in `rti_common_t`.
- *     // **************** IMPORTANT!!! ********************
- *     // **   If you make any change to this struct,     **
- *     // **   you MUST also change  rti_common_t in     **
- *     // ** (enclave.h)! The change must exactly match.  **
- *     // **************************************************
  */
 typedef struct rti_remote_t {
   rti_common_t base;
@@ -105,6 +112,15 @@ typedef struct rti_remote_t {
    * in respond_to_erroneous_connections().
    */
   volatile bool all_federates_exited;
+
+  /**
+   * Boolean indicating that all persistent federates have exited.
+   * This gets set to true exactly once before the program waits for
+   * persistent federates, then exits.
+   * It is marked volatile because the write is not guarded by a mutex.
+   * The main thread makes this true.
+   */
+  volatile bool all_persistent_federates_exited;
 
   /**
    * The ID of the federation that this RTI will supervise.
@@ -154,10 +170,26 @@ typedef struct rti_remote_t {
    * Boolean indicating that authentication is enabled.
    */
   bool authentication_enabled;
+
   /**
    * Boolean indicating that a stop request is already in progress.
    */
   bool stop_in_progress;
+
+  /**
+   * Number of transient federates
+   */
+  int32_t number_of_transient_federates;
+
+  /**
+   * Number of connected transient federates
+   */
+  int32_t number_of_connected_transient_federates;
+
+  /**
+   * Indicates the life cycle phase of the federation.
+   */
+  federation_life_cycle_phase phase;
 } rti_remote_t;
 
 /**
@@ -277,7 +309,7 @@ void handle_address_query(uint16_t fed_id);
  * field of the _RTI.federates[federate_id] array of structs.
  *
  * The server_hostname and server_ip_addr fields are assigned
- * in lf_connect_to_federates() upon accepting the socket
+ * in lf_connect_to_persistent_federates() upon accepting the socket
  * from the remote federate.
  *
  * This function assumes the caller does not hold the mutex.
@@ -348,12 +380,20 @@ void* federate_info_thread_TCP(void* fed);
 void send_reject(int* socket_id, unsigned char error_code);
 
 /**
- * Wait for one incoming connection request from each federate,
- * and upon receiving it, create a thread to communicate with
- * that federate. Return when all federates have connected.
+ * Wait for one incoming connection request from each (persistent) federate,
+ * and upon receiving it, create a thread to communicate with that federate.
+ * Return when all persistent federates have connected.
  * @param socket_descriptor The socket on which to accept connections.
  */
-void lf_connect_to_federates(int socket_descriptor);
+void lf_connect_to_persistent_federates(int socket_descriptor);
+
+/**
+ * Thread to wait for incoming connection request from transient federates.
+ * Upon receiving the connection request, check if a hot swap should start or
+ * simply create a thread to communicate with that federate.
+ * Stops if all persistent federates exited.
+ */
+void* lf_connect_to_transient_federates_thread(void* nothing);
 
 /**
  * Thread to respond to new connections, which could be federates of other
@@ -367,6 +407,12 @@ void* respond_to_erroneous_connections(void* nothing);
  * @param id The federate ID.
  */
 void initialize_federate(federate_info_t* fed, uint16_t id);
+
+/**
+ * Reset the federate. The federate has to be transient.
+ * @param fed A pointer to the federate
+ */
+void reset_transient_federate(federate_info_t* fed);
 
 /**
  * Start the socket server for the runtime infrastructure (RTI) and

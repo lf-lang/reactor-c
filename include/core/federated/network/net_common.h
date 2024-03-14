@@ -44,10 +44,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * When it has successfully opened a TCP connection, the first message it sends
  * to the RTI is a MSG_TYPE_FED_IDS message, which contains the ID of this federate
  * within the federation, contained in the global variable _lf_my_fed_id
- * in the federate code
- * (which is initialized by the code generator) and the unique ID of
- * the federation, a GUID that is created at run time by the generated script
- * that launches the federation.
+ * in the federate code (which is initialized by the code generator),
+ * the type of this federate (persistent (0) or transient (1)),
+ * and the unique ID of the federation, a GUID that is created at run time by the
+ * generated script that launches the federation.
  * If you launch the federates and the RTI manually, rather than using the script,
  * then the federation ID is a string that is optionally given to the federate
  * on the command line when it is launched. The federate will connect
@@ -672,6 +672,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Byte identifying that the federate or the RTI has failed.
  */
 #define MSG_TYPE_FAILED 25
+
+/**
+ * As an answer to MSG_TYPE_TIMESTAMP, the RTI broadcasts to all persistent
+ * federates, or sends to newly joining transient federate, a message of
+ * MSG_TYPE_STIMESTAMP_START. It includes the starting time of the federation,
+ * together with the effective starting logical tag. The latter is useful for
+ * transient federates.
+ */
+#define MSG_TYPE_TIMESTAMP_START 50
+#define MSG_TYPE_TIMESTAMP_START_LENGTH (1 + sizeof(instant_t) + sizeof(instant_t) + sizeof(microstep_t))
+
+/**
+ * Byte sent by the RTI ordering the federate to stop. Upon receiving the meaasage,
+ * the federate will call lf_stop(), which will make him resign at its current_tag
+ * plus 1 microstep.
+ * The next 8 bytes will be the time at which the federates will stop. *
+ * The next 4 bytes will be the microstep at which the federates will stop..
+ */
+#define MSG_TYPE_STOP 30
+#define MSG_TYPE_STOP_LENGTH 1
 
 /////////////////////////////////////////////
 //// Rejection codes
