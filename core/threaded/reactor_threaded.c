@@ -615,14 +615,13 @@ void _lf_initialize_start_tag(environment_t* env) {
   }
 
   _lf_initialize_timers(env);
+  env->current_tag = effective_start_tag;
 
 #if defined FEDERATED_DECENTRALIZED
   // If we have a non-zero STA offset, then we need to allow messages to arrive
   // prior to the start time.  To avoid spurious STP violations, we temporarily
   // set the current time back by the STA offset.
-  env->current_tag =
-      (tag_t){.time = effective_start_tag.time - lf_fed_STA_offset, .microstep = effective_start_tag.microstep};
-
+  env->current_tag.time -= lf_fed_STA_offset;
   LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".", start_time, lf_fed_STA_offset);
 #else
   // For other than federated decentralized execution, there is no lf_fed_STA_offset variable defined.
@@ -674,7 +673,7 @@ void _lf_initialize_start_tag(environment_t* env) {
   // from exceeding the timestamp of the message. It will remove that barrier
   // once the complete message has been read. Here, we wait for that barrier
   // to be removed, if appropriate before proceeding to executing tag (0,0).
-  _lf_wait_on_tag_barrier(env, (tag_t){.time = start_time, .microstep = 0});
+  _lf_wait_on_tag_barrier(env, effective_start_tag);
   lf_spawn_staa_thread();
 
 #else  // NOT FEDERATED_DECENTRALIZED
