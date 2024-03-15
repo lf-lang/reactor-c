@@ -5,7 +5,7 @@
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
- * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca. 
+ * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
  */
 #ifndef REACTOR_THREADED_H
 #define REACTOR_THREADED_H
@@ -58,7 +58,7 @@ void lf_enqueue_port_absent_reactions(environment_t* env);
  * If future_tag is in the past (or equals to current logical time), the runtime
  * will freeze advancement of logical time.
  */
-void _lf_increment_tag_barrier(environment_t *env, tag_t future_tag);
+void _lf_increment_tag_barrier(environment_t* env, tag_t future_tag);
 
 /**
  * @brief Version of _lf_increment_tag_barrier to call when the caller holds the mutex.
@@ -70,7 +70,7 @@ void _lf_increment_tag_barrier(environment_t *env, tag_t future_tag);
  * If future_tag is in the past (or equals to current logical time), the runtime
  * will freeze advancement of logical time.
  */
-void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag);
+void _lf_increment_tag_barrier_locked(environment_t* env, tag_t future_tag);
 
 /**
  * Decrement the total number of pending barrier requests for the environment tag barrier.

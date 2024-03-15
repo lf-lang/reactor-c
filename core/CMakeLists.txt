@@ -1,4 +1,17 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    set(CMAKE_SYSTEM_VERSION 10.0)
+    message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
+    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_NRF52)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
+    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_ZEPHYR)
+    set(PLATFORM_ZEPHYR true)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
+    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_RP2040)
+endif()
 
 # Get the general common sources for reactor-c
 list(APPEND GENERAL_SOURCES tag.c clock.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
@@ -6,7 +19,7 @@ list(APPEND GENERAL_SOURCES tag.c clock.c port.c mixed_radix.c reactor_common.c 
 # Add tracing support if requested
 if (DEFINED LF_TRACE)
     message(STATUS "Including sources specific to tracing.")
-    list(APPEND GENERAL_SOURCES trace.c)
+    list(APPEND GENERAL_SOURCES tracepoint.c)
 endif()
 
 # Add the general sources to the list of REACTORC_SOURCES
@@ -38,7 +51,6 @@ endif()
 # Include sources from subdirectories
 include(utils/CMakeLists.txt)
 include(modal_models/CMakeLists.txt)
-include(platform/CMakeLists.txt)
 
 # Print sources used for compilation
 list(JOIN REACTORC_SOURCES ", " PRINTABLE_SOURCE_LIST)
@@ -52,8 +64,39 @@ if(PLATFORM_ZEPHYR)
     zephyr_library_sources(${REACTORC_SOURCES})
     zephyr_library_link_libraries(kernel)
 else()
-    add_library(reactor-c ${REACTORC_SOURCES})
+    add_library(reactor-c)
+    target_sources(reactor-c PRIVATE ${REACTORC_SOURCES})
 endif()
+
+if (DEFINED LF_TRACE)
+    include(${LF_ROOT}/trace/api/CMakeLists.txt)
+    if(NOT LF_TRACE_PLUGIN)
+        set(LF_TRACE_PLUGIN lf::trace-impl)
+        include(${LF_ROOT}/trace/impl/CMakeLists.txt)
+    endif()
+    message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
+    target_link_libraries(reactor-c PUBLIC lf::trace-api)
+    target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN}")
+endif()
+
+include(${LF_ROOT}/version/api/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::version-api)
+
+include(${LF_ROOT}/logging/api/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::logging-api)
+
+include(${LF_ROOT}/tag/api/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::tag-api)
+
+include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
+include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::low-level-platform-api)
+target_link_libraries(reactor-c PRIVATE lf::low-level-platform-impl)
+
+include(${LF_ROOT}/platform/api/CMakeLists.txt)
+include(${LF_ROOT}/platform/impl/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::platform-api)
+target_link_libraries(reactor-c PRIVATE lf::platform-impl)
 
 # Apply compile definitions to the reactor-c library.
 target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})
@@ -128,6 +171,7 @@ define(FEDERATED_CENTRALIZED)
 define(FEDERATED_DECENTRALIZED)
 define(FEDERATED)
 define(FEDERATED_AUTHENTICATED)
+define(FEDERATE_ID)
 define(LF_REACTION_GRAPH_BREADTH)
 define(LF_TRACE)
 define(LF_SINGLE_THREADED)

@@ -6,6 +6,19 @@
 ## Documentation
 To generate and view documentation, see [docs/README.md](docs/README.md).
 
+## Code-formatting
+We use clang-format to format our codebase. To run the formatter on all source and header files in reactor-c:
+```
+make format
+```
+The CI will do a "dry-run" of the formatter to verify that all files are correctly formatted.
+
+VSCode can be configured to run clang-format on files as they are saved. To achieve this set the following settings:
+- editor.formatOnSave: true
+- C_Cpp.formatting: clang-format
+- C_Cpp.clang_format_style: file
+
+
 ## Testing
 The Github Actions tests for this repo will automatically run all the C Lingua Franca tests with each of the available schedulers. The version of the lingua-franca repo that is used to do this is specified by the lingua-franca-ref.txt file in this directory.
 
