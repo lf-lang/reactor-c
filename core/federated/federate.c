@@ -87,6 +87,8 @@ federate_instance_t _fed = {.socket_TCP_RTI = -1,
                             .is_last_TAG_provisional = false,
                             .has_upstream = false,
                             .has_downstream = false,
+                            .last_skipped_LTC = (tag_t){.time = NEVER, .microstep = 0u},
+                            .last_DNET = (tag_t){.time = NEVER, .microstep = 0u},
                             .received_stop_request_from_rti = false,
                             .last_sent_LTC = (tag_t){.time = NEVER, .microstep = 0u},
                             .last_sent_NET = (tag_t){.time = NEVER, .microstep = 0u},
@@ -1437,6 +1439,56 @@ static void handle_stop_request_message() {
 }
 
 /**
+ * Handle a downstream next event tag (DNET) message from the RTI.
+ * FIXME: Use this tag to eliminate unncessary LTC or NET messages.
+ */
+static void handle_downstream_next_event_tag() {
+  size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
+  unsigned char buffer[bytes_to_read];
+  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+                                 "Failed to read downstream next event tag from RTI.");
+  tag_t DNET = extract_tag(buffer);
+
+  // Trace the event when tracing is enabled
+  tracepoint_federate_from_rti(_fed.trace, receive_DNET, _lf_my_fed_id, &DNET);
+
+  LF_PRINT_LOG("Received Downstream Next Event Tag (DNET): " PRINTF_TAG ".", DNET.time - start_time, DNET.microstep);
+
+  _fed.last_DNET = DNET;
+
+  if (lf_tag_compare(_fed.last_skipped_LTC, NEVER_TAG) != 0 &&
+      lf_tag_compare(_fed.last_skipped_LTC, _fed.last_DNET) >= 0) {
+    send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, _fed.last_skipped_LTC);
+    _fed.last_skipped_LTC = NEVER_TAG;
+  }
+}
+
+/**
+ * Handle a downstream next event tag (DNET) message from the RTI.
+ * FIXME: Use this tag to eliminate unncessary LTC or NET messages.
+ */
+static void handle_downstream_next_event_tag() {
+  size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
+  unsigned char buffer[bytes_to_read];
+  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+                                 "Failed to read downstream next event tag from RTI.");
+  tag_t DNET = extract_tag(buffer);
+
+  // Trace the event when tracing is enabled
+  tracepoint_federate_from_rti(_fed.trace, receive_DNET, _lf_my_fed_id, &DNET);
+
+  LF_PRINT_LOG("Received Downstream Next Event Tag (DNET): " PRINTF_TAG ".", DNET.time - start_time, DNET.microstep);
+
+  _fed.last_DNET = DNET;
+
+  if (lf_tag_compare(_fed.last_skipped_LTC, NEVER_TAG) != 0 &&
+      lf_tag_compare(_fed.last_skipped_LTC, _fed.last_DNET) >= 0) {
+    send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, _fed.last_skipped_LTC);
+    _fed.last_skipped_LTC = NEVER_TAG;
+  }
+}
+
+/**
  * Send a resign signal to the RTI.
  */
 static void send_resign_signal(environment_t* env) {
@@ -1538,6 +1590,9 @@ static void* listen_to_rti_TCP(void* args) {
         // Failures to complete the read of absent messages from the RTI are fatal.
         lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
       }
+      break;
+    case MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG:
+      handle_downstream_next_event_tag();
       break;
     case MSG_TYPE_FAILED:
       handle_rti_failed_message();
@@ -2206,14 +2261,22 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 }
 
 void lf_latest_tag_complete(tag_t tag_to_send) {
-  int compare_with_last_tag = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
-  if (compare_with_last_tag >= 0) {
+  int compare_with_last_LTC = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
+  int compare_with_last_DNET = lf_tag_compare(_fed.last_DNET, tag_to_send);
+  if (compare_with_last_LTC >= 0) {
+    return;
+  }
+  if (compare_with_last_DNET > 0) {
+    LF_PRINT_LOG("Skipping Latest Tag Complete (LTC) " PRINTF_TAG " .", tag_to_send.time - start_time,
+                 tag_to_send.microstep);
+    _fed.last_skipped_LTC = tag_to_send;
     return;
   }
   LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.", tag_to_send.time - start_time,
                tag_to_send.microstep);
   send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, tag_to_send);
   _fed.last_sent_LTC = tag_to_send;
+  _fed.last_skipped_LTC = NEVER_TAG;
 }
 
 parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
@@ -2360,9 +2423,13 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       // This if statement does not fall through but rather returns.
       // NET is not bounded by physical time or has no downstream federates.
       // Normal case.
-      send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
-      _fed.last_sent_NET = tag;
-      LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
+      if (lf_tag_compare(_fed.last_DNET, tag) <= 0 || lf_tag_compare(_fed.last_TAG, tag) < 0) {
+        send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
+        _fed.last_sent_NET = tag;
+        LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
+      } else {
+        LF_PRINT_LOG("Skip next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
+      }
 
       if (!wait_for_reply) {
         LF_PRINT_LOG("Not waiting for reply to NET.");
@@ -2587,10 +2654,15 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   int* socket;
   if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
     socket = &_fed.sockets_for_outbound_p2p_connections[federate];
-    tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
+    tracepoint_federate_to_federate(_fed.trace, send_P2P_TAGGED_MSG, _lf_my_fed_id, federate,
+                                    &current_message_intended_tag);
   } else {
     socket = &_fed.socket_TCP_RTI;
-    tracepoint_federate_to_rti(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
+    tracepoint_federate_to_rti(_fed.trace, send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
+  }
+
+  if (lf_tag_compare(_fed.last_DNET, current_message_intended_tag) > 0) {
+    _fed.last_DNET = current_message_intended_tag;
   }
 
   int result = write_to_socket_close_on_error(socket, header_length, header_buffer);
