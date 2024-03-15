@@ -249,20 +249,6 @@ void synchronize_initial_physical_clock_with_rti(netdrv_t* netdrv_to_rti) {
     handle_T4_clock_sync_message(buffer, netdrv_to_rti, receive_time);
   }
 
-  // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-  read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
-                                 "Federate %d did not get the clock synchronization message T4 from the RTI.",
-                                 _lf_my_fed_id);
-
-  // Check that this is the T4 message.
-  if (buffer[0] != MSG_TYPE_CLOCK_SYNC_T4) {
-    lf_print_error_and_exit("Federate %d expected T4 message from RTI. Got %x.", _lf_my_fed_id, buffer[0]);
-  }
-
-  // Handle the message.
-  handle_T4_clock_sync_message(buffer, *rti_socket_TCP, receive_time);
-}
-
 LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
 }
 
