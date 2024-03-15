@@ -85,6 +85,20 @@ typedef enum clock_sync_stat { clock_sync_off, clock_sync_init, clock_sync_on } 
 typedef enum federation_life_cycle_phase { startup_phase, execution_phase, shutdown_phase } federation_life_cycle_phase;
 
 /**
+ * @brief The type for an element in a delayed grants priority queue that is sorted by tag.
+ */
+typedef struct pqueue_delayed_grant_element_t {
+  pqueue_tag_element_t base;
+  uint16_t fed_id;     // Id of the federate with delayed grant of tag (in base)
+  bool is_provisional; // Boolean recoding if the delayed grant is provisional
+} pqueue_delayed_grant_element_t;
+
+/**
+ * @brief Type of a delayed grants queue sorted by tags.
+ */
+typedef pqueue_tag_t pqueue_delayed_grants_t;
+
+/**
  * Structure that an RTI instance uses to keep track of its own and its
  * corresponding federates' state.
  */
@@ -183,6 +197,12 @@ typedef struct rti_remote_t {
    * Indicates the life cycle phase of the federation.
    */
   federation_life_cycle_phase phase;
+
+  /**
+   * Queue of the pending grants, in case transient federates are absent and
+   * issuing grants to their downstreams need to be delayed.
+   */
+  pqueue_delayed_grants_t* delayed_grants;
 } rti_remote_t;
 
 /**
@@ -387,6 +407,11 @@ void lf_connect_to_persistent_federates(int socket_descriptor);
  * Stops if all persistent federates exited.
  */
 void* lf_connect_to_transient_federates_thread(void* nothing);
+
+/**
+ * Thread that manages the delayed grants using a priprity queue.
+ */
+void* lf_delayed_grants_thread(void* nothing);
 
 /**
  * Thread to respond to new connections, which could be federates of other
