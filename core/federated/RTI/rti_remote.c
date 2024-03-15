@@ -594,7 +594,6 @@ void handle_stop_request_reply(federate_info_t *fed, unsigned char *buffer) {
 void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
     federate_info_t *fed = GET_FED_INFO(fed_id);
 
-
     uint16_t remote_fed_id = extract_uint16(buffer);
 
     if (rti_remote->base.tracing_enabled) {
@@ -608,9 +607,9 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
     // from this federate. In that case, it will respond by sending -1. 
     
     // The length is what is needed for the reply.
-    unsigned char buf[1 + sizeof(int32_t)];
+    unsigned char buf[1 + sizeof(int32_t) + sizeof(struct in_addr)];
     // Response message is MSG_TYPE_ADDRESS_QUERY_REPLY.
-    buffer[0] = MSG_TYPE_ADDRESS_QUERY_REPLY;
+    buf[0] = MSG_TYPE_ADDRESS_QUERY_REPLY;
 
     // Encode the port number.
     federate_info_t *remote_fed = GET_FED_INFO(remote_fed_id);
