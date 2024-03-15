@@ -50,18 +50,21 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define lf_is_type_equal(typename_a, typename_b) __builtin_types_compatible_p(typename_a, typename_b)
 
 /// Checks if the passed variable `p` is array or a pointer
-#define lf_is_pointer_or_array(p)  (__builtin_classify_type(p) == 5)
+#define lf_is_pointer_or_array(p) (__builtin_classify_type(p) == 5)
 
-#define lf_decay(p)  (&*__builtin_choose_expr(lf_is_pointer_or_array(p), p, NULL))
+#define lf_decay(p) (&*__builtin_choose_expr(lf_is_pointer_or_array(p), p, NULL))
 
 /// Checks if passed variable `p` is a pointer
-#define lf_is_pointer(p)  lf_is_same_type(p, lf_decay(p))
+#define lf_is_pointer(p) lf_is_same_type(p, lf_decay(p))
 
 /// Returns the pointer for specified `p`
 #define lf_get_pointer(p) __builtin_choose_expr(lf_is_pointer(p), p, &p)
 
 /// Checks types for both `left` and `right` and returns appropriate value based on `left` type
-#define lf_to_left_type(left, right) __builtin_choose_expr(lf_is_pointer_or_array(left), __builtin_choose_expr(lf_is_pointer_or_array(right), (right), &(right)), __builtin_choose_expr(lf_is_pointer_or_array(right), *(right), (right)))
+#define lf_to_left_type(left, right)                                                                                   \
+  __builtin_choose_expr(lf_is_pointer_or_array(left),                                                                  \
+                        __builtin_choose_expr(lf_is_pointer_or_array(right), (right), &(right)),                       \
+                        __builtin_choose_expr(lf_is_pointer_or_array(right), *(right), (right)))
 
 #else // buitin are not available
 
@@ -77,4 +80,3 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif // __has_builtin
 
 #endif // GENERICS_H
-

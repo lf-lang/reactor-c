@@ -58,16 +58,16 @@ static bool _latest_tag_completed = false;
  * Return true if the worker should stop now; false otherwise.
  * This function assumes the caller holds the mutex lock.
  */
-bool should_stop_locked(lf_scheduler_t * sched) {
-    // If this is not the very first step, check against the stop tag to see whether this is the last step.
-    if (_latest_tag_completed) {
-        // If we are at the stop tag, do not call _lf_next_locked()
-        // to prevent advancing the logical time.
-        if (lf_tag_compare(sched->env->current_tag, sched->env->stop_tag) >= 0) {
-            return true;
-        }
+bool should_stop_locked(lf_scheduler_t* sched) {
+  // If this is not the very first step, check against the stop tag to see whether this is the last step.
+  if (_latest_tag_completed) {
+    // If we are at the stop tag, do not call _lf_next_locked()
+    // to prevent advancing the logical time.
+    if (lf_tag_compare(sched->env->current_tag, sched->env->stop_tag) >= 0) {
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
 /**
@@ -78,30 +78,30 @@ bool should_stop_locked(lf_scheduler_t * sched) {
  *
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched) {
-    environment_t* env = sched->env;
-    logical_tag_complete(env->current_tag);
+bool _lf_sched_advance_tag_locked(lf_scheduler_t* sched) {
+  environment_t* env = sched->env;
+  logical_tag_complete(env->current_tag);
 
-    // If we are using scheduling enclaves. Notify the local RTI of the time 
-    // advancement.
-    #if defined LF_ENCLAVES
-    rti_logical_tag_complete_locked(env->enclave_info, env->current_tag);
-    #endif
+// If we are using scheduling enclaves. Notify the local RTI of the time
+// advancement.
+#if defined LF_ENCLAVES
+  rti_logical_tag_complete_locked(env->enclave_info, env->current_tag);
+#endif
 
-    if (should_stop_locked(sched)) {
-        return true;
-    }
+  if (should_stop_locked(sched)) {
+    return true;
+  }
 
-    _latest_tag_completed = true;
+  _latest_tag_completed = true;
 
-    // Advance time.
-    // _lf_next_locked() may block waiting for real time to pass or events to appear.
-    // to appear on the event queue. Note that we already
-    tracepoint_scheduler_advancing_time_starts(env);
-    _lf_next_locked(env);
-    tracepoint_scheduler_advancing_time_ends(env);
+  // Advance time.
+  // _lf_next_locked() may block waiting for real time to pass or events to appear.
+  // to appear on the event queue. Note that we already
+  tracepoint_scheduler_advancing_time_starts(env);
+  _lf_next_locked(env);
+  tracepoint_scheduler_advancing_time_ends(env);
 
-    LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");
-    return false;
+  LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");
+  return false;
 }
 #endif

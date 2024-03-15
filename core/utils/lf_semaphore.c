@@ -33,7 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_semaphore.h"
 #include <assert.h>
-#include "util.h"  // Defines macros LF_MUTEX_LOCK, etc.
+#include "util.h" // Defines macros LF_MUTEX_LOCK, etc.
 
 /**
  * @brief Create a new semaphore.
@@ -42,11 +42,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @return lf_semaphore_t* Can be NULL on error.
  */
 lf_semaphore_t* lf_semaphore_new(int count) {
-    lf_semaphore_t* semaphore = (lf_semaphore_t*)malloc(sizeof(lf_semaphore_t));
-    LF_MUTEX_INIT(&semaphore->mutex);
-    LF_COND_INIT(&semaphore->cond, &semaphore->mutex);
-    semaphore->count = count;
-    return semaphore;
+  lf_semaphore_t* semaphore = (lf_semaphore_t*)malloc(sizeof(lf_semaphore_t));
+  LF_MUTEX_INIT(&semaphore->mutex);
+  LF_COND_INIT(&semaphore->cond, &semaphore->mutex);
+  semaphore->count = count;
+  return semaphore;
 }
 
 /**
@@ -56,11 +56,11 @@ lf_semaphore_t* lf_semaphore_new(int count) {
  * @param i The count to add.
  */
 void lf_semaphore_release(lf_semaphore_t* semaphore, int i) {
-    assert(semaphore != NULL);
-    LF_MUTEX_LOCK(&semaphore->mutex);
-    semaphore->count += i;
-    lf_cond_broadcast(&semaphore->cond);
-    LF_MUTEX_UNLOCK(&semaphore->mutex);
+  assert(semaphore != NULL);
+  LF_MUTEX_LOCK(&semaphore->mutex);
+  semaphore->count += i;
+  lf_cond_broadcast(&semaphore->cond);
+  LF_MUTEX_UNLOCK(&semaphore->mutex);
 }
 
 /**
@@ -69,13 +69,13 @@ void lf_semaphore_release(lf_semaphore_t* semaphore, int i) {
  * @param semaphore Instance of a semaphore.
  */
 void lf_semaphore_acquire(lf_semaphore_t* semaphore) {
-    assert(semaphore != NULL);
-    LF_MUTEX_LOCK(&semaphore->mutex);
-    while (semaphore->count == 0) {
-        lf_cond_wait(&semaphore->cond);
-    }
-    semaphore->count--;
-    LF_MUTEX_UNLOCK(&semaphore->mutex);
+  assert(semaphore != NULL);
+  LF_MUTEX_LOCK(&semaphore->mutex);
+  while (semaphore->count == 0) {
+    lf_cond_wait(&semaphore->cond);
+  }
+  semaphore->count--;
+  LF_MUTEX_UNLOCK(&semaphore->mutex);
 }
 
 /**
@@ -84,12 +84,12 @@ void lf_semaphore_acquire(lf_semaphore_t* semaphore) {
  * @param semaphore Instance of a semaphore.
  */
 void lf_semaphore_wait(lf_semaphore_t* semaphore) {
-    assert(semaphore != NULL);
-    LF_MUTEX_LOCK(&semaphore->mutex);
-    while (semaphore->count == 0) {
-        lf_cond_wait(&semaphore->cond);
-    }
-    LF_MUTEX_UNLOCK(&semaphore->mutex);
+  assert(semaphore != NULL);
+  LF_MUTEX_LOCK(&semaphore->mutex);
+  while (semaphore->count == 0) {
+    lf_cond_wait(&semaphore->cond);
+  }
+  LF_MUTEX_UNLOCK(&semaphore->mutex);
 }
 
 /**
@@ -98,7 +98,7 @@ void lf_semaphore_wait(lf_semaphore_t* semaphore) {
  * @param semaphore Instance of a semaphore.
  */
 void lf_semaphore_destroy(lf_semaphore_t* semaphore) {
-    assert(semaphore != NULL);
-    free(semaphore);
+  assert(semaphore != NULL);
+  free(semaphore);
 }
 #endif

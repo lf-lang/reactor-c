@@ -54,15 +54,15 @@ extern PyTypeObject py_action_capsule_t;
  *             at the current logical time
  **/
 typedef struct {
-    token_type_t type;
-    lf_token_t* token;
-    size_t length;
-    bool is_present;
-    lf_action_internal_t _base;
-    self_base_t* parent;
-    bool has_value;
-    PyObject* value;
-    FEDERATED_GENERIC_EXTENSION
+  token_type_t type;
+  lf_token_t* token;
+  size_t length;
+  bool is_present;
+  lf_action_internal_t _base;
+  self_base_t* parent;
+  bool has_value;
+  PyObject* value;
+  FEDERATED_GENERIC_EXTENSION
 } generic_action_instance_struct;
 
 /**
@@ -82,13 +82,13 @@ typedef struct {
  * to a Python reaction.
  **/
 typedef struct {
-    PyObject_HEAD
-    PyObject* action; // Hold the void* pointer to a C action instance. However, passing void* directly
-                      // to Python is considered unsafe practice. Instead, this void* pointer to the C action
-                      // will be stored in a PyCapsule. @see https://docs.python.org/3/c-api/capsule.html
-    PyObject* value; // This value will be copied from the C action->value
-    bool is_present; // Same as value, is_present will be copied from the C action->is_present
-    FEDERATED_CAPSULE_EXTENSION
+  PyObject_HEAD PyObject*
+      action;      // Hold the void* pointer to a C action instance. However, passing void* directly
+                   // to Python is considered unsafe practice. Instead, this void* pointer to the C action
+                   // will be stored in a PyCapsule. @see https://docs.python.org/3/c-api/capsule.html
+  PyObject* value; // This value will be copied from the C action->value
+  bool is_present; // Same as value, is_present will be copied from the C action->is_present
+  FEDERATED_CAPSULE_EXTENSION
 } generic_action_capsule_struct;
 
 #endif

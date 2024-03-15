@@ -47,51 +47,51 @@ static uint32_t timer_freq;
 static volatile bool async_event = false;
 
 void _lf_initialize_clock() {
-    timer_freq = CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
-    LF_PRINT_LOG("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz\n", timer_freq);
-    last_epoch_nsec = 0;
-    epoch_duration_nsec = ((1LL << 32) * SECONDS(1))/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
+  timer_freq = CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
+  LF_PRINT_LOG("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz\n", timer_freq);
+  last_epoch_nsec = 0;
+  epoch_duration_nsec = ((1LL << 32) * SECONDS(1)) / CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
 }
 
 /**
  * Detect wraps by storing the previous clock readout. When a clock readout is
  * less than the previous we have had a wrap. This only works of `_lf_clock_gettime`
- * is invoked at least once per epoch. 
+ * is invoked at least once per epoch.
  */
 int _lf_clock_gettime(instant_t* t) {
-    static uint32_t last_read_cycles=0;
-    uint32_t now_cycles = k_cycle_get_32();
-    if (now_cycles < last_read_cycles) {
-        last_epoch_nsec += epoch_duration_nsec;
-    }
-    *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles + last_epoch_nsec;
-    last_read_cycles = now_cycles;
-    return 0;
+  static uint32_t last_read_cycles = 0;
+  uint32_t now_cycles = k_cycle_get_32();
+  if (now_cycles < last_read_cycles) {
+    last_epoch_nsec += epoch_duration_nsec;
+  }
+  *t = (SECOND(1) / CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC) * now_cycles + last_epoch_nsec;
+  last_read_cycles = now_cycles;
+  return 0;
 }
 
 /**
  * Interruptable sleep is implemented using busy-waiting.
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
-    async_event=false;    
+  async_event = false;
 
-    if (lf_critical_section_exit(env)) {
-        lf_print_error_and_exit("Failed to exit critical section.");
-    }
-    instant_t now;
-    do {
+  if (lf_critical_section_exit(env)) {
+    lf_print_error_and_exit("Failed to exit critical section.");
+  }
+  instant_t now;
+  do {
     _lf_clock_gettime(&now);
-    } while ( (now<wakeup) && !async_event);
-    if (lf_critical_section_enter(env)) {
-        lf_print_error_and_exit("Failed to exit critical section.");
-    }
+  } while ((now < wakeup) && !async_event);
+  if (lf_critical_section_enter(env)) {
+    lf_print_error_and_exit("Failed to exit critical section.");
+  }
 
-    if (async_event) {
-        async_event=false;
-        return -1;
-    } else {
-        return 0;
-    }
+  if (async_event) {
+    async_event = false;
+    return -1;
+  } else {
+    return 0;
+  }
 }
 
 /**
@@ -99,8 +99,8 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
  * thread out of the busy-wait.
  */
 int _lf_single_threaded_notify_of_event() {
-   async_event = true;
-   return 0;
+  async_event = true;
+  return 0;
 }
 
 #endif

@@ -66,51 +66,53 @@ typedef struct trigger_t trigger_t;
  * @param mode The target mode to set for activation.
  * @param change_type The change type of the transition.
  */
-#define _LF_SET_MODE_WITH_TYPE(mode, change_type) \
-do { \
-    ((self_base_t*)self)->_lf__mode_state.next_mode = mode; \
-    ((self_base_t*)self)->_lf__mode_state.mode_change = change_type; \
-} while(0)
+#define _LF_SET_MODE_WITH_TYPE(mode, change_type)                                                                      \
+  do {                                                                                                                 \
+    ((self_base_t*)self)->_lf__mode_state.next_mode = mode;                                                            \
+    ((self_base_t*)self)->_lf__mode_state.mode_change = change_type;                                                   \
+  } while (0)
 
 ////////////////////////////////////////////////////////////
 //// Type definitions for modal infrastructure.
 
 /** Typedef for reactor_mode_t struct, used for representing a mode. */
 typedef struct reactor_mode_t reactor_mode_t;
-/** Typedef for reactor_mode_state_t struct, used for storing modal state of reactor and/or its relation to enclosing modes. */
+/** Typedef for reactor_mode_state_t struct, used for storing modal state of reactor and/or its relation to enclosing
+ * modes. */
 typedef struct reactor_mode_state_t reactor_mode_state_t;
-/** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
+/** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in
+ * modes. */
 typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
 
 /** Type of the mode change. */
-typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
+typedef enum { no_transition, reset_transition, history_transition } lf_mode_change_type_t;
 
 /** A struct to represent a single mode instace in a reactor instance. */
 struct reactor_mode_t {
-    reactor_mode_state_t* state;    // Pointer to a struct with the reactor's mode state. INSTANCE.
-    char* name;                     // Name of this mode.
-    instant_t deactivation_time;    // Time when the mode was left.
-    uint8_t flags;                  // Bit vector for several internal flags related to the mode.
+  reactor_mode_state_t* state; // Pointer to a struct with the reactor's mode state. INSTANCE.
+  char* name;                  // Name of this mode.
+  instant_t deactivation_time; // Time when the mode was left.
+  uint8_t flags;               // Bit vector for several internal flags related to the mode.
 };
 
 /** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */
 struct reactor_mode_state_t {
-    reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exists).
-    reactor_mode_t* initial_mode;   // Pointer to the initial mode.
-    reactor_mode_t* current_mode;   // Pointer to the currently active mode (only locally active).
-    reactor_mode_t* next_mode;      // Pointer to the next mode to activate at the end of this step (if set).
-    lf_mode_change_type_t mode_change;  // A mode change type flag.
+  reactor_mode_t* parent_mode;       // Pointer to the next enclosing mode (if exists).
+  reactor_mode_t* initial_mode;      // Pointer to the initial mode.
+  reactor_mode_t* current_mode;      // Pointer to the currently active mode (only locally active).
+  reactor_mode_t* next_mode;         // Pointer to the next mode to activate at the end of this step (if set).
+  lf_mode_change_type_t mode_change; // A mode change type flag.
 };
 /** A struct to store data for resetting state variables nested in modes. */
 struct mode_state_variable_reset_data_t {
-    reactor_mode_t* mode;           // Pointer to the enclosing mode.
-    void* target;                   // Pointer to the target variable.
-    void* source;                   // Pointer to the data source.
-    size_t size;                    // The size of the variable.
+  reactor_mode_t* mode; // Pointer to the enclosing mode.
+  void* target;         // Pointer to the target variable.
+  void* source;         // Pointer to the data source.
+  size_t size;          // The size of the variable.
 };
 
 ////////////////////////////////////////////////////////////
-//// Forward declaration 
+//// Forward declaration
 typedef struct environment_t environment_t;
 
 ////////////////////////////////////////////////////////////
@@ -119,37 +121,19 @@ void _lf_initialize_modes(environment_t* env);
 void _lf_handle_mode_changes(environment_t* env);
 void _lf_handle_mode_triggered_reactions(environment_t* env);
 bool _lf_mode_is_active(reactor_mode_t* mode);
-void _lf_initialize_mode_states(
-    environment_t* env,
-    reactor_mode_state_t* states[], 
-    int states_size);
-void _lf_process_mode_changes(
-    environment_t* env,
-    reactor_mode_state_t* states[],
-    int states_size,
-    mode_state_variable_reset_data_t reset_data[],
-    int reset_data_size,
-    trigger_t* timer_triggers[],
-    int timer_triggers_size
-);
+void _lf_initialize_mode_states(environment_t* env, reactor_mode_state_t* states[], int states_size);
+void _lf_process_mode_changes(environment_t* env, reactor_mode_state_t* states[], int states_size,
+                              mode_state_variable_reset_data_t reset_data[], int reset_data_size,
+                              trigger_t* timer_triggers[], int timer_triggers_size);
 void _lf_add_suspended_event(event_t* event);
-void _lf_handle_mode_startup_reset_reactions(
-        environment_t* env,
-        reaction_t** startup_reactions,
-        int startup_reactions_size,
-        reaction_t** reset_reactions,
-        int reset_reactions_size,
-        reactor_mode_state_t* states[],
-        int states_size
-);
-void _lf_handle_mode_shutdown_reactions(
-        environment_t* env,
-        reaction_t** shutdown_reactions,
-        int shutdown_reactions_size
-);
+void _lf_handle_mode_startup_reset_reactions(environment_t* env, reaction_t** startup_reactions,
+                                             int startup_reactions_size, reaction_t** reset_reactions,
+                                             int reset_reactions_size, reactor_mode_state_t* states[], int states_size);
+void _lf_handle_mode_shutdown_reactions(environment_t* env, reaction_t** shutdown_reactions,
+                                        int shutdown_reactions_size);
 void _lf_terminate_modal_reactors(environment_t* env);
 
-#else /* IF NOT MODAL_REACTORS */
+#else  /* IF NOT MODAL_REACTORS */
 /*
  * Reactions and triggers must have a mode pointer to set up connection to enclosing modes,
  * also when they are precompiled without modal reactors in order to later work in modal reactors.
