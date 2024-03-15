@@ -1,8 +1,8 @@
 #ifndef LF_SOCKET_SUPPORT_H
 #define LF_SOCKET_SUPPORT_H
 
-#include <netinet/in.h>     // IPPROTO_TCP, IPPROTO_UDP 
-#include <netinet/tcp.h>    // TCP_NODELAY 
+#include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
+#include <netinet/tcp.h> // TCP_NODELAY
 
 #include "net_util.h"
 
@@ -50,38 +50,36 @@
 #define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
 
 typedef struct socket_priv_t {
-    int port; // my port number
-    int socket_descriptor;
-	int proto;
-	uint16_t user_specified_port;
+  int port; // my port number
+  int socket_descriptor;
+  int proto;
+  uint16_t user_specified_port;
 
-    // The connected other side's info.
-    char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
-    int32_t server_port;    // port number of the socket server of the federate
-                            // if it has any incoming direct connections from other federates.
-                            // The port number will be -1 if there is no server or if the
-                            // RTI has not been informed of the port number.
-    struct in_addr server_ip_addr; // Information about the IP address of the socket
-                                // server of the federate.
+  // The connected other side's info.
+  char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
+  int32_t server_port;                   // port number of the socket server of the federate
+                                         // if it has any incoming direct connections from other federates.
+                                         // The port number will be -1 if there is no server or if the
+                                         // RTI has not been informed of the port number.
+  struct in_addr server_ip_addr;         // Information about the IP address of the socket
+                                         // server of the federate.
 
-    struct sockaddr_in UDP_addr;           // The UDP address for the federate.
+  struct sockaddr_in UDP_addr; // The UDP address for the federate.
 } socket_priv_t;
 
-char* get_host_name(netdrv_t *drv);
-int32_t get_my_port(netdrv_t *drv);
-int32_t get_port(netdrv_t *drv);
-struct in_addr* get_ip_addr(netdrv_t *drv);
+char* get_host_name(netdrv_t* drv);
+int32_t get_my_port(netdrv_t* drv);
+int32_t get_port(netdrv_t* drv);
+struct in_addr* get_ip_addr(netdrv_t* drv);
 
-void set_host_name(netdrv_t *drv, const char* hostname);
-void set_port(netdrv_t *drv, int port);
-void set_ip_addr(netdrv_t *drv, struct in_addr ip_addr);
-void set_clock_netdrv(netdrv_t *clock_drv, netdrv_t *rti_drv, uint16_t port_num);
+void set_host_name(netdrv_t* drv, const char* hostname);
+void set_port(netdrv_t* drv, int port);
+void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr);
+void set_clock_netdrv(netdrv_t* clock_drv, netdrv_t* rti_drv, uint16_t port_num);
 
+netdrv_t* netdrv_init();
 
-netdrv_t * netdrv_init();
-
-void netdrv_free(netdrv_t *drv);
-
+void netdrv_free(netdrv_t* drv);
 
 int create_federate_server(netdrv_t* drv, uint16_t port, int specified_port);
 
@@ -100,20 +98,17 @@ int create_federate_server(netdrv_t* drv, uint16_t port, int specified_port);
  * @param socket_type The type of the socket for the server (TCP or UDP).
  * @return The socket descriptor on which to accept connections.
  */
-//TODO: Update descriptions.
-int create_rti_server(netdrv_t *drv, netdrv_type_t netdrv_type);
-
+// TODO: Update descriptions.
+int create_rti_server(netdrv_t* drv, netdrv_type_t netdrv_type);
 
 // int create_real_time_tcp_socket_errexit();
 // void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv);
 
-netdrv_t *netdrv_accept(netdrv_t *my_netdrv);
+netdrv_t* netdrv_accept(netdrv_t* my_netdrv);
 
-netdrv_t *accept_connection(netdrv_t * rti_netdrv);
+netdrv_t* accept_connection(netdrv_t* rti_netdrv);
 
-int netdrv_connect(netdrv_t *drv);
-
-
+int netdrv_connect(netdrv_t* drv);
 
 /**
  * Without blocking, peek at the specified socket and, if there is
@@ -123,9 +118,9 @@ int netdrv_connect(netdrv_t *drv);
  * @param socket The socket ID.
  * @param result Pointer to where to put the first byte available on the socket.
  */
-ssize_t peek_from_netdrv(netdrv_t *drv, unsigned char* result);
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
 
-int write_to_netdrv_UDP(netdrv_t *drv, netdrv_t *target, size_t num_bytes, unsigned char* buffer, int flags);
+int write_to_netdrv_UDP(netdrv_t* drv, netdrv_t* target, size_t num_bytes, unsigned char* buffer, int flags);
 
 /**
  * Write the specified number of bytes to the specified socket from the
@@ -141,7 +136,7 @@ int write_to_netdrv_UDP(netdrv_t *drv, netdrv_t *target, size_t num_bytes, unsig
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int write_to_netdrv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
+int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 
 /**
  * Write the specified number of bytes to the specified socket using write_to_socket
@@ -152,7 +147,7 @@ int write_to_netdrv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int write_to_netdrv_close_on_error(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
+int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 
 /**
  * Write the specified number of bytes to the specified socket using
@@ -169,12 +164,8 @@ int write_to_netdrv_close_on_error(netdrv_t *drv, size_t num_bytes, unsigned cha
  *  fields that will be used to fill the format string as in printf, or NULL
  *  to print a generic error message.
  */
-void write_to_netdrv_fail_on_error(
-		netdrv_t *drv,
-		size_t num_bytes,
-		unsigned char* buffer,
-		lf_mutex_t* mutex,
-		char* format, ...);
+void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+                                   char* format, ...);
 
 /**
  * Read the specified number of bytes from the specified socket into the specified buffer.
@@ -201,7 +192,7 @@ ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-ssize_t read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer, size_t buffer_length);
+ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length);
 
 /**
  * Read the specified number of bytes from the specified socket into the
@@ -219,6 +210,7 @@ ssize_t read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer, si
  * @return The number of bytes read, or 0 if an EOF is received, or
  *  a negative number for an error.
  */
-void read_from_netdrv_fail_on_error(netdrv_t *drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex, char* format, ...);
+void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
+                                    char* format, ...);
 
 #endif // LF_SOCKET_SUPPORT_H

@@ -52,7 +52,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 
 #define NUM_SOCKET_RETRIES 10
-//TODO: Copied at lf_socket_support.h. Erase after finished.
+// TODO: Copied at lf_socket_support.h. Erase after finished.
 #define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
 
 #define HOST_LITTLE_ENDIAN 1
@@ -66,25 +66,22 @@ int host_is_big_endian(void);
 
 #ifdef FEDERATED
 
-typedef enum netdrv_type_t {
-    RTI,
-    CLOCKSYNC
-} netdrv_type_t;
+typedef enum netdrv_type_t { RTI, CLOCKSYNC } netdrv_type_t;
 
 typedef struct netdrv_t {
-    int ( *open)(struct netdrv_t *drv);
-    void (*close)(struct netdrv_t *drv);
-    int ( *read)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
-    int (*write)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
-    void* priv;
-    unsigned int read_remaining_bytes; 
-    unsigned int write_remaining_bytes;
+  int (*open)(struct netdrv_t* drv);
+  void (*close)(struct netdrv_t* drv);
+  int (*read)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
+  int (*write)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
+  void* priv;
+  unsigned int read_remaining_bytes;
+  unsigned int write_remaining_bytes;
 } netdrv_t;
 
-int netdrv_open(netdrv_t *drv);
-void netdrv_close(netdrv_t *drv);
-int netdrv_read(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
-int netdrv_write(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
+int netdrv_open(netdrv_t* drv);
+void netdrv_close(netdrv_t* drv);
+int netdrv_read(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
+int netdrv_write(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 // void * netdrv_get_privdrv(netdrv_t *drv);
 /**
  * Mutex protecting socket close operations.
@@ -100,7 +97,7 @@ extern lf_mutex_t netdrv_mutex;
  */
 int create_real_time_tcp_socket_errexit();
 
-//TODO: Copied at lf_socket_support.c. Erase after finished.
+// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Read the specified number of bytes from the specified socket into the specified buffer.
  * If an error occurs during this reading, return -1 and set errno to indicate
@@ -117,7 +114,7 @@ int create_real_time_tcp_socket_errexit();
  */
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
-//TODO: Copied at lf_socket_support.c. Erase after finished.
+// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Read the specified number of bytes to the specified socket using read_from_socket
  * and close the socket if an error occurs. If an error occurs, this will change the
@@ -129,7 +126,7 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
  */
 int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
 
-//TODO: Copied at lf_socket_support.c. Erase after finished.
+// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Read the specified number of bytes from the specified socket into the
  * specified buffer. If a disconnect or an EOF occurs during this
@@ -149,7 +146,7 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
 void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                     char* format, ...);
 
-//TODO: Copied at lf_socket_support.c. Erase after finished.
+// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Without blocking, peek at the specified socket and, if there is
  * anything on the queue, put its first byte at the specified address and return 1.
@@ -160,7 +157,7 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
  */
 ssize_t peek_from_socket(int socket, unsigned char* result);
 
-//TODO: Copied at lf_socket_support.c. Erase after finished.
+// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Write the specified number of bytes to the specified socket from the
  * specified buffer. If an error occurs, return -1 and set errno to indicate
@@ -177,7 +174,7 @@ ssize_t peek_from_socket(int socket, unsigned char* result);
  */
 int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
-//TODO: Copied at lf_socket_support.c. Erase after finished.
+// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Write the specified number of bytes to the specified socket using write_to_socket
  * and close the socket if an error occurs. If an error occurs, this will change the
@@ -189,7 +186,7 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
  */
 int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
 
-//TODO: Copied at lf_socket_support.c. Erase after finished.
+// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Write the specified number of bytes to the specified socket using
  * write_to_socket_close_on_error and exit with an error code if an error occurs.
@@ -304,7 +301,7 @@ int64_t extract_int64(unsigned char* bytes);
  */
 uint16_t extract_uint16(unsigned char* bytes);
 
-/** 
+/**
  * Extract an uint32_t from the specified byte sequence.
  * This will swap the order of the bytes if this machine is big endian.
  * @param bytes The address of the start of the sequence of bytes.

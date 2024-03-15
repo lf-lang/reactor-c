@@ -179,14 +179,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NET_COMMON_H
 #define NET_COMMON_H
 
-//TODO: Copied at lf_socket_support.h. Erase after finished.
+// TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * The timeout time in ns for TCP operations.
  * Default value is 10 secs.
  */
 #define TCP_TIMEOUT_TIME SEC(10)
 
-//TODO: Copied at lf_socket_support.h. Erase after finished.
+// TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * The timeout time in ns for UDP operations.
  * Default value is 1 sec.
@@ -212,7 +212,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define CONNECT_MAX_RETRIES 100
 
-//TODO: Copied at lf_socket_support.h. Erase after finished.
+// TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * Maximum number of port addresses that a federate will try to connect to the RTI on.
  * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
@@ -228,7 +228,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)
 
-//TODO: Copied at lf_socket_support.h. Erase after finished.
+// TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * Time to wait before re-attempting to bind to a port.
  * When a process closes, the network stack typically waits between 30 and 120
@@ -238,14 +238,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define PORT_BIND_RETRY_INTERVAL SEC(1)
 
-
-//TODO: Copied at lf_socket_support.h. Erase after finished.
+// TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * Number of attempts to bind to a port before giving up.
  */
 #define PORT_BIND_RETRY_LIMIT 60
 
-//TODO: Copied at lf_socket_support.h. Erase after finished.
+// TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * Default port number for the RTI.
  * Unless a specific port has been specified by the LF program in the "at"
@@ -354,7 +353,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FED_RESPONSE 102
 
-
 // TODO: Need to be moved.
 /**
  * The randomly created nonce size will be 8 bytes.
@@ -375,7 +373,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_TIMESTAMP 2
 #define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(int64_t))
 
-//TODO: Deprecated.
+// TODO: Deprecated.
 /** Byte identifying a message to forward to another federate.
  *  The next two bytes will be the ID of the destination port.
  *  The next two bytes are the destination federate ID.
