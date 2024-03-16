@@ -453,7 +453,7 @@ static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t int
 static int handle_message(int* socket, int fed_id) {
   (void)fed_id;
   // Read the header.
-  size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
+  size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t);
   unsigned char buffer[bytes_to_read];
   if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
     // Read failed, which means the socket has been closed between reading the
@@ -511,7 +511,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
 
   // Read the header which contains the timestamp.
   size_t bytes_to_read =
-      sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(instant_t) + sizeof(microstep_t);
+      sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
   if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
     return -1; // Read failed.
@@ -1713,8 +1713,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                                    "Failed to read the requested port number for federate %d from RTI.",
                                    remote_federate_id);
 
-    if (buffer[0] != MSG_TYPE_ADDRESS_QUERY) {
-      // Unexpected reply.  Could be that RTI has failed and sent a resignation.
+    if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
+      // Unexpected reply. Could be that RTI has failed and sent a resignation.
       if (buffer[0] == MSG_TYPE_FAILED) {
         lf_print_error_and_exit("RTI has failed.");
       } else {
@@ -2271,7 +2271,7 @@ void lf_reset_status_fields_on_input_port_triggers() {
 
 int lf_send_message(int message_type, unsigned short port, unsigned short federate, const char* next_destination_str,
                     size_t length, unsigned char* message) {
-  unsigned char header_buffer[1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)];
+  unsigned char header_buffer[1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t)];
   // First byte identifies this as a timed message.
   if (message_type != MSG_TYPE_P2P_MESSAGE) {
     lf_print_error("lf_send_message: Unsupported message type (%d).", message_type);
@@ -2286,12 +2286,12 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   encode_uint16(federate, &(header_buffer[1 + sizeof(uint16_t)]));
 
   // The next four bytes are the message length.
-  encode_int32((int32_t)length, &(header_buffer[1 + sizeof(uint16_t) + sizeof(uint16_t)]));
+  encode_uint32((uint32_t)length, &(header_buffer[1 + sizeof(uint16_t) + sizeof(uint16_t)]));
 
   LF_PRINT_LOG("Sending untagged message to %s.", next_destination_str);
 
   // Header:  message_type + port_id + federate_id + length of message + timestamp + microstep
-  const int header_length = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
+  const int header_length = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t);
 
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
   LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
@@ -2542,7 +2542,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   assert(env != GLOBAL_ENVIRONMENT);
 
   size_t header_length =
-      1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(instant_t) + sizeof(microstep_t);
+      1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(instant_t) + sizeof(microstep_t);
   unsigned char header_buffer[header_length];
 
   if (message_type != MSG_TYPE_TAGGED_MESSAGE && message_type != MSG_TYPE_P2P_TAGGED_MESSAGE) {
@@ -2564,8 +2564,8 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   buffer_head += sizeof(uint16_t);
 
   // The next four bytes are the message length.
-  encode_int32((int32_t)length, &(header_buffer[buffer_head]));
-  buffer_head += sizeof(int32_t);
+  encode_uint32((uint32_t)length, &(header_buffer[buffer_head]));
+  buffer_head += sizeof(uint32_t);
 
   // Apply the additional delay to the current tag and use that as the intended
   // tag of the outgoing message.
