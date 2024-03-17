@@ -413,10 +413,6 @@ void extract_header(unsigned char* buffer, uint16_t* port_id, uint16_t* federate
 
   // The next four bytes are the message length.
   uint32_t local_length_signed = extract_uint32(&(buffer[sizeof(uint16_t) + sizeof(uint16_t)]));
-  if (local_length_signed < 0) {
-    lf_print_error_and_exit("Received an invalid message length (%d) from federate %d.", local_length_signed,
-                            *federate_id);
-  }
   *length = (size_t)local_length_signed;
 
   // printf("DEBUG: Federate receiving message to port %d to federate %d of length %d.\n", port_id, federate_id,
