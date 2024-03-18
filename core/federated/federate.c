@@ -2597,7 +2597,7 @@ void lf_synchronize_with_other_federates(void) {
   start_time = get_start_time_from_rti(lf_time_physical());
 
   lf_print("Starting timestamp is: " PRINTF_TIME " and effective start tag is: " PRINTF_TAG ".", lf_time_start(),
-           lf_tag_effective_start().time - lf_time_start(), lf_tag_effective_start().microstep);
+           effective_start_tag.time - lf_time_start(), effective_start_tag.microstep);
 
   lf_tracing_set_start_time(start_time);
 
