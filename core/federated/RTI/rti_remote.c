@@ -142,10 +142,9 @@ void pqueue_delayed_grants_remove(pqueue_delayed_grants_t* q, pqueue_delayed_gra
  */
 pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_delayed_grants_t* q, uint16_t fed_id) {
   pqueue_delayed_grant_element_t* dge;
-  pqueue_t* _q = (pqueue_t*)q;
   if (!q || q->size == 1)
     return NULL;
-  for (int i = 1; i <= q->size; i++) {
+  for (int i = 1; i < q->size; i++) {
     dge = (pqueue_delayed_grant_element_t*)q->d[i];
     if (dge) {
       if (dge->fed_id == fed_id) {
@@ -2125,8 +2124,8 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // Got a socket
         break;
       } else {
-        // Try again
-        lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+        // Continue trying
+        lf_print("RTI failed to accept the socket. %s. Continue trying.", strerror(errno));
         continue;
       }
     }
