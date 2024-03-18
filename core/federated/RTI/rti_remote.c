@@ -2113,9 +2113,9 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
     // The following blocks until a federate connects.
     int socket_id = -1;
     while (1) {
-      // if (!rti_remote->all_persistent_federates_exited) {
-      //   return NULL;
-      // }
+      if (rti_remote->all_persistent_federates_exited) {
+        return NULL;
+      }
       socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
       if (socket_id >= 0) {
         // Got a socket
