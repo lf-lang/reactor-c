@@ -1999,7 +1999,8 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     LF_PRINT_LOG("Accepted new connection from remote federate.");
 
     size_t header_length = 1 + sizeof(uint16_t) + 1;
-    unsigned char buffer[header_length];
+    // unsigned char buffer[header_length];
+    unsigned char buffer[256]; // TODO: NEED TO CHECK. Doesn't allow super long federation IDs.
     ssize_t bytes_read = read_from_netdrv(client_fed_netdrv, (unsigned char*)&buffer, header_length);
     if (bytes_read <= 0 || buffer[0] != MSG_TYPE_P2P_SENDING_FED_ID) {
       lf_print_warning("Federate received invalid first message on P2P socket. Closing socket.");
