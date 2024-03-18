@@ -133,24 +133,13 @@ void pqueue_delayed_grants_remove(pqueue_delayed_grants_t* q, pqueue_delayed_gra
   pqueue_tag_remove((pqueue_tag_t*)q, (void*)e);
 }
 
-/**
- * @brief Return the first item with the specified tag or NULL if there is none.
- * @param q The queue.
- * @param t The tag.
- * @return An entry with the specified tag or NULL if there isn't one.
- */
-pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_with_tag(pqueue_delayed_grants_t* q, tag_t t) {
-  return (pqueue_delayed_grant_element_t*)pqueue_tag_find_with_tag((pqueue_tag_t*)q, t);
-}
-
-// Function that does not in pqueue_tag.c
+// Function that does not exist in pqueue_tag.c
 /**
  * @brief Return the first item with the specified federate id or NULL if there is none.
  * @param q The queue.
  * @param fed_id The federate id.
  * @return An entry with the specified federate if or NULL if there isn't one.
  */
-
 pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_delayed_grants_t* q, uint16_t fed_id) {
   pqueue_delayed_grant_element_t* dge;
   pqueue_t* _q = (pqueue_t*)q;
@@ -158,8 +147,10 @@ pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_dela
     return NULL;
   for (int i = 1; i <= q->size; i++) {
     dge = (pqueue_delayed_grant_element_t*)q->d[i];
-    if (dge->fed_id == fed_id) {
-      return dge;
+    if (dge) {
+      if (dge->fed_id == fed_id) {
+        return dge;
+      }
     }
   }
   return NULL;
@@ -2130,25 +2121,21 @@ void* lf_delayed_grants_thread(void* nothing) {
     }
     if (pqueue_delayed_grants_size(rti_remote->delayed_grants) != 0) {
       pqueue_delayed_grant_element_t* next;
+
       // Do not pop, but rather read
       next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
       instant_t next_time = next->base.tag.time;
       // Wait for expiration, or a signal to stop or terminate.
-      if (lf_clock_cond_timedwait(&updated_delayed_grants, next_time) != LF_TIMEOUT) {
-        lf_print("RTI: lf_delayed_grants_thread() is sending grant to %d at " PRINTF_TIME ".", next->fed_id,
-                 next_time - start_time);
-        // Time reached to send the grant. Do it for delayed grants with
-        // the same tag
+      if (lf_clock_cond_timedwait(&updated_delayed_grants, next_time)) {
+        // Time reached to send the grant. Do it for delayed grants with the same tag
         LF_MUTEX_LOCK(&rti_mutex);
-        do {
-          next = pqueue_delayed_grants_pop(rti_remote->delayed_grants);
-          federate_info_t* fed = GET_FED_INFO(next->fed_id);
-          if (next->is_provisional) {
-            notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
-          } else {
-            notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
-          }
-        } while ((next = pqueue_delayed_grants_find_with_tag(rti_remote->delayed_grants, next->base.tag)) != NULL);
+        next = pqueue_delayed_grants_pop(rti_remote->delayed_grants);
+        federate_info_t* fed = GET_FED_INFO(next->fed_id);
+        if (next->is_provisional) {
+          notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+        } else {
+          notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+        }
         LF_MUTEX_UNLOCK(&rti_mutex);
       } else {
         // Waiting was interrupted, because of an update in the queue, or
@@ -2385,6 +2372,7 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->max_start_time = 0LL;
   rti_remote->num_feds_proposed_start = 0;
   rti_remote->all_federates_exited = false;
+  rti_remote->all_persistent_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";
   rti_remote->user_specified_port = 0;
   rti_remote->final_port_TCP = 0;
