@@ -89,7 +89,9 @@ federate_instance_t _fed = {.socket_TCP_RTI = -1,
                             .has_downstream = false,
                             .received_stop_request_from_rti = false,
                             .last_sent_LTC.time = NEVER,
+                            .last_sent_LTC.microstep = 0u,
                             .last_sent_NET.time = NEVER,
+                            .last_sent_NET.microstep = 0u,
                             .min_delay_from_physical_action_to_federate_output = NEVER};
 
 federation_metadata_t federation_metadata = {
