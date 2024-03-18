@@ -982,8 +982,6 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // Note that we report in the trace the effective_start_tag.
   // This is rather a choice. To be changed, if needed, of course.
   tracepoint_federate_from_rti(receive_TIMESTAMP, _lf_my_fed_id, &effective_start_tag);
-  lf_print("Starting timestamp is: " PRINTF_TIME " and effectve start tag is: " PRINTF_TAG ".", timestamp,
-           effective_start_tag.time - start_time, effective_start_tag.microstep);
   LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
   return timestamp;
@@ -2663,6 +2661,10 @@ void lf_synchronize_with_other_federates(void) {
   // Reset the start time to the coordinated start time for all federates.
   // Note that this does not grant execution to this federate.
   start_time = get_start_time_from_rti(lf_time_physical());
+
+  lf_print("Starting timestamp is: " PRINTF_TIME " and effective start tag is: " PRINTF_TAG ".", lf_time_start(),
+           lf_tag_effective_start().time - lf_time_start(), lf_tag_effective_start().microstep);
+
   lf_tracing_set_start_time(start_time);
 
   // Start a thread to listen for incoming TCP messages from the RTI.
@@ -2757,9 +2759,5 @@ void lf_stop() {
 char* lf_get_federates_bin_directory() { return LF_FEDERATES_BIN_DIRECTORY; }
 
 char* lf_get_federation_id() { return federation_metadata.federation_id; }
-
-instant_t lf_get_effective_start_time() { return effective_start_tag.time; }
-
-instant_t lf_get_start_time() { return start_time; }
 
 #endif
