@@ -19,6 +19,9 @@
 #include "environment.h"
 #include "low_level_platform.h"
 
+// TODO: Need to be fixed later.
+#include "lf_socket_support.h"
+
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)
 #endif
@@ -30,17 +33,24 @@
  * Structure that a federate instance uses to keep track of its own state.
  */
 typedef struct federate_instance_t {
+  netdrv_t* netdrv_to_rti; // socket_TCP_RTI;
+  netdrv_t* my_netdrv;     // server_socket; server_port;
+  netdrv_t* netdrv_for_inbound_p2p_connections
+      [NUMBER_OF_FEDERATES]; // sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+  netdrv_t* netdrv_for_outbound_p2p_connections
+      [NUMBER_OF_FEDERATES]; // sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+
   /**
    * The TCP socket descriptor for this federate to communicate with the RTI.
    * This is set by lf_connect_to_rti(), which must be called before other
    * functions that communicate with the rti are called.
    */
-  int socket_TCP_RTI;
+  // int socket_TCP_RTI;
 
   /**
    * Thread listening for incoming TCP messages from the RTI.
    */
-  lf_thread_t RTI_socket_listener;
+  lf_thread_t RTI_netdrv_listener;
 
   /**
    * Number of inbound physical connections to the federate.
@@ -54,7 +64,7 @@ typedef struct federate_instance_t {
    * This is NULL if there are none and otherwise has size given by
    * number_of_inbound_p2p_connections.
    */
-  lf_thread_t* inbound_socket_listeners;
+  lf_thread_t* inbound_netdriv_listeners;
 
   /**
    * Number of outbound peer-to-peer connections from the federate.
@@ -76,7 +86,7 @@ typedef struct federate_instance_t {
    * federate is the destination. Multiple incoming p2p connections from the
    * same remote federate will use the same socket.
    */
-  int sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+  // int sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
    * An array that holds the socket descriptors for outbound direct
@@ -91,7 +101,7 @@ typedef struct federate_instance_t {
    * program where this federate acts as the source. Multiple outgoing p2p
    * connections to the same remote federate will use the same socket.
    */
-  int sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+  // int sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
    * Thread ID for a thread that accepts sockets and then supervises
@@ -208,7 +218,7 @@ typedef enum parse_rti_code_t { SUCCESS, INVALID_PORT, INVALID_HOST, INVALID_USE
 /**
  * Mutex lock held while performing socket write and close operations.
  */
-extern lf_mutex_t lf_outbound_socket_mutex;
+extern lf_mutex_t lf_outbound_netdrv_mutex;
 
 /**
  * Condition variable for blocking on unkonwn federate input ports.
@@ -327,7 +337,7 @@ void lf_reset_status_fields_on_input_port_triggers();
  * between federates. If the socket connection to the remote federate or the RTI has been broken,
  * then this returns -1 without sending. Otherwise, it returns 0.
  *
- * This method assumes that the caller does not hold the lf_outbound_socket_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_netdrv_mutex lock,
  * which it acquires to perform the send.
  *
  * @param message_type The type of the message being sent (currently only MSG_TYPE_P2P_MESSAGE).
@@ -350,7 +360,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
  * information is needed for the RTI to perform the centralized coordination.
  * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
  */
-void lf_send_neighbor_structure_to_RTI(int);
+void lf_send_neighbor_structure_to_RTI(netdrv_t* netdrv);
 
 /**
  * @brief Send a next event tag (NET) signal.
@@ -450,7 +460,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  * to believe that there were no messages forthcoming.  In this case, on failure to send
  * the message, this function returns -11.
  *
- * This method assumes that the caller does not hold the lf_outbound_socket_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_netdrv_mutex lock,
  * which it acquires to perform the send.
  *
  * @param env The environment from which to get the current tag.

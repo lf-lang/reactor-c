@@ -80,11 +80,11 @@ static void send_failed_signal(federate_info_t* fed) {
   if (rti.base.tracing_enabled) {
     tracepoint_rti_to_federate(send_FAILED, fed->enclave.id, NULL);
   }
-  int failed = write_to_socket(fed->socket, bytes_to_write, &(buffer[0]));
-  if (failed == 0) {
+  int bytes_written = write_to_netdrv(fed->fed_netdrv, bytes_to_write, &(buffer[0]));
+  if (bytes_written > 0) {
     LF_PRINT_LOG("RTI has sent failed signal to federate %d due to abnormal termination.", fed->enclave.id);
   } else {
-    lf_print_error("RTI failed to send failed signal to federate %d on socket ID %d.", fed->enclave.id, fed->socket);
+    // lf_print_error("RTI failed to send failed signal to federate %d on socket ID %d.", fed->enclave.id, fed->socket);
   }
 }
 
@@ -245,6 +245,7 @@ int process_args(int argc, const char* argv[]) {
         usage(argc, argv);
         return 0;
       }
+      // TODO: Need to fix
       rti.user_specified_port = (uint16_t)RTI_port;
     } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--clock_sync") == 0) {
       if (argc < i + 2) {
@@ -329,9 +330,9 @@ int main(int argc, const char* argv[]) {
     rti.base.scheduling_nodes[i] = (scheduling_node_t*)fed_info;
   }
 
-  int socket_descriptor = start_rti_server(rti.user_specified_port);
-  if (socket_descriptor >= 0) {
-    wait_for_federates(socket_descriptor);
+  // TODO: Need to add user_specified_port
+  if (start_rti_server()) {
+    wait_for_federates(rti.rti_netdrv);
     normal_termination = true;
     if (rti.base.tracing_enabled) {
       // No need for a mutex lock because all threads have exited.

@@ -22,6 +22,7 @@
 #include <unistd.h>     // Defines read(), write(), and close()
 #include <strings.h>    // Defines bzero().
 
+#include "net_util.h"
 #include "rti_common.h"
 
 #ifdef __RTI_AUTH__
@@ -34,6 +35,9 @@
 
 /** Time allowed for federates to reply to stop request. */
 #define MAX_TIME_FOR_REPLY_TO_STOP_REQUEST SEC(30)
+
+// TODO: Need to be fixed later.
+#include "lf_socket_support.h"
 
 /////////////////////////////////////////////
 //// Data structures
@@ -54,20 +58,22 @@ typedef struct federate_info_t {
                                          // to a request for stop from the RTI. Used to prevent double-counting
                                          // a federate when handling lf_request_stop().
   lf_thread_t thread_id;                 // The ID of the thread handling communication with this federate.
-  int socket;                            // The TCP socket descriptor for communicating with this federate.
-  struct sockaddr_in UDP_addr;           // The UDP address for the federate.
+  // int socket;                            // The TCP socket descriptor for communicating with this federate.
+  // struct sockaddr_in UDP_addr;           // The UDP address for the federate.
   bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                          // for this federate. Enabled by default.
   pqueue_tag_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
                                          // yet processed. This record is ordered based on the time
                                          // value of each message for a more efficient access.
-  char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
-  int32_t server_port;                   // port number of the socket server of the federate
-                                         // if it has any incoming direct connections from other federates.
-                                         // The port number will be -1 if there is no server or if the
-                                         // RTI has not been informed of the port number.
-  struct in_addr server_ip_addr;         // Information about the IP address of the socket
-                                         // server of the federate.
+  // char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
+  // int32_t server_port;                   // port number of the socket server of the federate
+  //                                        // if it has any incoming direct connections from other federates.
+  //                                        // The port number will be -1 if there is no server or if the
+  //                                        // RTI has not been informed of the port number.
+  // struct in_addr server_ip_addr;         // Information about the IP address of the socket
+  //                                        // server of the federate.
+  netdrv_t* fed_netdrv; // The netdriver that the RTI handling each federate.
+  netdrv_t* clock_netdrv;
 } federate_info_t;
 
 /**
@@ -113,15 +119,19 @@ typedef struct rti_remote_t {
    */
   const char* federation_id;
 
+  // TODO: Does it have to be a pointer?
+  netdrv_t* rti_netdrv;
+  netdrv_t* clock_netdrv;
+
   /************* TCP server information *************/
   /** The desired port specified by the user on the command line. */
   uint16_t user_specified_port;
 
   /** The final port number that the TCP socket server ends up using. */
-  uint16_t final_port_TCP;
+  // uint16_t final_port_TCP;
 
-  /** The TCP socket descriptor for the socket server. */
-  int socket_descriptor_TCP;
+  // /** The TCP socket descriptor for the socket server. */
+  // int socket_descriptor_TCP;
 
   /************* UDP server information *************/
   /** The final port number that the UDP socket server ends up using. */
@@ -178,6 +188,8 @@ extern int lf_critical_section_enter(environment_t* env);
  */
 extern int lf_critical_section_exit(environment_t* env);
 
+void create_net_server(netdrv_t* drv, netdrv_type_t netdrv_type);
+
 /**
  * Indicator that one or more federates have reported an error on resigning.
  */
@@ -214,7 +226,8 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
  * @param sending_federate The sending federate.
  * @param buffer The buffer to read into (the first byte is already there).
  */
-void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer);
+void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer, size_t buffer_length,
+                          ssize_t bytes_read);
 
 /**
  * Handle a latest tag complete (LTC) message. @see
@@ -224,7 +237,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
  *
  * @param fed The federate that has completed a logical tag.
  */
-void handle_latest_tag_complete(federate_info_t* fed);
+void handle_latest_tag_complete(federate_info_t* fed, unsigned char* buffer);
 
 /**
  * Handle a next event tag (NET) message. @see MSG_TYPE_NEXT_EVENT_TAG in rti.h.
@@ -233,7 +246,7 @@ void handle_latest_tag_complete(federate_info_t* fed);
  *
  * @param fed The federate sending a NET message.
  */
-void handle_next_event_tag(federate_info_t* fed);
+void handle_next_event_tag(federate_info_t* fed, unsigned char* buffer);
 
 /////////////////// STOP functions ////////////////////
 
@@ -244,7 +257,7 @@ void handle_next_event_tag(federate_info_t* fed);
  *
  * @param fed The federate sending a MSG_TYPE_STOP_REQUEST message.
  */
-void handle_stop_request_message(federate_info_t* fed);
+void handle_stop_request_message(federate_info_t* fed, unsigned char* buffer);
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST_REPLY message.
@@ -253,7 +266,7 @@ void handle_stop_request_message(federate_info_t* fed);
  *
  * @param fed The federate replying the MSG_TYPE_STOP_REQUEST
  */
-void handle_stop_request_reply(federate_info_t* fed);
+void handle_stop_request_reply(federate_info_t* fed, unsigned char* buffer);
 
 //////////////////////////////////////////////////
 
@@ -268,7 +281,7 @@ void handle_stop_request_reply(federate_info_t* fed);
  * period of time.
  * @param fed_id The federate sending a MSG_TYPE_ADDRESS_QUERY message.
  */
-void handle_address_query(uint16_t fed_id);
+void handle_address_query(uint16_t fed_id, unsigned char* buffer);
 
 /**
  * Handle address advertisement messages (@see MSG_TYPE_ADDRESS_ADVERTISEMENT in net_common.h).
@@ -285,13 +298,13 @@ void handle_address_query(uint16_t fed_id);
  * @param federate_id The id of the remote federate that is
  *  sending the address advertisement.
  */
-void handle_address_ad(uint16_t federate_id);
+void handle_address_ad(uint16_t federate_id, unsigned char* buffer);
 
 /**
  * A function to handle timestamp messages.
  * This function assumes the caller does not hold the mutex.
  */
-void handle_timestamp(federate_info_t* my_fed);
+void handle_timestamp(federate_info_t* my_fed, unsigned char* buffer);
 
 /**
  * Take a snapshot of the physical clock time and send
@@ -345,7 +358,8 @@ void* federate_info_thread_TCP(void* fed);
  * @param socket_id Pointer to the socket ID.
  * @param error_code An error code.
  */
-void send_reject(int* socket_id, unsigned char error_code);
+// TODO: Update comments.
+void send_reject(netdrv_t* netdrv, unsigned char error_code);
 
 /**
  * Wait for one incoming connection request from each federate,
@@ -353,7 +367,8 @@ void send_reject(int* socket_id, unsigned char error_code);
  * that federate. Return when all federates have connected.
  * @param socket_descriptor The socket on which to accept connections.
  */
-void lf_connect_to_federates(int socket_descriptor);
+// TODO: Update comments.
+void lf_connect_to_federates(netdrv_t* rti_netdrv);
 
 /**
  * Thread to respond to new connections, which could be federates of other
@@ -375,14 +390,16 @@ void initialize_federate(federate_info_t* fed, uint16_t id);
  * @param port The port on which to listen for socket connections, or
  *  0 to use the default port range.
  */
-int32_t start_rti_server(uint16_t port);
+// TODO: Need to add descriptions.
+int32_t start_rti_server();
 
-/**
- * Start the runtime infrastructure (RTI) interaction with the federates
- * and wait for the federates to exit.
- * @param socket_descriptor The socket descriptor returned by start_rti_server().
- */
-void wait_for_federates(int socket_descriptor);
+// /**
+//  * Start the runtime infrastructure (RTI) interaction with the federates
+//  * and wait for the federates to exit.
+//  * @param socket_descriptor The socket descriptor returned by start_rti_server().
+//  */
+// TODO: Add documentation.
+void wait_for_federates(netdrv_t* netdrv);
 
 /**
  * Print a usage message.
