@@ -122,6 +122,8 @@ instant_t lf_time_physical_elapsed(void) { return lf_time_physical() - start_tim
 
 instant_t lf_time_start(void) { return start_time; }
 
+tag_t lf_tag_start_effective(void) { return effective_start_tag; }
+
 size_t lf_readable_time(char* buffer, instant_t time) {
   if (time <= (instant_t)0) {
     snprintf(buffer, 2, "0");
