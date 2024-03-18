@@ -310,6 +310,8 @@ static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provis
     dge->fed_id = fed->enclave.id;
     dge->is_provisional = is_provisional;
     pqueue_delayed_grants_insert(rti_remote->delayed_grants, dge);
+    LF_PRINT_LOG("RTI: Inserting a delayed grant of " PRINTF_TAG " for federate %d.", dge->base.tag.time - start_time,
+                 dge->base.tag.microstep, dge->fed_id);
     lf_cond_signal(&updated_delayed_grants);
   } else {
     // FIXME: Decide what to do in this case...
@@ -336,6 +338,8 @@ void notify_grant_canceled(federate_info_t* fed) {
       pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, fed->enclave.id);
   if (dge != NULL) {
     pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
+    LF_PRINT_LOG("RTI: Canceling the delayed grant of " PRINTF_TAG " for federate %d.", dge->base.tag.time - start_time,
+                 dge->base.tag.microstep, dge->fed_id);
     lf_cond_signal(&updated_delayed_grants);
   }
   LF_MUTEX_UNLOCK(&rti_mutex);
