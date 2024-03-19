@@ -32,7 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "util.h"
-#include "platform.h"
+#include "low_level_platform.h"
 
 #ifndef STANDALONE_RTI
 #include "environment.h"
