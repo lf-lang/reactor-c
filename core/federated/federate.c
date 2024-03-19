@@ -140,7 +140,9 @@ static void send_tag(unsigned char type, tag_t tag) {
     LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
     return;
   }
+#ifdef LF_TRACE
   trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
+#endif
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
   write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_write, buffer, &lf_outbound_socket_mutex,
