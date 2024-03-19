@@ -51,6 +51,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 #define TRACE_ALL_INSTRUCTIONS false
+#define SPIN_WAIT_THRESHOLD MSEC(100)
 
 /////////////////// External Variables /////////////////////////
 // Global variable defined in tag.c:
@@ -263,10 +264,10 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
     LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
     instant_t wait_interval = wakeup_time - lf_time_physical();
     if (wait_interval > 0) {
-        if (wait_interval < MSEC(1)) {
+        if (wait_interval < SPIN_WAIT_THRESHOLD) {
             // Spin wait if the wait interval is less than 1 ms.
             while (lf_time_physical() < wakeup_time);
-        } else if (wait_interval >= MSEC(1)) {
+        } else {
             // Otherwise sleep.
             _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
         }
