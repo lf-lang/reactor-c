@@ -55,6 +55,8 @@ int lf_clock_cond_timedwait(lf_cond_t *cond, instant_t wakeup_time) {
     // Remove any clock sync offset and call the Platform API.
     clock_sync_remove_offset(&wakeup_time);
     #endif
-    return _lf_cond_timedwait(cond, wakeup_time);
+    // return _lf_cond_timedwait(cond, wakeup_time);
+    while (lf_time_physical() < wakeup_time);
+    return true;
 }
 #endif
