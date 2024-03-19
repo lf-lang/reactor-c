@@ -41,8 +41,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdbool.h>
 
 #include <inttypes.h> // Needed to define PRId64 and PRIu32
-#define PRINTF_TIME "%" PRId64
-#define PRINTF_MICROSTEP "%" PRIu32
+#define PRINTF_TIME_ID PRId64
+#define PRINTF_MICROSTEP_ID PRIu32
 #define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
 
 /**

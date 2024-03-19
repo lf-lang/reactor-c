@@ -50,6 +50,10 @@
 // Convenience for converting times
 #define BILLION ((instant_t)1000000000LL)
 
+#define PRINTF_TIME "%" PRINTF_TIME_ID
+#define PRINTF_MICROSTEP "%" PRINTF_MICROSTEP_ID
+#define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
+
 #include <stdint.h>
 #include <stddef.h>
 #include <limits.h>

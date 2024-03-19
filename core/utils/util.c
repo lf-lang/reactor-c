@@ -32,8 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "util.h"
-#include "tag.h" // instant_t
-#include "platform/lf_tag_64_32.h" // PRINTF_TIME
+#include "platform.h"
 
 #ifndef STANDALONE_RTI
 #include "environment.h"
@@ -117,12 +116,12 @@ void _lf_message_print(int is_error, const char* prefix, const char* format, va_
     if (_lf_my_fed_id < 0) {
       size_t length = strlen(prefix) + strlen(format) + 64;
       message = (char*)malloc(length + 1);
-      snprintf(message, length, "(" PRINTF_TIME "s:" PRINTF_MICROSTEP "ns) %s%s\n", stamp/BILLION, (uint32_t) (stamp % BILLION), prefix, format);
+      snprintf(message, length, "[%010" PRINTF_TIME_ID "s:%09" PRINTF_MICROSTEP_ID "ns] %s%s\n", stamp/BILLION, (uint32_t) (stamp % BILLION), prefix, format);
     } else {
 #if defined STANDALONE_RTI
       size_t length = strlen(prefix) + strlen(format) + 37;
       message = (char*)malloc(length + 1);
-      snprintf(message, length, "(" PRINTF_TIME "s:" PRINTF_MICROSTEP "ns) RTI: %s%s\n", stamp/BILLION, (uint32_t) (stamp % BILLION), prefix, format);
+      snprintf(message, length, "[%010" PRINTF_TIME_ID "s:%09" PRINTF_MICROSTEP_ID "ns] RTI: %s%s\n", stamp/BILLION, (uint32_t) (stamp % BILLION), prefix, format);
 #else
       // Get the federate name from the top-level environment, which by convention is the first.
       environment_t* envs;
@@ -134,7 +133,7 @@ void _lf_message_print(int is_error, const char* prefix, const char* format, va_
       if (strncmp(name, "federate__", 10) == 0)
         name += 10;
 
-      snprintf(message, length, "(" PRINTF_TIME "s:" PRINTF_MICROSTEP "ns) Fed %d (%s): %s%s\n", stamp/BILLION, (uint32_t) (stamp % BILLION),_lf_my_fed_id, name, prefix, format);
+      snprintf(message, length, "[%010" PRINTF_TIME_ID "s:%09" PRINTF_MICROSTEP_ID "ns] Fed %d (%s): %s%s\n", stamp/BILLION, (uint32_t) (stamp % BILLION),_lf_my_fed_id, name, prefix, format);
 #endif // STANDALONE_RTI
     }
     if (print_message_function == NULL) {
