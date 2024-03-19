@@ -32,6 +32,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "util.h"
+#include "tag.h" // instant_t
+#include "platform/lf_tag_64_32.h" // PRINTF_TIME
 
 #ifndef STANDALONE_RTI
 #include "environment.h"
@@ -110,28 +112,29 @@ void _lf_message_print(int is_error, const char* prefix, const char* format, va_
     // If we make multiple calls to printf(), then the results could be
     // interleaved between threads.
     // vprintf() is a version that takes an arg list rather than multiple args.
+    instant_t stamp = lf_time_physical_elapsed();
     char* message;
     if (_lf_my_fed_id < 0) {
-      size_t length = strlen(prefix) + strlen(format) + 32;
+      size_t length = strlen(prefix) + strlen(format) + 64;
       message = (char*)malloc(length + 1);
-      snprintf(message, length, "%s%s\n", prefix, format);
+      snprintf(message, length, "(" PRINTF_TIME "s:" PRINTF_MICROSTEP "ns) %s%s\n", stamp/BILLION, (uint32_t) (stamp % BILLION), prefix, format);
     } else {
 #if defined STANDALONE_RTI
       size_t length = strlen(prefix) + strlen(format) + 37;
       message = (char*)malloc(length + 1);
-      snprintf(message, length, "RTI: %s%s\n", prefix, format);
+      snprintf(message, length, "(" PRINTF_TIME "s:" PRINTF_MICROSTEP "ns) RTI: %s%s\n", stamp/BILLION, (uint32_t) (stamp % BILLION), prefix, format);
 #else
       // Get the federate name from the top-level environment, which by convention is the first.
       environment_t* envs;
       _lf_get_environments(&envs);
       char* name = envs->name;
-      size_t length = strlen(prefix) + strlen(format) + +strlen(name) + 32;
+      size_t length = strlen(prefix) + strlen(format) + strlen(name) + 64;
       message = (char*)malloc(length + 1);
       // If the name has prefix "federate__", strip that out.
       if (strncmp(name, "federate__", 10) == 0)
         name += 10;
 
-      snprintf(message, length, "Fed %d (%s): %s%s\n", _lf_my_fed_id, name, prefix, format);
+      snprintf(message, length, "(" PRINTF_TIME "s:" PRINTF_MICROSTEP "ns) Fed %d (%s): %s%s\n", stamp/BILLION, (uint32_t) (stamp % BILLION),_lf_my_fed_id, name, prefix, format);
 #endif // STANDALONE_RTI
     }
     if (print_message_function == NULL) {
