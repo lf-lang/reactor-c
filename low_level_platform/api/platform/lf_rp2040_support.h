@@ -13,9 +13,8 @@
 #define NO_TTY
 
 // Defines for formatting time in printf for pico
-#define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
-#define PRINTF_TIME "%lld"
-#define PRINTF_MICROSTEP "%d"
+#define PRINTF_TIME_ID "lld"
+#define PRINTF_MICROSTEP_ID "d"
 
 #define LF_TIME_BUFFER_LENGTH 80
 #define _LF_TIMEOUT 1
