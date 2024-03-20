@@ -40,10 +40,5 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // PRINTF_TIME and PRINTF_MICROSTEP directly in the same file that
 // defines the types instant_t, interval_t, and microstep_t.
 #include <inttypes.h>
-#define PRINTF_TIME "%" PRId64
-#define PRINTF_MICROSTEP "%" PRIu32
-
-// For convenience, the following string can be inserted in a printf
-// format for printing both time and microstep as follows:
-//     printf("Tag is " PRINTF_TAG "\n", time_value, microstep);
-#define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
+#define PRINTF_TIME_ID PRId64
+#define PRINTF_MICROSTEP_ID PRIu32

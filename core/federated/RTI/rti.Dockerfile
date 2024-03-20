@@ -1,8 +1,7 @@
 # Docker file for building the image of the rti
 FROM alpine:latest
-COPY core /lingua-franca/core
-COPY include /lingua-franca/include
-WORKDIR /lingua-franca/core/federated/RTI
+COPY . /lingua-franca/reactor-c
+WORKDIR /lingua-franca/reactor-c/core/federated/RTI
 RUN set -ex && apk add --no-cache gcc musl-dev cmake make && \
     mkdir container && \
     cd container && \
