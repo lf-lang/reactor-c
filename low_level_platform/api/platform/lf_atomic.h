@@ -7,8 +7,8 @@
 #ifndef LF_ATOMICS_H
 #define LF_ATOMICS_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /**
  * @brief Atomically fetch a 32bit integer from memory and add a value to it.

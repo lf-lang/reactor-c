@@ -11,24 +11,24 @@
 #ifndef TAG_H
 #define TAG_H
 
-#define NSEC(t) ((interval_t)(t * 1LL))
-#define NSECS(t) ((interval_t)(t * 1LL))
-#define USEC(t) ((interval_t)(t * 1000LL))
-#define USECS(t) ((interval_t)(t * 1000LL))
-#define MSEC(t) ((interval_t)(t * 1000000LL))
-#define MSECS(t) ((interval_t)(t * 1000000LL))
-#define SEC(t) ((interval_t)(t * 1000000000LL))
-#define SECS(t) ((interval_t)(t * 1000000000LL))
-#define SECOND(t) ((interval_t)(t * 1000000000LL))
-#define SECONDS(t) ((interval_t)(t * 1000000000LL))
-#define MINUTE(t) ((interval_t)(t * 60000000000LL))
-#define MINUTES(t) ((interval_t)(t * 60000000000LL))
-#define HOUR(t) ((interval_t)(t * 3600000000000LL))
-#define HOURS(t) ((interval_t)(t * 3600000000000LL))
-#define DAY(t) ((interval_t)(t * 86400000000000LL))
-#define DAYS(t) ((interval_t)(t * 86400000000000LL))
-#define WEEK(t) ((interval_t)(t * 604800000000000LL))
-#define WEEKS(t) ((interval_t)(t * 604800000000000LL))
+#define NSEC(t) ((interval_t)((t)*1LL))
+#define NSECS(t) ((interval_t)((t)*1LL))
+#define USEC(t) ((interval_t)((t)*1000LL))
+#define USECS(t) ((interval_t)((t)*1000LL))
+#define MSEC(t) ((interval_t)((t)*1000000LL))
+#define MSECS(t) ((interval_t)((t)*1000000LL))
+#define SEC(t) ((interval_t)((t)*1000000000LL))
+#define SECS(t) ((interval_t)((t)*1000000000LL))
+#define SECOND(t) ((interval_t)((t)*1000000000LL))
+#define SECONDS(t) ((interval_t)((t)*1000000000LL))
+#define MINUTE(t) ((interval_t)((t)*60000000000LL))
+#define MINUTES(t) ((interval_t)((t)*60000000000LL))
+#define HOUR(t) ((interval_t)((t)*3600000000000LL))
+#define HOURS(t) ((interval_t)((t)*3600000000000LL))
+#define DAY(t) ((interval_t)((t)*86400000000000LL))
+#define DAYS(t) ((interval_t)((t)*86400000000000LL))
+#define WEEK(t) ((interval_t)((t)*604800000000000LL))
+#define WEEKS(t) ((interval_t)((t)*604800000000000LL))
 
 #define NEVER ((interval_t)LLONG_MIN)
 #define NEVER_MICROSTEP 0u
@@ -50,9 +50,9 @@
 // Convenience for converting times
 #define BILLION ((instant_t)1000000000LL)
 
-#include <stdint.h>
-#include <stddef.h>
 #include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 
 ////////////////  Type definitions
 

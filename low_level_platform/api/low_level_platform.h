@@ -10,8 +10,8 @@
  * files that define core datatypes and function signatures for Lingua Franca.
  */
 
-#ifndef PLATFORM_H
-#define PLATFORM_H
+#ifndef LOW_LEVEL_PLATFORM_H
+#define LOW_LEVEL_PLATFORM_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -277,4 +277,4 @@ DEPRECATED(int lf_nanosleep(interval_t sleep_duration));
 }
 #endif
 
-#endif // PLATFORM_H
+#endif // LOW_LEVEL_PLATFORM_H
