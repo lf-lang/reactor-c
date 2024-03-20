@@ -1,6 +1,18 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
+find_program(CLANG_TIDY clang-tidy)
+if (CLANG_TIDY)
+    message(STATUS "Enabled clang-tidy")
+    set(CMAKE_C_CLANG_TIDY
+        clang-tidy;
+        -header-filter=.;
+        -checks=*;
+        -warnings-as-errors=*;)
+else ()
+    message(WARNING "Please install clang-tidy!")
+endif()
+
 include(${LF_ROOT}/core/lf_utils.cmake)
 
 # Get the general common sources for reactor-c
