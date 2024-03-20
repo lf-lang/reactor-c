@@ -43,13 +43,12 @@ void _lf_initialize_watchdogs(environment_t* env) {
  * @brief Terminate all watchdog threads.
  */
 void _lf_watchdog_terminate_all(environment_t* env) {
-  void* thread_return;
+  void* thread_ret;
   for (int i = 0; i < env->watchdogs_size; i++) {
     watchdog_t* watchdog = env->watchdogs[i];
     LF_MUTEX_LOCK(watchdog->base->reactor_mutex);
     _lf_watchdog_terminate(watchdog);
     LF_MUTEX_UNLOCK(watchdog->base->reactor_mutex);
-    void* thread_ret;
     lf_thread_join(watchdog->thread_id, &thread_ret);
   }
 }

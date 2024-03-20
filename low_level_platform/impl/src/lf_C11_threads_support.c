@@ -5,8 +5,24 @@
 #include <stdlib.h>
 #include <stdint.h> // For fixed-width integral types
 
+struct lf_thread_data {
+  void* (*thread)(void*);
+  void* arguments;
+};
+
+static int lf_thread_c11_wrapper(void* args) {
+  struct lf_thread_data* thread_data = (struct lf_thread_data*)args;
+  thread_data->thread(thread_data->arguments);
+  free(thread_data);
+  return 0;
+}
+
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
-  return thrd_create((thrd_t*)thread, (thrd_start_t)lf_thread, arguments);
+  struct lf_thread_data* thread_data = (struct lf_thread_data*)malloc(sizeof(struct lf_thread_data));
+  thread_data->thread = lf_thread;
+  thread_data->arguments = arguments;
+
+  return thrd_create((thrd_t*)thread, (thrd_start_t)lf_thread_c11_wrapper, thread_data);
 }
 
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
