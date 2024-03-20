@@ -7,7 +7,6 @@ if (CLANG_TIDY)
     set(CMAKE_C_CLANG_TIDY
         clang-tidy;
         -header-filter=.;
-        -checks=*;
         -warnings-as-errors=*;)
 else ()
     message(WARNING "Please install clang-tidy!")
