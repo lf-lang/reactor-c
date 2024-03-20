@@ -18,5 +18,6 @@ var trace__util_8c =
     [ "PATH_SEPARATOR", "d5/df4/trace__util_8c.html#aa3d67123ee9a3ee4b138f06e57c2a54d", null ],
     [ "start_time", "d5/df4/trace__util_8c.html#a20b56e8fb05c017508f1c4fa2e311a87", null ],
     [ "top_level", "d5/df4/trace__util_8c.html#ab1c55a27299014bb233dac20381bd7d4", null ],
-    [ "trace", "d5/df4/trace__util_8c.html#acc1427f623068d0c5a2c307969e8a447", null ]
+    [ "trace", "d5/df4/trace__util_8c.html#acc1427f623068d0c5a2c307969e8a447", null ],
+    [ "trace_event_names", "d5/df4/trace__util_8c.html#ad8876683159ec2203bd41295d8af3017", null ]
 ];

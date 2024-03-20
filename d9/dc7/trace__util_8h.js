@@ -18,5 +18,6 @@ var trace__util_8h =
     [ "summary_file", "d9/dc7/trace__util_8h.html#ac84b6d7af9cb309303d5658997f0d7a2", null ],
     [ "top_level", "d9/dc7/trace__util_8h.html#ab1c55a27299014bb233dac20381bd7d4", null ],
     [ "trace", "d9/dc7/trace__util_8h.html#ab8e2538ed85d0094a64f532aa261c407", null ],
+    [ "trace_event_names", "d9/dc7/trace__util_8h.html#ad8876683159ec2203bd41295d8af3017", null ],
     [ "trace_file", "d9/dc7/trace__util_8h.html#a3fc7a0b0ac649ffc4c4d3d36df52f5b0", null ]
 ];

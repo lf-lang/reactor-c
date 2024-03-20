@@ -10,10 +10,11 @@ var searchData=
   ['lf_5fsemaphore_5ft_7',['lf_semaphore_t',['../de/dc8/structlf__semaphore__t.html',1,'']]],
   ['lf_5fsparse_5fio_5frecord_5ft_8',['lf_sparse_io_record_t',['../de/d9c/structlf__sparse__io__record__t.html',1,'']]],
   ['lf_5fstat_5fll_9',['lf_stat_ll',['../db/d63/structlf__stat__ll.html',1,'']]],
-  ['lf_5ftoken_5ft_10',['lf_token_t',['../d6/d80/structlf__token__t.html',1,'']]],
-  ['lf_5fwav_5fdata_5ft_11',['lf_wav_data_t',['../db/d43/structlf__wav__data__t.html',1,'']]],
-  ['lf_5fwav_5fformat_5ft_12',['lf_wav_format_t',['../d1/d3f/structlf__wav__format__t.html',1,'']]],
-  ['lf_5fwav_5friff_5ft_13',['lf_wav_riff_t',['../db/df5/structlf__wav__riff__t.html',1,'']]],
-  ['lf_5fwav_5ft_14',['lf_wav_t',['../d9/dad/structlf__wav__t.html',1,'']]],
-  ['lf_5fwaveform_5ft_15',['lf_waveform_t',['../d7/dc9/structlf__waveform__t.html',1,'']]]
+  ['lf_5fthread_5fdata_10',['lf_thread_data',['../dd/d53/structlf__thread__data.html',1,'']]],
+  ['lf_5ftoken_5ft_11',['lf_token_t',['../d6/d80/structlf__token__t.html',1,'']]],
+  ['lf_5fwav_5fdata_5ft_12',['lf_wav_data_t',['../db/d43/structlf__wav__data__t.html',1,'']]],
+  ['lf_5fwav_5fformat_5ft_13',['lf_wav_format_t',['../d1/d3f/structlf__wav__format__t.html',1,'']]],
+  ['lf_5fwav_5friff_5ft_14',['lf_wav_riff_t',['../db/df5/structlf__wav__riff__t.html',1,'']]],
+  ['lf_5fwav_5ft_15',['lf_wav_t',['../d9/dad/structlf__wav__t.html',1,'']]],
+  ['lf_5fwaveform_5ft_16',['lf_waveform_t',['../d7/dc9/structlf__waveform__t.html',1,'']]]
 ];

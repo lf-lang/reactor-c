@@ -26,7 +26,7 @@ var reactor__threaded_8c =
     [ "send_next_event_tag", "d5/dbc/reactor__threaded_8c.html#a6f9a4a14de3aa9e560935a57093eb122", null ],
     [ "start_threads", "d5/dbc/reactor__threaded_8c.html#aebbe83b2cb8e4ff5180c33eb8c8f9739", null ],
     [ "try_advance_level", "d5/dbc/reactor__threaded_8c.html#a5fdda22cb08d864a229c84f1ba995b21", null ],
-    [ "wait_until", "d5/dbc/reactor__threaded_8c.html#ab769495d64de2c45344fad51a14d3db2", null ],
+    [ "wait_until", "d5/dbc/reactor__threaded_8c.html#a7438abf968aad289c2862dc615459398", null ],
     [ "worker", "d5/dbc/reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63", null ],
     [ "global_mutex", "d5/dbc/reactor__threaded_8c.html#af9dc6502b81ff3ed7cc8148fbcdb6749", null ],
     [ "lf_stop_requested", "d5/dbc/reactor__threaded_8c.html#a196831f541ccda2c58b0b8c5a134c795", null ],
