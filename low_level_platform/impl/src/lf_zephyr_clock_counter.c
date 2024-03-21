@@ -1,6 +1,6 @@
 #if defined(PLATFORM_ZEPHYR)
 #include "platform/lf_zephyr_board_support.h"
-#if defined(LF_ZEPHYR_CLOCK_COUNTER)
+#if defined(CONFIG_LF_ZEPHYR_CLOCK_COUNTER)
 /*************
 Copyright (c) 2023, Norwegian University of Science and Technology.
 
