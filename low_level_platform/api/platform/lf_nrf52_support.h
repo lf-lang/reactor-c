@@ -48,7 +48,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * No mutex or condition variable needed for single threaded NRF platforms
  */
-typedef void lf_mutex_t;
+typedef void* lf_mutex_t;
 typedef void _lf_cond_var_t;
 
 #endif // LF_nRF52832_SUPPORT_H

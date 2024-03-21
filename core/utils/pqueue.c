@@ -15,7 +15,11 @@
 
 int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) { return (thiz > that); }
 
-int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) { return 0; }
+int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
+  (void)thiz;
+  (void)that;
+  return 0;
+}
 
 int event_matches(void* event1, void* event2) { return (((event_t*)event1)->trigger == ((event_t*)event2)->trigger); }
 
@@ -35,10 +39,10 @@ void set_reaction_position(void* reaction, size_t pos) { ((reaction_t*)reaction)
 
 void print_reaction(void* reaction) {
   reaction_t* r = (reaction_t*)reaction;
-  LF_PRINT_DEBUG("%s: chain_id: %llu, index: %llx, reaction: %p", r->name, r->chain_id, r->index, r);
+  LF_PRINT_DEBUG("%s: chain_id: %llu, index: %llx, reaction: %p", r->name, r->chain_id, r->index, reaction);
 }
 
 void print_event(void* event) {
   event_t* e = (event_t*)event;
-  LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p", e->time, e->trigger, e->token);
+  LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p", e->time, (void*)e->trigger, (void*)e->token);
 }

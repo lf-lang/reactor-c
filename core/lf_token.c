@@ -76,7 +76,7 @@ static lf_token_t* _lf_writable_copy_locked(lf_port_base_t* port) {
   lf_token_t* token = port->tmplt.token;
   if (token == NULL)
     return NULL;
-  LF_PRINT_DEBUG("lf_writable_copy: Requesting writable copy of token %p with reference count %zu.", token,
+  LF_PRINT_DEBUG("lf_writable_copy: Requesting writable copy of token %p with reference count %zu.", (void*)token,
                  token->ref_count);
   if (port->num_destinations == 1 && token->ref_count == 1) {
     LF_PRINT_DEBUG("lf_writable_copy: Avoided copy because there "
@@ -170,13 +170,13 @@ token_freed _lf_free_token(lf_token_t* token) {
   }
   if (hashset_num_items(_lf_token_recycling_bin) < _LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT) {
     // Recycle instead of freeing.
-    LF_PRINT_DEBUG("_lf_free_token: Putting token on the recycling bin: %p", token);
+    LF_PRINT_DEBUG("_lf_free_token: Putting token on the recycling bin: %p", (void*)token);
     if (!hashset_add(_lf_token_recycling_bin, token)) {
-      lf_print_warning("Putting token %p on the recycling bin, but it is already there!", token);
+      lf_print_warning("Putting token %p on the recycling bin, but it is already there!", (void*)token);
     }
   } else {
     // Recycling bin is full.
-    LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for token: %p", token);
+    LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for token: %p", (void*)token);
     free(token);
   }
 #if !defined NDEBUG
@@ -197,7 +197,7 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
     if (hashset_iterator_next(iterator) >= 0) {
       result = hashset_iterator_value(iterator);
       hashset_remove(_lf_token_recycling_bin, result);
-      LF_PRINT_DEBUG("_lf_new_token: Retrieved token from the recycling bin: %p", result);
+      LF_PRINT_DEBUG("_lf_new_token: Retrieved token from the recycling bin: %p", (void*)result);
     }
     free(iterator);
   }
@@ -212,7 +212,7 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
   if (result == NULL) {
     // Nothing found on the recycle bin.
     result = (lf_token_t*)calloc(1, sizeof(lf_token_t));
-    LF_PRINT_DEBUG("_lf_new_token: Allocated memory for token: %p", result);
+    LF_PRINT_DEBUG("_lf_new_token: Allocated memory for token: %p", (void*)result);
   }
   result->type = type;
   result->length = length;
@@ -224,7 +224,7 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
 lf_token_t* _lf_get_token(token_template_t* tmplt) {
   if (tmplt->token != NULL) {
     if (tmplt->token->ref_count == 1) {
-      LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu", tmplt->token,
+      LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu", (void*)tmplt->token,
                      tmplt->token->ref_count);
       // Free any previous value in the token.
       _lf_free_token_value(tmplt->token);
@@ -268,7 +268,8 @@ void _lf_initialize_template(token_template_t* tmplt, size_t element_size) {
 
 lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value, size_t length) {
   assert(tmplt != NULL);
-  LF_PRINT_DEBUG("_lf_initialize_token_with_value: template %p, value %p", tmplt, value);
+  LF_PRINT_DEBUG("_lf_initialize_token_with_value: template %p, value %p", (void*)tmplt, value);
+
   lf_token_t* result = _lf_get_token(tmplt);
   result->value = value;
 // Count allocations to issue a warning if this is never freed.
@@ -322,14 +323,15 @@ void _lf_free_all_tokens() {
 
 void _lf_replace_template_token(token_template_t* tmplt, lf_token_t* newtoken) {
   assert(tmplt != NULL);
-  LF_PRINT_DEBUG("_lf_replace_template_token: template: %p newtoken: %p.", tmplt, newtoken);
+  LF_PRINT_DEBUG("_lf_replace_template_token: template: %p newtoken: %p.", (void*)tmplt, (void*)newtoken);
   if (tmplt->token != newtoken) {
     if (tmplt->token != NULL) {
       _lf_done_using(tmplt->token);
     }
     if (newtoken != NULL) {
       newtoken->ref_count++;
-      LF_PRINT_DEBUG("_lf_replace_template_token: Incremented ref_count of %p to %zu.", newtoken, newtoken->ref_count);
+      LF_PRINT_DEBUG("_lf_replace_template_token: Incremented ref_count of %p to %zu.", (void*)newtoken,
+                     newtoken->ref_count);
     }
     tmplt->token = newtoken;
   }
@@ -339,16 +341,16 @@ token_freed _lf_done_using(lf_token_t* token) {
   if (token == NULL) {
     return NOT_FREED;
   }
-  LF_PRINT_DEBUG("_lf_done_using: token = %p, ref_count = %zu.", token, token->ref_count);
+  LF_PRINT_DEBUG("_lf_done_using: token = %p, ref_count = %zu.", (void*)token, token->ref_count);
   if (token->ref_count == 0) {
-    lf_print_warning("Token being freed that has already been freed: %p", token);
+    lf_print_warning("Token being freed that has already been freed: %p", (void*)token);
     return NOT_FREED;
   }
   token->ref_count--;
   return _lf_free_token(token);
 }
 
-void _lf_free_token_copies(struct environment_t* env) {
+void _lf_free_token_copies() {
   while (_lf_tokens_allocated_in_reactions != NULL) {
     lf_token_t* next = _lf_tokens_allocated_in_reactions->next;
     _lf_done_using(_lf_tokens_allocated_in_reactions);
