@@ -49,9 +49,9 @@ list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/platform_i
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     if(${CONFIG_LF_ZEPHYR_CLOCK_COUNTER})
-        message("--- Building Zephyr library with Counter clock ")
+        message(STATUS "Building Zephyr library with Counter clock ")
     else()
-        message("--- Building Zephyr library with Kernel clock ")
+        message(STATUS "Building Zephyr library with Kernel clock ")
     endif()
     zephyr_library_named(lf-low-level-platform-impl)
     zephyr_library_sources(${LF_LOW_LEVEL_PLATFORM_FILES})
