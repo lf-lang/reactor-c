@@ -59,15 +59,24 @@ void cb_pop_front(circular_buffer *cb, void *item)
     cb->count--;
 }
 
-int cb_peek(circular_buffer *cb, void *item)
+void cb_remove_front(circular_buffer *cb)
 {
     if(cb->count == 0){
         // handle error
-        lf_print("Warning: Peeking from an empty buffer!");
-        return 1;
+        lf_print("ERROR: Removing from an empty buffer!");
+        return;
     }
-    memcpy(item, cb->tail, cb->sz);
-    return 0;
+    cb->tail = (char*)cb->tail + cb->sz;
+    if(cb->tail == cb->buffer_end)
+        cb->tail = cb->buffer;
+    cb->count--;
+}
+
+void* cb_peek(circular_buffer *cb)
+{
+    if(cb->count == 0)
+        return NULL;
+    return cb->tail;
 }
 
 void cb_dump_events(circular_buffer *cb)

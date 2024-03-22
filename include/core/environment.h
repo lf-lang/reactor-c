@@ -115,7 +115,7 @@ typedef struct environment_t {
     int reactor_self_array_size;
     reaction_t** reaction_array;
     int reaction_array_size;
-    event_t* pqueue_heads;
+    event_t** pqueue_heads;
     int num_pqueue_heads;
 #endif
 #ifdef LF_ENCLAVES // TODO: Consider dropping #ifdef
