@@ -1288,7 +1288,7 @@ static bool authenticate_federate(netdrv_t* fed_netdrv) {
   read_from_netdrv_fail_on_error(fed_netdrv, buffer, 1 + fed_id_length + NONCE_LENGTH, NULL,
                                  "Failed to read MSG_TYPE_FED_NONCE.");
   if (buffer[0] != MSG_TYPE_FED_NONCE) {
-    lf_print_error_and_exit("Received unexpected response %u from the FED (see net_common.h).", buffer[0]);
+    lf_print_error_and_exit("Received unexpected response %u from the federate (see net_common.h).", buffer[0]);
   }
   unsigned int hmac_length = SHA256_HMAC_LENGTH;
   size_t federation_id_length = strnlen(rti_remote->federation_id, 255);

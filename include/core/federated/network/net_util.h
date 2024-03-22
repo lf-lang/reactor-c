@@ -75,7 +75,7 @@ typedef struct netdrv_t {
   int (*write)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
   void* priv;
   unsigned int read_remaining_bytes;
-  unsigned int write_remaining_bytes;
+  // unsigned int write_remaining_bytes;
 } netdrv_t;
 
 int netdrv_open(netdrv_t* drv);

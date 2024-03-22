@@ -844,6 +844,7 @@ static int perform_hmac_authentication() {
   unsigned char fed_hello_buf[message_length];
   fed_hello_buf[0] = MSG_TYPE_FED_NONCE;
   encode_uint16((uint16_t)_lf_my_fed_id, &fed_hello_buf[1]);
+  // Must save fed_nonce for handshake comparison.
   unsigned char fed_nonce[NONCE_LENGTH];
   RAND_bytes(fed_nonce, NONCE_LENGTH);
   memcpy(&fed_hello_buf[1 + fed_id_length], fed_nonce, NONCE_LENGTH);
