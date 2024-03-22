@@ -9,6 +9,7 @@
 
 #include "util.h"
 #include "circular_buffer.h"
+#include "lf_types.h"
 
 void cb_init(circular_buffer *cb, size_t capacity, size_t sz)
 {
@@ -67,4 +68,17 @@ int cb_peek(circular_buffer *cb, void *item)
     }
     memcpy(item, cb->tail, cb->sz);
     return 0;
+}
+
+void cb_dump_events(circular_buffer *cb)
+{
+    lf_print("*** Dumping Events ***");
+    void *p = cb->tail;
+    while (p != cb->head) {
+        event_t* e = (event_t*)p;
+        lf_print("Event @ %lld w/ token %p", e->time, e->token);
+        p += cb->sz;
+        if (p == cb->buffer_end) p = cb->buffer;
+    }
+    lf_print("**********************");
 }
