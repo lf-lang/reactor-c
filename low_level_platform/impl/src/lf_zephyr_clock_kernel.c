@@ -67,7 +67,7 @@ K_SEM_DEFINE(sleeping_sem, 0, 1)
 
 void _lf_initialize_clock() {
   timer_freq = CONFIG_SYS_CLOCK_TICKS_PER_SEC;
-  LF_PRINT_LOG("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz\n", timer_freq);
+  lf_print("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz", timer_freq);
 }
 
 /** Uses Zephyr's monotonic increasing uptime count. */
@@ -90,7 +90,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     lf_print_error_and_exit("Failed to exit critical section.");
   }
 
-  int res = k_sem_take(sleeping_sem, K_NSEC(duration));
+  int res = k_sem_take(&sleeping_sem, K_NSEC(duration));
 
   if (lf_critical_section_enter(env)) {
     lf_print_error_and_exit("Failed to exit critical section.");
@@ -111,7 +111,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
  */
 int _lf_single_threaded_notify_of_event() {
   async_event = true;
-  k_sem_give(sleeping_sem);
+  k_sem_give(&sleeping_sem);
   return 0;
 }
 
