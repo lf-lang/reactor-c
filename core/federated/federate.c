@@ -260,14 +260,17 @@ static void update_last_known_status_on_input_ports(tag_t tag) {
  * @param portID The port ID.
  */
 static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id) {
+#ifdef FEDERATED_DECENTRALIZED
   if (lf_tag_compare(tag, env->current_tag) < 0)
     tag = env->current_tag;
+#endif // FEDERATED_DECENTRALIZED
   trigger_t* input_port_action = action_for_port(port_id)->trigger;
   int comparison = lf_tag_compare(tag, input_port_action->last_known_status_tag);
   if (comparison == 0)
     tag.microstep++;
   if (comparison >= 0) {
-    LF_PRINT_LOG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
+    LF_PRINT_LOG("At tag " PRINTF_TAG ", Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
+                 env->current_tag.time, env->current_tag.microstep, port_id,
                  input_port_action->last_known_status_tag.time - lf_time_start(),
                  input_port_action->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
     input_port_action->last_known_status_tag = tag;
