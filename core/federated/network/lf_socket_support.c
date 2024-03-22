@@ -594,11 +594,11 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
     *bytes_to_read = sizeof(uint16_t) + NONCE_LENGTH;
     *state = FINISH_READ;
     break;
-  case MSG_TYPE_RTI_RESPONSE: // 1 + sizeof(uint16_t) + NONCE_LENGTH(8)
-    *bytes_to_read = sizeof(uint16_t) + NONCE_LENGTH;
+  case MSG_TYPE_RTI_RESPONSE: // 1 + NONCE_LENGTH(8) + SHA256_HMAC_LENGTH(32)
+    *bytes_to_read = NONCE_LENGTH + SHA256_HMAC_LENGTH;
     *state = FINISH_READ;
     break;
-  case MSG_TYPE_FED_RESPONSE: // 1 + SHA256_HMAC_LENGTH(8)
+  case MSG_TYPE_FED_RESPONSE: // 1 + SHA256_HMAC_LENGTH(32)
     *bytes_to_read = SHA256_HMAC_LENGTH;
     *state = FINISH_READ;
     break;
