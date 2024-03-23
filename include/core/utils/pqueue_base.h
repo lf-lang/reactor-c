@@ -39,9 +39,10 @@
 #define PQUEUE_BASE_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 /** Priority data type. */
-typedef unsigned long long pqueue_pri_t;
+typedef uintptr_t pqueue_pri_t;
 
 /** Callback to get the priority of an element. */
 typedef pqueue_pri_t (*pqueue_get_pri_f)(void* a);
