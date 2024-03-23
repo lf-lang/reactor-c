@@ -128,7 +128,7 @@ typedef char* string;
 #endif
 
 /** Topological order index for reactions. */
-typedef pqueue_pri_t index_t;
+typedef uint64_t index_t;
 
 /**
  * Reaction function type. The argument passed to one of
