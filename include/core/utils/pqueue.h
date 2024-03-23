@@ -54,7 +54,7 @@ pqueue_pri_t get_event_time(void* event);
  * blocked and executing queues.
  * @param reaction A pointer to a reaction_t.
  */
-pqueue_pri_t get_reaction_index(void* reaction_t);
+index_t get_reaction_index(void* reaction_t);
 
 /**
  * Return the given event's position in the queue.
