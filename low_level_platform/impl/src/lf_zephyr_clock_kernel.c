@@ -82,7 +82,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
   async_event = false;
 
   interval_t duration = wakeup - lf_time_physical();
-  if (wakeup <= 0) {
+  if (duration <= 0) {
     return 0;
   }
 
