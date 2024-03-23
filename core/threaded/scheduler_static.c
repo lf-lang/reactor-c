@@ -285,15 +285,19 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
 void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
     int pc_orig = (int) *pc;
-    if (op3.imm == ULLONG_MAX) {tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);}
-    else {tracepoint_static_scheduler_EXE_reaction_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);}
+    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);}
+#if TRACE_ALL_INSTRUCTIONS
+    else {tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);}
+#endif
     function_generic_t function = (function_generic_t)(uintptr_t)op1.reg;
     void *args = (void*)op2.reg;
     // Execute the function directly.
     function(args);
     *pc += 1; // Increment pc.
-    if (op3.imm == ULLONG_MAX) {tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);}
-    else {tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);}
+    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);}
+#if TRACE_ALL_INSTRUCTIONS
+    else {tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);}
+#endif
 }
 
 
@@ -390,103 +394,6 @@ void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, operand_t
 #endif
 }
 
-/**
- * @brief Execute an instruction
- * 
- * @param opcode the opcode
- * @param op1 the first operand
- * @param op2 the second operand
- * @param pc a pointer to the program counter
- * @param returned_reaction a pointer to a reaction to be executed 
- * 
- * FIXME: This feels like a bad design in the abstraction.
- * @param exit_loop a pointer to a boolean indicating whether
- *                  the outer while loop should be exited
- */
-void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t opcode, operand_t op1, operand_t op2, operand_t op3, bool debug,
-    size_t* pc, reaction_t** returned_reaction, bool* exit_loop) {
-    char* op_str = NULL;
-    switch (opcode) {
-        case ADD:
-            op_str = "ADD";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_ADD(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case ADDI:
-            op_str = "ADDI";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_ADDI(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case ADV:
-            op_str = "ADV";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_ADV(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case ADVI:
-            op_str = "ADVI";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_ADVI(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case BEQ:
-            op_str = "BEQ";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_BEQ(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case BGE:
-            op_str = "BGE";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_BGE(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case BLT:
-            op_str = "BLT";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_BLT(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case BNE:
-            op_str = "BNE";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_BNE(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case DU:  
-            op_str = "DU";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_DU(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case EXE:
-            op_str = "EXE";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_EXE(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case JAL:
-            op_str = "JAL";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_JAL(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case JALR:
-            op_str = "JALR";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_JALR(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case STP:
-            op_str = "STP";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_STP(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case WLT:
-            op_str = "WLT";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_WLT(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        case WU:
-            op_str = "WU";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_WU(scheduler, worker_number, op1, op2, op3, debug, pc, returned_reaction, exit_loop);
-            break;
-        default:
-            lf_print_error_and_exit("Invalid instruction: %d", opcode);
-    }
-}
-
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 /**
  * @brief Initialize the scheduler.
@@ -567,6 +474,8 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
     reaction_t*     returned_reaction   = NULL;
     bool            exit_loop           = false;
     size_t*         pc                  = &scheduler->pc[worker_number];
+
+    function_virtual_instruction_t func;
     opcode_t        opcode;
     operand_t       op1;
     operand_t       op2;
@@ -574,14 +483,15 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
     bool            debug;
 
     while (!exit_loop) {
-        opcode  = current_schedule[*pc].opcode;
+        func = current_schedule[*pc].func;
+        // opcode = current_schedule[*pc].opcode; // FIXME: Opcode is unused.
         op1 = current_schedule[*pc].op1;
         op2 = current_schedule[*pc].op2;
         op3 = current_schedule[*pc].op3;
         debug = current_schedule[*pc].debug;
 
         // Execute the current instruction
-        execute_inst(scheduler, worker_number, opcode, op1, op2, op3, debug, pc,
+        func(scheduler, worker_number, op1, op2, op3, debug, pc,
                     &returned_reaction, &exit_loop);
     }
 

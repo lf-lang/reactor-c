@@ -46,6 +46,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdbool.h>
 
 #if SCHEDULER == SCHED_STATIC
+// Forward declaration so that lf_scheduler_t is visible in
+// scheduler_instructions.h
+typedef struct lf_scheduler_t lf_scheduler_t;
 #include "lf_types.h"
 #include "scheduler_instructions.h"
 #endif
