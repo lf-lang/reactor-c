@@ -256,13 +256,14 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
     LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
     instant_t wait_interval = wakeup_time - lf_time_physical();
     if (wait_interval > 0) {
-        if (wait_interval < SPIN_WAIT_THRESHOLD) {
-            // Spin wait if the wait interval is less than 1 ms.
-            while (lf_time_physical() < wakeup_time);
-        } else {
-            // Otherwise sleep.
-            _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
-        }
+        // if (wait_interval < SPIN_WAIT_THRESHOLD) {
+        //     // Spin wait if the wait interval is less than 1 ms.
+        //     while (lf_time_physical() < wakeup_time);
+        // } else {
+        //     // Otherwise sleep.
+        //     _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
+        // }
+        while (lf_time_physical() < wakeup_time);
     }
     LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
     *pc += 1; // Increment pc.
