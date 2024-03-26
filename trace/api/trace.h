@@ -176,12 +176,14 @@ typedef struct {
  * calling this procedure is undefined behavior.
  *
  * @param process_name The name of the current federate, or a placeholder if this is not a federate.
+ * @param process_names The names of all federates, separated by commas, or NULL
+ * if that information is not available.
  * @param process_id The ID of the current federate, or -1 if this is the RTI. 0
  * if unfederated.
  * @param max_num_local_threads An upper bound on the number of threads created
  * by this process.
  */
-void lf_tracing_global_init(char* process_name, int process_id, int max_num_local_threads);
+void lf_tracing_global_init(char* process_name, char* process_names, int process_id, int max_num_local_threads);
 /**
  * @brief Register a kind of trace event. This should be called before
  * tracepoints are reached.
