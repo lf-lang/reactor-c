@@ -254,6 +254,7 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
 }
 
 void lf_tracing_global_init(char* process_name, char* process_names, int fedid, int max_num_local_threads) {
+  (void) process_names;
   trace_mutex = lf_platform_mutex_new();
   if (!trace_mutex) {
     fprintf(stderr, "WARNING: Failed to initialize trace mutex.\n");
