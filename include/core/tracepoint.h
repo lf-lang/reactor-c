@@ -37,6 +37,8 @@
 #include "net_common.h"
 #endif // FEDERATED
 
+#include "trace_types.h"
+
 #ifdef LF_TRACE
 
 #include "trace.h"
