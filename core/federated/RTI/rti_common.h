@@ -54,11 +54,11 @@ typedef struct scheduling_node_t {
   tag_t last_provisionally_granted; // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
   tag_t next_event;                 // Most recent NET received from the scheduling node (or NEVER if none received).
   scheduling_node_state_t state;    // State of the scheduling node.
-  int* upstream;                    // Array of upstream scheduling node ids.
+  uint16_t* upstream;                    // Array of upstream scheduling node ids.
   interval_t* upstream_delay;       // Minimum delay on connections from upstream scheduling nodes.
                                     // Here, NEVER encodes no delay. 0LL is a microstep delay.
   int num_upstream;                 // Size of the array of upstream scheduling nodes and delays.
-  int* downstream;                  // Array of downstream scheduling node ids.
+  uint16_t* downstream;                  // Array of downstream scheduling node ids.
   int num_downstream;               // Size of the array of downstream scheduling nodes.
   execution_mode_t mode;            // FAST or REALTIME.
   minimum_delay_t* min_delays;      // Array of minimum delays from upstream nodes, not including this node.
