@@ -1215,9 +1215,9 @@ void initialize_global(void) {
   // -- threads are spawned to listen to upstream federates. Add 1 for the
   // clock sync thread and add 1 for the staa thread
   max_threads_tracing += NUMBER_OF_FEDERATES + 2;
-  lf_tracing_global_init(envs[0].name, FEDERATE_ID, max_threads_tracing);
+  lf_tracing_global_init(envs[0].name, _LF_FEDERATE_NAMES_COMMA_SEPARATED, FEDERATE_ID, max_threads_tracing);
 #else
-  lf_tracing_global_init("trace", 0, max_threads_tracing);
+  lf_tracing_global_init("main", NULL, 0, max_threads_tracing);
 #endif
   // Call the code-generated function to initialize all actions, timers, and ports
   // This is done for all environments/enclaves at the same time.
