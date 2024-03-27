@@ -179,20 +179,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NET_COMMON_H
 #define NET_COMMON_H
 
-// TODO: Copied at lf_socket_support.h. Erase after finished.
-/**
- * The timeout time in ns for TCP operations.
- * Default value is 10 secs.
- */
-#define TCP_TIMEOUT_TIME SEC(10)
-
-// TODO: Copied at lf_socket_support.h. Erase after finished.
-/**
- * The timeout time in ns for UDP operations.
- * Default value is 1 sec.
- */
-#define UDP_TIMEOUT_TIME SEC(1)
-
 /**
  * Size of the buffer used for messages sent between federates.
  * This is used by both the federates and the rti, so message lengths
@@ -212,14 +198,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define CONNECT_MAX_RETRIES 100
 
-// TODO: Copied at lf_socket_support.h. Erase after finished.
-/**
- * Maximum number of port addresses that a federate will try to connect to the RTI on.
- * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
- * on the number of RTIs that can be running on the same host.
- */
-#define MAX_NUM_PORT_ADDRESSES 16
-
 /**
  * Time that a federate waits before asking
  * the RTI again for the port and IP address of a federate
@@ -227,31 +205,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * does not know.  This allows time for federates to start separately.
  */
 #define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)
-
-// TODO: Copied at lf_socket_support.h. Erase after finished.
-/**
- * Time to wait before re-attempting to bind to a port.
- * When a process closes, the network stack typically waits between 30 and 120
- * seconds before releasing the port.  This is to allow for delayed packets so
- * that a new process does not receive packets from a previous process.
- * Here, we limit the retries to 60 seconds.
- */
-#define PORT_BIND_RETRY_INTERVAL SEC(1)
-
-// TODO: Copied at lf_socket_support.h. Erase after finished.
-/**
- * Number of attempts to bind to a port before giving up.
- */
-#define PORT_BIND_RETRY_LIMIT 60
-
-// TODO: Copied at lf_socket_support.h. Erase after finished.
-/**
- * Default port number for the RTI.
- * Unless a specific port has been specified by the LF program in the "at"
- * for the RTI or on the command line, when the RTI starts up, it will attempt
- * to open a socket server on this port.
- */
-#define DEFAULT_PORT 15045u
 
 /**
  * Delay the start of all federates by this amount.
