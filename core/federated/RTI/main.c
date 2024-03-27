@@ -331,7 +331,7 @@ int main(int argc, const char* argv[]) {
   }
 
   // TODO: Need to add user_specified_port
-  if (start_rti_server()) {
+  if (start_rti_server(rti.user_specified_port)) {
     wait_for_federates(rti.rti_netdrv);
     normal_termination = true;
     if (rti.base.tracing_enabled) {
