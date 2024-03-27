@@ -15,11 +15,6 @@ void set_clock_netdrv(netdrv_t* clock_drv, netdrv_t* rti_drv, uint16_t port_num)
 
 void netdrv_free(netdrv_t* drv);
 
-// void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv);
-
-netdrv_t* netdrv_accept(netdrv_t* my_netdrv);
-
-// netdrv_t* establish_communication_session(netdrv_t* netdrv);
 
 int netdrv_connect(netdrv_t* drv);
 

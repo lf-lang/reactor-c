@@ -1406,7 +1406,7 @@ void* respond_to_erroneous_connections(void* nothing) {
   initialize_lf_thread_id();
   while (true) {
     // TODO: DONGHA: Need to fix. Do we need accept as api?
-    netdrv_t* fed_netdrv = netdrv_accept(rti_remote->rti_netdrv);
+    netdrv_t* fed_netdrv = establish_communication_session(rti_remote->rti_netdrv);
 
     if (fed_netdrv == NULL)
       continue;

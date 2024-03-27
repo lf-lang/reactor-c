@@ -1984,7 +1984,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     _fed.inbound_netdriv_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
     while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
         // Wait for an incoming connection request.
-        netdrv_t *client_fed_netdrv = netdrv_accept(_fed.my_netdrv);
+        netdrv_t *client_fed_netdrv = establish_communication_session(_fed.my_netdrv);
 
     if (client_fed_netdrv == NULL) {
       if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {

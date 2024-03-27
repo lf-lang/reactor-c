@@ -135,42 +135,7 @@ static void socket_close(netdrv_t* drv) {
   }
 }
 
-// void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
-//     socket_priv_t *rti_priv = get_priv(rti_netdrv);
-//     socket_priv_t *clock_priv = get_priv(clock_netdrv);
-//     // Shutdown and close the socket that is listening for incoming connections
-//     // so that the accept() call in respond_to_erroneous_connections returns.
-//     // That thread should then check rti->all_federates_exited and it should exit.
-//     if (shutdown(rti_priv->socket_descriptor, SHUT_RDWR)) {
-//         LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
-//     }
-//     // NOTE: In all common TCP/IP stacks, there is a time period,
-//     // typically between 30 and 120 seconds, called the TIME_WAIT period,
-//     // before the port is released after this close. This is because
-//     // the OS is preventing another program from accidentally receiving
-//     // duplicated packets intended for this program.
-//     close(rti_priv->socket_descriptor);
 
-//     if (clock_priv->socket_descriptor > 0) {
-//         if (shutdown(clock_priv->socket_descriptor, SHUT_RDWR)) {
-//             LF_PRINT_LOG("On shut down UDP socket, received reply: %s", strerror(errno));
-//         }
-//         close(clock_priv->socket_descriptor);
-//     }
-// }
-
-netdrv_t* netdrv_accept(netdrv_t* my_netdrv) {
-  netdrv_t* client_netdrv = netdrv_init();
-  socket_priv_t* my_priv = get_priv(my_netdrv);
-  socket_priv_t* client_priv = get_priv(client_netdrv);
-  struct sockaddr client_fd;
-  uint32_t client_length = sizeof(client_fd);
-  client_priv->socket_descriptor = accept(my_priv->socket_descriptor, &client_fd, &client_length);
-  if (client_priv->socket_descriptor < 0) {
-    return NULL;
-  }
-  return client_netdrv;
-}
 
 /** 
  * 1. initializes other side's netdrv.
@@ -184,7 +149,7 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   // Wait for an incoming connection request.
   struct sockaddr client_fd;
   uint32_t client_length = sizeof(client_fd);
-  // The following blocks until a federate connects.
+  // The following blocks until a client connects.
   while (1) {
     ret_priv->socket_descriptor = accept(my_priv->socket_descriptor, &client_fd, &client_length);
     if (ret_priv->socket_descriptor >= 0) {
