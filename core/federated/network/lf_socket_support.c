@@ -1,6 +1,3 @@
-
-#include "lf_socket_support.h"
-
 #include <arpa/inet.h> /* htons */
 #include <errno.h>
 #include <linux/if.h> /* IFNAMSIZ */
@@ -19,7 +16,27 @@
 #include "util.h"
 #include "net_common.h"
 
-typedef enum { TCP, UDP } socket_type_t;
+#include "lf_socket_support.h"
+
+netdrv_t* netdrv_init() {
+  netdrv_t* drv = malloc(sizeof(netdrv_t));
+  if (!drv) {
+    lf_print_error_and_exit("Falied to malloc netdrv_t.");
+  }
+  memset(drv, 0, sizeof(netdrv_t));
+  drv->open = socket_open;
+  drv->close = socket_close;
+  // drv->read = socket_read;
+  // drv->write = socket_write;
+  drv->read_remaining_bytes = 0;
+
+  // Initialize priv.
+  socket_priv_t* priv = socket_priv_init();
+
+  // Set drv->priv pointer to point the malloc'd priv.
+  drv->priv = (void*)priv;
+  return drv;
+}
 
 static socket_priv_t* get_priv(netdrv_t* drv) {
   if (!drv) {
@@ -67,39 +84,39 @@ void set_clock_netdrv(netdrv_t* clock_drv, netdrv_t* rti_drv, uint16_t port_num)
   priv_clock->UDP_addr.sin_addr = priv_rti->server_ip_addr;
 }
 
-// create_real_time_tcp_socket_errexit
-static int socket_open(netdrv_t* drv) {
-  if (!drv) {
-    return -1;
-  }
-  socket_priv_t* priv = get_priv(drv);
-  priv->socket_descriptor = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  priv->proto = TCP;
-  if (priv->socket_descriptor < 0) {
-    lf_print_error_and_exit("Could not open TCP socket. Err=%d", priv->socket_descriptor);
-  }
-  // Disable Nagle's algorithm which bundles together small TCP messages to
-  //  reduce network traffic
-  // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-  //  is enough.
-  int flag = 1;
-  int result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+// // create_real_time_tcp_socket_errexit
+// static int socket_open(netdrv_t* drv) {
+//   if (!drv) {
+//     return -1;
+//   }
+//   socket_priv_t* priv = get_priv(drv);
+//   priv->socket_descriptor = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+//   priv->proto = TCP;
+//   if (priv->socket_descriptor < 0) {
+//     lf_print_error_and_exit("Could not open TCP socket. Err=%d", priv->socket_descriptor);
+//   }
+//   // Disable Nagle's algorithm which bundles together small TCP messages to
+//   //  reduce network traffic
+//   // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
+//   //  is enough.
+//   int flag = 1;
+//   int result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
 
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-  }
+//   if (result < 0) {
+//     lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+//   }
 
-// Disable delayed ACKs. Only possible on Linux
-#if defined(PLATFORM_Linux)
-  result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+// // Disable delayed ACKs. Only possible on Linux
+// #if defined(PLATFORM_Linux)
+//   result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
 
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-  }
-#endif
+//   if (result < 0) {
+//     lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+//   }
+// #endif
 
-  return priv->socket_descriptor;
-}
+//   return priv->socket_descriptor;
+// }
 
 void netdrv_free(netdrv_t* drv) {
   socket_priv_t* priv = get_priv(drv);
@@ -117,253 +134,6 @@ static void socket_close(netdrv_t* drv) {
     close(priv->socket_descriptor);
     priv->socket_descriptor = -1;
   }
-}
-
-netdrv_t* netdrv_init() {
-  // TODO: Should it be malloc? To support different network stacks operate simulatneously?
-  netdrv_t* drv = malloc(sizeof(*drv) + sizeof(socket_priv_t)); // Don't need to call malloc() twice.
-  if (!drv) {                                                   // check if malloc worked.
-    lf_print_error_and_exit("Falied to malloc netdrv_t.");
-  }
-  memset(drv, 0, sizeof(netdrv_t));
-
-  socket_priv_t* priv = get_priv(drv);
-  priv->port = 0;
-  priv->socket_descriptor = 0;
-  priv->user_specified_port = 0;
-
-  // federate initialization
-  strncpy(priv->server_hostname, "localhost", INET_ADDRSTRLEN);
-  priv->server_port = -1;
-  priv->server_ip_addr.s_addr = 0;
-
-  priv->proto = TCP;
-
-  drv->read_remaining_bytes = 0;
-
-  drv->open = socket_open;
-  drv->close = socket_close;
-  // drv->read = socket_read;
-  // drv->write = socket_write;
-  // drv->get_priv = get_priv;
-  return drv;
-}
-
-/**
- * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
- * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
- * on any error.
- *
- * @return The socket ID (a file descriptor).
- */
-static int net_create_real_time_tcp_socket_errexit() {
-  int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if (sock < 0) {
-    lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
-  }
-  // Disable Nagle's algorithm which bundles together small TCP messages to
-  //  reduce network traffic
-  // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-  //  is enough.
-  int flag = 1;
-  int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
-
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-  }
-
-// Disable delayed ACKs. Only possible on Linux
-#if defined(PLATFORM_Linux)
-  result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
-
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-  }
-#endif
-
-  return sock;
-}
-
-// TODO: DONGHA: Need to fix port.
-int create_federate_server(netdrv_t* drv, uint16_t port, int specified_port) {
-  socket_priv_t* priv = get_priv(drv);
-  // Server file descriptor.
-  struct sockaddr_in server_fd;
-  // Zero out the server address structure.
-  bzero((char*)&server_fd, sizeof(server_fd));
-
-  server_fd.sin_family = AF_INET;         // IPv4
-  server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
-  // Convert the port number from host byte order to network byte order.
-  server_fd.sin_port = htons(port);
-
-  int result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  int count = 0;
-  while (result < 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-    lf_sleep(PORT_BIND_RETRY_INTERVAL);
-    result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  }
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to bind socket on port %d.", port);
-  }
-
-  // Set the global server port.
-  if (specified_port == 0) {
-    // Need to retrieve the port number assigned by the OS.
-    struct sockaddr_in assigned;
-    socklen_t addr_len = sizeof(assigned);
-    if (getsockname(priv->socket_descriptor, (struct sockaddr*)&assigned, &addr_len) < 0) {
-      lf_print_error_and_exit("Failed to retrieve assigned port number.");
-    }
-    priv->port = ntohs(assigned.sin_port);
-  } else {
-    priv->port = port;
-  }
-
-  // Enable listening for socket connections.
-  // The second argument is the maximum number of queued socket requests,
-  // which according to the Mac man page is limited to 128.
-  listen(priv->socket_descriptor, 128);
-}
-
-/**
- * Create a server and enable listening for socket connections.
- * If the specified port if it is non-zero, it will attempt to acquire that port.
- * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
- * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
- * zero, then it will attempt to acquire DEFAULT_PORT first. If this fails, then it
- * will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times, incrementing the port
- * number between attempts, with no delay between attempts.  Once it has incremented
- * the port number MAX_NUM_PORT_ADDRESSES times, it will cycle around and begin again
- * with DEFAULT_PORT.
- *
- * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
- * @param socket_type The type of the socket for the server (TCP or UDP).
- * @return The socket descriptor on which to accept connections.
- */
-// TODO: Fix comments.
-int create_rti_server(netdrv_t* drv, netdrv_type_t netdrv_type) {
-  socket_priv_t* priv = get_priv(drv);
-
-  // Timeout time for the communications of the server
-  struct timeval timeout_time = {.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
-  // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-  priv->socket_descriptor = -1;
-  if (netdrv_type == RTI) {
-    priv->socket_descriptor = net_create_real_time_tcp_socket_errexit();
-    priv->proto = TCP;
-  } else if (netdrv_type == CLOCKSYNC) {
-    priv->socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    // Set the appropriate timeout time
-    timeout_time =
-        (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
-    priv->proto = UDP;
-  }
-  if (priv->socket_descriptor < 0) {
-    lf_print_error_and_exit("Failed to create RTI socket.");
-  }
-
-  // Set the option for this socket to reuse the same address
-  int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
-  if (setsockopt(priv->socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
-    lf_print_error("RTI failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
-  }
-  // Set the timeout on the socket so that read and write operations don't block for too long
-  if (setsockopt(priv->socket_descriptor, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) <
-      0) {
-    lf_print_error("RTI failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
-  }
-  if (setsockopt(priv->socket_descriptor, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) <
-      0) {
-    lf_print_error("RTI failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
-  }
-
-  /*
-   * The following used to permit reuse of a port that an RTI has previously
-   * used that has not been released. We no longer do this, but instead
-   * increment the port number until an available port is found.
-
-  // SO_REUSEPORT (since Linux 3.9)
-  //       Permits multiple AF_INET or AF_INET6 sockets to be bound to an
-  //       identical socket address.  This option must be set on each
-  //       socket (including the first socket) prior to calling bind(2)
-  //       on the socket.  To prevent port hijacking, all of the
-  //       processes binding to the same address must have the same
-  //       effective UID.  This option can be employed with both TCP and
-  //       UDP sockets.
-
-  int reuse = 1;
-  if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR,
-          (const char*)&reuse, sizeof(reuse)) < 0) {
-      perror("setsockopt(SO_REUSEADDR) failed");
-  }
-
-  #ifdef SO_REUSEPORT
-  if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEPORT,
-          (const char*)&reuse, sizeof(reuse)) < 0)  {
-      perror("setsockopt(SO_REUSEPORT) failed");
-  }
-  #endif
-  */
-
-  // Server file descriptor.
-  struct sockaddr_in server_fd;
-  // Zero out the server address structure.
-  bzero((char*)&server_fd, sizeof(server_fd));
-
-  uint16_t port = 0; // TODO: Need to bring specified port. Not working currently.
-  uint16_t specified_port = port;
-  if (specified_port == 0)
-    port = DEFAULT_PORT;
-
-  server_fd.sin_family = AF_INET;         // IPv4
-  server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
-  // Convert the port number from host byte order to network byte order.
-  server_fd.sin_port = htons(port);
-
-  int result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-
-  // Try repeatedly to bind to a port. If no specific port is specified, then
-  // increment the port number each time.
-
-  int count = 1;
-  while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-    if (specified_port == 0) {
-      lf_print_warning("RTI failed to get port %d.", port);
-      port++;
-      if (port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
-        port = DEFAULT_PORT;
-      lf_print_warning("RTI will try again with port %d.", port);
-      server_fd.sin_port = htons(port);
-      // Do not sleep.
-    } else {
-      lf_print("RTI failed to get port %d. Will try again.", port);
-      lf_sleep(PORT_BIND_RETRY_INTERVAL);
-    }
-    result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  }
-  if (result != 0) {
-    lf_print_error_and_exit("Failed to bind the RTI socket. Port %d is not available. ", port);
-  }
-  char* type = "TCP";
-  if (netdrv_type == CLOCKSYNC) {
-    type = "UDP";
-  }
-  // lf_print("RTI using %s port %d for federation %s.", type, port, rti_remote->federation_id); //TODO: How to bring
-  // federation_id?
-
-  if (netdrv_type == RTI) {
-    priv->port = port;
-
-    // Enable listening for socket connections.
-    // The second argument is the maximum number of queued socket requests,
-    // which according to the Mac man page is limited to 128.
-    listen(priv->socket_descriptor, 128);
-  } else if (netdrv_type == CLOCKSYNC) {
-    priv->port = port;
-    // No need to listen on the UDP socket
-  }
-  return priv->socket_descriptor;
 }
 
 // void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
