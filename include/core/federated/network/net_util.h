@@ -75,7 +75,6 @@ typedef struct netdrv_t {
   int (*write)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
   void* priv;
   unsigned int read_remaining_bytes;
-  // unsigned int write_remaining_bytes;
 } netdrv_t;
 
 int netdrv_open(netdrv_t* drv);
@@ -83,21 +82,61 @@ void netdrv_close(netdrv_t* drv);
 int netdrv_read(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 int netdrv_write(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 // void * netdrv_get_privdrv(netdrv_t *drv);
+
+netdrv_t* netdrv_init();
+
+typedef enum server_type_t { RTI, FED } server_type_t;
+
+// Port will be NULL on MQTT.
+int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
+
+// Returns socket number of clock_sync_server.
+int create_clock_sync_server(uint16_t* clock_sync_port);
 /**
- * Mutex protecting socket close operations.
+ * Write the specified number of bytes to the specified socket from the
+ * specified buffer. If an error occurs, return -1 and set errno to indicate
+ * the cause of the error. If the write succeeds, return 0.
+ * This function repeats the attempt until the specified number of bytes
+ * have been written or an error occurs. Specifically, errors EAGAIN,
+ * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
+ * another attempt. A delay between attempts is given by
+ * DELAY_BETWEEN_SOCKET_RETRIES.
+ * @param socket The socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @return 0 for success, -1 for failure.
  */
-extern lf_mutex_t netdrv_mutex;
+int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 
 /**
- * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
- * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
- * on any error.
- *
- * @return The socket ID (a file descriptor).
+ * Write the specified number of bytes to the specified socket using write_to_socket
+ * and close the socket if an error occurs. If an error occurs, this will change the
+ * socket ID pointed to by the first argument to -1 and will return -1.
+ * @param socket Pointer to the socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @return 0 for success, -1 for failure.
  */
-int create_real_time_tcp_socket_errexit();
+int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 
-// TODO: Copied at lf_socket_support.c. Erase after finished.
+/**
+ * Write the specified number of bytes to the specified socket using
+ * write_to_socket_close_on_error and exit with an error code if an error occurs.
+ * If the mutex argument is non-NULL, release the mutex before exiting.  If the
+ * format argument is non-null, then use it an any additional arguments to form
+ * the error message using printf conventions. Otherwise, print a generic error
+ * message.
+ * @param socket Pointer to the socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @param mutex If non-NULL, the mutex to unlock before exiting.
+ * @param format A format string for error messages, followed by any number of
+ *  fields that will be used to fill the format string as in printf, or NULL
+ *  to print a generic error message.
+ */
+void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+                                   char* format, ...);
+
 /**
  * Read the specified number of bytes from the specified socket into the specified buffer.
  * If an error occurs during this reading, return -1 and set errno to indicate
@@ -112,9 +151,8 @@ int create_real_time_tcp_socket_errexit();
  * @param buffer The buffer into which to put the bytes.
  * @return 0 for success, 1 for EOF, and -1 for an error.
  */
-int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
+ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length);
 
-// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Read the specified number of bytes to the specified socket using read_from_socket
  * and close the socket if an error occurs. If an error occurs, this will change the
@@ -124,9 +162,8 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
+ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length);
 
-// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Read the specified number of bytes from the specified socket into the
  * specified buffer. If a disconnect or an EOF occurs during this
@@ -143,67 +180,23 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
  * @return The number of bytes read, or 0 if an EOF is received, or
  *  a negative number for an error.
  */
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
                                     char* format, ...);
 
-// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
- * Without blocking, peek at the specified socket and, if there is
- * anything on the queue, put its first byte at the specified address and return 1.
- * If there is nothing on the queue, return 0, and if an error occurs,
- * return -1.
- * @param socket The socket ID.
- * @param result Pointer to where to put the first byte available on the socket.
+ * Mutex protecting socket close operations.
  */
-ssize_t peek_from_socket(int socket, unsigned char* result);
+extern lf_mutex_t netdrv_mutex;
 
-// TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
- * Write the specified number of bytes to the specified socket from the
- * specified buffer. If an error occurs, return -1 and set errno to indicate
- * the cause of the error. If the write succeeds, return 0.
- * This function repeats the attempt until the specified number of bytes
- * have been written or an error occurs. Specifically, errors EAGAIN,
- * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
- * another attempt. A delay between attempts is given by
- * DELAY_BETWEEN_SOCKET_RETRIES.
- * @param socket The socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @return 0 for success, -1 for failure.
+ * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
+ * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
+ * on any error.
+ *
+ * @return The socket ID (a file descriptor).
  */
-int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
+int create_real_time_tcp_socket_errexit();
 
-// TODO: Copied at lf_socket_support.c. Erase after finished.
-/**
- * Write the specified number of bytes to the specified socket using write_to_socket
- * and close the socket if an error occurs. If an error occurs, this will change the
- * socket ID pointed to by the first argument to -1 and will return -1.
- * @param socket Pointer to the socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @return 0 for success, -1 for failure.
- */
-int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
-
-// TODO: Copied at lf_socket_support.c. Erase after finished.
-/**
- * Write the specified number of bytes to the specified socket using
- * write_to_socket_close_on_error and exit with an error code if an error occurs.
- * If the mutex argument is non-NULL, release the mutex before exiting.  If the
- * format argument is non-null, then use it an any additional arguments to form
- * the error message using printf conventions. Otherwise, print a generic error
- * message.
- * @param socket Pointer to the socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @param mutex If non-NULL, the mutex to unlock before exiting.
- * @param format A format string for error messages, followed by any number of
- *  fields that will be used to fill the format string as in printf, or NULL
- *  to print a generic error message.
- */
-void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...);
 
 #endif // FEDERATED
 
