@@ -127,20 +127,13 @@ typedef struct rti_remote_t {
   /** The desired port specified by the user on the command line. */
   uint16_t user_specified_port;
 
-  /** The final port number that the TCP socket server ends up using. */
-  // uint16_t final_port_TCP;
-
-  // /** The TCP socket descriptor for the socket server. */
-  // int socket_descriptor_TCP;
-
-  /************* UDP server information *************/
+  /************* Clock synchronization server information *************/
   /** The final port number that the UDP socket server ends up using. */
-  uint16_t final_port_UDP;
+  uint16_t clock_sync_port;
 
   /** The UDP socket descriptor for the socket server. */
-  int socket_descriptor_UDP;
+  int clock_sync_socket;
 
-  /************* Clock synchronization information *************/
   /* Thread performing PTP clock sync sessions periodically. */
   lf_thread_t clock_thread;
 
@@ -386,19 +379,16 @@ void initialize_federate(federate_info_t* fed, uint16_t id);
 /**
  * Start the socket server for the runtime infrastructure (RTI) and
  * return the socket descriptor.
- * @param num_feds Number of federates.
  * @param port The port on which to listen for socket connections, or
  *  0 to use the default port range.
  */
-// TODO: Need to add descriptions.
-int32_t start_rti_server();
+int32_t start_rti_server(uint16_t port);
 
 // /**
 //  * Start the runtime infrastructure (RTI) interaction with the federates
 //  * and wait for the federates to exit.
-//  * @param socket_descriptor The socket descriptor returned by start_rti_server().
+//  * @param netdrv The netdrv returned by start_rti_server().
 //  */
-// TODO: Add documentation.
 void wait_for_federates(netdrv_t* netdrv);
 
 /**
