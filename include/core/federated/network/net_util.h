@@ -66,7 +66,7 @@ int host_is_big_endian(void);
 
 #ifdef FEDERATED
 
-typedef enum netdrv_type_t { RTI, CLOCKSYNC } netdrv_type_t;
+typedef enum netdrv_type_t { NETDRV, UDP } netdrv_type_t;
 
 typedef struct netdrv_t {
   int (*open)(struct netdrv_t* drv);

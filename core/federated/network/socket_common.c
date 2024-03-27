@@ -194,8 +194,8 @@ int create_clock_sync_server(uint16_t* clock_sync_port) {
   while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
     lf_print_warning("RTI failed to get port %d.", port);
     port++;
-    if (port >= DEFAULT_UDP_PORT + MAX_NUM_PORT_ADDRESSES)
-      port = DEFAULT_UDP_PORT;
+    if (port >= RTI_DEFAULT_UDP_PORT + MAX_NUM_PORT_ADDRESSES)
+      port = RTI_DEFAULT_UDP_PORT;
     lf_print_warning("RTI will try again with port %d.", port);
     server_fd.sin_port = htons(port);
     result = bind(socket, (struct sockaddr*)&server_fd, sizeof(server_fd));

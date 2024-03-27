@@ -773,9 +773,16 @@ void* clock_synchronization_thread(void* noargs) {
       int remaining_attempts = 5;
       while (remaining_attempts > 0) {
         remaining_attempts--;
-        ssize_t bytes_read = read_from_netdrv(rti_remote->clock_netdrv, buffer, message_size);
+
+        // Read from the UDP socket
+        do {
+          ssize_t bytes = recv(rti_remote->socket_descriptor_UDP, buffer, message_size, MSG_WAITALL);
+          if (bytes > 0) {
+            bytes_read += bytes;
+          }
+        } while ((errno == EAGAIN || errno == EWOULDBLOCK) && bytes_read < (ssize_t)message_size);
         // If any errors occur, either discard the message or the clock sync round.
-        if (bytes_read > 0) {
+        if (!read_failed) {
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
             int32_t fed_id_2 = extract_int32(&(buffer[1]));
             // Check that this message came from the correct federate.
