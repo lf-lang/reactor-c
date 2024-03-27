@@ -42,8 +42,6 @@
 /////////////////////////////////////////////
 //// Data structures
 
-typedef enum socket_type_t { TCP, UDP } socket_type_t;
-
 /**
  * Information about a federate known to the RTI, including its runtime state,
  * mode of execution, and connectivity with other federates.
@@ -58,8 +56,7 @@ typedef struct federate_info_t {
                                          // to a request for stop from the RTI. Used to prevent double-counting
                                          // a federate when handling lf_request_stop().
   lf_thread_t thread_id;                 // The ID of the thread handling communication with this federate.
-  // int socket;                            // The TCP socket descriptor for communicating with this federate.
-  // struct sockaddr_in UDP_addr;           // The UDP address for the federate.
+  struct sockaddr_in UDP_addr;           // The UDP address for the federate.
   bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                          // for this federate. Enabled by default.
   pqueue_tag_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
@@ -73,7 +70,6 @@ typedef struct federate_info_t {
   // struct in_addr server_ip_addr;         // Information about the IP address of the socket
   //                                        // server of the federate.
   netdrv_t* fed_netdrv; // The netdriver that the RTI handling each federate.
-  // netdrv_t* clock_netdrv;
 } federate_info_t;
 
 /**
@@ -120,7 +116,6 @@ typedef struct rti_remote_t {
   const char* federation_id;
 
   netdrv_t* rti_netdrv;
-  // netdrv_t* clock_netdrv;
 
   /************* TCP server information *************/
   /** The desired port specified by the user on the command line. */

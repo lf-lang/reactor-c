@@ -252,7 +252,7 @@ void lf_connect_to_federate(uint16_t);
  * @brief Connect to the RTI at the specified host and port.
  *
  * This will return the socket descriptor for the connection.
- * If port_number is 0, then start at DEFAULT_PORT and increment
+ * If port_number is 0, then start at RTI_DEFAULT_PORT and increment
  * the port number on each attempt. If an attempt fails, wait CONNECT_RETRY_INTERVAL
  * and try again.  If it fails after CONNECT_MAX_RETRIES, the program exits.
  * If it succeeds, it sets the _fed.socket_TCP_RTI global variable to refer to

@@ -176,10 +176,6 @@ int create_clock_sync_server(uint16_t* clock_sync_port) {
   bzero((char*)&server_fd, sizeof(server_fd));
 
   uint16_t port = RTI_DEFAULT_UDP_PORT; // Default UDP port.
-  // uint16_t specified_port = port;
-  // if (specified_port == 0)
-  //   port = DEFAULT_PORT;
-
   server_fd.sin_family = AF_INET;         // IPv4
   server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
   // Convert the port number from host byte order to network byte order.

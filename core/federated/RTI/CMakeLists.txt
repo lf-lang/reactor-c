@@ -61,6 +61,7 @@ add_executable(
     ${CoreLib}/clock.c
     ${CoreLib}/federated/network/net_util.c
     ${CoreLib}/federated/network/lf_socket_support.c
+    ${CoreLib}/federated/network/socket_common.c
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
@@ -128,6 +129,18 @@ IF(AUTH MATCHES ON)
   find_package(OpenSSL REQUIRED)
   target_link_libraries(RTI OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)
+
+# # Option for enabling federate authentication by RTI.
+# option(SST "Federate authentication by SST-c-api is enabled." OFF)
+# IF(SST MATCHES ON)
+#   add_compile_definitions(__RTI_SST__)
+#   # Find OpenSSL and link to it
+#   find_package(OpenSSL REQUIRED)
+#   target_link_libraries(RTI OpenSSL::SSL)
+#   add_subdirectory(../../../third_party/sst-c-api SSTLIB)
+#   target_link_libraries(RTI SSTLIB)
+#   target_sources(RTI PUBLICE ${CoreLib}/federated/network/lf_sst_support.c)
+# ENDIF(SST MATCHES ON)
 
 install(
     TARGETS RTI

@@ -20,7 +20,7 @@
 
 /**
  * Maximum number of port addresses that a federate will try to connect to the RTI on.
- * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
+ * If you are using automatic ports begining at RTI_DEFAULT_PORT, this puts an upper bound
  * on the number of RTIs that can be running on the same host.
  */
 #define MAX_NUM_PORT_ADDRESSES 16
@@ -50,8 +50,6 @@
 #define RTI_DEFAULT_UDP_PORT 15061u
 
 #define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
-
-typedef enum { TCP, UDP } socket_type_t;
 
 typedef struct socket_priv_t {
   int port; // my port number

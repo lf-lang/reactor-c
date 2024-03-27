@@ -11,7 +11,6 @@ struct in_addr* get_ip_addr(netdrv_t* drv);
 void set_host_name(netdrv_t* drv, const char* hostname);
 void set_port(netdrv_t* drv, int port);
 void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr);
-void set_clock_netdrv(netdrv_t* clock_drv, netdrv_t* rti_drv, uint16_t port_num);
 
 void netdrv_free(netdrv_t* drv);
 
@@ -27,7 +26,5 @@ int netdrv_connect(netdrv_t* drv);
  * @param result Pointer to where to put the first byte available on the socket.
  */
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
-
-int write_to_netdrv_UDP(netdrv_t* drv, netdrv_t* target, size_t num_bytes, unsigned char* buffer, int flags);
 
 #endif // LF_SOCKET_SUPPORT_H
