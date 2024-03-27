@@ -15,6 +15,7 @@ netdrv_t* netdrv_init() {}
  * @brief Create a server object
  * Initializes MQTT client, and connects to broker.
  * MQTTClient_connect()
+ * RTI subscribes “{Federation_ID}_RTI” topic.
  * Check socket_common.c for example. It is a common function because also lf_sst_support.c will also use it.
  * @param drv 
  * @param server_type 
@@ -23,14 +24,11 @@ netdrv_t* netdrv_init() {}
  */
 int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) { }
 
-
-
 /**
  * @brief 
- * 1. RTI subscribes “{Federation_ID}_RTI” topic.
- * 2. Each federate publishes fed_id to {Federation_ID}_RTI
- * 3. fed_{n} subscribes to “{Federation_Id}_RTI_to_fed_{n}”.
- * 4. RTI subscribes to “{Federation_Id}_fed_{n}_to_RTI”.
+ * 1. Each federate publishes fed_id to {Federation_ID}_RTI
+ * 2. fed_{n} subscribes to “{Federation_Id}_RTI_to_fed_{n}”.
+ * 3. RTI subscribes to “{Federation_Id}_fed_{n}_to_RTI”.
  * Check lf_socket_support.c for example.
 
  * @param netdrv 
