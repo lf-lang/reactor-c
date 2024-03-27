@@ -94,34 +94,6 @@ int netdrv_write(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
 // 	return drv->get_priv(drv);
 // }
 
-int create_real_time_tcp_socket_errexit() {
-  int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if (sock < 0) {
-    lf_print_error_system_failure("Could not open TCP socket.");
-  }
-  // Disable Nagle's algorithm which bundles together small TCP messages to
-  // reduce network traffic.
-  // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-  // is enough.
-  int flag = 1;
-  int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
-
-  if (result < 0) {
-    lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
-  }
-
-#if defined(PLATFORM_Linux)
-  // Disable delayed ACKs. Only possible on Linux
-  result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
-
-  if (result < 0) {
-    lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
-  }
-#endif // Linux
-
-  return sock;
-}
-
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
   if (socket < 0) {
     // Socket is not open.

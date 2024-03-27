@@ -188,16 +188,6 @@ void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t
  */
 extern lf_mutex_t netdrv_mutex;
 
-/**
- * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
- * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
- * on any error.
- *
- * @return The socket ID (a file descriptor).
- */
-int create_real_time_tcp_socket_errexit();
-
-
 #endif // FEDERATED
 
 /**
