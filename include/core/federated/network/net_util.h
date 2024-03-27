@@ -92,6 +92,9 @@ int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
 
 // Returns socket number of clock_sync_server.
 int create_clock_sync_server(uint16_t* clock_sync_port);
+
+netdrv_t* establish_communication_session(netdrv_t* netdrv);
+
 /**
  * Write the specified number of bytes to the specified socket from the
  * specified buffer. If an error occurs, return -1 and set errno to indicate

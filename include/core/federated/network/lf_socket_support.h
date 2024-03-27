@@ -19,7 +19,7 @@ void netdrv_free(netdrv_t* drv);
 
 netdrv_t* netdrv_accept(netdrv_t* my_netdrv);
 
-netdrv_t* accept_connection(netdrv_t* rti_netdrv);
+// netdrv_t* establish_communication_session(netdrv_t* netdrv);
 
 int netdrv_connect(netdrv_t* drv);
 

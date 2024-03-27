@@ -15,7 +15,6 @@
 
 #include "util.h"
 #include "net_common.h"
-
 #include "lf_socket_support.h"
 
 netdrv_t* netdrv_init() {
@@ -173,24 +172,29 @@ netdrv_t* netdrv_accept(netdrv_t* my_netdrv) {
   return client_netdrv;
 }
 
-netdrv_t* accept_connection(netdrv_t* rti_netdrv) {
-  netdrv_t* fed_netdrv = netdrv_init();
-  socket_priv_t* rti_priv = get_priv(rti_netdrv);
-  socket_priv_t* fed_priv = get_priv(fed_netdrv);
+/** 
+ * 1. initializes other side's netdrv.
+ * 2. Establishes communication session.
+
+**/
+netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
+  netdrv_t* ret_netdrv = netdrv_init();
+  socket_priv_t* my_priv = (socket_priv_t*)my_netdrv->priv;
+  socket_priv_t* ret_priv = (socket_priv_t*)ret_netdrv->priv;
   // Wait for an incoming connection request.
   struct sockaddr client_fd;
   uint32_t client_length = sizeof(client_fd);
   // The following blocks until a federate connects.
   while (1) {
-    fed_priv->socket_descriptor = accept(rti_priv->socket_descriptor, &client_fd, &client_length);
-    if (fed_priv->socket_descriptor >= 0) {
+    ret_priv->socket_descriptor = accept(my_priv->socket_descriptor, &client_fd, &client_length);
+    if (ret_priv->socket_descriptor >= 0) {
       // Got a socket
       break;
-    } else if (fed_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-      lf_print_error_and_exit("RTI failed to accept the socket. %s.", strerror(errno));
+    } else if (ret_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+      lf_print_error_and_exit("Failed to accept the socket. %s.", strerror(errno));
     } else {
       // Try again
-      lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+      lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
       continue;
     }
   }
@@ -200,8 +204,8 @@ netdrv_t* accept_connection(netdrv_t* rti_netdrv) {
   // First, convert the sockaddr structure into a sockaddr_in that contains an internet address.
   struct sockaddr_in* pV4_addr = (struct sockaddr_in*)&client_fd;
   // Then extract the internet address (which is in IPv4 format) and assign it as the federate's socket server
-  fed_priv->server_ip_addr = pV4_addr->sin_addr;
-  return fed_netdrv;
+  ret_priv->server_ip_addr = pV4_addr->sin_addr;
+  return ret_netdrv;
 }
 
 int netdrv_connect(netdrv_t* drv) {
