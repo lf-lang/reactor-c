@@ -674,7 +674,7 @@ void handle_timestamp(federate_info_t* my_fed, unsigned char* buffer) {
   LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
-void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type) {
+void send_physical_clock(unsigned char message_type, federate_info_t* fed, netdrv_type_t netdrv_type) {
   if (fed->enclave.state == NOT_CONNECTED) {
     lf_print_warning("Clock sync: RTI failed to send physical time to federate %d. Netdrv not connected.\n",
                      fed->enclave.id);
@@ -686,16 +686,16 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, socke
   encode_int64(current_physical_time, &(buffer[1]));
 
   // Send the message
-  if (socket_type == UDP) {
+  if (netdrv_type == UDP) {
     LF_PRINT_DEBUG("Clock sync: RTI sending UDP message type %u.", buffer[0]);
-    ssize_t bytes_written =
-        write_to_netdrv_UDP(rti_remote->clock_netdrv, fed->clock_netdrv, 1 + sizeof(int64_t), buffer, 0);
+    ssize_t bytes_written = sendto(rti_remote->socket_descriptor_UDP, buffer, 1 + sizeof(int64_t), 0,
+                                   (struct sockaddr*)&fed->UDP_addr, sizeof(fed->UDP_addr));
     if (bytes_written < (ssize_t)sizeof(int64_t) + 1) {
       lf_print_warning("Clock sync: RTI failed to send physical time to federate %d: %s\n", fed->enclave.id,
                        strerror(errno));
       return;
     }
-  } else if (socket_type == TCP) {
+  } else if (netdrv_type == NETDRV) {
     LF_PRINT_DEBUG("Clock sync:  RTI sending TCP message type %u.", buffer[0]);
     LF_MUTEX_LOCK(&rti_mutex);
     write_to_netdrv_fail_on_error(fed->fed_netdrv, 1 + sizeof(int64_t), buffer, &rti_mutex,
@@ -706,16 +706,16 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, socke
                  current_physical_time, fed->enclave.id);
 }
 
-void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t socket_type) {
+void handle_physical_clock_sync_message(federate_info_t* my_fed, netdrv_type_t netdrv_type) {
   // Lock the mutex to prevent interference between sending the two
   // coded probe messages.
   LF_MUTEX_LOCK(&rti_mutex);
   // Reply with a T4 type message
-  send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed, socket_type);
+  send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed, netdrv_type);
   // Send the corresponding coded probe immediately after,
   // but only if this is a UDP channel.
   if (socket_type == UDP) {
-    send_physical_clock(MSG_TYPE_CLOCK_SYNC_CODED_PROBE, my_fed, socket_type);
+    send_physical_clock(MSG_TYPE_CLOCK_SYNC_CODED_PROBE, my_fed, netdrv_type);
   }
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -1232,7 +1232,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* netdrv, uint16_t 
         // Send the required number of messages for clock synchronization
         for (int i = 0; i < rti_remote->clock_sync_exchanges_per_interval; i++) {
           // Send the RTI's current physical time T1 to the federate.
-          send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
+          send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, NETDRV);
 
           // Listen for reply message, which should be T3.
           size_t message_size = 1 + sizeof(int32_t);
@@ -1444,7 +1444,7 @@ int32_t start_rti_server(uint16_t port) {
   lf_print("RTI: Listening for federates.");
   // Create the clocksync's netdriver.
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-    rti_remote->clock_sync_socket = create_clock_sync_server(&rti_remote->clock_sync_port);
+    rti_remote->socket_descriptor_UDP = create_clock_sync_server(&rti_remote->final_port_UDP);
   }
   return ret;
 }
@@ -1503,8 +1503,8 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->user_specified_port = 0;
   // rti_remote->final_port_TCP = 0;
   // rti_remote->socket_descriptor_TCP = -1;
-  // rti_remote->final_port_UDP = UINT16_MAX;
-  // rti_remote->socket_descriptor_UDP = -1;
+  rti_remote->final_port_UDP = UINT16_MAX;
+  rti_remote->socket_descriptor_UDP = -1;
   rti_remote->clock_sync_global_status = clock_sync_init;
   rti_remote->clock_sync_period_ns = MSEC(10);
   rti_remote->clock_sync_exchanges_per_interval = 10;
