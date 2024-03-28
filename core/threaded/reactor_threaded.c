@@ -28,6 +28,8 @@
 #include "reactor_common.h"
 #include "watchdog.h"
 
+#include "platform/lf_unix_clock_support.h"
+
 #ifdef FEDERATED
 #include "federate.h"
 #endif

@@ -42,7 +42,7 @@
  * to prevent unnecessary delays caused by simply setting up and
  * performing the wait.
  */
-#define MIN_SLEEP_DURATION USEC(10)
+// #define MIN_SLEEP_DURATION USEC(10)
 
 //////////////////////  Global Variables  //////////////////////
 
