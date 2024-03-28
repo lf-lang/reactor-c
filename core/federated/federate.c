@@ -1926,7 +1926,7 @@ void lf_create_server(int specified_port) {
     LF_PRINT_LOG("Creating a socket server on port %d.", port);
 
     netdrv_t* my_netdrv = netdrv_init();
-    create_server(my_netdrv, specified_port);
+    create_server(my_netdrv, FED, specified_port);
     // my_netdrv->open(my_netdrv);
     // create_federate_server(my_netdrv, port, specified_port);
 

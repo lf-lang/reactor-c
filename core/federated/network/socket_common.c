@@ -71,9 +71,7 @@ static int create_real_time_tcp_socket_errexit() {
 
 #if defined(PLATFORM_Linux)
   // Disable delayed ACKs. Only possible on Linux
-  result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
-
-  if (result < 0) {
+  if (setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int))< 0) {
     lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
   }
 #endif // Linux
@@ -148,25 +146,25 @@ int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
 // Returns clock sync UDP socket.
 int create_clock_sync_server(uint16_t* clock_sync_port) {
   // Create UDP socket.
-  int socket = -1;
-  socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  int socket_descriptor = -1;
+  socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
   // Set the appropriate timeout time for the communications of the server
   struct timeval timeout_time =
       (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
-  if (socket < 0) {
+  if (socket_descriptor < 0) {
     lf_print_error_system_failure("Failed to create RTI socket.");
   }
 
   // Set the option for this socket to reuse the same address
   int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
-  if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
+  if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
     lf_print_error("RTI failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
   }
   // Set the timeout on the socket so that read and write operations don't block for too long
-  if (setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
+  if (setsockopt(socket_descriptor, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
     lf_print_error("RTI failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
   }
-  if (setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
+  if (setsockopt(socket_descriptor, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
     lf_print_error("RTI failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
   }
 
@@ -181,7 +179,7 @@ int create_clock_sync_server(uint16_t* clock_sync_port) {
   // Convert the port number from host byte order to network byte order.
   server_fd.sin_port = htons(port);
 
-  int result = bind(socket, (struct sockaddr*)&server_fd, sizeof(server_fd));
+  int result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
 
   // Try repeatedly to bind to a port. If no specific port is specified, then
   // increment the port number each time.
@@ -194,7 +192,7 @@ int create_clock_sync_server(uint16_t* clock_sync_port) {
       port = RTI_DEFAULT_UDP_PORT;
     lf_print_warning("RTI will try again with port %d.", port);
     server_fd.sin_port = htons(port);
-    result = bind(socket, (struct sockaddr*)&server_fd, sizeof(server_fd));
+    result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
   }
   if (result != 0) {
     lf_print_error_and_exit("Failed to bind the RTI socket. Port %d is not available. ", port);
@@ -204,5 +202,5 @@ int create_clock_sync_server(uint16_t* clock_sync_port) {
   *clock_sync_port = port;
   // No need to listen on the UDP socket
 
-  return socket;
+  return socket_descriptor;
 }
