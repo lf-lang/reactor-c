@@ -241,6 +241,9 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
     if (wait_duration < MIN_SLEEP_DURATION) {
       LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION " PRINTF_TIME ". Skipping wait.",
                      wait_duration, MIN_SLEEP_DURATION);
+      while (lf_time_physical() < wait_until_time) {
+        //Busy wait
+      }
       return true;
     }
 
