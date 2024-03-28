@@ -18,15 +18,16 @@
 #include "lf_socket_support.h"
 
 static void socket_close(netdrv_t* drv) {
-  if (!drv) {
-    return;
-  }
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   if (priv->socket_descriptor > 0) {
     shutdown(priv->socket_descriptor, SHUT_RDWR);
     close(priv->socket_descriptor);
     priv->socket_descriptor = -1;
   }
+}
+static void socket_open(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
 }
 
 netdrv_t* netdrv_init() {
@@ -35,7 +36,7 @@ netdrv_t* netdrv_init() {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
   }
   memset(drv, 0, sizeof(netdrv_t));
-  // drv->open = socket_open;
+  drv->open = socket_open;
   drv->close = socket_close;
   // drv->read = socket_read;
   // drv->write = socket_write;

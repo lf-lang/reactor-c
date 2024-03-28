@@ -42,7 +42,7 @@ socket_priv_t* socket_priv_init() {
  *
  * @return The socket ID (a file descriptor).
  */
-static int create_real_time_tcp_socket_errexit() {
+int create_real_time_tcp_socket_errexit() {
   // Timeout time for the communications of the server
   struct timeval timeout_time = {.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
   int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);

@@ -70,4 +70,8 @@ typedef struct socket_priv_t {
 } socket_priv_t;
 
 socket_priv_t* socket_priv_init();
+
+int create_real_time_tcp_socket_errexit();
+
+
 #endif /* SOCKET_COMMON_H */
