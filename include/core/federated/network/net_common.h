@@ -39,7 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * put into its code by the code generator (i.e., it attempts to
  * open a TCP connection).  If an explicit port is given in the `at` clause
  * on the `federated reactor` statement, it will use that port. Otherwise, it will
- * use DEFAULT_PORT.
+ * use RTI_DEFAULT_PORT.
  *
  * When it has successfully opened a TCP connection, the first message it sends
  * to the RTI is a MSG_TYPE_FED_IDS message, which contains the ID of this federate

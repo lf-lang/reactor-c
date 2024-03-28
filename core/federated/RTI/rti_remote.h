@@ -42,8 +42,6 @@
 /////////////////////////////////////////////
 //// Data structures
 
-// typedef enum socket_type_t { TCP, UDP } socket_type_t;
-
 /**
  * Information about a federate known to the RTI, including its runtime state,
  * mode of execution, and connectivity with other federates.
@@ -58,8 +56,7 @@ typedef struct federate_info_t {
                                          // to a request for stop from the RTI. Used to prevent double-counting
                                          // a federate when handling lf_request_stop().
   lf_thread_t thread_id;                 // The ID of the thread handling communication with this federate.
-  // int socket;                            // The TCP socket descriptor for communicating with this federate.
-  // struct sockaddr_in UDP_addr;           // The UDP address for the federate.
+  struct sockaddr_in UDP_addr;           // The UDP address for the federate.
   bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                          // for this federate. Enabled by default.
   pqueue_tag_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
@@ -73,7 +70,6 @@ typedef struct federate_info_t {
   // struct in_addr server_ip_addr;         // Information about the IP address of the socket
   //                                        // server of the federate.
   netdrv_t* fed_netdrv; // The netdriver that the RTI handling each federate.
-  netdrv_t* clock_netdrv;
 } federate_info_t;
 
 /**
@@ -119,9 +115,7 @@ typedef struct rti_remote_t {
    */
   const char* federation_id;
 
-  // TODO: Does it have to be a pointer?
   netdrv_t* rti_netdrv;
-  netdrv_t* clock_netdrv;
 
   /************* TCP server information *************/
   /** The desired port specified by the user on the command line. */
@@ -180,8 +174,6 @@ extern int lf_critical_section_enter(environment_t* env);
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_critical_section_exit(environment_t* env);
-
-// void create_net_server(netdrv_t* drv, netdrv_type_t netdrv_type);
 
 /**
  * Indicator that one or more federates have reported an error on resigning.
@@ -307,9 +299,9 @@ void handle_timestamp(federate_info_t* my_fed, unsigned char* buffer);
  *
  * @param message_type The type of the clock sync message (see net_common.h).
  * @param fed The federate to send the physical time to.
- * @param socket_type The socket type (TCP or UDP).
+ * @param netdrv_type The netdrv_type (NETDRV or UDP).
  */
-void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type);
+void send_physical_clock(unsigned char message_type, federate_info_t* fed, netdrv_type_t netdrv_type);
 
 /**
  * Handle clock synchronization T3 messages from federates.
@@ -322,9 +314,9 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, socke
  * clock synchronization round.
  *
  * @param my_fed The sending federate.
- * @param socket_type The RTI's socket type used for the communication (TCP or UDP)
+ * @param netdrv_type The RTI's netdrv_type used for the communication (NETDRV or UDP)
  */
-void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t socket_type);
+void handle_physical_clock_sync_message(federate_info_t* my_fed, netdrv_type_t netdrv_type);
 
 /**
  * A (quasi-)periodic thread that performs clock synchronization with each

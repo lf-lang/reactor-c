@@ -51,8 +51,6 @@
 
 #define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
 
-typedef enum { TCP, UDP } socket_type_t;
-
 typedef struct socket_priv_t {
   int port; // my port number
   int socket_descriptor;

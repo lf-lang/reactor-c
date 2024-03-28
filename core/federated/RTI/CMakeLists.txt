@@ -48,6 +48,15 @@ include_directories(${IncludeDir}/federated/network)
 include_directories(${IncludeDir}/modal_models)
 include_directories(${IncludeDir}/utils)
 
+# Option for enabling federate authentication by RTI.
+option(COMM_TYPE "Communication type between RTI and federate(s)." SOCKET)
+set(CommSrc lf_socket_support.c socket_common.c)
+IF(COMM_TYPE MATCHES SST)
+    set(CommSrc lf_sst_support.c)
+ELSEIF(COMM_TYPE MATCHES MQTT)
+    set(CommSrc lf_mqtt_support.c)
+ENDIF(COMM_TYPE MATCHES SST)
+
 
 # Declare a new executable target and list all its sources
 add_executable(
@@ -60,13 +69,13 @@ add_executable(
     ${CoreLib}/tag.c
     ${CoreLib}/clock.c
     ${CoreLib}/federated/network/net_util.c
-    ${CoreLib}/federated/network/lf_socket_support.c
-    ${CoreLib}/federated/network/socket_common.c
+    ${CoreLib}/federated/network/${CommSrc}
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
 )
-if (NOT DEFINED LOG_LEVEL)
+
+IF(NOT DEFINED LOG_LEVEL)
     set(LOG_LEVEL 0)
 ENDIF(NOT DEFINED LOG_LEVEL)
 
@@ -129,6 +138,23 @@ IF(AUTH MATCHES ON)
   find_package(OpenSSL REQUIRED)
   target_link_libraries(RTI OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)
+
+IF(COMM_TYPE MATCHES MQTT)
+    find_package(eclipse-paho-mqtt-c REQUIRED)
+    target_link_libraries(eclipse-paho-mqtt-c::paho-mqtt3as)
+ENDIF(COMM_TYPE MATCHES MQTT)
+
+# # Option for enabling federate authentication by RTI.
+# option(SST "Federate authentication by SST-c-api is enabled." OFF)
+# IF(SST MATCHES ON)
+#   add_compile_definitions(__RTI_SST__)
+#   # Find OpenSSL and link to it
+#   find_package(OpenSSL REQUIRED)
+#   target_link_libraries(RTI OpenSSL::SSL)
+#   add_subdirectory(../../../third_party/sst-c-api SSTLIB)
+#   target_link_libraries(RTI SSTLIB)
+#   target_sources(RTI PUBLICE ${CoreLib}/federated/network/lf_sst_support.c)
+# ENDIF(SST MATCHES ON)
 
 install(
     TARGETS RTI

@@ -87,13 +87,6 @@ int netdrv_write(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   return drv->write(drv, num_bytes, buffer);
 }
 
-// void *netdrv_get_privdrv(netdrv_t *drv) {
-// 	if (!drv) {
-// 		return -1;
-//     }
-// 	return drv->get_priv(drv);
-// }
-
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
   if (socket < 0) {
     // Socket is not open.
