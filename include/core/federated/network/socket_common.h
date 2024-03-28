@@ -45,7 +45,7 @@
  * for the RTI or on the command line, when the RTI starts up, it will attempt
  * to open a socket server on this port.
  */
-#define RTI_DEFAULT_PORT 15045u
+#define DEFAULT_PORT 15045u
 
 #define RTI_DEFAULT_UDP_PORT 15061u
 
@@ -56,7 +56,7 @@ typedef enum { TCP, UDP } socket_type_t;
 typedef struct socket_priv_t {
   int port; // my port number
   int socket_descriptor;
-//   int proto;
+  int proto;
   uint16_t user_specified_port;
 
   // The connected other side's info.
@@ -72,4 +72,5 @@ typedef struct socket_priv_t {
 } socket_priv_t;
 
 socket_priv_t* socket_priv_init();
+int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
 #endif /* SOCKET_COMMON_H */

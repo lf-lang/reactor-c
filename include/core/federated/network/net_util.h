@@ -66,7 +66,7 @@ int host_is_big_endian(void);
 
 #ifdef FEDERATED
 
-typedef enum netdrv_type_t { RTI, CLOCKSYNC } netdrv_type_t;
+// typedef enum netdrv_type_t { RTI, CLOCKSYNC } netdrv_type_t;
 
 typedef struct netdrv_t {
   int (*open)(struct netdrv_t* drv);
@@ -88,7 +88,7 @@ netdrv_t* netdrv_init();
 typedef enum server_type_t { RTI, FED } server_type_t;
 
 // Port will be NULL on MQTT.
-int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
+// int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
 
 // Returns socket number of clock_sync_server.
 int create_clock_sync_server(uint16_t* clock_sync_port);

@@ -1394,11 +1394,12 @@ void lf_connect_to_federates(netdrv_t* rti_netdrv) {
         break;
       }
     }
-    if (rti_remote->final_port_UDP != UINT16_MAX && clock_sync_enabled) {
-      if (get_port(rti_remote->clock_netdrv) != UINT16_MAX && clock_sync_enabled) {
-        lf_thread_create(&rti_remote->clock_thread, clock_synchronization_thread, NULL);
-      }
-    }
+    // FIXME: Disabled for testing.
+    // if (rti_remote->final_port_UDP != UINT16_MAX && clock_sync_enabled) {
+    //   if (get_port(rti_remote->clock_netdrv) != UINT16_MAX && clock_sync_enabled) {
+    //     lf_thread_create(&rti_remote->clock_thread, clock_synchronization_thread, NULL);
+    //   }
+    // }
   }
 }
 
@@ -1440,12 +1441,13 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 int32_t start_rti_server(uint16_t port) {
   _lf_initialize_clock();
   // Create the RTI's netdriver.
-  int ret = create_server(rti_remote->rti_netdrv, RTI);
+  int ret = create_server(rti_remote->rti_netdrv, RTI, DEFAULT_PORT);
   lf_print("RTI: Listening for federates.");
   // Create the clocksync's netdriver.
-  if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-    rti_remote->clock_sync_socket = create_clock_sync_server(&rti_remote->clock_sync_port);
-  }
+  // FIXME: Disabled for testing.
+  // if (rti_remote->clock_sync_global_status >= clock_sync_on) {
+  //   rti_remote->clock_sync_socket = create_clock_sync_server(&rti_remote->clock_sync_port);
+  // }
   return ret;
 }
 

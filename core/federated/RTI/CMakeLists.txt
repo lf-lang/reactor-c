@@ -61,6 +61,7 @@ add_executable(
     ${CoreLib}/clock.c
     ${CoreLib}/federated/network/net_util.c
     ${CoreLib}/federated/network/lf_socket_support.c
+    ${CoreLib}/federated/network/socket_common.c
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c

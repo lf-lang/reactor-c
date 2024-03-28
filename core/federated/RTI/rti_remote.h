@@ -42,7 +42,7 @@
 /////////////////////////////////////////////
 //// Data structures
 
-typedef enum socket_type_t { TCP, UDP } socket_type_t;
+// typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
 /**
  * Information about a federate known to the RTI, including its runtime state,
@@ -181,7 +181,7 @@ extern int lf_critical_section_enter(environment_t* env);
  */
 extern int lf_critical_section_exit(environment_t* env);
 
-void create_net_server(netdrv_t* drv, netdrv_type_t netdrv_type);
+// void create_net_server(netdrv_t* drv, netdrv_type_t netdrv_type);
 
 /**
  * Indicator that one or more federates have reported an error on resigning.
