@@ -80,39 +80,46 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
   priv->server_ip_addr = ip_addr;
 }
 
-// // create_real_time_tcp_socket_errexit
-// static int socket_open(netdrv_t* drv) {
-//   if (!drv) {
-//     return -1;
-//   }
-//   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-//   priv->socket_descriptor = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-//   priv->proto = TCP;
-//   if (priv->socket_descriptor < 0) {
-//     lf_print_error_and_exit("Could not open TCP socket. Err=%d", priv->socket_descriptor);
-//   }
-//   // Disable Nagle's algorithm which bundles together small TCP messages to
-//   //  reduce network traffic
-//   // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-//   //  is enough.
-//   int flag = 1;
-//   int result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+void set_clock_netdrv(netdrv_t* clock_drv, netdrv_t* rti_drv, uint16_t port_num) {
+  socket_priv_t* priv_clock = (socket_priv_t*)(clock_drv);
+  socket_priv_t* priv_rti = (socket_priv_t*)(rti_drv);
+  priv_clock->UDP_addr.sin_family = AF_INET;
+  priv_clock->UDP_addr.sin_port = htons(port_num);
+  priv_clock->UDP_addr.sin_addr = priv_rti->server_ip_addr;
+}
 
-//   if (result < 0) {
-//     lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-//   }
+// create_real_time_tcp_socket_errexit
+static void socket_open(netdrv_t* drv) {
+  if (!drv) {
+    return -1;
+  }
+  socket_priv_t* priv = (socket_priv_t*)(drv);
+  priv->socket_descriptor = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  if (priv->socket_descriptor < 0) {
+    lf_print_error_and_exit("Could not open TCP socket. Err=%d", priv->socket_descriptor);
+  }
+  // Disable Nagle's algorithm which bundles together small TCP messages to
+  //  reduce network traffic
+  // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
+  //  is enough.
+  int flag = 1;
+  int result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
 
-// // Disable delayed ACKs. Only possible on Linux
-// #if defined(PLATFORM_Linux)
-//   result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+  if (result < 0) {
+    lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+  }
 
-//   if (result < 0) {
-//     lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-//   }
-// #endif
+// Disable delayed ACKs. Only possible on Linux
+#if defined(PLATFORM_Linux)
+  result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
 
-//   return priv->socket_descriptor;
-// }
+  if (result < 0) {
+    lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+  }
+#endif
+
+  return priv->socket_descriptor;
+}
 
 void netdrv_free(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
@@ -139,7 +146,8 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
       // Got a socket
       break;
     } else if (ret_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-      lf_print_error_and_exit("Failed to accept the socket. %s.", strerror(errno));
+      lf_print_error_and_exit("Failed to accept the socket. %s. ret_priv->socket_descriptor = %d",
+        strerror(errno), ret_priv->socket_descriptor);
     } else {
       // Try again
       lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));

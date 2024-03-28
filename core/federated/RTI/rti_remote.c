@@ -27,7 +27,7 @@
  */
 
 #include "rti_remote.h"
-// #include "net_util.h"
+#include "net_util.h"
 #include <string.h>
 
 // Global variables defined in tag.c:
@@ -782,7 +782,7 @@ void* clock_synchronization_thread(void* noargs) {
           }
         } while ((errno == EAGAIN || errno == EWOULDBLOCK) && bytes_read < (ssize_t)message_size);
         // If any errors occur, either discard the message or the clock sync round.
-        if (bytes_read == message_size) {
+        if (!bytes_read) {
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
             int32_t fed_id_2 = extract_int32(&(buffer[1]));
             // Check that this message came from the correct federate.
