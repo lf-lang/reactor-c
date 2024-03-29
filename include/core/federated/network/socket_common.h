@@ -26,7 +26,7 @@
 
 /**
  * Maximum number of port addresses that a federate will try to connect to the RTI on.
- * If you are using automatic ports begining at RTI_DEFAULT_PORT, this puts an upper bound
+ * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
  * on the number of RTIs that can be running on the same host.
  */
 #define MAX_NUM_PORT_ADDRESSES 16
@@ -51,7 +51,7 @@
  * for the RTI or on the command line, when the RTI starts up, it will attempt
  * to open a socket server on this port.
  */
-#define RTI_DEFAULT_PORT 15045u
+#define DEFAULT_PORT 15045u
 
 #define RTI_DEFAULT_UDP_PORT 15061u
 
@@ -76,6 +76,5 @@ typedef struct socket_priv_t {
 socket_priv_t* socket_priv_init();
 
 int create_real_time_tcp_socket_errexit();
-
 
 #endif /* SOCKET_COMMON_H */

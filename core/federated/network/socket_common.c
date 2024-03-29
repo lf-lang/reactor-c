@@ -82,7 +82,7 @@ int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   // Federate always has a specified port. The RTI can get a specified port by user input.
   uint16_t specified_port = port;
   if (specified_port == 0 && server_type == RTI) {
-    port = RTI_DEFAULT_PORT;
+    port = DEFAULT_PORT;
   }
 
   // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
@@ -106,8 +106,8 @@ int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
     if (specified_port == 0) {
       lf_print_warning("Failed to get port %d.", port);
       port++;
-      if (port >= RTI_DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
-        port = RTI_DEFAULT_PORT;
+      if (port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
+        port = DEFAULT_PORT;
       lf_print_warning("Try again with port %d.", port);
       server_fd.sin_port = htons(port);
       // Do not sleep.

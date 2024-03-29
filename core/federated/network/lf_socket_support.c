@@ -32,6 +32,9 @@ static void socket_open(netdrv_t* drv) {
   priv->socket_descriptor = create_real_time_tcp_socket_errexit();
 }
 
+static void socket_open(netdrv_t* drv);
+static void socket_close(netdrv_t* drv);
+
 netdrv_t* netdrv_init() {
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {

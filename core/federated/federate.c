@@ -1780,14 +1780,14 @@ void lf_connect_to_rti(const char* hostname, int port) {
   if (port < 0 || port > INT16_MAX) {
     lf_print_error("lf_connect_to_rti(): Specified port (%d) is out of range,"
                    " using the default port %d instead.",
-                   port, RTI_DEFAULT_PORT);
-    uport = RTI_DEFAULT_PORT;
+                   port, DEFAULT_PORT);
+    uport = DEFAULT_PORT;
     port = 0; // Mark so that increments occur between tries.
   } else {
     uport = (uint16_t)port;
   }
   if (uport == 0) {
-    uport = RTI_DEFAULT_PORT;
+    uport = DEFAULT_PORT;
   }
 
   // Initialize netdriver to rti.
