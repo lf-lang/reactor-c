@@ -18,22 +18,31 @@
 #include "net_util.h"
 #include "netdriver.h"
 
+// static void socket_close(netdrv_t* drv) {
+//   socket_priv_t* priv = (socket_priv_t*)drv->priv;
+//   if (priv->socket_descriptor > 0) {
+//     shutdown(priv->socket_descriptor, SHUT_RDWR);
+//     close(priv->socket_descriptor);
+//     priv->socket_descriptor = -1;
+//   }
+// }
+// static void socket_open(netdrv_t* drv) {
+//   socket_priv_t* priv = (socket_priv_t*)drv->priv;
+//   priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+// }
 
-static void socket_close(netdrv_t* drv) {
+// static void socket_open(netdrv_t* drv);
+// static void socket_close(netdrv_t* drv);
+
+void TCP_open(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  if (priv->socket_descriptor > 0) {
-    shutdown(priv->socket_descriptor, SHUT_RDWR);
-    close(priv->socket_descriptor);
-    priv->socket_descriptor = -1;
-  }
-}
-static void socket_open(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+  TCP_socket_open(priv);
 }
 
-static void socket_open(netdrv_t* drv);
-static void socket_close(netdrv_t* drv);
+void TCP_close(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  TCP_socket_close(priv);
+}
 
 netdrv_t* netdrv_init() {
   netdrv_t* drv = malloc(sizeof(netdrv_t));
@@ -41,14 +50,14 @@ netdrv_t* netdrv_init() {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
   }
   memset(drv, 0, sizeof(netdrv_t));
-  drv->open = socket_open;
-  drv->close = socket_close;
+  drv->open = TCP_open;
+  drv->close = TCP_close;
   // drv->read = socket_read;
   // drv->write = socket_write;
   drv->read_remaining_bytes = 0;
 
   // Initialize priv.
-  socket_priv_t* priv = socket_priv_init();
+  socket_priv_t* priv = TCP_socket_priv_init();
 
   // Set drv->priv pointer to point the malloc'd priv.
   drv->priv = (void*)priv;
@@ -99,6 +108,70 @@ void netdrv_free(netdrv_t* drv) {
   free(drv);
 }
 
+// This only creates TCP servers not UDP.
+int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  // Federate always has a specified port. The RTI can get a specified port by user input.
+  uint16_t specified_port = port;
+  if (specified_port == 0 && server_type == RTI) {
+    port = DEFAULT_PORT;
+  }
+
+  // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
+  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+
+  // Server file descriptor.
+  struct sockaddr_in server_fd;
+  // Zero out the server address structure.
+  bzero((char*)&server_fd, sizeof(server_fd));
+
+  server_fd.sin_family = AF_INET;         // IPv4
+  server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
+  // Convert the port number from host byte order to network byte order.
+  server_fd.sin_port = htons(port);
+
+  int result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
+  // Try repeatedly to bind to a port.
+  int count = 1;
+
+  while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
+    if (specified_port == 0) {
+      lf_print_warning("Failed to get port %d.", port);
+      port++;
+      if (port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
+        port = DEFAULT_PORT;
+      lf_print_warning("Try again with port %d.", port);
+      server_fd.sin_port = htons(port);
+      // Do not sleep.
+    } else {
+      lf_print("RTI failed to get port %d. Will try again.", port);
+      lf_sleep(PORT_BIND_RETRY_INTERVAL);
+    }
+    result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
+  }
+  if (result != 0) {
+    lf_print_error_and_exit("Failed to bind the socket. Port %d is not available. ", port);
+  }
+  // Enable listening for socket connections.
+  // The second argument is the maximum number of queued socket requests,
+  // which according to the Mac man page is limited to 128.
+  listen(priv->socket_descriptor, 128);
+
+  // Set the port into priv->port.
+  if (specified_port == 0 && server_type == FED) {
+    // Need to retrieve the port number assigned by the OS.
+    struct sockaddr_in assigned;
+    socklen_t addr_len = sizeof(assigned);
+    if (getsockname(priv->socket_descriptor, (struct sockaddr*)&assigned, &addr_len) < 0) {
+      lf_print_error_and_exit("Failed to retrieve assigned port number.");
+    }
+    priv->port = ntohs(assigned.sin_port);
+  } else {
+    priv->port = port;
+  }
+  return 1;
+}
+
 /**
  * 1. initializes other side's netdrv.
  * 2. Establishes communication session.
@@ -118,8 +191,8 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
       // Got a socket
       break;
     } else if (ret_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-      lf_print_error_and_exit("Failed to accept the socket. %s. ret_priv->socket_descriptor = %d",
-        strerror(errno), ret_priv->socket_descriptor);
+      lf_print_error_and_exit("Failed to accept the socket. %s. ret_priv->socket_descriptor = %d", strerror(errno),
+                              ret_priv->socket_descriptor);
     } else {
       // Try again
       lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
@@ -266,7 +339,7 @@ typedef enum {
   FINISH_READ
 } read_state_t;
 
-static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* bytes_to_read, int* state) {
+static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int* state) {
   switch (buffer[0]) {
   case MSG_TYPE_REJECT: // 1 +1
     *bytes_to_read = 1;
@@ -397,12 +470,12 @@ static void handle_header_read(netdrv_t* netdrv, unsigned char* buffer, size_t* 
 
 // TODO: DONGHA: ADD buffer_length checking.
 //  Returns the total bytes read.
-ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length) {
-  socket_priv_t* priv = (socket_priv_t*)netdrv->priv;
+ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
 
   size_t bytes_to_read;        // The bytes to read in future.
   ssize_t bytes_read = 0;      // The bytes that was read by a single read() function.
-  size_t total_bytes_read = 0; // The total bytes that have been read, and will be the return of the read_from netdrv.
+  size_t total_bytes_read = 0; // The total bytes that have been read, and will be the return of the read_from drv.
   int retry_count;
   int state;
   // Check if socket_descriptor is open.
@@ -414,8 +487,8 @@ ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_
   // First, check if there are remaining bytes.
   // If there are remaining bytes, it reads as long as it can (buffer_length).
   // Then it becomes KEEP_READING state.
-  if (netdrv->read_remaining_bytes > 0) {
-    bytes_to_read = (netdrv->read_remaining_bytes > buffer_length) ? buffer_length : netdrv->read_remaining_bytes;
+  if (drv->read_remaining_bytes > 0) {
+    bytes_to_read = (drv->read_remaining_bytes > buffer_length) ? buffer_length : drv->read_remaining_bytes;
     state = KEEP_READING;
   } else {
     // If there are no left bytes to read, it reads the header byte.
@@ -447,7 +520,7 @@ ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_
 
     switch (state) {
     case HEADER_READ:
-      handle_header_read(netdrv, buffer, &bytes_to_read, &state);
+      handle_header_read(buffer, &bytes_to_read, &state);
       break;
 
     case READ_MSG_TYPE_FED_IDS:;
@@ -465,14 +538,14 @@ ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_
       size_t length = (size_t)extract_uint32(buffer + 1 + sizeof(uint16_t) + sizeof(uint16_t));
       if (length > buffer_length - total_bytes_read) {
         bytes_to_read = buffer_length - total_bytes_read;
-        netdrv->read_remaining_bytes = length - bytes_to_read;
+        drv->read_remaining_bytes = length - bytes_to_read;
       } else {
         bytes_to_read = length;
       }
       state = FINISH_READ;
       break;
     case KEEP_READING:
-      netdrv->read_remaining_bytes -= total_bytes_read;
+      drv->read_remaining_bytes -= total_bytes_read;
       return total_bytes_read;
     case FINISH_READ:
       return total_bytes_read;

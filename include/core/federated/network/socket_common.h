@@ -73,7 +73,10 @@ typedef struct socket_priv_t {
   struct sockaddr_in UDP_addr; // The UDP address for the federate.
 } socket_priv_t;
 
-socket_priv_t* socket_priv_init();
+socket_priv_t* TCP_socket_priv_init();
+void TCP_socket_close(socket_priv_t* priv);
+void TCP_socket_open(socket_priv_t* priv);
+
 
 int create_real_time_tcp_socket_errexit();
 
