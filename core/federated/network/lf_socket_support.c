@@ -15,9 +15,24 @@
 
 #include "util.h"
 #include "net_common.h"
-#include "lf_socket_support.h"
+#include "net_util.h"
+#include "netdriver.h"
 
-static int socket_open(netdrv_t* drv);
+
+static void socket_close(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  if (priv->socket_descriptor > 0) {
+    shutdown(priv->socket_descriptor, SHUT_RDWR);
+    close(priv->socket_descriptor);
+    priv->socket_descriptor = -1;
+  }
+}
+static void socket_open(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+}
+
+static void socket_open(netdrv_t* drv);
 static void socket_close(netdrv_t* drv);
 
 netdrv_t* netdrv_init() {
@@ -52,6 +67,7 @@ int32_t get_port(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   return (priv == NULL) ? -1 : priv->server_port;
 }
+//
 struct in_addr* get_ip_addr(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   return &priv->server_ip_addr;
@@ -77,56 +93,10 @@ void set_clock_netdrv(netdrv_t* clock_drv, netdrv_t* rti_drv, uint16_t port_num)
   priv_clock->UDP_addr.sin_addr = priv_rti->server_ip_addr;
 }
 
-// create_real_time_tcp_socket_errexit
-static int socket_open(netdrv_t* drv) {
-  if (!drv) {
-    return -1;
-  }
-  socket_priv_t* priv = (socket_priv_t*)(drv);
-  priv->socket_descriptor = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  priv->proto = NETDRV;
-  if (priv->socket_descriptor < 0) {
-    lf_print_error_and_exit("Could not open TCP socket. Err=%d", priv->socket_descriptor);
-  }
-  // Disable Nagle's algorithm which bundles together small TCP messages to
-  //  reduce network traffic
-  // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-  //  is enough.
-  int flag = 1;
-  int result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
-
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-  }
-
-// Disable delayed ACKs. Only possible on Linux
-#if defined(PLATFORM_Linux)
-  result = setsockopt(priv->socket_descriptor, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
-
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-  }
-#endif
-
-  return priv->socket_descriptor;
-}
-
 void netdrv_free(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   // free(priv); // Already freed on socket close()
   free(drv);
-}
-
-static void socket_close(netdrv_t* drv) {
-  if (!drv) {
-    return;
-  }
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  if (priv->socket_descriptor > 0) {
-    shutdown(priv->socket_descriptor, SHUT_RDWR);
-    close(priv->socket_descriptor);
-    priv->socket_descriptor = -1;
-  }
 }
 
 /**
@@ -156,12 +126,12 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
       continue;
     }
   }
-  // Assign the address information for federate.
-  // The IP address is stored here as an in_addr struct (in .server_ip_addr) that can be useful
-  // to create sockets and can be efficiently sent over the network.
-  // First, convert the sockaddr structure into a sockaddr_in that contains an internet address.
+
+  // TODO: DONGHA
+  // Get the IP address of the other accepting client. This is used in two cases.
+  // 1) Decentralized coordination - handle_address_query() - Sends the port number and address of the federate.
+  // 2) Clock synchronization - send_physical_clock - Send through UDP.
   struct sockaddr_in* pV4_addr = (struct sockaddr_in*)&client_fd;
-  // Then extract the internet address (which is in IPv4 format) and assign it as the federate's socket server
   ret_priv->server_ip_addr = pV4_addr->sin_addr;
   return ret_netdrv;
 }

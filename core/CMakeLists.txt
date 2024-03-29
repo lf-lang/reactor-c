@@ -26,12 +26,6 @@ endif()
 list(APPEND REACTORC_SOURCES ${GENERAL_SOURCES})
 
 # Add sources for either threaded or single-threaded runtime
-if (DEFINED FEDERATED)
-    include(federated/CMakeLists.txt)
-    include(federated/network/CMakeLists.txt)
-endif()
-
-# Add sources for either threaded or single-threaded runtime
 if(DEFINED LF_SINGLE_THREADED)
     message(STATUS "Including sources for single-threaded runtime.")
     list(APPEND SINGLE_THREADED_SOURCES reactor.c)
@@ -77,6 +71,13 @@ if (DEFINED LF_TRACE)
     message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
     target_link_libraries(reactor-c PUBLIC lf::trace-api)
     target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN}")
+endif()
+
+# Add sources for either threaded or single-threaded runtime
+if (DEFINED FEDERATED)
+    include(federated/CMakeLists.txt)
+    include(federated/network/CMakeLists.txt)
+    target_link_libraries(reactor-c PUBLIC lf::low-level-platform-api)
 endif()
 
 include(${LF_ROOT}/version/api/CMakeLists.txt)

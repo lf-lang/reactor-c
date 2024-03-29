@@ -51,10 +51,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "low_level_platform.h"
 #include "tag.h"
 
-#define NUM_SOCKET_RETRIES 10
-// TODO: Copied at lf_socket_support.h. Erase after finished.
-#define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
-
 #define HOST_LITTLE_ENDIAN 1
 #define HOST_BIG_ENDIAN 2
 
@@ -63,134 +59,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * return false.
  */
 int host_is_big_endian(void);
-
-#ifdef FEDERATED
-
-typedef enum netdrv_type_t { NETDRV, UDP } netdrv_type_t;
-
-typedef struct netdrv_t {
-  int (*open)(struct netdrv_t* drv);
-  void (*close)(struct netdrv_t* drv);
-  int (*read)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
-  int (*write)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
-  void* priv;
-  unsigned int read_remaining_bytes;
-} netdrv_t;
-
-int netdrv_open(netdrv_t* drv);
-void netdrv_close(netdrv_t* drv);
-int netdrv_read(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
-int netdrv_write(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
-
-netdrv_t* netdrv_init();
-
-typedef enum server_type_t { RTI, FED } server_type_t;
-
-// Port will be NULL on MQTT.
-// int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
-
-// Returns socket number of clock_sync_server.
-int create_clock_sync_server(uint16_t* clock_sync_port);
-
-netdrv_t* establish_communication_session(netdrv_t* netdrv);
-
-/**
- * Write the specified number of bytes to the specified socket from the
- * specified buffer. If an error occurs, return -1 and set errno to indicate
- * the cause of the error. If the write succeeds, return 0.
- * This function repeats the attempt until the specified number of bytes
- * have been written or an error occurs. Specifically, errors EAGAIN,
- * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
- * another attempt. A delay between attempts is given by
- * DELAY_BETWEEN_SOCKET_RETRIES.
- * @param socket The socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @return 0 for success, -1 for failure.
- */
-int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
-
-/**
- * Write the specified number of bytes to the specified socket using write_to_socket
- * and close the socket if an error occurs. If an error occurs, this will change the
- * socket ID pointed to by the first argument to -1 and will return -1.
- * @param socket Pointer to the socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @return 0 for success, -1 for failure.
- */
-int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
-
-/**
- * Write the specified number of bytes to the specified socket using
- * write_to_socket_close_on_error and exit with an error code if an error occurs.
- * If the mutex argument is non-NULL, release the mutex before exiting.  If the
- * format argument is non-null, then use it an any additional arguments to form
- * the error message using printf conventions. Otherwise, print a generic error
- * message.
- * @param socket Pointer to the socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @param mutex If non-NULL, the mutex to unlock before exiting.
- * @param format A format string for error messages, followed by any number of
- *  fields that will be used to fill the format string as in printf, or NULL
- *  to print a generic error message.
- */
-void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...);
-
-/**
- * Read the specified number of bytes from the specified socket into the specified buffer.
- * If an error occurs during this reading, return -1 and set errno to indicate
- * the cause of the error. If the read succeeds in reading the specified number of bytes,
- * return 0. If an EOF occurs before reading the specified number of bytes, return 1.
- * This function repeats the read attempt until the specified number of bytes
- * have been read, an EOF is read, or an error occurs. Specifically, errors EAGAIN,
- * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
- * another attempt. A delay between attempts is given by DELAY_BETWEEN_SOCKET_RETRIES.
- * @param socket The socket ID.
- * @param num_bytes The number of bytes to read.
- * @param buffer The buffer into which to put the bytes.
- * @return 0 for success, 1 for EOF, and -1 for an error.
- */
-ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length);
-
-/**
- * Read the specified number of bytes to the specified socket using read_from_socket
- * and close the socket if an error occurs. If an error occurs, this will change the
- * socket ID pointed to by the first argument to -1 and will return -1.
- * @param socket Pointer to the socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @return 0 for success, -1 for failure.
- */
-ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length);
-
-/**
- * Read the specified number of bytes from the specified socket into the
- * specified buffer. If a disconnect or an EOF occurs during this
- * reading, then if format is non-null, report an error and exit.
- * If the mutex argument is non-NULL, release the mutex before exiting.
- * If format is null, then report the error, but do not exit.
- * This function takes a formatted string and additional optional arguments
- * similar to printf(format, ...) that is appended to the error messages.
- * @param socket The socket ID.
- * @param num_bytes The number of bytes to read.
- * @param buffer The buffer into which to put the bytes.
- * @param format A printf-style format string, followed by arguments to
- *  fill the string, or NULL to not exit with an error message.
- * @return The number of bytes read, or 0 if an EOF is received, or
- *  a negative number for an error.
- */
-void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
-                                    char* format, ...);
-
-/**
- * Mutex protecting socket close operations.
- */
-extern lf_mutex_t netdrv_mutex;
-
-#endif // FEDERATED
 
 /**
  * Write the specified data as a sequence of bytes starting
@@ -294,6 +162,11 @@ uint16_t extract_uint16(unsigned char* bytes);
 uint32_t extract_uint32(unsigned char* bytes);
 
 #ifdef FEDERATED
+
+/**
+ * Mutex protecting socket close operations.
+ */
+extern lf_mutex_t netdrv_mutex;
 
 /**
  * Extract the core header information that all messages between

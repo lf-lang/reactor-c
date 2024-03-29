@@ -25,6 +25,8 @@
 #include "net_util.h"
 #include "rti_common.h"
 
+#include "netdriver.h"
+
 #ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC authentication.
@@ -37,7 +39,7 @@
 #define MAX_TIME_FOR_REPLY_TO_STOP_REQUEST SEC(30)
 
 // TODO: Need to be fixed later.
-#include "lf_socket_support.h"
+// #include "lf_socket_support.h"
 
 /////////////////////////////////////////////
 //// Data structures

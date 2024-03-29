@@ -3,8 +3,6 @@
 
 #include <MQTTClient.h>
 
-#include "net_util.h"
-
 typedef struct mqtt_priv_t {
   MQTTClient client;
   MQTTClient_connectOptions conn_opts; // = MQTTClient_connectOptions_initializer;

@@ -1,10 +1,16 @@
 #ifndef SOCKET_COMMON_H
 #define SOCKET_COMMON_H
 
-#include "net_util.h"
-
 #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
 #include <netinet/tcp.h> // TCP_NODELAY
+
+#if defined(COMM_TYPE_TCP)
+#include "type/lf_socket_support.h"
+#elif defined(COMM_TYPE_SST)
+#include "type/lf_sst_support.h"
+#endif
+
+#include "tag.h"
 
 /**
  * The timeout time in ns for TCP operations.
@@ -49,8 +55,6 @@
 
 #define RTI_DEFAULT_UDP_PORT 15061u
 
-#define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
-
 typedef struct socket_priv_t {
   int port; // my port number
   int socket_descriptor;
@@ -70,5 +74,7 @@ typedef struct socket_priv_t {
 } socket_priv_t;
 
 socket_priv_t* socket_priv_init();
-int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
+
+int create_real_time_tcp_socket_errexit();
+
 #endif /* SOCKET_COMMON_H */

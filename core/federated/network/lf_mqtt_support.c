@@ -1,6 +1,6 @@
 #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
 
-#include "lf_mqtt_support.h"
+#include "netdriver.h"
 
 /**
  * @brief 
@@ -52,7 +52,6 @@ int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) { }
  */
 netdrv_t* establish_communication_session(netdrv_t* netdrv) {}
 
-
 /**
  * @brief Publish message.
  * 
@@ -63,18 +62,14 @@ netdrv_t* establish_communication_session(netdrv_t* netdrv) {}
  */
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {}
 
-
 int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {}
 
 void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...) {}
 
-
 ssize_t read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer, size_t buffer_length) {}
 
-
 ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {}
-
 
 void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
                                     char* format, ...) {}

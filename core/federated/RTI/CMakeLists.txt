@@ -48,16 +48,6 @@ include_directories(${IncludeDir}/federated/network)
 include_directories(${IncludeDir}/modal_models)
 include_directories(${IncludeDir}/utils)
 
-# Option for enabling federate authentication by RTI.
-option(COMM_TYPE "Communication type between RTI and federate(s)." SOCKET)
-set(CommSrc lf_socket_support.c socket_common.c)
-IF(COMM_TYPE MATCHES SST)
-    set(CommSrc lf_sst_support.c)
-ELSEIF(COMM_TYPE MATCHES MQTT)
-    set(CommSrc lf_mqtt_support.c)
-ENDIF(COMM_TYPE MATCHES SST)
-
-
 # Declare a new executable target and list all its sources
 add_executable(
     RTI
@@ -68,12 +58,15 @@ add_executable(
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
     ${CoreLib}/clock.c
-    ${CoreLib}/federated/network/net_util.c
-    ${CoreLib}/federated/network/${CommSrc}
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
 )
+
+option(COMM_TYPE "Communication type between RTI and federate(s)." ON)
+IF(COMM_TYPE MATCHES ON)
+    set(COMM_TYPE TCP)
+ENDIF()
 
 IF(NOT DEFINED LOG_LEVEL)
     set(LOG_LEVEL 0)
@@ -113,13 +106,21 @@ target_link_libraries(RTI lf::low-level-platform-impl)
 include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
 target_link_libraries(RTI lf::low-level-platform-api)
 
-# Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
-target_compile_definitions(RTI PUBLIC STANDALONE_RTI=1)
-
 # Set FEDERATED to get federated compilation support
 target_compile_definitions(RTI PUBLIC FEDERATED=1)
 
+include(${IncludeDir}/federated/network/CMakeLists.txt)
+target_link_libraries(RTI lf::network-api)
+
+include(${CoreLib}/federated/network/CMakeLists.txt)
+target_link_libraries(RTI lf::network-impl)
+
+# Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
+target_compile_definitions(RTI PUBLIC STANDALONE_RTI=1)
+
 target_compile_definitions(RTI PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
+
+target_compile_definitions(RTI PUBLIC COMM_TYPE_${COMM_TYPE})
 
 # Set RTI Tracing
 target_compile_definitions(RTI PUBLIC RTI_TRACE)
@@ -138,23 +139,6 @@ IF(AUTH MATCHES ON)
   find_package(OpenSSL REQUIRED)
   target_link_libraries(RTI OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)
-
-IF(COMM_TYPE MATCHES MQTT)
-    find_package(eclipse-paho-mqtt-c REQUIRED)
-    target_link_libraries(eclipse-paho-mqtt-c::paho-mqtt3as)
-ENDIF(COMM_TYPE MATCHES MQTT)
-
-# # Option for enabling federate authentication by RTI.
-# option(SST "Federate authentication by SST-c-api is enabled." OFF)
-# IF(SST MATCHES ON)
-#   add_compile_definitions(__RTI_SST__)
-#   # Find OpenSSL and link to it
-#   find_package(OpenSSL REQUIRED)
-#   target_link_libraries(RTI OpenSSL::SSL)
-#   add_subdirectory(../../../third_party/sst-c-api SSTLIB)
-#   target_link_libraries(RTI SSTLIB)
-#   target_sources(RTI PUBLICE ${CoreLib}/federated/network/lf_sst_support.c)
-# ENDIF(SST MATCHES ON)
 
 install(
     TARGETS RTI

@@ -27,7 +27,7 @@
  */
 
 #include "rti_remote.h"
-// #include "net_util.h"
+#include "net_util.h"
 #include <string.h>
 
 // Global variables defined in tag.c:
@@ -773,7 +773,6 @@ void* clock_synchronization_thread(void* noargs) {
       int remaining_attempts = 5;
       while (remaining_attempts > 0) {
         remaining_attempts--;
-
         // Read from the UDP socket
         ssize_t bytes_read = 0;
         do {
@@ -1264,10 +1263,11 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* netdrv, uint16_t 
       if (rti_remote->clock_sync_global_status >= clock_sync_on) {
         // If no runtime clock sync, no need to set up the UDP port.
         // Initialize the UDP_addr field of the federate struct
+        // TODO: DONGHA - Need to know the ip_address of the federate.
+        //
         fed->UDP_addr.sin_family = AF_INET;
         fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
-        // FIXME: Disabled for testing.
-        // fed->UDP_addr.sin_addr = fed->server_ip_addr;
+        fed->UDP_addr.sin_addr = *get_ip_addr(netdrv);
       } else {
         // Disable clock sync after initial round.
         fed->clock_synchronization_enabled = false;
@@ -1405,10 +1405,9 @@ void lf_connect_to_federates(netdrv_t* rti_netdrv) {
         break;
       }
     }
-    // FIXME: Disabled for testing.
-    // if (rti_remote->final_port_UDP != UINT16_MAX && clock_sync_enabled) {
-    //   lf_thread_create(&rti_remote->clock_thread, clock_synchronization_thread, NULL);
-    // }
+    if (rti_remote->clock_sync_port != UINT16_MAX && clock_sync_enabled) {
+      lf_thread_create(&rti_remote->clock_thread, clock_synchronization_thread, NULL);
+    }
   }
 }
 
@@ -1449,13 +1448,12 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 int32_t start_rti_server(uint16_t port) {
   _lf_initialize_clock();
   // Create the RTI's netdriver.
-  int ret = create_server(rti_remote->rti_netdrv, RTI, DEFAULT_PORT);
+  int ret = create_server(rti_remote->rti_netdrv, RTI, port);
   lf_print("RTI: Listening for federates.");
   // Create the clocksync's netdriver.
-  // FIXME: Disabled for testing.
-  // if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-  //   rti_remote->clock_sync_socket = create_clock_sync_server(&rti_remote->final_port_UDP);
-  // }
+  if (rti_remote->clock_sync_global_status >= clock_sync_on) {
+    rti_remote->clock_sync_socket = create_clock_sync_server(&rti_remote->clock_sync_port);
+  }
   return ret;
 }
 
@@ -1510,7 +1508,7 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->user_specified_port = 0;
   // rti_remote->final_port_TCP = 0;
   // rti_remote->socket_descriptor_TCP = -1;
-  // rti_remote->final_port_UDP = UINT16_MAX;
+  rti_remote->clock_sync_port = UINT16_MAX;
   rti_remote->clock_sync_socket = -1;
   rti_remote->clock_sync_global_status = clock_sync_init;
   rti_remote->clock_sync_period_ns = MSEC(10);
