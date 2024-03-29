@@ -47,45 +47,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Define socket functions only for federated execution.
 #ifdef FEDERATED
-#include <unistd.h> // Defines read(), write(), and close()
 
 #ifndef NUMBER_OF_FEDERATES
 #define NUMBER_OF_FEDERATES 1
 #endif
-
-/** Number of nanoseconds to sleep before retrying a socket read. */
-#define SOCKET_READ_RETRY_INTERVAL 1000000
-
-// Mutex lock held while performing socket close operations.
-// A deadlock can occur if two threads simulataneously attempt to close the same socket.
-lf_mutex_t netdrv_mutex;
-
-int netdrv_open(netdrv_t* drv) {
-  if (!drv) {
-    return -1;
-  }
-  return drv->open(drv);
-}
-void netdrv_close(netdrv_t* drv) {
-  if (!drv) {
-    return;
-  }
-  drv->close(drv);
-}
-
-int netdrv_read(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
-  if (!drv) {
-    return -1;
-  }
-  return drv->read(drv, num_bytes, buffer);
-}
-
-int netdrv_write(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
-  if (!drv) {
-    return -1;
-  }
-  return drv->write(drv, num_bytes, buffer);
-}
 
 #endif // FEDERATED
 

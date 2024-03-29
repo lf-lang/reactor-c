@@ -15,7 +15,9 @@
 
 #include "util.h"
 #include "net_common.h"
-#include "socket_common.h"
+#include "net_util.h"
+#include "netdriver.h"
+// #include "socket_common.h"
 
 socket_priv_t* socket_priv_init() {
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));
@@ -71,7 +73,7 @@ int create_real_time_tcp_socket_errexit() {
 
 #if defined(PLATFORM_Linux)
   // Disable delayed ACKs. Only possible on Linux
-  if (setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int))< 0) {
+  if (setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int)) < 0) {
     lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
   }
 #endif // Linux
@@ -173,7 +175,7 @@ int create_clock_sync_server(uint16_t* clock_sync_port) {
   // Zero out the server address structure.
   bzero((char*)&server_fd, sizeof(server_fd));
 
-  uint16_t port = RTI_DEFAULT_UDP_PORT; // Default UDP port.
+  uint16_t port = RTI_DEFAULT_UDP_PORT;   // Default UDP port.
   server_fd.sin_family = AF_INET;         // IPv4
   server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
   // Convert the port number from host byte order to network byte order.

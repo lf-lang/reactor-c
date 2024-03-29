@@ -1,7 +1,6 @@
 #ifndef LF_SST_SUPPORT_H
 #define LF_SST_SUPPORT_H
 
-#include "socket_common.h"
 #include "c_api.h"
 typedef struct sst_socket_priv_t {
   socket_priv_t socket_priv; // Must be first variable.

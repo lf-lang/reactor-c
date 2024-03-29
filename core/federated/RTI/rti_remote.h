@@ -25,6 +25,8 @@
 #include "net_util.h"
 #include "rti_common.h"
 
+#include "netdriver.h"
+
 #ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC authentication.
