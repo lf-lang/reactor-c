@@ -20,7 +20,7 @@
 #include "low_level_platform.h"
 
 // TODO: Need to be fixed later.
-#include "lf_socket_support.h"
+#include "netdriver.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)

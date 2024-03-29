@@ -16,13 +16,9 @@ else()
     target_link_libraries(lf-network-impl PUBLIC lf-logging-api)
 endif()
 
-target_compile_definitions(lf-network-impl PUBLIC COMM_TYPE_${COMM_TYPE})
-target_compile_definitions(lf-network-impl PUBLIC FEDERATED=1)
-
 target_sources(lf-network-impl PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/net_util.c
 )
-
 IF(COMM_TYPE MATCHES TCP)
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lf_socket_support.c ${CMAKE_CURRENT_LIST_DIR}/socket_common.c)
 ELSEIF(COMM_TYPE MATCHES MQTT)
@@ -30,3 +26,8 @@ ELSEIF(COMM_TYPE MATCHES MQTT)
 ELSEIF(COMM_TYPE MATCHES SST)
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lf_sst_support.c)
 ENDIF()
+
+target_include_directories(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+
+target_compile_definitions(lf-network-impl PUBLIC COMM_TYPE_${COMM_TYPE})
+target_compile_definitions(lf-network-impl PUBLIC FEDERATED=1)

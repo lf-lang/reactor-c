@@ -73,11 +73,12 @@ if (DEFINED LF_TRACE)
     target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN}")
 endif()
 
-# # Add sources for either threaded or single-threaded runtime
+# Add sources for either threaded or single-threaded runtime
 # if (DEFINED FEDERATED)
-#     include(federated/CMakeLists.txt)
-#     include(federated/network/CMakeLists.txt)
-#     target_link_libraries(reactor-c PUBLIC lf::low-level-platform-api)
+#     include(${LF_ROOT}/core/federated/CMakeLists.txt)
+#     include(${LF_ROOT}/core/federated/network/CMakeLists.txt)
+#     include(${LF_ROOT}/include/core/federated/network/CMakeLists.txt)
+#     target_link_libraries(reactor-c PUBLIC lf::network-api)
 # endif()
 
 include(${LF_ROOT}/version/api/CMakeLists.txt)
@@ -105,11 +106,11 @@ IF(COMM_TYPE MATCHES ON)
     set(COMM_TYPE TCP)
 ENDIF()
 
-include(${IncludeDir}/federated/network/CMakeLists.txt)
-target_link_libraries(reactor-c lf::network-api)
+include(${LF_ROOT}/include/core/federated/network/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::network-api)
 
-include(${CoreLib}/federated/network/CMakeLists.txt)
-target_link_libraries(reactor-c lf::network-impl)
+include(${LF_ROOT}/core/federated/network/CMakeLists.txt)
+target_link_libraries(reactor-c PRIVATE lf::network-impl)
 
 # Apply compile definitions to the reactor-c library.
 target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})
