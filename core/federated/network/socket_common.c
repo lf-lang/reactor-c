@@ -22,19 +22,14 @@
 socket_priv_t* socket_priv_init() {
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));
   if (!priv) {
-    lf_print_error_and_exit("Falied to malloc netdrv_t.");
+    lf_print_error_and_exit("Falied to malloc socket_priv_t.");
   }
   memset(priv, 0, sizeof(socket_priv_t));
-
-  // TODO: Remove when it works.
-  // priv->port = 0;
-  // priv->socket_descriptor = 0;
-  // priv->user_specified_port = 0;
-  // priv->server_ip_addr.s_addr = 0;
 
   // federate initialization
   strncpy(priv->server_hostname, "localhost", INET_ADDRSTRLEN);
   priv->server_port = -1;
+  return priv;
 }
 
 /**
