@@ -94,6 +94,13 @@ include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::low-level-platform-api)
 target_link_libraries(reactor-c PRIVATE lf::low-level-platform-impl)
 
+include(${IncludeDir}/federated/network/CMakeLists.txt)
+target_link_libraries(reactor-c lf::network-api)
+
+include(${CoreLib}/federated/network/CMakeLists.txt)
+target_link_libraries(reactor-c lf::network-impl)
+
+
 include(${LF_ROOT}/platform/api/CMakeLists.txt)
 include(${LF_ROOT}/platform/impl/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::platform-api)
