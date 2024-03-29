@@ -74,12 +74,12 @@ if (DEFINED LF_TRACE)
 endif()
 
 # Add sources for either threaded or single-threaded runtime
-# if (DEFINED FEDERATED)
-#     include(${LF_ROOT}/core/federated/CMakeLists.txt)
+if (DEFINED FEDERATED)
+    include(${LF_ROOT}/core/federated/CMakeLists.txt)
 #     include(${LF_ROOT}/core/federated/network/CMakeLists.txt)
 #     include(${LF_ROOT}/include/core/federated/network/CMakeLists.txt)
 #     target_link_libraries(reactor-c PUBLIC lf::network-api)
-# endif()
+endif()
 
 include(${LF_ROOT}/version/api/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::version-api)
