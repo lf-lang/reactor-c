@@ -8,8 +8,12 @@
 
 #include "socket_common.h"
 
-#if defined(COMM_TYPE_MQTT)
+#if defined(COMM_TYPE_TCP)
+#include "type/lf_socket_support.h"
+#elif defined(COMM_TYPE_MQTT)
 #include "type/lf_mqtt_support.h"
+#elif defined(COMM_TYPE_SST)
+#include "type/lf_sst_support.h"
 #endif
 
 typedef enum netdrv_type_t { NETDRV, UDP } netdrv_type_t;

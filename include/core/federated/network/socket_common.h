@@ -4,12 +4,6 @@
 #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
 #include <netinet/tcp.h> // TCP_NODELAY
 
-#if defined(COMM_TYPE_TCP)
-#include "type/lf_socket_support.h"
-#elif defined(COMM_TYPE_SST)
-#include "type/lf_sst_support.h"
-#endif
-
 #include "tag.h"
 
 /**

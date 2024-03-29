@@ -16,7 +16,7 @@
 #include "util.h"
 #include "net_common.h"
 #include "net_util.h"
-#include "netdriver.h"
+#include "socket_common.h"
 
 socket_priv_t* TCP_socket_priv_init() {
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));

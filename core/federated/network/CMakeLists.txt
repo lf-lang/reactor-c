@@ -18,12 +18,14 @@ endif()
 
 target_sources(lf-network-impl PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/net_util.c
+    ${CMAKE_CURRENT_LIST_DIR}/socket_common.c
 )
 IF(COMM_TYPE MATCHES TCP)
-    target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lf_socket_support.c ${CMAKE_CURRENT_LIST_DIR}/socket_common.c)
+    target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lf_socket_support.c)
 ELSEIF(COMM_TYPE MATCHES MQTT)
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lf_mqtt_support.c)
 ELSEIF(COMM_TYPE MATCHES SST)
+    target_link_libraries(lf-network-impl PUBLIC SSTLIB)
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lf_sst_support.c)
 ENDIF()
 
