@@ -151,6 +151,7 @@ void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_
     reg_t *base = op2.reg;
     reactor->tag.time = *base + op3.imm;
     reactor->tag.microstep = 0;
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu advance reactor time (%p) from %lld to %lld by %lld", *pc, worker_number, &(reactor->tag.time), *base, reactor->tag.time, op3.imm);
     *pc += 1; // Increment pc.
 #if TRACE_ALL_INSTRUCTIONS
     tracepoint_static_scheduler_ADVI_ends(scheduler->env->trace, worker_number, pc_orig);
@@ -251,10 +252,11 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
     // When wakeup_time overflows but lf_time_physical() doesn't,
     // _lf_interruptable_sleep_until_locked() terminates immediately.
     reg_t *src = op1.reg;
+    instant_t current_time = lf_time_physical();
     instant_t wakeup_time = *src + op2.imm;
-    LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, op1: %lld, op2: %lld, current_physical_time: %lld\n", start_time, wakeup_time, *src, op2.imm, lf_time_physical());
-    LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
-    instant_t wait_interval = wakeup_time - lf_time_physical();
+    instant_t wait_interval = wakeup_time - current_time;
+    // LF_PRINT_DEBUG("*** start_time: %lld, wakeup_time: %lld, op1: %lld, op2: %lld, current_physical_time: %lld\n", start_time, wakeup_time, *src, op2.imm, lf_time_physical());
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu delaying, current_physical_time: %lld, wakeup_time: %lld, wait_interval: %lld", *pc, worker_number, current_time, wakeup_time, wait_interval);
     if (wait_interval > 0) {
         // if (wait_interval < SPIN_WAIT_THRESHOLD) {
         //     // Spin wait if the wait interval is less than 1 ms.
@@ -265,7 +267,7 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
         // }
         while (lf_time_physical() < wakeup_time);
     }
-    LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu done delaying", *pc, worker_number);
     *pc += 1; // Increment pc.
 #if TRACE_ALL_INSTRUCTIONS
     tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, pc_orig);
@@ -285,7 +287,9 @@ void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     function_generic_t function = (function_generic_t)(uintptr_t)op1.reg;
     void *args = (void*)op2.reg;
     // Execute the function directly.
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu executing reaction", *pc, worker_number);
     function(args);
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu done executing reaction", *pc, worker_number);
     *pc += 1; // Increment pc.
     if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);}
 #if TRACE_ALL_INSTRUCTIONS
