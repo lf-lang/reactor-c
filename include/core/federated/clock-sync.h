@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "low_level_platform.h"
 #include "net_util.h"
+#include "netdriver.h"
 
 /**
  * Number of required clock sync T4 messages per synchronization

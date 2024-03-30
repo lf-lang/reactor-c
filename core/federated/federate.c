@@ -1811,8 +1811,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
       set_host_name(_fed.netdrv_to_rti, hostname);
       if (port == 0) {
         uport++;
-        if (uport >= RTI_DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
-          uport = RTI_DEFAULT_PORT;
+        if (uport >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
+          uport = DEFAULT_PORT;
       }
       set_port(_fed.netdrv_to_rti, uport);
       lf_sleep(CONNECT_RETRY_INTERVAL);

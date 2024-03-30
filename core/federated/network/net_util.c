@@ -52,6 +52,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_FEDERATES 1
 #endif
 
+lf_mutex_t netdrv_mutex;
+
 #endif // FEDERATED
 
 // Below are more generally useful functions.

@@ -45,7 +45,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 // TODO: Temp include.
-#include "lf_socket_support.h"
+// #include "lf_socket_support.h"
 
 /** Offset calculated by the clock synchronization algorithm. */
 interval_t _lf_clock_sync_offset = NSEC(0);
