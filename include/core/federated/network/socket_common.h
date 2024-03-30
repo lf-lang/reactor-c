@@ -45,7 +45,7 @@
  * for the RTI or on the command line, when the RTI starts up, it will attempt
  * to open a socket server on this port.
  */
-#define DEFAULT_PORT 15045u
+#define RTI_DEFAULT_PORT 15045u
 
 #define RTI_DEFAULT_UDP_PORT 15061u
 
@@ -73,5 +73,7 @@ void TCP_socket_open(socket_priv_t* priv);
 
 
 int create_real_time_tcp_socket_errexit();
+// TODO: Check if it's fine to just use int. It's just an enum. Can't use server_type_t because not including netdriver.h
+int create_TCP_server(socket_priv_t* priv, int server_type, uint16_t port);
 
 #endif /* SOCKET_COMMON_H */

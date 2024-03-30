@@ -18,7 +18,8 @@
 
 typedef enum netdrv_type_t { NETDRV, UDP } netdrv_type_t;
 
-typedef enum server_type_t { RTI, FED } server_type_t;
+// Just doing 0 for RTI, 1 for FED
+// typedef enum server_type_t { RTI, FED } server_type_t; 
 
 typedef struct netdrv_t {
   void (*open)(struct netdrv_t* drv);
@@ -37,7 +38,7 @@ int netdrv_write(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 netdrv_t* netdrv_init();
 
 // Port will be NULL on MQTT.
-int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
+int create_server(netdrv_t* drv, int server_type, uint16_t port);
 
 // Returns socket number of clock_sync_server.
 int create_clock_sync_server(uint16_t* clock_sync_port);

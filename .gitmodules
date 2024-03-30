@@ -1,3 +1,0 @@
-[submodule "third_party/sst-c-api"]
-	path = third_party/sst-c-api
-	url = https://github.com/iotauth/sst-c-api.git
