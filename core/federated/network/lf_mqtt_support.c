@@ -38,7 +38,7 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {}
  * @param port The port is NULL here.
  * @return int
  */
-int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {}
+int create_server(netdrv_t* drv, int server_type, uint16_t port) {}
 
 /**
  * @brief

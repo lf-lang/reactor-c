@@ -1780,14 +1780,14 @@ void lf_connect_to_rti(const char* hostname, int port) {
   if (port < 0 || port > INT16_MAX) {
     lf_print_error("lf_connect_to_rti(): Specified port (%d) is out of range,"
                    " using the default port %d instead.",
-                   port, DEFAULT_PORT);
-    uport = DEFAULT_PORT;
+                   port, RTI_DEFAULT_PORT);
+    uport = RTI_DEFAULT_PORT;
     port = 0; // Mark so that increments occur between tries.
   } else {
     uport = (uint16_t)port;
   }
   if (uport == 0) {
-    uport = DEFAULT_PORT;
+    uport = RTI_DEFAULT_PORT;
   }
 
   // Initialize netdriver to rti.
@@ -1922,7 +1922,7 @@ void lf_create_server(int specified_port) {
   LF_PRINT_LOG("Creating a socket server on port %d.", port);
 
   netdrv_t* my_netdrv = netdrv_init();
-  create_server(my_netdrv, FED, specified_port);
+  create_server(my_netdrv, 1, specified_port); // 1 for FED
   // my_netdrv->open(my_netdrv);
   // create_federate_server(my_netdrv, port, specified_port);
 

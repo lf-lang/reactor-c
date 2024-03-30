@@ -87,6 +87,69 @@ int create_real_time_tcp_socket_errexit() {
   return sock;
 }
 
+int create_TCP_server(socket_priv_t* priv, int server_type, uint16_t port) {
+  // Federate always has a specified port. The RTI can get a specified port by user input.
+  uint16_t specified_port = port;
+  if (specified_port == 0 && server_type == 0) { // 0 for RTI
+    port = RTI_DEFAULT_PORT;
+  }
+
+  // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
+  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+
+  // Server file descriptor.
+  struct sockaddr_in server_fd;
+  // Zero out the server address structure.
+  bzero((char*)&server_fd, sizeof(server_fd));
+
+  server_fd.sin_family = AF_INET;         // IPv4
+  server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
+  // Convert the port number from host byte order to network byte order.
+  server_fd.sin_port = htons(port);
+
+  int result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
+  // Try repeatedly to bind to a port.
+  int count = 1;
+
+  while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
+    if (specified_port == 0) {
+      lf_print_warning("Failed to get port %d.", port);
+      port++;
+      if (port >= RTI_DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
+        port = RTI_DEFAULT_PORT;
+      lf_print_warning("Try again with port %d.", port);
+      server_fd.sin_port = htons(port);
+      // Do not sleep.
+    } else {
+      lf_print("RTI failed to get port %d. Will try again.", port);
+      lf_sleep(PORT_BIND_RETRY_INTERVAL);
+    }
+    result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
+  }
+  if (result != 0) {
+    lf_print_error_and_exit("Failed to bind the socket. Port %d is not available. ", port);
+  }
+  // Enable listening for socket connections.
+  // The second argument is the maximum number of queued socket requests,
+  // which according to the Mac man page is limited to 128.
+  listen(priv->socket_descriptor, 128);
+
+  // Set the port into priv->port.
+  if (specified_port == 0 && server_type == 1) { // 1 for FED
+    // Need to retrieve the port number assigned by the OS.
+    struct sockaddr_in assigned;
+    socklen_t addr_len = sizeof(assigned);
+    if (getsockname(priv->socket_descriptor, (struct sockaddr*)&assigned, &addr_len) < 0) {
+      lf_print_error_and_exit("Failed to retrieve assigned port number.");
+    }
+    priv->port = ntohs(assigned.sin_port);
+  } else {
+    priv->port = port;
+  }
+  return 1;
+}
+
+
 // Returns clock sync UDP socket.
 int create_clock_sync_server(uint16_t* clock_sync_port) {
   // Create UDP socket.

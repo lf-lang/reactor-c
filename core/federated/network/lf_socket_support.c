@@ -89,6 +89,8 @@ void set_port(netdrv_t* drv, int port) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   priv->server_port = port;
 }
+
+// Unused.
 void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   priv->server_ip_addr = ip_addr;
@@ -109,67 +111,9 @@ void netdrv_free(netdrv_t* drv) {
 }
 
 // This only creates TCP servers not UDP.
-int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
+int create_server(netdrv_t* drv, int server_type, uint16_t port) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  // Federate always has a specified port. The RTI can get a specified port by user input.
-  uint16_t specified_port = port;
-  if (specified_port == 0 && server_type == RTI) {
-    port = DEFAULT_PORT;
-  }
-
-  // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
-
-  // Server file descriptor.
-  struct sockaddr_in server_fd;
-  // Zero out the server address structure.
-  bzero((char*)&server_fd, sizeof(server_fd));
-
-  server_fd.sin_family = AF_INET;         // IPv4
-  server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
-  // Convert the port number from host byte order to network byte order.
-  server_fd.sin_port = htons(port);
-
-  int result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  // Try repeatedly to bind to a port.
-  int count = 1;
-
-  while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-    if (specified_port == 0) {
-      lf_print_warning("Failed to get port %d.", port);
-      port++;
-      if (port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
-        port = DEFAULT_PORT;
-      lf_print_warning("Try again with port %d.", port);
-      server_fd.sin_port = htons(port);
-      // Do not sleep.
-    } else {
-      lf_print("RTI failed to get port %d. Will try again.", port);
-      lf_sleep(PORT_BIND_RETRY_INTERVAL);
-    }
-    result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  }
-  if (result != 0) {
-    lf_print_error_and_exit("Failed to bind the socket. Port %d is not available. ", port);
-  }
-  // Enable listening for socket connections.
-  // The second argument is the maximum number of queued socket requests,
-  // which according to the Mac man page is limited to 128.
-  listen(priv->socket_descriptor, 128);
-
-  // Set the port into priv->port.
-  if (specified_port == 0 && server_type == FED) {
-    // Need to retrieve the port number assigned by the OS.
-    struct sockaddr_in assigned;
-    socklen_t addr_len = sizeof(assigned);
-    if (getsockname(priv->socket_descriptor, (struct sockaddr*)&assigned, &addr_len) < 0) {
-      lf_print_error_and_exit("Failed to retrieve assigned port number.");
-    }
-    priv->port = ntohs(assigned.sin_port);
-  } else {
-    priv->port = port;
-  }
-  return 1;
+  return create_TCP_server(priv, server_type, port);
 }
 
 /**
