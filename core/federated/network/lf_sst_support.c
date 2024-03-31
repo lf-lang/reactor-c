@@ -91,12 +91,12 @@ int create_server(netdrv_t* drv, int server_type, uint16_t port) {
   return create_TCP_server(sst_priv->socket_priv, server_type, port);
 }
 
-netdrv_t* establish_communication_session(netdrv_t* netdrv) {
+netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   netdrv_t* ret_netdrv = netdrv_init();
   sst_priv_t* my_priv = (sst_priv_t*)my_netdrv->priv;
   sst_priv_t* ret_priv = (sst_priv_t*)ret_netdrv->priv;
   session_key_list_t *s_key_list = init_empty_session_key_list();
-  SST_session_ctx_t* session_ctx = server_secure_comm_setup(my_priv->sst_ctx, my_priv->socket_priv.socket_descriptor, s_key_list);
+  SST_session_ctx_t* session_ctx = server_secure_comm_setup(my_priv->sst_ctx, my_priv->socket_priv->socket_descriptor, s_key_list);
   free_session_key_list_t(s_key_list);
   ret_priv->session_ctx = session_ctx;
 }
