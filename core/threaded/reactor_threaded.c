@@ -42,6 +42,9 @@ extern instant_t start_time;
  */
 #define MAX_STALL_INTERVAL MSEC(1)
 
+#define LAG_CONTROL_KP  0.5
+#define LAG_CONTROL_KI 0.01
+
 /**
  * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
  */
@@ -222,8 +225,8 @@ void lf_set_present(lf_port_base_t* port) {
  */
 bool wait_until(instant_t logical_time, lf_cond_t* condition) {
   LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
-  static interval_t ave_lag = NSEC(0);
-  static int64_t lag_count = 0;
+  static interval_t error_integral = NSEC(0);
+  static interval_t last_lag = NSEC(0);
   interval_t wait_until_time = logical_time;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
   // Apply the STA to the logical time
@@ -245,11 +248,11 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
     // }
 
     //Subtract the average lag from the requested wait_until_time
-    interval_t wait_until_time_with_lag = wait_until_time - ave_lag;
+    interval_t wait_until_time_with_adjustment = wait_until_time - (LAG_CONTROL_KP * last_lag + LAG_CONTROL_KI * error_integral);
     instant_t now = lf_time_physical();
     if (wait_until_time < now) {
       return true;
-    } else if (wait_until_time_with_lag < now && wait_until_time > now) {
+    } else if (wait_until_time_with_adjustment < now && wait_until_time > now) {
       while (wait_until_time > lf_time_physical()){}
       return true;
     }
@@ -259,7 +262,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
     // returns 0 if it is awakened before the timeout. Hence, we want to run
     // it repeatedly until either it returns non-zero or the current
     // physical time matches or exceeds the logical time.
-    if (lf_clock_cond_timedwait(condition, wait_until_time_with_lag) != LF_TIMEOUT) {
+    if (lf_clock_cond_timedwait(condition, wait_until_time_with_adjustment) != LF_TIMEOUT) {
       LF_PRINT_DEBUG("-------- wait_until interrupted before timeout.");
 
       // Wait did not time out, which means that there
@@ -274,11 +277,12 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
       LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", wait_duration);
       
       //Calculate the lag and update the average
-      interval_t lag = lf_time_physical() - wait_until_time_with_lag;
-      lag = lag - ave_lag;
-      lag_count++;
-      lag = lag / lag_count;
-      ave_lag += lag; 
+      last_lag = lf_time_physical() - wait_until_time_with_adjustment;
+      error_integral += last_lag;
+      // lag = lag - ave_lag;
+      // lag_count++;
+      // lag = lag / lag_count;
+      // ave_lag += lag; 
 
       //Check if the wait amount was sufficient
       if (lf_time_physical() > wait_until_time) {
