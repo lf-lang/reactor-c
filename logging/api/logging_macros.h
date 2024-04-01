@@ -76,7 +76,7 @@
 #if defined(NDEBUG)
 #define LF_ASSERT(condition, format, ...) (void)(condition)
 #define LF_ASSERTN(condition, format, ...) (void)(condition)
-#define LF_ASSERT_NON_NULL(pointer)
+#define LF_ASSERT_NON_NULL(pointer) (void)(pointer)
 #else
 #define LF_ASSERT(condition, format, ...)                                                                              \
   do {                                                                                                                 \

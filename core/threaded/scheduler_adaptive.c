@@ -293,13 +293,13 @@ static void worker_states_init(lf_scheduler_t* scheduler, size_t number_of_worke
   worker_states->worker_conds = (lf_cond_t*)malloc(sizeof(lf_cond_t) * num_conds);
   worker_states->cumsum_of_worker_group_sizes = (size_t*)calloc(num_conds, sizeof(size_t));
   worker_states->mutex_held = (bool*)calloc(number_of_workers, sizeof(bool));
-  for (int i = 0; i < number_of_workers; i++) {
+  for (size_t i = 0; i < number_of_workers; i++) {
     worker_states->cumsum_of_worker_group_sizes[cond_of(i)]++;
   }
-  for (int i = 1; i < num_conds; i++) {
+  for (size_t i = 1; i < num_conds; i++) {
     worker_states->cumsum_of_worker_group_sizes[i] += worker_states->cumsum_of_worker_group_sizes[i - 1];
   }
-  for (int i = 0; i < num_conds; i++) {
+  for (size_t i = 0; i < num_conds; i++) {
     LF_COND_INIT(worker_states->worker_conds + i, &scheduler->env->mutex);
   }
   worker_states->num_loose_threads = scheduler->number_of_workers;
@@ -322,7 +322,7 @@ static void worker_states_free(lf_scheduler_t* scheduler) {
 static void worker_states_awaken_locked(lf_scheduler_t* scheduler, size_t worker, size_t num_to_awaken) {
   worker_states_t* worker_states = scheduler->custom_data->worker_states;
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
-  assert(num_to_awaken <= worker_assignments->max_num_workers);
+  LF_ASSERT(num_to_awaken <= worker_assignments->max_num_workers, "Sched requested to wake too many workers");
   if ((worker == 0) && (num_to_awaken <= 1)) {
     worker_states->num_loose_threads = 1;
     return;
@@ -339,7 +339,7 @@ static void worker_states_awaken_locked(lf_scheduler_t* scheduler, size_t worker
   worker_states->num_loose_threads += worker >= worker_states->num_loose_threads;
   worker_states->num_awakened = worker_states->num_loose_threads;
   scheduler->custom_data->level_counter++;
-  for (int cond = 0; cond <= max_cond; cond++) {
+  for (size_t cond = 0; cond <= max_cond; cond++) {
     lf_cond_broadcast(worker_states->worker_conds + cond);
   }
 }
@@ -348,8 +348,8 @@ static void worker_states_awaken_locked(lf_scheduler_t* scheduler, size_t worker
 static void worker_states_lock(lf_scheduler_t* scheduler, size_t worker) {
   worker_states_t* worker_states = scheduler->custom_data->worker_states;
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
-  assert(worker_states->num_loose_threads > 0);
-  assert(worker_states->num_loose_threads <= worker_assignments->max_num_workers);
+  LF_ASSERT(worker_states->num_loose_threads > 0, "Sched: No loose threads");
+  LF_ASSERT(worker_states->num_loose_threads <= worker_assignments->max_num_workers, "Sched: Too many loose threads");
   size_t lt = worker_states->num_loose_threads;
   if (lt > 1 || !fast) { // FIXME: Lock should be partially optimized out even when !fast
     LF_MUTEX_LOCK(&scheduler->env->mutex);
@@ -377,9 +377,7 @@ static void worker_states_unlock(lf_scheduler_t* scheduler, size_t worker) {
 static bool worker_states_finished_with_level_locked(lf_scheduler_t* scheduler, size_t worker) {
   worker_states_t* worker_states = scheduler->custom_data->worker_states;
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
-  assert(worker >= 0);
-  assert(worker_states->num_loose_threads > 0);
-  assert(worker_assignments->num_reactions_by_worker[worker] != 1);
+  LF_ASSERT(worker_assignments->num_reactions_by_worker[worker] != 1, "Sched: Current worker not assigned");
   assert(((int64_t)worker_assignments->num_reactions_by_worker[worker]) <= 0);
   // Why use an atomic operation when we are supposed to be "as good as locked"? Because I took a
   // shortcut, and the shortcut was imperfect.
@@ -401,8 +399,8 @@ static bool worker_states_finished_with_level_locked(lf_scheduler_t* scheduler, 
 static void worker_states_sleep_and_unlock(lf_scheduler_t* scheduler, size_t worker, size_t level_counter_snapshot) {
   worker_states_t* worker_states = scheduler->custom_data->worker_states;
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
-  assert(worker < worker_assignments->max_num_workers);
-  assert(worker_states->num_loose_threads <= worker_assignments->max_num_workers);
+  LF_ASSERT(worker < worker_assignments->max_num_workers, "Sched: Invalid worker");
+  LF_ASSERT(worker_states->num_loose_threads <= worker_assignments->max_num_workers, "Sched: Too many loose threads");
   if (!worker_states->mutex_held[worker]) {
     LF_MUTEX_LOCK(&scheduler->env->mutex);
   }
@@ -413,7 +411,8 @@ static void worker_states_sleep_and_unlock(lf_scheduler_t* scheduler, size_t wor
       lf_cond_wait(worker_states->worker_conds + cond);
     } while (level_counter_snapshot == scheduler->custom_data->level_counter || worker >= worker_states->num_awakened);
   }
-  assert(!worker_states->mutex_held[worker]); // This thread holds the mutex, but it did not report that.
+  LF_ASSERT(!worker_states->mutex_held[worker],
+            "Sched: Worker doesnt hold the mutex"); // This thread holds the mutex, but it did not report that.
   LF_MUTEX_UNLOCK(&scheduler->env->mutex);
 }
 
@@ -423,7 +422,6 @@ static void worker_states_sleep_and_unlock(lf_scheduler_t* scheduler, size_t wor
  */
 static void advance_level_and_unlock(lf_scheduler_t* scheduler, size_t worker) {
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
-  worker_states_t* worker_states = scheduler->custom_data->worker_states;
   size_t max_level = worker_assignments->num_levels - 1;
   while (true) {
     if (worker_assignments->current_level == max_level) {
@@ -443,7 +441,7 @@ static void advance_level_and_unlock(lf_scheduler_t* scheduler, size_t worker) {
     size_t total_num_reactions = get_num_reactions(scheduler);
     if (total_num_reactions) {
       size_t num_workers_to_awaken = LF_MIN(total_num_reactions, worker_assignments->num_workers);
-      assert(num_workers_to_awaken > 0);
+      LF_ASSERT(num_workers_to_awaken > 0, "");
       worker_states_awaken_locked(scheduler, worker, num_workers_to_awaken);
       worker_states_unlock(scheduler, worker);
       return;
@@ -476,7 +474,7 @@ static void possible_nums_workers_init(lf_scheduler_t* scheduler) {
   data_collection->possible_nums_workers = (size_t*)malloc(pnw_length * sizeof(size_t));
   temp = 1;
   data_collection->possible_nums_workers[0] = 0;
-  for (int i = 1; i < pnw_length; i++) {
+  for (size_t i = 1; i < pnw_length; i++) {
     data_collection->possible_nums_workers[i] = temp;
     temp *= 2;
   }
@@ -492,7 +490,7 @@ static void possible_nums_workers_init(lf_scheduler_t* scheduler) {
  * would like to optimize.
  */
 static int get_jitter(size_t current_state, interval_t execution_time) {
-  static const size_t parallelism_cost_max = 114688;
+  static const interval_t parallelism_cost_max = 114688;
   // The following handles the case where the current level really is just fluff:
   // No parallelism needed, no work to be done.
   if (execution_time < 16384 && current_state == 1)
@@ -595,7 +593,6 @@ static size_t restrict_to_range(size_t start_inclusive, size_t end_inclusive, si
  */
 static void compute_number_of_workers(lf_scheduler_t* scheduler, size_t* num_workers_by_level,
                                       size_t* max_num_workers_by_level, bool jitter) {
-  worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   data_collection_t* data_collection = scheduler->custom_data->data_collection;
   for (size_t level = 0; level < data_collection->num_levels; level++) {
     interval_t this_execution_time =
@@ -603,7 +600,6 @@ static void compute_number_of_workers(lf_scheduler_t* scheduler, size_t* num_wor
     size_t ideal_number_of_workers;
     size_t max_reasonable_num_workers = max_num_workers_by_level[level];
     ideal_number_of_workers = data_collection->execution_times_argmins[level];
-    int range = 1;
     if (jitter) {
       ideal_number_of_workers =
           get_nums_workers_neighboring_state(scheduler, ideal_number_of_workers, this_execution_time);
@@ -621,7 +617,6 @@ static void compute_number_of_workers(lf_scheduler_t* scheduler, size_t* num_wor
  */
 static void compute_costs(lf_scheduler_t* scheduler, size_t* num_workers_by_level) {
   data_collection_t* data_collection = scheduler->custom_data->data_collection;
-  worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   for (size_t level = 0; level < data_collection->num_levels; level++) {
     interval_t score = data_collection->execution_times_by_num_workers_by_level[level][num_workers_by_level[level]];
     if (!data_collection->execution_times_mins[level] | (score < data_collection->execution_times_mins[level]) |
@@ -640,7 +635,6 @@ static void compute_costs(lf_scheduler_t* scheduler, size_t* num_workers_by_leve
  */
 static void data_collection_end_tag(lf_scheduler_t* scheduler, size_t* num_workers_by_level,
                                     size_t* max_num_workers_by_level) {
-  worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   data_collection_t* data_collection = scheduler->custom_data->data_collection;
   if (data_collection->collecting_data && data_collection->start_times_by_level[0]) {
     compute_costs(scheduler, num_workers_by_level);
@@ -716,13 +710,13 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
 }
 
 void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
-  assert(worker_number >= 0);
-  assert(done_reaction->status != inactive);
+  (void)worker_number;
+  LF_ASSERT(done_reaction->status != inactive, "");
   done_reaction->status = inactive;
 }
 
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
-  assert(worker_number >= -1);
+  LF_ASSERT(worker_number >= -1, "Sched: Invalid worker number");
   if (!lf_atomic_bool_compare_and_swap32((int32_t*)&reaction->status, inactive, queued))
     return;
   worker_assignments_put(scheduler, reaction);
