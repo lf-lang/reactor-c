@@ -48,8 +48,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "rti_remote.h"
-// #include "net_util.h"
-// #include "socket_common.h"
 #include <signal.h> // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
 #include <string.h>
 
