@@ -44,7 +44,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.h"
 #include "util.h"
 
-
 /** Offset calculated by the clock synchronization algorithm. */
 interval_t _lf_clock_sync_offset = NSEC(0);
 /** Offset used to test clock synchronization (clock sync should largely remove this offset). */
@@ -317,7 +316,8 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* netdrv_or_sock, ne
  */
 
 // TODO: DONGHA: Need to check here...
-void handle_T4_clock_sync_message(unsigned char* buffer, void* netdrv_or_sock, netdrv_type_t netdrv_type, instant_t r4) {
+void handle_T4_clock_sync_message(unsigned char* buffer, void* netdrv_or_sock, netdrv_type_t netdrv_type,
+                                  instant_t r4) {
   // Increment the number of received T4 messages
   _lf_rti_socket_stat.received_T4_messages_in_current_sync_window++;
 
@@ -391,58 +391,58 @@ void handle_T4_clock_sync_message(unsigned char* buffer, void* netdrv_or_sock, n
     // the clock sync adjustment.
     adjustment = estimated_clock_error / _LF_CLOCK_SYNC_ATTENUATION;
   } else {
-  // Use of TCP socket means we are in the startup phase, so
-  // rather than adjust the clock offset, we simply set it to the
-  // estimated error.
-  adjustment = estimated_clock_error;
-}
-
-#ifdef _LF_CLOCK_SYNC_COLLECT_STATS // Enabled by default
-// Update RTI's socket stats
-update_socket_stat(&_lf_rti_socket_stat, network_round_trip_delay, estimated_clock_error);
-#endif
-
-// FIXME: Enable alternative regression mechanism here.
-LF_PRINT_DEBUG("Clock sync: Adjusting clock offset running average by " PRINTF_TIME ".",
-               adjustment / _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL);
-// Calculate the running average
-_lf_rti_socket_stat.history += adjustment / _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL;
-
-if (_lf_rti_socket_stat.received_T4_messages_in_current_sync_window >= _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL) {
-
-  lf_stat_ll stats = {0, 0, 0, 0};
-#ifdef _LF_CLOCK_SYNC_COLLECT_STATS // Enabled by default
-  stats = calculate_socket_stat(&_lf_rti_socket_stat);
-  // Issue a warning if standard deviation is high in data
-  if (stats.standard_deviation >= CLOCK_SYNC_GUARD_BAND) {
-    // Reset the stats
-    LF_PRINT_LOG("Clock sync: Large standard deviation detected in network delays (" PRINTF_TIME
-                 ") for the current period."
-                 " Clock synchronization offset might not be accurate.",
-                 stats.standard_deviation);
-    reset_socket_stat(&_lf_rti_socket_stat);
-    return;
+    // Use of TCP socket means we are in the startup phase, so
+    // rather than adjust the clock offset, we simply set it to the
+    // estimated error.
+    adjustment = estimated_clock_error;
   }
+
+#ifdef _LF_CLOCK_SYNC_COLLECT_STATS // Enabled by default
+  // Update RTI's socket stats
+  update_socket_stat(&_lf_rti_socket_stat, network_round_trip_delay, estimated_clock_error);
 #endif
-  // The number of received T4 messages has reached _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL
-  // which means we can now adjust the clock offset.
-  // For the AVG algorithm, history is a running average and can be directly
-  // applied
-  adjust_lf_clock_sync_offset(_lf_rti_socket_stat.history);
-  // @note AVG and SD will be zero if collect-stats is set to false
-  LF_PRINT_LOG("Clock sync:"
-               " New offset: " PRINTF_TIME "."
-               " Round trip delay to RTI (now): " PRINTF_TIME "."
-               " (AVG): " PRINTF_TIME "."
-               " (SD): " PRINTF_TIME "."
-               " Local round trip delay: " PRINTF_TIME ".",
-               _lf_clock_sync_offset, network_round_trip_delay, stats.average, stats.standard_deviation,
-               _lf_rti_socket_stat.local_delay);
-  // Reset the stats
-  reset_socket_stat(&_lf_rti_socket_stat);
-  // Set the last instant at which the clocks were synchronized
-  _lf_last_clock_sync_instant = r4;
-}
+
+  // FIXME: Enable alternative regression mechanism here.
+  LF_PRINT_DEBUG("Clock sync: Adjusting clock offset running average by " PRINTF_TIME ".",
+                 adjustment / _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL);
+  // Calculate the running average
+  _lf_rti_socket_stat.history += adjustment / _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL;
+
+  if (_lf_rti_socket_stat.received_T4_messages_in_current_sync_window >= _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL) {
+
+    lf_stat_ll stats = {0, 0, 0, 0};
+#ifdef _LF_CLOCK_SYNC_COLLECT_STATS // Enabled by default
+    stats = calculate_socket_stat(&_lf_rti_socket_stat);
+    // Issue a warning if standard deviation is high in data
+    if (stats.standard_deviation >= CLOCK_SYNC_GUARD_BAND) {
+      // Reset the stats
+      LF_PRINT_LOG("Clock sync: Large standard deviation detected in network delays (" PRINTF_TIME
+                   ") for the current period."
+                   " Clock synchronization offset might not be accurate.",
+                   stats.standard_deviation);
+      reset_socket_stat(&_lf_rti_socket_stat);
+      return;
+    }
+#endif
+    // The number of received T4 messages has reached _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL
+    // which means we can now adjust the clock offset.
+    // For the AVG algorithm, history is a running average and can be directly
+    // applied
+    adjust_lf_clock_sync_offset(_lf_rti_socket_stat.history);
+    // @note AVG and SD will be zero if collect-stats is set to false
+    LF_PRINT_LOG("Clock sync:"
+                 " New offset: " PRINTF_TIME "."
+                 " Round trip delay to RTI (now): " PRINTF_TIME "."
+                 " (AVG): " PRINTF_TIME "."
+                 " (SD): " PRINTF_TIME "."
+                 " Local round trip delay: " PRINTF_TIME ".",
+                 _lf_clock_sync_offset, network_round_trip_delay, stats.average, stats.standard_deviation,
+                 _lf_rti_socket_stat.local_delay);
+    // Reset the stats
+    reset_socket_stat(&_lf_rti_socket_stat);
+    // Set the last instant at which the clocks were synchronized
+    _lf_last_clock_sync_instant = r4;
+  }
 }
 
 /**
