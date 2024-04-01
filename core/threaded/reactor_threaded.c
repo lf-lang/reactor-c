@@ -238,16 +238,18 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
   if (!fast) {
     // Check whether we actually need to wait, or if we have already passed the timepoint.
     interval_t wait_duration = wait_until_time - lf_time_physical();
-    if (wait_duration < MIN_SLEEP_DURATION) {
-      LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION " PRINTF_TIME ". Skipping wait.",
-                     wait_duration, MIN_SLEEP_DURATION);
-      return true;
-    }
+    // if (wait_duration < MIN_SLEEP_DURATION) {
+    //   LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION " PRINTF_TIME ". Skipping wait.",
+    //                  wait_duration, MIN_SLEEP_DURATION);
+    //   return true;
+    // }
 
     //Subtract the average lag from the requested wait_until_time
     interval_t wait_until_time_with_lag = wait_until_time - ave_lag;
     instant_t now = lf_time_physical();
-    if (wait_until_time_with_lag < now && wait_until_time > now) {
+    if (wait_until_time < now) {
+      return true;
+    } else if (wait_until_time_with_lag < now && wait_until_time > now) {
       while (wait_until_time > lf_time_physical()){}
       return true;
     }
