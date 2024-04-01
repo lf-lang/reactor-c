@@ -52,6 +52,14 @@ int create_server(netdrv_t* drv, int server_type, uint16_t port) {}
  */
 netdrv_t* establish_communication_session(netdrv_t* netdrv) {}
 
+int netdrv_connect(netdrv_t* drv) {}
+
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
+
+void netdrv_free(netdrv_t* drv) {}
+
+int32_t get_my_port(netdrv_t* drv) {}
+
 /**
  * @brief Publish message.
  *

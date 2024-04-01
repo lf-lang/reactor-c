@@ -101,6 +101,10 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   ret_priv->session_ctx = session_ctx;
 }
 
+int netdrv_connect(netdrv_t* drv) {}
+
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
+
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {}
 
 int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {}
