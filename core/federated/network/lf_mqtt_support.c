@@ -17,6 +17,8 @@ netdrv_t* netdrv_init() {
 
 char* get_host_name(netdrv_t* drv) {}
 
+int32_t get_my_port(netdrv_t* drv) {}
+
 int32_t get_port(netdrv_t* drv) {}
 
 struct in_addr* get_ip_addr(netdrv_t* drv) {}
@@ -26,6 +28,8 @@ void set_host_name(netdrv_t* drv, const char* hostname) {}
 void set_port(netdrv_t* drv, int port) {}
 
 void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {}
+
+void netdrv_free(netdrv_t* drv) {}
 
 /**
  * @brief Create a server object
@@ -52,6 +56,10 @@ int create_server(netdrv_t* drv, int server_type, uint16_t port) {}
  */
 netdrv_t* establish_communication_session(netdrv_t* netdrv) {}
 
+int netdrv_connect(netdrv_t* drv) {}
+
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
+
 /**
  * @brief Publish message.
  *
@@ -74,4 +82,4 @@ ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, si
 void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
                                     char* format, ...) {}
 
-int create_clock_sync_server(uint16_t* clock_sync_port) {}
+// int create_clock_sync_server(uint16_t* clock_sync_port) {}

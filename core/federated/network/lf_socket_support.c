@@ -45,6 +45,7 @@ void TCP_close(netdrv_t* drv) {
 }
 
 netdrv_t* netdrv_init() {
+  printf("\n\t[TCP PROTOCOL]\n\n");
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
