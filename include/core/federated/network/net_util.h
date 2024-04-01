@@ -365,7 +365,7 @@ bool validate_user(const char* user);
  * Extract one match group from the rti_addr regex .
  * @return true if SUCCESS, else false.
  */
-bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len,
+bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, size_t max_len, size_t min_len,
                          const char* err_msg);
 
 /**
@@ -373,7 +373,7 @@ bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int
  * @return true if success, else false.
  */
 bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array,
-                          int* gids, int* max_lens, int* min_lens, const char** err_msgs);
+                          int* gids, size_t* max_lens, size_t* min_lens, const char** err_msgs);
 
 /**
  * Extract the host, port and user from rti_addr.

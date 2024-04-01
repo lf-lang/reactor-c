@@ -184,7 +184,7 @@ void lf_set_present(lf_port_base_t* port) {
 
   // Support for sparse destination multiports.
   if (port->sparse_record && port->destination_channel >= 0 && port->sparse_record->size >= 0) {
-    int next = lf_atomic_fetch_add32(&port->sparse_record->size, 1);
+    size_t next = (size_t)lf_atomic_fetch_add32(&port->sparse_record->size, 1);
     if (next >= port->sparse_record->capacity) {
       // Buffer is full. Have to revert to the classic iteration.
       port->sparse_record->size = -1;
@@ -220,7 +220,7 @@ void lf_set_present(lf_port_base_t* port) {
  *  the stop time, if one was specified. Return true if the full wait time
  *  was reached.
  */
-bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition) {
+bool wait_until(instant_t logical_time, lf_cond_t* condition) {
   LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
   interval_t wait_until_time = logical_time;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
@@ -320,6 +320,8 @@ tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
 #elif defined(LF_ENCLAVES)
   return rti_next_event_tag_locked(env->enclave_info, tag);
 #else
+  (void)env;
+  (void)wait_for_reply;
   return tag;
 #endif
 }
@@ -419,7 +421,7 @@ void _lf_next_locked(environment_t* env) {
   // This can be interrupted if a physical action triggers (e.g., a message
   // arrives from an upstream federate or a local physical action triggers).
   LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (next_tag.time - start_time));
-  while (!wait_until(env, next_tag.time, &env->event_q_changed)) {
+  while (!wait_until(next_tag.time, &env->event_q_changed)) {
     LF_PRINT_DEBUG("_lf_next_locked(): Wait until time interrupted.");
     // Sleep was interrupted.  Check for a new next_event.
     // The interruption could also have been due to a call to lf_request_stop().
@@ -641,7 +643,7 @@ void _lf_initialize_start_tag(environment_t* env) {
   // Here we wait until the start time and also release the environment mutex.
   // this means that the other worker threads will be allowed to start. We need
   // this to avoid potential deadlock in federated startup.
-  while (!wait_until(env, start_time + lf_fed_STA_offset, &env->event_q_changed)) {
+  while (!wait_until(start_time + lf_fed_STA_offset, &env->event_q_changed)) {
   };
   LF_PRINT_DEBUG("Done waiting for start time + STA offset " PRINTF_TIME ".", start_time + lf_fed_STA_offset);
   LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be close to the STA offset.",
@@ -851,6 +853,8 @@ void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_
 void try_advance_level(environment_t* env, volatile size_t* next_reaction_level) {
 #ifdef FEDERATED
   lf_stall_advance_level_federation(env, *next_reaction_level);
+#else
+  (void)env;
 #endif
   if (*next_reaction_level < SIZE_MAX)
     *next_reaction_level += 1;
@@ -973,6 +977,7 @@ void lf_print_snapshot(environment_t* env) {
 }
 #else  // NDEBUG
 void lf_print_snapshot(environment_t* env) {
+  (void)env;
   // Do nothing.
 }
 #endif // NDEBUG
@@ -982,7 +987,7 @@ void start_threads(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   LF_PRINT_LOG("Starting %u worker threads in environment", env->num_workers);
-  for (unsigned int i = 0; i < env->num_workers; i++) {
+  for (int i = 0; i < env->num_workers; i++) {
     if (lf_thread_create(&env->thread_ids[i], worker, env) != 0) {
       lf_print_error_and_exit("Could not start thread-%u", i);
     }

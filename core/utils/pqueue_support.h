@@ -97,7 +97,7 @@ static void set_reaction_position(void* a, size_t pos) { ((reaction_t*)a)->pos =
  */
 static void print_reaction(void* reaction) {
   reaction_t* r = (reaction_t*)reaction;
-  LF_PRINT_DEBUG("%s: chain_id:%llu, index: %llx, reaction: %p", r->name, r->chain_id, r->index, r);
+  LF_PRINT_DEBUG("%s: chain_id:%llu, index: %llx, reaction: %p", r->name, r->chain_id, r->index, (void*)r);
 }
 
 /**
@@ -107,8 +107,8 @@ static void print_reaction(void* reaction) {
  */
 static void print_event(void* event) {
   event_t* e = (event_t*)event;
-  LF_PRINT_DEBUG("tag: " PRINTF_TAG ", trigger: %p, token: %p", e->base.tag.time, e->base.tag.microstep, e->trigger,
-                 e->token);
+  LF_PRINT_DEBUG("tag: " PRINTF_TAG ", trigger: %p, token: %p", e->base.tag.time, e->base.tag.microstep,
+                 (void*)e->trigger, (void*)e->token);
 }
 
 // ********** Priority Queue Support End
