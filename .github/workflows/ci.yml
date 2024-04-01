@@ -61,7 +61,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+      all-platforms: ${{ contains( github.event.pull_request.labels.*.name, 'mac') }}
 
   # lf-python:
   #   needs: [fetch-lf]
