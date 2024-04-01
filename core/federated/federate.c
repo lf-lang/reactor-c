@@ -529,7 +529,7 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
   }
   // Check if the message is intended for this federate
   assert(_lf_my_fed_id == federate_id);
-  LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
+  LF_PRINT_DEBUG("Receiving message to port %d of length %zu of bytes_read %zu.", port_id, length, bytes_read);
 
   // Get the triggering action for the corresponding port
   lf_action_base_t* action = action_for_port(port_id);
@@ -560,8 +560,8 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
   // Read the payload.
   // Allocate memory for the message contents.
   unsigned char* message_contents = (unsigned char*)malloc(length);
-  memcpy(message_contents, buffer + header_length, bytes_read);
-  int buf_count = bytes_read;
+  memcpy(message_contents, buffer + header_length, bytes_read - header_length);
+  int buf_count = bytes_read - header_length;
   while (netdrv->read_remaining_bytes > 0) {
     ssize_t bytes_read_again =
         read_from_netdrv_close_on_error(netdrv, message_contents + buf_count, length - buf_count);

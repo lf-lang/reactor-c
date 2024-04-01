@@ -1,9 +1,6 @@
 #ifndef NETDRIVER_H
 #define NETDRIVER_H
 
-// TODO: Need federated keyword.
-#ifdef FEDERATED
-
 #include "low_level_platform.h"
 
 #include "socket_common.h"
@@ -161,7 +158,5 @@ int netdrv_connect(netdrv_t* drv);
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
 
 ////////////////////////////
-
-#endif // FEDERATED
 
 #endif /* NETDRIVER_H */

@@ -29,7 +29,4 @@ ELSEIF(COMM_TYPE MATCHES SST)
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lf_sst_support.c)
 ENDIF()
 
-target_include_directories(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
-
 target_compile_definitions(lf-network-impl PUBLIC COMM_TYPE_${COMM_TYPE})
-target_compile_definitions(lf-network-impl PUBLIC FEDERATED=1)
