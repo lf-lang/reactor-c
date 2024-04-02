@@ -76,6 +76,11 @@ void set_port(netdrv_t* drv, int port) {
   sst_priv->socket_priv->server_port = port;
 }
 
+void set_specified_port(netdrv_t* drv, int port) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  sst_priv->socket_priv->user_specified_port = port;
+}
+
 // Unused.
 void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
@@ -86,7 +91,7 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
 int create_server(netdrv_t* drv, int server_type, uint16_t port) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   SST_ctx_t* ctx = init_SST(
-      "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/RTI/c_client.config");
+      "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/RTI/RTI.config");
   sst_priv->sst_ctx = ctx;
   return create_TCP_server(sst_priv->socket_priv, server_type, port);
 }
@@ -95,13 +100,55 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   netdrv_t* ret_netdrv = netdrv_init();
   sst_priv_t* my_priv = (sst_priv_t*)my_netdrv->priv;
   sst_priv_t* ret_priv = (sst_priv_t*)ret_netdrv->priv;
-  session_key_list_t *s_key_list = init_empty_session_key_list();
-  SST_session_ctx_t* session_ctx = server_secure_comm_setup(my_priv->sst_ctx, my_priv->socket_priv->socket_descriptor, s_key_list);
+
+  // Wait for an incoming connection request.
+  struct sockaddr client_fd;
+  uint32_t client_length = sizeof(client_fd);
+  // The following blocks until a client connects.
+  while (1) {
+    ret_priv->socket_priv->socket_descriptor =
+        accept(my_priv->socket_priv->socket_descriptor, &client_fd, &client_length);
+    if (ret_priv->socket_priv->socket_descriptor >= 0) {
+      // Got a socket
+      break;
+    } else if (ret_priv->socket_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+      lf_print_error_and_exit("Failed to accept the socket. %s. ret_priv->socket_priv->socket_descriptor = %d",
+                              strerror(errno), ret_priv->socket_priv->socket_descriptor);
+    } else {
+      // Try again
+      lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
+      continue;
+    }
+  }
+
+  session_key_list_t* s_key_list = init_empty_session_key_list();
+  SST_session_ctx_t* session_ctx =
+      server_secure_comm_setup(my_priv->sst_ctx, my_priv->socket_priv->socket_descriptor, s_key_list);
   free_session_key_list_t(s_key_list);
   ret_priv->session_ctx = session_ctx;
+
+  // TODO: DONGHA
+  // Get the IP address of the other accepting client. This is used in two cases.
+  // 1) Decentralized coordination - handle_address_query() - Sends the port number and address of the federate.
+  // 2) Clock synchronization - send_physical_clock - Send through UDP.
+  struct sockaddr_in* pV4_addr = (struct sockaddr_in*)&client_fd;
+  ret_priv->socket_priv->server_ip_addr = pV4_addr->sin_addr;
 }
 
-int netdrv_connect(netdrv_t* drv) {}
+int netdrv_connect(netdrv_t* drv) {
+  char cwd[256];
+  getcwd(cwd, sizeof(cwd));
+  printf("Current working dir: %s\n", cwd);
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  unsigned char* config_path;
+  SST_ctx_t* ctx = init_SST(
+      "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/network/fed1.config");
+  session_key_list_t* s_key_list = get_session_key(ctx, NULL);
+  SST_session_ctx_t* session_ctx = secure_connect_to_server(&s_key_list->s_key[0], ctx);
+  sst_priv->sst_ctx = ctx;
+  sst_priv->session_ctx = session_ctx;
+  return 1;
+}
 
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
 
