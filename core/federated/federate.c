@@ -1775,7 +1775,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
   // Override passed hostname and port if passed as runtime arguments.
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
-  set_specified_port(_fed.netdrv_to_rti, port);
 
   // Adjust the port.
   uint16_t uport = 0;
@@ -1791,12 +1790,13 @@ void lf_connect_to_rti(const char* hostname, int port) {
   if (uport == 0) {
     uport = RTI_DEFAULT_PORT;
   }
-  
+
   // Initialize netdriver to rti.
   _fed.netdrv_to_rti = netdrv_init();           // set memory.
   _fed.netdrv_to_rti->open(_fed.netdrv_to_rti); // open netdriver.
   set_host_name(_fed.netdrv_to_rti, hostname);
   set_port(_fed.netdrv_to_rti, uport);
+  set_specified_port(_fed.netdrv_to_rti, port);
 
   if (netdrv_connect(_fed.netdrv_to_rti) < 0) {
     lf_print_error_and_exit("Failed to connect() to RTI after %d tries.", CONNECT_MAX_RETRIES);
