@@ -110,6 +110,10 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
 trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, interval_t extra_delay,
                                      lf_token_t* token) {
   assert(env != GLOBAL_ENVIRONMENT);
+#ifdef FEDERATED_DECENTRALIZED
+  lf_print("lf_schedule_trigger: intended tag of trigger is " PRINTF_TAG ".",
+    trigger->intended_tag.time - lf_start_time(), trigger->intended_tag.microstep);
+#endif
   if (lf_is_tag_after_stop_tag(env, env->current_tag)) {
     // If schedule is called after stop_tag
     // This is a critical condition.
@@ -202,6 +206,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   if (min_spacing <= 0) {
     // No minimum spacing defined.
     e->base.tag = intended_tag;
+    printf("intended_tag is " PRINTF_TAG ".\n", intended_tag.time, intended_tag.microstep);
     event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)e);
     // Check for conflicts. Let events pile up in super dense time.
     if (found != NULL) {
@@ -288,6 +293,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
 #endif
   if (intended_tag.time == env->current_tag.time) {
     // Increment microstep.
+    printf("Increment microstep from %u to %u.\n", intended_tag.microstep, env->current_tag.microstep + 1);
     intended_tag.microstep = env->current_tag.microstep + 1;
   }
 
@@ -310,7 +316,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   trigger->last_tag = intended_tag;
 
   // Queue the event.
-  LF_PRINT_LOG("Inserting event in the event queue with elapsed tag " PRINTF_TAG ".",
+  lf_print("Inserting event in the event queue with elapsed tag " PRINTF_TAG ".",
                e->base.tag.time - lf_time_start(), e->base.tag.microstep);
   pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
 
