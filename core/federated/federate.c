@@ -77,22 +77,23 @@ int max_level_allowed_to_advance;
  * and the _fed global variable refers to that instance.
  */
 
-//TODO: DONGHA: Need to change socket_related. socket_TCP_RTI, server_socket, server_port
-federate_instance_t _fed = {// .socket_TCP_RTI = -1,
-                            .number_of_inbound_p2p_connections = 0,
-                            .inbound_netdriv_listeners = NULL,
-                            .number_of_outbound_p2p_connections = 0,
-                            .inbound_p2p_handling_thread_id = 0,
-                            .server_socket = -1,
-                            .server_port = -1,
-                            .last_TAG = {.time = NEVER, .microstep = 0u},
-                            .is_last_TAG_provisional = false,
-                            .has_upstream = false,
-                            .has_downstream = false,
-                            .received_stop_request_from_rti = false,
-                            .last_sent_LTC = (tag_t){.time = NEVER, .microstep = 0u},
-                            .last_sent_NET = (tag_t){.time = NEVER, .microstep = 0u},
-                            .min_delay_from_physical_action_to_federate_output = NEVER};
+// TODO: DONGHA: Need to change socket_related. socket_TCP_RTI, server_socket, server_port
+federate_instance_t _fed = {
+    // .socket_TCP_RTI = -1,
+    .number_of_inbound_p2p_connections = 0,
+    .inbound_netdriv_listeners = NULL,
+    .number_of_outbound_p2p_connections = 0,
+    .inbound_p2p_handling_thread_id = 0,
+    .server_socket = -1,
+    .server_port = -1,
+    .last_TAG = {.time = NEVER, .microstep = 0u},
+    .is_last_TAG_provisional = false,
+    .has_upstream = false,
+    .has_downstream = false,
+    .received_stop_request_from_rti = false,
+    .last_sent_LTC = (tag_t){.time = NEVER, .microstep = 0u},
+    .last_sent_NET = (tag_t){.time = NEVER, .microstep = 0u},
+    .min_delay_from_physical_action_to_federate_output = NEVER};
 
 // TODO: DONGHA: Need to change host and port.
 federation_metadata_t federation_metadata = {
@@ -1774,6 +1775,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   // Override passed hostname and port if passed as runtime arguments.
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
+  set_specified_port(_fed.netdrv_to_rti, port);
 
   // Adjust the port.
   uint16_t uport = 0;
@@ -1789,36 +1791,19 @@ void lf_connect_to_rti(const char* hostname, int port) {
   if (uport == 0) {
     uport = RTI_DEFAULT_PORT;
   }
-
+  
   // Initialize netdriver to rti.
   _fed.netdrv_to_rti = netdrv_init();           // set memory.
   _fed.netdrv_to_rti->open(_fed.netdrv_to_rti); // open netdriver.
   set_host_name(_fed.netdrv_to_rti, hostname);
   set_port(_fed.netdrv_to_rti, uport);
 
-  // Connect
-  int result = -1;
-  int count_retries = 0;
-  // TODO: DONGHA: count_retries not being updated for the authentication process?
-  while (count_retries++ < CONNECT_MAX_RETRIES && !_lf_termination_executed) {
-    // TODO: DONGHA: Connecting phase. Let's just make a netdrv_connect() api first.
-    result = netdrv_connect(_fed.netdrv_to_rti);
-    if (result < 0) {
-      _fed.netdrv_to_rti->close(_fed.netdrv_to_rti);
-      netdrv_free(_fed.netdrv_to_rti);
-      _fed.netdrv_to_rti = netdrv_init();
-      _fed.netdrv_to_rti->open(_fed.netdrv_to_rti);
-      set_host_name(_fed.netdrv_to_rti, hostname);
-      if (port == 0) {
-        uport++;
-        if (uport >= RTI_DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
-          uport = RTI_DEFAULT_PORT;
-      }
-      set_port(_fed.netdrv_to_rti, uport);
-      lf_sleep(CONNECT_RETRY_INTERVAL);
-      continue; // Connect failed.
-    }
+  if (netdrv_connect(_fed.netdrv_to_rti) < 0) {
+    lf_print_error_and_exit("Failed to connect() to RTI after %d tries.", CONNECT_MAX_RETRIES);
+  }
 
+  int count_retries = 0;
+  while (count_retries++ < CONNECT_MAX_RETRIES && !_lf_termination_executed) {
     // Have connected to an RTI, but not sure it's the right RTI.
     // Send a MSG_TYPE_FED_IDS message and wait for a reply.
     // Notify the RTI of the ID of this federate and its federation.
@@ -1891,9 +1876,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
       lf_print_warning("RTI on port %d gave unexpect response %u. Will try again", uport, response[0]);
       continue;
     }
-  }
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to connect to RTI after %d tries.", CONNECT_MAX_RETRIES);
   }
 
   // Call a generated (external) function that sends information
