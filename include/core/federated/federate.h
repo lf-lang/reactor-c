@@ -19,7 +19,6 @@
 #include "environment.h"
 #include "low_level_platform.h"
 
-// TODO: Need to be fixed later.
 #include "netdriver.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL

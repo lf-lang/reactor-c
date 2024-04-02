@@ -529,7 +529,7 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
   }
   // Check if the message is intended for this federate
   assert(_lf_my_fed_id == federate_id);
-  LF_PRINT_DEBUG("Receiving message to port %d of length %zu of bytes_read %zu.", port_id, length, bytes_read);
+  LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
 
   // Get the triggering action for the corresponding port
   lf_action_base_t* action = action_for_port(port_id);
