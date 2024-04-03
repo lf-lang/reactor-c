@@ -68,7 +68,7 @@ static pqueue_pri_t get_event_time(void* a) { return (pqueue_pri_t)(((event_t*)a
  * Used for sorting pointers to reaction_t structs in the
  * blocked and executing queues.
  */
-static pqueue_pri_t get_reaction_index(void* a) { return ((reaction_t*)a)->index; }
+static index_t get_reaction_index(void* a) { return ((reaction_t*)a)->index; }
 
 /**
  * Return the given event's position in the queue.
@@ -97,7 +97,7 @@ static void set_reaction_position(void* a, size_t pos) { ((reaction_t*)a)->pos =
  */
 static void print_reaction(void* reaction) {
   reaction_t* r = (reaction_t*)reaction;
-  LF_PRINT_DEBUG("%s: chain_id:%llu, index: %llx, reaction: %p", r->name, r->chain_id, r->index, (void*)r);
+  LF_PRINT_DEBUG("%s: chain_id:%llu, index: " PRINTF_TIME ", reaction: %p", r->name, r->chain_id, r->index, (void*)r);
 }
 
 /**

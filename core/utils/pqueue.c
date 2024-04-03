@@ -25,9 +25,9 @@ int event_matches(void* event1, void* event2) { return (((event_t*)event1)->trig
 
 int reaction_matches(void* a, void* b) { return (a == b); }
 
-pqueue_pri_t get_event_time(void* event) { return (pqueue_pri_t)(((event_t*)event)->time); }
+instant_t get_event_time(void* event) { return (pqueue_pri_t)(((event_t*)event)->time); }
 
-pqueue_pri_t get_reaction_index(void* reaction) { return ((reaction_t*)reaction)->index; }
+index_t get_reaction_index(void* reaction) { return ((reaction_t*)reaction)->index; }
 
 size_t get_event_position(void* event) { return ((event_t*)event)->pos; }
 
@@ -39,7 +39,7 @@ void set_reaction_position(void* reaction, size_t pos) { ((reaction_t*)reaction)
 
 void print_reaction(void* reaction) {
   reaction_t* r = (reaction_t*)reaction;
-  LF_PRINT_DEBUG("%s: chain_id: %llu, index: %llx, reaction: %p", r->name, r->chain_id, r->index, reaction);
+  LF_PRINT_DEBUG("%s: chain_id: %llu, index: " PRINTF_TIME ", reaction: %p", r->name, r->chain_id, r->index, reaction);
 }
 
 void print_event(void* event) {
