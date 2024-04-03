@@ -149,7 +149,8 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   if (!trigger->is_timer) {
     delay += trigger->offset;
   }
-  tag_t intended_tag = (tag_t){.time = env->current_tag.time + delay, .microstep = 0};
+  tag_t intended_tag = lf_delay_tag(env->current_tag, delay);
+  printf("intended tag = " PRINTF_TAG ".\n", intended_tag.time, intended_tag.microstep);
 
   LF_PRINT_DEBUG("lf_schedule_trigger: env->current_tag = " PRINTF_TAG ". Total logical delay = " PRINTF_TIME "",
                  env->current_tag.time, env->current_tag.microstep, delay);
@@ -173,6 +174,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   if (trigger->is_physical) {
     // Get the current physical time and assign it as the intended time.
     intended_tag.time = lf_time_physical() + delay;
+    intended_tag.microstep = 0;
   } else {
 // FIXME: We need to verify that we are executing within a reaction?
 // See reactor_threaded.
@@ -205,7 +207,11 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
     event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)e);
     // Check for conflicts. Let events pile up in super dense time.
     if (found != NULL) {
-      intended_tag.microstep++;
+      while (found != NULL) {
+        intended_tag.microstep++;
+        e->base.tag = intended_tag;
+        found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)e);
+      }
       if (lf_is_tag_after_stop_tag(env, intended_tag)) {
         LF_PRINT_DEBUG("Attempt to schedule an event after stop_tag was rejected.");
         // Scheduling an event will incur a microstep
@@ -213,7 +219,6 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         lf_recycle_event(env, e);
         return 0;
       }
-      e->base.tag = intended_tag;
       trigger->last_tag = intended_tag;
       pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
       return (0); // FIXME: return value
@@ -286,9 +291,9 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
     intended_tag.time = env->current_tag.time;
   }
 #endif
-  if (intended_tag.time == env->current_tag.time) {
+  if (lf_tag_compare(intended_tag, env->current_tag) == 0) {
     // Increment microstep.
-    intended_tag.microstep = env->current_tag.microstep + 1;
+    intended_tag.microstep++;
   }
 
   // Set the tag of the event.
