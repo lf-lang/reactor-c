@@ -158,9 +158,6 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
 
   event_t* e = lf_get_new_event(env);
 
-  // Initialize the next pointer.
-  //   e->next = NULL;
-
   // Set the payload.
   e->token = token;
 
@@ -299,7 +296,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   // Set the tag of the event.
   e->base.tag = intended_tag;
 
-  // Do not schedule events if if the event time is past the stop tag.
+  // Do not schedule events if the event time is past the stop tag.
   LF_PRINT_DEBUG("Comparing event with elapsed tag " PRINTF_TAG " against stop tag " PRINTF_TAG ".",
                  e->base.tag.time - lf_time_start(), e->base.tag.microstep, env->stop_tag.time - lf_time_start(),
                  env->stop_tag.microstep);
