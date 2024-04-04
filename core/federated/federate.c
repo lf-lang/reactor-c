@@ -1866,8 +1866,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
   int result = -1;
   struct addrinfo* res = NULL;
 
-  instant_t connect_start = lf_time_physical();
-  while (CHECK_TIMEOUT(connect_start, CONNECT_TIMEOUT) && !_lf_termination_executed) {
+  instant_t start_connect = lf_time_physical();
+  while (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT) && !_lf_termination_executed) {
     if (res != NULL) {
       // This is a repeated attempt.
       if (_fed.socket_TCP_RTI >= 0)
