@@ -13,7 +13,12 @@ static sst_priv_t* sst_priv_init() {
   return sst_priv;
 }
 
-static void sst_open(netdrv_t* drv) { sst_priv_t* sst_priv = (sst_priv_t*)drv->priv; }
+static void sst_open(netdrv_t* drv) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  SST_ctx_t* ctx = init_SST(
+      "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/network/fed1.config");
+  sst_priv->sst_ctx = ctx;
+}
 static void sst_close(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   if (sst_priv->socket_priv != NULL) {
@@ -123,7 +128,7 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
 
   session_key_list_t* s_key_list = init_empty_session_key_list();
   SST_session_ctx_t* session_ctx =
-      server_secure_comm_setup(my_priv->sst_ctx, my_priv->socket_priv->socket_descriptor, s_key_list);
+      server_secure_comm_setup(my_priv->sst_ctx, ret_priv->socket_priv->socket_descriptor, s_key_list);
   free_session_key_list_t(s_key_list);
   ret_priv->session_ctx = session_ctx;
 
@@ -136,16 +141,13 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
 }
 
 int netdrv_connect(netdrv_t* drv) {
-  char cwd[256];
-  getcwd(cwd, sizeof(cwd));
-  printf("Current working dir: %s\n", cwd);
+  // char cwd[256];
+  // getcwd(cwd, sizeof(cwd));
+  // printf("Current working dir: %s\n", cwd);
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  unsigned char* config_path;
-  SST_ctx_t* ctx = init_SST(
-      "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/network/fed1.config");
-  session_key_list_t* s_key_list = get_session_key(ctx, NULL);
-  SST_session_ctx_t* session_ctx = secure_connect_to_server(&s_key_list->s_key[0], ctx);
-  sst_priv->sst_ctx = ctx;
+  session_key_list_t* s_key_list = get_session_key(sst_priv->sst_ctx, NULL);
+  // Does not increases RTI port number.
+  SST_session_ctx_t* session_ctx = secure_connect_to_server(&s_key_list->s_key[0], sst_priv->sst_ctx);
   sst_priv->session_ctx = session_ctx;
   return 1;
 }
