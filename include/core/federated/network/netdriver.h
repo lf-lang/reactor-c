@@ -19,15 +19,16 @@ typedef enum netdrv_type_t { NETDRV, UDP } netdrv_type_t;
 // typedef enum server_type_t { RTI, FED } server_type_t; 
 
 typedef struct netdrv_t {
-  void (*open)(struct netdrv_t* drv);
+  void (*open)(struct netdrv_t* drv, int federate_id);
   void (*close)(struct netdrv_t* drv);
   int (*read)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
   int (*write)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
   void* priv;
   unsigned int read_remaining_bytes;
+  int federate_id;
 } netdrv_t;
 
-int netdrv_open(netdrv_t* drv);
+int netdrv_open(netdrv_t* drv, int federate_id);
 void netdrv_close(netdrv_t* drv);
 int netdrv_read(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 int netdrv_write(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
@@ -54,7 +55,7 @@ netdrv_t* establish_communication_session(netdrv_t* netdrv);
  * @param socket The socket ID.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
- * @return 0 for success, -1 for failure.
+ * @return The number of bytes written.
  */
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 

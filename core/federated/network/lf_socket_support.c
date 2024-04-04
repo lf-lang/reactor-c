@@ -34,7 +34,8 @@
 // static void socket_open(netdrv_t* drv);
 // static void socket_close(netdrv_t* drv);
 
-void TCP_open(netdrv_t* drv) {
+void TCP_open(netdrv_t* drv, int federate_id) {
+  drv->federate_id = federate_id;
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   TCP_socket_open(priv);
 }
@@ -217,7 +218,6 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
     return -1;
   }
   ssize_t bytes_written = 0;
-  va_list args;
   while (bytes_written < (ssize_t)num_bytes) {
     ssize_t more = write(priv->socket_descriptor, buffer + bytes_written, num_bytes - (size_t)bytes_written);
     if (more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
