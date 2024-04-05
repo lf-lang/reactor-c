@@ -13,10 +13,16 @@ static sst_priv_t* sst_priv_init() {
   return sst_priv;
 }
 
-static void sst_open(netdrv_t* drv) {
+static void sst_open(netdrv_t* drv, int federate_id) {
+  drv->federate_id = federate_id;
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  SST_ctx_t* ctx = init_SST(
-      "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/network/fed1.config");
+  lf_print_error("federate_id: %d", federate_id);
+  unsigned char config_path[256];
+  sprintf(
+      config_path,
+      "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/network/fed_%d.config",
+      federate_id);
+  SST_ctx_t* ctx = init_SST(config_path);
   sst_priv->sst_ctx = ctx;
 }
 static void sst_close(netdrv_t* drv) {
@@ -138,6 +144,7 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   // 2) Clock synchronization - send_physical_clock - Send through UDP.
   struct sockaddr_in* pV4_addr = (struct sockaddr_in*)&client_fd;
   ret_priv->socket_priv->server_ip_addr = pV4_addr->sin_addr;
+  return ret_netdrv;
 }
 
 int netdrv_connect(netdrv_t* drv) {
@@ -147,6 +154,7 @@ int netdrv_connect(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   session_key_list_t* s_key_list = get_session_key(sst_priv->sst_ctx, NULL);
   // Does not increases RTI port number.
+  print_buf(s_key_list->s_key[0].key_id, 8);
   SST_session_ctx_t* session_ctx = secure_connect_to_server(&s_key_list->s_key[0], sst_priv->sst_ctx);
   sst_priv->session_ctx = session_ctx;
   return 1;
@@ -154,16 +162,84 @@ int netdrv_connect(netdrv_t* drv) {
 
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
 
-int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {}
+int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  if(buffer[0] == MSG_TYPE_FAILED) {
+    // Just return.
+    return 0;
+  }
+  return send_secure_message(buffer, num_bytes, sst_priv->session_ctx);
+}
 
-int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {}
+int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
+  int bytes_written = write_to_netdrv(drv, num_bytes, buffer);
+  if (bytes_written <= 0) {
+    // Write failed.
+    // Netdrv has probably been closed from the other side.
+    // Shut down and close the netdrv from this side.
+    drv->close(drv);
+  }
+  return bytes_written;
+}
 
 void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...) {}
+                                   char* format, ...) {
+  va_list args;
+  int bytes_written = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
+  if (bytes_written <= 0) {
+    // Write failed.
+    if (mutex != NULL) {
+      lf_mutex_unlock(mutex);
+    }
+    if (format != NULL) {
+      lf_print_error_system_failure(format, args);
+    } else {
+      lf_print_error("Failed to write to socket. Closing it.");
+    }
+  }
+}
 
-ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {}
+ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  unsigned char sst_buffer[1024];
+  unsigned int bytes_read;
+  bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, sizeof(sst_buffer));
+  // TODO: DONGHA: Just for error checking. Remove in final.
+  if (bytes_read == sizeof(sst_buffer)) {
+    lf_print_error("It read as much as the buffer size... Be aware.");
+  }
+  unsigned int decrypted_buffer_length;
+  unsigned char* decrypted_buffer =
+      return_decrypted_buf(sst_buffer, bytes_read, &decrypted_buffer_length, sst_priv->session_ctx);
+  // Returned SEQ_NUM_BUFFER(8) + decrypted_buffer;
+  // Doing this because it should be freed.
+  memcpy(buffer, decrypted_buffer + 8, decrypted_buffer_length - 8);
+  free(decrypted_buffer);
+  return decrypted_buffer_length;
+}
 
-ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {}
+ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
+  ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
+  if (bytes_read <= 0) {
+    drv->close(drv);
+    return -1;
+  }
+  return bytes_read;
+}
 
 void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
-                                    char* format, ...) {}
+                                    char* format, ...) {
+  va_list args;
+  ssize_t bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
+  if (bytes_read <= 0) {
+    // Read failed.
+    if (mutex != NULL) {
+      lf_mutex_unlock(mutex);
+    }
+    if (format != NULL) {
+      lf_print_error_system_failure(format, args);
+    } else {
+      lf_print_error_system_failure("Failed to read from netdrv.");
+    }
+  }
+}
