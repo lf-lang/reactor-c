@@ -1,7 +1,13 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <errno.h>
+
 #include "util.h"
 #include "net_common.h"
 #include "net_util.h"
 #include "netdriver.h"
+
 
 static sst_priv_t* sst_priv_init() {
   sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
@@ -153,7 +159,6 @@ int netdrv_connect(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   session_key_list_t* s_key_list = get_session_key(sst_priv->sst_ctx, NULL);
   // Does not increases RTI port number.
-  print_buf(s_key_list->s_key[0].key_id, 8);
   SST_session_ctx_t* session_ctx = secure_connect_to_server(&s_key_list->s_key[0], sst_priv->sst_ctx);
   sst_priv->session_ctx = session_ctx;
   return 1;
@@ -163,7 +168,7 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
 
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  if(buffer[0] == MSG_TYPE_FAILED) {
+  if (buffer[0] == MSG_TYPE_FAILED) {
     // Just return.
     return 0;
   }
@@ -201,8 +206,10 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   unsigned char sst_buffer[1024];
-  unsigned int bytes_read;
-  bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, sizeof(sst_buffer));
+  unsigned int bytes_read = 0;
+  while (bytes_read <= 0) {
+    bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, sizeof(sst_buffer));
+  }
   // TODO: DONGHA: Just for error checking. Remove in final.
   if (bytes_read == sizeof(sst_buffer)) {
     lf_print_error("It read as much as the buffer size... Be aware.");
