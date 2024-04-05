@@ -16,7 +16,6 @@ static sst_priv_t* sst_priv_init() {
 static void sst_open(netdrv_t* drv, int federate_id) {
   drv->federate_id = federate_id;
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  lf_print_error("federate_id: %d", federate_id);
   unsigned char config_path[256];
   sprintf(
       config_path,
