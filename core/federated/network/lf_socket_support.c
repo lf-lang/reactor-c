@@ -1,7 +1,5 @@
 #include <arpa/inet.h> /* htons */
 #include <errno.h>
-#include <linux/if.h> /* IFNAMSIZ */
-#include <netinet/ether.h>
 #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
 #include <netinet/tcp.h> // TCP_NODELAY
 #include <netdb.h>

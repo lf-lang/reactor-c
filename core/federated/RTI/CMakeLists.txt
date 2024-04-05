@@ -37,6 +37,10 @@
 cmake_minimum_required(VERSION 3.12)
 project(RTI VERSION 1.0.0 LANGUAGES C)
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(OPENSSL_ROOT_DIR "/usr/local/lib64")
+endif()
+
 set(CoreLib ../../../core)
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
 
@@ -47,6 +51,8 @@ include_directories(${IncludeDir}/federated)
 include_directories(${IncludeDir}/federated/network)
 include_directories(${IncludeDir}/modal_models)
 include_directories(${IncludeDir}/utils)
+include_directories(/usr/local/include)
+
 
 # Declare a new executable target and list all its sources
 add_executable(

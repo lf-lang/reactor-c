@@ -1063,7 +1063,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* netdrv) {
       tracepoint_rti_from_federate(receive_FED_ID, fed_id, NULL);
     }
     // Compare the received federation ID to mine.
-    if (strncmp(rti_remote->federation_id, buffer + 2 + sizeof(uint16_t), federation_id_length) != 0) {
+    if (strncmp(rti_remote->federation_id, (const char*)buffer + 2 + sizeof(uint16_t), federation_id_length) != 0) {
       // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
       lf_print_warning("Federate from another federation %s attempted to connect to RTI in federation %s.",
                        buffer + 2 + sizeof(uint16_t), rti_remote->federation_id);
