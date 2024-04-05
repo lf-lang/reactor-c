@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <netdb.h>
+#include <unistd.h>
 
 #include "util.h"
 #include "net_common.h"
