@@ -22,12 +22,12 @@ static sst_priv_t* sst_priv_init() {
 static void sst_open(netdrv_t* drv, int federate_id) {
   drv->federate_id = federate_id;
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  unsigned char config_path[256];
+  char config_path[256];
   sprintf(
       config_path,
       "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/network/fed_%d.config",
       federate_id);
-  SST_ctx_t* ctx = init_SST(config_path);
+  SST_ctx_t* ctx = init_SST((const char*)config_path);
   sst_priv->sst_ctx = ctx;
 }
 static void sst_close(netdrv_t* drv) {
@@ -166,11 +166,12 @@ int netdrv_connect(netdrv_t* drv) {
 
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   // sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  // ssize_t bytes_read = recv(sst_priv->session_ctx->sock, result, 1, MSG_DONTWAIT | MSG_PEEK);
+  // ssize_t bytes_read = recv(sst_priv->session_ctx->sock, lf_sst_support.cresult, 1, MSG_DONTWAIT | MSG_PEEK);
   // if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
   //   return 0;
   // else
   //   return bytes_read;
+  return 0;
 }
 
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
