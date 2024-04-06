@@ -9,7 +9,6 @@
 #include "net_util.h"
 #include "netdriver.h"
 
-
 static sst_priv_t* sst_priv_init() {
   sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
   if (!sst_priv) {
@@ -165,7 +164,14 @@ int netdrv_connect(netdrv_t* drv) {
   return 1;
 }
 
-ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
+  // sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  // ssize_t bytes_read = recv(sst_priv->session_ctx->sock, result, 1, MSG_DONTWAIT | MSG_PEEK);
+  // if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
+  //   return 0;
+  // else
+  //   return bytes_read;
+}
 
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
@@ -204,17 +210,41 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
   }
 }
 
+static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, unsigned int* num,
+                                  unsigned int* var_len_int_buf_size) {
+  *num = 0;
+  *var_len_int_buf_size = 0;
+  for (int i = 0; i < buf_length; i++) {
+    *num |= (buf[i] & 127) << (7 * i);
+    if ((buf[i] & 128) == 0) {
+      *var_len_int_buf_size = i + 1;
+      break;
+    }
+  }
+}
+
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   unsigned char sst_buffer[1024];
-  unsigned int bytes_read = 0;
-  while (bytes_read <= 0) {
-    bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, sizeof(sst_buffer));
+  ssize_t bytes_read = 0;
+  unsigned int temp_length = 10;
+
+  // Read 10 bytes first.
+  bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, temp_length);
+  unsigned int payload_length; // Length of the payload of SST.
+  unsigned int var_length_buf_size;
+  // This fills payload_length and var_length_buf_size.
+  var_length_int_to_num(sst_buffer + sizeof(unsigned char), bytes_read, &payload_length, &var_length_buf_size);
+  unsigned int bytes_to_read = payload_length - (temp_length - (sizeof(unsigned char) + var_length_buf_size));
+
+  unsigned int second_read = 0;
+  unsigned int more = 0;
+  while (second_read != bytes_to_read) {
+    more = read(sst_priv->session_ctx->sock, sst_buffer + temp_length, bytes_to_read);
+    second_read += more;
+    bytes_read += second_read;
   }
-  // TODO: DONGHA: Just for error checking. Remove in final.
-  if (bytes_read == sizeof(sst_buffer)) {
-    lf_print_error("It read as much as the buffer size... Be aware.");
-  }
+
   unsigned int decrypted_buffer_length;
   unsigned char* decrypted_buffer =
       return_decrypted_buf(sst_buffer, bytes_read, &decrypted_buffer_length, sst_priv->session_ctx);
@@ -237,7 +267,6 @@ ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, si
 void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
                                     char* format, ...) {
   va_list args;
-  ssize_t bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
   if (bytes_read <= 0) {
     // Read failed.
     if (mutex != NULL) {
@@ -250,3 +279,4 @@ void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t
     }
   }
 }
+
