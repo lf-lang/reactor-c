@@ -122,6 +122,7 @@ target_include_directories(reactor-c PUBLIC ../include/core/modal_models)
 target_include_directories(reactor-c PUBLIC ../include/core/threaded)
 target_include_directories(reactor-c PUBLIC ../include/core/utils)
 target_include_directories(reactor-c PUBLIC federated/RTI/)
+target_include_directories(reactor-c PUBLIC /usr/local/include)
 
 if (APPLE)
     SET(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
@@ -138,6 +139,12 @@ if(DEFINED FEDERATED_AUTHENTICATED)
     find_package(OpenSSL REQUIRED)
     target_link_libraries(reactor-c PUBLIC OpenSSL::SSL)
 endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(OPENSSL_ROOT_DIR "/usr/local/lib64")
+endif()
+
+set(OPENSSL_ROOT_DIR "/usr/local/lib64")
 
 if(DEFINED _LF_CLOCK_SYNC_ON)
   find_library(MATH_LIBRARY m)
