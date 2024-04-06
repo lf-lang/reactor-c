@@ -1870,8 +1870,6 @@ void lf_create_server(int specified_port) {
 
   netdrv_t* my_netdrv = netdrv_init();
   create_server(my_netdrv, 1, specified_port); // 1 for FED
-  // my_netdrv->open(my_netdrv);
-  // create_federate_server(my_netdrv, port, specified_port);
 
   // TODO: NEED to fix.
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", get_my_port(my_netdrv));
