@@ -180,7 +180,7 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
     // Just return.
     return 0;
   }
-  return send_secure_message(buffer, num_bytes, sst_priv->session_ctx);
+  return send_secure_message((char*)buffer, num_bytes, sst_priv->session_ctx);
 }
 
 int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
