@@ -9,6 +9,10 @@
 #include "net_util.h"
 #include "netdriver.h"
 
+const char* sst_config_path;
+
+void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
+
 static sst_priv_t* sst_priv_init() {
   sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
   if (!sst_priv) {
@@ -20,14 +24,24 @@ static sst_priv_t* sst_priv_init() {
 }
 
 static void sst_open(netdrv_t* drv, int federate_id) {
+  char cwd[1024];
+  // Get the current working directory
+  if (getcwd(cwd, sizeof(cwd)) != NULL) {
+      lf_print_error("Current working directory: %s\n", cwd);
+  } else {
+      perror("getcwd");
+      return 1;
+  } 
   drv->federate_id = federate_id;
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  char config_path[256];
-  sprintf(
-      config_path,
-      "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/network/fed_%d.config",
-      federate_id);
-  SST_ctx_t* ctx = init_SST((const char*)config_path);
+  // char config_path[256];
+  // sprintf(
+  //     config_path,
+  //     "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/network/fed_%d.config",
+  //     federate_id);
+  // SST_ctx_t* ctx = init_SST((const char*)config_path);
+  SST_ctx_t* ctx = init_SST((const char*)sst_config_path);
+
   sst_priv->sst_ctx = ctx;
 }
 static void sst_close(netdrv_t* drv) {

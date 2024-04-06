@@ -35,6 +35,8 @@
 #include "environment.h"
 #include "reactor_common.h"
 
+#include "netdriver.h"
+
 #if !defined(LF_SINGLE_THREADED)
 #include "watchdog.h"
 #endif
@@ -1003,6 +1005,9 @@ void usage(int argc, const char* argv[]) {
   printf("  -l\n");
   printf("   Send stdout to individual log files for each federate.\n\n");
 #endif
+#ifdef COMM_TYPE_SST
+  printf("  -c, --config_path <n>\n");
+#endif
 
   printf("Command given:\n");
   for (int i = 0; i < argc; i++) {
@@ -1150,6 +1155,17 @@ int process_args(int argc, const char* argv[]) {
         usage(argc, argv);
         return 0;
       }
+    }
+#endif
+#ifdef COMM_TYPE_SST
+    else if (strcmp(arg, "-c") == 0 || strcmp(arg, "--config_path") == 0) {
+      if (argc < i + 1) {
+        lf_print_error("--config_path needs a string argument.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* fid = argv[i++];
+      lf_set_sst_config_path(fid);
     }
 #endif
     else if (strcmp(arg, "--ros-args") == 0) {

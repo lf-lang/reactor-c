@@ -20,5 +20,7 @@ typedef struct sst_priv_t {
 
 } sst_priv_t;
 
+void lf_set_sst_config_path(const char* config_path);
+
 
 #endif // LF_SST_SUPPORT_H
