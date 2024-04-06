@@ -267,6 +267,7 @@ ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, si
 void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
                                     char* format, ...) {
   va_list args;
+  ssize_t bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
   if (bytes_read <= 0) {
     // Read failed.
     if (mutex != NULL) {
