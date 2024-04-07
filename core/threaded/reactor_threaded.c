@@ -42,8 +42,7 @@ extern instant_t start_time;
  */
 #define MAX_STALL_INTERVAL MSEC(1)
 
-#define LAG_CONTROL_KP  0.5
-#define LAG_CONTROL_KI 0.01
+#define LAG_CONTROL  0.5
 
 /**
  * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
@@ -225,8 +224,7 @@ void lf_set_present(lf_port_base_t* port) {
  */
 bool wait_until(instant_t logical_time, lf_cond_t* condition) {
   LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
-  static interval_t error_integral = NSEC(0);
-  static interval_t last_lag = NSEC(0);
+  static interval_t error_control = NSEC(0);
   interval_t wait_until_time = logical_time;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
   // Apply the STA to the logical time
@@ -248,7 +246,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
     // }
 
     //Subtract the average lag from the requested wait_until_time
-    interval_t wait_until_time_with_adjustment = wait_until_time - (LAG_CONTROL_KP * last_lag + LAG_CONTROL_KI * error_integral);
+    interval_t wait_until_time_with_adjustment = wait_until_time - (LAG_CONTROL * error_control);
     instant_t now = lf_time_physical();
     if (wait_until_time < now) {
       return true;
@@ -277,8 +275,8 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
       LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", wait_duration);
       
       //Calculate the lag and update the average
-      last_lag = lf_time_physical() - wait_until_time_with_adjustment;
-      error_integral += last_lag;
+      instant_t lag = lf_time_physical() - wait_until_time;
+      error_control += lag;
       // lag = lag - ave_lag;
       // lag_count++;
       // lag = lag / lag_count;
@@ -288,7 +286,8 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
       if (lf_time_physical() > wait_until_time) {
         return true;
       } else {
-        return wait_until(logical_time, condition);
+        while (wait_until_time > lf_time_physical()){}
+        return true;
       }
     }
   }
