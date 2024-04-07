@@ -1006,7 +1006,7 @@ void usage(int argc, const char* argv[]) {
   printf("   Send stdout to individual log files for each federate.\n\n");
 #endif
 #ifdef COMM_TYPE_SST
-  printf("  -c, --config_path <n>\n");
+  printf("  -sst, --sst <n>\n");
 #endif
 
   printf("Command given:\n");
@@ -1158,9 +1158,9 @@ int process_args(int argc, const char* argv[]) {
     }
 #endif
 #ifdef COMM_TYPE_SST
-    else if (strcmp(arg, "-c") == 0 || strcmp(arg, "--config_path") == 0) {
+    else if (strcmp(arg, "-sst") == 0 || strcmp(arg, "--sst") == 0) {
       if (argc < i + 1) {
-        lf_print_error("--config_path needs a string argument.");
+        lf_print_error("--sst needs a string argument.");
         usage(argc, argv);
         return 0;
       }

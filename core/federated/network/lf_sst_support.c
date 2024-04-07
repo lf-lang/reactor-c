@@ -10,8 +10,10 @@
 #include "netdriver.h"
 
 const char* sst_config_path;
+const char* RTI_config_path;
 
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
+void lf_set_rti_sst_config_path(const char* config_path) { RTI_config_path = config_path; }
 
 static sst_priv_t* sst_priv_init() {
   sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
@@ -24,22 +26,8 @@ static sst_priv_t* sst_priv_init() {
 }
 
 static void sst_open(netdrv_t* drv, int federate_id) {
-  char cwd[1024];
-  // Get the current working directory
-  if (getcwd(cwd, sizeof(cwd)) != NULL) {
-      lf_print_error("Current working directory: %s\n", cwd);
-  } else {
-      perror("getcwd");
-      return 1;
-  } 
   drv->federate_id = federate_id;
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  // char config_path[256];
-  // sprintf(
-  //     config_path,
-  //     "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/network/fed_%d.config",
-  //     federate_id);
-  // SST_ctx_t* ctx = init_SST((const char*)config_path);
   SST_ctx_t* ctx = init_SST((const char*)sst_config_path);
 
   sst_priv->sst_ctx = ctx;
@@ -120,8 +108,7 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
 // Port will be NULL on MQTT.
 int create_server(netdrv_t* drv, int server_type, uint16_t port) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  SST_ctx_t* ctx = init_SST(
-      "/home/dongha/project/lingua-franca/core/src/main/resources/lib/c/reactor-c/core/federated/RTI/RTI.config");
+  SST_ctx_t* ctx = init_SST(RTI_config_path);
   sst_priv->sst_ctx = ctx;
   return create_TCP_server(sst_priv->socket_priv, server_type, port);
 }
