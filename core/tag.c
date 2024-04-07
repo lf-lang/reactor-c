@@ -194,7 +194,7 @@ size_t lf_readable_time(char* buffer, instant_t time) {
     }
     size_t printed = lf_comma_separated_time(buffer, time);
     buffer += printed;
-    snprintf(buffer, 3, " %s", units);
+    snprintf(buffer, 4, " %s", units);
     buffer += strlen(units) + 1;
   }
   return (buffer - original_buffer);
