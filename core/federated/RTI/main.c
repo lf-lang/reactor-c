@@ -135,6 +135,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
+  lf_print("  -sst, --sst SST config path for RTI.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
@@ -261,6 +262,15 @@ int process_args(int argc, const char* argv[]) {
       return 0;
 #endif
       rti.authentication_enabled = true;
+    } else if (strcmp(argv[i], "-sst") == 0 || strcmp(argv[i], "--sst") == 0) {
+#ifndef COMM_TYPE_SST
+      lf_print_error("--sst requires the RTI to be built with the --DCOMM_TYPE=SST option.");
+      usage(argc, argv);
+      return 0;
+#else
+      i++;
+      lf_set_rti_sst_config_path(argv[i]);
+#endif
     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
       rti.base.tracing_enabled = true;
     } else if (strcmp(argv[i], " ") == 0) {
