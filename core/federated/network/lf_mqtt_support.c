@@ -1,6 +1,13 @@
-#include <netinet/in.h> // IPPROTO_TCP, IPPROTO_UDP
-
 #include "netdriver.h"
+
+static MQTT_priv_t* MQTT_priv_init() {
+  MQTT_priv_t* MQTT_priv = malloc(sizeof(MQTT_priv_t));
+  if (!MQTT_priv) {
+    lf_print_error_and_exit("Falied to malloc MQTT_priv_t.");
+  }
+  memset(MQTT_priv, 0, sizeof(MQTT_priv_t));
+  return MQTT_priv;
+}
 
 /**
  * @brief
@@ -13,6 +20,23 @@
 netdrv_t* netdrv_init() {
   // FIXME: Delete below.
   printf("\n\t[MQTT PROTOCOL]\n\n");
+  netdrv_t* drv = malloc(sizeof(netdrv_t));
+  if (!drv) {
+    lf_print_error_and_exit("Falied to malloc netdrv_t.");
+  }
+  memset(drv, 0, sizeof(netdrv_t));
+  drv->open = MQTT_open;
+  drv->close = MQTT_close;
+  // drv->read = socket_read;
+  // drv->write = socket_write;
+  drv->read_remaining_bytes = 0;
+
+  // Initialize priv.
+  MQTT_priv_t* priv = MQTT_priv_init();
+
+  // Set drv->priv pointer to point the malloc'd priv.
+  drv->priv = (void*)priv;
+  return drv;
 }
 
 char* get_host_name(netdrv_t* drv) {}

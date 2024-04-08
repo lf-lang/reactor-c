@@ -3,12 +3,13 @@
 
 #include <MQTTClient.h>
 
-typedef struct mqtt_priv_t {
+typedef struct MQTT_priv_t {
   MQTTClient client;
   MQTTClient_connectOptions conn_opts; // = MQTTClient_connectOptions_initializer;
   MQTTClient_message pubmsg; //= MQTTClient_message_initializer;
   MQTTClient_deliveryToken token;
+  int QOS;
   const char* topic_name;
-} mqtt_priv_t;
+} MQTT_priv_t;
 
 #endif // LF_MQTT_SUPPORT_H
