@@ -65,7 +65,7 @@ add_executable(
     ${CoreLib}/utils/pqueue.c
 )
 if (NOT DEFINED LOG_LEVEL)
-    set(LOG_LEVEL 0)
+    set(LOG_LEVEL 2)
 ENDIF(NOT DEFINED LOG_LEVEL)
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
