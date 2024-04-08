@@ -1,6 +1,10 @@
 #include "netdriver.h"
 #include "lf_mqtt_support.h"
 
+#define ADDRESS     "tcp://mqtt.eclipseprojects.io:1883"
+#define QOS         2
+#define TIMEOUT     10000L
+
 static MQTT_priv_t* MQTT_priv_init() {
   MQTT_priv_t* MQTT_priv = malloc(sizeof(MQTT_priv_t));
   if (!MQTT_priv) {
