@@ -139,6 +139,7 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   }
 
   session_key_list_t* s_key_list = init_empty_session_key_list();
+  printf("hokeun lf_support 1: %d\n", s_key_list->num_key);
   SST_session_ctx_t* session_ctx =
       server_secure_comm_setup(my_priv->sst_ctx, ret_priv->socket_priv->socket_descriptor, s_key_list);
   free_session_key_list_t(s_key_list);
