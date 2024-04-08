@@ -29,6 +29,7 @@
 #include "rti_remote.h"
 #include "net_util.h"
 #include <string.h>
+#include <pthread.h>
 
 // Global variables defined in tag.c:
 extern instant_t start_time;
@@ -351,6 +352,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   tag_t intended_tag;
   // Extract information from the header.
   extract_timed_header(&(buffer[1]), &reactor_port_id, &federate_id, &length, &intended_tag);
+  // if (length == 320) printf("Fed: %d Got timed message with length %zu\n", sending_federate->enclave.id, length);
 
   size_t total_bytes_to_read = length + header_size;
   size_t bytes_to_read = length;
@@ -371,6 +373,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                sending_federate->enclave.id, federate_id, reactor_port_id, intended_tag.time - lf_time_start(),
                intended_tag.microstep);
 
+  // if (length == 320) printf("%p Fed-%d Reading %zu bytes \n", (void *) pthread_self(), fed->enclave.id, bytes_to_read);
   read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, &(buffer[header_size]), NULL,
                                  "RTI failed to read timed message from federate %d.", federate_id);
   size_t bytes_read = bytes_to_read + header_size;
@@ -387,11 +390,10 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   LF_MUTEX_LOCK(&rti_mutex);
 
   // If the destination federate is no longer connected, issue a warning
-  // and return.
+  // and return. We also need to empty the incoming socket for the remaining data.
   federate_info_t* fed = GET_FED_INFO(federate_id);
   if (fed->enclave.state == NOT_CONNECTED) {
-    LF_MUTEX_UNLOCK(&rti_mutex);
-    lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.", federate_id);
+    lf_print_error("RTI: Destination federate %d is no longer connected. Dropping message.", federate_id);
     LF_PRINT_LOG("Fed status: next_event " PRINTF_TAG ", "
                  "completed " PRINTF_TAG ", "
                  "last_granted " PRINTF_TAG ", "
@@ -401,6 +403,19 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                  fed->enclave.last_granted.time - start_time, fed->enclave.last_granted.microstep,
                  fed->enclave.last_provisionally_granted.time - start_time,
                  fed->enclave.last_provisionally_granted.microstep);
+    // The message length may be longer than the buffer,
+    // in which case we have to handle it in chunks.
+    size_t total_bytes_read = bytes_read;
+    while (total_bytes_read < total_bytes_to_read) {
+      bytes_to_read = total_bytes_to_read - total_bytes_read;
+      if (bytes_to_read > FED_COM_BUFFER_SIZE) {
+        bytes_to_read = FED_COM_BUFFER_SIZE;
+      }
+      read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, buffer, NULL,
+                                    "RTI failed to read message chunks.");
+      total_bytes_read += bytes_to_read;
+    }
+    LF_MUTEX_UNLOCK(&rti_mutex);
     return;
   }
 
@@ -430,6 +445,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     if (bytes_to_read > FED_COM_BUFFER_SIZE) {
       bytes_to_read = FED_COM_BUFFER_SIZE;
     }
+    // if (length == 320) printf("%p Fed %d Reading %zu bytes total=%zu\n",(void*) pthread_self(),fed->enclave.id, bytes_to_read, total_bytes_to_read);
     read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, buffer, NULL,
                                    "RTI failed to read message chunks.");
     total_bytes_read += bytes_to_read;
@@ -441,7 +457,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     write_to_socket_fail_on_error(&fed->socket, bytes_to_read, buffer, &rti_mutex,
                                   "RTI failed to send message chunks.");
   }
-
+  
   // Record this in-transit message in federate's in-transit message queue.
   if (lf_tag_compare(fed->enclave.completed, intended_tag) < 0) {
     // Add a record of this message to the list of in-transit messages to this federate.
@@ -1073,7 +1089,7 @@ void* federate_info_thread_TCP(void* fed) {
     int read_failed = read_from_socket(my_fed->socket, 1, buffer);
     if (read_failed) {
       // Socket is closed
-      lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
+      lf_print_error("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
       my_fed->socket = -1;
       // FIXME: We need better error handling here, but do not stop execution here.
@@ -1117,12 +1133,23 @@ void* federate_info_thread_TCP(void* fed) {
     case MSG_TYPE_FAILED:
       handle_federate_failed(my_fed);
       return NULL;
-    default:
-      lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->enclave.id,
+    default: {
+      lf_print_error("%p RTI received from federate %d an unrecognized TCP message type: %u.", (void*) pthread_self(), my_fed->enclave.id,
                      buffer[0]);
+      for (int i = 0; i<12; i++) {
+        int read_failed = read_from_socket(my_fed->socket, 1, buffer);
+        if (read_failed) {
+          lf_print_error_and_exit("read failed");
+        } else {
+          printf("%d ", buffer[0]);
+        }
+      }
+      printf("\n");
+      lf_print_error_and_exit("Killing RTI.");
       if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(receive_UNIDENTIFIED, my_fed->enclave.id, NULL);
       }
+    }
     }
   }
 
@@ -1561,6 +1588,7 @@ void lf_connect_to_federates(int socket_descriptor) {
 
     // The first message from the federate should contain its ID and the federation ID.
     int32_t fed_id = receive_and_check_fed_id_message(&socket_id, (struct sockaddr_in*)&client_fd);
+    lf_print("Fed %d coming on socket %d", fed_id, socket_id);
     if (fed_id >= 0 && socket_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
         receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
 
