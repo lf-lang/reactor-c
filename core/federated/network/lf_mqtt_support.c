@@ -1,4 +1,5 @@
 #include "netdriver.h"
+#include "lf_mqtt_support.h"
 
 static MQTT_priv_t* MQTT_priv_init() {
   MQTT_priv_t* MQTT_priv = malloc(sizeof(MQTT_priv_t));
@@ -70,7 +71,18 @@ void netdrv_free(netdrv_t* drv) {}
  * @return int
  */
 int create_server(netdrv_t* drv, int server_type, uint16_t port) {
+  MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
+  if ((MQTTClient_create(&MQTT_priv->client, ADDRESS, CLIENTID, MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS) {
+    lf_print_error_and_exit("Failed to create client, return code %d\n", rc);
+    exit(EXIT_FAILURE);
+  }
 
+  conn_opts.keepAliveInterval = 20;
+  conn_opts.cleansession = 1;
+  if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
+    printf("Failed to connect, return code %d\n", rc);
+    exit(EXIT_FAILURE);
+  }
 }
 
 /**

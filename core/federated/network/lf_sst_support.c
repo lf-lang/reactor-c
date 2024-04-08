@@ -8,6 +8,7 @@
 #include "net_common.h"
 #include "net_util.h"
 #include "netdriver.h"
+#include "lf_sst_support.h"
 
 const char* sst_config_path;
 const char* RTI_config_path;
