@@ -246,11 +246,12 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
     // }
 
     //Subtract the average lag from the requested wait_until_time
-    interval_t wait_until_time_with_adjustment = wait_until_time - (LAG_CONTROL * error_control);
+    interval_t wait_until_time_with_adjustment = wait_until_time - error_control;
     instant_t now = lf_time_physical();
     if (wait_until_time < now) {
       return true;
     } else if (wait_until_time_with_adjustment < now && wait_until_time > now) {
+      error_control = error_control - (LAG_CONTROL * (now - wait_until_time_with_adjustment));
       while (wait_until_time > lf_time_physical()){}
       return true;
     }
@@ -276,7 +277,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
       
       //Calculate the lag and update the average
       instant_t lag = lf_time_physical() - wait_until_time;
-      error_control += lag;
+      error_control += LAG_CONTROL * lag;
       // lag = lag - ave_lag;
       // lag_count++;
       // lag = lag / lag_count;
