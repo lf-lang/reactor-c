@@ -95,17 +95,17 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
     return -1;
   }
   ssize_t bytes_read = 0;
-  int retry_count = 0;
   while (bytes_read < (ssize_t)num_bytes) {
     ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-    if (more < 0 && retry_count++ < NUM_SOCKET_RETRIES && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
+    if (more < 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
       // Those error codes set by the socket indicates
       // that we should try again (@see man errno).
-      lf_print_warning("Reading from socket failed. Will try again.");
+      LF_PRINT_DEBUG("Reading from socket %d failed with errno=%d. Will try again.", socket, errno);
       lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
       continue;
     } else if (more < 0) {
       // A more serious error occurred.
+      lf_print_error("Reading from socket failed. With errno=%d",errno);
       return -1;
     } else if (more == 0) {
       // EOF received.
@@ -176,6 +176,7 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
       continue;
     } else if (more < 0) {
       // A more serious error occurred.
+      lf_print_error("Writing to socket failed. With errno=%d",errno);
       return -1;
     }
     bytes_written += more;
