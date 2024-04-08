@@ -26,8 +26,7 @@
 // static void socket_open(netdrv_t* drv);
 // static void socket_close(netdrv_t* drv);
 
-void TCP_open(netdrv_t* drv, int federate_id) {
-  drv->federate_id = federate_id;
+void TCP_open(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   TCP_socket_open(priv);
 }
@@ -37,7 +36,7 @@ void TCP_close(netdrv_t* drv) {
   TCP_socket_close(priv);
 }
 
-netdrv_t* netdrv_init() {
+netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
   printf("\n\t[TCP PROTOCOL]\n\n");
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {
@@ -49,6 +48,8 @@ netdrv_t* netdrv_init() {
   // drv->read = socket_read;
   // drv->write = socket_write;
   drv->read_remaining_bytes = 0;
+  drv->federate_id = federate_id;
+  drv->federation_id = federation_id;
 
   // Initialize priv.
   socket_priv_t* priv = TCP_socket_priv_init();
@@ -120,7 +121,8 @@ int create_server(netdrv_t* drv, int server_type, uint16_t port) {
 
 **/
 netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
-  netdrv_t* ret_netdrv = netdrv_init();
+  // -2 is for uninitialized value.
+  netdrv_t* ret_netdrv = netdrv_init(-2, my_netdrv->federation_id);
   socket_priv_t* my_priv = (socket_priv_t*)my_netdrv->priv;
   socket_priv_t* ret_priv = (socket_priv_t*)ret_netdrv->priv;
   // Wait for an incoming connection request.

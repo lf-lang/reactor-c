@@ -1690,8 +1690,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
   // Iterate until we either successfully connect or exceed the number of
   // attempts given by CONNECT_MAX_RETRIES.
-  netdrv_t* netdrv = netdrv_init();
-  netdrv->open(netdrv, _lf_my_fed_id);
+  netdrv_t* netdrv = netdrv_init(_lf_my_fed_id, federation_metadata.federation_id);
+  netdrv->open(netdrv);
   set_host_name(netdrv, hostname);
   set_port(netdrv, uport);
   result = netdrv_connect(netdrv);
@@ -1757,8 +1757,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
   }
 
   // Initialize netdriver to rti.
-  _fed.netdrv_to_rti = netdrv_init();           // set memory.
-  _fed.netdrv_to_rti->open(_fed.netdrv_to_rti, _lf_my_fed_id); // open netdriver.
+  _fed.netdrv_to_rti = netdrv_init(_lf_my_fed_id, federation_metadata.federation_id);       // set memory.
+  _fed.netdrv_to_rti->open(_fed.netdrv_to_rti); // open netdriver.
   set_host_name(_fed.netdrv_to_rti, hostname);
   set_port(_fed.netdrv_to_rti, uport);
   set_specified_port(_fed.netdrv_to_rti, port);
@@ -1868,7 +1868,7 @@ void lf_create_server(int specified_port) {
   uint16_t port = (uint16_t)specified_port;
   LF_PRINT_LOG("Creating a socket server on port %d.", port);
 
-  netdrv_t* my_netdrv = netdrv_init();
+  netdrv_t* my_netdrv = netdrv_init(_lf_my_fed_id, federation_metadata.federation_id);
   create_server(my_netdrv, 1, specified_port); // 1 for FED
 
   // TODO: NEED to fix.

@@ -25,8 +25,7 @@ static sst_priv_t* sst_priv_init() {
   return sst_priv;
 }
 
-static void sst_open(netdrv_t* drv, int federate_id) {
-  drv->federate_id = federate_id;
+static void sst_open(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   SST_ctx_t* ctx = init_SST((const char*)sst_config_path);
 
@@ -48,7 +47,7 @@ void netdrv_free(netdrv_t* drv) {
   free(drv);
 }
 
-netdrv_t* netdrv_init() {
+netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
@@ -114,7 +113,7 @@ int create_server(netdrv_t* drv, int server_type, uint16_t port) {
 }
 
 netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
-  netdrv_t* ret_netdrv = netdrv_init();
+  netdrv_t* ret_netdrv = netdrv_init(-2, my_netdrv->federation_id);
   sst_priv_t* my_priv = (sst_priv_t*)my_netdrv->priv;
   sst_priv_t* ret_priv = (sst_priv_t*)ret_netdrv->priv;
 

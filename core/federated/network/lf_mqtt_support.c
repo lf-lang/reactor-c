@@ -17,7 +17,7 @@ static MQTT_priv_t* MQTT_priv_init() {
  *
  * @return netdrv_t*
  */
-netdrv_t* netdrv_init() {
+netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
   // FIXME: Delete below.
   printf("\n\t[MQTT PROTOCOL]\n\n");
   netdrv_t* drv = malloc(sizeof(netdrv_t));
@@ -30,6 +30,8 @@ netdrv_t* netdrv_init() {
   // drv->read = socket_read;
   // drv->write = socket_write;
   drv->read_remaining_bytes = 0;
+  drv->federate_id = federate_id;
+  drv->federation_id = federation_id;
 
   // Initialize priv.
   MQTT_priv_t* priv = MQTT_priv_init();
@@ -67,7 +69,9 @@ void netdrv_free(netdrv_t* drv) {}
  * @param port The port is NULL here.
  * @return int
  */
-int create_server(netdrv_t* drv, int server_type, uint16_t port) {}
+int create_server(netdrv_t* drv, int server_type, uint16_t port) {
+
+}
 
 /**
  * @brief

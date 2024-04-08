@@ -1094,6 +1094,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* netdrv) {
     }
   }
   federate_info_t* fed = GET_FED_INFO(fed_id);
+  netdrv->federate_id = (int) fed_id;
   fed->fed_netdrv = netdrv;
 
 // TODO: Make this work for only TCP.
@@ -1497,9 +1498,6 @@ void initialize_RTI(rti_remote_t* rti) {
   initialize_rti_common(&rti_remote->base);
   rti_remote->base.mutex = &rti_mutex;
 
-  // TODO: How to make this compile dependent? When should the options be determined?
-  rti_remote->rti_netdrv = netdrv_init();
-
   // federation_rti related initializations
   rti_remote->max_start_time = 0LL;
   rti_remote->num_feds_proposed_start = 0;
@@ -1516,6 +1514,10 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->authentication_enabled = false;
   rti_remote->base.tracing_enabled = false;
   rti_remote->stop_in_progress = false;
+
+  // TODO: How to make this compile dependent? When should the options be determined?
+  // -1 for RTI ID.
+  rti_remote->rti_netdrv = netdrv_init(-1, rti_remote->federation_id);
 }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
