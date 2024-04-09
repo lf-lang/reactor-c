@@ -77,7 +77,7 @@ int lf_critical_section_exit(environment_t* env);
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
 #if defined(LF_SINGLE_THREADED)
-typedef void lf_mutex_t;
+typedef void* lf_mutex_t;
 /**
  * @brief Disable interrupts with support for nested calls
  * @return 0 on success

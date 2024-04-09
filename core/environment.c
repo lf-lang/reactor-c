@@ -53,7 +53,9 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
   LF_MUTEX_INIT(&env->mutex);
   LF_COND_INIT(&env->event_q_changed, &env->mutex);
   LF_COND_INIT(&env->global_tag_barrier_requestors_reached_zero, &env->mutex);
-
+#else
+  (void)env;
+  (void)num_workers;
 #endif
 }
 /**
@@ -67,6 +69,8 @@ static void environment_init_single_threaded(environment_t* env) {
   env->reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index, get_reaction_position,
                                 set_reaction_position, reaction_matches, print_reaction);
 
+#else
+  (void)env;
 #endif
 }
 
@@ -97,6 +101,10 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
   } else {
     env->modes = NULL;
   }
+#else
+  (void)env;
+  (void)num_modes;
+  (void)num_state_resets;
 #endif
 }
 
@@ -113,6 +121,9 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
     env->_lf_intended_tag_fields = NULL;
     env->_lf_intended_tag_fields_size = 0;
   }
+#else
+  (void)env;
+  (void)num_is_present_fields;
 #endif
 }
 
@@ -132,12 +143,16 @@ static void environment_free_threaded(environment_t* env) {
 #if !defined(LF_SINGLE_THREADED)
   free(env->thread_ids);
   lf_sched_free(env->scheduler);
+#else
+  (void)env;
 #endif
 }
 
 static void environment_free_single_threaded(environment_t* env) {
 #ifdef LF_SINGLE_THREADED
   pqueue_free(env->reaction_q);
+#else
+  (void)env;
 #endif
 }
 
@@ -148,12 +163,16 @@ static void environment_free_modes(environment_t* env) {
     free(env->modes->state_resets);
     free(env->modes);
   }
+#else
+  (void)env;
 #endif
 }
 
 static void environment_free_federated(environment_t* env) {
 #ifdef FEDERATED_DECENTRALIZED
   free(env->_lf_intended_tag_fields);
+#else
+  (void)env;
 #endif
 }
 
@@ -179,6 +198,7 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
                      int num_startup_reactions, int num_shutdown_reactions, int num_reset_reactions,
                      int num_is_present_fields, int num_modes, int num_state_resets, int num_watchdogs,
                      const char* trace_file_name) {
+  (void)trace_file_name; // Will be used with future enclave support.
 
   env->name = malloc(strlen(name) + 1); // +1 for the null terminator
   LF_ASSERT_NON_NULL(env->name);

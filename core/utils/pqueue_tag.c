@@ -81,7 +81,7 @@ pqueue_tag_t* pqueue_tag_init(size_t initial_size) {
 }
 
 void pqueue_tag_free(pqueue_tag_t* q) {
-  for (int i = 1; i < q->size; i++) {
+  for (size_t i = 1; i < q->size; i++) {
     if (q->d[i] != NULL && ((pqueue_tag_element_t*)q->d[i])->is_dynamic) {
       free(q->d[i]);
     }

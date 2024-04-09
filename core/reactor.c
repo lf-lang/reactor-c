@@ -27,9 +27,18 @@
 extern instant_t start_time;
 
 int lf_thread_id() { return 0; }
-int lf_mutex_unlock(lf_mutex_t* mutex) { return 0; }
-int lf_mutex_init(lf_mutex_t* mutex) { return 0; }
-int lf_mutex_lock(lf_mutex_t* mutex) { return 0; }
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+  (void)mutex;
+  return 0;
+}
+int lf_mutex_init(lf_mutex_t* mutex) {
+  (void)mutex;
+  return 0;
+}
+int lf_mutex_lock(lf_mutex_t* mutex) {
+  (void)mutex;
+  return 0;
+}
 
 // Defined in reactor_common.c:
 extern bool fast;
@@ -83,11 +92,13 @@ void lf_print_snapshot(environment_t* env) {
 }
 #else  // NDEBUG
 void lf_print_snapshot(environment_t* env) {
+  (void)env;
   // Do nothing.
 }
 #endif // NDEBUG
 
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
+  (void)worker_number;
   assert(env != GLOBAL_ENVIRONMENT);
 
 #ifdef MODAL_REACTORS
@@ -273,8 +284,7 @@ int next(environment_t* env) {
 void lf_request_stop(void) {
   // There is only one enclave, so get its environment.
   environment_t* env;
-  int num_environments = _lf_get_environments(&env);
-  assert(num_environments == 1);
+  _lf_get_environments(&env);
 
   tag_t new_stop_tag;
   new_stop_tag.time = env->current_tag.time;
@@ -368,9 +378,18 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
  * @brief Notify of new event by calling the single-threaded platform API
  * @param env Environment in which we are executing.
  */
-int lf_notify_of_event(environment_t* env) { return _lf_single_threaded_notify_of_event(); }
+int lf_notify_of_event(environment_t* env) {
+  (void)env;
+  return _lf_single_threaded_notify_of_event();
+}
 
-int lf_critical_section_enter(environment_t* env) { return lf_disable_interrupts_nested(); }
+int lf_critical_section_enter(environment_t* env) {
+  (void)env;
+  return lf_disable_interrupts_nested();
+}
 
-int lf_critical_section_exit(environment_t* env) { return lf_enable_interrupts_nested(); }
+int lf_critical_section_exit(environment_t* env) {
+  (void)env;
+  return lf_enable_interrupts_nested();
+}
 #endif

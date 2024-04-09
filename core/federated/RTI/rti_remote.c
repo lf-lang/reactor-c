@@ -340,7 +340,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
 }
 
 void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer) {
-  size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
+  size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(int64_t) + sizeof(uint32_t);
   // Read the header, minus the first byte which has already been read.
   read_from_socket_fail_on_error(&sending_federate->socket, header_size - 1, &(buffer[1]), NULL,
                                  "RTI failed to read the timed message header from remote federate.");
@@ -721,8 +721,8 @@ void handle_address_query(uint16_t fed_id) {
   // the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message
   // from this federate. In that case, it will respond by sending -1.
 
-  // Response message is also of type MSG_TYPE_ADDRESS_QUERY.
-  buffer[0] = MSG_TYPE_ADDRESS_QUERY;
+  // Response message is MSG_TYPE_ADDRESS_QUERY_REPLY.
+  buffer[0] = MSG_TYPE_ADDRESS_QUERY_REPLY;
 
   // Encode the port number.
   federate_info_t* remote_fed = GET_FED_INFO(remote_fed_id);
@@ -891,11 +891,6 @@ void* clock_synchronization_thread(void* noargs) {
   }
 
   // Initiate a clock synchronization every rti->clock_sync_period_ns
-  // Initiate a clock synchronization every rti->clock_sync_period_ns
-  struct timespec sleep_time = {(time_t)rti_remote->clock_sync_period_ns / BILLION,
-                                rti_remote->clock_sync_period_ns % BILLION};
-  struct timespec remaining_time;
-
   bool any_federates_connected = true;
   while (any_federates_connected) {
     // Sleep
@@ -1323,17 +1318,20 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
 
     // Allocate memory for the upstream and downstream pointers
     if (fed->enclave.num_upstream > 0) {
-      fed->enclave.upstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
+      fed->enclave.upstream = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
+      LF_ASSERT_NON_NULL(fed->enclave.upstream);
       // Allocate memory for the upstream delay pointers
       fed->enclave.upstream_delay = (interval_t*)malloc(sizeof(interval_t) * fed->enclave.num_upstream);
+      LF_ASSERT_NON_NULL(fed->enclave.upstream_delay);
     } else {
-      fed->enclave.upstream = (int*)NULL;
+      fed->enclave.upstream = (uint16_t*)NULL;
       fed->enclave.upstream_delay = (interval_t*)NULL;
     }
     if (fed->enclave.num_downstream > 0) {
-      fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
+      fed->enclave.downstream = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
+      LF_ASSERT_NON_NULL(fed->enclave.downstream);
     } else {
-      fed->enclave.downstream = (int*)NULL;
+      fed->enclave.downstream = (uint16_t*)NULL;
     }
 
     size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) * fed->enclave.num_upstream) +
@@ -1341,6 +1339,7 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
     unsigned char* connections_info_body = NULL;
     if (connections_info_body_size > 0) {
       connections_info_body = (unsigned char*)malloc(connections_info_body_size);
+      LF_ASSERT_NON_NULL(connections_info_body);
       read_from_socket_fail_on_error(socket_id, connections_info_body_size, connections_info_body, NULL,
                                      "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
                                      fed_id);

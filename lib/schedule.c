@@ -45,12 +45,6 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
 }
 
 trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
-  if (length < 0) {
-    lf_print_error("schedule_copy():"
-                   " Ignoring request to copy a value with a negative length (%zu).",
-                   length);
-    return -1;
-  }
   if (value == NULL) {
     return lf_schedule_token(action, offset, NULL);
   }
@@ -129,13 +123,13 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
     extra_delay = 0LL;
   }
 
-  LF_PRINT_DEBUG("lf_schedule_trigger: scheduling trigger %p with delay " PRINTF_TIME " and token %p.", trigger,
-                 extra_delay, token);
+  LF_PRINT_DEBUG("lf_schedule_trigger: scheduling trigger %p with delay " PRINTF_TIME " and token %p.", (void*)trigger,
+                 extra_delay, (void*)token);
 
   // Increment the reference count of the token.
   if (token != NULL) {
     token->ref_count++;
-    LF_PRINT_DEBUG("lf_schedule_trigger: Incremented ref_count of %p to %zu.", token, token->ref_count);
+    LF_PRINT_DEBUG("lf_schedule_trigger: Incremented ref_count of %p to %zu.", (void*)token, token->ref_count);
   }
 
   // The trigger argument could be null, meaning that nothing is triggered.
