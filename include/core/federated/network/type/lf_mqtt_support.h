@@ -9,6 +9,7 @@ typedef struct MQTT_priv_t {
   MQTTClient_message pubmsg; //= MQTTClient_message_initializer;
   MQTTClient_deliveryToken token;
   const char* topic_name;
+  char client_id[20];
 } MQTT_priv_t;
 
 #endif // LF_MQTT_SUPPORT_H
