@@ -146,20 +146,6 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   return decrypted_buffer_length;
 }
 
-
-void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
-void lf_set_rti_sst_config_path(const char* config_path) { RTI_config_path = config_path; }
-
-static sst_priv_t* sst_priv_init() {
-  sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
-  if (!sst_priv) {
-    lf_print_error_and_exit("Falied to malloc sst_priv_t.");
-  }
-  memset(sst_priv, 0, sizeof(sst_priv_t));
-  sst_priv->socket_priv = TCP_socket_priv_init();
-  return sst_priv;
-}
-
 // void netdrv_free(netdrv_t* drv) {
 //   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
 //   // free(priv); // Already freed on socket close()
@@ -206,6 +192,20 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
 
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
 
+// ------------------Helper Functions------------------ //
+
+void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
+void lf_set_rti_sst_config_path(const char* config_path) { RTI_config_path = config_path; }
+
+static sst_priv_t* sst_priv_init() {
+  sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
+  if (!sst_priv) {
+    lf_print_error_and_exit("Falied to malloc sst_priv_t.");
+  }
+  memset(sst_priv, 0, sizeof(sst_priv_t));
+  sst_priv->socket_priv = TCP_socket_priv_init();
+  return sst_priv;
+}
 
 static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, unsigned int* num,
                                   unsigned int* var_len_int_buf_size) {
@@ -219,4 +219,3 @@ static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, u
     }
   }
 }
-

@@ -248,6 +248,18 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   return 1;
 }
 
+char* get_host_name(netdrv_t* drv) {}
+int32_t get_my_port(netdrv_t* drv) {}
+int32_t get_port(netdrv_t* drv) {}
+struct in_addr* get_ip_addr(netdrv_t* drv) {}
+void set_host_name(netdrv_t* drv, const char* hostname) {}
+void set_port(netdrv_t* drv, int port) {}
+void set_specified_port(netdrv_t* drv, int port) {}
+void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {}
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
+
+// ------------------Helper Functions------------------ //
+
 static MQTT_priv_t* MQTT_priv_init() {
   MQTT_priv_t* MQTT_priv = malloc(sizeof(MQTT_priv_t));
   if (!MQTT_priv) {
@@ -353,13 +365,3 @@ static void set_MQTTServer_id(MQTT_priv_t* MQTT_priv, int my_id, int client_id) 
 }
 
 static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int client_id) { sprintf(MQTT_priv->client_id, "%d", client_id); }
-
-char* get_host_name(netdrv_t* drv) {}
-int32_t get_my_port(netdrv_t* drv) {}
-int32_t get_port(netdrv_t* drv) {}
-struct in_addr* get_ip_addr(netdrv_t* drv) {}
-void set_host_name(netdrv_t* drv, const char* hostname) {}
-void set_port(netdrv_t* drv, int port) {}
-void set_specified_port(netdrv_t* drv, int port) {}
-void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {}
-ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
