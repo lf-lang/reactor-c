@@ -1019,7 +1019,8 @@ void* worker(void* arg) {
 
         tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->start_tag);
         LF_ASSERT(  lf_tag_compare(tag_granted, env->start_tag) == 0,
-                    "We did not receive a TAG to the start tag. Got tag " PRINTF_TAG, tag_granted);
+                    "We did not receive a TAG to the start tag. Got tag " PRINTF_TAG,
+                    tag_granted.time, tag_granted.microstep);
         env->current_tag = env->start_tag;
     }
     #endif
