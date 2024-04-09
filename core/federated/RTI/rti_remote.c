@@ -1448,6 +1448,7 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 
 int32_t start_rti_server(uint16_t port) {
   _lf_initialize_clock();
+  rti_remote->rti_netdrv = netdrv_init(-1, rti_remote->federation_id);
   // Create the RTI's netdriver.
   int ret = create_server(rti_remote->rti_netdrv, 0, port); // 0 for RTI
   lf_print("RTI: Listening for federates.");
@@ -1515,9 +1516,6 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->base.tracing_enabled = false;
   rti_remote->stop_in_progress = false;
 
-  // TODO: How to make this compile dependent? When should the options be determined?
-  // -1 for RTI ID.
-  rti_remote->rti_netdrv = netdrv_init(-1, rti_remote->federation_id);
 }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
