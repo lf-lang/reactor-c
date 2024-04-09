@@ -10,6 +10,8 @@
 #include "net_util.h"
 #include "netdriver.h"
 
+static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int* state);
+
 netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
   printf("\n\t[TCP PROTOCOL]\n\n");
   netdrv_t* drv = malloc(sizeof(netdrv_t));
@@ -319,15 +321,6 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
 }
 
 // ------------------Helper Functions------------------ //
-
-typedef enum {
-  HEADER_READ,
-  READ_MSG_TYPE_FED_IDS,
-  READ_MSG_TYPE_NEIGHBOR_STRUCTURE,
-  READ_MSG_TYPE_TAGGED_MESSAGE,
-  KEEP_READING,
-  FINISH_READ
-} read_state_t;
 
 static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int* state) {
   switch (buffer[0]) {
