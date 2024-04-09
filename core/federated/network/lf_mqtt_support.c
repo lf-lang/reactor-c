@@ -14,6 +14,8 @@
 #define QOS 2
 #define TIMEOUT 10000L
 
+static void MQTT_open(netdrv_t* drv);
+
 static MQTT_priv_t* MQTT_priv_init() {
   MQTT_priv_t* MQTT_priv = malloc(sizeof(MQTT_priv_t));
   if (!MQTT_priv) {
@@ -78,64 +80,50 @@ static char* create_topic_federation_id_rti_to_fed_id(const char* federation_id,
 
 // Function to encode data as Base64 using OpenSSL's EVP_EncodeBlock()
 static char* base64_encode(const unsigned char* input, int input_len, int* output_len) {
-    // Calculate the maximum possible length of the Base64 encoded data
-    int max_encoded_len = (((input_len + 2) / 3) * 4) + 1; // +1 for null terminator
+  // Calculate the maximum possible length of the Base64 encoded data
+  int max_encoded_len = (((input_len + 2) / 3) * 4) + 1; // +1 for null terminator
 
-    // Allocate memory for the Base64 encoded data
-    char* encoded_data = (char*)malloc(max_encoded_len);
-    if (encoded_data == NULL) {
-        *output_len = 0;
-        return NULL; // Memory allocation failed
-    }
+  // Allocate memory for the Base64 encoded data
+  char* encoded_data = (char*)malloc(max_encoded_len);
+  if (encoded_data == NULL) {
+    *output_len = 0;
+    return NULL; // Memory allocation failed
+  }
 
-    // Encode the input data as Base64
-    *output_len = EVP_EncodeBlock((unsigned char*)encoded_data, input, input_len);
-    return encoded_data;
+  // Encode the input data as Base64
+  *output_len = EVP_EncodeBlock((unsigned char*)encoded_data, input, input_len);
+  return encoded_data;
 }
 
 // Function to encode data as Base64 using OpenSSL's EVP_DecodeBlock()
 static unsigned char* base64_decode(const unsigned char* input, int input_len, int* output_len) {
-    // Allocate memory for the output buffer
-    unsigned char* output = (unsigned char*)malloc(input_len);
-    if (output == NULL) {
-        return NULL; // Memory allocation failed
-    }
-
-    // Decode the Base64 data
-    // TODO: DONGHA This can have errors, because this may add 0bit paddings.
-    *output_len = EVP_DecodeBlock(output, input, input_len);
-
-    return output;
-}
-
-static void set_client_id(MQTT_priv_t* MQTT_priv, int id) {
-  if (id == -1) {
-    strcat(MQTT_priv->client_id, "RTI");
-  }
-  sprintf(MQTT_priv->client_id, "%d", id);
-}
-
-/**
- * @brief Federate connects to broker.
- *
- * @param drv
- */
-static void MQTT_open(netdrv_t* drv) {
-  MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
-  set_client_id(MQTT_priv, drv->federate_id);
-  int rc;
-  if ((rc = MQTTClient_create(&MQTT_priv->client, ADDRESS, MQTT_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
-      MQTTCLIENT_SUCCESS) {
-    lf_print_error_and_exit("Failed to create client, return code %d\n", rc);
-    exit(EXIT_FAILURE);
+  // Allocate memory for the output buffer
+  unsigned char* output = (unsigned char*)malloc(input_len);
+  if (output == NULL) {
+    return NULL; // Memory allocation failed
   }
 
-  MQTT_priv->conn_opts.keepAliveInterval = 20;
-  MQTT_priv->conn_opts.cleansession = 1;
-  if ((rc = MQTTClient_connect(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
-    lf_print_error_and_exit("Failed to connect, return code %d\n", rc);
+  // Decode the Base64 data
+  // TODO: DONGHA This can have errors, because this may add 0bit paddings.
+  *output_len = EVP_DecodeBlock(output, input, input_len);
+
+  return output;
+}
+
+static void set_MQTTServer_id(MQTT_priv_t* MQTT_priv, int my_id, int client_id) {
+  if (my_id == -1 && client_id == -1) {
+    strcat(MQTT_priv->client_id, "RTI_RTI");
+  } else if (my_id == -1) {
+    sprintf(MQTT_priv->client_id, "RTI_%d", client_id);
+  } else {
+    sprintf(MQTT_priv->client_id, "fed%d_fed%d", my_id, client_id);
   }
 }
+
+static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int client_id) {
+  sprintf(MQTT_priv->client_id, "%d", client_id);
+}
+
 static void MQTT_close(netdrv_t* drv) {}
 
 /**
@@ -202,7 +190,8 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {}
  */
 int create_server(netdrv_t* drv, int server_type, uint16_t port) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
-  set_client_id(MQTT_priv, drv->federate_id);
+  // If RTI calls this, it will be -1. If federate server calls, it will be it's federate ID.
+  set_MQTTServer_id(MQTT_priv, drv->federate_id, drv->federate_id);
   int rc;
   if ((rc = MQTTClient_create(&MQTT_priv->client, ADDRESS, MQTT_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
       MQTTCLIENT_SUCCESS) {
@@ -215,7 +204,7 @@ int create_server(netdrv_t* drv, int server_type, uint16_t port) {
   if ((rc = MQTTClient_connect(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to connect, return code %d\n", rc);
   }
-  MQTT_priv->topic_name = (const char*) create_topic_federation_id_rti(drv->federation_id);
+  MQTT_priv->topic_name = (const char*)create_topic_federation_id_rti(drv->federation_id);
   if ((rc = MQTTClient_subscribe(MQTT_priv->client, MQTT_priv->topic_name, QOS)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to subscribe, return code %d\n", rc);
   }
@@ -238,15 +227,18 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   netdrv_t* ret_netdrv = netdrv_init(-2, my_netdrv->federation_id);
   // MQTT_priv_t* my_priv = (MQTT_priv_t*)my_netdrv->priv;
   MQTT_priv_t* ret_priv = (MQTT_priv_t*)ret_netdrv->priv;
-  unsigned char buffer[sizeof(uint16_t)];
-  read_from_netdrv_fail_on_error(my_netdrv, buffer, sizeof(uint16_t), NULL, "MQTT receive failed.");
+  unsigned char buffer[1 + sizeof(uint16_t)];
+  read_from_netdrv_fail_on_error(my_netdrv, buffer, 1 + sizeof(uint16_t), NULL, "MQTT receive failed.");
+  if (buffer[0] != MSG_TYPE_MQTT_JOIN) {
+    lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_JOIN.");
+  }
   uint16_t fed_id = extract_uint16(buffer + 1);
   ret_netdrv->federate_id = (int)fed_id;
 
-  set_client_id(ret_priv, ret_netdrv->federate_id);
+  set_MQTTServer_id(ret_priv, my_netdrv->federate_id, ret_netdrv->federate_id);
   int rc;
   if ((rc = MQTTClient_create(&ret_priv->client, ADDRESS, ret_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
-      MQTTCLIENT_SUCCESS) {
+      MQTTCLIENT_SUCCESS) { 
     lf_print_error_and_exit("Failed to create client, return code %d\n", rc);
   }
 
@@ -256,13 +248,41 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
     lf_print_error_and_exit("Failed to connect, return code %d\n", rc);
   }
 
-  ret_priv->topic_name = (const char*) create_topic_federation_id_fed_id_to_rti(ret_netdrv->federation_id, fed_id);
-  if ((rc = MQTTClient_subscribe(ret_priv->client, ret_priv->topic_name, QOS)) != MQTTCLIENT_SUCCESS) {
+  char* topic_to_subscribe = create_topic_federation_id_fed_id_to_rti(ret_netdrv->federation_id, fed_id);
+  if ((rc = MQTTClient_subscribe(ret_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to subscribe, return code %d\n", rc);
   }
-  LF_PRINT_LOG("Subscribing on topic %s.", ret_priv->topic_name);
+  LF_PRINT_LOG("Subscribing on topic %s.", topic_to_subscribe);
+  free(topic_to_subscribe);
+
+  ret_priv->topic_name = (const char*) create_topic_federation_id_rti_to_fed_id(ret_netdrv->federation_id, fed_id);
+  buffer[0] = MSG_TYPE_MQTT_JOIN_ACK;
+  encode_uint16((uint16_t)ret_netdrv->federate_id, buffer + 1);
+  write_to_netdrv_fail_on_error(ret_netdrv, 1 + sizeof(uint16_t), buffer, NULL, "Failed to send MSG_TYPE_MQTT_JOIN_ACK to federate %d", ret_netdrv->federate_id);
 
   return ret_netdrv;
+}
+
+/**
+ * @brief Federate connects to broker.
+ *
+ * @param drv
+ */
+static void MQTT_open(netdrv_t* drv) {
+  MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
+  set_MQTTClient_id(MQTT_priv, drv->federate_id);
+  int rc;
+  if ((rc = MQTTClient_create(&MQTT_priv->client, ADDRESS, MQTT_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
+      MQTTCLIENT_SUCCESS) {
+    lf_print_error_and_exit("Failed to create client, return code %d\n", rc);
+    exit(EXIT_FAILURE);
+  }
+
+  MQTT_priv->conn_opts.keepAliveInterval = 20;
+  MQTT_priv->conn_opts.cleansession = 1;
+  if ((rc = MQTTClient_connect(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
+    lf_print_error_and_exit("Failed to connect, return code %d\n", rc);
+  }
 }
 /**
  * @brief Federate publishes it's federate ID to "{Federation_ID}_RTI", then subscribes to
@@ -274,17 +294,29 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
 int netdrv_connect(netdrv_t* drv) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   int rc;
-  MQTT_priv->topic_name = (const char*) create_topic_federation_id_rti(drv->federation_id);
-  unsigned char buffer[sizeof(uint16_t)];
-  encode_uint16((uint16_t)drv->federate_id, buffer);
-  uint16_t fed_id = extract_uint16(buffer + 1);
-  write_to_netdrv_fail_on_error(drv, sizeof(uint16_t), buffer, NULL, "Failed to write federate_id_to RTI for connection through MQTT.");
-  MQTT_priv->topic_name = (const char*) create_topic_federation_id_rti_to_fed_id(drv->federation_id, drv->federate_id);
-  if ((rc = MQTTClient_subscribe(MQTT_priv->client, MQTT_priv->topic_name, QOS)) != MQTTCLIENT_SUCCESS) {
+  MQTT_priv->topic_name = (const char*)create_topic_federation_id_rti(drv->federation_id);
+  unsigned char buffer[1 + sizeof(uint16_t)];
+  buffer[0] = MSG_TYPE_MQTT_JOIN;
+  lf_print_log("Federate_id: %d", drv->federate_id);
+  encode_uint16((uint16_t)drv->federate_id, buffer + 1);
+  write_to_netdrv_fail_on_error(drv, 1 + sizeof(uint16_t), buffer, NULL,
+                                "Failed to write federate_id_to RTI for connection through MQTT.");
+  free((char*)MQTT_priv->topic_name);
+  char* topic_to_subscribe = create_topic_federation_id_rti_to_fed_id(drv->federation_id, drv->federate_id);
+  if ((rc = MQTTClient_subscribe(MQTT_priv->client, (const char*) topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to subscribe, return code %d\n", rc);
   }
-  LF_PRINT_LOG("Subscribing on topic %s.", MQTT_priv->topic_name);
-
+  LF_PRINT_LOG("Subscribing on topic %s.", topic_to_subscribe);
+  free(topic_to_subscribe);
+  MQTT_priv->topic_name = (const char*) create_topic_federation_id_fed_id_to_rti(drv->federation_id, drv->federate_id);
+  read_from_netdrv_fail_on_error(drv, buffer, 1 + sizeof(uint16_t), NULL, "Failed to read MSG_TYPE_MQTT_JOIN_ACK.");
+  if (buffer[0] != MSG_TYPE_MQTT_JOIN_ACK) {
+    lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_JOIN_ACK.");
+  }
+  uint16_t temp_fed_id = extract_uint16(buffer + 1);
+  if(drv->federate_id != temp_fed_id) {
+    lf_print_error_and_exit("Wrong federate id. Received %d\n", temp_fed_id);
+  }
 }
 
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
@@ -302,16 +334,23 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   MQTTClient_message pubmsg = MQTTClient_message_initializer;
   MQTTClient_deliveryToken token;
   int rc;
-  pubmsg.payload = (void *) base64_encode(buffer, num_bytes, &pubmsg.payloadlen);
+  pubmsg.payload = (void*)base64_encode(buffer, num_bytes, &pubmsg.payloadlen);
   // pubmsg.payload = buffer;
   // pubmsg.payloadlen = num_bytes;
   pubmsg.qos = QOS;
   pubmsg.retained = 0;
+
+  // TESTING
+  lf_print_log("num_bytes: %ld", num_bytes);
+  // int decoded_length;
+  // unsigned char* decoded = base64_decode(pubmsg.payload, pubmsg.payloadlen, &decoded_length);
   // pubmsg.payloadlen does not include null terminator. Only characters.
-  if ((rc = MQTTClient_publishMessage(MQTT_priv->client, MQTT_priv->topic_name, &pubmsg, &token)) != MQTTCLIENT_SUCCESS) {
+  if ((rc = MQTTClient_publishMessage(MQTT_priv->client, MQTT_priv->topic_name, &pubmsg, &token)) !=
+      MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to publish message, return code %d\n", rc);
   }
-  LF_PRINT_LOG("Message publishing on topic %s is %.*s", MQTT_priv->topic_name, pubmsg.payloadlen, (char*)(pubmsg.payload));
+  // LF_PRINT_LOG("Message publishing on topic %s is %.*s", MQTT_priv->topic_name, pubmsg.payloadlen,
+  //              (char*)(pubmsg.payload));
   rc = MQTTClient_waitForCompletion(MQTT_priv->client, token, TIMEOUT);
   free(pubmsg.payload);
   return 1;
@@ -355,12 +394,19 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
     lf_print_error_and_exit("Failed to receive message, return code %d\n", rc);
   }
   int decoded_length;
-  unsigned char * decoded = base64_decode(message->payload, message->payloadlen, &decoded_length);
+  unsigned char* decoded = base64_decode(message->payload, message->payloadlen, &decoded_length);
+  lf_print_log("decoded_length: %d", decoded_length);
+  if (decoded_length == buffer_length + 1) {
+    decoded_length --;
+    lf_print_log("decoded_length -- : %d", decoded_length);
+  }
+  
+
   if (buffer_length < decoded_length) {
     lf_print_error("Buffer to read is too short.");
     return -1;
   }
-  LF_PRINT_LOG("Message received on topic %s is %.*s", topicName, message->payloadlen, (char*)(message->payload));
+  // LF_PRINT_LOG("Message received on topic %s is %.*s", topicName, message->payloadlen, (char*)(message->payload));
 
   memcpy(buffer, decoded, decoded_length);
   free(decoded);
