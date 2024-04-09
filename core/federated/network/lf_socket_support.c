@@ -10,12 +10,7 @@
 #include "net_util.h"
 #include "netdriver.h"
 
-void close_netdrv(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  TCP_socket_close(priv);
-}
-
-netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
+netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
   printf("\n\t[TCP PROTOCOL]\n\n");
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {
@@ -36,54 +31,9 @@ netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
   return drv;
 }
 
-char* get_host_name(netdrv_t* drv) {
+void close_netdrv(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  return priv->server_hostname;
-}
-int32_t get_my_port(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  return priv->port;
-}
-int32_t get_port(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  return (priv == NULL) ? -1 : priv->server_port;
-}
-//
-struct in_addr* get_ip_addr(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  return &priv->server_ip_addr;
-}
-void set_host_name(netdrv_t* drv, const char* hostname) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  memcpy(priv->server_hostname, hostname, INET_ADDRSTRLEN);
-}
-void set_port(netdrv_t* drv, int port) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  priv->server_port = port;
-}
-void set_specified_port(netdrv_t* drv, int port) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  priv->user_specified_port = port;
-}
-
-// Unused.
-void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  priv->server_ip_addr = ip_addr;
-}
-
-void set_clock_netdrv(netdrv_t* clock_drv, netdrv_t* rti_drv, uint16_t port_num) {
-  socket_priv_t* priv_clock = (socket_priv_t*)(clock_drv);
-  socket_priv_t* priv_rti = (socket_priv_t*)(rti_drv);
-  priv_clock->UDP_addr.sin_family = AF_INET;
-  priv_clock->UDP_addr.sin_port = htons(port_num);
-  priv_clock->UDP_addr.sin_addr = priv_rti->server_ip_addr;
-}
-
-void netdrv_free(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  // free(priv); // Already freed on socket close()
-  free(drv);
+  TCP_socket_close(priv);
 }
 
 // This only creates TCP servers not UDP.
@@ -92,10 +42,6 @@ int create_server(netdrv_t* drv, int server_type, uint16_t port) {
   return create_TCP_server(priv, server_type, port);
 }
 
-void create_client(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  TCP_socket_open(priv);
-}
 /**
  * 1. initializes other side's netdrv.
  * 2. Establishes communication session.
@@ -103,7 +49,7 @@ void create_client(netdrv_t* drv) {
 **/
 netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   // -2 is for uninitialized value.
-  netdrv_t* ret_netdrv = netdrv_init(-2, my_netdrv->federation_id);
+  netdrv_t* ret_netdrv = initialize_netdrv(-2, my_netdrv->federation_id);
   socket_priv_t* my_priv = (socket_priv_t*)my_netdrv->priv;
   socket_priv_t* ret_priv = (socket_priv_t*)ret_netdrv->priv;
   // Wait for an incoming connection request.
@@ -134,7 +80,12 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   return ret_netdrv;
 }
 
-int netdrv_connect(netdrv_t* drv) {
+void create_client(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  TCP_socket_open(priv);
+}
+
+int connect_to_netdrv(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
 
   struct addrinfo hints;
@@ -176,14 +127,21 @@ int netdrv_connect(netdrv_t* drv) {
   return ret;
 }
 
-ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  ssize_t bytes_read = recv(priv->socket_descriptor, result, 1, MSG_DONTWAIT | MSG_PEEK);
-  if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
-    return 0;
-  else
-    return bytes_read;
-}
+
+/**
+ * Write the specified number of bytes to the specified socket from the
+ * specified buffer. If an error occurs, return -1 and set errno to indicate
+ * the cause of the error. If the write succeeds, return 0.
+ * This function repeats the attempt until the specified number of bytes
+ * have been written or an error occurs. Specifically, errors EAGAIN,
+ * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
+ * another attempt. A delay between attempts is given by
+ * DELAY_BETWEEN_SOCKET_RETRIES.
+ * @param socket The socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @return The number of bytes written.
+ */
 
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
@@ -210,7 +168,15 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   }
   return bytes_written;
 }
-
+/**
+ * Write the specified number of bytes to the specified socket using write_to_socket
+ * and close the socket if an error occurs. If an error occurs, this will change the
+ * socket ID pointed to by the first argument to -1 and will return -1.
+ * @param socket Pointer to the socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @return 0 for success, -1 for failure.
+ */
 int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   int bytes_written = write_to_netdrv(drv, num_bytes, buffer);
   if (bytes_written <= 0) {
@@ -222,6 +188,21 @@ int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
   return bytes_written;
 }
 
+/**
+ * Write the specified number of bytes to the specified socket using
+ * write_to_socket_close_on_error and exit with an error code if an error occurs.
+ * If the mutex argument is non-NULL, release the mutex before exiting.  If the
+ * format argument is non-null, then use it an any additional arguments to form
+ * the error message using printf conventions. Otherwise, print a generic error
+ * message.
+ * @param socket Pointer to the socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @param mutex If non-NULL, the mutex to unlock before exiting.
+ * @param format A format string for error messages, followed by any number of
+ *  fields that will be used to fill the format string as in printf, or NULL
+ *  to print a generic error message.
+ */
 void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...) {
   va_list args;
@@ -238,33 +219,8 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
     }
   }
 }
-// TODO: Fix return.
-ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
-  ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
-  if (bytes_read <= 0) {
-    close_netdrv(drv);
-    return -1;
-  }
-  return bytes_read;
-}
 
-// TODO: FIX return
-void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
-                                    char* format, ...) {
-  va_list args;
-  ssize_t bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
-  if (bytes_read <= 0) {
-    // Read failed.
-    if (mutex != NULL) {
-      lf_mutex_unlock(mutex);
-    }
-    if (format != NULL) {
-      lf_print_error_system_failure(format, args);
-    } else {
-      lf_print_error_system_failure("Failed to read from netdrv.");
-    }
-  }
-}
+
 
 typedef enum {
   HEADER_READ,
@@ -404,8 +360,20 @@ static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int
   }
 }
 
-// TODO: DONGHA: ADD buffer_length checking.
-//  Returns the total bytes read.
+/**
+ * Read the specified number of bytes from the specified socket into the specified buffer.
+ * If an error occurs during this reading, return -1 and set errno to indicate
+ * the cause of the error. If the read succeeds in reading the specified number of bytes,
+ * return 0. If an EOF occurs before reading the specified number of bytes, return 1.
+ * This function repeats the read attempt until the specified number of bytes
+ * have been read, an EOF is read, or an error occurs. Specifically, errors EAGAIN,
+ * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
+ * another attempt. A delay between attempts is given by DELAY_BETWEEN_SOCKET_RETRIES.
+ * @param socket The socket ID.
+ * @param num_bytes The number of bytes to read.
+ * @param buffer The buffer into which to put the bytes.
+ * @return 0 for success, 1 for EOF, and -1 for an error.
+ */
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
 
@@ -487,4 +455,109 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
       return total_bytes_read;
     }
   }
+}
+
+/**
+ * Read the specified number of bytes to the specified socket using read_from_socket
+ * and close the socket if an error occurs. If an error occurs, this will change the
+ * socket ID pointed to by the first argument to -1 and will return -1.
+ * @param socket Pointer to the socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @return 0 for success, -1 for failure.
+ */
+ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
+  ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
+  if (bytes_read <= 0) {
+    close_netdrv(drv);
+    return -1;
+  }
+  return bytes_read;
+}
+
+/**
+ * Read the specified number of bytes from the specified socket into the
+ * specified buffer. If a disconnect or an EOF occurs during this
+ * reading, then if format is non-null, report an error and exit.
+ * If the mutex argument is non-NULL, release the mutex before exiting.
+ * If format is null, then report the error, but do not exit.
+ * This function takes a formatted string and additional optional arguments
+ * similar to printf(format, ...) that is appended to the error messages.
+ * @param socket The socket ID.
+ * @param num_bytes The number of bytes to read.
+ * @param buffer The buffer into which to put the bytes.
+ * @param format A printf-style format string, followed by arguments to
+ *  fill the string, or NULL to not exit with an error message.
+ * @return The number of bytes read, or 0 if an EOF is received, or
+ *  a negative number for an error.
+ */
+void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
+                                    char* format, ...) {
+  va_list args;
+  ssize_t bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
+  if (bytes_read <= 0) {
+    // Read failed.
+    if (mutex != NULL) {
+      lf_mutex_unlock(mutex);
+    }
+    if (format != NULL) {
+      lf_print_error_system_failure(format, args);
+    } else {
+      lf_print_error_system_failure("Failed to read from netdrv.");
+    }
+  }
+}
+
+char* get_host_name(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return priv->server_hostname;
+}
+int32_t get_my_port(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return priv->port;
+}
+int32_t get_port(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return (priv == NULL) ? -1 : priv->server_port;
+}
+//
+struct in_addr* get_ip_addr(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return &priv->server_ip_addr;
+}
+void set_host_name(netdrv_t* drv, const char* hostname) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  memcpy(priv->server_hostname, hostname, INET_ADDRSTRLEN);
+}
+void set_port(netdrv_t* drv, int port) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  priv->server_port = port;
+}
+void set_specified_port(netdrv_t* drv, int port) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  priv->user_specified_port = port;
+}
+
+// Unused.
+void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  priv->server_ip_addr = ip_addr;
+}
+
+void set_clock_netdrv(netdrv_t* clock_drv, netdrv_t* rti_drv, uint16_t port_num) {
+  socket_priv_t* priv_clock = (socket_priv_t*)(clock_drv);
+  socket_priv_t* priv_rti = (socket_priv_t*)(rti_drv);
+  priv_clock->UDP_addr.sin_family = AF_INET;
+  priv_clock->UDP_addr.sin_port = htons(port_num);
+  priv_clock->UDP_addr.sin_addr = priv_rti->server_ip_addr;
+}
+
+
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  ssize_t bytes_read = recv(priv->socket_descriptor, result, 1, MSG_DONTWAIT | MSG_PEEK);
+  if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
+    return 0;
+  else
+    return bytes_read;
 }

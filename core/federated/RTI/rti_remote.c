@@ -1450,7 +1450,7 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 
 int32_t start_rti_server(uint16_t port) {
   _lf_initialize_clock();
-  rti_remote->rti_netdrv = netdrv_init(-1, rti_remote->federation_id);
+  rti_remote->rti_netdrv = initialize_netdrv(-1, rti_remote->federation_id);
   // Create the RTI's netdriver.
   int ret = create_server(rti_remote->rti_netdrv, 0, port); // 0 for RTI
   lf_print("RTI: Listening for federates.");

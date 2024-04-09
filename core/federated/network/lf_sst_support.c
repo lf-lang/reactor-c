@@ -13,42 +13,7 @@
 const char* sst_config_path;
 const char* RTI_config_path;
 
-void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
-void lf_set_rti_sst_config_path(const char* config_path) { RTI_config_path = config_path; }
-
-static sst_priv_t* sst_priv_init() {
-  sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
-  if (!sst_priv) {
-    lf_print_error_and_exit("Falied to malloc sst_priv_t.");
-  }
-  memset(sst_priv, 0, sizeof(sst_priv_t));
-  sst_priv->socket_priv = TCP_socket_priv_init();
-  return sst_priv;
-}
-
-void create_client(netdrv_t* drv) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  SST_ctx_t* ctx = init_SST((const char*)sst_config_path);
-
-  sst_priv->sst_ctx = ctx;
-}
-void close_netdrv(netdrv_t* drv) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  if (sst_priv->socket_priv != NULL) {
-    TCP_socket_close(sst_priv->socket_priv);
-  } else {
-    lf_print_error("Trying to close TCP socket not existing.");
-  }
-}
-
-void netdrv_free(netdrv_t* drv) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  // free(priv); // Already freed on socket close()
-  free_SST_ctx_t(sst_priv->sst_ctx);
-  free(drv);
-}
-
-netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
+netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
@@ -63,42 +28,13 @@ netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
   drv->priv = (void*)sst_priv;
   return drv;
 }
-
-char* get_host_name(netdrv_t* drv) {
+void close_netdrv(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  return sst_priv->socket_priv->server_hostname;
-}
-int32_t get_my_port(netdrv_t* drv) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  return sst_priv->socket_priv->port;
-}
-int32_t get_port(netdrv_t* drv) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  return (sst_priv->socket_priv == NULL) ? -1 : sst_priv->socket_priv->server_port;
-}
-//
-struct in_addr* get_ip_addr(netdrv_t* drv) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  return &sst_priv->socket_priv->server_ip_addr;
-}
-void set_host_name(netdrv_t* drv, const char* hostname) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  memcpy(sst_priv->socket_priv->server_hostname, hostname, INET_ADDRSTRLEN);
-}
-void set_port(netdrv_t* drv, int port) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  sst_priv->socket_priv->server_port = port;
-}
-
-void set_specified_port(netdrv_t* drv, int port) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  sst_priv->socket_priv->user_specified_port = port;
-}
-
-// Unused.
-void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  sst_priv->socket_priv->server_ip_addr = ip_addr;
+  if (sst_priv->socket_priv != NULL) {
+    TCP_socket_close(sst_priv->socket_priv);
+  } else {
+    lf_print_error("Trying to close TCP socket not existing.");
+  }
 }
 
 // Port will be NULL on MQTT.
@@ -110,7 +46,7 @@ int create_server(netdrv_t* drv, int server_type, uint16_t port) {
 }
 
 netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
-  netdrv_t* ret_netdrv = netdrv_init(-2, my_netdrv->federation_id);
+  netdrv_t* ret_netdrv = initialize_netdrv(-2, my_netdrv->federation_id);
   sst_priv_t* my_priv = (sst_priv_t*)my_netdrv->priv;
   sst_priv_t* ret_priv = (sst_priv_t*)ret_netdrv->priv;
 
@@ -149,13 +85,77 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   return ret_netdrv;
 }
 
-int netdrv_connect(netdrv_t* drv) {
+void create_client(netdrv_t* drv) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  SST_ctx_t* ctx = init_SST((const char*)sst_config_path);
+
+  sst_priv->sst_ctx = ctx;
+}
+
+int connect_to_netdrv(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   session_key_list_t* s_key_list = get_session_key(sst_priv->sst_ctx, NULL);
   // Does not increases RTI port number.
   SST_session_ctx_t* session_ctx = secure_connect_to_server(&s_key_list->s_key[0], sst_priv->sst_ctx);
   sst_priv->session_ctx = session_ctx;
   return 1;
+}
+
+void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
+void lf_set_rti_sst_config_path(const char* config_path) { RTI_config_path = config_path; }
+
+static sst_priv_t* sst_priv_init() {
+  sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
+  if (!sst_priv) {
+    lf_print_error_and_exit("Falied to malloc sst_priv_t.");
+  }
+  memset(sst_priv, 0, sizeof(sst_priv_t));
+  sst_priv->socket_priv = TCP_socket_priv_init();
+  return sst_priv;
+}
+
+void netdrv_free(netdrv_t* drv) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  // free(priv); // Already freed on socket close()
+  free_SST_ctx_t(sst_priv->sst_ctx);
+  free(drv);
+}
+
+char* get_host_name(netdrv_t* drv) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  return sst_priv->socket_priv->server_hostname;
+}
+int32_t get_my_port(netdrv_t* drv) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  return sst_priv->socket_priv->port;
+}
+int32_t get_port(netdrv_t* drv) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  return (sst_priv->socket_priv == NULL) ? -1 : sst_priv->socket_priv->server_port;
+}
+//
+struct in_addr* get_ip_addr(netdrv_t* drv) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  return &sst_priv->socket_priv->server_ip_addr;
+}
+void set_host_name(netdrv_t* drv, const char* hostname) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  memcpy(sst_priv->socket_priv->server_hostname, hostname, INET_ADDRSTRLEN);
+}
+void set_port(netdrv_t* drv, int port) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  sst_priv->socket_priv->server_port = port;
+}
+
+void set_specified_port(netdrv_t* drv, int port) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  sst_priv->socket_priv->user_specified_port = port;
+}
+
+// Unused.
+void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  sst_priv->socket_priv->server_ip_addr = ip_addr;
 }
 
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
@@ -275,4 +275,3 @@ void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t
     }
   }
 }
-
