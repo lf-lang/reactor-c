@@ -218,34 +218,6 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   return 1;
 }
 
-int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
-  int bytes_written = write_to_netdrv(drv, num_bytes, buffer);
-  if (bytes_written <= 0) {
-    // Write failed.
-    // Netdrv has probably been closed from the other side.
-    // Shut down and close the netdrv from this side.
-    close_netdrv(drv);
-  }
-  return bytes_written;
-}
-
-void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...) {
-  va_list args;
-  int bytes_written = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
-  if (bytes_written <= 0) {
-    // Write failed.
-    if (mutex != NULL) {
-      lf_mutex_unlock(mutex);
-    }
-    if (format != NULL) {
-      lf_print_error_system_failure(format, args);
-    } else {
-      lf_print_error("Failed to write to socket. Closing it.");
-    }
-  }
-}
-
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   char* topicName = NULL;
@@ -274,32 +246,6 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   MQTTClient_free(topicName);
   MQTTClient_freeMessage(&message);
   return 1;
-}
-
-ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
-  ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
-  if (bytes_read <= 0) {
-    close_netdrv(drv);
-    return -1;
-  }
-  return bytes_read;
-}
-
-void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
-                                    char* format, ...) {
-  va_list args;
-  ssize_t bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
-  if (bytes_read <= 0) {
-    // Read failed.
-    if (mutex != NULL) {
-      lf_mutex_unlock(mutex);
-    }
-    if (format != NULL) {
-      lf_print_error_system_failure(format, args);
-    } else {
-      lf_print_error_system_failure("Failed to read from netdrv.");
-    }
-  }
 }
 
 static MQTT_priv_t* MQTT_priv_init() {

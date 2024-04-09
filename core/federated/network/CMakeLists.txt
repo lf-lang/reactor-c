@@ -23,6 +23,7 @@ include_directories(/usr/local/include)
 
 target_sources(lf-network-impl PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/net_util.c
+    ${CMAKE_CURRENT_LIST_DIR}/netdriver.c
     ${CMAKE_CURRENT_LIST_DIR}/socket_common.c
 )
 IF(COMM_TYPE MATCHES TCP)
