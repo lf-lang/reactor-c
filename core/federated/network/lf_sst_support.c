@@ -154,9 +154,6 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
 }
 
 int netdrv_connect(netdrv_t* drv) {
-  // char cwd[256];
-  // getcwd(cwd, sizeof(cwd));
-  // printf("Current working dir: %s\n", cwd);
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   session_key_list_t* s_key_list = get_session_key(sst_priv->sst_ctx, NULL);
   // Does not increases RTI port number.
