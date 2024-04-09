@@ -10,28 +10,7 @@
 #include "net_util.h"
 #include "netdriver.h"
 
-// static void socket_close(netdrv_t* drv) {
-//   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-//   if (priv->socket_descriptor > 0) {
-//     shutdown(priv->socket_descriptor, SHUT_RDWR);
-//     close(priv->socket_descriptor);
-//     priv->socket_descriptor = -1;
-//   }
-// }
-// static void socket_open(netdrv_t* drv) {
-//   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-//   priv->socket_descriptor = create_real_time_tcp_socket_errexit();
-// }
-
-// static void socket_open(netdrv_t* drv);
-// static void socket_close(netdrv_t* drv);
-
-void TCP_open(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  TCP_socket_open(priv);
-}
-
-void TCP_close(netdrv_t* drv) {
+void close_netdrv(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   TCP_socket_close(priv);
 }
@@ -43,8 +22,6 @@ netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
   }
   memset(drv, 0, sizeof(netdrv_t));
-  drv->open = TCP_open;
-  drv->close = TCP_close;
   // drv->read = socket_read;
   // drv->write = socket_write;
   drv->read_remaining_bytes = 0;
@@ -115,6 +92,10 @@ int create_server(netdrv_t* drv, int server_type, uint16_t port) {
   return create_TCP_server(priv, server_type, port);
 }
 
+void create_client(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  TCP_socket_open(priv);
+}
 /**
  * 1. initializes other side's netdrv.
  * 2. Establishes communication session.
@@ -236,7 +217,7 @@ int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
     // Write failed.
     // Netdrv has probably been closed from the other side.
     // Shut down and close the netdrv from this side.
-    drv->close(drv);
+    close_netdrv(drv);
   }
   return bytes_written;
 }
@@ -261,7 +242,7 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
 ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
   ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
   if (bytes_read <= 0) {
-    drv->close(drv);
+    close_netdrv(drv);
     return -1;
   }
   return bytes_read;

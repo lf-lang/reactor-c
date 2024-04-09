@@ -26,13 +26,13 @@ static sst_priv_t* sst_priv_init() {
   return sst_priv;
 }
 
-static void sst_open(netdrv_t* drv) {
+void create_client(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   SST_ctx_t* ctx = init_SST((const char*)sst_config_path);
 
   sst_priv->sst_ctx = ctx;
 }
-static void sst_close(netdrv_t* drv) {
+void close_netdrv(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   if (sst_priv->socket_priv != NULL) {
     TCP_socket_close(sst_priv->socket_priv);
@@ -54,10 +54,6 @@ netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
   }
   memset(drv, 0, sizeof(netdrv_t));
-  drv->open = sst_open;
-  drv->close = sst_close;
-  // drv->read = socket_read;
-  // drv->write = socket_write;
   drv->read_remaining_bytes = 0;
 
   // Initialize priv.
@@ -187,7 +183,7 @@ int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
     // Write failed.
     // Netdrv has probably been closed from the other side.
     // Shut down and close the netdrv from this side.
-    drv->close(drv);
+    close_netdrv(drv);
   }
   return bytes_written;
 }
@@ -257,7 +253,7 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
 ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
   ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
   if (bytes_read <= 0) {
-    drv->close(drv);
+    close_netdrv(drv);
     return -1;
   }
   return bytes_read;

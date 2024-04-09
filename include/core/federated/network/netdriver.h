@@ -19,25 +19,22 @@ typedef enum netdrv_type_t { NETDRV, UDP } netdrv_type_t;
 // typedef enum server_type_t { RTI, FED } server_type_t; 
 
 typedef struct netdrv_t {
-  void (*open)(struct netdrv_t* drv);
-  void (*close)(struct netdrv_t* drv);
-  int (*read)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
-  int (*write)(struct netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
   void* priv;
   unsigned int read_remaining_bytes;
   int federate_id;
   const char* federation_id;
 } netdrv_t;
 
-int netdrv_open(netdrv_t* drv, int federate_id);
-void netdrv_close(netdrv_t* drv);
-int netdrv_read(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
-int netdrv_write(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
+
+void close_netdrv(netdrv_t* drv);
 
 netdrv_t* netdrv_init(int federate_id, const char* federation_id);
 
 // Port will be NULL on MQTT.
 int create_server(netdrv_t* drv, int server_type, uint16_t port);
+
+
+void create_client(netdrv_t* drv);
 
 // Returns socket number of clock_sync_server.
 int create_clock_sync_server(uint16_t* clock_sync_port);

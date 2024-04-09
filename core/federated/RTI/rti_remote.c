@@ -847,7 +847,7 @@ static void handle_federate_failed(federate_info_t* my_fed) {
   my_fed->enclave.next_event = FOREVER_TAG;
 
   // Shutdown and close netdriver.
-  my_fed->fed_netdrv->close(my_fed->fed_netdrv);
+  close_netdrv(my_fed->fed_netdrv);
 
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
@@ -904,7 +904,7 @@ static void handle_federate_resign(federate_info_t* my_fed) {
   // // We can now safely close the socket.
   // close(my_fed->socket); //  from unistd.h
 
-  my_fed->fed_netdrv->close(my_fed->fed_netdrv);
+  close_netdrv(my_fed->fed_netdrv);
 
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
@@ -982,7 +982,7 @@ void* federate_info_thread_TCP(void* fed) {
   // Nothing more to do. Close the socket and exit.
   // Prevent multiple threads from closing the same socket at the same time.
   LF_MUTEX_LOCK(&rti_mutex);
-  my_fed->fed_netdrv->close(my_fed->fed_netdrv);
+  close_netdrv(my_fed->fed_netdrv);
   LF_MUTEX_UNLOCK(&rti_mutex);
   return NULL;
 }
@@ -998,7 +998,7 @@ void send_reject(netdrv_t* netdrv, unsigned char error_code) {
     lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
   }
   // Shutdown and close the netdrv.
-  netdrv->close(netdrv);
+  close_netdrv(netdrv);
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
@@ -1105,7 +1105,8 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* netdrv) {
 
   // TODO: NEED TO FIX HERE!
   inet_ntop(AF_INET, get_ip_addr(fed->fed_netdrv), str, INET_ADDRSTRLEN);
-  strncpy(get_host_name(fed->fed_netdrv), str, INET_ADDRSTRLEN);
+  // strncpy(get_host_name(fed->fed_netdrv), str, INET_ADDRSTRLEN);
+  set_host_name(fed->fed_netdrv, str);
 
   LF_PRINT_DEBUG("RTI got address %s from federate %d.", get_host_name(fed->fed_netdrv), fed_id);
 #endif
@@ -1122,7 +1123,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* netdrv) {
     tracepoint_rti_to_federate(send_ACK, fed_id, NULL);
   }
   LF_MUTEX_LOCK(&rti_mutex);
-  if (write_to_netdrv_close_on_error(netdrv, 1, &ack_message) <= 0) {
+  if (write_to_netdrv_close_on_error(fed->fed_netdrv, 1, &ack_message) <= 0) {
     LF_MUTEX_UNLOCK(&rti_mutex);
     lf_print_error("RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
     return -1;
@@ -1367,7 +1368,8 @@ void lf_connect_to_federates(netdrv_t* rti_netdrv) {
       if (!authenticate_federate(fed_netdrv)) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
 
-        fed_netdrv->close(fed_netdrv);
+        close_netdrv(fed_netdrv);
+
         // Ignore the federate that failed authentication.
         i--;
         continue;
@@ -1434,7 +1436,7 @@ void* respond_to_erroneous_connections(void* nothing) {
       lf_print_warning("RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
     }
     // Close the netdriver.
-    fed_netdrv->close(fed_netdrv);
+    close_netdrv(fed_netdrv);
   }
   return NULL;
 }
@@ -1485,7 +1487,7 @@ void wait_for_federates(netdrv_t* netdrv) {
 
   rti_remote->all_federates_exited = true;
 
-  netdrv->close(netdrv);
+  close_netdrv(netdrv);
 }
 
 void initialize_RTI(rti_remote_t* rti) {

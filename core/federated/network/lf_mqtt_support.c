@@ -14,7 +14,8 @@
 #define QOS 2
 #define TIMEOUT 10000L
 
-static void MQTT_open(netdrv_t* drv);
+
+void close_netdrv(netdrv_t* drv) {}
 
 static MQTT_priv_t* MQTT_priv_init() {
   MQTT_priv_t* MQTT_priv = malloc(sizeof(MQTT_priv_t));
@@ -124,7 +125,6 @@ static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int client_id) {
   sprintf(MQTT_priv->client_id, "%d", client_id);
 }
 
-static void MQTT_close(netdrv_t* drv) {}
 
 /**
  * @brief
@@ -140,10 +140,6 @@ netdrv_t* netdrv_init(int federate_id, const char* federation_id) {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
   }
   memset(drv, 0, sizeof(netdrv_t));
-  drv->open = MQTT_open;
-  drv->close = MQTT_close;
-  // drv->read = socket_read;
-  // drv->write = socket_write;
   drv->read_remaining_bytes = 0;
   drv->federate_id = federate_id;
   drv->federation_id = federation_id;
@@ -268,7 +264,7 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
  *
  * @param drv
  */
-static void MQTT_open(netdrv_t* drv) {
+void create_client(netdrv_t* drv) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   set_MQTTClient_id(MQTT_priv, drv->federate_id);
   int rc;
@@ -335,8 +331,6 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   MQTTClient_deliveryToken token;
   int rc;
   pubmsg.payload = (void*)base64_encode(buffer, num_bytes, &pubmsg.payloadlen);
-  // pubmsg.payload = buffer;
-  // pubmsg.payloadlen = num_bytes;
   pubmsg.qos = QOS;
   pubmsg.retained = 0;
 
@@ -362,7 +356,7 @@ int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
     // Write failed.
     // Netdrv has probably been closed from the other side.
     // Shut down and close the netdrv from this side.
-    drv->close(drv);
+    close_netdrv(drv);
   }
   return bytes_written;
 }
@@ -418,7 +412,7 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
 ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
   ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
   if (bytes_read <= 0) {
-    drv->close(drv);
+    close_netdrv(drv);
     return -1;
   }
   return bytes_read;

@@ -400,7 +400,7 @@ static void close_inbound_netdrv(int fed_id, int flag) {
     // }
     // close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
     // _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
-    _fed.netdrv_for_inbound_p2p_connections[fed_id]->close(_fed.netdrv_for_inbound_p2p_connections[fed_id]);
+    close_netdrv(_fed.netdrv_for_inbound_p2p_connections[fed_id]);
     _fed.netdrv_for_inbound_p2p_connections[fed_id] = NULL;
   }
   LF_MUTEX_UNLOCK(&netdrv_mutex);
@@ -825,7 +825,7 @@ static void close_outbound_netdrv(int fed_id, int flag) {
     // }
     // close(_fed.sockets_for_outbound_p2p_connections[fed_id]);
     // _fed.sockets_for_outbound_p2p_connections[fed_id] = -1;
-    _fed.netdrv_for_outbound_p2p_connections[fed_id]->close(_fed.netdrv_for_outbound_p2p_connections[fed_id]);
+    close_netdrv(_fed.netdrv_for_outbound_p2p_connections[fed_id]);
     _fed.netdrv_for_outbound_p2p_connections[fed_id] = NULL;
   }
   if (_lf_normal_termination) {
@@ -1691,7 +1691,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   // Iterate until we either successfully connect or exceed the number of
   // attempts given by CONNECT_MAX_RETRIES.
   netdrv_t* netdrv = netdrv_init(_lf_my_fed_id, federation_metadata.federation_id);
-  netdrv->open(netdrv);
+  create_client(netdrv);
   set_host_name(netdrv, hostname);
   set_port(netdrv, uport);
   result = netdrv_connect(netdrv);
@@ -1758,7 +1758,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
   // Initialize netdriver to rti.
   _fed.netdrv_to_rti = netdrv_init(_lf_my_fed_id, federation_metadata.federation_id);       // set memory.
-  _fed.netdrv_to_rti->open(_fed.netdrv_to_rti); // open netdriver.
+  create_client(_fed.netdrv_to_rti);
   set_host_name(_fed.netdrv_to_rti, hostname);
   set_port(_fed.netdrv_to_rti, uport);
   set_specified_port(_fed.netdrv_to_rti, port);
@@ -1780,7 +1780,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
         continue; // Try again with a new port.
       } else {
         // No point in trying again because it will be the same port.
-        _fed.netdrv_to_rti->close(_fed.netdrv_to_rti);
+        close_netdrv(_fed.netdrv_to_rti);
         lf_print_error_and_exit("Authentication failed.");
       }
     }
@@ -1957,7 +1957,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Ignore errors on this response.
         write_to_netdrv(client_fed_netdrv, 2, response);
       }
-      client_fed_netdrv->close(client_fed_netdrv);
+      close_netdrv(client_fed_netdrv);
       continue;
     }
 
@@ -1977,7 +1977,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Ignore errors on this response.
         write_to_netdrv(client_fed_netdrv, 2, response);
       }
-      client_fed_netdrv->close(client_fed_netdrv);
+      close_netdrv(client_fed_netdrv);
       continue;
     }
 
@@ -2015,8 +2015,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       // Failed to create a listening thread.
       LF_MUTEX_LOCK(&netdrv_mutex);
       if (_fed.netdrv_for_inbound_p2p_connections[remote_fed_id] != NULL) {
-        _fed.netdrv_for_inbound_p2p_connections[remote_fed_id]->close(
-            _fed.netdrv_for_inbound_p2p_connections[remote_fed_id]);
+            close_netdrv(_fed.netdrv_for_inbound_p2p_connections[remote_fed_id]);
         _fed.netdrv_for_inbound_p2p_connections[remote_fed_id] = NULL;
       }
       LF_MUTEX_UNLOCK(&netdrv_mutex);
