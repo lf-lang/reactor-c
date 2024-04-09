@@ -13,6 +13,10 @@
 const char* sst_config_path;
 const char* RTI_config_path;
 
+static sst_priv_t* sst_priv_init();
+static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, unsigned int* num,
+                                  unsigned int* var_len_int_buf_size);
+
 netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {
@@ -101,6 +105,48 @@ int connect_to_netdrv(netdrv_t* drv) {
   return 1;
 }
 
+int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  if (buffer[0] == MSG_TYPE_FAILED) {
+    // Just return.
+    return 0;
+  }
+  return send_secure_message((char*)buffer, num_bytes, sst_priv->session_ctx);
+}
+
+ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
+  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+  unsigned char sst_buffer[1024];
+  ssize_t bytes_read = 0;
+  unsigned int temp_length = 10;
+
+  // Read 10 bytes first.
+  bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, temp_length);
+  unsigned int payload_length; // Length of the payload of SST.
+  unsigned int var_length_buf_size;
+  // This fills payload_length and var_length_buf_size.
+  var_length_int_to_num(sst_buffer + sizeof(unsigned char), bytes_read, &payload_length, &var_length_buf_size);
+  unsigned int bytes_to_read = payload_length - (temp_length - (sizeof(unsigned char) + var_length_buf_size));
+
+  unsigned int second_read = 0;
+  unsigned int more = 0;
+  while (second_read != bytes_to_read) {
+    more = read(sst_priv->session_ctx->sock, sst_buffer + temp_length, bytes_to_read);
+    second_read += more;
+    bytes_read += second_read;
+  }
+
+  unsigned int decrypted_buffer_length;
+  unsigned char* decrypted_buffer =
+      return_decrypted_buf(sst_buffer, bytes_read, &decrypted_buffer_length, sst_priv->session_ctx);
+  // Returned SEQ_NUM_BUFFER(8) + decrypted_buffer;
+  // Doing this because it should be freed.
+  memcpy(buffer, decrypted_buffer + 8, decrypted_buffer_length - 8);
+  free(decrypted_buffer);
+  return decrypted_buffer_length;
+}
+
+
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
 void lf_set_rti_sst_config_path(const char* config_path) { RTI_config_path = config_path; }
 
@@ -114,12 +160,12 @@ static sst_priv_t* sst_priv_init() {
   return sst_priv;
 }
 
-void netdrv_free(netdrv_t* drv) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  // free(priv); // Already freed on socket close()
-  free_SST_ctx_t(sst_priv->sst_ctx);
-  free(drv);
-}
+// void netdrv_free(netdrv_t* drv) {
+//   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
+//   // free(priv); // Already freed on socket close()
+//   free_SST_ctx_t(sst_priv->sst_ctx);
+//   free(drv);
+// }
 
 char* get_host_name(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
@@ -158,52 +204,8 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
   sst_priv->socket_priv->server_ip_addr = ip_addr;
 }
 
-ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
-  // sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  // ssize_t bytes_read = recv(sst_priv->session_ctx->sock, lf_sst_support.cresult, 1, MSG_DONTWAIT | MSG_PEEK);
-  // if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
-  //   return 0;
-  // else
-  //   return bytes_read;
-  return 0;
-}
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
 
-int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  if (buffer[0] == MSG_TYPE_FAILED) {
-    // Just return.
-    return 0;
-  }
-  return send_secure_message((char*)buffer, num_bytes, sst_priv->session_ctx);
-}
-
-int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
-  int bytes_written = write_to_netdrv(drv, num_bytes, buffer);
-  if (bytes_written <= 0) {
-    // Write failed.
-    // Netdrv has probably been closed from the other side.
-    // Shut down and close the netdrv from this side.
-    close_netdrv(drv);
-  }
-  return bytes_written;
-}
-
-void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...) {
-  va_list args;
-  int bytes_written = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
-  if (bytes_written <= 0) {
-    // Write failed.
-    if (mutex != NULL) {
-      lf_mutex_unlock(mutex);
-    }
-    if (format != NULL) {
-      lf_print_error_system_failure(format, args);
-    } else {
-      lf_print_error("Failed to write to socket. Closing it.");
-    }
-  }
-}
 
 static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, unsigned int* num,
                                   unsigned int* var_len_int_buf_size) {
@@ -218,60 +220,3 @@ static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, u
   }
 }
 
-ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
-  sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  unsigned char sst_buffer[1024];
-  ssize_t bytes_read = 0;
-  unsigned int temp_length = 10;
-
-  // Read 10 bytes first.
-  bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, temp_length);
-  unsigned int payload_length; // Length of the payload of SST.
-  unsigned int var_length_buf_size;
-  // This fills payload_length and var_length_buf_size.
-  var_length_int_to_num(sst_buffer + sizeof(unsigned char), bytes_read, &payload_length, &var_length_buf_size);
-  unsigned int bytes_to_read = payload_length - (temp_length - (sizeof(unsigned char) + var_length_buf_size));
-
-  unsigned int second_read = 0;
-  unsigned int more = 0;
-  while (second_read != bytes_to_read) {
-    more = read(sst_priv->session_ctx->sock, sst_buffer + temp_length, bytes_to_read);
-    second_read += more;
-    bytes_read += second_read;
-  }
-
-  unsigned int decrypted_buffer_length;
-  unsigned char* decrypted_buffer =
-      return_decrypted_buf(sst_buffer, bytes_read, &decrypted_buffer_length, sst_priv->session_ctx);
-  // Returned SEQ_NUM_BUFFER(8) + decrypted_buffer;
-  // Doing this because it should be freed.
-  memcpy(buffer, decrypted_buffer + 8, decrypted_buffer_length - 8);
-  free(decrypted_buffer);
-  return decrypted_buffer_length;
-}
-
-ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
-  ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
-  if (bytes_read <= 0) {
-    close_netdrv(drv);
-    return -1;
-  }
-  return bytes_read;
-}
-
-void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
-                                    char* format, ...) {
-  va_list args;
-  ssize_t bytes_read = read_from_netdrv_close_on_error(drv, buffer, buffer_length);
-  if (bytes_read <= 0) {
-    // Read failed.
-    if (mutex != NULL) {
-      lf_mutex_unlock(mutex);
-    }
-    if (format != NULL) {
-      lf_print_error_system_failure(format, args);
-    } else {
-      lf_print_error_system_failure("Failed to read from netdrv.");
-    }
-  }
-}
