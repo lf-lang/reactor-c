@@ -14,6 +14,15 @@
 #define QOS 2
 #define TIMEOUT 10000L
 
+static MQTT_priv_t* MQTT_priv_init();
+static char* create_topic_federation_id_rti(const char* federation_id);
+static char* create_topic_federation_id_fed_id_to_rti(const char* federation_id, uint16_t fed_id);
+static char* create_topic_federation_id_rti_to_fed_id(const char* federation_id, uint16_t fed_id);
+static char* base64_encode(const unsigned char* input, int input_len, int* output_len);
+static unsigned char* base64_decode(const unsigned char* input, int input_len, int* output_len);
+static void set_MQTTServer_id(MQTT_priv_t* MQTT_priv, int my_id, int client_id);
+static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int client_id);
+
 /**
  * @brief
  * Initializes structure of netdrv, and priv inside.
