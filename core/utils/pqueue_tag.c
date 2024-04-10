@@ -27,7 +27,8 @@ static pqueue_pri_t pqueue_tag_get_priority(void* element) { return (pqueue_pri_
 
 /**
  * @brief Callback comparison function for the tag-based priority queue.
- * Return 0 if the first argument is less than second and 1 otherwise.
+ * Return -1 if the first argument is less than second, 0 if the two arguments are the same,
+ * and 1 otherwise.
  * This function is of type pqueue_cmp_pri_f.
  * @param priority1 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
  * @param priority2 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
