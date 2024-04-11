@@ -30,6 +30,14 @@
  *   search for equal elements present in the queue; and
  * - Removed capability to reassign priorities.
  *
+ * Modified by Byeonggil Jun (Apr, 2024).
+ * Changes:
+ * - Made the pqueue_cmp_pri_f function return do the three-way comparison
+ *   rather than the two-way comparison.
+ * - The changed pqueue_cmp_pri_f function is used to check the equality of
+ *   two elements in the pqueue_find_equal_same_priority function.
+ * - Remove the pqueue_find_equal function.
+ *
  * @brief Priority Queue function declarations used as a base for Lingua Franca priority queues.
  *
  * @{
@@ -138,16 +146,6 @@ void* pqueue_pop(pqueue_t* q);
  * @param src  The queue to empty
  */
 void pqueue_empty_into(pqueue_t** dest, pqueue_t** src);
-
-/**
- * Find the highest-ranking item with priority up to and including the given
- * maximum priority that matches the supplied entry.
- * @param q the queue
- * @param e the entry to compare against
- * @param max_priority the maximum priority to consider
- * @return NULL if no matching event has been found, otherwise the entry
- */
-void* pqueue_find_equal(pqueue_t* q, void* e, pqueue_pri_t max_priority);
 
 /**
  * Return an entry with the same priority as the specified entry or NULL if there is no such entry.

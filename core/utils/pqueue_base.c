@@ -29,6 +29,15 @@
  * - The provided pqueue_eq_elem_f implementation is used to test and
  *   search for equal elements present in the queue; and
  * - Removed capability to reassign priorities.
+ *
+ * Modified by Byeonggil Jun (Apr, 2024).
+ * Changes:
+ * - Made the pqueue_cmp_pri_f function return do the three-way comparison
+ *   rather than the two-way comparison.
+ * - The changed pqueue_cmp_pri_f function is used to check the equality of
+ *   two elements in the pqueue_find_equal_same_priority function.
+ * - Remove the pqueue_find_equal function.
+ *
  */
 
 #include <stdlib.h>
@@ -43,38 +52,6 @@
 #define LF_LEFT(i) ((i) << 1)
 #define LF_RIGHT(i) (((i) << 1) + 1)
 #define LF_PARENT(i) ((i) >> 1)
-
-void* find_equal(pqueue_t* q, void* e, int pos, pqueue_pri_t max) {
-  if (pos < 0) {
-    lf_print_error_and_exit("find_equal() called with a negative pos index.");
-  }
-
-  // Stop the recursion when we've reached the end of the
-  // queue. This has to be done before accessing the queue
-  // to avoid segmentation fault.
-  if (!q || (size_t)pos >= q->size) {
-    return NULL;
-  }
-
-  void* rval;
-  void* curr = q->d[pos];
-
-  // Stop the recursion when we've surpassed the maximum priority.
-  if (!curr || q->cmppri(q->getpri(curr), max) == 1) {
-    return NULL;
-  }
-
-  if (q->eqelem(curr, e)) {
-    return curr;
-  } else {
-    rval = find_equal(q, e, LF_LEFT(pos), max);
-    if (rval)
-      return rval;
-    else
-      return find_equal(q, e, LF_RIGHT(pos), max);
-  }
-  return NULL;
-}
 
 static void* find_same_priority(pqueue_t* q, void* e, int pos) {
   if (pos < 0) {
@@ -226,8 +203,6 @@ static void percolate_down(pqueue_t* q, size_t i) {
   q->d[i] = moving_node;
   q->setpos(moving_node, i);
 }
-
-void* pqueue_find_equal(pqueue_t* q, void* e, pqueue_pri_t max) { return find_equal(q, e, 1, max); }
 
 void* pqueue_find_same_priority(pqueue_t* q, void* e) { return find_same_priority(q, e, 1); }
 
