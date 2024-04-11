@@ -150,8 +150,7 @@ void pqueue_empty_into(pqueue_t** dest, pqueue_t** src);
 void* pqueue_find_equal(pqueue_t* q, void* e, pqueue_pri_t max_priority);
 
 /**
- * Find the item with the same priority. This function does not care about
- * the element.
+ * Return an entry with the same priority as the specified entry or NULL if there is no such entry.
  * @param q the queue
  * @param e the entry to compare against
  * @return NULL if no matching event has been found, otherwise the entry
@@ -159,7 +158,8 @@ void* pqueue_find_equal(pqueue_t* q, void* e, pqueue_pri_t max_priority);
 void* pqueue_find_same_priority(pqueue_t* q, void* e);
 
 /**
- * Find the item with the same priority that matches the supplied entry.
+ * Return an entry with the same priority (determined by `cmppri`) that matches the supplied entry (determined
+ * by `eqelem`) or `NULL` if there is no such entry.
  * @param q the queue
  * @param e the entry to compare against
  * @return NULL if no matching event has been found, otherwise the entry

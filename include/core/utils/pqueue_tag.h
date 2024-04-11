@@ -70,7 +70,7 @@ typedef pqueue_t pqueue_tag_t;
 pqueue_tag_t* pqueue_tag_init(size_t initial_size);
 
 /**
- * @brief Create a priority queue sorted by tags and has a payload that requires a particular comparison function.
+ * @brief Create a priority queue sorted by tags and has a payload that requires a particular equivalence checker function.
  *
  * @param eqelem the callback function to check equivalence of payloads.
  *
@@ -136,7 +136,8 @@ int pqueue_tag_insert_if_no_match(pqueue_tag_t* q, tag_t t);
 pqueue_tag_element_t* pqueue_tag_find_with_tag(pqueue_tag_t* q, tag_t t);
 
 /**
- * @brief Return the first item with the same tag that matches the supplied element or NULL if there is none.
+ * @brief Return an item with the same tag (`cmppri` returns 0) that matches the supplied element
+ * (`eqelem` returns non-zero) or NULL if there is none.
  * @param q The queue.
  * @param e The element.
  * @return An entry with the specified tag or NULL if there isn't one.

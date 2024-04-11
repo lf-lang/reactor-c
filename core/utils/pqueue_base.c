@@ -76,7 +76,7 @@ void* find_equal(pqueue_t* q, void* e, int pos, pqueue_pri_t max) {
   return NULL;
 }
 
-void* find_same_priority(pqueue_t* q, void* e, int pos) {
+static void* find_same_priority(pqueue_t* q, void* e, int pos) {
   if (pos < 0) {
     lf_print_error_and_exit("find_same_priority() called with a negative pos index.");
   }
