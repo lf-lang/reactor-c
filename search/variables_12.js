@@ -11,7 +11,7 @@ var searchData=
   ['tick_5fcursor_5fy_8',['tick_cursor_y',['../d7/d58/sensor__simulator_8c.html#a738704b6f923ff895b40f06a19f375e5',1,'sensor_simulator.c']]],
   ['tick_5fwindow_9',['tick_window',['../d7/d58/sensor__simulator_8c.html#a682ef20deffe76d72ab94e4e1ac037cc',1,'sensor_simulator.c']]],
   ['tick_5fwindow_5fwidth_10',['tick_window_width',['../d7/d58/sensor__simulator_8c.html#a89502730b2655e279c83afb299e8ded5',1,'sensor_simulator.c']]],
-  ['time_11',['time',['../da/d67/structevent__t.html#aeff8ee74b3835a35460f05a3b45f710c',1,'event_t::time'],['../db/df7/structtag__t.html#ad6fc78329d72e52bc7e449036f64937d',1,'tag_t::time']]],
+  ['time_11',['time',['../db/df7/structtag__t.html#ad6fc78329d72e52bc7e449036f64937d',1,'tag_t']]],
   ['timer_5ftriggers_12',['timer_triggers',['../d2/d01/structenvironment__t.html#a5ec0f96f80f71a929bf3a150d70b5a67',1,'environment_t']]],
   ['timer_5ftriggers_5fsize_13',['timer_triggers_size',['../d2/d01/structenvironment__t.html#a2e134fb4e7bafe271bed676dc4444d3e',1,'environment_t']]],
   ['title_14',['title',['../d6/d1e/namespacefedsd.html#a3fe8855d125aec0ede8975013632b9ff',1,'fedsd']]],

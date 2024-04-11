@@ -1,8 +1,12 @@
 var pqueue__tag_8c =
 [
+    [ "pqueue_tag_compare", "d2/d5f/pqueue__tag_8c.html#ac6870c37fb36dcb65dbfcceff317cab4", null ],
+    [ "pqueue_tag_dump", "d2/d5f/pqueue__tag_8c.html#a4b5d0cba34127064e3a14d7a499bbdf3", null ],
+    [ "pqueue_tag_find_equal_same_tag", "d2/d5f/pqueue__tag_8c.html#afe428033cb2f6915828e75efb90edc44", null ],
     [ "pqueue_tag_find_with_tag", "d2/d5f/pqueue__tag_8c.html#a91d0568eb488ec1255fc1146163934fa", null ],
     [ "pqueue_tag_free", "d2/d5f/pqueue__tag_8c.html#a7eee6edbbb90d5a0bb072a728dd3c7f2", null ],
     [ "pqueue_tag_init", "d2/d5f/pqueue__tag_8c.html#a30b038fea77adb97ee6e0ab13af55ede", null ],
+    [ "pqueue_tag_init_customize", "d2/d5f/pqueue__tag_8c.html#a7194e0ba9a3cd659f5e94f5a46c3d1f1", null ],
     [ "pqueue_tag_insert", "d2/d5f/pqueue__tag_8c.html#a7db3de28c457287e689dedc3a6dc20da", null ],
     [ "pqueue_tag_insert_if_no_match", "d2/d5f/pqueue__tag_8c.html#a067e8fdd88be6f660e79744350a74128", null ],
     [ "pqueue_tag_insert_tag", "d2/d5f/pqueue__tag_8c.html#a89084b69d8049630eebb8df759c666d0", null ],

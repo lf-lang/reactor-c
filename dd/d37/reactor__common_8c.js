@@ -1,7 +1,7 @@
 var reactor__common_8c =
 [
-    [ "_lf_advance_logical_time", "dd/d37/reactor__common_8c.html#ad6031638f0f22cf1763bbce3d31b4380", null ],
-    [ "_lf_create_dummy_events", "dd/d37/reactor__common_8c.html#ad531827d1684e7b15d45e6669884083e", null ],
+    [ "_lf_advance_tag", "dd/d37/reactor__common_8c.html#a4659db62370c837baa55484134b3bfb7", null ],
+    [ "_lf_create_dummy_events", "dd/d37/reactor__common_8c.html#a6396bfcdac50ddb71b6b29fa33a3cc5d", null ],
     [ "_lf_initialize_timer", "dd/d37/reactor__common_8c.html#a680ad4849cdbbb46c3a8268663bd37dc", null ],
     [ "_lf_initialize_timers", "dd/d37/reactor__common_8c.html#a61d27ca2e7a856120bff72150fdec9a4", null ],
     [ "_lf_insert_reactions_for_trigger", "dd/d37/reactor__common_8c.html#aeac3f6a2d15f30e3adecc9f431162bef", null ],

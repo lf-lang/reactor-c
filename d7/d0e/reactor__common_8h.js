@@ -1,8 +1,8 @@
 var reactor__common_8h =
 [
     [ "MIN_SLEEP_DURATION", "d7/d0e/reactor__common_8h.html#a3b755b6f58cb9ea64ae2f1ba9a382c86", null ],
-    [ "_lf_advance_logical_time", "d7/d0e/reactor__common_8h.html#ad6031638f0f22cf1763bbce3d31b4380", null ],
-    [ "_lf_create_dummy_events", "d7/d0e/reactor__common_8h.html#ad531827d1684e7b15d45e6669884083e", null ],
+    [ "_lf_advance_tag", "d7/d0e/reactor__common_8h.html#a4659db62370c837baa55484134b3bfb7", null ],
+    [ "_lf_create_dummy_events", "d7/d0e/reactor__common_8h.html#a6396bfcdac50ddb71b6b29fa33a3cc5d", null ],
     [ "_lf_initialize_timer", "d7/d0e/reactor__common_8h.html#a680ad4849cdbbb46c3a8268663bd37dc", null ],
     [ "_lf_initialize_timers", "d7/d0e/reactor__common_8h.html#a61d27ca2e7a856120bff72150fdec9a4", null ],
     [ "_lf_initialize_trigger_objects", "d7/d0e/reactor__common_8h.html#a52ffa06ff177dc19d33713beb2ff344e", null ],

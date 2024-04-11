@@ -99,6 +99,9 @@ $(function(){initNavTree('db/dd7/pqueue__tag_8h.html','../../'); initResizable()
   <div class="headertitle"><div class="title">pqueue_tag.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Priority queue that uses tags for sorting.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d6/d51/pqueue__base_8h_source.html">pqueue_base.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 </div>
@@ -118,9 +121,15 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ac6870c37fb36dcb65dbfcceff317cab4" id="r_ac6870c37fb36dcb65dbfcceff317cab4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac6870c37fb36dcb65dbfcceff317cab4">pqueue_tag_compare</a> (<a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">priority1</a>, <a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">priority2</a>)</td></tr>
+<tr class="memdesc:ac6870c37fb36dcb65dbfcceff317cab4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback comparison function for the tag-based priority queue. Return -1 if the first argument is less than second, 0 if the two arguments are the same, and 1 otherwise. This function is of type pqueue_cmp_pri_f.  <br /></td></tr>
+<tr class="separator:ac6870c37fb36dcb65dbfcceff317cab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30b038fea77adb97ee6e0ab13af55ede" id="r_a30b038fea77adb97ee6e0ab13af55ede"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a30b038fea77adb97ee6e0ab13af55ede">pqueue_tag_init</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">initial_size</a>)</td></tr>
 <tr class="memdesc:a30b038fea77adb97ee6e0ab13af55ede"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a priority queue sorted by tags.  <br /></td></tr>
 <tr class="separator:a30b038fea77adb97ee6e0ab13af55ede"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7194e0ba9a3cd659f5e94f5a46c3d1f1" id="r_a7194e0ba9a3cd659f5e94f5a46c3d1f1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7194e0ba9a3cd659f5e94f5a46c3d1f1">pqueue_tag_init_customize</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">initial_size</a>, <a class="el" href="../../d6/d51/pqueue__base_8h.html#a1c3f02694b2a0ec19584c395a88bb6f9">pqueue_cmp_pri_f</a> cmppri, <a class="el" href="../../d6/d51/pqueue__base_8h.html#a664f0abcd86c8089468869aa3dc6e535">pqueue_eq_elem_f</a> eqelem, <a class="el" href="../../d6/d51/pqueue__base_8h.html#a884902da135214a6167f1536ad4ed4bc">pqueue_print_entry_f</a> prt)</td></tr>
+<tr class="memdesc:a7194e0ba9a3cd659f5e94f5a46c3d1f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a priority queue that stores elements with a particular payload.  <br /></td></tr>
+<tr class="separator:a7194e0ba9a3cd659f5e94f5a46c3d1f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7eee6edbbb90d5a0bb072a728dd3c7f2" id="r_a7eee6edbbb90d5a0bb072a728dd3c7f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7eee6edbbb90d5a0bb072a728dd3c7f2">pqueue_tag_free</a> (<a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>)</td></tr>
 <tr class="memdesc:a7eee6edbbb90d5a0bb072a728dd3c7f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free all memory used by the queue including elements that are marked dynamic.  <br /></td></tr>
 <tr class="separator:a7eee6edbbb90d5a0bb072a728dd3c7f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -139,6 +148,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a91d0568eb488ec1255fc1146163934fa" id="r_a91d0568eb488ec1255fc1146163934fa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dce/structpqueue__tag__element__t.html">pqueue_tag_element_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a91d0568eb488ec1255fc1146163934fa">pqueue_tag_find_with_tag</a> (<a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">t</a>)</td></tr>
 <tr class="memdesc:a91d0568eb488ec1255fc1146163934fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the first item with the specified tag or NULL if there is none.  <br /></td></tr>
 <tr class="separator:a91d0568eb488ec1255fc1146163934fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe428033cb2f6915828e75efb90edc44" id="r_afe428033cb2f6915828e75efb90edc44"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dce/structpqueue__tag__element__t.html">pqueue_tag_element_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afe428033cb2f6915828e75efb90edc44">pqueue_tag_find_equal_same_tag</a> (<a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../d2/dce/structpqueue__tag__element__t.html">pqueue_tag_element_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">e</a>)</td></tr>
+<tr class="memdesc:afe428033cb2f6915828e75efb90edc44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an item with the same tag (<code>cmppri</code> returns 0) that matches the supplied element (<code>eqelem</code> returns non-zero) or NULL if there is none.  <br /></td></tr>
+<tr class="separator:afe428033cb2f6915828e75efb90edc44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16cbdbb45d26bd5373e258de819cfdd3" id="r_a16cbdbb45d26bd5373e258de819cfdd3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dce/structpqueue__tag__element__t.html">pqueue_tag_element_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a16cbdbb45d26bd5373e258de819cfdd3">pqueue_tag_peek</a> (<a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>)</td></tr>
 <tr class="memdesc:a16cbdbb45d26bd5373e258de819cfdd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return highest-ranking item (the one with the least tag) without removing it.  <br /></td></tr>
 <tr class="separator:a16cbdbb45d26bd5373e258de819cfdd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,8 +169,17 @@ Functions</h2></td></tr>
 <tr class="memitem:a135a225e2361b815a415607bc1f71e3b" id="r_a135a225e2361b815a415607bc1f71e3b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a135a225e2361b815a415607bc1f71e3b">pqueue_tag_remove_up_to</a> (<a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">t</a>)</td></tr>
 <tr class="memdesc:a135a225e2361b815a415607bc1f71e3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove items from the queue with tags up to and including the specified tag.  <br /></td></tr>
 <tr class="separator:a135a225e2361b815a415607bc1f71e3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b5d0cba34127064e3a14d7a499bbdf3" id="r_a4b5d0cba34127064e3a14d7a499bbdf3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4b5d0cba34127064e3a14d7a499bbdf3">pqueue_tag_dump</a> (<a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>)</td></tr>
+<tr class="separator:a4b5d0cba34127064e3a14d7a499bbdf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Typedef Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Priority queue that uses tags for sorting. </p>
+<dl class="section author"><dt>Author</dt><dd>Byeonggil Jun </dd>
+<dd>
+Edward A. Lee </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2023, The University of California at Berkeley License in <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
+<p>This file extends the pqueue infrastructure with support for queues that are sorted by tag instead of by a long long. Elements in this queue are structs of type <a class="el" href="../../d2/dce/structpqueue__tag__element__t.html" title="The type for an element in a priority queue that is sorted by tag.">pqueue_tag_element_t</a> or a derived struct, as explained below. What you put onto the queue is a pointer to a tagged_element_t struct. That pointer, when cast to pqueue_pri_t, an alias for long long, also serves as the "priority" for the queue. </p>
+</div><h2 class="groupheader">Typedef Documentation</h2>
 <a id="ac52d056c47d9595f94d37e95484b3acd" name="ac52d056c47d9595f94d37e95484b3acd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac52d056c47d9595f94d37e95484b3acd">&#9670;&#160;</a></span>pqueue_tag_t</h2>
 
@@ -176,6 +197,85 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="ac6870c37fb36dcb65dbfcceff317cab4" name="ac6870c37fb36dcb65dbfcceff317cab4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6870c37fb36dcb65dbfcceff317cab4">&#9670;&#160;</a></span>pqueue_tag_compare()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> pqueue_tag_compare </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a></td>          <td class="paramname"><span class="paramname"><em>priority1</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a></td>          <td class="paramname"><span class="paramname"><em>priority2</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Callback comparison function for the tag-based priority queue. Return -1 if the first argument is less than second, 0 if the two arguments are the same, and 1 otherwise. This function is of type pqueue_cmp_pri_f. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">priority1</td><td>A pointer to a <a class="el" href="../../d2/dce/structpqueue__tag__element__t.html" title="The type for an element in a priority queue that is sorted by tag.">pqueue_tag_element_t</a>, cast to pqueue_pri_t. </td></tr>
+    <tr><td class="paramname">priority2</td><td>A pointer to a <a class="el" href="../../d2/dce/structpqueue__tag__element__t.html" title="The type for an element in a priority queue that is sorted by tag.">pqueue_tag_element_t</a>, cast to pqueue_pri_t. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4b5d0cba34127064e3a14d7a499bbdf3" name="a4b5d0cba34127064e3a14d7a499bbdf3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b5d0cba34127064e3a14d7a499bbdf3">&#9670;&#160;</a></span>pqueue_tag_dump()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> pqueue_tag_dump </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *</td>          <td class="paramname"><span class="paramname"><em>q</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Dump the queue and it's internal structure. </p>
+
+</div>
+</div>
+<a id="afe428033cb2f6915828e75efb90edc44" name="afe428033cb2f6915828e75efb90edc44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe428033cb2f6915828e75efb90edc44">&#9670;&#160;</a></span>pqueue_tag_find_equal_same_tag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d2/dce/structpqueue__tag__element__t.html">pqueue_tag_element_t</a> * pqueue_tag_find_equal_same_tag </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *</td>          <td class="paramname"><span class="paramname"><em>q</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/dce/structpqueue__tag__element__t.html">pqueue_tag_element_t</a> *</td>          <td class="paramname"><span class="paramname"><em>e</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return an item with the same tag (<code>cmppri</code> returns 0) that matches the supplied element (<code>eqelem</code> returns non-zero) or NULL if there is none. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">q</td><td>The queue. </td></tr>
+    <tr><td class="paramname">e</td><td>The element. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An entry with the specified tag or NULL if there isn't one. </dd></dl>
+
+</div>
+</div>
 <a id="a91d0568eb488ec1255fc1146163934fa" name="a91d0568eb488ec1255fc1146163934fa"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a91d0568eb488ec1255fc1146163934fa">&#9670;&#160;</a></span>pqueue_tag_find_with_tag()</h2>
 
@@ -248,6 +348,48 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Create a priority queue sorted by tags. </p>
+<p>The elements of the priority queue will be of type <a class="el" href="../../d2/dce/structpqueue__tag__element__t.html" title="The type for an element in a priority queue that is sorted by tag.">pqueue_tag_element_t</a>. The caller should call <a class="el" href="#a7eee6edbbb90d5a0bb072a728dd3c7f2" title="Free all memory used by the queue including elements that are marked dynamic.">pqueue_tag_free()</a> when finished with the queue. </p><dl class="section return"><dt>Returns</dt><dd>A dynamically allocated priority queue or NULL if memory allocation fails. </dd></dl>
+
+</div>
+</div>
+<a id="a7194e0ba9a3cd659f5e94f5a46c3d1f1" name="a7194e0ba9a3cd659f5e94f5a46c3d1f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7194e0ba9a3cd659f5e94f5a46c3d1f1">&#9670;&#160;</a></span>pqueue_tag_init_customize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#ac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> * pqueue_tag_init_customize </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>initial_size</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/d51/pqueue__base_8h.html#a1c3f02694b2a0ec19584c395a88bb6f9">pqueue_cmp_pri_f</a></td>          <td class="paramname"><span class="paramname"><em>cmppri</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/d51/pqueue__base_8h.html#a664f0abcd86c8089468869aa3dc6e535">pqueue_eq_elem_f</a></td>          <td class="paramname"><span class="paramname"><em>eqelem</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/d51/pqueue__base_8h.html#a884902da135214a6167f1536ad4ed4bc">pqueue_print_entry_f</a></td>          <td class="paramname"><span class="paramname"><em>prt</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a priority queue that stores elements with a particular payload. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cmppri</td><td>the callback function to compare priorities </td></tr>
+    <tr><td class="paramname">eqelem</td><td>the callback function to check equivalence of payloads. </td></tr>
+    <tr><td class="paramname">prt</td><td>the callback function to print elements</td></tr>
+  </table>
+  </dd>
+</dl>
 <p>The elements of the priority queue will be of type <a class="el" href="../../d2/dce/structpqueue__tag__element__t.html" title="The type for an element in a priority queue that is sorted by tag.">pqueue_tag_element_t</a>. The caller should call <a class="el" href="#a7eee6edbbb90d5a0bb072a728dd3c7f2" title="Free all memory used by the queue including elements that are marked dynamic.">pqueue_tag_free()</a> when finished with the queue. </p><dl class="section return"><dt>Returns</dt><dd>A dynamically allocated priority queue or NULL if memory allocation fails. </dd></dl>
 
 </div>

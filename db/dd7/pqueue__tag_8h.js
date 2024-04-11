@@ -2,9 +2,13 @@ var pqueue__tag_8h =
 [
     [ "pqueue_tag_element_t", "d2/dce/structpqueue__tag__element__t.html", "d2/dce/structpqueue__tag__element__t" ],
     [ "pqueue_tag_t", "db/dd7/pqueue__tag_8h.html#ac52d056c47d9595f94d37e95484b3acd", null ],
+    [ "pqueue_tag_compare", "db/dd7/pqueue__tag_8h.html#ac6870c37fb36dcb65dbfcceff317cab4", null ],
+    [ "pqueue_tag_dump", "db/dd7/pqueue__tag_8h.html#a4b5d0cba34127064e3a14d7a499bbdf3", null ],
+    [ "pqueue_tag_find_equal_same_tag", "db/dd7/pqueue__tag_8h.html#afe428033cb2f6915828e75efb90edc44", null ],
     [ "pqueue_tag_find_with_tag", "db/dd7/pqueue__tag_8h.html#a91d0568eb488ec1255fc1146163934fa", null ],
     [ "pqueue_tag_free", "db/dd7/pqueue__tag_8h.html#a7eee6edbbb90d5a0bb072a728dd3c7f2", null ],
     [ "pqueue_tag_init", "db/dd7/pqueue__tag_8h.html#a30b038fea77adb97ee6e0ab13af55ede", null ],
+    [ "pqueue_tag_init_customize", "db/dd7/pqueue__tag_8h.html#a7194e0ba9a3cd659f5e94f5a46c3d1f1", null ],
     [ "pqueue_tag_insert", "db/dd7/pqueue__tag_8h.html#a7db3de28c457287e689dedc3a6dc20da", null ],
     [ "pqueue_tag_insert_if_no_match", "db/dd7/pqueue__tag_8h.html#a067e8fdd88be6f660e79744350a74128", null ],
     [ "pqueue_tag_insert_tag", "db/dd7/pqueue__tag_8h.html#a89084b69d8049630eebb8df759c666d0", null ],

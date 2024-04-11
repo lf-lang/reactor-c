@@ -1,5 +1,6 @@
 var NAVTREEINDEX4 =
 {
+"d7/d58/sensor__simulator_8c.html#af6dff3826fe260fe7ef094143ea9d904":[12,0,10,7,17],
 "d7/d58/sensor__simulator_8c.html#afa21343db2cbddc2217a5056e48eda62":[12,0,10,7,10],
 "d7/d58/sensor__simulator_8c.html#afb458531acce5cf61822ddd3018fb1cc":[12,0,10,7,18],
 "d7/d6e/clock_8h.html":[12,0,1,1,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX4 =
 "d9/da6/net__common_8h_source.html":[12,0,1,1,0,0,0],
 "d9/daa/modes_8h.html":[12,0,1,1,1,0],
 "d9/daa/modes_8h.html#a17df34d9c9d092aa6a399512b6a023e4":[12,0,1,1,1,0,0],
-"d9/daa/modes_8h_source.html":[12,0,1,1,1,0],
-"d9/dad/structlf__wav__t.html":[11,0,33]
+"d9/daa/modes_8h_source.html":[12,0,1,1,1,0]
 };
