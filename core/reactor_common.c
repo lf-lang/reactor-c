@@ -234,7 +234,7 @@ void _lf_pop_events(environment_t* env) {
   while (event != NULL && lf_tag_compare(event->base.tag, env->current_tag) == 0) {
     event = (event_t*)pqueue_tag_pop(env->event_q);
 
-    if (event->is_dummy) {
+    if (event->trigger == NULL) {
       LF_PRINT_DEBUG("Popped dummy event from the event queue.");
       lf_recycle_event(env, event);
       // Peek at the next event in the event queue.
@@ -447,19 +447,17 @@ void lf_recycle_event(environment_t* env, event_t* e) {
   e->base.tag = (tag_t){.time = 0LL, .microstep = 0};
   e->trigger = NULL;
   e->token = NULL;
-  e->is_dummy = false;
 #ifdef FEDERATED_DECENTRALIZED
   e->intended_tag = (tag_t){.time = NEVER, .microstep = 0u};
 #endif
   pqueue_tag_insert(env->recycle_q, (pqueue_tag_element_t*)e);
 }
 
-event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, tag_t tag) {
+event_t* _lf_create_dummy_events(environment_t* env, tag_t tag) {
   event_t* dummy = lf_get_new_event(env);
   dummy->base.tag = tag;
 
-  dummy->is_dummy = true;
-  dummy->trigger = trigger;
+  dummy->trigger = NULL;
   return dummy;
 }
 
@@ -527,7 +525,6 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
     case replace:
       // Replace the payload of the event at the head with our
       // current payload.
-      found->is_dummy = false;
       lf_replace_token(found, token);
       lf_recycle_event(env, e);
       return 0;

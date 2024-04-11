@@ -56,7 +56,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Forward declaration of functions and variables supplied by reactor_common.c
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);
-event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, tag_t tag);
+event_t* _lf_create_dummy_events(environment_t* env, tag_t tag);
 
 // ----------------------------------------------------------------------------
 
@@ -508,7 +508,7 @@ void _lf_process_mode_changes(environment_t* env, reactor_mode_state_t* states[]
       // Insert a dummy event in the event queue for the next microstep to make
       // sure startup/reset reactions (if any) are triggered as soon as possible.
       tag_t dummy_event_tag = (tag_t){.time = env->current_tag.time, .microstep = 1};
-      pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)_lf_create_dummy_events(env, NULL, dummy_event_tag));
+      pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)_lf_create_dummy_events(env, dummy_event_tag));
     }
   }
 }

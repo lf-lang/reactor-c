@@ -1288,7 +1288,7 @@ static void handle_provisional_tag_advance_grant() {
                    env->current_tag.time - start_time, env->current_tag.microstep, PTAG.time - start_time,
                    PTAG.microstep);
     // Dummy event points to a NULL trigger.
-    event_t* dummy = _lf_create_dummy_events(env, NULL, PTAG);
+    event_t* dummy = _lf_create_dummy_events(env, PTAG);
     pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)dummy);
   }
 
@@ -2404,7 +2404,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       // enable progress for downstream federates. Increment the time by ADVANCE_MESSAGE_INTERVAL
       // to prevent too frequent dummy events.
       tag_t dummy_event_tag = (tag_t){.time = tag.time + ADVANCE_MESSAGE_INTERVAL, .microstep = tag.microstep};
-      event_t* dummy = _lf_create_dummy_events(env, NULL, dummy_event_tag);
+      event_t* dummy = _lf_create_dummy_events(env, dummy_event_tag);
       pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)dummy);
     }
 
