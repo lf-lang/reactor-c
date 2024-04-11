@@ -61,6 +61,16 @@ typedef struct {
 typedef pqueue_t pqueue_tag_t;
 
 /**
+ * @brief Callback comparison function for the tag-based priority queue.
+ * Return -1 if the first argument is less than second, 0 if the two arguments are the same,
+ * and 1 otherwise.
+ * This function is of type pqueue_cmp_pri_f.
+ * @param priority1 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
+ * @param priority2 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
+ */
+int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2);
+
+/**
  * @brief Create a priority queue sorted by tags.
  *
  * The elements of the priority queue will be of type pqueue_tag_element_t.
@@ -70,15 +80,18 @@ typedef pqueue_t pqueue_tag_t;
 pqueue_tag_t* pqueue_tag_init(size_t initial_size);
 
 /**
- * @brief Create a priority queue sorted by tags and has a payload that requires a particular equivalence checker function.
+ * @brief Create a priority queue that stores elements with a particular payload.
  *
+ * @param cmppri the callback function to compare priorities
  * @param eqelem the callback function to check equivalence of payloads.
+ * @param prt the callback function to print elements
  *
  * The elements of the priority queue will be of type pqueue_tag_element_t.
  * The caller should call pqueue_tag_free() when finished with the queue.
  * @return A dynamically allocated priority queue or NULL if memory allocation fails.
  */
-pqueue_tag_t* pqueue_tag_init_customize(size_t initial_size, pqueue_eq_elem_f eqelem);
+pqueue_tag_t* pqueue_tag_init_customize(size_t initial_size, pqueue_cmp_pri_f cmppri, pqueue_eq_elem_f eqelem,
+                                        pqueue_print_entry_f prt);
 
 /**
  * @brief Free all memory used by the queue including elements that are marked dynamic.

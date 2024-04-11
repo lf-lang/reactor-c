@@ -26,18 +26,6 @@
 static pqueue_pri_t pqueue_tag_get_priority(void* element) { return (pqueue_pri_t)element; }
 
 /**
- * @brief Callback comparison function for the tag-based priority queue.
- * Return -1 if the first argument is less than second, 0 if the two arguments are the same,
- * and 1 otherwise.
- * This function is of type pqueue_cmp_pri_f.
- * @param priority1 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
- * @param priority2 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
- */
-static int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2) {
-  return (lf_tag_compare(((pqueue_tag_element_t*)priority1)->tag, ((pqueue_tag_element_t*)priority2)->tag));
-}
-
-/**
  * @brief Callback function to determine whether two elements are equivalent.
  * Return 1 if the tags contained by given elements are identical, 0 otherwise.
  * This function is of type pqueue_eq_elem_f.
@@ -76,14 +64,19 @@ static void pqueue_tag_print_element(void* element) {
 //////////////////
 // Functions defined in pqueue_tag.h.
 
+int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2) {
+  return (lf_tag_compare(((pqueue_tag_element_t*)priority1)->tag, ((pqueue_tag_element_t*)priority2)->tag));
+}
+
 pqueue_tag_t* pqueue_tag_init(size_t initial_size) {
   return (pqueue_tag_t*)pqueue_init(initial_size, pqueue_tag_compare, pqueue_tag_get_priority, pqueue_tag_get_position,
                                     pqueue_tag_set_position, pqueue_tag_matches, pqueue_tag_print_element);
 }
 
-pqueue_tag_t* pqueue_tag_init_customize(size_t initial_size, pqueue_eq_elem_f eqelem) {
-  return (pqueue_tag_t*)pqueue_init(initial_size, pqueue_tag_compare, pqueue_tag_get_priority, pqueue_tag_get_position,
-                                    pqueue_tag_set_position, eqelem, pqueue_tag_print_element);
+pqueue_tag_t* pqueue_tag_init_customize(size_t initial_size, pqueue_cmp_pri_f cmppri, pqueue_eq_elem_f eqelem,
+                                        pqueue_print_entry_f prt) {
+  return (pqueue_tag_t*)pqueue_init(initial_size, cmppri, pqueue_tag_get_priority, pqueue_tag_get_position,
+                                    pqueue_tag_set_position, eqelem, prt);
 }
 
 void pqueue_tag_free(pqueue_tag_t* q) {

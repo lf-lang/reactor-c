@@ -334,7 +334,7 @@ void _lf_pop_events(environment_t* env) {
 event_t* lf_get_new_event(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
   // Recycle event_t structs, if possible.
-  event_t* e = (event_t*)pqueue_pop(env->recycle_q);
+  event_t* e = (event_t*)pqueue_tag_pop(env->recycle_q);
   if (e == NULL) {
     e = (event_t*)calloc(1, sizeof(struct event_t));
     if (e == NULL)
@@ -451,7 +451,7 @@ void lf_recycle_event(environment_t* env, event_t* e) {
 #ifdef FEDERATED_DECENTRALIZED
   e->intended_tag = (tag_t){.time = NEVER, .microstep = 0u};
 #endif
-  pqueue_insert(env->recycle_q, e);
+  pqueue_tag_insert(env->recycle_q, (pqueue_tag_element_t*)e);
 }
 
 event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, tag_t tag) {

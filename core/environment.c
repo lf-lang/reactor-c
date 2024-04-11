@@ -185,7 +185,7 @@ void environment_free(environment_t* env) {
   free(env->is_present_fields);
   free(env->is_present_fields_abbreviated);
   pqueue_tag_free(env->event_q);
-  pqueue_free(env->recycle_q);
+  pqueue_tag_free(env->recycle_q);
 
   environment_free_threaded(env);
   environment_free_single_threaded(env);
@@ -260,9 +260,9 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
   env->_lf_handle = 1;
 
   // Initialize our priority queues.
-  env->event_q = pqueue_tag_init_customize(INITIAL_EVENT_QUEUE_SIZE, event_matches);
-  env->recycle_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time, get_event_position,
-                               set_event_position, event_matches, print_event);
+  env->event_q = pqueue_tag_init_customize(INITIAL_EVENT_QUEUE_SIZE, pqueue_tag_compare, event_matches, print_event);
+  env->recycle_q =
+      pqueue_tag_init_customize(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, event_matches, print_event);
 
   // Initialize functionality depending on target properties.
   environment_init_threaded(env, num_workers);

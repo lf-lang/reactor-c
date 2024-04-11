@@ -2,10 +2,14 @@
  * @file pqueue.c
  * @author Marten Lohstroh
  * @author Edward A. Lee
+ * @author Byeonggil Jun
  * @copyright (c) 2020-2023, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  *
- * @brief Priority queue definitions for the event queue and reaction queue.
+ * @brief Priority queue definitions for queues where the priority is a number that can be compared with ordinary
+ * numerical comparisons.
+ *
+ * This is used for the reaction queue. The event queue uses a `tag_t` struct for its priority, so it cannot use this.
  */
 
 #include "low_level_platform.h"
@@ -25,15 +29,9 @@ int event_matches(void* event1, void* event2) { return (((event_t*)event1)->trig
 
 int reaction_matches(void* a, void* b) { return (a == b); }
 
-pqueue_pri_t get_event_time(void* event) { return (pqueue_pri_t)(((event_t*)event)->base.tag.time); }
-
 pqueue_pri_t get_reaction_index(void* reaction) { return ((reaction_t*)reaction)->index; }
 
-size_t get_event_position(void* event) { return ((event_t*)event)->base.pos; }
-
 size_t get_reaction_position(void* reaction) { return ((reaction_t*)reaction)->pos; }
-
-void set_event_position(void* event, size_t pos) { ((event_t*)event)->base.pos = pos; }
 
 void set_reaction_position(void* reaction, size_t pos) { ((reaction_t*)reaction)->pos = pos; }
 
