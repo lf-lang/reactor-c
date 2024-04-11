@@ -1,5 +1,5 @@
 /**
- * @file tag_pqueue.h
+ * @file pqueue_tag.h
  * @author Byeonggil Jun
  * @author Edward A. Lee
  * @copyright (c) 2023, The University of California at Berkeley

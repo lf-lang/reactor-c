@@ -195,7 +195,9 @@ void _lf_trigger_startup_reactions(environment_t* env);
 void _lf_trigger_shutdown_reactions(environment_t* env);
 
 /**
- * Create dummy events to be used as spacers in the event queue.
+ * @brief Create a dummy event with the specified tag.
+ *
+ * A dummy event is an event with no triggers that can be put on the event queue to trigger a tag advance to the specified tag.
  * @param env Environment in which we are executing.
  * @param trigger The eventual event to be triggered.
  * @param tag The tag of that event.

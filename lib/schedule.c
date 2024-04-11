@@ -150,7 +150,6 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
     delay += trigger->offset;
   }
   tag_t intended_tag = lf_delay_tag(env->current_tag, delay);
-  printf("intended tag = " PRINTF_TAG ".\n", intended_tag.time, intended_tag.microstep);
 
   LF_PRINT_DEBUG("lf_schedule_trigger: env->current_tag = " PRINTF_TAG ". Total logical delay = " PRINTF_TIME "",
                  env->current_tag.time, env->current_tag.microstep, delay);
