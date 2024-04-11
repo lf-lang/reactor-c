@@ -38,6 +38,31 @@
 #include "scheduler.h"
 #endif
 
+//////////////////
+// Local functions, not intended for use outside this file.
+
+/**
+ * @brief Callback function to determine whether two events have the same trigger.
+ * This function is used by event queue and recycle.
+ * Return 1 if the triggers are identical, 0 otherwise.
+ * @param event1 A pointer to an event.
+ * @param event2 A pointer to an event.
+ */
+static int event_matches(void* event1, void* event2) {
+  return (((event_t*)event1)->trigger == ((event_t*)event2)->trigger);
+}
+
+/**
+ * @brief Callback function to print information about an event.
+ * This function is used by event queue and recycle.
+ * @param element A pointer to an event.
+ */
+static void print_event(void* event) {
+  event_t* e = (event_t*)event;
+  LF_PRINT_DEBUG("tag: " PRINTF_TAG ", trigger: %p, token: %p", e->base.tag.time, e->base.tag.microstep,
+                 (void*)e->trigger, (void*)e->token);
+}
+
 /**
  * @brief Initialize the threaded part of the environment struct.
  */
@@ -58,6 +83,7 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
   (void)num_workers;
 #endif
 }
+
 /**
  * @brief Initialize the single-threaded-specific parts of the environment struct.
  */
@@ -127,18 +153,6 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
 #endif
 }
 
-void environment_init_tags(environment_t* env, instant_t start_time, interval_t duration) {
-  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
-
-  tag_t stop_tag = FOREVER_TAG_INITIALIZER;
-  if (duration >= 0LL) {
-    // A duration has been specified. Calculate the stop time.
-    stop_tag.time = env->current_tag.time + duration;
-    stop_tag.microstep = 0;
-  }
-  env->stop_tag = stop_tag;
-}
-
 static void environment_free_threaded(environment_t* env) {
 #if !defined(LF_SINGLE_THREADED)
   free(env->thread_ids);
@@ -176,6 +190,9 @@ static void environment_free_federated(environment_t* env) {
 #endif
 }
 
+//////////////////
+// Functions defined in environment.h.
+
 void environment_free(environment_t* env) {
   free(env->name);
   free(env->timer_triggers);
@@ -191,6 +208,18 @@ void environment_free(environment_t* env) {
   environment_free_single_threaded(env);
   environment_free_modes(env);
   environment_free_federated(env);
+}
+
+void environment_init_tags(environment_t* env, instant_t start_time, interval_t duration) {
+  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+
+  tag_t stop_tag = FOREVER_TAG_INITIALIZER;
+  if (duration >= 0LL) {
+    // A duration has been specified. Calculate the stop time.
+    stop_tag.time = env->current_tag.time + duration;
+    stop_tag.microstep = 0;
+  }
+  env->stop_tag = stop_tag;
 }
 
 int environment_init(environment_t* env, const char* name, int id, int num_workers, int num_timers,

@@ -6,7 +6,10 @@
  * @copyright (c) 2020-2023, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  *
- * @brief Priority queue declarations for the event queue and reaction queue.
+ * @brief Priority queue definitions for queues where the priority is a number that can be compared with ordinary
+ * numerical comparisons.
+ *
+ * This is used for the reaction queue. The event queue uses a `tag_t` struct for its priority, so it cannot use this.
  */
 
 #ifndef PQUEUE_H
@@ -27,13 +30,6 @@ int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
  * @param that Second argument.
  */
 int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that);
-
-/**
- * Return 1 if the two events have the same trigger.
- * @param event1 A pointer to an event_t.
- * @param event2 A pointer to an event_t.
- */
-int event_matches(void* event1, void* event2);
 
 /**
  * Return 1 if the two arguments are identical pointers.
@@ -69,12 +65,5 @@ void set_reaction_position(void* reaction, size_t pos);
  * @param reaction A pointer to a reaction_t.
  */
 void print_reaction(void* reaction);
-
-/**
- * Print some information about the given event.
- * This only prints something if logging is set to DEBUG.
- * @param event A pointer to an event_t.
- */
-void print_event(void* event);
 
 #endif /* PQUEUE_H */
