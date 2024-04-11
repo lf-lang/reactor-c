@@ -195,16 +195,15 @@ void _lf_trigger_startup_reactions(environment_t* env);
 void _lf_trigger_shutdown_reactions(environment_t* env);
 
 /**
- * Create dummy events to be used as spacers in the event queue.
+ * @brief Create a dummy event with the specified tag.
+ *
+ * A dummy event is an event with no triggers that can be put on the event queue to trigger a tag advance to the
+ * specified tag.
  * @param env Environment in which we are executing.
- * @param trigger The eventual event to be triggered.
- * @param time The logical time of that event.
- * @param next The event to place after the dummy events.
- * @param offset The number of dummy events to insert.
- * @return A pointer to the first dummy event.
+ * @param tag The tag of that event.
+ * @return A pointer to the dummy event.
  */
-event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant_t time, event_t* next,
-                                 microstep_t offset);
+event_t* _lf_create_dummy_events(environment_t* env, tag_t tag);
 
 /**
  * @brief Schedule an event at a specific tag (time, microstep).
@@ -250,9 +249,9 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
  * the current time, then increase the microstep. Otherwise, update the current
  * time and set the microstep to zero.
  * @param env The environment in which we are executing
- * @param next_time The time step to advance to.
+ * @param next_tag The tag step to advance to.
  */
-void _lf_advance_logical_time(environment_t* env, instant_t next_time);
+void _lf_advance_tag(environment_t* env, tag_t next_tag);
 
 /**
  * @brief Pop all events from event_q with tag equal to current tag.
