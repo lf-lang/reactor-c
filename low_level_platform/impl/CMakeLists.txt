@@ -41,6 +41,11 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_rp2040_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Patmos")
+    set(LF_LOW_LEVEL_PLATFORM_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_patmos_support.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
+    )
 else()
     message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Zephyr, Nrf52 and RP2040.")
 endif()
