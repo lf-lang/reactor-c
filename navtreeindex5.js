@@ -1,10 +1,5 @@
 var NAVTREEINDEX5 =
 {
-"d9/dad/structlf__wav__t.html":[11,0,33],
-"d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9":[11,0,33,2],
-"d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c":[11,0,33,0],
-"d9/dad/structlf__wav__t.html#ade6c01f216604eef5d88c937972ab052":[11,0,33,1],
-"d9/daf/lf__zephyr__clock__counter_8c.html":[12,0,4,1,0,15],
 "d9/dc7/trace__util_8h.html":[12,0,10,0,6],
 "d9/dc7/trace__util_8h.html#a139bc891db3edc74b0d9f49d1cec20b9":[12,0,10,0,6,5],
 "d9/dc7/trace__util_8h.html#a14da003f17f3fb32043a735158a234c5":[12,0,10,0,6,3],
@@ -249,5 +244,10 @@ var NAVTREEINDEX5 =
 "db/d63/structlf__stat__ll.html#a8841b6fc40c60f3f1b73ada60ce556b7":[11,0,27,1],
 "db/d63/structlf__stat__ll.html#aa1018daf35cf8d68814ee876382eaecc":[11,0,27,0],
 "db/d70/lf___c11__threads__support_8h.html":[12,0,4,0,0,3],
-"db/d70/lf___c11__threads__support_8h.html#a7608d2d84407d5e7c73f36e2420d8201":[12,0,4,0,0,3,1]
+"db/d70/lf___c11__threads__support_8h.html#a7608d2d84407d5e7c73f36e2420d8201":[12,0,4,0,0,3,1],
+"db/d70/lf___c11__threads__support_8h.html#aaa456353790fbeda2b144e28e4eb1a85":[12,0,4,0,0,3,2],
+"db/d70/lf___c11__threads__support_8h_source.html":[12,0,4,0,0,3],
+"db/d7a/trace__to__chrome_8c.html":[12,0,10,0,2],
+"db/d7a/trace__to__chrome_8c.html#a098934fbabbee9f888db19314276e9e5":[12,0,10,0,2,11],
+"db/d7a/trace__to__chrome_8c.html#a0ddf1224851353fc92bfbff6f499fa97":[12,0,10,0,2,6]
 };

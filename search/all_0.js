@@ -114,9 +114,5 @@ var searchData=
   ['_5floop_5fnext_111',['_LOOP_NEXT',['../de/dcd/influxdb_8h.html#ad82790662264e54a9d1f0c4815b9245e',1,'influxdb.h']]],
   ['_5fopen_5ffiles_112',['_open_files',['../d5/df4/trace__util_8c.html#ae013e47b5c905db9ba2cf198efbf69e7',1,'trace_util.c']]],
   ['_5fsys_5f_5ftimespec_5fh_5f_113',['_SYS__TIMESPEC_H_',['../d3/d79/lf__arduino__support_8h.html#abb50862d2e0e95d4abacd7eb12b34060',1,'lf_arduino_support.h']]],
-  ['_5funtil_114',['_UNTIL',['../de/dcd/influxdb_8h.html#a6220fbb96443025e3a7ff76dbb816a79',1,'influxdb.h']]],
-  ['_5fzephyr_5fatomic_5fadd_5ffetch_115',['_zephyr_atomic_add_fetch',['../d4/d3d/lf__zephyr__support_8h.html#a934c6a1dd245c567f3c23adf6acd9302',1,'lf_zephyr_support.h']]],
-  ['_5fzephyr_5fatomic_5ffetch_5fadd_116',['_zephyr_atomic_fetch_add',['../d4/d3d/lf__zephyr__support_8h.html#acdba855386dc3cce907e0a4b759f64b9',1,'lf_zephyr_support.h']]],
-  ['_5fzephyr_5fbool_5fcompare_5fand_5fswap_117',['_zephyr_bool_compare_and_swap',['../d4/d3d/lf__zephyr__support_8h.html#aeea88d6f1dfe90100a500a7276560f0d',1,'lf_zephyr_support.h']]],
-  ['_5fzephyr_5fval32_5fcompare_5fand_5fswap_118',['_zephyr_val32_compare_and_swap',['../d4/d3d/lf__zephyr__support_8h.html#a969011cd50d0a4454bcaa68c7b0391b2',1,'lf_zephyr_support.h']]]
+  ['_5funtil_114',['_UNTIL',['../de/dcd/influxdb_8h.html#a6220fbb96443025e3a7ff76dbb816a79',1,'influxdb.h']]]
 ];

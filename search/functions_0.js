@@ -61,9 +61,5 @@ var searchData=
   ['_5flf_5fworker_5fhandle_5fdeadline_5fviolation_5ffor_5freaction_58',['_lf_worker_handle_deadline_violation_for_reaction',['../d5/dbc/reactor__threaded_8c.html#a7afeacd5ca6e5287e256c26ce4249afa',1,'reactor_threaded.c']]],
   ['_5flf_5fworker_5fhandle_5fstp_5fviolation_5ffor_5freaction_59',['_lf_worker_handle_STP_violation_for_reaction',['../d5/dbc/reactor__threaded_8c.html#ab0712a5ae2165ebf50aff2bc1de7b91e',1,'reactor_threaded.c']]],
   ['_5flf_5fworker_5fhandle_5fviolations_60',['_lf_worker_handle_violations',['../d5/dbc/reactor__threaded_8c.html#a2c11b17740bdc30694ea62c0960d1ca9',1,'reactor_threaded.c']]],
-  ['_5flf_5fworker_5finvoke_5freaction_61',['_lf_worker_invoke_reaction',['../d5/dbc/reactor__threaded_8c.html#a3b3be80932590a67d7e07f1a62b13c29',1,'reactor_threaded.c']]],
-  ['_5fzephyr_5fatomic_5fadd_5ffetch_62',['_zephyr_atomic_add_fetch',['../d4/d3d/lf__zephyr__support_8h.html#a934c6a1dd245c567f3c23adf6acd9302',1,'lf_zephyr_support.h']]],
-  ['_5fzephyr_5fatomic_5ffetch_5fadd_63',['_zephyr_atomic_fetch_add',['../d4/d3d/lf__zephyr__support_8h.html#acdba855386dc3cce907e0a4b759f64b9',1,'lf_zephyr_support.h']]],
-  ['_5fzephyr_5fbool_5fcompare_5fand_5fswap_64',['_zephyr_bool_compare_and_swap',['../d4/d3d/lf__zephyr__support_8h.html#aeea88d6f1dfe90100a500a7276560f0d',1,'lf_zephyr_support.h']]],
-  ['_5fzephyr_5fval32_5fcompare_5fand_5fswap_65',['_zephyr_val32_compare_and_swap',['../d4/d3d/lf__zephyr__support_8h.html#a969011cd50d0a4454bcaa68c7b0391b2',1,'lf_zephyr_support.h']]]
+  ['_5flf_5fworker_5finvoke_5freaction_61',['_lf_worker_invoke_reaction',['../d5/dbc/reactor__threaded_8c.html#a3b3be80932590a67d7e07f1a62b13c29',1,'reactor_threaded.c']]]
 ];
