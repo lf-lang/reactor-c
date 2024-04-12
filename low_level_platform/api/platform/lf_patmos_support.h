@@ -29,9 +29,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Patmos API support for the C target of Lingua Franca.
  *
  * This is based on lf_nrf_support.h in icyphy/lf-buckler.
- *  
+ *
  * @author{Ehsan Khodadad <ehkh@dtu.dk>}
- * @author{Luca Pezzarossa <lpez@dtu.dk>} 
+ * @author{Luca Pezzarossa <lpez@dtu.dk>}
  * @author{Martin Schoeberl <masca@dtu.dk>}
  */
 
@@ -39,12 +39,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LF_PATMOS_SUPPORT_H
 
 // This embedded platform has no TTY suport
-#define NO_TTY 
+#define NO_TTY
 
 #include <stdint.h> // For fixed-width integral types
 #include <stdbool.h>
 
-#include <inttypes.h>  // Needed to define PRId64 and PRIu32
+#include <inttypes.h> // Needed to define PRId64 and PRIu32
 #define PRINTF_TIME "%" PRId64
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
