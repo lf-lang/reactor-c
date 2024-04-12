@@ -99,6 +99,8 @@ typedef enum {
   receive_ADR_AD,
   receive_ADR_QR,
   receive_UNIDENTIFIED,
+  send_STOP,
+  receive_STOP,
   NUM_EVENT_TYPES
 } trace_event_t;
 

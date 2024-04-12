@@ -44,6 +44,7 @@
 
 // Global variables defined in tag.c:
 extern instant_t start_time;
+extern tag_t effective_start_tag;
 
 // Global variable defined in reactor_common.c:
 extern bool _lf_termination_executed;
@@ -90,7 +91,8 @@ federate_instance_t _fed = {.socket_TCP_RTI = -1,
                             .received_stop_request_from_rti = false,
                             .last_sent_LTC = {.time = NEVER, .microstep = 0u},
                             .last_sent_NET = {.time = NEVER, .microstep = 0u},
-                            .min_delay_from_physical_action_to_federate_output = NEVER};
+                            .min_delay_from_physical_action_to_federate_output = NEVER,
+                            .is_transient = false};
 
 federation_metadata_t federation_metadata = {
     .federation_id = "Unidentified Federation", .rti_host = NULL, .rti_port = -1, .rti_user = NULL};
@@ -954,30 +956,35 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // Send the timestamp marker first.
   send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
 
-  // Read bytes from the socket. We need 9 bytes.
+  // Read bytes from the socket. We need 21 (1 + 8 + 8 + 4) bytes.
   // Buffer for message ID plus timestamp.
-  size_t buffer_length = 1 + sizeof(instant_t);
+  size_t buffer_length = MSG_TYPE_TIMESTAMP_START_LENGTH;
   unsigned char buffer[buffer_length];
 
   read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, buffer_length, buffer, NULL,
-                                 "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
-  LF_PRINT_DEBUG("Read 9 bytes.");
+                                 "Failed to read MSG_TYPE_TIMESTAMP_START message from RTI.");
+  LF_PRINT_DEBUG("Read 21 bytes.");
 
   // First byte received is the message ID.
-  if (buffer[0] != MSG_TYPE_TIMESTAMP) {
+  if (buffer[0] != MSG_TYPE_TIMESTAMP_START) {
     if (buffer[0] == MSG_TYPE_FAILED) {
       lf_print_error_and_exit("RTI has failed.");
     }
-    lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP message from the RTI. Got %u (see net_common.h).",
+    lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP_START message from the RTI. Got %u (see net_common.h).",
                             buffer[0]);
   }
 
   instant_t timestamp = extract_int64(&(buffer[1]));
 
   tag_t tag = {.time = timestamp, .microstep = 0};
-  // Trace the event when tracing is enabled
-  tracepoint_federate_from_rti(receive_TIMESTAMP, _lf_my_fed_id, &tag);
-  lf_print("Starting timestamp is: " PRINTF_TIME ".", timestamp);
+  effective_start_tag = extract_tag(&(buffer[9]));
+
+  // Trace the event when tracing is enabled.
+  // Note that we report in the trace the effective_start_tag.
+  // This is rather a choice. To be changed, if needed, of course.
+  tracepoint_federate_from_rti(receive_TIMESTAMP, _lf_my_fed_id, &effective_start_tag);
+  lf_print("Starting timestamp is: " PRINTF_TIME " and effectve start tag is: " PRINTF_TAG ".", timestamp,
+           effective_start_tag.time - start_time, effective_start_tag.microstep);
   LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
   return timestamp;
@@ -1345,6 +1352,20 @@ static void handle_stop_granted_message() {
 }
 
 /**
+ * @brief Handle a MSG_TYPE_STOP message from the RTI.
+ *
+ * This function simply calls lf_stop().
+ */
+void handle_stop() {
+  // Trace the event when tracing is enabled
+  tracepoint_federate_from_rti(receive_STOP, _lf_my_fed_id, NULL);
+
+  lf_print("Received from RTI a MSG_TYPE_STOP at physical time " PRINTF_TIME ".", lf_time_physical());
+
+  lf_stop();
+}
+
+/**
  * Handle a MSG_TYPE_STOP_REQUEST message from the RTI.
  */
 static void handle_stop_request_message() {
@@ -1529,6 +1550,9 @@ static void* listen_to_rti_TCP(void* args) {
       break;
     case MSG_TYPE_STOP_GRANTED:
       handle_stop_granted_message();
+      break;
+    case MSG_TYPE_STOP:
+      handle_stop();
       break;
     case MSG_TYPE_PORT_ABSENT:
       if (handle_port_absent_message(&_fed.socket_TCP_RTI, -1)) {
@@ -1789,7 +1813,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
       lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
     } else {
       // Connect was successful.
-      size_t buffer_length = 1 + sizeof(uint16_t) + 1;
+      size_t buffer_length = 1 + sizeof(uint16_t) + 1 + 1;
       unsigned char buffer[buffer_length];
       buffer[0] = MSG_TYPE_P2P_SENDING_FED_ID;
       if (_lf_my_fed_id > UINT16_MAX) {
@@ -1797,8 +1821,9 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
         lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX);
       }
       encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(buffer[1]));
+      buffer[1 + sizeof(uint16_t)] = _fed.is_transient ? 1 : 0;
       unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
-      buffer[sizeof(uint16_t) + 1] = federation_id_length;
+      buffer[sizeof(uint16_t) + 2] = federation_id_length;
       // Trace the event when tracing is enabled
       tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
 
@@ -1912,23 +1937,25 @@ void lf_connect_to_rti(const char* hostname, int port) {
 #endif
 
     // Send the message type first.
-    unsigned char buffer[4];
+    unsigned char buffer[5];
     buffer[0] = MSG_TYPE_FED_IDS;
     // Next send the federate ID.
     if (_lf_my_fed_id > UINT16_MAX) {
       lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX);
     }
     encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
+    // Next send the federate type (persistent or transient)
+    buffer[1 + sizeof(uint16_t)] = _fed.is_transient ? 1 : 0;
     // Next send the federation ID length.
     // The federation ID is limited to 255 bytes.
     size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
-    buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
+    buffer[2 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
 
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_FED_ID, _lf_my_fed_id, NULL);
 
     // No need for a mutex here because no other threads are writing to this socket.
-    if (write_to_socket(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t), buffer)) {
+    if (write_to_socket(_fed.socket_TCP_RTI, 3 + sizeof(uint16_t), buffer)) {
       continue; // Try again, possibly on a new port.
     }
 
@@ -2111,7 +2138,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     }
     LF_PRINT_LOG("Accepted new connection from remote federate.");
 
-    size_t header_length = 1 + sizeof(uint16_t) + 1;
+    size_t header_length = 1 + sizeof(uint16_t) + 1 + 1;
     unsigned char buffer[header_length];
     int read_failed = read_from_socket(socket_id, header_length, (unsigned char*)&buffer);
     if (read_failed || buffer[0] != MSG_TYPE_P2P_SENDING_FED_ID) {
@@ -2152,6 +2179,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 
     // Extract the ID of the sending federate.
     uint16_t remote_fed_id = extract_uint16((unsigned char*)&(buffer[1]));
+    bool remote_fed_is_transient = buffer[1 + sizeof(uint16_t)];
     LF_PRINT_DEBUG("Received sending federate ID %d.", remote_fed_id);
 
     // Trace the event when tracing is enabled
@@ -2697,5 +2725,37 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
                  lf_time_logical_elapsed(env));
   return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
 }
+
+void lf_stop() {
+  environment_t* env;
+  int num_env = _lf_get_environments(&env);
+
+  for (int i = 0; i < num_env; i++) {
+    LF_MUTEX_LOCK(&env[i].mutex);
+
+    tag_t new_stop_tag;
+    new_stop_tag.time = env[i].current_tag.time;
+    new_stop_tag.microstep = env[i].current_tag.microstep + 1;
+
+    lf_set_stop_tag(&env[i], new_stop_tag);
+
+    lf_print("Setting the stop tag of env %d to " PRINTF_TAG ".", i, env[i].stop_tag.time - start_time,
+             env[i].stop_tag.microstep);
+
+    if (env[i].barrier.requestors)
+      _lf_decrement_tag_barrier_locked(&env[i]);
+    lf_cond_broadcast(&env[i].event_q_changed);
+    LF_MUTEX_UNLOCK(&env[i].mutex);
+  }
+  LF_PRINT_LOG("Federate is stopping.");
+}
+
+char* lf_get_federates_bin_directory() { return LF_FEDERATES_BIN_DIRECTORY; }
+
+char* lf_get_federation_id() { return federation_metadata.federation_id; }
+
+instant_t lf_get_effective_start_time() { return effective_start_tag.time; }
+
+instant_t lf_get_start_time() { return start_time; }
 
 #endif
