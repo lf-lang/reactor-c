@@ -1250,11 +1250,6 @@ void* clock_synchronization_thread(void* noargs) {
   }
 
   // Initiate a clock synchronization every rti->clock_sync_period_ns
-  // Initiate a clock synchronization every rti->clock_sync_period_ns
-  struct timespec sleep_time = {(time_t)rti_remote->clock_sync_period_ns / BILLION,
-                                rti_remote->clock_sync_period_ns % BILLION};
-  struct timespec remaining_time;
-
   bool any_federates_connected = true;
   while (any_federates_connected) {
     // Sleep
@@ -1754,17 +1749,20 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
 
     // Allocate memory for the upstream and downstream pointers
     if (fed->enclave.num_upstream > 0) {
-      fed->enclave.upstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
+      fed->enclave.upstream = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
+      LF_ASSERT_NON_NULL(fed->enclave.upstream);
       // Allocate memory for the upstream delay pointers
       fed->enclave.upstream_delay = (interval_t*)malloc(sizeof(interval_t) * fed->enclave.num_upstream);
+      LF_ASSERT_NON_NULL(fed->enclave.upstream_delay);
     } else {
-      fed->enclave.upstream = (int*)NULL;
+      fed->enclave.upstream = (uint16_t*)NULL;
       fed->enclave.upstream_delay = (interval_t*)NULL;
     }
     if (fed->enclave.num_downstream > 0) {
-      fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
+      fed->enclave.downstream = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
+      LF_ASSERT_NON_NULL(fed->enclave.downstream);
     } else {
-      fed->enclave.downstream = (int*)NULL;
+      fed->enclave.downstream = (uint16_t*)NULL;
     }
 
     size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) * fed->enclave.num_upstream) +
@@ -1772,6 +1770,7 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
     unsigned char* connections_info_body = NULL;
     if (connections_info_body_size > 0) {
       connections_info_body = (unsigned char*)malloc(connections_info_body_size);
+      LF_ASSERT_NON_NULL(connections_info_body);
       read_from_socket_fail_on_error(socket_id, connections_info_body_size, connections_info_body, NULL,
                                      "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
                                      fed_id);

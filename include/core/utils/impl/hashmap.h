@@ -125,7 +125,6 @@ void HASHMAP(free)(HASHMAP(t) * hashmap) {
 
 void HASHMAP(put)(HASHMAP(t) * hashmap, K key, V value) {
   assert(key != hashmap->nothing);
-  assert(key >= 0);
   HASHMAP(entry_t)* write_to = HASHMAP(get_actual_address)(hashmap, key);
   write_to->key = key;
   write_to->value = value;

@@ -47,6 +47,9 @@
 #define ZERO_TAG                                                                                                       \
   (tag_t) { .time = 0LL, .microstep = 0u }
 
+// Returns true if timeout has elapsed.
+#define CHECK_TIMEOUT(start, duration) (lf_time_physical() > ((start) + (duration)))
+
 // Convenience for converting times
 #define BILLION ((instant_t)1000000000LL)
 
