@@ -205,10 +205,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * Bound on the number of retries to connect to the RTI.
- * A federate will retry every CONNECT_RETRY_INTERVAL seconds
- * this many times before giving up.
+ * A federate will retry every CONNECT_RETRY_INTERVAL seconds until
+ * CONNECTION_TIMEOUT expires.
  */
-#define CONNECT_MAX_RETRIES 100
+#define CONNECT_TIMEOUT MINUTES(1)
 
 /**
  * Maximum number of port addresses that a federate will try to connect to the RTI on.
