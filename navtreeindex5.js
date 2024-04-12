@@ -1,5 +1,6 @@
 var NAVTREEINDEX5 =
 {
+"d9/daf/lf__zephyr__clock__counter_8c.html":[12,0,4,1,0,15],
 "d9/dc7/trace__util_8h.html":[12,0,10,0,6],
 "d9/dc7/trace__util_8h.html#a139bc891db3edc74b0d9f49d1cec20b9":[12,0,10,0,6,5],
 "d9/dc7/trace__util_8h.html#a14da003f17f3fb32043a735158a234c5":[12,0,10,0,6,3],
@@ -248,6 +249,5 @@ var NAVTREEINDEX5 =
 "db/d70/lf___c11__threads__support_8h.html#aaa456353790fbeda2b144e28e4eb1a85":[12,0,4,0,0,3,2],
 "db/d70/lf___c11__threads__support_8h_source.html":[12,0,4,0,0,3],
 "db/d7a/trace__to__chrome_8c.html":[12,0,10,0,2],
-"db/d7a/trace__to__chrome_8c.html#a098934fbabbee9f888db19314276e9e5":[12,0,10,0,2,11],
-"db/d7a/trace__to__chrome_8c.html#a0ddf1224851353fc92bfbff6f499fa97":[12,0,10,0,2,6]
+"db/d7a/trace__to__chrome_8c.html#a098934fbabbee9f888db19314276e9e5":[12,0,10,0,2,11]
 };

@@ -110,8 +110,8 @@ Macros</h2></td></tr>
 <tr class="separator:acc95612e1d2dbbdf34afe76d50e75223"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2106828de539188aed925f592751c12" id="r_ab2106828de539188aed925f592751c12"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2106828de539188aed925f592751c12">CONNECT_RETRY_INTERVAL</a>&#160;&#160;&#160;<a class="el" href="../../d2/dcd/tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(500)</td></tr>
 <tr class="separator:ab2106828de539188aed925f592751c12"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a32f375367fd80a6e453a02b728a78464" id="r_a32f375367fd80a6e453a02b728a78464"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a32f375367fd80a6e453a02b728a78464">CONNECT_MAX_RETRIES</a>&#160;&#160;&#160;100</td></tr>
-<tr class="separator:a32f375367fd80a6e453a02b728a78464"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a252b2cb72531cb00ecd4d4db37a5a473" id="r_a252b2cb72531cb00ecd4d4db37a5a473"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a252b2cb72531cb00ecd4d4db37a5a473">CONNECT_TIMEOUT</a>&#160;&#160;&#160;<a class="el" href="../../d2/dcd/tag_8h.html#a694878332b974b464c7d58c7114ee6e9">MINUTES</a>(1)</td></tr>
+<tr class="separator:a252b2cb72531cb00ecd4d4db37a5a473"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5dbc42b5857eb262a06aa04399475d16" id="r_a5dbc42b5857eb262a06aa04399475d16"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5dbc42b5857eb262a06aa04399475d16">MAX_NUM_PORT_ADDRESSES</a>&#160;&#160;&#160;16</td></tr>
 <tr class="separator:a5dbc42b5857eb262a06aa04399475d16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ce563da4edbe9c4f7c1ccf35ad8694f" id="r_a8ce563da4edbe9c4f7c1ccf35ad8694f"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8ce563da4edbe9c4f7c1ccf35ad8694f">ADDRESS_QUERY_RETRY_INTERVAL</a>&#160;&#160;&#160;<a class="el" href="../../d2/dcd/tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(250)</td></tr>
@@ -248,21 +248,6 @@ LICENSE</h1>
 
 </div>
 </div>
-<a id="a32f375367fd80a6e453a02b728a78464" name="a32f375367fd80a6e453a02b728a78464"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a32f375367fd80a6e453a02b728a78464">&#9670;&#160;</a></span>CONNECT_MAX_RETRIES</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> CONNECT_MAX_RETRIES&#160;&#160;&#160;100</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Bound on the number of retries to connect to the RTI. A federate will retry every CONNECT_RETRY_INTERVAL seconds this many times before giving up. </p>
-
-</div>
-</div>
 <a id="ab2106828de539188aed925f592751c12" name="ab2106828de539188aed925f592751c12"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab2106828de539188aed925f592751c12">&#9670;&#160;</a></span>CONNECT_RETRY_INTERVAL</h2>
 
@@ -275,6 +260,21 @@ LICENSE</h1>
       </table>
 </div><div class="memdoc">
 <p>Time between a federate's attempts to connect to the RTI. </p>
+
+</div>
+</div>
+<a id="a252b2cb72531cb00ecd4d4db37a5a473" name="a252b2cb72531cb00ecd4d4db37a5a473"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a252b2cb72531cb00ecd4d4db37a5a473">&#9670;&#160;</a></span>CONNECT_TIMEOUT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> CONNECT_TIMEOUT&#160;&#160;&#160;<a class="el" href="../../d2/dcd/tag_8h.html#a694878332b974b464c7d58c7114ee6e9">MINUTES</a>(1)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Bound on the number of retries to connect to the RTI. A federate will retry every CONNECT_RETRY_INTERVAL seconds until CONNECTION_TIMEOUT expires. </p>
 
 </div>
 </div>
@@ -338,7 +338,7 @@ LICENSE</h1>
 <div class="line">  } <span class="keywordflow">while</span> (0)</div>
 <div class="ttc" id="ahashmap_8h_html_ad2c17ed7e0d4d65a63bf9002aba2016f"><div class="ttname"><a href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">address</a></div><div class="ttdeci">return address</div><div class="ttdef"><b>Definition</b> hashmap.h:74</div></div>
 <div class="ttc" id="anet__common_8h_html_aad37dd00423e88f213ca7d7d238bce2e"><div class="ttname"><a href="#aad37dd00423e88f213ca7d7d238bce2e">MSG_TYPE_STOP_GRANTED</a></div><div class="ttdeci">#define MSG_TYPE_STOP_GRANTED</div><div class="ttdef"><b>Definition</b> net_common.h:513</div></div>
-<div class="ttc" id="atag_8h_html_a827080fd3c574bad5a32db9f7c367587"><div class="ttname"><a href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></div><div class="ttdeci">int64_t instant_t</div><div class="ttdef"><b>Definition</b> tag.h:63</div></div>
+<div class="ttc" id="atag_8h_html_a827080fd3c574bad5a32db9f7c367587"><div class="ttname"><a href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></div><div class="ttdeci">int64_t instant_t</div><div class="ttdef"><b>Definition</b> tag.h:66</div></div>
 <div class="ttc" id="atrace__util_8c_html_af00b615ca097c43dbb02ae3a00ea3a62"><div class="ttname"><a href="../../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62">buffer</a></div><div class="ttdeci">char buffer[BUFFER_SIZE]</div><div class="ttdef"><b>Definition</b> trace_util.c:42</div></div>
 </div><!-- fragment -->
 </div>

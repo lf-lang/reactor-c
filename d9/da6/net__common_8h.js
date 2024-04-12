@@ -1,8 +1,8 @@
 var net__common_8h =
 [
     [ "ADDRESS_QUERY_RETRY_INTERVAL", "d9/da6/net__common_8h.html#a8ce563da4edbe9c4f7c1ccf35ad8694f", null ],
-    [ "CONNECT_MAX_RETRIES", "d9/da6/net__common_8h.html#a32f375367fd80a6e453a02b728a78464", null ],
     [ "CONNECT_RETRY_INTERVAL", "d9/da6/net__common_8h.html#ab2106828de539188aed925f592751c12", null ],
+    [ "CONNECT_TIMEOUT", "d9/da6/net__common_8h.html#a252b2cb72531cb00ecd4d4db37a5a473", null ],
     [ "DEFAULT_PORT", "d9/da6/net__common_8h.html#a16b710f592bf8f7900666392adc444dc", null ],
     [ "DELAY_START", "d9/da6/net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed", null ],
     [ "ENCODE_STOP_GRANTED", "d9/da6/net__common_8h.html#a8086398bfefdc0104767df037e59daa5", null ],

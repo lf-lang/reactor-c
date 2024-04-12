@@ -350,7 +350,7 @@ Anirudh Rengarajsm </dd></dl>
 </div><div class="memdoc">
 
 <p>Connect to the RTI at the specified host and port. </p>
-<p>This will return the socket descriptor for the connection. If port_number is 0, then start at DEFAULT_PORT and increment the port number on each attempt. If an attempt fails, wait CONNECT_RETRY_INTERVAL and try again. If it fails after CONNECT_MAX_RETRIES, the program exits. If it succeeds, it sets the _fed.socket_TCP_RTI global variable to refer to the socket for communicating with the RTI. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>This will return the socket descriptor for the connection. If port_number is 0, then start at DEFAULT_PORT and increment the port number on each attempt. If an attempt fails, wait CONNECT_RETRY_INTERVAL and try again. If it fails after CONNECT_TIMEOUT, the program exits. If it succeeds, it sets the _fed.socket_TCP_RTI global variable to refer to the socket for communicating with the RTI. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">hostname</td><td>A hostname, such as "localhost". </td></tr>
     <tr><td class="paramname">port_number</td><td>A port number or 0 to start with the default. </td></tr>
