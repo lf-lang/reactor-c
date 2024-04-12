@@ -119,6 +119,8 @@ const char* trace_event_names[] = {
     "Receiving ADR_AD",
     "Receiving ADR_QR",
     "Receiving UNIDENTIFIED",
+    "Sending STOP",
+    "Receiving STOP",
 };
 
 /**
