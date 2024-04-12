@@ -45,7 +45,7 @@ static int write_trace_header(trace_t* trace) {
       _LF_TRACE_FAILURE(trace);
 
     // Next we write the table.
-    for (int i = 0; i < trace->_lf_trace_object_descriptions_size; i++) {
+    for (size_t i = 0; i < trace->_lf_trace_object_descriptions_size; i++) {
       // Write the pointer to the self struct.
       items_written = fwrite(&trace->_lf_trace_object_descriptions[i].pointer, sizeof(void*), 1, trace->_lf_trace_file);
       if (items_written != 1)
@@ -63,7 +63,7 @@ static int write_trace_header(trace_t* trace) {
         _LF_TRACE_FAILURE(trace);
 
       // Write the description.
-      int description_size = strlen(trace->_lf_trace_object_descriptions[i].description);
+      size_t description_size = strlen(trace->_lf_trace_object_descriptions[i].description);
       items_written = fwrite(trace->_lf_trace_object_descriptions[i].description, sizeof(char),
                              description_size + 1, // Include null terminator.
                              trace->_lf_trace_file);
@@ -137,11 +137,11 @@ static void start_trace(trace_t* trace, int max_num_local_threads) {
   trace->_lf_trace_buffer =
       (trace_record_nodeps_t**)malloc(sizeof(trace_record_nodeps_t*) * (trace->_lf_number_of_trace_buffers + 1));
   trace->_lf_trace_buffer++; // the buffer at index -1 is a fallback for user threads.
-  for (int i = -1; i < trace->_lf_number_of_trace_buffers; i++) {
+  for (int i = -1; i < (int)trace->_lf_number_of_trace_buffers; i++) {
     trace->_lf_trace_buffer[i] = (trace_record_nodeps_t*)malloc(sizeof(trace_record_nodeps_t) * TRACE_BUFFER_CAPACITY);
   }
   // Array of counters that track the size of each trace record (per thread).
-  trace->_lf_trace_buffer_size = (int*)calloc(sizeof(int), trace->_lf_number_of_trace_buffers + 1);
+  trace->_lf_trace_buffer_size = (size_t*)calloc(sizeof(size_t), trace->_lf_number_of_trace_buffers + 1);
   trace->_lf_trace_buffer_size++;
 
   trace->_lf_trace_stop = 0;
@@ -150,15 +150,8 @@ static void start_trace(trace_t* trace, int max_num_local_threads) {
 
 static void trace_new(char* filename) {
 
-  // Determine length of the filename
-  size_t len = strlen(filename) + 1;
-
-  // Allocate memory for the filename on the trace struct
-  trace.filename = (char*)malloc(len * sizeof(char));
-  LF_ASSERT(trace.filename, "Out of memory");
-
   // Copy it to the struct
-  strncpy(trace.filename, filename, len);
+  strncpy(trace.filename, filename, TRACE_MAX_FILENAME_LENGTH);
   // FIXME: location of trace file should be customizable.
   trace._lf_trace_file = fopen(trace.filename, "w");
   if (trace._lf_trace_file == NULL) {
@@ -171,16 +164,14 @@ static void trace_new(char* filename) {
   }
 }
 
-static void trace_free(trace_t* trace) { free(trace->filename); }
-
 static void stop_trace_locked(trace_t* trace) {
   if (trace->_lf_trace_stop) {
     // Trace was already stopped. Nothing to do.
     return;
   }
-  for (int i = -1; i < trace->_lf_number_of_trace_buffers; i++) {
+  for (int i = -1; i < (int)trace->_lf_number_of_trace_buffers; i++) {
     // Flush the buffer if it has data.
-    LF_PRINT_DEBUG("Trace buffer %d has %d records.", i, trace->_lf_trace_buffer_size[i]);
+    LF_PRINT_DEBUG("Trace buffer %d has %zu records.", i, trace->_lf_trace_buffer_size[i]);
     if (trace->_lf_trace_buffer_size && trace->_lf_trace_buffer_size[i] > 0) {
       flush_trace_locked(trace, i);
     }
@@ -231,6 +222,7 @@ void lf_tracing_register_trace_event(object_description_t description) {
 }
 
 void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
+  (void)worker;
   // Worker argument determines which buffer to write to.
   int tid = lf_thread_id();
   if (tid < 0) {
@@ -239,8 +231,8 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
     // Therefore we should fall back to using a mutex.
     lf_platform_mutex_lock(trace_mutex);
   }
-  if (tid > trace._lf_number_of_trace_buffers) {
-    lf_print_error_and_exit("the thread id (%d) exceeds the number of trace buffers (%d)", tid,
+  if (tid > (int)trace._lf_number_of_trace_buffers) {
+    lf_print_error_and_exit("the thread id (%d) exceeds the number of trace buffers (%zu)", tid,
                             trace._lf_number_of_trace_buffers);
   }
 
@@ -280,6 +272,5 @@ void lf_tracing_global_init(char* file_name_prefix, int fedid, int max_num_local
 void lf_tracing_set_start_time(int64_t time) { start_time = time; }
 void lf_tracing_global_shutdown() {
   stop_trace(&trace);
-  trace_free(&trace);
   lf_platform_mutex_free(trace_mutex);
 }

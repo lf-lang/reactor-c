@@ -56,8 +56,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Forward declaration of functions and variables supplied by reactor_common.c
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);
-event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant_t time, event_t* next,
-                                 microstep_t offset);
+event_t* _lf_create_dummy_events(environment_t* env, tag_t tag);
 
 // ----------------------------------------------------------------------------
 
@@ -400,28 +399,17 @@ void _lf_process_mode_changes(environment_t* env, reactor_mode_state_t* states[]
                        event->trigger != NULL) { // History transition to a different mode
               // Remaining time that the event would have been waiting before mode was left
               instant_t local_remaining_delay =
-                  event->time -
+                  event->base.tag.time -
                   (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : lf_time_start());
               tag_t current_logical_tag = env->current_tag;
 
               // Reschedule event with original local delay
               LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of " PRINTF_TIME
                              " (previous TTH: " PRINTF_TIME ", Mode suspended at: " PRINTF_TIME ").",
-                             local_remaining_delay, event->time, state->next_mode->deactivation_time);
+                             local_remaining_delay, event->base.tag.time, state->next_mode->deactivation_time);
               tag_t schedule_tag = {.time = current_logical_tag.time + local_remaining_delay,
                                     .microstep = (local_remaining_delay == 0 ? current_logical_tag.microstep + 1 : 0)};
               _lf_schedule_at_tag(env, event->trigger, schedule_tag, event->token);
-
-              // Also schedule events stacked up in super dense time.
-              event_t* e = event;
-              while (e->next != NULL) {
-                schedule_tag.microstep++;
-                _lf_schedule_at_tag(env, e->next->trigger, schedule_tag, e->next->token);
-                event_t* tmp = e->next;
-                e = tmp->next;
-                // A fresh event was created by schedule, hence, recycle old one
-                lf_recycle_event(env, tmp);
-              }
             }
             // A fresh event was created by schedule, hence, recycle old one
             lf_recycle_event(env, event);
@@ -490,7 +478,7 @@ void _lf_process_mode_changes(environment_t* env, reactor_mode_state_t* states[]
 
     // Retract all events from the event queue that are associated with now inactive modes
     if (env->event_q != NULL) {
-      size_t q_size = pqueue_size(env->event_q);
+      size_t q_size = pqueue_tag_size(env->event_q);
       if (q_size > 0) {
         event_t** delayed_removal = (event_t**)calloc(q_size, sizeof(event_t*));
         size_t delayed_removal_count = 0;
@@ -509,7 +497,7 @@ void _lf_process_mode_changes(environment_t* env, reactor_mode_state_t* states[]
         LF_PRINT_DEBUG("Modes: Pulling %zu events from the event queue to suspend them. %d events are now suspended.",
                        delayed_removal_count, _lf_suspended_events_num);
         for (size_t i = 0; i < delayed_removal_count; i++) {
-          pqueue_remove(env->event_q, delayed_removal[i]);
+          pqueue_tag_remove(env->event_q, (pqueue_tag_element_t*)(delayed_removal[i]));
         }
 
         free(delayed_removal);
@@ -519,7 +507,8 @@ void _lf_process_mode_changes(environment_t* env, reactor_mode_state_t* states[]
     if (env->modes->triggered_reactions_request) {
       // Insert a dummy event in the event queue for the next microstep to make
       // sure startup/reset reactions (if any) are triggered as soon as possible.
-      pqueue_insert(env->event_q, _lf_create_dummy_events(env, NULL, env->current_tag.time, NULL, 1));
+      tag_t dummy_event_tag = (tag_t){.time = env->current_tag.time, .microstep = 1};
+      pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)_lf_create_dummy_events(env, dummy_event_tag));
     }
   }
 }

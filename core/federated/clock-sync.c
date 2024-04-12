@@ -438,6 +438,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
  * Thread that listens for UDP inputs from the RTI.
  */
 void* listen_to_rti_UDP_thread(void* args) {
+  (void)args;
   initialize_lf_thread_id();
   // Listen for UDP messages from the RTI.
   // The only expected messages are T1 and T4, which have
@@ -468,12 +469,12 @@ void* listen_to_rti_UDP_thread(void* args) {
       if (bytes > 0) {
         bytes_read += bytes;
       }
-    } while ((errno == EAGAIN || errno == EWOULDBLOCK) && bytes_read < message_size);
+    } while ((errno == EAGAIN || errno == EWOULDBLOCK) && bytes_read < (ssize_t)message_size);
 
     // Get local physical time before doing anything else.
     instant_t receive_time = lf_time_physical();
 
-    if (bytes_read < message_size) {
+    if (bytes_read < (ssize_t)message_size) {
       // Either the socket has closed or the RTI has sent EOF.
       // Exit the thread to halt clock synchronization.
       lf_print_error("Clock sync: UDP socket to RTI is broken: %s. Clock sync is now disabled.", strerror(errno));
@@ -533,9 +534,9 @@ void clock_sync_remove_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf
 
 void clock_sync_set_constant_bias(interval_t offset) { _lf_clock_sync_constant_bias = offset; }
 #else
-void clock_sync_apply_offset(instant_t* t) {}
-void clock_sync_remove_offset(instant_t* t) {}
-void clock_sync_set_constant_bias(interval_t offset) {}
+void clock_sync_apply_offset(instant_t* t) { (void)t; }
+void clock_sync_remove_offset(instant_t* t) { (void)t; }
+void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
 #endif
 
 /**
@@ -550,6 +551,8 @@ int create_clock_sync_thread(lf_thread_t* thread_id) {
 #ifdef _LF_CLOCK_SYNC_ON
   // One for UDP messages if clock synchronization is enabled for this federate
   return lf_thread_create(thread_id, listen_to_rti_UDP_thread, NULL);
+#else
+  (void)thread_id;
 #endif // _LF_CLOCK_SYNC_ON
   return 0;
 }

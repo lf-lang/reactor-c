@@ -1,5 +1,5 @@
 /**
- * @file tag_pqueue.h
+ * @file pqueue_tag.h
  * @author Byeonggil Jun
  * @author Edward A. Lee
  * @copyright (c) 2023, The University of California at Berkeley
@@ -61,6 +61,16 @@ typedef struct {
 typedef pqueue_t pqueue_tag_t;
 
 /**
+ * @brief Callback comparison function for the tag-based priority queue.
+ * Return -1 if the first argument is less than second, 0 if the two arguments are the same,
+ * and 1 otherwise.
+ * This function is of type pqueue_cmp_pri_f.
+ * @param priority1 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
+ * @param priority2 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
+ */
+int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2);
+
+/**
  * @brief Create a priority queue sorted by tags.
  *
  * The elements of the priority queue will be of type pqueue_tag_element_t.
@@ -68,6 +78,20 @@ typedef pqueue_t pqueue_tag_t;
  * @return A dynamically allocated priority queue or NULL if memory allocation fails.
  */
 pqueue_tag_t* pqueue_tag_init(size_t initial_size);
+
+/**
+ * @brief Create a priority queue that stores elements with a particular payload.
+ *
+ * @param cmppri the callback function to compare priorities
+ * @param eqelem the callback function to check equivalence of payloads.
+ * @param prt the callback function to print elements
+ *
+ * The elements of the priority queue will be of type pqueue_tag_element_t.
+ * The caller should call pqueue_tag_free() when finished with the queue.
+ * @return A dynamically allocated priority queue or NULL if memory allocation fails.
+ */
+pqueue_tag_t* pqueue_tag_init_customize(size_t initial_size, pqueue_cmp_pri_f cmppri, pqueue_eq_elem_f eqelem,
+                                        pqueue_print_entry_f prt);
 
 /**
  * @brief Free all memory used by the queue including elements that are marked dynamic.
@@ -125,6 +149,15 @@ int pqueue_tag_insert_if_no_match(pqueue_tag_t* q, tag_t t);
 pqueue_tag_element_t* pqueue_tag_find_with_tag(pqueue_tag_t* q, tag_t t);
 
 /**
+ * @brief Return an item with the same tag (`cmppri` returns 0) that matches the supplied element
+ * (`eqelem` returns non-zero) or NULL if there is none.
+ * @param q The queue.
+ * @param e The element.
+ * @return An entry with the specified tag or NULL if there isn't one.
+ */
+pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t* q, pqueue_tag_element_t* e);
+
+/**
  * @brief Return highest-ranking item (the one with the least tag) without removing it.
  * @param q The queue.
  * @return NULL on if the queue is empty, otherwise the entry.
@@ -174,5 +207,13 @@ void pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e);
  * @param t The specified tag.
  */
 void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t);
+
+/**
+ * Dump the queue and it's internal structure.
+ * @internal
+ * debug function only
+ * @param q the queue
+ */
+void pqueue_tag_dump(pqueue_tag_t* q);
 
 #endif // PQUEUE_TAG_H

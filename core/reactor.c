@@ -27,9 +27,18 @@
 extern instant_t start_time;
 
 int lf_thread_id() { return 0; }
-int lf_mutex_unlock(lf_mutex_t* mutex) { return 0; }
-int lf_mutex_init(lf_mutex_t* mutex) { return 0; }
-int lf_mutex_lock(lf_mutex_t* mutex) { return 0; }
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+  (void)mutex;
+  return 0;
+}
+int lf_mutex_init(lf_mutex_t* mutex) {
+  (void)mutex;
+  return 0;
+}
+int lf_mutex_lock(lf_mutex_t* mutex) {
+  (void)mutex;
+  return 0;
+}
 
 // Defined in reactor_common.c:
 extern bool fast;
@@ -83,11 +92,13 @@ void lf_print_snapshot(environment_t* env) {
 }
 #else  // NDEBUG
 void lf_print_snapshot(environment_t* env) {
+  (void)env;
   // Do nothing.
 }
 #endif // NDEBUG
 
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
+  (void)worker_number;
   assert(env != GLOBAL_ENVIRONMENT);
 
 #ifdef MODAL_REACTORS
@@ -209,7 +220,7 @@ int next(environment_t* env) {
   // Enter the critical section and do not leave until we have
   // determined which tag to commit to and start invoking reactions for.
   LF_CRITICAL_SECTION_ENTER(env);
-  event_t* event = (event_t*)pqueue_peek(env->event_q);
+  event_t* event = (event_t*)pqueue_tag_peek(env->event_q);
   // pqueue_dump(event_q, event_q->prt);
   // If there is no next event and -keepalive has been specified
   // on the command line, then we will wait the maximum time possible.
@@ -220,13 +231,7 @@ int next(environment_t* env) {
       lf_set_stop_tag(env, (tag_t){.time = env->current_tag.time, .microstep = env->current_tag.microstep + 1});
     }
   } else {
-    next_tag.time = event->time;
-    // Deduce the microstep
-    if (next_tag.time == env->current_tag.time) {
-      next_tag.microstep = env->current_tag.microstep + 1;
-    } else {
-      next_tag.microstep = 0;
-    }
+    next_tag = event->base.tag;
   }
 
   if (lf_is_tag_after_stop_tag(env, next_tag)) {
@@ -234,10 +239,10 @@ int next(environment_t* env) {
     next_tag = env->stop_tag;
   }
 
-  LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
+  LF_PRINT_LOG("Next event (elapsed) tag is " PRINTF_TAG ".", next_tag.time - start_time, next_tag.microstep);
   // Wait until physical time >= event.time.
   int finished_sleep = wait_until(env, next_tag.time);
-  LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
+  LF_PRINT_LOG("Next event (elapsed) tag is " PRINTF_TAG ".", next_tag.time - start_time, next_tag.microstep);
   if (finished_sleep != 0) {
     LF_PRINT_DEBUG("***** wait_until was interrupted.");
     // Sleep was interrupted. This could happen when a physical action
@@ -247,10 +252,10 @@ int next(environment_t* env) {
     LF_CRITICAL_SECTION_EXIT(env);
     return 1;
   }
-  // Advance current time to match that of the first event on the queue.
+  // Advance current tag to match that of the first event on the queue.
   // We can now leave the critical section. Any events that will be added
   // to the queue asynchronously will have a later tag than the current one.
-  _lf_advance_logical_time(env, next_tag.time);
+  _lf_advance_tag(env, next_tag);
 
   // Trigger shutdown reactions if appropriate.
   if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
@@ -273,8 +278,7 @@ int next(environment_t* env) {
 void lf_request_stop(void) {
   // There is only one enclave, so get its environment.
   environment_t* env;
-  int num_environments = _lf_get_environments(&env);
-  assert(num_environments == 1);
+  _lf_get_environments(&env);
 
   tag_t new_stop_tag;
   new_stop_tag.time = env->current_tag.time;
@@ -368,9 +372,18 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
  * @brief Notify of new event by calling the single-threaded platform API
  * @param env Environment in which we are executing.
  */
-int lf_notify_of_event(environment_t* env) { return _lf_single_threaded_notify_of_event(); }
+int lf_notify_of_event(environment_t* env) {
+  (void)env;
+  return _lf_single_threaded_notify_of_event();
+}
 
-int lf_critical_section_enter(environment_t* env) { return lf_disable_interrupts_nested(); }
+int lf_critical_section_enter(environment_t* env) {
+  (void)env;
+  return lf_disable_interrupts_nested();
+}
 
-int lf_critical_section_exit(environment_t* env) { return lf_enable_interrupts_nested(); }
+int lf_critical_section_exit(environment_t* env) {
+  (void)env;
+  return lf_enable_interrupts_nested();
+}
 #endif

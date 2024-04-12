@@ -112,7 +112,7 @@ instant_t lf_time_logical(void* env) {
 interval_t lf_time_logical_elapsed(void* env) { return lf_time_logical(env) - start_time; }
 
 instant_t lf_time_physical(void) {
-  instant_t now, last_read_local;
+  instant_t now;
   // Get the current clock value
   LF_ASSERTN(lf_clock_gettime(&now), "Failed to read physical clock.");
   return now;
@@ -200,7 +200,7 @@ size_t lf_readable_time(char* buffer, instant_t time) {
     }
     size_t printed = lf_comma_separated_time(buffer, time);
     buffer += printed;
-    snprintf(buffer, 3, " %s", units);
+    snprintf(buffer, 4, " %s", units);
     buffer += strlen(units) + 1;
   }
   return (buffer - original_buffer);

@@ -341,7 +341,7 @@ token_freed _lf_done_using(lf_token_t* token);
  * to avoid memory leaks.
  * @param env Environment in which we are executing.
  */
-void _lf_free_token_copies(struct environment_t* env);
+void _lf_free_token_copies(void);
 
 #endif /* LF_TOKEN_H */
 /** @} */
