@@ -42,7 +42,8 @@ extern instant_t start_time;
  */
 #define MAX_STALL_INTERVAL MSEC(1)
 
-#define LAG_CONTROL_DIV  2
+#define KI_DIV  2
+#define KI_MUL 3
 
 /**
  * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
@@ -251,7 +252,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
     if (wait_until_time < now) {
       return true;
     } else if (wait_until_time_with_adjustment < now && wait_until_time > now) {
-      error_control = error_control - ((now - wait_until_time_with_adjustment) / LAG_CONTROL_DIV);
+      error_control = error_control - (((now - wait_until_time_with_adjustment) * KI_MUL) / KI_DIV);
       while (wait_until_time > lf_time_physical()){}
       return true;
     }
@@ -277,7 +278,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
       
       //Calculate the lag and update the average
       instant_t lag = lf_time_physical() - wait_until_time;
-      error_control = error_control + (lag / LAG_CONTROL_DIV);
+      error_control = error_control + ((lag * KI_MUL) / KI_DIV);
       // lag = lag - ave_lag;
       // lag_count++;
       // lag = lag / lag_count;
