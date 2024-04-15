@@ -987,8 +987,6 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   }
 
   instant_t timestamp = extract_int64(&(buffer[1]));
-
-  tag_t tag = {.time = timestamp, .microstep = 0};
   effective_start_tag = extract_tag(&(buffer[9]));
 
   // Trace the event when tracing is enabled.
@@ -2106,7 +2104,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 
     // Extract the ID of the sending federate.
     uint16_t remote_fed_id = extract_uint16((unsigned char*)&(buffer[1]));
-    bool remote_fed_is_transient = buffer[1 + sizeof(uint16_t)];
+    // bool remote_fed_is_transient = buffer[1 + sizeof(uint16_t)];
     LF_PRINT_DEBUG("Received sending federate ID %d.", remote_fed_id);
 
     // Trace the event when tracing is enabled
@@ -2692,8 +2690,14 @@ void lf_stop() {
   LF_PRINT_LOG("Federate is stopping.");
 }
 
-char* lf_get_federates_bin_directory() { return LF_FEDERATES_BIN_DIRECTORY; }
+char* lf_get_federates_bin_directory() {
+#ifdef LF_FEDERATES_BIN_DIRECTORY
+  return LF_FEDERATES_BIN_DIRECTORY;
+#else
+  return NULL;
+#endif
+}
 
-char* lf_get_federation_id() { return federation_metadata.federation_id; }
+const char* lf_get_federation_id() { return federation_metadata.federation_id; }
 
 #endif

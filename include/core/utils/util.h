@@ -215,6 +215,6 @@ char* lf_get_federates_bin_directory();
  *
  * This function is useful for creating federates on runtime.
  */
-char* lf_get_federation_id();
+const char* lf_get_federation_id();
 
 #endif /* UTIL_H */
