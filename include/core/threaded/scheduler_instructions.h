@@ -2,6 +2,9 @@
  * @author Shaokai Lin <shaokai@berkeley.edu>
  * @brief Format of the instruction set
  */
+#ifndef SCHEDULER_INSTRUCTIONS_H
+#define SCHEDULER_INSTRUCTIONS_H
+
 typedef enum {
     ADD,
     ADDI,
@@ -43,14 +46,32 @@ typedef union {
 } operand_t;
 
 /**
+ * @brief Virtual instruction function pointer
+ */
+typedef void (*function_virtual_instruction_t)(
+    lf_scheduler_t* scheduler, 
+    size_t worker_number, 
+    operand_t op1, 
+    operand_t op2, 
+    operand_t op3, 
+    bool debug, 
+    size_t* pc, 
+    reaction_t** returned_reaction, 
+    bool* exit_loop);
+
+/**
  * @brief This struct represents a PRET VM instruction for C platforms.
  * There is an opcode and three operands. The operands are unions so they
  * can be either a pointer or an immediate
  * 
  */
 typedef struct inst_t {
+    function_virtual_instruction_t func;
     opcode_t opcode;
     operand_t op1;
     operand_t op2;
     operand_t op3;
+    bool debug;
 } inst_t;
+
+#endif

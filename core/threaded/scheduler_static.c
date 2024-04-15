@@ -50,6 +50,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "util.h"
 
+#define TRACE_ALL_INSTRUCTIONS false
+#define SPIN_WAIT_THRESHOLD MSEC(100)
+
 /////////////////// External Variables /////////////////////////
 // Global variable defined in tag.c:
 extern instant_t start_time;
@@ -70,38 +73,50 @@ extern volatile reg_t binary_sema[];
 /**
  * @brief The implementation of the ADD instruction
  */
-void execute_inst_ADD(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_ADD(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
+    int pc_orig = (int) *pc;
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_ADD_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     reg_t *dst = op1.reg;
     reg_t *src = op2.reg;
     reg_t *src2 = op3.reg;
     *dst = *src + *src2;
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_ADD_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the ADDI instruction
  */
-void execute_inst_ADDI(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_ADDI(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     reg_t *dst = op1.reg;
     reg_t *src = op2.reg;
     // FIXME: Will there be problems if instant_t adds reg_t?
     *dst = *src + op3.imm;
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the ADV instruction
  */
-void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_ADV_starts(scheduler->env->trace, worker_number, (int) *pc);
-
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_ADV_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     reg_t *base = op2.reg;
     reg_t *inc  = op3.reg;
     self_base_t* reactor =
@@ -118,178 +133,237 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     }
 
     *pc += 1; // Increment pc.
-
-    tracepoint_static_scheduler_ADV_ends(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_ADV_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the ADVI instruction
  */
-void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_ADVI_starts(scheduler->env->trace, worker_number, (int) *pc);
-
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_ADVI_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     self_base_t *reactor = (self_base_t*) op1.reg;
     reg_t *base = op2.reg;
     reactor->tag.time = *base + op3.imm;
     reactor->tag.microstep = 0;
-    
-    // Reset all "is_present" fields of the output ports of the reactor
-    // Doing this here has the major implication that ADV has to execute AFTER 
-    // all downstream reactions have finished, since it is modifying state that is
-    // visible to those reactions.
-    for (int i = 0; i < reactor->num_output_ports; i++) {
-        reactor->output_ports[i]->is_present = false;
-    }
-   
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu advance reactor time (%p) from %lld to %lld by %lld", *pc, worker_number, &(reactor->tag.time), *base, reactor->tag.time, op3.imm);
     *pc += 1; // Increment pc.
-
-    tracepoint_static_scheduler_ADVI_ends(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_ADVI_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the BEQ instruction
  */
-void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_BEQ_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     // These NULL checks allow _rs1 and _rs2 to be uninitialized in the static
     // schedule, which can save a few lines in the schedule. But it is debatable
     // whether this is good practice.
-    // lf_print("_rs1 = %p, _rs2 = %p", _rs1, _rs2);
-    if (_rs1 != NULL) LF_PRINT_DEBUG("*_rs1 = %lld\n", *_rs1);
-    if (_rs2 != NULL) LF_PRINT_DEBUG("*_rs2 = %lld\n", *_rs2);
+    if (debug) {
+        lf_print("DEBUG: _rs1 = %p, _rs2 = %p", _rs1, _rs2);
+        if (_rs1 != NULL) lf_print("DEBUG: *_rs1 = %lld", *_rs1);
+        if (_rs2 != NULL) lf_print("DEBUG: *_rs2 = %lld", *_rs2);
+    }
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 == *_rs2) *pc = op3.imm;
     else *pc += 1;
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_BEQ_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the BGE instruction
  */
-void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_BGE_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     LF_PRINT_DEBUG("Worker %zu: BGE : operand 1 = %lld, operand 2 = %lld", worker_number, *_rs1, *_rs2);
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 >= *_rs2) *pc = op3.imm;
     else *pc += 1;
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_BGE_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the BLT instruction
  */
-void execute_inst_BLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_BLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_BLT_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 < *_rs2) *pc = op3.imm;
     else *pc += 1;
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_BLT_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the BNE instruction
  */
-void execute_inst_BNE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_BNE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_BNE_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     if (_rs1 != NULL && _rs2 != NULL && *_rs1 != *_rs2) *pc = op3.imm;
     else *pc += 1;
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_BNE_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the DU instruction
  */
-void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_DU_starts(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_DU_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     // FIXME: There seems to be an overflow problem.
     // When wakeup_time overflows but lf_time_physical() doesn't,
     // _lf_interruptable_sleep_until_locked() terminates immediately.
     reg_t *src = op1.reg;
+    instant_t current_time = lf_time_physical();
     instant_t wakeup_time = *src + op2.imm;
-    LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, op1: %lld, op2: %lld, current_physical_time: %lld\n", start_time, wakeup_time, *src, op2.imm, lf_time_physical());
-    LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
-    _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
-    LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
+    instant_t wait_interval = wakeup_time - current_time;
+    // LF_PRINT_DEBUG("*** start_time: %lld, wakeup_time: %lld, op1: %lld, op2: %lld, current_physical_time: %lld\n", start_time, wakeup_time, *src, op2.imm, lf_time_physical());
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu delaying, current_physical_time: %lld, wakeup_time: %lld, wait_interval: %lld", *pc, worker_number, current_time, wakeup_time, wait_interval);
+    if (wait_interval > 0) {
+        // if (wait_interval < SPIN_WAIT_THRESHOLD) {
+        //     // Spin wait if the wait interval is less than 1 ms.
+        //     while (lf_time_physical() < wakeup_time);
+        // } else {
+        //     // Otherwise sleep.
+        //     _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
+        // }
+        while (lf_time_physical() < wakeup_time);
+    }
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu done delaying", *pc, worker_number);
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the EXE instruction
  */
-void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    if (op3.imm == ULLONG_MAX) {
-        tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc);
-    }
-    else {
-        tracepoint_static_scheduler_EXE_reaction_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc, (int) op3.imm);
-    }
+    int pc_orig = (int) *pc;
+    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);}
+#if TRACE_ALL_INSTRUCTIONS
+    else {tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);}
+#endif
     function_generic_t function = (function_generic_t)(uintptr_t)op1.reg;
     void *args = (void*)op2.reg;
     // Execute the function directly.
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu executing reaction", *pc, worker_number);
     function(args);
+    LF_PRINT_DEBUG("*** [Line %zu] Worker %zu done executing reaction", *pc, worker_number);
     *pc += 1; // Increment pc.
-    if (op3.imm == ULLONG_MAX) {
-        tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc);
-    }
-    else {
-        tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, (int) *pc, (int) op3.imm);
-    }
+    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig, (int) op3.imm);}
+#if TRACE_ALL_INSTRUCTIONS
+    else {tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, (self_base_t *) op2.reg, worker_number, pc_orig);}
+#endif
 }
 
 
 /**
  * @brief The implementation of the WLT instruction
  */
-void execute_inst_WLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_WLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_WLT_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
     reg_t *var = op1.reg;
     while(*var >= op2.imm);
     LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
     *pc += 1; // Increment pc.
-    // tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_WLT_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the WU instruction
  */
-void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
     reg_t *var = op1.reg;
     while(*var < op2.imm);
     LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the JAL instruction
  */
-void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_JAL_starts(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_JAL_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     // Use the destination register as the return address and, if the
     // destination register is not the zero register, store pc+1 in it.
     reg_t *destReg = op1.reg;
     if (destReg != &zero) *destReg = *pc + 1;
     *pc = op2.imm;
-    tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the JALR instruction
  */
-void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_JALR_starts(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_JALR_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     // Use the destination register as the return address and, if the
     // destination register is not the zero register, store pc+1 in it.
     reg_t *destReg = op1.reg;
@@ -297,114 +371,24 @@ void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_
     // Set pc to base addr + immediate.
     reg_t *baseAddr = op2.reg;
     *pc = *baseAddr + op3.imm;
-    tracepoint_static_scheduler_JALR_ends(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_JALR_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 /**
  * @brief The implementation of the STP instruction
  */
-void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
+void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_STP_starts(scheduler->env->trace, worker_number, (int) *pc);
+#if TRACE_ALL_INSTRUCTIONS
+    int pc_orig = (int) *pc;
+    tracepoint_static_scheduler_STP_starts(scheduler->env->trace, worker_number, pc_orig);
+#endif
     *exit_loop = true;
-    tracepoint_static_scheduler_STP_ends(scheduler->env->trace, worker_number, (int) *pc);
-}
-
-/**
- * @brief Execute an instruction
- * 
- * @param opcode the opcode
- * @param op1 the first operand
- * @param op2 the second operand
- * @param pc a pointer to the program counter
- * @param returned_reaction a pointer to a reaction to be executed 
- * 
- * FIXME: This feels like a bad design in the abstraction.
- * @param exit_loop a pointer to a boolean indicating whether
- *                  the outer while loop should be exited
- */
-void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t opcode, operand_t op1, operand_t op2, operand_t op3,
-    size_t* pc, reaction_t** returned_reaction, bool* exit_loop) {
-    char* op_str = NULL;
-    switch (opcode) {
-        case ADD:
-            op_str = "ADD";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_ADD(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case ADDI:
-            op_str = "ADDI";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_ADDI(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case ADV:
-            op_str = "ADV";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_ADV(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case ADVI:
-            op_str = "ADVI";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_ADVI(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case BEQ:
-            op_str = "BEQ";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_BEQ(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case BGE:
-            op_str = "BGE";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_BGE(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case BLT:
-            op_str = "BLT";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_BLT(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case BNE:
-            op_str = "BNE";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_BNE(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case DU:  
-            op_str = "DU";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_DU(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case EXE:
-            op_str = "EXE";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_EXE(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case JAL:
-            op_str = "JAL";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_JAL(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case JALR:
-            op_str = "JALR";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_JALR(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case STP:
-            op_str = "STP";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_STP(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case WLT:
-            op_str = "WLT";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_WLT(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        case WU:
-            op_str = "WU";
-            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-            execute_inst_WU(scheduler, worker_number, op1, op2, op3, pc, returned_reaction, exit_loop);
-            break;
-        default:
-            lf_print_error_and_exit("Invalid instruction: %d", opcode);
-    }
+#if TRACE_ALL_INSTRUCTIONS
+    tracepoint_static_scheduler_STP_ends(scheduler->env->trace, worker_number, pc_orig);
+#endif
 }
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
@@ -487,19 +471,24 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
     reaction_t*     returned_reaction   = NULL;
     bool            exit_loop           = false;
     size_t*         pc                  = &scheduler->pc[worker_number];
+
+    function_virtual_instruction_t func;
     opcode_t        opcode;
     operand_t       op1;
     operand_t       op2;
     operand_t       op3;
+    bool            debug;
 
     while (!exit_loop) {
-        opcode  = current_schedule[*pc].opcode;
+        func = current_schedule[*pc].func;
+        // opcode = current_schedule[*pc].opcode; // FIXME: Opcode is unused.
         op1 = current_schedule[*pc].op1;
         op2 = current_schedule[*pc].op2;
         op3 = current_schedule[*pc].op3;
+        debug = current_schedule[*pc].debug;
 
         // Execute the current instruction
-        execute_inst(scheduler, worker_number, opcode, op1, op2, op3, pc,
+        func(scheduler, worker_number, op1, op2, op3, debug, pc,
                     &returned_reaction, &exit_loop);
     }
 
