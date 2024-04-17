@@ -1,5 +1,15 @@
+/**
+ * @file
+ * @author Edward A. Lee (eal@berkeley.edu)
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
+ */
 #ifndef REACTOR_THREADED_H
 #define REACTOR_THREADED_H
+
 #include "lf_types.h"
 
 /**
@@ -17,7 +27,7 @@ void try_advance_level(environment_t* env, volatile size_t* next_reaction_level)
  * message to downstream federates if a given network output port is not present.
  * @param env The environment in which we are executing
  */
-void enqueue_port_absent_reactions(environment_t* env);
+void lf_enqueue_port_absent_reactions(environment_t* env);
 
 /**
  * Raise a barrier to prevent the current tag for the specified environment from advancing
@@ -48,7 +58,7 @@ void enqueue_port_absent_reactions(environment_t* env);
  * If future_tag is in the past (or equals to current logical time), the runtime
  * will freeze advancement of logical time.
  */
-void _lf_increment_tag_barrier(environment_t *env, tag_t future_tag);
+void _lf_increment_tag_barrier(environment_t* env, tag_t future_tag);
 
 /**
  * @brief Version of _lf_increment_tag_barrier to call when the caller holds the mutex.
@@ -60,7 +70,7 @@ void _lf_increment_tag_barrier(environment_t *env, tag_t future_tag);
  * If future_tag is in the past (or equals to current logical time), the runtime
  * will freeze advancement of logical time.
  */
-void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag);
+void _lf_increment_tag_barrier_locked(environment_t* env, tag_t future_tag);
 
 /**
  * Decrement the total number of pending barrier requests for the environment tag barrier.
@@ -79,8 +89,8 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag);
 void _lf_decrement_tag_barrier_locked(environment_t* env);
 
 int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag);
-void synchronize_with_other_federates(environment_t* env);
-bool wait_until(environment_t* env, instant_t logical_time_ns, lf_cond_t* condition);
+void lf_synchronize_with_other_federates(void);
+bool wait_until(instant_t logical_time_ns, lf_cond_t* condition);
 tag_t get_next_event_tag(environment_t* env);
 tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply);
 void _lf_next_locked(environment_t* env);

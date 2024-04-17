@@ -27,12 +27,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  @section DESCRIPTION
  @brief Header file for permuted mixed-radix numbers used in Lingua Franca programs.
- 
+
  A mixed radix number is a number representation where each digit can have
  a distinct radix. The radixes are given by a list of numbers, r0, r1, ... , rn,
  where r0 is the radix of the lowest-order digit and rn is the radix of the
  highest order digit that has a specified radix.
- 
+
  A permuted mixed radix number is a mixed radix number that, when incremented,
  increments the digits in the order given by the permutation matrix.
  For an ordinary mixed radix number, the permutation matrix is
@@ -42,14 +42,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  set to 0 and the d1 digit will be incremented. If it overflows, the
  next digit is incremented.  If the last digit overflows, then the
  number wraps around so that all digits become zero.
- 
+
  The functions defined here are pretty limited and assume that the
  caller is well behaved. These functions are used in code generated
  by the Lingua-Franca compiler and are not intended to be used by
  end users. For example, there is very limited error checking and
  misuse of the functions is likely to result in assertion errors
  and/or segmentation faults that will cause the program to exit.
- 
+
  To use these functions, you can create the arrays on the stack
  as follows:
  ```
@@ -99,10 +99,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * assumed to have the same size as given by the size field.
  */
 typedef struct mixed_radix_int_t {
-	int size;
-	int* digits;
-	int* radixes;
-	int* permutation;
+  int size;
+  int* digits;
+  int* radixes;
+  int* permutation;
 } mixed_radix_int_t;
 
 /**

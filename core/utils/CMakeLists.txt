@@ -1,9 +1,11 @@
-set(UTIL_SOURCES vector.c pqueue_base.c pqueue_tag.c pqueue.c util.c semaphore.c)
+set(UTIL_SOURCES vector.c pqueue_base.c pqueue_tag.c pqueue.c util.c)
 
-list(APPEND INFO_SOURCES ${UTIL_SOURCES})
+if(NOT DEFINED LF_SINGLE_THREADED)
+  list(APPEND UTIL_SOURCES lf_semaphore.c)
+endif()
 
 list(TRANSFORM UTIL_SOURCES PREPEND utils/)
-target_sources(core PRIVATE ${UTIL_SOURCES})
+list(APPEND REACTORC_SOURCES ${UTIL_SOURCES})
 
 # Include sources from subdirectories
 include(utils/hashset/CMakeLists.txt)

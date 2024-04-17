@@ -37,9 +37,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TYPE_CONVERTER_H_
 #define TYPE_CONVERTER_H_
 
-#define PASTE(x,y) x ## y
+#define PASTE(x, y) x##y
 
-#define RESOLVE(i, o, in)  PASTE(convert__##i, _to__##o)(in)
+#define RESOLVE(i, o, in) PASTE(convert__##i, _to__##o)(in)
 
 /// @name DO_CONVERT
 /// @param fromType Typename of <code> value </code> field
