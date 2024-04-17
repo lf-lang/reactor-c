@@ -136,9 +136,6 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return);
 
-/**
- * Thread scheduling API.
- */
 #define LF_SCHED_MAX_PRIORITY 99
 #define LF_SCHED_MIN_PRIORITY 0
 /**

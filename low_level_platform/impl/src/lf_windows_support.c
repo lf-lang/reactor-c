@@ -187,6 +187,15 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
   return 0;
 }
 
+/**
+ * Real-time scheduling API not implemented for Windows.
+ */
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) { return -1; }
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) { return -1; }
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) { return -1; }
+
 int lf_mutex_init(_lf_critical_section_t* critical_section) {
   // Set up a recursive mutex
   InitializeCriticalSection((PCRITICAL_SECTION)critical_section);

@@ -158,6 +158,9 @@ lf_thread_t lf_thread_self() { return k_current_get(); }
 
 int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) { return k_thread_cpu_pin(thread, cpu_number); }
 
+/**
+ * Real-time scheduling API
+ */
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
   k_thread_priority_set(thread, LF_SCHED_MAX_PRIORITY - priority);
   return 0;

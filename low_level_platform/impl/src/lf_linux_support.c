@@ -43,6 +43,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_os_single_threaded_support.c"
 #else
 #include "lf_POSIX_threads_support.c"
+
 int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
   // First verify that we have num_cores>cpu_number
   if (lf_available_cores() <= cpu_number) {
