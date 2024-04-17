@@ -108,8 +108,7 @@ int lf_mutex_lock(lf_mutex_t* mutex);
 int lf_available_cores();
 
 /**
- * Returns the thread ID of the calling thread
- *
+ * Returns the lf_thread_t of the calling thread.
  */
 lf_thread_t lf_thread_self();
 
@@ -118,7 +117,6 @@ lf_thread_t lf_thread_self();
  * getting passed arguments. The new handle is stored in thread_id.
  *
  * @return 0 on success, platform-specific error number otherwise.
- *
  */
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments);
 
@@ -138,15 +136,13 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return);
 
-// The following API introduce the ability to change how the LF workers are sheduled
-// by the underlying thread scheduling. This API is still experimental and future
-// changes are expected.
-
+/**
+ * Thread scheduling API.
+ */
 #define LF_SCHED_MAX_PRIORITY 99
 #define LF_SCHED_MIN_PRIORITY 0
 /**
  * @brief The thread scheduling policies.
- *
  */
 typedef enum {
   LF_SCHED_FAIR,      // Non real-time scheduling policy. Corresponds to SCHED_OTHER
