@@ -26,17 +26,6 @@
 static pqueue_pri_t pqueue_tag_get_priority(void* element) { return (pqueue_pri_t)element; }
 
 /**
- * @brief Callback comparison function for the tag-based priority queue.
- * Return 0 if the first argument is less than second and 1 otherwise.
- * This function is of type pqueue_cmp_pri_f.
- * @param priority1 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
- * @param priority2 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
- */
-static int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2) {
-  return (lf_tag_compare(((pqueue_tag_element_t*)priority1)->tag, ((pqueue_tag_element_t*)priority2)->tag) > 0);
-}
-
-/**
  * @brief Callback function to determine whether two elements are equivalent.
  * Return 1 if the tags contained by given elements are identical, 0 otherwise.
  * This function is of type pqueue_eq_elem_f.
@@ -75,9 +64,19 @@ static void pqueue_tag_print_element(void* element) {
 //////////////////
 // Functions defined in pqueue_tag.h.
 
+int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2) {
+  return (lf_tag_compare(((pqueue_tag_element_t*)priority1)->tag, ((pqueue_tag_element_t*)priority2)->tag));
+}
+
 pqueue_tag_t* pqueue_tag_init(size_t initial_size) {
   return (pqueue_tag_t*)pqueue_init(initial_size, pqueue_tag_compare, pqueue_tag_get_priority, pqueue_tag_get_position,
                                     pqueue_tag_set_position, pqueue_tag_matches, pqueue_tag_print_element);
+}
+
+pqueue_tag_t* pqueue_tag_init_customize(size_t initial_size, pqueue_cmp_pri_f cmppri, pqueue_eq_elem_f eqelem,
+                                        pqueue_print_entry_f prt) {
+  return (pqueue_tag_t*)pqueue_init(initial_size, cmppri, pqueue_tag_get_priority, pqueue_tag_get_position,
+                                    pqueue_tag_set_position, eqelem, prt);
 }
 
 void pqueue_tag_free(pqueue_tag_t* q) {
@@ -101,11 +100,14 @@ int pqueue_tag_insert_tag(pqueue_tag_t* q, tag_t t) {
 }
 
 pqueue_tag_element_t* pqueue_tag_find_with_tag(pqueue_tag_t* q, tag_t t) {
-  // Create elements on the stack. These elements are only needed during
-  // the duration of this function call, so putting them on the stack is OK.
+  // Create an element on the stack. This element is only needed during
+  // the duration of this function call, so putting it on the stack is OK.
   pqueue_tag_element_t element = {.tag = t, .pos = 0, .is_dynamic = false};
-  pqueue_tag_element_t forever = {.tag = FOREVER_TAG, .pos = 0, .is_dynamic = false};
-  return pqueue_find_equal((pqueue_t*)q, (void*)&element, (pqueue_pri_t)&forever);
+  return pqueue_find_same_priority((pqueue_t*)q, (void*)&element);
+}
+
+pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t* q, pqueue_tag_element_t* e) {
+  return pqueue_find_equal_same_priority((pqueue_t*)q, (void*)e);
 }
 
 int pqueue_tag_insert_if_no_match(pqueue_tag_t* q, tag_t t) {
@@ -149,3 +151,5 @@ void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t) {
     head = pqueue_tag_peek_tag(q);
   }
 }
+
+void pqueue_tag_dump(pqueue_tag_t* q) { pqueue_dump((pqueue_t*)q, pqueue_tag_print_element); }

@@ -1255,9 +1255,6 @@ static void handle_provisional_tag_advance_grant() {
   // (which it should be). Do not do this if the federate has not fully
   // started yet.
 
-  instant_t dummy_event_time = PTAG.time;
-  microstep_t dummy_event_relative_microstep = PTAG.microstep;
-
   if (lf_tag_compare(env->current_tag, PTAG) == 0) {
     // The current tag can equal the PTAG if we are at the start time
     // or if this federate has been able to advance time to the current
@@ -1281,22 +1278,18 @@ static void handle_provisional_tag_advance_grant() {
     // Nothing more to do.
     LF_MUTEX_UNLOCK(&env->mutex);
     return;
-  } else if (PTAG.time == env->current_tag.time) {
-    // We now know env->current_tag < PTAG, but the times are equal.
-    // Adjust the microstep for scheduling the dummy event.
-    dummy_event_relative_microstep -= env->current_tag.microstep;
   }
   // We now know env->current_tag < PTAG.
 
-  if (dummy_event_time != FOREVER) {
-    // Schedule a dummy event at the specified time and (relative) microstep.
+  if (PTAG.time != FOREVER) {
+    // Schedule a dummy event at the specified tag.
     LF_PRINT_DEBUG("At tag " PRINTF_TAG ", inserting into the event queue a dummy event "
-                   "with time " PRINTF_TIME " and (relative) microstep " PRINTF_MICROSTEP ".",
-                   env->current_tag.time - start_time, env->current_tag.microstep, dummy_event_time - start_time,
-                   dummy_event_relative_microstep);
-    // Dummy event points to a NULL trigger and NULL real event.
-    event_t* dummy = _lf_create_dummy_events(env, NULL, dummy_event_time, NULL, dummy_event_relative_microstep);
-    pqueue_insert(env->event_q, dummy);
+                   "with time " PRINTF_TIME " and microstep " PRINTF_MICROSTEP ".",
+                   env->current_tag.time - start_time, env->current_tag.microstep, PTAG.time - start_time,
+                   PTAG.microstep);
+    // Dummy event points to a NULL trigger.
+    event_t* dummy = _lf_create_dummy_events(env, PTAG);
+    pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)dummy);
   }
 
   LF_MUTEX_UNLOCK(&env->mutex);
@@ -1685,7 +1678,6 @@ void lf_terminate_execution(environment_t* env) {
 
 void lf_connect_to_federate(uint16_t remote_federate_id) {
   int result = -1;
-  int count_retries = 0;
 
   // Ask the RTI for port number of the remote federate.
   // The buffer is used for both sending and receiving replies.
@@ -1693,7 +1685,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   unsigned char buffer[sizeof(int32_t) + INET_ADDRSTRLEN + 1];
   int port = -1;
   struct in_addr host_ip_addr;
-  int count_tries = 0;
+  instant_t start_connect = lf_time_physical();
   while (port == -1 && !_lf_termination_executed) {
     buffer[0] = MSG_TYPE_ADDRESS_QUERY;
     // NOTE: Sending messages in little endian.
@@ -1731,7 +1723,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // remote federate has not yet sent an MSG_TYPE_ADDRESS_ADVERTISEMENT message to the RTI.
     // Sleep for some time before retrying.
     if (port == -1) {
-      if (count_tries++ >= CONNECT_MAX_RETRIES) {
+      if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
         lf_print_error_and_exit("TIMEOUT obtaining IP/port for federate %d from the RTI.", remote_federate_id);
       }
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
@@ -1752,8 +1744,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   LF_PRINT_LOG("Received address %s port %d for federate %d from RTI.", hostname, uport, remote_federate_id);
 #endif
 
-  // Iterate until we either successfully connect or exceed the number of
-  // attempts given by CONNECT_MAX_RETRIES.
+  // Iterate until we either successfully connect or we exceed the CONNECT_TIMEOUT
+  start_connect = lf_time_physical();
   int socket_id = -1;
   while (result < 0 && !_lf_termination_executed) {
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
@@ -1779,12 +1771,11 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
       // Note that this should not really happen since the remote federate should be
       // accepting socket connections. But possibly it will be busy (in process of accepting
       // another socket connection?). Hence, we retry.
-      count_retries++;
-      if (count_retries > CONNECT_MAX_RETRIES) {
-        // If the remote federate is not accepting the connection after CONNECT_MAX_RETRIES
+      if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
+        // If the remote federate is not accepting the connection after CONNECT_TIMEOUT
         // treat it as a soft error condition and return.
-        lf_print_error("Failed to connect to federate %d after %d retries. Giving up.", remote_federate_id,
-                       CONNECT_MAX_RETRIES);
+        lf_print_error("Failed to connect to federate %d with timeout: " PRINTF_TIME ". Giving up.", remote_federate_id,
+                       CONNECT_TIMEOUT);
         return;
       }
       lf_print_warning("Could not connect to federate %d. Will try again every" PRINTF_TIME "nanoseconds.\n",
@@ -1866,10 +1857,10 @@ void lf_connect_to_rti(const char* hostname, int port) {
   _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
 
   int result = -1;
-  int count_retries = 0;
   struct addrinfo* res = NULL;
 
-  while (count_retries++ < CONNECT_MAX_RETRIES && !_lf_termination_executed) {
+  instant_t start_connect = lf_time_physical();
+  while (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT) && !_lf_termination_executed) {
     if (res != NULL) {
       // This is a repeated attempt.
       if (_fed.socket_TCP_RTI >= 0)
@@ -1891,7 +1882,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
         // Reconstruct the address info.
         rti_address(hostname, uport, &res);
       }
-      lf_print("Trying RTI again on port %d (attempt %d).", uport, count_retries);
+      lf_print("Trying RTI again on port %d.", uport);
     } else {
       // This is the first attempt.
       rti_address(hostname, uport, &res);
@@ -1982,7 +1973,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
     }
   }
   if (result < 0) {
-    lf_print_error_and_exit("Failed to connect to RTI after %d tries.", CONNECT_MAX_RETRIES);
+    lf_print_error_and_exit("Failed to connect to RTI with timeout: " PRINTF_TIME, CONNECT_TIMEOUT);
   }
 
   freeaddrinfo(res); /* No longer needed */
@@ -2410,8 +2401,9 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       // Create a dummy event that will force this federate to advance time and subsequently
       // enable progress for downstream federates. Increment the time by ADVANCE_MESSAGE_INTERVAL
       // to prevent too frequent dummy events.
-      event_t* dummy = _lf_create_dummy_events(env, NULL, tag.time + ADVANCE_MESSAGE_INTERVAL, NULL, 0);
-      pqueue_insert(env->event_q, dummy);
+      tag_t dummy_event_tag = (tag_t){.time = tag.time + ADVANCE_MESSAGE_INTERVAL, .microstep = tag.microstep};
+      event_t* dummy = _lf_create_dummy_events(env, dummy_event_tag);
+      pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)dummy);
     }
 
     LF_PRINT_DEBUG("Inserted a dummy event for logical time " PRINTF_TIME ".", tag.time - lf_time_start());
