@@ -108,7 +108,7 @@ int lf_mutex_lock(lf_mutex_t* mutex);
 int lf_available_cores();
 
 /**
- * Returns the lf_thread_t of the calling thread.
+ * @brief Returns the lf_thread_t of the calling thread.
  */
 lf_thread_t lf_thread_self();
 
