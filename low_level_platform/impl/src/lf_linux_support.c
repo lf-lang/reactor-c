@@ -35,8 +35,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _GNU_SOURCE // Needed to get access to Linux thread-scheduling API
 #include "platform/lf_linux_support.h"
+#include "platform/lf_platform_util.h"
 #include "low_level_platform.h"
-#include "lf_platform_util.h"
 
 #include "platform/lf_unix_clock_support.h"
 

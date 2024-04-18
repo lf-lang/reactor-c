@@ -1,5 +1,5 @@
 #include "low_level_platform.h"
-#include "lf_platform_util.h"
+#include "platform/lf_platform_util.h"
 
 int map_priorities(int priority, int dest_min, int dest_max) {
   // Check if priority is within the legal range
