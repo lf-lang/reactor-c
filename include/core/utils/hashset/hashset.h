@@ -1,5 +1,31 @@
 /* -*- Mode: C; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-/*
+/**
+ * @file hashset.h
+ * @brief A modified hash set implementation in C from: https://github.com/avsej/hashset.c
+ *
+ * ## Example
+ * 
+ * <pre>
+
+    #include "hashset.h"
+
+    char *foo = "foo";
+    char *missing = "missing";
+    hashset_t set = hashset_create(3);
+
+    if (set == NULL) {
+    	fprintf(stderr, "failed to create hashset instance\n");
+    	abort();
+    }
+
+    hashset_add(set, foo);
+    assert(hashset_is_member(set, foo) == 1);
+    assert(hashset_is_member(set, missing) == 0);
+
+ * The corresponding .c files are in reactor-c/core/utils/hashset
+ *
+ * ## License
+ * 
  *     Copyright 2012 Couchbase, Inc.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,6 +67,7 @@ typedef struct hashset_st* hashset_t;
 
 /**
  * @brief Create a hashset instance.
+ * 
  * The returned value is a pointer.
  * The caller must call hashset_destroy() to free allocated memory.
  * @param nbits The log base 2 of the initial capacity of the hashset.
@@ -59,6 +86,7 @@ size_t hashset_num_items(hashset_t set);
 
 /**
  * @brief Add a pointer to the hashset.
+ * 
  * Note that 0 and 1 are special values, meaning nil and deleted items.
  * This function will return -1 indicating error if you try to add 0 or 1.
  * This function may resize the hashset if it is approaching capacity.
@@ -68,6 +96,7 @@ int hashset_add(hashset_t set, void* item);
 
 /**
  * @brief Remove an item from the hashset.
+ * 
  * Return non-zero if the item was removed and zero if the item
  * is not on the hashset.
  */
