@@ -43,7 +43,7 @@ else()
     message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Zephyr, Nrf52 and RP2040.")
 endif()
 
-list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/platform_internal.c)
+list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/lf_platform_util.c)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     if(${LF_ZEPHYR_CLOCK_COUNTER})
@@ -68,6 +68,7 @@ lf_enable_compiler_warnings(lf-low-level-platform-impl)
 
 target_link_libraries(lf-low-level-platform-impl PRIVATE lf::low-level-platform-api)
 target_link_libraries(lf-low-level-platform-impl PUBLIC lf-logging-api)
+target_include_directories(lf-low-level-platform-impl PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 message(STATUS "Applying preprocessor definitions to platform...")

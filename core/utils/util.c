@@ -213,13 +213,3 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
   print_message_function = function;
   print_message_level = log_level;
 }
-
-int map(int value, int in_min, int in_max, int out_min, int out_max) {
-  // Check if value is within the input range
-  if (value < in_min || value > in_max) {
-    return -1;
-  }
-
-  // Perform the linear mapping
-  return out_min + ((out_max - out_min) / (in_max - in_min)) * (value - in_min);
-}
