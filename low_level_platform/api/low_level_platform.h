@@ -108,7 +108,7 @@ int lf_mutex_lock(lf_mutex_t* mutex);
 int lf_available_cores();
 
 /**
- * @brief Returns the lf_thread_t of the calling thread.
+ * @brief Return the lf_thread_t of the calling thread.
  */
 lf_thread_t lf_thread_self();
 
@@ -155,7 +155,7 @@ typedef struct {
 } lf_scheduling_policy_t;
 
 /**
- * This pins a lf_thread to a specific CPU
+ * @brief Pin a thread to a specific CPU.
  *
  * @param thread The thread
  * @param cpu_number the CPU ID
@@ -164,7 +164,8 @@ typedef struct {
 int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
 
 /**
- * Sets the priority of a thread. Priority ranges from 0 to 99 where a higher
+ * @brief Set the priority of a thread.
+ * Priority ranges from 0 to 99 where a higher
  * number indicates higher priority. Setting the priority of a thread only
  * makes sense if the thread is scheduled with LF_SCHED_TIMESLICE or LF_THREAD_PRIORITY
  *
@@ -175,7 +176,7 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
 int lf_thread_set_priority(lf_thread_t thread, int priority);
 
 /**
- * Sets the scheduling policy of a thread. This is based on the scheduling
+ * @brief Set the scheduling policy of a thread. This is based on the scheduling
  * concept from Linux explained here: https://man7.org/linux/man-pages/man7/sched.7.html
  * A scheduling policy is specific to a thread/worker. We have three policies
  * LF_SCHED_PRIORITY which corresponds to SCHED_FIFO on Linux.
