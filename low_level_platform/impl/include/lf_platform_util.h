@@ -1,5 +1,5 @@
-#ifndef PLATFORM_INTERNAL_H
-#define PLATFORM_INTERNAL_H
+#ifndef LF_PLATFORM_UTIL_H
+#define LF_PLATFORM_UTIL_H
 /**
  * @brief Maps a priority into a destination priority range.
  */
