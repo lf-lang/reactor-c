@@ -136,6 +136,7 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return);
 
+// Worker priorities range from 0 to 99 where 99 is the highest priority.
 #define LF_SCHED_MAX_PRIORITY 99
 #define LF_SCHED_MIN_PRIORITY 0
 /**
@@ -174,7 +175,12 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
 int lf_thread_set_priority(lf_thread_t thread, int priority);
 
 /**
- * Sets the scheduling policy of a thread.
+ * Sets the scheduling policy of a thread. This is based on the scheduling
+ * concept from Linux explained here: https://man7.org/linux/man-pages/man7/sched.7.html
+ * A scheduling policy is specific to a thread/worker. We have three policies
+ * LF_SCHED_PRIORITY which corresponds to SCHED_FIFO on Linux.
+ * LF_SCHED_TIMESLICE which corresponds to SCHED_RR on Linux.
+ * LF_SCHED_FAIR which corresponds to SCHED_OTHER on Linux.
  *
  * @return int 0 on success, platform-specific error number otherwise.
  */

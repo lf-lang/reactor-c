@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/lf_zephyr_board_support.h"
 #include "low_level_platform.h"
 #include "tag.h"
+#include "util.h"
 
 #include <zephyr/kernel.h>
 
@@ -162,7 +163,12 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) { return k_thread_cpu_
  * Real-time scheduling API
  */
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
-  k_thread_priority_set(thread, LF_SCHED_MAX_PRIORITY - priority);
+  int final_priority;
+  if (priority > LF_SCHED_MAX_PRIORITY || priority < LF_SCHED_MIN_PRIORITY) {
+    return -1;
+  }
+  final_priority = map(priority, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY, CONFIG_NUM_PREEMPT_PRIORITIES - 1, 0);
+  k_thread_priority_set(thread, final_priority);
   return 0;
 }
 
@@ -171,12 +177,18 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
   switch (policy->policy) {
     break;
   case LF_SCHED_TIMESLICE: {
-    k_thread_priority_set(thread, LF_SCHED_MAX_PRIORITY - policy->priority);
-    k_sched_time_slice_set(0, policy->time_slice / MSEC(1));
+    // This sets timeslicing for all threads on all priorities. I.e. it is not
+    // set on a per-thread basis.
+    k_sched_time_slice_set(policy->time_slice / MSEC(1), 0);
+    if (lf_thread_set_priority(thread, policy->priority) != 0) {
+      return -1;
+    }
     break;
   }
   case LF_SCHED_PRIORITY: {
-    k_thread_priority_set(thread, 99 - policy->priority);
+    if (lf_thread_set_priority(thread, policy->priority) != 0) {
+      return -1;
+    }
     break;
   }
   case LF_SCHED_FAIR:

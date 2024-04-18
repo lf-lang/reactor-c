@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _GNU_SOURCE // Needed to get access to Linux thread-scheduling API
 #include "platform/lf_linux_support.h"
 #include "low_level_platform.h"
+#include "util.h"
 
 #include "platform/lf_unix_clock_support.h"
 
@@ -58,7 +59,29 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
   return pthread_setaffinity_np(thread, sizeof(cpu_set), &cpu_set);
 }
 
-int lf_thread_set_priority(lf_thread_t thread, int priority) { return pthread_setschedprio(thread, priority); }
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
+  int posix_policy, min_pri, max_pri, final_priority;
+  struct sched_param schedparam;
+
+  if (priority > LF_SCHED_MAX_PRIORITY || priority < LF_SCHED_MIN_PRIORITY) {
+    return -1;
+  }
+
+  // Get the current scheduling policy
+  if (pthread_getschedparam(thread, &posix_policy, &schedparam) != 0) {
+    return -1;
+  }
+
+  min_pri = sched_get_priority_min(posix_policy);
+  max_pri = sched_get_priority_max(posix_policy);
+  if (min_pri == -1 || max_pri == -1) {
+    return -1;
+  }
+
+  final_priority = map(priority, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY, min_pri, max_pri);
+
+  return pthread_setschedprio(thread, final_priority);
+}
 
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
   int posix_policy;
@@ -76,11 +99,9 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
     break;
   case LF_SCHED_TIMESLICE:
     posix_policy = SCHED_RR;
-    schedparam.sched_priority = policy->priority;
     break;
   case LF_SCHED_PRIORITY:
     posix_policy = SCHED_FIFO;
-    schedparam.sched_priority = policy->priority;
     break;
   default:
     return -1;
@@ -90,6 +111,11 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
   // Write it back
   if (pthread_setschedparam(thread, posix_policy, &schedparam) != 0) {
     return -3;
+  }
+
+  // Set the priority
+  if (lf_thread_set_priority(thread, policy->priority) != 0) {
+    return -1;
   }
 
   return 0;
