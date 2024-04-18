@@ -25,7 +25,7 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/**
+/**i
  * @brief Platform support for the Linux operating system.
  *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
@@ -36,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _GNU_SOURCE // Needed to get access to Linux thread-scheduling API
 #include "platform/lf_linux_support.h"
 #include "low_level_platform.h"
-#include "util.h"
+#include "lf_platform_util.h"
 
 #include "platform/lf_unix_clock_support.h"
 
@@ -78,7 +78,10 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
     return -1;
   }
 
-  final_priority = map(priority, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY, min_pri, max_pri);
+  final_priority = map_priorities(priority, min_pri, max_pri);
+  if (final_priority < 0) {
+    return -1;
+  }
 
   return pthread_setschedprio(thread, final_priority);
 }

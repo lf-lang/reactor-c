@@ -35,7 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/lf_zephyr_board_support.h"
 #include "low_level_platform.h"
 #include "tag.h"
-#include "util.h"
+#include "lf_platform_util.h"
 
 #include <zephyr/kernel.h>
 
@@ -167,7 +167,12 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
   if (priority > LF_SCHED_MAX_PRIORITY || priority < LF_SCHED_MIN_PRIORITY) {
     return -1;
   }
-  final_priority = map(priority, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY, CONFIG_NUM_PREEMPT_PRIORITIES - 1, 0);
+
+  final_priority = map_priorities(priority, CONFIG_NUM_PREEMPT_PRIORITIES - 1, 0);
+  if (final_priority < 0) {
+    return -1;
+  }
+
   k_thread_priority_set(thread, final_priority);
   return 0;
 }
