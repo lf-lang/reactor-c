@@ -13,14 +13,12 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(LF_LOW_LEVEL_PLATFORM_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_clock_support.c
-        ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_syscall_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_linux_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_gcc_clang.c
     )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     set(LF_LOW_LEVEL_PLATFORM_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_clock_support.c
-        ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_syscall_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_macos_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_gcc_clang.c
     )
@@ -45,7 +43,7 @@ else()
     message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Zephyr, Nrf52 and RP2040.")
 endif()
 
-list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/platform_internal.c)
+list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/lf_platform_util.c)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     if(${LF_ZEPHYR_CLOCK_COUNTER})
