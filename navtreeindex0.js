@@ -11,6 +11,10 @@ var NAVTREEINDEX0 =
 "d0/d15/hashset__itr_8h.html#aabacd1abe5de3d3d03fb2b649a1f2ba5":[12,0,1,1,3,0,1,1],
 "d0/d15/hashset__itr_8h_source.html":[12,0,1,1,3,0,1],
 "d0/d29/main_8c.html":[12,0,0,0,1,0],
+"d0/d31/lf__platform__util_8c.html":[12,0,4,1,0,9],
+"d0/d31/lf__platform__util_8c.html#a2bce97def24140cdfc7041719d3c4006":[12,0,4,1,0,9,2],
+"d0/d31/lf__platform__util_8c.html#a60ad13713bf64d0ce969c85944c78129":[12,0,4,1,0,9,1],
+"d0/d31/lf__platform__util_8c.html#a9c1687eb39a627d51c8b28159ce0fb89":[12,0,4,1,0,9,0],
 "d0/d5e/python__port_8h.html":[12,0,6,0,3],
 "d0/d5e/python__port_8h.html#a8adb85eeed779d0d643fc0024bc72b89":[12,0,6,0,3,3],
 "d0/d5e/python__port_8h.html#ad6dcab80ca45bdb108bb8a2b634e6175":[12,0,6,0,3,2],
@@ -245,9 +249,5 @@ var NAVTREEINDEX0 =
 "d2/dab/structgeneric__port__capsule__struct.html#a8336292b3d416c8bcd8af788ab71ee9a":[11,0,14,4],
 "d2/dab/structgeneric__port__capsule__struct.html#aa3a80180dd9fe54b3beb52b198edc974":[11,0,14,2],
 "d2/dab/structgeneric__port__capsule__struct.html#ace74af8e4955d6950dc37ec76ab06e0d":[11,0,14,3],
-"d2/dab/structgeneric__port__capsule__struct.html#ade3934351aa6dc67dbf7e7a5febd4a36":[11,0,14,1],
-"d2/dcd/tag_8h.html":[12,0,7,0,0],
-"d2/dcd/tag_8h.html#a0d876ab54e766798e559c4f47340b359":[12,0,7,0,0,19],
-"d2/dcd/tag_8h.html#a183109e082a793ae85cec00d72e70d4b":[12,0,7,0,0,7],
-"d2/dcd/tag_8h.html#a2249e1bedc7aeaad64ed3fefdd6e7951":[12,0,7,0,0,10]
+"d2/dab/structgeneric__port__capsule__struct.html#ade3934351aa6dc67dbf7e7a5febd4a36":[11,0,14,1]
 };

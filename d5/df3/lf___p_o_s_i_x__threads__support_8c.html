@@ -103,13 +103,20 @@ $(function(){initNavTree('d5/df3/lf___p_o_s_i_x__threads__support_8c.html','../.
 <code>#include &lt;pthread.h&gt;</code><br />
 <code>#include &lt;errno.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
+<code>#include &lt;unistd.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a48fa558d833200b986c03bc8c12bbe77" id="r_a48fa558d833200b986c03bc8c12bbe77"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48fa558d833200b986c03bc8c12bbe77">lf_thread_create</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> *thread, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *(*<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_thread</a>)(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *), <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *arguments)</td></tr>
+<tr class="memitem:abe5a04985bd63ade71fc058f189d2545" id="r_abe5a04985bd63ade71fc058f189d2545"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abe5a04985bd63ade71fc058f189d2545">lf_available_cores</a> ()</td></tr>
+<tr class="memdesc:abe5a04985bd63ade71fc058f189d2545"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of cores on the host machine.  <br /></td></tr>
+<tr class="separator:abe5a04985bd63ade71fc058f189d2545"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48fa558d833200b986c03bc8c12bbe77" id="r_a48fa558d833200b986c03bc8c12bbe77"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48fa558d833200b986c03bc8c12bbe77">lf_thread_create</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *(*<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_thread</a>)(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *), <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">arguments</a>)</td></tr>
 <tr class="memdesc:a48fa558d833200b986c03bc8c12bbe77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function for creating a thread.  <br /></td></tr>
 <tr class="separator:a48fa558d833200b986c03bc8c12bbe77"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a652d8db6bafa59434d297216607266ed" id="r_a652d8db6bafa59434d297216607266ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a652d8db6bafa59434d297216607266ed">lf_thread_join</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> thread, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread_return</a>)</td></tr>
+<tr class="memitem:a8ae1ceb17982ccac5e6cb4dd04b9784b" id="r_a8ae1ceb17982ccac5e6cb4dd04b9784b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8ae1ceb17982ccac5e6cb4dd04b9784b">lf_thread_self</a> ()</td></tr>
+<tr class="memdesc:a8ae1ceb17982ccac5e6cb4dd04b9784b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the lf_thread_t of the calling thread.  <br /></td></tr>
+<tr class="separator:a8ae1ceb17982ccac5e6cb4dd04b9784b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a652d8db6bafa59434d297216607266ed" id="r_a652d8db6bafa59434d297216607266ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a652d8db6bafa59434d297216607266ed">lf_thread_join</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread_return</a>)</td></tr>
 <tr class="separator:a652d8db6bafa59434d297216607266ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa6f228487e6af38e496882f406aafaf6" id="r_aa6f228487e6af38e496882f406aafaf6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa6f228487e6af38e496882f406aafaf6">lf_mutex_init</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a> *mutex)</td></tr>
 <tr class="separator:aa6f228487e6af38e496882f406aafaf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,6 +156,25 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Block the current thread on the condition variable until the condition variable pointed by "cond" is signaled or the time given by wakeup_time is reached. This should not be used directly as it does not account for clock synchronization offsets. Use <code>lf_clock_cond_timedwait</code> from <a class="el" href="../../d7/d6e/clock_8h.html" title="A higher level API to the clock utilities provided by the platform API.">clock.h</a> instead.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 on success, LF_TIMEOUT on timeout, and platform-specific error number otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="abe5a04985bd63ade71fc058f189d2545" name="abe5a04985bd63ade71fc058f189d2545"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe5a04985bd63ade71fc058f189d2545">&#9670;&#160;</a></span>lf_available_cores()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> lf_available_cores </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the number of cores on the host machine. </p>
 
 </div>
 </div>
@@ -345,6 +371,25 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a8ae1ceb17982ccac5e6cb4dd04b9784b" name="a8ae1ceb17982ccac5e6cb4dd04b9784b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ae1ceb17982ccac5e6cb4dd04b9784b">&#9670;&#160;</a></span>lf_thread_self()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> lf_thread_self </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the lf_thread_t of the calling thread. </p>
 
 </div>
 </div>

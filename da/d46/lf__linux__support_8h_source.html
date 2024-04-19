@@ -114,20 +114,14 @@ $(function(){initNavTree('da/d46/lf__linux__support_8h_source.html','../../'); i
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &quot;<a class="code" href="../../d5/da7/lf__tag__64__32_8h.html">lf_tag_64_32.h</a>&quot;</span></div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#if !defined LF_SINGLE_THREADED</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#if __STDC_VERSION__ &lt; 201112L || defined(__STDC_NO_THREADS__)</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="comment">// (Not C++11 or later) or no threads support</span></div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#include &quot;<a class="code" href="../../d6/d57/lf___p_o_s_i_x__threads__support_8h.html">lf_POSIX_threads_support.h</a>&quot;</span></div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="preprocessor">#include &quot;<a class="code" href="../../db/d70/lf___c11__threads__support_8h.html">lf_C11_threads_support.h</a>&quot;</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#include &quot;<a class="code" href="../../d6/d57/lf___p_o_s_i_x__threads__support_8h.html">lf_POSIX_threads_support.h</a>&quot;</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="preprocessor">#if !defined(_POSIX_TIMERS) || _POSIX_TIMERS &lt;= 0</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="preprocessor">#error Linux platform misses clock support</span></div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="preprocessor">#if !defined(_POSIX_TIMERS) || _POSIX_TIMERS &lt;= 0</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="preprocessor">#error Linux platform misses clock support</span></div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="preprocessor">#endif </span><span class="comment">// LF_LINUX_SUPPORT_H</span></div>
-<div class="ttc" id="alf___c11__threads__support_8h_html"><div class="ttname"><a href="../../db/d70/lf___c11__threads__support_8h.html">lf_C11_threads_support.h</a></div></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#endif </span><span class="comment">// LF_LINUX_SUPPORT_H</span></div>
 <div class="ttc" id="alf___p_o_s_i_x__threads__support_8h_html"><div class="ttname"><a href="../../d6/d57/lf___p_o_s_i_x__threads__support_8h.html">lf_POSIX_threads_support.h</a></div></div>
 <div class="ttc" id="alf__tag__64__32_8h_html"><div class="ttname"><a href="../../d5/da7/lf__tag__64__32_8h.html">lf_tag_64_32.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

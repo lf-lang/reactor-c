@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.10.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: lf_thread_data Struct Reference</title>
+<title>reactor-c: lf_scheduling_policy_t Struct Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -66,7 +66,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(function(){initNavTree('dd/d53/structlf__thread__data.html','../../'); initResizable(); });
+$(function(){initNavTree('d8/d71/structlf__scheduling__policy__t.html','../../'); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -94,40 +94,58 @@ $(function(){initNavTree('dd/d53/structlf__thread__data.html','../../'); initRes
 <div class="header">
   <div class="summary">
 <a href="#pub-attribs">Data Fields</a>  </div>
-  <div class="headertitle"><div class="title">lf_thread_data Struct Reference</div></div>
+  <div class="headertitle"><div class="title">lf_scheduling_policy_t Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="../../da/dfb/low__level__platform_8h_source.html">low_level_platform.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:ac8210cd3fd3c42f737d8dcd5c97eb4c3" id="r_ac8210cd3fd3c42f737d8dcd5c97eb4c3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac8210cd3fd3c42f737d8dcd5c97eb4c3">thread</a> )(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *)</td></tr>
-<tr class="separator:ac8210cd3fd3c42f737d8dcd5c97eb4c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2086b1a6fea0a739a4d09a285b0cfc07" id="r_a2086b1a6fea0a739a4d09a285b0cfc07"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2086b1a6fea0a739a4d09a285b0cfc07">arguments</a></td></tr>
-<tr class="separator:a2086b1a6fea0a739a4d09a285b0cfc07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48e1693aafa698bb53266497e340e6a5" id="r_a48e1693aafa698bb53266497e340e6a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/dfb/low__level__platform_8h.html#adc74ec49eb5cc6eceda1447090d61ab6">lf_scheduling_policy_type_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a48e1693aafa698bb53266497e340e6a5">policy</a></td></tr>
+<tr class="separator:a48e1693aafa698bb53266497e340e6a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a841601dc7442af1fc4b89fb658915907" id="r_a841601dc7442af1fc4b89fb658915907"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a841601dc7442af1fc4b89fb658915907">priority</a></td></tr>
+<tr class="separator:a841601dc7442af1fc4b89fb658915907"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15dbf1952ebdd232040fa334af433d0e" id="r_a15dbf1952ebdd232040fa334af433d0e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15dbf1952ebdd232040fa334af433d0e">time_slice</a></td></tr>
+<tr class="separator:a15dbf1952ebdd232040fa334af433d0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Field Documentation</h2>
-<a id="a2086b1a6fea0a739a4d09a285b0cfc07" name="a2086b1a6fea0a739a4d09a285b0cfc07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2086b1a6fea0a739a4d09a285b0cfc07">&#9670;&#160;</a></span>arguments</h2>
+<a id="a48e1693aafa698bb53266497e340e6a5" name="a48e1693aafa698bb53266497e340e6a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48e1693aafa698bb53266497e340e6a5">&#9670;&#160;</a></span>policy</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>* lf_thread_data::arguments</td>
+          <td class="memname"><a class="el" href="../../da/dfb/low__level__platform_8h.html#adc74ec49eb5cc6eceda1447090d61ab6">lf_scheduling_policy_type_t</a> lf_scheduling_policy_t::policy</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="ac8210cd3fd3c42f737d8dcd5c97eb4c3" name="ac8210cd3fd3c42f737d8dcd5c97eb4c3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac8210cd3fd3c42f737d8dcd5c97eb4c3">&#9670;&#160;</a></span>thread</h2>
+<a id="a841601dc7442af1fc4b89fb658915907" name="a841601dc7442af1fc4b89fb658915907"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a841601dc7442af1fc4b89fb658915907">&#9670;&#160;</a></span>priority</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *(* lf_thread_data::thread) (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *)</td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> lf_scheduling_policy_t::priority</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a15dbf1952ebdd232040fa334af433d0e" name="a15dbf1952ebdd232040fa334af433d0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15dbf1952ebdd232040fa334af433d0e">&#9670;&#160;</a></span>time_slice</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> lf_scheduling_policy_t::time_slice</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -135,14 +153,14 @@ Data Fields</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>low_level_platform/impl/src/<a class="el" href="../../d3/d9c/lf___c11__threads__support_8c.html">lf_C11_threads_support.c</a></li>
+<li>low_level_platform/api/<a class="el" href="../../da/dfb/low__level__platform_8h_source.html">low_level_platform.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dd/d53/structlf__thread__data.html">lf_thread_data</a></li>
+    <li class="navelem"><a class="el" href="../../d8/d71/structlf__scheduling__policy__t.html">lf_scheduling_policy_t</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>
