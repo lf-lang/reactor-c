@@ -1,8 +1,8 @@
 #include <time.h>
 #include <errno.h>
 #include <assert.h>
-#include <lf_patmos_support.h>
-#include "../platform.h"
+#include "platform/lf_patmos_support.h"
+#include "low_level_platform.h"
 #include <machine/rtc.h>
 #include <machine/exceptions.h>
 #include <stdio.h>
