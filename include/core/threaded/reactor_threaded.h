@@ -88,6 +88,15 @@ void _lf_increment_tag_barrier_locked(environment_t* env, tag_t future_tag);
  */
 void _lf_decrement_tag_barrier_locked(environment_t* env);
 
+/**
+ * @brief The number of cores to use.
+ * 
+ * If the target parameter number_of_cores is set, it will override this default.
+ */
+#ifndef _LF_NUMBER_OF_CORES
+#define _LF_NUMBER_OF_CORES 1
+#endif
+
 int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag);
 void lf_synchronize_with_other_federates(void);
 bool wait_until(instant_t logical_time_ns, lf_cond_t* condition);

@@ -991,6 +991,23 @@ void start_threads(environment_t* env) {
     if (lf_thread_create(&env->thread_ids[i], worker, env) != 0) {
       lf_print_error_and_exit("Could not start thread-%u", i);
     }
+    // FIXME: Use the target property to set the policy.
+    lf_scheduling_policy_t policy = {
+      .priority = 80, // FIXME: determine good priority
+      .policy = LF_SCHED_PRIORITY
+    };
+    lf_thread_set_scheduling_policy(env->thread_ids[i], &policy);
+
+    int number_of_cores = _LF_NUMBER_OF_CORES;
+    if (number_of_cores > 0) {
+      // Pin the thread to cores starting at the highest numbered core.
+      static int core_number = -1;
+      if (core_number < 0) core_number = lf_available_cores() - 1;
+      lf_thread_set_cpu(env->thread_ids[i], core_number);
+      printf("***** FIXME: core_number %d\n", core_number);
+      core_number--;
+      if (core_number < lf_available_cores() - _LF_NUMBER_OF_CORES) core_number = lf_available_cores() - 1;
+    }
   }
 }
 
