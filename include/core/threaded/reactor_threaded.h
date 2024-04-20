@@ -93,8 +93,8 @@ void _lf_decrement_tag_barrier_locked(environment_t* env);
  * 
  * If the target parameter number_of_cores is set, it will override this default.
  */
-#ifndef _LF_NUMBER_OF_CORES
-#define _LF_NUMBER_OF_CORES 1
+#ifndef LF_NUMBER_OF_CORES
+#define LF_NUMBER_OF_CORES 0
 #endif
 
 int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag);

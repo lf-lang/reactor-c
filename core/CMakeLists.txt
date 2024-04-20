@@ -128,8 +128,9 @@ target_compile_definitions(reactor-c PRIVATE INITIAL_EVENT_QUEUE_SIZE=${INITIAL_
 target_compile_definitions(reactor-c PRIVATE INITIAL_REACT_QUEUE_SIZE=${INITIAL_REACT_QUEUE_SIZE})
 target_compile_definitions(reactor-c PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
-# Macro for translating a command-line argument into compile definition for
-# reactor-c lib
+# If variable X is defined in cMake (set using SET()) or passed in as a command-line
+# argument using -DX=<value>, then make it a compiler flag for reactor-c so that X
+# is also defined in the C code for reactor-c.
 macro(define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
@@ -159,6 +160,7 @@ define(LOG_LEVEL)
 define(MODAL_REACTORS)
 define(NUMBER_OF_FEDERATES)
 define(NUMBER_OF_WORKERS)
+define(LF_NUMBER_OF_CORES)
 define(NUMBER_OF_WATCHDOGS)
 define(USER_THREADS)
 define(SCHEDULER)

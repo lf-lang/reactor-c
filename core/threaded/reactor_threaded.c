@@ -998,7 +998,7 @@ void start_threads(environment_t* env) {
     };
     lf_thread_set_scheduling_policy(env->thread_ids[i], &policy);
 
-    int number_of_cores = _LF_NUMBER_OF_CORES;
+    int number_of_cores = LF_NUMBER_OF_CORES;
     if (number_of_cores > 0) {
       // Pin the thread to cores starting at the highest numbered core.
       static int core_number = -1;
@@ -1006,7 +1006,7 @@ void start_threads(environment_t* env) {
       lf_thread_set_cpu(env->thread_ids[i], core_number);
       printf("***** FIXME: core_number %d\n", core_number);
       core_number--;
-      if (core_number < lf_available_cores() - _LF_NUMBER_OF_CORES) core_number = lf_available_cores() - 1;
+      if (core_number < lf_available_cores() - LF_NUMBER_OF_CORES) core_number = lf_available_cores() - 1;
     }
   }
 }
