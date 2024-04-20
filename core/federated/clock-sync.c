@@ -416,9 +416,9 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
     // The number of received T4 messages has reached _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL
     // which means we can now adjust the clock offset.
     // For the AVG algorithm, history is a running average and can be directly
-    // applied
+    // applied.
     adjust_lf_clock_sync_offset(_lf_rti_socket_stat.history);
-    // @note AVG and SD will be zero if collect-stats is set to false
+    // @note AVG and SD will be zero if _LF_CLOCK_SYNC_COLLECT_STATS is set to false
     LF_PRINT_LOG("Clock sync:"
                  " New offset: " PRINTF_TIME "."
                  " Round trip delay to RTI (now): " PRINTF_TIME "."

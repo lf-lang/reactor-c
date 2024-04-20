@@ -49,6 +49,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _LF_CLOCK_SYNC_ATTENUATION 10
 #endif
 
+/** By default, collect statistics on clock synchronization. */
+#ifndef _LF_CLOCK_SYNC_COLLECT_STATS 
+#define _LF_CLOCK_SYNC_COLLECT_STATS true
+#endif
+
 /**
  * Define a guard band to filter clock synchronization
  * messages based on discrepancies in the network delay.
