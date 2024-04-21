@@ -994,17 +994,19 @@ void start_threads(environment_t* env) {
     // FIXME: Use the target property to set the policy.
     lf_scheduling_policy_t policy = {
       .priority = 80, // FIXME: determine good priority
-      .policy = LF_SCHED_PRIORITY
+      .policy = LF_THREAD_POLICY
     };
+    LF_PRINT_LOG("Setting thread policy to %d", LF_THREAD_POLICY);
     lf_thread_set_scheduling_policy(env->thread_ids[i], &policy);
 
     int number_of_cores = LF_NUMBER_OF_CORES;
+    LF_PRINT_LOG("Using %d cores", number_of_cores);
     if (number_of_cores > 0) {
       // Pin the thread to cores starting at the highest numbered core.
       static int core_number = -1;
       if (core_number < 0) core_number = lf_available_cores() - 1;
       lf_thread_set_cpu(env->thread_ids[i], core_number);
-      printf("***** FIXME: core_number %d\n", core_number);
+      LF_PRINT_LOG("Using core_number %d", core_number);
       core_number--;
       if (core_number < lf_available_cores() - LF_NUMBER_OF_CORES) core_number = lf_available_cores() - 1;
     }
