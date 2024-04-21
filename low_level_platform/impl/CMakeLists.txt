@@ -39,6 +39,11 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_rp2040_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
+    set(LF_LOW_LEVEL_PLATFORM_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_flexpret_support.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
+    )
 else()
     message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Zephyr, Nrf52 and RP2040.")
 endif()
@@ -54,6 +59,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     zephyr_library_named(lf-low-level-platform-impl)
     zephyr_library_sources(${LF_LOW_LEVEL_PLATFORM_FILES})
     zephyr_library_link_libraries(kernel)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+    target_link_libraries(lf-low-level-platform-impl PRIVATE fp-sdk-if)
 else()
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
     # Link the platform to a threading library
