@@ -61,7 +61,7 @@ int register_user_trace_event(void* self, char* description) {
 }
 
 void call_tracepoint(int event_type, void* reactor, tag_t tag, int worker, int src_id, int dst_id,
-                     instant_t* physical_time, trigger_t* trigger, interval_t extra_delay, bool is_interval_start) {
+                     instant_t* physical_time, trigger_t* trigger, interval_t extra_delay) {
   instant_t local_time;
   if (physical_time == NULL) {
     local_time = lf_time_physical();
@@ -97,7 +97,7 @@ void tracepoint_schedule(environment_t* env, trigger_t* trigger, interval_t extr
   // This is OK because it is called only while holding the mutex lock.
   // True argument specifies to record physical time as late as possible, when
   // the event is already on the event queue.
-  call_tracepoint(schedule_called, reactor, env->current_tag, -1, 0, 0, NULL, trigger, extra_delay, true);
+  call_tracepoint(schedule_called, reactor, env->current_tag, -1, 0, 0, NULL, trigger, extra_delay);
 }
 
 /**
@@ -119,7 +119,7 @@ void tracepoint_user_event(void* self, char* description) {
   // There will be a performance hit for this.
   LF_ASSERT(self, "A pointer to the self struct is needed to trace an event");
   environment_t* env = ((self_base_t*)self)->environment;
-  call_tracepoint(user_event, description, env->current_tag, -1, -1, -1, NULL, NULL, 0, false);
+  call_tracepoint(user_event, description, env->current_tag, -1, -1, -1, NULL, NULL, 0);
 }
 
 /**
@@ -144,7 +144,7 @@ void tracepoint_user_value(void* self, char* description, long long value) {
   // because multiple reactions might be calling the same tracepoint function.
   // There will be a performance hit for this.
   environment_t* env = ((self_base_t*)self)->environment;
-  call_tracepoint(user_value, description, env->current_tag, -1, -1, -1, NULL, NULL, value, false);
+  call_tracepoint(user_value, description, env->current_tag, -1, -1, -1, NULL, NULL, value);
 }
 
 ////////////////////////////////////////////////////////////
@@ -168,8 +168,7 @@ void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag
                   -1,                     // int dst_id,
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
-                  true                    // is_interval_start
+                  0                       // interval_t extra_delay
   );
 }
 
@@ -190,8 +189,7 @@ void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* t
                   -1,                     // int dst_id,
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
-                  false                   // is_interval_start
+                  0                       // interval_t extra_delay
   );
 }
 
@@ -212,8 +210,7 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
                   partner_id,             // int dst_id,
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
-                  true                    // is_interval_start
+                  0                       // interval_t extra_delay
   );
 }
 
@@ -234,8 +231,7 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
                   partner_id,             // int dst_id,
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
-                  false                   // is_interval_start
+                  0                       // interval_t extra_delay
   );
 }
 #endif // FEDERATED
@@ -261,8 +257,7 @@ void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
                   fed_id,                 // int dst_id
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
-                  true                    // is_interval_start
+                  0                       // interval_t extra_delay
   );
 }
 
@@ -282,8 +277,7 @@ void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* t
                   fed_id,                 // int dst_id
                   NULL,                   // instant_t* physical_time (will be generated)
                   NULL,                   // trigger_t* trigger,
-                  0,                      // interval_t extra_delay
-                  false                   // is_interval_start
+                  0                       // interval_t extra_delay
   );
 }
 

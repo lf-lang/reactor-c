@@ -25,30 +25,105 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/**
+/**i
  * @brief Platform support for the Linux operating system.
  *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
+ * @author{Erling Jellum <erling@xronos.com>}
  */
 
+#define _GNU_SOURCE // Needed to get access to Linux thread-scheduling API
 #include "platform/lf_linux_support.h"
+#include "platform/lf_platform_util.h"
 #include "low_level_platform.h"
+
+#include "platform/lf_unix_clock_support.h"
 
 #if defined LF_SINGLE_THREADED
 #include "lf_os_single_threaded_support.c"
-#endif
-
-#if !defined LF_SINGLE_THREADED
-#if __STDC_VERSION__ < 201112L || defined(__STDC_NO_THREADS__)
-// (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.c"
 #else
-#include "lf_C11_threads_support.c"
-#endif
-#endif
+#include "lf_POSIX_threads_support.c"
 
-#include "platform/lf_unix_clock_support.h"
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
+  // First verify that we have num_cores>cpu_number
+  if (lf_available_cores() <= cpu_number) {
+    return -1;
+  }
+
+  // Create a CPU-set consisting of only the desired CPU
+  cpu_set_t cpu_set;
+  CPU_ZERO(&cpu_set);
+  CPU_SET(cpu_number, &cpu_set);
+
+  return pthread_setaffinity_np(thread, sizeof(cpu_set), &cpu_set);
+}
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
+  int posix_policy, min_pri, max_pri, final_priority;
+  struct sched_param schedparam;
+
+  if (priority > LF_SCHED_MAX_PRIORITY || priority < LF_SCHED_MIN_PRIORITY) {
+    return -1;
+  }
+
+  // Get the current scheduling policy
+  if (pthread_getschedparam(thread, &posix_policy, &schedparam) != 0) {
+    return -1;
+  }
+
+  min_pri = sched_get_priority_min(posix_policy);
+  max_pri = sched_get_priority_max(posix_policy);
+  if (min_pri == -1 || max_pri == -1) {
+    return -1;
+  }
+
+  final_priority = map_priorities(priority, min_pri, max_pri);
+  if (final_priority < 0) {
+    return -1;
+  }
+
+  return pthread_setschedprio(thread, final_priority);
+}
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
+  int posix_policy;
+  struct sched_param schedparam;
+
+  // Get the current scheduling policy
+  if (pthread_getschedparam(thread, &posix_policy, &schedparam) != 0) {
+    return -1;
+  }
+
+  // Update the policy
+  switch (policy->policy) {
+  case LF_SCHED_FAIR:
+    posix_policy = SCHED_OTHER;
+    break;
+  case LF_SCHED_TIMESLICE:
+    posix_policy = SCHED_RR;
+    break;
+  case LF_SCHED_PRIORITY:
+    posix_policy = SCHED_FIFO;
+    break;
+  default:
+    return -1;
+    break;
+  }
+
+  // Write it back
+  if (pthread_setschedparam(thread, posix_policy, &schedparam) != 0) {
+    return -3;
+  }
+
+  // Set the priority
+  if (lf_thread_set_priority(thread, policy->priority) != 0) {
+    return -1;
+  }
+
+  return 0;
+}
+#endif
 
 int lf_sleep(interval_t sleep_duration) {
   const struct timespec tp = convert_ns_to_timespec(sleep_duration);
@@ -57,6 +132,7 @@ int lf_sleep(interval_t sleep_duration) {
 }
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
+  (void)env;
   interval_t sleep_duration = wakeup_time - lf_time_physical();
 
   if (sleep_duration <= 0) {

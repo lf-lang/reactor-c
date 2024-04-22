@@ -74,10 +74,14 @@ int lf_critical_section_exit(environment_t* env);
 
 #define LF_TIMEOUT 1
 
+// Worker priorities range from 0 to 99 where 99 is the highest priority.
+#define LF_SCHED_MAX_PRIORITY 99
+#define LF_SCHED_MIN_PRIORITY 0
+
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
 #if defined(LF_SINGLE_THREADED)
-typedef void lf_mutex_t;
+typedef void* lf_mutex_t;
 /**
  * @brief Disable interrupts with support for nested calls
  * @return 0 on success
@@ -108,11 +112,15 @@ int lf_mutex_lock(lf_mutex_t* mutex);
 int lf_available_cores();
 
 /**
+ * @brief Return the lf_thread_t of the calling thread.
+ */
+lf_thread_t lf_thread_self();
+
+/**
  * Create a new thread, starting with execution of lf_thread
  * getting passed arguments. The new handle is stored in thread_id.
  *
  * @return 0 on success, platform-specific error number otherwise.
- *
  */
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments);
 
@@ -131,6 +139,54 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return);
+
+/**
+ * @brief The thread scheduling policies.
+ */
+typedef enum {
+  LF_SCHED_FAIR,      // Non real-time scheduling policy. Corresponds to SCHED_OTHER
+  LF_SCHED_TIMESLICE, // Real-time, time-slicing priority-based policty. Corresponds to SCHED_RR.
+  LF_SCHED_PRIORITY,  // Real-time, priority-only based scheduling. Corresponds to SCHED_FIFO.
+} lf_scheduling_policy_type_t;
+
+typedef struct {
+  lf_scheduling_policy_type_t policy; // The scheduling policy
+  int priority;                       // The priority, if applicable
+  interval_t time_slice;              // The time-slice allocated, if applicable.
+} lf_scheduling_policy_t;
+
+/**
+ * @brief Pin a thread to a specific CPU.
+ *
+ * @param thread The thread
+ * @param cpu_number the CPU ID
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
+
+/**
+ * @brief Set the priority of a thread.
+ * Priority ranges from 0 to 99 where a higher
+ * number indicates higher priority. Setting the priority of a thread only
+ * makes sense if the thread is scheduled with LF_SCHED_TIMESLICE or LF_THREAD_PRIORITY
+ *
+ * @param thread The thread.
+ * @param priority The priority.
+ * @return int 0 on success, platform-specific error otherwise
+ */
+int lf_thread_set_priority(lf_thread_t thread, int priority);
+
+/**
+ * @brief Set the scheduling policy of a thread. This is based on the scheduling
+ * concept from Linux explained here: https://man7.org/linux/man-pages/man7/sched.7.html
+ * A scheduling policy is specific to a thread/worker. We have three policies
+ * LF_SCHED_PRIORITY which corresponds to SCHED_FIFO on Linux.
+ * LF_SCHED_TIMESLICE which corresponds to SCHED_RR on Linux.
+ * LF_SCHED_FAIR which corresponds to SCHED_OTHER on Linux.
+ *
+ * @return int 0 on success, platform-specific error number otherwise.
+ */
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy);
 
 /**
  * Initialize a mutex.

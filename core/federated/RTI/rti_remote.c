@@ -280,27 +280,7 @@ void send_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
   encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
   if (rti_remote->base.tracing_enabled) {
-    tracepoint_rti_to_federate(rti_remote->base.trace, send_DNET, e->id, &tag);
-  }
-  if (write_to_socket(((federate_info_t*)e)->socket, message_length, buffer)) {
-    lf_print_error("RTI failed to send downstream next event tag to federate %d.", e->id);
-    e->state = NOT_CONNECTED;
-  } else {
-    e->last_DNET = tag;
-    LF_PRINT_LOG("RTI sent to federate %d the Downstream Next Event Tag (DNET) " PRINTF_TAG ".", e->id,
-                 tag.time - start_time, tag.microstep);
-  }
-}
-
-void send_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
-  size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
-  unsigned char buffer[message_length];
-  buffer[0] = MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG;
-  encode_int64(tag.time, &(buffer[1]));
-  encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
-
-  if (rti_remote->base.tracing_enabled) {
-    tracepoint_rti_to_federate(rti_remote->base.trace, send_DNET, e->id, &tag);
+    tracepoint_rti_to_federate(send_DNET, e->id, &tag);
   }
   if (write_to_socket(((federate_info_t*)e)->socket, message_length, buffer)) {
     lf_print_error("RTI failed to send downstream next event tag to federate %d.", e->id);
@@ -931,11 +911,6 @@ void* clock_synchronization_thread(void* noargs) {
   }
 
   // Initiate a clock synchronization every rti->clock_sync_period_ns
-  // Initiate a clock synchronization every rti->clock_sync_period_ns
-  struct timespec sleep_time = {(time_t)rti_remote->clock_sync_period_ns / BILLION,
-                                rti_remote->clock_sync_period_ns % BILLION};
-  struct timespec remaining_time;
-
   bool any_federates_connected = true;
   while (any_federates_connected) {
     // Sleep
@@ -1382,6 +1357,7 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
     unsigned char* connections_info_body = NULL;
     if (connections_info_body_size > 0) {
       connections_info_body = (unsigned char*)malloc(connections_info_body_size);
+      LF_ASSERT_NON_NULL(connections_info_body);
       read_from_socket_fail_on_error(socket_id, connections_info_body_size, connections_info_body, NULL,
                                      "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
                                      fed_id);
