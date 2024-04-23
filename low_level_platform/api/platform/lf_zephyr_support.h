@@ -49,8 +49,11 @@ typedef struct {
 } lf_cond_t;
 typedef struct k_thread* lf_thread_t;
 
-#define KI_DIV  1
-#define KI_MUL 1
+/* The constants used for I-controller for lag regulation under reactor_threaded.c wait_until function.
+The lag gets multiplied by KI_MUL and divided by KI_DIV before incorporated into control value.
+Currently no lag control support in this platform. */
+#define KI_DIV 1
+#define KI_MUL 0
 
 /**
  * @brief Add `value` to `*ptr` and return original value of `*ptr`
