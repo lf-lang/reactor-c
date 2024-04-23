@@ -105,6 +105,7 @@ typedef struct environment_t {
   lf_cond_t global_tag_barrier_requestors_reached_zero;
 #endif // LF_SINGLE_THREADED
 #if defined(FEDERATED)
+  bool need_to_send_LTC;
   tag_t** _lf_intended_tag_fields;
   int _lf_intended_tag_fields_size;
 #endif             // FEDERATED

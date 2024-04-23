@@ -145,11 +145,6 @@ typedef struct federate_instance_t {
   /**
    *
    */
-  tag_t last_skipped_LTC;
-
-  /**
-   *
-   */
   tag_t last_DNET;
 
   /**
