@@ -96,6 +96,7 @@ const char* trace_event_names[] = {
     "Sending P2P_MSG",
     "Sending ADR_AD",
     "Sending ADR_QR",
+    "Sending DNET",
     // Receiving messages
     "Receiving ACK",
     "Receiving FAILED",
@@ -118,6 +119,7 @@ const char* trace_event_names[] = {
     "Receiving P2P_MSG",
     "Receiving ADR_AD",
     "Receiving ADR_QR",
+    "Receiving DNET",
     "Receiving UNIDENTIFIED",
 };
 

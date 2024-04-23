@@ -273,6 +273,15 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
 }
 
 void send_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
+  if (e->state == NOT_CONNECTED) {
+    return;
+  }
+  // Need to make sure that the destination federate's thread has already
+  // sent the starting MSG_TYPE_TIMESTAMP message.
+  while (e->state == PENDING) {
+    // Need to wait here.
+    lf_cond_wait(&sent_start_time);
+  }
   size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
   unsigned char buffer[message_length];
   buffer[0] = MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG;
