@@ -61,7 +61,23 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     zephyr_library_link_libraries(kernel)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
-    target_link_libraries(lf-low-level-platform-impl PRIVATE fp-sdk-if)
+    target_link_libraries(lf-low-level-platform-impl PUBLIC fp-sdk)
+
+    if (DEFINED NUMBER_OF_WORKERS)
+        # Verify that FlexPRET has the number of requested workers
+        # That information is available in the SDK's hwconfig
+        include($ENV{FP_SDK_PATH}/flexpret/hwconfig.cmake)
+        math(EXPR FLEXPRET_AVAILABLE_WORKERS "${THREADS} - 1")
+
+        if (${NUMBER_OF_WORKERS} GREATER ${THREADS})
+            message(FATAL_ERROR
+                "Number of requested workers (${NUMBER_OF_WORKERS}) is higher \
+                than FlexPRET's number of available workers \
+                (${FLEXPET_AVAILABLE_WORKERS}). Note that FlexPRET uses \
+                hardware threads, not the usual software threads"
+            )
+        endif()
+    endif()
 else()
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
     # Link the platform to a threading library
