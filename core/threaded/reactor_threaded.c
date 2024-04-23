@@ -42,9 +42,6 @@ extern instant_t start_time;
  */
 #define MAX_STALL_INTERVAL MSEC(1)
 
-#define KI_DIV  2
-#define KI_MUL 3
-
 /**
  * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
  */

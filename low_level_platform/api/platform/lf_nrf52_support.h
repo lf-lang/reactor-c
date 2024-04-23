@@ -51,4 +51,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef void* lf_mutex_t;
 typedef void _lf_cond_var_t;
 
+#define KI_DIV  1
+#define KI_MUL 1
+
 #endif // LF_nRF52832_SUPPORT_H

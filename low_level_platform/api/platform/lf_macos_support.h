@@ -44,6 +44,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #else
 #include "lf_C11_threads_support.h"
 #endif
+#define KI_DIV  1
+#define KI_MUL 1
+
 #endif
 
 #endif // LF_MACOS_SUPPORT_H

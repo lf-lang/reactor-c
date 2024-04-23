@@ -61,6 +61,9 @@ typedef struct {
   CONDITION_VARIABLE condition;
 } lf_cond_t;
 typedef HANDLE lf_thread_t;
+
+#define KI_DIV  1
+#define KI_MUL 1
 #endif
 
 // Use 64-bit times and 32-bit unsigned microsteps

@@ -20,4 +20,7 @@
 #define LF_TIME_BUFFER_LENGTH 80
 #define _LF_TIMEOUT 1
 
+#define KI_DIV  1
+#define KI_MUL 1
+
 #endif // LF_PICO_SUPPORT_H

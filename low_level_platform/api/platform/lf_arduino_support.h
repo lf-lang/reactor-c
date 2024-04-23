@@ -132,4 +132,7 @@ typedef void* lf_thread_t;
 // Arduinos are embedded platforms with no tty
 #define NO_TTY
 
+#define KI_DIV  1
+#define KI_MUL 1
+
 #endif // LF_ARDUINO_SUPPORT_H

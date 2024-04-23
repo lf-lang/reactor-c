@@ -52,4 +52,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error Linux platform misses clock support
 #endif
 
+#define KI_DIV  2
+#define KI_MUL 3
+
 #endif // LF_LINUX_SUPPORT_H

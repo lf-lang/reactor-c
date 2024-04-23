@@ -49,6 +49,9 @@ typedef struct {
 } lf_cond_t;
 typedef struct k_thread* lf_thread_t;
 
+#define KI_DIV  1
+#define KI_MUL 1
+
 /**
  * @brief Add `value` to `*ptr` and return original value of `*ptr`
  */
