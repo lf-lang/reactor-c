@@ -299,24 +299,18 @@ tag_t get_next_event_tag(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   // Peek at the earliest event in the event queue.
-  event_t* event = (event_t*)pqueue_peek(env->event_q);
+  event_t* event = (event_t*)pqueue_tag_peek(env->event_q);
   tag_t next_tag = FOREVER_TAG;
   if (event != NULL) {
     // There is an event in the event queue.
-    if (event->time < env->current_tag.time) {
-      lf_print_error_and_exit("get_next_event_tag(): Earliest event on the event queue (" PRINTF_TIME ") is "
-                              "earlier than the current time (" PRINTF_TIME ").",
-                              event->time - start_time, env->current_tag.time - start_time);
+    if (lf_tag_compare(event->base.tag, env->current_tag) < 0) {
+      lf_print_error_and_exit("get_next_event_tag(): Earliest event on the event queue (" PRINTF_TAG ") is "
+                              "earlier than the current tag (" PRINTF_TAG ").",
+                              event->base.tag.time - start_time, event->base.tag.microstep,
+                              env->current_tag.time - start_time, env->current_tag.microstep);
     }
 
-    next_tag.time = event->time;
-    if (next_tag.time == env->current_tag.time) {
-      LF_PRINT_DEBUG("Earliest event matches current time. Incrementing microstep. Event is dummy: %d.",
-                     event->is_dummy);
-      next_tag.microstep = env->current_tag.microstep + 1;
-    } else {
-      next_tag.microstep = 0;
-    }
+    next_tag = event->base.tag;
   }
 
   // If a timeout tag was given, adjust the next_tag from the
@@ -325,7 +319,7 @@ tag_t get_next_event_tag(environment_t* env) {
     next_tag = env->stop_tag;
   }
   LF_PRINT_LOG("Earliest event on the event queue (or stop time if empty) is " PRINTF_TAG ". Event queue has size %zu.",
-               next_tag.time - start_time, next_tag.microstep, pqueue_size(env->event_q));
+               next_tag.time - start_time, next_tag.microstep, pqueue_tag_size(env->event_q));
   return next_tag;
 }
 
@@ -433,7 +427,7 @@ void _lf_next_locked(environment_t* env) {
   // behavior with centralized coordination as with unfederated execution.
 
 #else // not FEDERATED_CENTRALIZED nor LF_ENCLAVES
-  if (pqueue_peek(env->event_q) == NULL && !keepalive_specified) {
+  if (pqueue_tag_peek(env->event_q) == NULL && !keepalive_specified) {
     // There is no event on the event queue and keepalive is false.
     // No event in the queue
     // keepalive is not set so we should stop.
@@ -501,7 +495,7 @@ void _lf_next_locked(environment_t* env) {
   }
 
   // At this point, finally, we have an event to process.
-  _lf_advance_logical_time(env, next_tag.time);
+  _lf_advance_tag(env, next_tag);
 
   _lf_start_time_step(env);
 
@@ -511,7 +505,7 @@ void _lf_next_locked(environment_t* env) {
     _lf_trigger_shutdown_reactions(env);
   }
 
-  // Pop all events from event_q with timestamp equal to env->current_tag.time,
+  // Pop all events from event_q with timestamp equal to env->current_tag,
   // extract all the reactions triggered by these events, and
   // stick them into the reaction queue.
   _lf_pop_events(env);
@@ -998,8 +992,9 @@ void lf_print_snapshot(environment_t* env) {
     LF_PRINT_DEBUG("Pending:");
     // pqueue_dump(reaction_q, print_reaction); FIXME: reaction_q is not
     // accessible here
-    LF_PRINT_DEBUG("Event queue size: %zu. Contents:", pqueue_size(env->event_q));
-    pqueue_dump(env->event_q, print_reaction);
+    LF_PRINT_DEBUG("Event queue size: %zu. Contents:", pqueue_tag_size(env->event_q));
+    // FIXME: There is no pqueue_tag_dump now
+    pqueue_tag_dump(env->event_q);
     LF_PRINT_DEBUG(">>> END Snapshot");
   }
 }

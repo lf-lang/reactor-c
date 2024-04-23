@@ -55,29 +55,6 @@ Currently no lag control support in this platform. */
 #define KI_DIV 1
 #define KI_MUL 0
 
-/**
- * @brief Add `value` to `*ptr` and return original value of `*ptr`
- */
-int _zephyr_atomic_fetch_add(int* ptr, int value);
-/**
- * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
- */
-int _zephyr_atomic_add_fetch(int* ptr, int value);
-
-/**
- * @brief Compare and swap for boolaen value.
- * If `*ptr` is equal to `value` then overwrite it
- * with `newval`. If not do nothing. Retruns true on overwrite.
- */
-bool _zephyr_bool_compare_and_swap(bool* ptr, bool value, bool newval);
-
-/**
- * @brief Compare and swap for integers. If `*ptr` is equal
- * to `value`, it is updated to `newval`. The function returns
- * the original value of `*ptr`.
- */
-int _zephyr_val32_compare_and_swap(uint32_t* ptr, int value, int newval);
-
 #endif // !LF_SINGLE_THREADED
 
 #endif // LF_ZEPHYR_SUPPORT_H
