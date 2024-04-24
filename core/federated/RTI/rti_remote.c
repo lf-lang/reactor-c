@@ -1712,6 +1712,11 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
 /**
  * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
  * out the relevant information in the federate's struct.
+ *
+ * In case of a hot swap, check that no changes were made to the connections, compared
+ * to the first instance that joigned. This means that the first instance to join
+ * __is__ the reference.
+ *
  * @return 1 on success and 0 on failure.
  */
 static int receive_connection_information(int* socket_id, uint16_t fed_id) {
