@@ -867,7 +867,7 @@ void try_advance_level(environment_t* env, volatile size_t* next_reaction_level)
  * @param env Environment within which we are executing.
  * @param worker_number The number assigned to this worker thread
  */
-void _lf_worker_do_work(environment_t* env, int worker_number) {
+static void _lf_worker_do_work(environment_t* env, int worker_number) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   // Keep track of whether we have decremented the idle thread count.
@@ -886,6 +886,25 @@ void _lf_worker_do_work(environment_t* env, int worker_number) {
                    worker_number, current_reaction_to_execute->name, LF_LEVEL(current_reaction_to_execute->index),
                    current_reaction_to_execute->is_an_input_reaction, current_reaction_to_execute->chain_id,
                    current_reaction_to_execute->deadline);
+
+#if defined(LF_THREAD_POLICY) && LF_THREAD_POLICY != LF_SCHED_FAIR
+    // Examine the reaction's (inferred) deadline to set this thread's priority.
+    interval_t inferred_deadline = (interval_t) (current_reaction_to_execute->index >> 16);
+    // If there is no deadline, set the priority to 1.
+    if (inferred_deadline >= (FOREVER >> 16) << 16) {
+      // All reactions without (inferred) deadlines result in a thread priority of 1.
+      lf_thread_set_priority(lf_thread_self(), 1);
+      // FIXME: Remove this thread from the data structure containing assigned priorities.
+    } else {
+      // Get the absolute deadline to implement EDF.
+      instant_t absolute_deadline = (env->current_tag.time + inferred_deadline);
+      // FIXME: This is the hard part.
+      // Need to know the priorities of running threads and the absolute deadline associated with it
+      // and choose a priority that is in between those with earlier deadlines and those with larger deadlines.
+      lf_critical_section_enter();
+      lf_critical_section_exit();
+    }
+#endif // defined(LF_THREAD_POLICY) && LF_THREAD_POLICY != LF_SCHED_FAIR
 
     bool violation = _lf_worker_handle_violations(env, worker_number, current_reaction_to_execute);
 
