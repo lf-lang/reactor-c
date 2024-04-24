@@ -20,9 +20,7 @@ int lf_clock_gettime(instant_t* now) {
   if (res != 0) {
     return -1;
   }
-#if defined(_LF_CLOCK_SYNC_ON)
   clock_sync_apply_offset(now);
-#endif
   do {
     // Atomically fetch the last read value. This is done with
     // atomics to guarantee that it works on 32bit platforms as well.

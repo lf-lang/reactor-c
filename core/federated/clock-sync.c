@@ -527,7 +527,7 @@ void* listen_to_rti_UDP_thread(void* args) {
 
 // If clock synchronization is enabled, provide implementations. If not
 // just empty implementations that should be optimized away.
-#if defined(FEDERATED) && defined(_LF_CLOCK_SYNC_ON)
+#if defined(FEDERATED) && (defined(_LF_CLOCK_SYNC_ON) || defined(_LF_CLOCK_SYNC_INITIAL))
 void clock_sync_apply_offset(instant_t* t) { *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
 
 void clock_sync_remove_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
