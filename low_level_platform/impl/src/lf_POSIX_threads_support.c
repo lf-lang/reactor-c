@@ -6,10 +6,15 @@
 #include <pthread.h>
 #include <errno.h>
 #include <stdint.h> // For fixed-width integral types
+#include <unistd.h>
+
+int lf_available_cores() { return (int)sysconf(_SC_NPROCESSORS_ONLN); }
 
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
   return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
 }
+
+lf_thread_t lf_thread_self() { return pthread_self(); }
 
 int lf_thread_join(lf_thread_t thread, void** thread_return) { return pthread_join((pthread_t)thread, thread_return); }
 
