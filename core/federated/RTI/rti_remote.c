@@ -2216,7 +2216,7 @@ void reset_transient_federate(federate_info_t* fed) {
   fed->server_ip_addr.s_addr = 0;
   fed->server_port = -1;
   fed->requested_stop = false;
-  invalidate_min_delays_upstream(fed->enclave);
+  invalidate_min_delays_upstream(&(fed->enclave));
 }
 
 int32_t start_rti_server(uint16_t port) {
