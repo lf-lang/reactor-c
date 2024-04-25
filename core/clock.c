@@ -8,7 +8,13 @@
 #include "clock.h"
 #include "low_level_platform.h"
 
+#ifdef FEDERATED
 #include "clock-sync.h"
+#else
+// Provide empty implementations of these functions.
+void clock_sync_add_offset(instant_t* t) { (void)t; }
+void clock_sync_subtract_offset(instant_t* t) { (void)t; }
+#endif // FEDERATED
 
 static instant_t last_read_physical_time = NEVER;
 
@@ -49,4 +55,4 @@ int lf_clock_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
   clock_sync_subtract_offset(&wakeup_time);
   return _lf_cond_timedwait(cond, wakeup_time);
 }
-#endif
+#endif // !defined(LF_SINGLE_THREADED)
