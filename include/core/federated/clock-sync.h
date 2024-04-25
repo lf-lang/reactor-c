@@ -50,7 +50,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 /** By default, collect statistics on clock synchronization. */
-#ifndef _LF_CLOCK_SYNC_COLLECT_STATS 
+#ifndef _LF_CLOCK_SYNC_COLLECT_STATS
 #define _LF_CLOCK_SYNC_COLLECT_STATS true
 #endif
 
