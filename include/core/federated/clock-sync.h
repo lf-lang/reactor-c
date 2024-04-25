@@ -126,7 +126,7 @@ void update_socket_stat(struct socket_stat_t* socket_stat, long long network_del
  * @return An lf_stat_ll struct with relevant information.
  */
 struct lf_stat_ll calculate_socket_stat(struct socket_stat_t* socket_stat);
-#endif
+#endif // _LF_CLOCK_SYNC_COLLECT_STATS
 
 /**
  * Reset statistics on the socket.

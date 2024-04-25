@@ -534,8 +534,8 @@ void clock_sync_subtract_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _
 
 void clock_sync_set_constant_bias(interval_t offset) { _lf_clock_sync_constant_bias = offset; }
 #else
-void clock_sync_add_offset(instant_t* t) { (void)t; }
-void clock_sync_subtract_offset(instant_t* t) { (void)t; }
+// Empty implementations of clock_sync_add_offset and clock_sync_subtract_offset
+// are in clock.c.
 void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
 #endif // (defined(_LF_CLOCK_SYNC_ON) || defined(_LF_CLOCK_SYNC_INITIAL)
 
