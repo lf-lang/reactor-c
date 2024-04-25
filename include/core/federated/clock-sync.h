@@ -207,13 +207,13 @@ int create_clock_sync_thread(lf_thread_t* thread_id);
  * @brief Add the current clock synchronization offset to a specified timestamp.
  * @param t Pointer to the timestamp to which to add the offset.
  */
-void clock_sync_apply_offset(instant_t* t);
+void clock_sync_add_offset(instant_t* t);
 
 /**
  * @brief Subtract the clock synchronization offset from a timestamp.
  * @param t The timestamp from which to subtract the current clock sync offset.
  */
-void clock_sync_offset(instant_t* t);
+void clock_sync_subtract_offset(instant_t* t);
 
 /**
  * Set a fixed offset to the physical clock.

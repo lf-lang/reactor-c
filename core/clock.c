@@ -18,7 +18,7 @@ int lf_clock_gettime(instant_t* now) {
   if (res != 0) {
     return -1;
   }
-  clock_sync_apply_offset(now);
+  clock_sync_add_offset(now);
   do {
     // Atomically fetch the last read value. This is done with
     // atomics to guarantee that it works on 32bit platforms as well.
@@ -39,14 +39,14 @@ int lf_clock_gettime(instant_t* now) {
 
 int lf_clock_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
   // Remove any clock sync offset and call the Platform API.
-  clock_sync_offset(&wakeup_time);
+  clock_sync_subtract_offset(&wakeup_time);
   return _lf_interruptable_sleep_until_locked(env, wakeup_time);
 }
 
 #if !defined(LF_SINGLE_THREADED)
 int lf_clock_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
   // Remove any clock sync offset and call the Platform API.
-  clock_sync_offset(&wakeup_time);
+  clock_sync_subtract_offset(&wakeup_time);
   return _lf_cond_timedwait(cond, wakeup_time);
 }
 #endif
