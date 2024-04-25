@@ -86,7 +86,7 @@ static void adjust_lf_clock_sync_offset(interval_t adjustment) {
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
 
-#include <math.h>   // For sqrtl()
+#include <math.h> // For sqrtl()
 
 /**
  * Update statistic on the socket based on the newly calculated network delay
