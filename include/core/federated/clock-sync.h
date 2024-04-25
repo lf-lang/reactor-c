@@ -213,7 +213,7 @@ void clock_sync_apply_offset(instant_t* t);
  * @brief Subtract the clock synchronization offset from a timestamp.
  * @param t The timestamp from which to subtract the current clock sync offset.
  */
-void clock_sync_remove_offset(instant_t* t);
+void clock_sync_offset(instant_t* t);
 
 /**
  * Set a fixed offset to the physical clock.

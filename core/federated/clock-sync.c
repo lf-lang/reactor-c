@@ -530,12 +530,12 @@ void* listen_to_rti_UDP_thread(void* args) {
 #if defined(FEDERATED) && (defined(_LF_CLOCK_SYNC_ON) || defined(_LF_CLOCK_SYNC_INITIAL))
 void clock_sync_apply_offset(instant_t* t) { *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
 
-void clock_sync_remove_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
+void clock_sync_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
 
 void clock_sync_set_constant_bias(interval_t offset) { _lf_clock_sync_constant_bias = offset; }
 #else
 void clock_sync_apply_offset(instant_t* t) { (void)t; }
-void clock_sync_remove_offset(instant_t* t) { (void)t; }
+void clock_sync_offset(instant_t* t) { (void)t; }
 void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
 #endif
 

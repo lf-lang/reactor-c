@@ -8,9 +8,7 @@
 #include "clock.h"
 #include "low_level_platform.h"
 
-#if defined(_LF_CLOCK_SYNC_ON)
 #include "clock-sync.h"
-#endif
 
 static instant_t last_read_physical_time = NEVER;
 
@@ -40,19 +38,15 @@ int lf_clock_gettime(instant_t* now) {
 }
 
 int lf_clock_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
-#if defined(_LF_CLOCK_SYNC_ON)
   // Remove any clock sync offset and call the Platform API.
-  clock_sync_remove_offset(&wakeup_time);
-#endif
+  clock_sync_offset(&wakeup_time);
   return _lf_interruptable_sleep_until_locked(env, wakeup_time);
 }
 
 #if !defined(LF_SINGLE_THREADED)
 int lf_clock_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
-#if defined(_LF_CLOCK_SYNC_ON)
   // Remove any clock sync offset and call the Platform API.
-  clock_sync_remove_offset(&wakeup_time);
-#endif
+  clock_sync_offset(&wakeup_time);
   return _lf_cond_timedwait(cond, wakeup_time);
 }
 #endif
