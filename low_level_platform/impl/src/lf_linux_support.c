@@ -88,8 +88,7 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
 }
 
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
-  int posix_policy;
-  int res;
+  int posix_policy, res;
   struct sched_param schedparam;
 
   // Get the current scheduling policy
@@ -108,6 +107,7 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
   case LF_SCHED_TIMESLICE:
     posix_policy = SCHED_RR;
     schedparam.sched_priority = sched_get_priority_max(SCHED_RR);
+    break;
   case LF_SCHED_PRIORITY:
     posix_policy = SCHED_FIFO;
     schedparam.sched_priority = sched_get_priority_max(SCHED_FIFO);
