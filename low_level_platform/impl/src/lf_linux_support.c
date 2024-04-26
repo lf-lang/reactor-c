@@ -60,7 +60,7 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
 }
 
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
-  int posix_policy, min_pri, max_pri, final_priority;
+  int posix_policy, min_pri, max_pri, final_priority, res;
   struct sched_param schedparam;
 
   if (priority > LF_SCHED_MAX_PRIORITY || priority < LF_SCHED_MIN_PRIORITY) {
@@ -68,8 +68,9 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
   }
 
   // Get the current scheduling policy
-  if (pthread_getschedparam(thread, &posix_policy, &schedparam) != 0) {
-    return -1;
+  int res = pthread_getschedparam(thread, &posix_policy, &schedparam);
+  if (res != 0) {
+    return res;
   }
 
   min_pri = sched_get_priority_min(posix_policy);
@@ -88,23 +89,28 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
 
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
   int posix_policy;
+  int res;
   struct sched_param schedparam;
 
   // Get the current scheduling policy
-  if (pthread_getschedparam(thread, &posix_policy, &schedparam) != 0) {
-    return -1;
+  res = pthread_getschedparam(thread, &posix_policy, &schedparam);
+  if (res != 0) {
+    return res;
   }
 
-  // Update the policy
+  // Update the policy, and initially set the priority to max.
+  // The priority value is later updated. Initializing it
+  // is just to avoid code duplication.
   switch (policy->policy) {
   case LF_SCHED_FAIR:
     posix_policy = SCHED_OTHER;
     break;
   case LF_SCHED_TIMESLICE:
     posix_policy = SCHED_RR;
-    break;
+    schedparam.sched_priority = sched_get_priority_max(SCHED_RR);
   case LF_SCHED_PRIORITY:
     posix_policy = SCHED_FIFO;
+    schedparam.sched_priority = sched_get_priority_max(SCHED_FIFO);
     break;
   default:
     return -1;
@@ -112,14 +118,15 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
   }
 
   // Write it back
-  if (pthread_setschedparam(thread, posix_policy, &schedparam) != 0) {
-    return -3;
+  res = pthread_setschedparam(thread, posix_policy, &schedparam);
+  if (res != 0) {
+    return res;
   }
 
   // Set the priority
-  if (lf_thread_set_priority(thread, policy->priority) != 0) {
-    return -1;
-  }
+  res = lf_thread_set_priority(thread, policy->priority);
+  if (res != 0)
+    return res;
 
   return 0;
 }
