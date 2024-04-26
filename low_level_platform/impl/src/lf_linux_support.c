@@ -68,7 +68,7 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
   }
 
   // Get the current scheduling policy
-  int res = pthread_getschedparam(thread, &posix_policy, &schedparam);
+  res = pthread_getschedparam(thread, &posix_policy, &schedparam);
   if (res != 0) {
     return res;
   }
