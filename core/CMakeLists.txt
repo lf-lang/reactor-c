@@ -28,7 +28,6 @@ list(APPEND REACTORC_SOURCES ${GENERAL_SOURCES})
 # Add sources for either threaded or single-threaded runtime
 if (DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
-    # include(federated/network/CMakeLists.txt)
 endif()
 
 # Add sources for either threaded or single-threaded runtime

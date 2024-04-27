@@ -636,7 +636,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MSG_TYPE_MQTT_JOIN 26
 
-#define MSG_TYPE_MQTT_JOIN_ACK 27
+#define MSG_TYPE_MQTT_ACCEPT 27
+
+#define MSG_TYPE_MQTT_ACCEPT_ACK 28
 
 /////////////////////////////////////////////
 //// Rejection codes
