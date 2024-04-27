@@ -91,6 +91,7 @@ federate_instance_t _fed = {.socket_TCP_RTI = -1,
                             .received_stop_request_from_rti = false,
                             .last_sent_LTC = {.time = NEVER, .microstep = 0u},
                             .last_sent_NET = {.time = NEVER, .microstep = 0u},
+                            .last_skipped_NET = {.time = NEVER, .microstep = 0u},
                             .min_delay_from_physical_action_to_federate_output = NEVER};
 
 federation_metadata_t federation_metadata = {
@@ -1449,6 +1450,17 @@ static void handle_downstream_next_event_tag() {
 
   LF_PRINT_LOG("Received Downstream Next Event Tag (DNET): " PRINTF_TAG ".", DNET.time - start_time, DNET.microstep);
 
+  environment_t* env;
+  _lf_get_environments(&env);
+  if (lf_tag_compare(DNET, _fed.last_skipped_NET) < 0) {
+    LF_PRINT_LOG("The incoming DNET " PRINTF_TAG " is earlier than the last skipped NET " PRINTF_TAG
+                 ". Send the skipped NET",
+                 DNET.time - start_time, DNET.microstep, _fed.last_skipped_NET.time, _fed.last_skipped_NET.microstep);
+    send_tag(MSG_TYPE_NEXT_EVENT_TAG, _fed.last_skipped_NET);
+    _fed.last_sent_NET = _fed.last_skipped_NET;
+    _fed.last_skipped_NET = NEVER_TAG;
+  }
+
   _fed.last_DNET = DNET;
 }
 
@@ -2381,8 +2393,10 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       if (lf_tag_compare(_fed.last_DNET, tag) < 0 || (_fed.has_upstream && lf_tag_compare(_fed.last_TAG, tag) < 0)) {
         send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
         _fed.last_sent_NET = tag;
+        _fed.last_skipped_NET = NEVER_TAG;
         LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
       } else {
+        _fed.last_skipped_NET = tag;
         LF_PRINT_LOG("Skip next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
       }
 
@@ -2420,6 +2434,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
         if (lf_tag_compare(next_tag, tag) != 0) {
           send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag);
           _fed.last_sent_NET = next_tag;
+          _fed.last_skipped_NET = NEVER_TAG;
           LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI from loop.", next_tag.time - lf_time_start(),
                        next_tag.microstep);
         }

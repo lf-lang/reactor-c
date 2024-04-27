@@ -143,11 +143,6 @@ typedef struct federate_instance_t {
   bool has_downstream;
 
   /**
-   *
-   */
-  tag_t last_DNET;
-
-  /**
    * Used to prevent the federate from sending a REQUEST_STOP
    * message if it has already received a stop request from the RTI.
    * This variable should only be accessed while holding a mutex lock.
@@ -172,6 +167,16 @@ typedef struct federate_instance_t {
    * A record of the most recently sent NET (next event tag) message.
    */
   tag_t last_sent_NET;
+
+  /**
+   * A record of the most recently skipped NET (next event tag) message.
+   */
+  tag_t last_skipped_NET;
+
+  /**
+   *
+   */
+  tag_t last_DNET;
 
   /**
    * For use in federates with centralized coordination, the minimum
