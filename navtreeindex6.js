@@ -1,5 +1,8 @@
 var NAVTREEINDEX6 =
 {
+"db/d43/structlf__wav__data__t.html#ab8bd3b197739b497ff0e6a040225942f":[11,0,30,0],
+"db/d63/structlf__stat__ll.html":[11,0,28],
+"db/d63/structlf__stat__ll.html#a012949dce8d9257172f510eebdf848d4":[11,0,28,2],
 "db/d63/structlf__stat__ll.html#a58abf354e780a1ec59cae3644d2fcbc1":[11,0,28,3],
 "db/d63/structlf__stat__ll.html#a8841b6fc40c60f3f1b73ada60ce556b7":[11,0,28,1],
 "db/d63/structlf__stat__ll.html#aa1018daf35cf8d68814ee876382eaecc":[11,0,28,0],
@@ -143,9 +146,11 @@ var NAVTREEINDEX6 =
 "dc/d4f/structbuild__config__t.html#a870c8bef5e1969be2c0f39b2db1dc5a9":[11,0,5,0],
 "dc/d4f/structbuild__config__t.html#ae157534091a9543d123bcebbfa7c1fb6":[11,0,5,1],
 "dc/d54/clock_8c.html":[12,0,0,4],
-"dc/d54/clock_8c.html#a1d6ed42d060c926d05db76544172fed8":[12,0,0,4,0],
-"dc/d54/clock_8c.html#a341e2d260240fd35d29ada9531aa9ead":[12,0,0,4,2],
-"dc/d54/clock_8c.html#aad3e8b04cd7bf1132b774940602a72d3":[12,0,0,4,1],
+"dc/d54/clock_8c.html#a1d6ed42d060c926d05db76544172fed8":[12,0,0,4,2],
+"dc/d54/clock_8c.html#a341e2d260240fd35d29ada9531aa9ead":[12,0,0,4,4],
+"dc/d54/clock_8c.html#a6b3edec4d337711a2e914c9f5581ce1c":[12,0,0,4,0],
+"dc/d54/clock_8c.html#aad3e8b04cd7bf1132b774940602a72d3":[12,0,0,4,3],
+"dc/d54/clock_8c.html#af5fb44eb0db80b9dfa61399bdab8b85c":[12,0,0,4,1],
 "dc/d66/pqueue_8h.html":[12,0,1,1,3,3],
 "dc/d66/pqueue_8h.html#a051ae6a8bc2b547818e06cb0c72b14a2":[12,0,1,1,3,3,1],
 "dc/d66/pqueue_8h.html#a19d650d18c331602f44c642bce2456e8":[12,0,1,1,3,3,3],
@@ -244,10 +249,5 @@ var NAVTREEINDEX6 =
 "dc/d85/reactor_8h.html":[12,0,1,1,10],
 "dc/d85/reactor_8h.html#a07b2e94bcac5d7bcfd47d4eaf35a4977":[12,0,1,1,10,9],
 "dc/d85/reactor_8h.html#a129c6df527165b2378d1dc4852411c35":[12,0,1,1,10,5],
-"dc/d85/reactor_8h.html#a1a5fdb69bc112879d4014bb0790e843c":[12,0,1,1,10,1],
-"dc/d85/reactor_8h.html#a2f0b7c8d624c2da93012538bd93568ad":[12,0,1,1,10,3],
-"dc/d85/reactor_8h.html#a4625be3023ef492f25fd5193ef754774":[12,0,1,1,10,0],
-"dc/d85/reactor_8h.html#aae4a4a9ce970c18bff7785cf7863777c":[12,0,1,1,10,6],
-"dc/d85/reactor_8h.html#ab49affc958f705d9e33c5e3463848bda":[12,0,1,1,10,7],
-"dc/d85/reactor_8h.html#adaa6f5f1a265e7a37aeb3b6a0d101732":[12,0,1,1,10,8]
+"dc/d85/reactor_8h.html#a1a5fdb69bc112879d4014bb0790e843c":[12,0,1,1,10,1]
 };

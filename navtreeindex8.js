@@ -1,5 +1,10 @@
 var NAVTREEINDEX8 =
 {
+"de/dcd/influxdb_8h.html#ad456eef5a970734402bf147d5daa162c":[12,0,10,0,1,22],
+"de/dcd/influxdb_8h.html#ad45a883e3caea0fa7c2a8d542314c1b0":[12,0,10,0,1,32],
+"de/dcd/influxdb_8h.html#ad82790662264e54a9d1f0c4815b9245e":[12,0,10,0,1,6],
+"de/dcd/influxdb_8h.html#adabd4b2ff9a9ae87bb6af970dc1184f2":[12,0,10,0,1,10],
+"de/dcd/influxdb_8h.html#ae1bca5e82622ef9d7ec0d00784a6a97b":[12,0,10,0,1,24],
 "de/dcd/influxdb_8h.html#ae4983c0f27aa6bd2d0b61c013fb5ce0b":[12,0,10,0,1,13],
 "de/dcd/influxdb_8h.html#af41d4fee72efff67b442ebf9bc17f3b4":[12,0,10,0,1,26],
 "de/dcd/influxdb_8h.html#afd91aaf985037d61628552664203a397":[12,0,10,0,1,2],

@@ -8,11 +8,12 @@ var searchData=
   ['_5fget_5fnext_5fchar_5',['_GET_NEXT_CHAR',['../de/dcd/influxdb_8h.html#a49f65e2120cd077ee205fefbcd5bdc50',1,'influxdb.h']]],
   ['_5fget_5fnumber_6',['_GET_NUMBER',['../de/dcd/influxdb_8h.html#aab5c9cefe9b019d4aaa5712203c74e0e',1,'influxdb.h']]],
   ['_5flf_5fclock_5fsync_5fattenuation_7',['_LF_CLOCK_SYNC_ATTENUATION',['../d9/dd5/clock-sync_8h.html#a532da6f271eb75c9ac745571b995c404',1,'clock-sync.h']]],
-  ['_5flf_5fclock_5fsync_5fexchanges_5fper_5finterval_8',['_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL',['../d9/dd5/clock-sync_8h.html#ab0eeaea19d6e5c9217a4eed928c32141',1,'clock-sync.h']]],
-  ['_5flf_5ftimeout_9',['_LF_TIMEOUT',['../da/d31/lf__rp2040__support_8h.html#a648705f106259061531b75d252c66f79',1,'lf_rp2040_support.h']]],
-  ['_5flf_5ftoken_5frecycling_5fbin_5fsize_5flimit_10',['_LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT',['../d4/d37/lf__token_8c.html#ad6be436dfb95ab914336870d340b207d',1,'lf_token.c']]],
-  ['_5flf_5ftrace_5ffailure_11',['_LF_TRACE_FAILURE',['../dc/d2e/trace__impl_8c.html#af3c85a0b744418d63cf8a7bdf8b2dfc0',1,'_LF_TRACE_FAILURE:&#160;trace_impl.c'],['../d9/dc7/trace__util_8h.html#a7e540fdcdbf452d4198f88859699ce18',1,'_LF_TRACE_FAILURE:&#160;trace_util.h']]],
-  ['_5floop_5fnext_12',['_LOOP_NEXT',['../de/dcd/influxdb_8h.html#ad82790662264e54a9d1f0c4815b9245e',1,'influxdb.h']]],
-  ['_5fsys_5f_5ftimespec_5fh_5f_13',['_SYS__TIMESPEC_H_',['../d3/d79/lf__arduino__support_8h.html#abb50862d2e0e95d4abacd7eb12b34060',1,'lf_arduino_support.h']]],
-  ['_5funtil_14',['_UNTIL',['../de/dcd/influxdb_8h.html#a6220fbb96443025e3a7ff76dbb816a79',1,'influxdb.h']]]
+  ['_5flf_5fclock_5fsync_5fcollect_5fstats_8',['_LF_CLOCK_SYNC_COLLECT_STATS',['../d9/dd5/clock-sync_8h.html#a4b9290ecd850995c857e04746aa45d10',1,'clock-sync.h']]],
+  ['_5flf_5fclock_5fsync_5fexchanges_5fper_5finterval_9',['_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL',['../d9/dd5/clock-sync_8h.html#ab0eeaea19d6e5c9217a4eed928c32141',1,'clock-sync.h']]],
+  ['_5flf_5ftimeout_10',['_LF_TIMEOUT',['../da/d31/lf__rp2040__support_8h.html#a648705f106259061531b75d252c66f79',1,'lf_rp2040_support.h']]],
+  ['_5flf_5ftoken_5frecycling_5fbin_5fsize_5flimit_11',['_LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT',['../d4/d37/lf__token_8c.html#ad6be436dfb95ab914336870d340b207d',1,'lf_token.c']]],
+  ['_5flf_5ftrace_5ffailure_12',['_LF_TRACE_FAILURE',['../dc/d2e/trace__impl_8c.html#af3c85a0b744418d63cf8a7bdf8b2dfc0',1,'_LF_TRACE_FAILURE:&#160;trace_impl.c'],['../d9/dc7/trace__util_8h.html#a7e540fdcdbf452d4198f88859699ce18',1,'_LF_TRACE_FAILURE:&#160;trace_util.h']]],
+  ['_5floop_5fnext_13',['_LOOP_NEXT',['../de/dcd/influxdb_8h.html#ad82790662264e54a9d1f0c4815b9245e',1,'influxdb.h']]],
+  ['_5fsys_5f_5ftimespec_5fh_5f_14',['_SYS__TIMESPEC_H_',['../d3/d79/lf__arduino__support_8h.html#abb50862d2e0e95d4abacd7eb12b34060',1,'lf_arduino_support.h']]],
+  ['_5funtil_15',['_UNTIL',['../de/dcd/influxdb_8h.html#a6220fbb96443025e3a7ff76dbb816a79',1,'influxdb.h']]]
 ];

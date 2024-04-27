@@ -105,6 +105,12 @@ $(function(){initNavTree('dc/d54/clock_8c.html','../../'); initResizable(); });
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a6b3edec4d337711a2e914c9f5581ce1c" id="r_a6b3edec4d337711a2e914c9f5581ce1c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6b3edec4d337711a2e914c9f5581ce1c">clock_sync_add_offset</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">t</a>)</td></tr>
+<tr class="memdesc:a6b3edec4d337711a2e914c9f5581ce1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add the current clock synchronization offset to a specified timestamp.  <br /></td></tr>
+<tr class="separator:a6b3edec4d337711a2e914c9f5581ce1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5fb44eb0db80b9dfa61399bdab8b85c" id="r_af5fb44eb0db80b9dfa61399bdab8b85c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af5fb44eb0db80b9dfa61399bdab8b85c">clock_sync_subtract_offset</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">t</a>)</td></tr>
+<tr class="memdesc:af5fb44eb0db80b9dfa61399bdab8b85c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Subtract the clock synchronization offset from a timestamp.  <br /></td></tr>
+<tr class="separator:af5fb44eb0db80b9dfa61399bdab8b85c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad3e8b04cd7bf1132b774940602a72d3" id="r_aad3e8b04cd7bf1132b774940602a72d3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aad3e8b04cd7bf1132b774940602a72d3">lf_clock_gettime</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">now</a>)</td></tr>
 <tr class="separator:aad3e8b04cd7bf1132b774940602a72d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a341e2d260240fd35d29ada9531aa9ead" id="r_a341e2d260240fd35d29ada9531aa9ead"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a341e2d260240fd35d29ada9531aa9ead">lf_clock_interruptable_sleep_until_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">wakeup_time</a>)</td></tr>
@@ -117,6 +123,56 @@ Functions</h2></td></tr>
 <dl class="section author"><dt>Author</dt><dd>Erling Jellum </dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="a6b3edec4d337711a2e914c9f5581ce1c" name="a6b3edec4d337711a2e914c9f5581ce1c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6b3edec4d337711a2e914c9f5581ce1c">&#9670;&#160;</a></span>clock_sync_add_offset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> clock_sync_add_offset </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *</td>          <td class="paramname"><span class="paramname"><em>t</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Add the current clock synchronization offset to a specified timestamp. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>Pointer to the timestamp to which to add the offset. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af5fb44eb0db80b9dfa61399bdab8b85c" name="af5fb44eb0db80b9dfa61399bdab8b85c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5fb44eb0db80b9dfa61399bdab8b85c">&#9670;&#160;</a></span>clock_sync_subtract_offset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> clock_sync_subtract_offset </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *</td>          <td class="paramname"><span class="paramname"><em>t</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Subtract the clock synchronization offset from a timestamp. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">t</td><td>The timestamp from which to subtract the current clock sync offset. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a1d6ed42d060c926d05db76544172fed8" name="a1d6ed42d060c926d05db76544172fed8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1d6ed42d060c926d05db76544172fed8">&#9670;&#160;</a></span>lf_clock_cond_timedwait()</h2>
 
