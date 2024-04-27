@@ -120,8 +120,18 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   ssize_t bytes_read = 0;
   unsigned int temp_length = 10;
 
+  if (sst_priv->session_ctx->sock < 0) {
+    return -1;
+  }
+
   // Read 10 bytes first.
   bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, temp_length);
+  if (bytes_read == 0) {
+    // Connection closed.
+    return 0;
+  } else if (bytes_read < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+    // Add retry.
+  }
   unsigned int payload_length; // Length of the payload of SST.
   unsigned int var_length_buf_size;
   // This fills payload_length and var_length_buf_size.

@@ -87,7 +87,7 @@ int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
 void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
 
-
+// Return 0 when connection lost. -1 on error. > 0 bytes read.
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length);
 
 
