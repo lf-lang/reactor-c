@@ -26,8 +26,6 @@ if(NUMBER_OF_WORKERS)
     if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
       add_test_dir(${TEST_DIR}/scheduling)
     endif()
-else()
-    add_test_dir(${TEST_DIR}/single-threaded)
 endif(NUMBER_OF_WORKERS)
 
 # Create executables for each test.

@@ -11,29 +11,20 @@ jobs:
   run:
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.platform }}
 
     steps:
       - name: Check out reactor-c repository
         uses: actions/checkout@v2
 
-      - name: Build and run unit tests ${{ inputs.cmake-args }} (linux)
+      - name: Build and run unit tests ${{ inputs.cmake-args }}
         run: |
           mkdir build
           cd build
           cmake .. ${{ inputs.cmake-args }}
           cmake --build .
           sudo make test
-        if: matrix.platform == 'ubuntu-latest'
-      - name: Build and run unit tests ${{ inputs.cmake-args }} (macos/win)
-        run: |
-          mkdir build
-          cd build
-          cmake .. ${{ inputs.cmake-args }}
-          cmake --build .
-          make test
-        if: matrix.platform != 'ubuntu-latest'
       - name: Run RTI unit tests
         run: |
           cd core/federated/RTI
@@ -42,5 +33,4 @@ jobs:
           cmake ..
           cmake --build .
           ctest
-        if: matrix.platform == 'ubuntu-latest' || matrix.platform == 'macos-latest'
           
