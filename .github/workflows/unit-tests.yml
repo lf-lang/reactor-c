@@ -18,10 +18,16 @@ jobs:
       - name: Check out reactor-c repository
         uses: actions/checkout@v2
 
-      - name: Build and run unit tests ${{ inputs.cmake-args }}
+      - name: Build unit tests${{ inputs.cmake-args }}
         run: |
           mkdir build
           cd build
           cmake .. ${{ inputs.cmake-args }}
           cmake --build .
-          make test
+      - name: Run unit tests with sudo. (Needed for changing prio/policy)
+        run: sudo make test
+        if: matrix.platform == 'ubuntu-latest'
+      - name: Run unit tests normal.
+        run: cd build && make test
+        if: matrix.platform != 'ubuntu-latest'
+          

@@ -1,8 +1,11 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "core/utils/util.h"
 #include "low_level_platform.h"
+
+#if !defined PLATFORM_Linux
+#error scheduling_api_test.c should only be compiled on Linux
+#endif
 
 int main(int argc, char** argv) {
   int res;
