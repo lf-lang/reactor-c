@@ -3,6 +3,8 @@
 
 #include <MQTTClient.h>
 
+#define MQTT_RTI_RESIGNED 88
+
 typedef struct MQTT_priv_t {
   MQTTClient client;
   MQTTClient_connectOptions conn_opts; // = MQTTClient_connectOptions_initializer;

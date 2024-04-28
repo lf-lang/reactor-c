@@ -50,7 +50,16 @@ netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
 }
 
 void close_netdrv(netdrv_t* drv) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
+  unsigned char buffer[1];
+  buffer[0] = MQTT_RTI_RESIGNED;
+  write_to_netdrv_fail_on_error(drv, 1, buffer, NULL,
+                                "Failed to send MQTT_RTI_RESIGNED to federate %d", drv->federate_id);
+  int rc;
+  if ((rc = MQTTClient_disconnect(MQTT_priv->client, 10000)) != MQTTCLIENT_SUCCESS) {
+    printf("Failed to disconnect, return code %d\n", rc);
+  }
+  MQTTClient_destroy(&MQTT_priv->client);
 }
 
 /**
@@ -65,8 +74,10 @@ void close_netdrv(netdrv_t* drv) {
  * @return int
  */
 int create_server(netdrv_t* drv, int server_type, uint16_t port) {
-  if(server_type == 0) {} //JUST TO PASS COMPILER.
-  if(port == 0) {} //JUST TO PASS COMPILER.
+  if (server_type == 0) {
+  } // JUST TO PASS COMPILER.
+  if (port == 0) {
+  } // JUST TO PASS COMPILER.
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   // If RTI calls this, it will be -1. If federate server calls, it will be it's federate ID.
   set_MQTTServer_id(MQTT_priv, drv->federate_id, drv->federate_id);
@@ -219,7 +230,7 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   MQTTClient_deliveryToken token;
   int rc;
   // pubmsg.payload = (void*)base64_encode(buffer, num_bytes, &pubmsg.payloadlen);
-  pubmsg.payload = (void*) buffer;
+  pubmsg.payload = (void*)buffer;
   pubmsg.payloadlen = num_bytes;
   pubmsg.qos = QOS;
   pubmsg.retained = 0;
@@ -236,12 +247,13 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   // LF_PRINT_LOG("Message publishing on topic %s is %.*s", MQTT_priv->topic_name, pubmsg.payloadlen,
   //              (char*)(pubmsg.payload));
   rc = MQTTClient_waitForCompletion(MQTT_priv->client, token, TIMEOUT);
-  // free(pubmsg.payload);
-  return 1;
+  int bytes_written = pubmsg.payloadlen;
+  return bytes_written;
 }
 
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
-  if(buffer_length == 0) {} //JUST TO PASS COMPILER.
+  if (buffer_length == 0) {
+  } // JUST TO PASS COMPILER.
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   char* topicName = NULL;
   int topicLen;
@@ -249,6 +261,10 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   int rc;
   if ((rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 1000000)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to receive message, return code %d\n", rc);
+  }
+
+  if (buffer[0] == MQTT_RTI_RESIGNED) {
+    return 0;
   }
   // int decoded_length;
   // unsigned char* decoded = base64_decode(message->payload, message->payloadlen, &decoded_length);
@@ -267,47 +283,62 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   // memcpy(buffer, decoded, decoded_length);
   // free(decoded);
 
-  memcpy(buffer, (unsigned char *)message->payload, message->payloadlen);
+  memcpy(buffer, (unsigned char*)message->payload, message->payloadlen);
+  int bytes_read = message->payloadlen;
   MQTTClient_free(topicName);
   MQTTClient_freeMessage(&message);
-  return 1;
+  return bytes_read;
 }
 
 char* get_host_name(netdrv_t* drv) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
   return NULL;
 }
 int32_t get_my_port(netdrv_t* drv) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
   return 0;
 }
 int32_t get_port(netdrv_t* drv) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
   return 0;
 }
 struct in_addr* get_ip_addr(netdrv_t* drv) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
   return NULL;
 }
 void set_host_name(netdrv_t* drv, const char* hostname) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
-  if(hostname == NULL) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
+  if (hostname == NULL) {
+  } // JUST TO PASS COMPILER.
 }
 void set_port(netdrv_t* drv, int port) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER
-  if(port == 0) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER
+  if (port == 0) {
+  } // JUST TO PASS COMPILER.
 }
 void set_specified_port(netdrv_t* drv, int port) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
-  if(port == 0) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
+  if (port == 0) {
+  } // JUST TO PASS COMPILER.
 }
 void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
-  if(ip_addr.s_addr == 0) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
+  if (ip_addr.s_addr == 0) {
+  } // JUST TO PASS COMPILER.
 }
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
-  if(result == NULL) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
+  if (result == NULL) {
+  } // JUST TO PASS COMPILER.
   return 0;
 }
 
