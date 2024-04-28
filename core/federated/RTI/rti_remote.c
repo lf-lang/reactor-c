@@ -1518,6 +1518,10 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->base.tracing_enabled = false;
   rti_remote->stop_in_progress = false;
 
+// #ifdef OPENSSL_REQUIRED
+//   OPENSSL_init_crypto(OPENSSL_INIT_NO_ATEXIT, NULL);
+// #endif
+
 }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {

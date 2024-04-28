@@ -36,6 +36,10 @@
 #include "reactor_common.h"
 
 #include "netdriver.h"
+// #ifdef OPENSSL_REQUIRED
+//   #include <openssl/crypto.h>
+// #endif
+
 
 #if !defined(LF_SINGLE_THREADED)
 #include "watchdog.h"

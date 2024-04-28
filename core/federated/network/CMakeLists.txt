@@ -33,6 +33,7 @@ ELSEIF(COMM_TYPE MATCHES MQTT)
 ELSEIF(COMM_TYPE MATCHES SST)
     target_link_libraries(lf-network-impl PUBLIC SSTLIB)
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/lf_sst_support.c)
+    # add_compile_definitions(OPENSSL_REQUIRED)
 ENDIF()
 
 target_compile_definitions(lf-network-impl PUBLIC COMM_TYPE_${COMM_TYPE})

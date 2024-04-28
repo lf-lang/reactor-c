@@ -1394,10 +1394,10 @@ static void send_resign_signal(environment_t* env) {
   size_t bytes_to_write = 1;
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_RESIGN;
-  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
+  // LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, bytes_to_write, &(buffer[0]), &lf_outbound_netdrv_mutex,
                                 "Failed to send MSG_TYPE_RESIGN.");
-  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
+  // LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   LF_PRINT_LOG("Resigned.");
 }
 
@@ -2421,11 +2421,18 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     tracepoint_federate_to_rti(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
   }
 
-  int bytes_written = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
-  if (bytes_written > 0) {
-    // Header sent successfully. Send the body.
-    bytes_written = write_to_netdrv_close_on_error(netdrv, length, message);
-  }
+
+//TODO: THIS IS ONLY TEMPORARY... NEED TO FIX!!
+  size_t sender_length = length + header_length;
+  unsigned char *sender = malloc(sender_length);
+  memcpy(sender, header_buffer, header_length);
+  memcpy(sender + header_length, message, length);
+  // int bytes_written = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
+  // if (bytes_written > 0) {
+  //   // Header sent successfully. Send the body.
+  //   bytes_written = write_to_netdrv_close_on_error(netdrv, length, message);
+  // }
+  int bytes_written = write_to_netdrv_close_on_error(netdrv, sender_length, sender);
   if (bytes_written <= 0) {
     // Message did not send. Handling depends on message type.
     if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
