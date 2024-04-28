@@ -7,7 +7,7 @@
 #error scheduling_api_test.c should only be compiled on Linux
 #endif
 
-int main(int argc, char** argv) {
+int main() {
   int res;
 
   // Set the CPU Set of the current thread.

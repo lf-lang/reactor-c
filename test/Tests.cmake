@@ -6,6 +6,8 @@ set(TEST_SUFFIX test.c)  # Files that are tests must have names ending with TEST
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 set(TEST_MOCK_SRCS ${TEST_DIR}/src_gen_stub.c ${TEST_DIR}/rand_utils.c)
 
+include(${LF_ROOT}/core/lf_utils.cmake)
+
 # Add the test files found in DIR to TEST_FILES.
 function(add_test_dir DIR)
     file(
@@ -41,4 +43,6 @@ foreach(FILE ${TEST_FILES})
         ${CoreLib} ${Lib}
     )
     target_include_directories(${NAME} PRIVATE ${TEST_DIR})
+    # Warnings as errors
+    lf_enable_compiler_warnings(${NAME})
 endforeach(FILE ${TEST_FILES})

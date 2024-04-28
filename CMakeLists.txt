@@ -22,9 +22,6 @@ if(DEFINED LF_SINGLE_THREADED)
     add_compile_definitions(LF_SINGLE_THREADED=1)
 endif()
 
-# Warnings as errors
-add_compile_options(-Werror)
-
 set(Test test)
 set(Lib lib)
 set(CoreLibPath core)
