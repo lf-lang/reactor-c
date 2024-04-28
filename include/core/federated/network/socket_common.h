@@ -76,4 +76,6 @@ int create_real_time_tcp_socket_errexit();
 // TODO: Check if it's fine to just use int. It's just an enum. Can't use server_type_t because not including netdriver.h
 int create_TCP_server(socket_priv_t* priv, int server_type, uint16_t port);
 
+int connect_to_socket(int sock, char* hostname, int port, uint16_t user_specified_port);
+
 #endif /* SOCKET_COMMON_H */

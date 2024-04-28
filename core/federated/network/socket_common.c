@@ -209,3 +209,44 @@ int create_clock_sync_server(uint16_t* clock_sync_port) {
 
   return socket_descriptor;
 }
+
+int connect_to_socket(int sock, char* hostname, int port, uint16_t user_specified_port){
+  struct addrinfo hints;
+  struct addrinfo* result;
+  int ret = -1;
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;       /* Allow IPv4 */
+  hints.ai_socktype = SOCK_STREAM; /* Stream socket */
+  hints.ai_protocol = IPPROTO_TCP; /* TCP protocol */
+  hints.ai_addr = NULL;
+  hints.ai_next = NULL;
+  hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
+
+  int count_retries = 0;
+  while (count_retries++ < CONNECT_MAX_RETRIES) {
+    // Convert port number to string.
+    char str[6];
+    sprintf(str, "%u", port);
+
+    // Get address structure matching hostname and hints criteria, and
+    // set port to the port number provided in str. There should only
+    // ever be one matching address structure, and we connect to that.
+    if (getaddrinfo(hostname, (const char*)&str, &hints, &result)) {
+      lf_print_error_and_exit("No host matching given hostname: %s", hostname);
+    }
+    ret = connect(sock, result->ai_addr, result->ai_addrlen);
+    if (ret < 0) {
+      lf_sleep(CONNECT_RETRY_INTERVAL);
+      if (user_specified_port == 0) {
+        port++;
+      }
+      continue;
+    } else {
+      break;
+    }
+  }
+  freeaddrinfo(result);
+  return ret;
+}
+

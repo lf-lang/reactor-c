@@ -100,7 +100,12 @@ int connect_to_netdrv(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   session_key_list_t* s_key_list = get_session_key(sst_priv->sst_ctx, NULL);
   // Does not increases RTI port number.
-  SST_session_ctx_t* session_ctx = secure_connect_to_server(&s_key_list->s_key[0], sst_priv->sst_ctx);
+  int sock = create_real_time_tcp_socket_errexit();
+  int ret = connect_to_socket(sock, sst_priv->sst_ctx->config->entity_server_ip_addr, atoi(sst_priv->sst_ctx->config->entity_server_port_num), 0); // Not supporting user_specified_port yet.
+  if (ret != 0) {
+    return ret;
+  }
+  SST_session_ctx_t *session_ctx = secure_connect_to_server_with_socket(&s_key_list->s_key[0], sst_priv->sst_ctx, sock);
   sst_priv->session_ctx = session_ctx;
   return 1;
 }

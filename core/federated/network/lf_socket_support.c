@@ -90,42 +90,7 @@ void create_client(netdrv_t* drv) {
 int connect_to_netdrv(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
 
-  struct addrinfo hints;
-  struct addrinfo* result;
-
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;       /* Allow IPv4 */
-  hints.ai_socktype = SOCK_STREAM; /* Stream socket */
-  hints.ai_protocol = IPPROTO_TCP; /* TCP protocol */
-  hints.ai_addr = NULL;
-  hints.ai_next = NULL;
-  hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
-
-  int count_retries = 0;
-  int ret = -1;
-  while (count_retries++ < CONNECT_MAX_RETRIES) {
-    // Convert port number to string.
-    char str[6];
-    sprintf(str, "%u", priv->server_port);
-
-    // Get address structure matching hostname and hints criteria, and
-    // set port to the port number provided in str. There should only
-    // ever be one matching address structure, and we connect to that.
-    if (getaddrinfo(priv->server_hostname, (const char*)&str, &hints, &result)) {
-      lf_print_error_and_exit("No host matching given hostname: %s", priv->server_hostname);
-    }
-    ret = connect(priv->socket_descriptor, result->ai_addr, result->ai_addrlen);
-    if (ret < 0) {
-      lf_sleep(CONNECT_RETRY_INTERVAL);
-      if (priv->user_specified_port == 0) {
-        priv->server_port++;
-      }
-      continue;
-    } else {
-      break;
-    }
-  }
-  freeaddrinfo(result);
+  int ret = connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port, priv->user_specified_port);
   return ret;
 }
 
