@@ -105,7 +105,7 @@ int connect_to_netdrv(netdrv_t* drv) {
   if (ret != 0) {
     return ret;
   }
-  SST_session_ctx_t *session_ctx = secure_connect_to_server_with_socket(&s_key_list->s_key[0], sst_priv->sst_ctx, sock);
+  SST_session_ctx_t *session_ctx = secure_connect_to_server_with_socket(&s_key_list->s_key[0], sock);
   sst_priv->session_ctx = session_ctx;
   return 1;
 }
