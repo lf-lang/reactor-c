@@ -18,6 +18,8 @@ static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, u
                                   unsigned int* var_len_int_buf_size);
 
 netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
+  if(federate_id == 0) {} //JUST TO PASS COMPILER.
+  if(federation_id == NULL) {} //JUST TO PASS COMPILER.
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
@@ -120,6 +122,7 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
 }
 
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
+  if(buffer_length == 0) {}//JUST TO PASS COMPILER.
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   unsigned char sst_buffer[1024];
   ssize_t bytes_read = 0;
@@ -205,7 +208,11 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
   sst_priv->socket_priv->server_ip_addr = ip_addr;
 }
 
-ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  if(result == NULL) {} //JUST TO PASS COMPILER.
+  return 0;
+}
 
 // ------------------Helper Functions------------------ //
 
@@ -226,7 +233,7 @@ static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, u
                                   unsigned int* var_len_int_buf_size) {
   *num = 0;
   *var_len_int_buf_size = 0;
-  for (int i = 0; i < buf_length; i++) {
+  for (unsigned int i = 0; i < buf_length; i++) {
     *num |= (buf[i] & 127) << (7 * i);
     if ((buf[i] & 128) == 0) {
       *var_len_int_buf_size = i + 1;

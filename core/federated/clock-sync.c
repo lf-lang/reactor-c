@@ -284,7 +284,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* netdrv_or_sock, ne
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
-  int ret;
+  int ret = -1;
   if (netdrv_type == NETDRV) {
     ret = write_to_netdrv((netdrv_t*)netdrv_or_sock, 1 + sizeof(int), reply_buffer);
   } else if (netdrv_type == UDP) {

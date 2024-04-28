@@ -49,7 +49,9 @@ netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
   return drv;
 }
 
-void close_netdrv(netdrv_t* drv) {}
+void close_netdrv(netdrv_t* drv) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+}
 
 /**
  * @brief Create a server object
@@ -63,6 +65,8 @@ void close_netdrv(netdrv_t* drv) {}
  * @return int
  */
 int create_server(netdrv_t* drv, int server_type, uint16_t port) {
+  if(server_type == 0) {} //JUST TO PASS COMPILER.
+  if(port == 0) {} //JUST TO PASS COMPILER.
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   // If RTI calls this, it will be -1. If federate server calls, it will be it's federate ID.
   set_MQTTServer_id(MQTT_priv, drv->federate_id, drv->federate_id);
@@ -198,6 +202,7 @@ int connect_to_netdrv(netdrv_t* drv) {
   buffer[0] = MSG_TYPE_MQTT_ACCEPT_ACK;
   write_to_netdrv_fail_on_error(drv, 1, buffer, NULL,
                                 "Failed to write MSG_TYPE_MQTT_ACCEPT_ACK_to RTI for connection through MQTT.");
+  return 0;
 }
 
 /**
@@ -236,6 +241,7 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
 }
 
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
+  if(buffer_length == 0) {} //JUST TO PASS COMPILER.
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   char* topicName = NULL;
   int topicLen;
@@ -267,15 +273,43 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   return 1;
 }
 
-char* get_host_name(netdrv_t* drv) {}
-int32_t get_my_port(netdrv_t* drv) {}
-int32_t get_port(netdrv_t* drv) {}
-struct in_addr* get_ip_addr(netdrv_t* drv) {}
-void set_host_name(netdrv_t* drv, const char* hostname) {}
-void set_port(netdrv_t* drv, int port) {}
-void set_specified_port(netdrv_t* drv, int port) {}
-void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {}
-ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {}
+char* get_host_name(netdrv_t* drv) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  return NULL;
+}
+int32_t get_my_port(netdrv_t* drv) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  return 0;
+}
+int32_t get_port(netdrv_t* drv) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  return 0;
+}
+struct in_addr* get_ip_addr(netdrv_t* drv) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  return NULL;
+}
+void set_host_name(netdrv_t* drv, const char* hostname) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  if(hostname == NULL) {} //JUST TO PASS COMPILER.
+}
+void set_port(netdrv_t* drv, int port) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER
+  if(port == 0) {} //JUST TO PASS COMPILER.
+}
+void set_specified_port(netdrv_t* drv, int port) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  if(port == 0) {} //JUST TO PASS COMPILER.
+}
+void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  if(ip_addr.s_addr == 0) {} //JUST TO PASS COMPILER.
+}
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
+  if(drv == NULL) {} //JUST TO PASS COMPILER.
+  if(result == NULL) {} //JUST TO PASS COMPILER.
+  return 0;
+}
 
 // ------------------Helper Functions------------------ //
 

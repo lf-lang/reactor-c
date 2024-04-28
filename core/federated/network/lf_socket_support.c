@@ -408,6 +408,7 @@ static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int
   case MSG_TYPE_FAILED:
     *bytes_to_read = 0;
     *state = FINISH_READ;
+    break;
   default:
     *bytes_to_read = 0;
     // Error handling?

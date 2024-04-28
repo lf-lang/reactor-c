@@ -390,14 +390,14 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 static void close_inbound_netdrv(int fed_id, int flag) {
   LF_MUTEX_LOCK(&netdrv_mutex);
   if (_fed.netdrv_for_inbound_p2p_connections[fed_id] != NULL) {
-    // if (flag >= 0) {
+    if (flag >= 0) {
     //     if (flag > 0) {
     //         shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
     //     } else {
     //         // Have received EOF from the other end. Send EOF to the other end.
     //         shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_WR);
     //     }
-    // }
+    }
     // close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
     // _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
     close_netdrv(_fed.netdrv_for_inbound_p2p_connections[fed_id]);
@@ -463,6 +463,8 @@ static int handle_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, s
   unsigned short port_id;
   unsigned short federate_id;
   size_t length;
+    //TODO: JUST FOR COMPILER.
+  if(fed_id==0){}
   extract_header(buffer, &port_id, &federate_id, &length);
   size_t header_length = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
   // Check if the message is intended for this federate
@@ -812,7 +814,7 @@ static void close_outbound_netdrv(int fed_id, int flag) {
   if (_fed.netdrv_for_outbound_p2p_connections[fed_id] != NULL) {
     // // Close the socket by sending a FIN packet indicating that no further writes
     // // are expected.  Then read until we get an EOF indication.
-    // if (flag >= 0) {
+    if (flag >= 0) {
     //     // SHUT_WR indicates no further outgoing messages.
     //     shutdown(_fed.sockets_for_outbound_p2p_connections[fed_id], SHUT_WR);
     //     if (flag > 0) {
@@ -822,7 +824,7 @@ static void close_outbound_netdrv(int fed_id, int flag) {
     //         unsigned char message[32];
     //         while (read(_fed.sockets_for_outbound_p2p_connections[fed_id], &message, 32) > 0);
     //     }
-    // }
+    }
     // close(_fed.sockets_for_outbound_p2p_connections[fed_id]);
     // _fed.sockets_for_outbound_p2p_connections[fed_id] = -1;
     close_netdrv(_fed.netdrv_for_outbound_p2p_connections[fed_id]);
@@ -1668,7 +1670,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // remote federate has not yet sent an MSG_TYPE_ADDRESS_ADVERTISEMENT message to the RTI.
     // Sleep for some time before retrying.
     if (port == -1) {
-      if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
+      //TODO: NEED TO CHANGE 
+      if (count_tries++ >= CONNECT_MAX_RETRIES) {
         lf_print_error_and_exit("TIMEOUT obtaining IP/port for federate %d from the RTI.", remote_federate_id);
       }
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
@@ -1690,6 +1693,10 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   set_host_name(netdrv, hostname);
   set_port(netdrv, uport);
   result = connect_to_netdrv(netdrv);
+  if (result != 0 ) {
+    LF_PRINT_LOG("Failed to connect.");
+  }
+
 
   // Connect was successful.
   size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
@@ -1956,10 +1963,10 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     }
 
     // Get the federation ID and check it.
-    unsigned char federation_id_length = buffer[header_length - 1];
+    // unsigned char federation_id_length = buffer[header_length - 1];
     // char remote_federation_id[federation_id_length];
     // bytes_read = read_from_netdrv(client_fed_netdrv, (unsigned char*)remote_federation_id, federation_id_length);
-    if (bytes_read <= 0 || (strncmp(federation_metadata.federation_id, buffer + header_length,
+    if (bytes_read <= 0 || (strncmp(federation_metadata.federation_id, (const char *) buffer + header_length,
                                     strnlen(federation_metadata.federation_id, 255)) != 0)) {
       lf_print_warning("Received invalid federation ID. Closing socket.");
       if (bytes_read > 0) {
