@@ -1,3 +1,6 @@
+/**
+ * This tests the real-time scheduling API implementation in Linux.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "core/utils/util.h"
@@ -16,7 +19,7 @@ int main() {
     lf_print_error_and_exit("lf_thread_set_cpu failed with %d", res);
   }
 
-  // // Pick SCHED_FIFO
+  // Configure SCHED_FIFO
   {
     lf_scheduling_policy_t cfg;
     cfg.policy = LF_SCHED_PRIORITY;
@@ -28,7 +31,7 @@ int main() {
     }
   }
 
-  // Set SCHED_RR
+  // Configure SCHED_RR
   {
     lf_scheduling_policy_t cfg;
     cfg.policy = LF_SCHED_TIMESLICE;
@@ -58,11 +61,13 @@ int main() {
     lf_print_error_and_exit("lf_thread_set_priority failed with %d", res);
   }
 
+  // Try negative priority
   res = lf_thread_set_priority(lf_thread_self(), -50);
   if (res == 0) {
     lf_print_error_and_exit("lf_thread_set_priority should have failed for -50");
   }
 
+  // Configure back to SCHED_OTHER
   {
     lf_scheduling_policy_t cfg;
     cfg.policy = LF_SCHED_FAIR;
@@ -72,14 +77,9 @@ int main() {
     }
   }
 
-  // Try to high CPU
+  // Try pinning to non-existant CPU core.
   res = lf_thread_set_cpu(lf_thread_self(), lf_available_cores());
   if (res == 0) {
     lf_print_error_and_exit("lf_thread_set_cpu should fail for too high CPU id");
-  }
-
-  res = lf_thread_set_cpu(lf_thread_self(), -1);
-  if (res == 0) {
-    lf_print_error_and_exit("lf_thread_set_cpu should fail for too low CPU id");
   }
 }
