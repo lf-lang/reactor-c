@@ -1,4 +1,3 @@
-#if defined STANDALONE_RTI
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -257,4 +256,3 @@ int main() {
   two_nodes_normal_delay();
   multiple_nodes();
 }
-#endif
