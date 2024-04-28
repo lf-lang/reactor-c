@@ -70,20 +70,20 @@ int lf_fed_id() { return _lf_my_fed_id; }
 // Declaration needed to attach attributes to suppress warnings of the form:
 // "warning: function '_lf_message_print' might be a candidate for 'gnu_printf'
 // format attribute [-Wsuggest-attribute=format]"
-void _lf_message_print(int is_error, const char* prefix, const char* format, va_list args, int log_level)
-    ATTRIBUTE_FORMAT_PRINTF(3, 0);
+void _lf_message_print(const char* prefix, const char* format, va_list args, int log_level)
+    ATTRIBUTE_FORMAT_PRINTF(2, 0);
 
 /**
  * Print a fatal error message. Internal function.
  */
 static void lf_vprint_fatal_error(const char* format, va_list args) {
-  _lf_message_print(1, "FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
+  _lf_message_print("FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
 }
 
 /**
  * Internal implementation of the next few reporting functions.
  */
-void _lf_message_print(int is_error, const char* prefix, const char* format, va_list args,
+void _lf_message_print(const char* prefix, const char* format, va_list args,
                        int log_level) { // Disable warnings about format check.
   // The logging level may be set either by a LOG_LEVEL #define
   // (which is code generated based on the logging target property)
@@ -148,7 +148,7 @@ void lf_print(const char* format, ...) {
   va_end(args);
 }
 
-void lf_vprint(const char* format, va_list args) { _lf_message_print(0, "", format, args, LOG_LEVEL_INFO); }
+void lf_vprint(const char* format, va_list args) { _lf_message_print("", format, args, LOG_LEVEL_INFO); }
 
 void lf_print_log(const char* format, ...) {
   va_list args;
@@ -157,7 +157,7 @@ void lf_print_log(const char* format, ...) {
   va_end(args);
 }
 
-void lf_vprint_log(const char* format, va_list args) { _lf_message_print(0, "LOG: ", format, args, LOG_LEVEL_LOG); }
+void lf_vprint_log(const char* format, va_list args) { _lf_message_print("LOG: ", format, args, LOG_LEVEL_LOG); }
 
 void lf_print_debug(const char* format, ...) {
   va_list args;
@@ -166,9 +166,7 @@ void lf_print_debug(const char* format, ...) {
   va_end(args);
 }
 
-void lf_vprint_debug(const char* format, va_list args) {
-  _lf_message_print(0, "DEBUG: ", format, args, LOG_LEVEL_DEBUG);
-}
+void lf_vprint_debug(const char* format, va_list args) { _lf_message_print("DEBUG: ", format, args, LOG_LEVEL_DEBUG); }
 
 void lf_print_error(const char* format, ...) {
   va_list args;
@@ -177,9 +175,7 @@ void lf_print_error(const char* format, ...) {
   va_end(args);
 }
 
-void lf_vprint_error(const char* format, va_list args) {
-  _lf_message_print(1, "ERROR: ", format, args, LOG_LEVEL_ERROR);
-}
+void lf_vprint_error(const char* format, va_list args) { _lf_message_print("ERROR: ", format, args, LOG_LEVEL_ERROR); }
 
 void lf_print_warning(const char* format, ...) {
   va_list args;
@@ -189,7 +185,7 @@ void lf_print_warning(const char* format, ...) {
 }
 
 void lf_vprint_warning(const char* format, va_list args) {
-  _lf_message_print(1, "WARNING: ", format, args, LOG_LEVEL_WARNING);
+  _lf_message_print("WARNING: ", format, args, LOG_LEVEL_WARNING);
 }
 
 void lf_print_error_and_exit(const char* format, ...) {

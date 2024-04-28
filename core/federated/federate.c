@@ -91,8 +91,8 @@ federate_instance_t _fed = {
     .has_upstream = false,
     .has_downstream = false,
     .received_stop_request_from_rti = false,
-    .last_sent_LTC = (tag_t){.time = NEVER, .microstep = 0u},
-    .last_sent_NET = (tag_t){.time = NEVER, .microstep = 0u},
+    .last_sent_LTC = {.time = NEVER, .microstep = 0u},
+    .last_sent_NET = {.time = NEVER, .microstep = 0u},
     .min_delay_from_physical_action_to_federate_output = NEVER};
 
 // TODO: DONGHA: Need to change host and port.
@@ -189,7 +189,7 @@ extern size_t staa_lst_size;
  * @return A pointer to an action struct or null if the ID is out of range.
  */
 static lf_action_base_t* action_for_port(int port_id) {
-  if (port_id >= 0 && port_id < _lf_action_table_size) {
+  if (port_id >= 0 && ((size_t)port_id) < _lf_action_table_size) {
     return _lf_action_table[port_id];
   }
   lf_print_error_and_exit("Invalid port ID: %d", port_id);
@@ -211,7 +211,7 @@ static lf_action_base_t* action_for_port(int port_id) {
 static void update_last_known_status_on_input_ports(tag_t tag) {
   LF_PRINT_DEBUG("In update_last_known_status_on_input ports.");
   bool notify = false;
-  for (int i = 0; i < _lf_action_table_size; i++) {
+  for (size_t i = 0; i < _lf_action_table_size; i++) {
     lf_action_base_t* input_port_action = _lf_action_table[i];
     // This is called when a TAG is received.
     // But it is possible for an input port to have received already
@@ -220,7 +220,7 @@ static void update_last_known_status_on_input_ports(tag_t tag) {
     // is in the future and should not be rolled back. So in that case,
     // we do not update the last known status tag.
     if (lf_tag_compare(tag, input_port_action->trigger->last_known_status_tag) >= 0) {
-      LF_PRINT_DEBUG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", i,
+      LF_PRINT_DEBUG("Updating the last known status tag of port %zu from " PRINTF_TAG " to " PRINTF_TAG ".", i,
                      input_port_action->trigger->last_known_status_tag.time - lf_time_start(),
                      input_port_action->trigger->last_known_status_tag.microstep, tag.time - lf_time_start(),
                      tag.microstep);
@@ -443,7 +443,7 @@ static void close_inbound_netdrv(int fed_id, int flag) {
  * @param intended_tag The intended tag.
  */
 static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t intended_tag) {
-  return trigger->reactions[0]->index >= max_level_allowed_to_advance &&
+  return trigger->reactions[0]->index >= ((index_t)max_level_allowed_to_advance) &&
          lf_tag_compare(intended_tag, lf_tag(env)) == 0 && lf_tag_compare(intended_tag, trigger->last_tag) > 0 &&
          lf_tag_compare(intended_tag, trigger->last_known_status_tag) > 0 && env->execution_started &&
          !trigger->is_physical;
@@ -1012,7 +1012,7 @@ static void handle_tag_advance_grant(unsigned char* buffer) {
  */
 static bool a_port_is_unknown(staa_t* staa_elem) {
   bool do_wait = false;
-  for (int j = 0; j < staa_elem->num_actions; ++j) {
+  for (size_t j = 0; j < staa_elem->num_actions; ++j) {
     if (staa_elem->actions[j]->trigger->status == unknown) {
       do_wait = true;
       break;
@@ -1020,19 +1020,20 @@ static bool a_port_is_unknown(staa_t* staa_elem) {
   }
   return do_wait;
 }
-#endif
 
 /**
  * @brief Return the port ID of the port associated with the given action.
  * @return The port ID or -1 if there is no match.
  */
 static int id_of_action(lf_action_base_t* input_port_action) {
-  for (int i = 0; i < _lf_action_table_size; i++) {
+  for (size_t i = 0; i < _lf_action_table_size; i++) {
     if (_lf_action_table[i] == input_port_action)
       return i;
   }
   return -1;
 }
+
+#endif
 
 /**
  * @brief Thread handling setting the known absent status of input ports.
@@ -1043,18 +1044,19 @@ static int id_of_action(lf_action_base_t* input_port_action) {
  */
 #ifdef FEDERATED_DECENTRALIZED
 static void* update_ports_from_staa_offsets(void* args) {
+  (void)args;
   initialize_lf_thread_id();
   if (staa_lst_size == 0)
     return NULL; // Nothing to do.
   // NOTE: Using only the top-level environment, which is the one that deals with network
   // input ports.
   environment_t* env;
-  int num_envs = _lf_get_environments(&env);
+  _lf_get_environments(&env);
   LF_MUTEX_LOCK(&env->mutex);
   while (1) {
     LF_PRINT_DEBUG("**** (update thread) starting");
     tag_t tag_when_started_waiting = lf_tag(env);
-    for (int i = 0; i < staa_lst_size; ++i) {
+    for (size_t i = 0; i < staa_lst_size; ++i) {
       staa_t* staa_elem = staa_lst[i];
       // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
       // The list is sorted in increasing order of adjusted STAA offsets.
@@ -1077,7 +1079,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       }
       while (a_port_is_unknown(staa_elem)) {
         LF_PRINT_DEBUG("**** (update thread) waiting until: " PRINTF_TIME, wait_until_time - lf_time_start());
-        if (wait_until(env, wait_until_time, &lf_port_status_changed)) {
+        if (wait_until(wait_until_time, &lf_port_status_changed)) {
           if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
             break;
           }
@@ -1089,7 +1091,7 @@ static void* update_ports_from_staa_offsets(void* args) {
           lf_time_start());
           */
 
-          for (int j = 0; j < staa_elem->num_actions; ++j) {
+          for (size_t j = 0; j < staa_elem->num_actions; ++j) {
             lf_action_base_t* input_port_action = staa_elem->actions[j];
             if (input_port_action->trigger->status == unknown) {
               input_port_action->trigger->status = absent;
@@ -1121,7 +1123,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       // it would be huge mistake to enter the wait for a new tag below because the
       // program will freeze.  First, check whether any ports are unknown:
       bool port_unkonwn = false;
-      for (int i = 0; i < staa_lst_size; ++i) {
+      for (size_t i = 0; i < staa_lst_size; ++i) {
         staa_t* staa_elem = staa_lst[i];
         if (a_port_is_unknown(staa_elem)) {
           port_unkonwn = true;
@@ -1213,9 +1215,6 @@ static void handle_provisional_tag_advance_grant(unsigned char* buffer) {
   // (which it should be). Do not do this if the federate has not fully
   // started yet.
 
-  instant_t dummy_event_time = PTAG.time;
-  microstep_t dummy_event_relative_microstep = PTAG.microstep;
-
   if (lf_tag_compare(env->current_tag, PTAG) == 0) {
     // The current tag can equal the PTAG if we are at the start time
     // or if this federate has been able to advance time to the current
@@ -1239,22 +1238,18 @@ static void handle_provisional_tag_advance_grant(unsigned char* buffer) {
     // Nothing more to do.
     LF_MUTEX_UNLOCK(&env->mutex);
     return;
-  } else if (PTAG.time == env->current_tag.time) {
-    // We now know env->current_tag < PTAG, but the times are equal.
-    // Adjust the microstep for scheduling the dummy event.
-    dummy_event_relative_microstep -= env->current_tag.microstep;
   }
   // We now know env->current_tag < PTAG.
 
-  if (dummy_event_time != FOREVER) {
-    // Schedule a dummy event at the specified time and (relative) microstep.
+  if (PTAG.time != FOREVER) {
+    // Schedule a dummy event at the specified tag.
     LF_PRINT_DEBUG("At tag " PRINTF_TAG ", inserting into the event queue a dummy event "
-                   "with time " PRINTF_TIME " and (relative) microstep " PRINTF_MICROSTEP ".",
-                   env->current_tag.time - start_time, env->current_tag.microstep, dummy_event_time - start_time,
-                   dummy_event_relative_microstep);
-    // Dummy event points to a NULL trigger and NULL real event.
-    event_t* dummy = _lf_create_dummy_events(env, NULL, dummy_event_time, NULL, dummy_event_relative_microstep);
-    pqueue_insert(env->event_q, dummy);
+                   "with time " PRINTF_TIME " and microstep " PRINTF_MICROSTEP ".",
+                   env->current_tag.time - start_time, env->current_tag.microstep, PTAG.time - start_time,
+                   PTAG.microstep);
+    // Dummy event points to a NULL trigger.
+    event_t* dummy = _lf_create_dummy_events(env, PTAG);
+    pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)dummy);
   }
 
   LF_MUTEX_UNLOCK(&env->mutex);
@@ -1390,7 +1385,7 @@ static void handle_stop_request_message(unsigned char* buffer) {
 /**
  * Send a resign signal to the RTI.
  */
-static void send_resign_signal(environment_t* env) {
+static void send_resign_signal() {
   size_t bytes_to_write = 1;
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_RESIGN;
@@ -1404,7 +1399,7 @@ static void send_resign_signal(environment_t* env) {
 /**
  * Send a failed signal to the RTI.
  */
-static void send_failed_signal(environment_t* env) {
+static void send_failed_signal() {
   size_t bytes_to_write = 1;
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_FAILED;
@@ -1427,6 +1422,7 @@ static void handle_rti_failed_message(void) { exit(1); }
  * @param args Ignored
  */
 static void* listen_to_rti_TCP(void* args) {
+  (void)args;
   initialize_lf_thread_id();
   // Buffer for incoming messages.
   // This does not constrain the message size
@@ -1571,10 +1567,10 @@ void lf_terminate_execution(environment_t* env) {
   if (_fed.netdrv_to_rti != 0) {
     if (_lf_normal_termination) {
       tracepoint_federate_to_rti(send_RESIGN, _lf_my_fed_id, &env->current_tag);
-      send_resign_signal(env);
+      send_resign_signal();
     } else {
       tracepoint_federate_to_rti(send_FAILED, _lf_my_fed_id, &env->current_tag);
-      send_failed_signal(env);
+      send_failed_signal();
     }
   }
 
@@ -1604,7 +1600,7 @@ void lf_terminate_execution(environment_t* env) {
   if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_netdriv_listeners != NULL) {
     LF_PRINT_LOG("Waiting for %zu threads listening for incoming messages to exit.",
                  _fed.number_of_inbound_p2p_connections);
-    for (int i = 0; i < _fed.number_of_inbound_p2p_connections; i++) {
+    for (size_t i = 0; i < _fed.number_of_inbound_p2p_connections; i++) {
       // Ignoring errors here.
       lf_thread_join(_fed.inbound_netdriv_listeners[i], NULL);
     }
@@ -1630,7 +1626,6 @@ void lf_terminate_execution(environment_t* env) {
 // TODO: DONGHA: Handling address queries must be changed. Just leaving port and ip_addr now.
 void lf_connect_to_federate(uint16_t remote_federate_id) {
   int result = -1;
-  int count_retries = 0;
 
   // Ask the RTI for port number of the remote federate.
   // The buffer is used for both sending and receiving replies.
@@ -1673,7 +1668,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // remote federate has not yet sent an MSG_TYPE_ADDRESS_ADVERTISEMENT message to the RTI.
     // Sleep for some time before retrying.
     if (port == -1) {
-      if (count_tries++ >= CONNECT_MAX_RETRIES) {
+      if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
         lf_print_error_and_exit("TIMEOUT obtaining IP/port for federate %d from the RTI.", remote_federate_id);
       }
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
@@ -1908,7 +1903,7 @@ void lf_enqueue_port_absent_reactions(environment_t* env) {
     LF_PRINT_DEBUG("No port absent reactions.");
     return;
   }
-  for (int i = 0; i < num_port_absent_reactions; i++) {
+  for (size_t i = 0; i < num_port_absent_reactions; i++) {
     reaction_t* reaction = port_absent_reaction[i];
     if (reaction && reaction->status == inactive) {
       LF_PRINT_DEBUG("Inserting port absent reaction on reaction queue.");
@@ -1918,9 +1913,8 @@ void lf_enqueue_port_absent_reactions(environment_t* env) {
 }
 
 void* lf_handle_p2p_connections_from_federates(void* env_arg) {
-  assert(env_arg);
-  environment_t* env = (environment_t*)env_arg;
-  int received_federates = 0;
+  LF_ASSERT_NON_NULL(env_arg);
+  size_t received_federates = 0;
   // Allocate memory to store thread IDs.
   _fed.inbound_netdriv_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
@@ -2042,7 +2036,6 @@ void lf_latest_tag_complete(tag_t tag_to_send) {
 }
 
 parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
-  bool has_host = false, has_port = false, has_user = false;
   rti_addr_info_t rti_addr_info = {0};
   extract_rti_addr_info(rti_addr, &rti_addr_info);
   if (!rti_addr_info.has_host && !rti_addr_info.has_port && !rti_addr_info.has_user) {
@@ -2050,8 +2043,8 @@ parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
   }
   if (rti_addr_info.has_host) {
     if (validate_host(rti_addr_info.rti_host_str)) {
-      char* rti_host = (char*)calloc(256, sizeof(char));
-      strncpy(rti_host, rti_addr_info.rti_host_str, 255);
+      char* rti_host = (char*)calloc(257, sizeof(char));
+      strncpy(rti_host, rti_addr_info.rti_host_str, 256);
       federation_metadata.rti_host = rti_host;
     } else {
       return INVALID_HOST;
@@ -2066,8 +2059,8 @@ parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
   }
   if (rti_addr_info.has_user) {
     if (validate_user(rti_addr_info.rti_user_str)) {
-      char* rti_user = (char*)calloc(256, sizeof(char));
-      strncpy(rti_user, rti_addr_info.rti_user_str, 255);
+      char* rti_user = (char*)calloc(257, sizeof(char));
+      strncpy(rti_user, rti_addr_info.rti_user_str, 256);
       federation_metadata.rti_user = rti_user;
     } else {
       return INVALID_USER;
@@ -2080,7 +2073,7 @@ void lf_reset_status_fields_on_input_port_triggers() {
   environment_t* env;
   _lf_get_environments(&env);
   tag_t now = lf_tag(env);
-  for (int i = 0; i < _lf_action_table_size; i++) {
+  for (size_t i = 0; i < _lf_action_table_size; i++) {
     if (lf_tag_compare(_lf_action_table[i]->trigger->last_known_status_tag, now) >= 0) {
       set_network_port_status(i, absent); // Default may be overriden to become present.
     } else {
@@ -2235,8 +2228,9 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       // Create a dummy event that will force this federate to advance time and subsequently
       // enable progress for downstream federates. Increment the time by ADVANCE_MESSAGE_INTERVAL
       // to prevent too frequent dummy events.
-      event_t* dummy = _lf_create_dummy_events(env, NULL, tag.time + ADVANCE_MESSAGE_INTERVAL, NULL, 0);
-      pqueue_insert(env->event_q, dummy);
+      tag_t dummy_event_tag = (tag_t){.time = tag.time + ADVANCE_MESSAGE_INTERVAL, .microstep = tag.microstep};
+      event_t* dummy = _lf_create_dummy_events(env, dummy_event_tag);
+      pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)dummy);
     }
 
     LF_PRINT_DEBUG("Inserted a dummy event for logical time " PRINTF_TIME ".", tag.time - lf_time_start());
@@ -2491,6 +2485,8 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
   int prev_max_level_allowed_to_advance = max_level_allowed_to_advance;
   max_level_allowed_to_advance = INT_MAX;
 #ifdef FEDERATED_DECENTRALIZED
+  (void)tag;
+  (void)is_provisional;
   size_t action_table_size = _lf_action_table_size;
   lf_action_base_t** action_table = _lf_action_table;
 #else
@@ -2506,7 +2502,7 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
   size_t action_table_size = _lf_zero_delay_cycle_action_table_size;
   lf_action_base_t** action_table = _lf_zero_delay_cycle_action_table;
 #endif // FEDERATED_DECENTRALIZED
-  for (int i = 0; i < action_table_size; i++) {
+  for (size_t i = 0; i < action_table_size; i++) {
     lf_action_base_t* input_port_action = action_table[i];
 #ifdef FEDERATED_DECENTRALIZED
     // In decentralized execution, if the current_tag is close enough to the

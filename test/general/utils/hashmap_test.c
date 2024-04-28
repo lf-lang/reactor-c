@@ -15,9 +15,9 @@ static hashmap_object2int_entry_t mock[CAPACITY];
 static size_t mock_size = 0;
 
 void test_put(hashmap_object2int_t* h) {
-  void* key = NULL;
+  int* key = NULL;
   while (!key)
-    key = NULL + (rand() % CAPACITY); // Generate a dummy pointer.
+    key += (rand() % CAPACITY); // Generate a dummy pointer.
   int value = rand();
   hashmap_object2int_entry_t entry = (hashmap_object2int_entry_t){.key = key, .value = value};
   hashmap_object2int_put(h, entry.key, entry.value);
@@ -54,7 +54,6 @@ void test_get(hashmap_object2int_t* h) {
  * which each of two actions are performed, expressed as percents.
  */
 void run_test(hashmap_object2int_t* h, int* distribution) {
-  int result = 1;
   int r = rand();
   int choice = (r < 0 ? -r : r) % 100;
   if ((choice = choice - distribution[0]) < 0) {

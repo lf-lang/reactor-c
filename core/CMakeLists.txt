@@ -1,17 +1,7 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(CMAKE_SYSTEM_VERSION 10.0)
-    message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
-    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_NRF52)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
-    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_ZEPHYR)
-    set(PLATFORM_ZEPHYR true)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
-    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_RP2040)
-endif()
+include(${LF_ROOT}/core/lf_utils.cmake)
 
 # Get the general common sources for reactor-c
 list(APPEND GENERAL_SOURCES tag.c clock.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
@@ -49,23 +39,18 @@ endif()
 
 # Include sources from subdirectories
 include(utils/CMakeLists.txt)
+
+if (DEFINED MODAL_REACTORS)
 include(modal_models/CMakeLists.txt)
+endif()
 
 # Print sources used for compilation
 list(JOIN REACTORC_SOURCES ", " PRINTABLE_SOURCE_LIST)
 message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 
-# Create the reactor-c library. If we are targeting Zephyr we have to use the
-# Zephyr Cmake extension to create the library and add the sources.
-if(PLATFORM_ZEPHYR)
-    message("--- Building Zephyr library")
-    zephyr_library_named(reactor-c)
-    zephyr_library_sources(${REACTORC_SOURCES})
-    zephyr_library_link_libraries(kernel)
-else()
-    add_library(reactor-c)
-    target_sources(reactor-c PRIVATE ${REACTORC_SOURCES})
-endif()
+add_library(reactor-c)
+target_sources(reactor-c PRIVATE ${REACTORC_SOURCES})
+lf_enable_compiler_warnings(reactor-c)
 
 if (DEFINED LF_TRACE)
     include(${LF_ROOT}/trace/api/CMakeLists.txt)
@@ -145,20 +130,24 @@ endif()
 
 set(OPENSSL_ROOT_DIR "/usr/local/lib64")
 
-if(DEFINED _LF_CLOCK_SYNC_ON)
+if(DEFINED FEDERATED)
   find_library(MATH_LIBRARY m)
   if(MATH_LIBRARY)
     target_link_libraries(reactor-c PUBLIC ${MATH_LIBRARY})
   endif()
 endif()
 
-# Link with thread library, unless we are on the Zephyr platform.
-if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
-    if (NOT PLATFORM_ZEPHYR)
-        find_package(Threads REQUIRED)
-        target_link_libraries(reactor-c PUBLIC Threads::Threads)
-    endif()
+# Unless specified otherwise initial event queue and reaction queue to size 10
+if (NOT DEFINED INITIAL_EVENT_QUEUE_SIZE)
+    set(INITIAL_EVENT_QUEUE_SIZE 10)
 endif()
+if (NOT DEFINED INITIAL_REACT_QUEUE_SIZE)
+    set(INITIAL_REACT_QUEUE_SIZE 10)
+endif()
+
+target_compile_definitions(reactor-c PRIVATE INITIAL_EVENT_QUEUE_SIZE=${INITIAL_EVENT_QUEUE_SIZE})
+target_compile_definitions(reactor-c PRIVATE INITIAL_REACT_QUEUE_SIZE=${INITIAL_REACT_QUEUE_SIZE})
+target_compile_definitions(reactor-c PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
 # Macro for translating a command-line argument into compile definition for
 # reactor-c lib
@@ -168,12 +157,6 @@ macro(define X)
         target_compile_definitions(reactor-c PUBLIC ${X}=${${X}})
     endif(DEFINED ${X})
 endmacro()
-
-# FIXME: May want these to be application dependent, hence passed as
-# parameters to Cmake.
-target_compile_definitions(reactor-c PRIVATE INITIAL_EVENT_QUEUE_SIZE=10)
-target_compile_definitions(reactor-c PRIVATE INITIAL_REACT_QUEUE_SIZE=10)
-target_compile_definitions(reactor-c PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
 # Search and apply all possible compile definitions
 message(STATUS "Applying preprocessor definitions...")

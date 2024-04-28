@@ -36,15 +36,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined LF_SINGLE_THREADED
 #include "lf_os_single_threaded_support.c"
-#endif
-
-#if !defined LF_SINGLE_THREADED
-#if __STDC_VERSION__ < 201112L || defined(__STDC_NO_THREADS__)
-// (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.c"
 #else
-#include "lf_C11_threads_support.c"
-#endif
+#include "lf_POSIX_threads_support.c"
+
+/**
+ * Real-time scheduling API not implemented for macOS.
+ */
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) { return -1; }
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) { return -1; }
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) { return -1; }
 #endif
 
 #include "platform/lf_unix_clock_support.h"
@@ -57,6 +59,7 @@ int lf_sleep(interval_t sleep_duration) {
 }
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
+  (void)env;
   interval_t sleep_duration = wakeup_time - lf_time_physical();
 
   if (sleep_duration <= 0) {

@@ -225,7 +225,7 @@ int process_args(int argc, const char* argv[]) {
       }
       i++;
       long num_federates = strtol(argv[i], NULL, 10);
-      if (num_federates == 0L || num_federates == LONG_MAX || num_federates == LONG_MIN) {
+      if (num_federates <= 0L || num_federates == LONG_MAX || num_federates == LONG_MIN) {
         lf_print_error("--number_of_federates needs a valid positive integer argument.");
         usage(argc, argv);
         return 0;
@@ -281,11 +281,6 @@ int process_args(int argc, const char* argv[]) {
       usage(argc, argv);
       return 0;
     }
-  }
-  if (rti.base.number_of_scheduling_nodes == 0) {
-    lf_print_error("--number_of_federates needs a valid positive integer argument.");
-    usage(argc, argv);
-    return 0;
   }
   return 1;
 }
