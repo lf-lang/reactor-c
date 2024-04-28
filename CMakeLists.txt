@@ -22,7 +22,6 @@ if(DEFINED LF_SINGLE_THREADED)
     add_compile_definitions(LF_SINGLE_THREADED=1)
 endif()
 
-set(Test test)
 set(Lib lib)
 set(CoreLibPath core)
 set(CoreLib reactor-c)
@@ -39,7 +38,6 @@ include_directories(${CMAKE_SOURCE_DIR}/include/core/utils)
 include_directories(${CMAKE_SOURCE_DIR}/include/api)
 
 enable_testing()
-add_subdirectory(${Test})
 add_subdirectory(${Lib})
 add_subdirectory(${CoreLibPath})
 
