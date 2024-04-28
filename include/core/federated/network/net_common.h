@@ -191,6 +191,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define CONNECT_RETRY_INTERVAL MSEC(500)
 
+
+//TODO: NEED TO ERASE!!! CHECK CONFLICTS.
+/**
+ * Bound on the number of retries to connect to the RTI.
+ * A federate will retry every CONNECT_RETRY_INTERVAL seconds
+ * this many times before giving up.
+ */
+#define CONNECT_MAX_RETRIES 100
+
 /**
  * Bound on the number of retries to connect to the RTI.
  * A federate will retry every CONNECT_RETRY_INTERVAL seconds until
