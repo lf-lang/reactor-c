@@ -147,10 +147,15 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   unsigned int bytes_to_read = payload_length - (temp_length - (sizeof(unsigned char) + var_length_buf_size));
 
   unsigned int second_read = 0;
-  unsigned int more = 0;
+  ssize_t more = 0;
   while (second_read != bytes_to_read) {
     more = read(sst_priv->session_ctx->sock, sst_buffer + temp_length, bytes_to_read);
     second_read += more;
+    if (more == 0) {
+      return 0;
+    } else if (more < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+      continue;
+    }
     bytes_read += second_read;
   }
 

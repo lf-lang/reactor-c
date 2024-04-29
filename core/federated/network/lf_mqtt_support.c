@@ -10,7 +10,7 @@
 
 // #include <MQTTClient.h>
 
-#define ADDRESS "tcp://mqtt.eclipseprojects.io:1883"
+#define ADDRESS "tcp://10.218.100.147:1883"
 #define QOS 2
 #define TIMEOUT 10000L
 
