@@ -237,6 +237,9 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
   }
 #endif
   if (!fast) {
+    if (error_control < NSEC(0)) {
+      error_control = NSEC(0);
+    }
     // Subtract the control value from the requested wait_until_time
     interval_t wait_until_time_with_adjustment = wait_until_time - error_control;
     instant_t now = lf_time_physical();
