@@ -33,7 +33,7 @@ var low__level__platform_8h =
     [ "lf_thread_id", "da/dfb/low__level__platform_8h.html#a60ad13713bf64d0ce969c85944c78129", null ],
     [ "lf_thread_join", "da/dfb/low__level__platform_8h.html#a652d8db6bafa59434d297216607266ed", null ],
     [ "lf_thread_self", "da/dfb/low__level__platform_8h.html#a8ae1ceb17982ccac5e6cb4dd04b9784b", null ],
-    [ "lf_thread_set_cpu", "da/dfb/low__level__platform_8h.html#a5ee8e5acd5bf3fe2b89a2766191fa107", null ],
+    [ "lf_thread_set_cpu", "da/dfb/low__level__platform_8h.html#addc34b525849f46d172fbafa894dc474", null ],
     [ "lf_thread_set_priority", "da/dfb/low__level__platform_8h.html#a173ebe6288d9a800df16cbd400247578", null ],
     [ "lf_thread_set_scheduling_policy", "da/dfb/low__level__platform_8h.html#adc1acd7c6e9bd4f7bd333ad7d3e7b5d1", null ]
 ];

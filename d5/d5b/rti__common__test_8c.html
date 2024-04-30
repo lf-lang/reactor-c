@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.10.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: test/RTI/rti_common_test.c File Reference</title>
+<title>reactor-c: core/federated/RTI/test/rti_common_test.c File Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -92,15 +92,235 @@ $(function(){initNavTree('d5/d5b/rti__common__test_8c.html','../../'); initResiz
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">rti_common_test.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &lt;stdlib.h&gt;</code><br />
+<code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="../../d1/d1c/rti__remote_8h_source.html">rti_remote.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../dc/da9/rti__common_8h_source.html">rti_common.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ac461d9160af51d5b52ae07578fbae62e" id="r_ac461d9160af51d5b52ae07578fbae62e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac461d9160af51d5b52ae07578fbae62e">delete_scheduling_node</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">scheduling_node_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">node</a>)</td></tr>
+<tr class="separator:ac461d9160af51d5b52ae07578fbae62e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a137e99b99b7442e9338165eaea224059" id="r_a137e99b99b7442e9338165eaea224059"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a137e99b99b7442e9338165eaea224059">set_scheduling_node</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> id, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_upstream</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_downstream</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">upstream</a>, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">upstream_delay</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">downstream</a>)</td></tr>
+<tr class="separator:a137e99b99b7442e9338165eaea224059"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afcbeaa1514d484830c5d8a745440a43b" id="r_afcbeaa1514d484830c5d8a745440a43b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afcbeaa1514d484830c5d8a745440a43b">reset_common_RTI</a> ()</td></tr>
+<tr class="separator:afcbeaa1514d484830c5d8a745440a43b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affa6903178f9f0cb6596b471ed0f62ba" id="r_affa6903178f9f0cb6596b471ed0f62ba"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#affa6903178f9f0cb6596b471ed0f62ba">set_common_RTI</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">uint16_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">num_nodes</a>)</td></tr>
+<tr class="separator:affa6903178f9f0cb6596b471ed0f62ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b87d50e87893430301be08938c1a200" id="r_a4b87d50e87893430301be08938c1a200"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4b87d50e87893430301be08938c1a200">set_state_of_nodes</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">scheduling_node_state_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">state</a>)</td></tr>
+<tr class="separator:a4b87d50e87893430301be08938c1a200"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedb2b725085ae6b369ede6dd077dde4c" id="r_aedb2b725085ae6b369ede6dd077dde4c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aedb2b725085ae6b369ede6dd077dde4c">valid_cache</a> ()</td></tr>
+<tr class="separator:aedb2b725085ae6b369ede6dd077dde4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accec7d0ba7abfee2f8f7fbb8202e39c4" id="r_accec7d0ba7abfee2f8f7fbb8202e39c4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#accec7d0ba7abfee2f8f7fbb8202e39c4">not_connected</a> ()</td></tr>
+<tr class="separator:accec7d0ba7abfee2f8f7fbb8202e39c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae66f6b31b5ad750f1fe042a706a4e3d4" id="r_ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
+<tr class="separator:ae66f6b31b5ad750f1fe042a706a4e3d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="ac461d9160af51d5b52ae07578fbae62e" name="ac461d9160af51d5b52ae07578fbae62e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac461d9160af51d5b52ae07578fbae62e">&#9670;&#160;</a></span>delete_scheduling_node()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> delete_scheduling_node </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">scheduling_node_t</a> *</td>          <td class="paramname"><span class="paramname"><em>node</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Free dynamically allocated memory on the scheduling node. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">node</td><td>The node to be freed </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae66f6b31b5ad750f1fe042a706a4e3d4" name="ae66f6b31b5ad750f1fe042a706a4e3d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae66f6b31b5ad750f1fe042a706a4e3d4">&#9670;&#160;</a></span>main()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> main </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="accec7d0ba7abfee2f8f7fbb8202e39c4" name="accec7d0ba7abfee2f8f7fbb8202e39c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accec7d0ba7abfee2f8f7fbb8202e39c4">&#9670;&#160;</a></span>not_connected()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> not_connected </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afcbeaa1514d484830c5d8a745440a43b" name="afcbeaa1514d484830c5d8a745440a43b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afcbeaa1514d484830c5d8a745440a43b">&#9670;&#160;</a></span>reset_common_RTI()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> reset_common_RTI </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Reset the RTI to re-construct the structure of nodes. This includes freeing every scheduling node and the array of nodes. </p>
+
+</div>
+</div>
+<a id="affa6903178f9f0cb6596b471ed0f62ba" name="affa6903178f9f0cb6596b471ed0f62ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#affa6903178f9f0cb6596b471ed0f62ba">&#9670;&#160;</a></span>set_common_RTI()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> set_common_RTI </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">uint16_t</a></td>          <td class="paramname"><span class="paramname"><em>num_nodes</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set the number of nodes and create an array for scheduling nodes. This includes resetting the previous RTI. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">num_nodes</td><td>The number of scheduling nodes. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a137e99b99b7442e9338165eaea224059" name="a137e99b99b7442e9338165eaea224059"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a137e99b99b7442e9338165eaea224059">&#9670;&#160;</a></span>set_scheduling_node()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> set_scheduling_node </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>id</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>num_upstream</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>num_downstream</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> *</td>          <td class="paramname"><span class="paramname"><em>upstream</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> *</td>          <td class="paramname"><span class="paramname"><em>upstream_delay</em>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> *</td>          <td class="paramname"><span class="paramname"><em>downstream</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set the parameters of scheduling node to construct the test case. Before calling this function, reset_common_RTI should be called to reset every scheduling nodes. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">id</td><td>The ID of the scheduling node. </td></tr>
+    <tr><td class="paramname">num_upstream</td><td>The number of upstreams of the scheduling node. </td></tr>
+    <tr><td class="paramname">num_downstream</td><td>The number of downstreams of the scheduling node. </td></tr>
+    <tr><td class="paramname">upstream</td><td>The array of IDs from upstream nodes. </td></tr>
+    <tr><td class="paramname">upstream_delay</td><td>The array of delays from upstream nodes. </td></tr>
+    <tr><td class="paramname">downstream</td><td>The array of IDs from downstream nodes. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4b87d50e87893430301be08938c1a200" name="a4b87d50e87893430301be08938c1a200"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b87d50e87893430301be08938c1a200">&#9670;&#160;</a></span>set_state_of_nodes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> set_state_of_nodes </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">scheduling_node_state_t</a></td>          <td class="paramname"><span class="paramname"><em>state</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set the state of every scheduling node. The state can be NOT_CONNECTED, GRANTED, or PENDING. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">state</td><td>The state that every scheduling node will have. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aedb2b725085ae6b369ede6dd077dde4c" name="aedb2b725085ae6b369ede6dd077dde4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aedb2b725085ae6b369ede6dd077dde4c">&#9670;&#160;</a></span>valid_cache()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> valid_cache </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_13e138d54eb8818da29c3992edef070a.html">test</a></li><li class="navelem"><a class="el" href="../../dir_f67f2fda652a616eb7541825d20f0d9a.html">RTI</a></li><li class="navelem"><a class="el" href="../../d5/d5b/rti__common__test_8c.html">rti_common_test.c</a></li>
+    <li class="navelem"><a class="el" href="../../dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li><li class="navelem"><a class="el" href="../../dir_da79f73d8cf16fc09c9e3a52dcc440a7.html">federated</a></li><li class="navelem"><a class="el" href="../../dir_b52e7938672f1d30fc92120ae2e8e089.html">RTI</a></li><li class="navelem"><a class="el" href="../../dir_1381c228f130ba066c961b0f503ac8ef.html">test</a></li><li class="navelem"><a class="el" href="../../d5/d5b/rti__common__test_8c.html">rti_common_test.c</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0 </li>
   </ul>
 </div>

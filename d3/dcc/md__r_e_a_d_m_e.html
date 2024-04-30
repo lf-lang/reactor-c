@@ -128,7 +128,10 @@ Testing</h2>
 <p>To run tests for the multithreaded runtime, provide a nonzero number of workers when invoking <code>cmake</code>. For example:</p>
 <ul>
 <li><code>cmake .. -DNUMBER_OF_WORKERS=2</code></li>
+<li><code>cmake --build .</code></li>
+<li><code>sudo make test</code></li>
 </ul>
+<p>Note that one of the tests in the multithreaded test suite requires sudo because it changes the scheduling policy and priorities.</p>
 <p>To define/undefine other preprocessor definitions such as <code>LOG_LEVEL</code>, pass them as arguments to <code>cmake</code> in the same way as with <code>NUMBER_OF_WORKERS</code>, using the same <code>-D</code>/<code>-U</code> prefixes. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

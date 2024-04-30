@@ -10,7 +10,8 @@ var searchData=
   ['scheduler_5fnp_2ec_7',['scheduler_NP.c',['../da/d2a/scheduler___n_p_8c.html',1,'']]],
   ['scheduler_5fsync_5ftag_5fadvance_2ec_8',['scheduler_sync_tag_advance.c',['../d2/df5/scheduler__sync__tag__advance_8c.html',1,'']]],
   ['scheduler_5fsync_5ftag_5fadvance_2eh_9',['scheduler_sync_tag_advance.h',['../d7/dff/scheduler__sync__tag__advance_8h.html',1,'']]],
-  ['sensor_5fsimulator_2ec_10',['sensor_simulator.c',['../d7/d58/sensor__simulator_8c.html',1,'']]],
-  ['sensor_5fsimulator_2eh_11',['sensor_simulator.h',['../dc/de9/sensor__simulator_8h.html',1,'']]],
-  ['src_5fgen_5fstub_2ec_12',['src_gen_stub.c',['../d8/d9c/src__gen__stub_8c.html',1,'']]]
+  ['scheduling_5fapi_5ftest_2ec_10',['scheduling_api_test.c',['../d3/d2c/scheduling__api__test_8c.html',1,'']]],
+  ['sensor_5fsimulator_2ec_11',['sensor_simulator.c',['../d7/d58/sensor__simulator_8c.html',1,'']]],
+  ['sensor_5fsimulator_2eh_12',['sensor_simulator.h',['../dc/de9/sensor__simulator_8h.html',1,'']]],
+  ['src_5fgen_5fstub_2ec_13',['src_gen_stub.c',['../d8/d9c/src__gen__stub_8c.html',1,'']]]
 ];

@@ -162,9 +162,9 @@ Functions</h2></td></tr>
 <tr class="separator:a48fa558d833200b986c03bc8c12bbe77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a652d8db6bafa59434d297216607266ed" id="r_a652d8db6bafa59434d297216607266ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a652d8db6bafa59434d297216607266ed">lf_thread_join</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread_return</a>)</td></tr>
 <tr class="separator:a652d8db6bafa59434d297216607266ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ee8e5acd5bf3fe2b89a2766191fa107" id="r_a5ee8e5acd5bf3fe2b89a2766191fa107"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5ee8e5acd5bf3fe2b89a2766191fa107">lf_thread_set_cpu</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">cpu_number</a>)</td></tr>
-<tr class="memdesc:a5ee8e5acd5bf3fe2b89a2766191fa107"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pin a thread to a specific CPU.  <br /></td></tr>
-<tr class="separator:a5ee8e5acd5bf3fe2b89a2766191fa107"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addc34b525849f46d172fbafa894dc474" id="r_addc34b525849f46d172fbafa894dc474"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#addc34b525849f46d172fbafa894dc474">lf_thread_set_cpu</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">cpu_number</a>)</td></tr>
+<tr class="memdesc:addc34b525849f46d172fbafa894dc474"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pin a thread to a specific CPU.  <br /></td></tr>
+<tr class="separator:addc34b525849f46d172fbafa894dc474"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a173ebe6288d9a800df16cbd400247578" id="r_a173ebe6288d9a800df16cbd400247578"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a173ebe6288d9a800df16cbd400247578">lf_thread_set_priority</a> (<a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thread</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> priority)</td></tr>
 <tr class="memdesc:a173ebe6288d9a800df16cbd400247578"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the priority of a thread. Priority ranges from 0 to 99 where a higher number indicates higher priority. Setting the priority of a thread only makes sense if the thread is scheduled with LF_SCHED_TIMESLICE or LF_THREAD_PRIORITY.  <br /></td></tr>
 <tr class="separator:a173ebe6288d9a800df16cbd400247578"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -808,8 +808,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a5ee8e5acd5bf3fe2b89a2766191fa107" name="a5ee8e5acd5bf3fe2b89a2766191fa107"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ee8e5acd5bf3fe2b89a2766191fa107">&#9670;&#160;</a></span>lf_thread_set_cpu()</h2>
+<a id="addc34b525849f46d172fbafa894dc474" name="addc34b525849f46d172fbafa894dc474"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#addc34b525849f46d172fbafa894dc474">&#9670;&#160;</a></span>lf_thread_set_cpu()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -822,7 +822,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a></td>          <td class="paramname"><span class="paramname"><em>cpu_number</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>cpu_number</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
