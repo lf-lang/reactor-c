@@ -143,7 +143,7 @@ int _lf_single_threaded_notify_of_event() {
 #else // Multi threaded
 
 int lf_available_cores() {
-    return FP_THREADS; // Return the number of Flexpret HW threads
+    return FP_THREADS-1; // Return the number of Flexpret HW threads
 }
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
