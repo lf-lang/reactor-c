@@ -79,7 +79,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
             message(FATAL_ERROR
                 "Number of requested workers (${NUMBER_OF_WORKERS}) is higher \
                 than FlexPRET's number of available workers \
-                (${FLEXPET_AVAILABLE_WORKERS}). Note that FlexPRET uses \
+                (${FLEXPRET_AVAILABLE_WORKERS}). Note that FlexPRET uses \
                 hardware threads, not the usual software threads"
             )
         endif()
