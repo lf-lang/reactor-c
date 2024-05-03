@@ -122,4 +122,11 @@ typedef fp_thread_t lf_thread_t;
 typedef fp_cond_t lf_cond_t;
 #endif
 
+// FlexPRET has no tty
+#define NO_TTY
+
+// Likewise, fprintf is used to print to `stderr`, but FlexPRET has no `stderr`
+// We instead redirect its output to normal printf
+#define fprintf(stream, fmt, ...) printf(fmt, ##__VA_ARGS__)
+
 #endif // LF_FLEXPRET_SUPPORT_H
