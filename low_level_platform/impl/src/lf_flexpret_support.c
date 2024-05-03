@@ -21,6 +21,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Support file for Bare-metal FlexPRET platform.
  *  
  *  @author{Shaokai Lin <shaokai@berkeley.edu>}
+ *  @author{Magnus Mæhlum <magnmaeh@stud.ntnu.no>}
  */
 
 #include <stdio.h>
@@ -85,7 +86,7 @@ int lf_sleep(interval_t sleep_duration) {
  * Initialize the LF clock.
  */
 void _lf_initialize_clock() {
-    // FlexPRET does not require any initialization
+    // FlexPRET clock does not require any initialization
 }
 
 int lf_disable_interrupts_nested() {
@@ -196,6 +197,7 @@ int lf_thread_id() {
 }
 
 void initialize_lf_thread_id() {
-    // TODO: Verify: Don't think anything is necessary here for FlexPRET
+    // Nothing needed here; thread ID's are already available in harware registers
+    // which can be fetched with `read_hartid`.
 }
 #endif
