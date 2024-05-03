@@ -75,7 +75,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
 
         math(EXPR FLEXPRET_AVAILABLE_WORKERS "${THREADS} - 1")
 
-        if (${NUMBER_OF_WORKERS} GREATER ${THREADS})
+        if (${NUMBER_OF_WORKERS} GREATER ${FLEXPRET_AVAILABLE_WORKERS})
             message(FATAL_ERROR
                 "Number of requested workers (${NUMBER_OF_WORKERS}) is higher \
                 than FlexPRET's number of available workers \
