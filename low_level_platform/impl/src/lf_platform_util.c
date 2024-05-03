@@ -7,9 +7,10 @@ int map_priorities(int priority, int dest_min, int dest_max) {
     return -1;
   }
 
-  // Perform the linear mapping
-  return dest_min +
-         ((dest_max - dest_min) / (LF_SCHED_MAX_PRIORITY - LF_SCHED_MIN_PRIORITY)) * (priority - LF_SCHED_MIN_PRIORITY);
+  // Perform the linear mapping. Since we are working with integers, it is
+  // important to multiply before we divide
+  return dest_min + (((priority - LF_SCHED_MIN_PRIORITY) * (dest_max - dest_min)) /
+                     (LF_SCHED_MAX_PRIORITY - LF_SCHED_MIN_PRIORITY));
 }
 
 #ifndef PLATFORM_ZEPHYR // on Zephyr, this is handled separately

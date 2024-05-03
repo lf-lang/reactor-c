@@ -85,6 +85,9 @@ static void adjust_lf_clock_sync_offset(interval_t adjustment) {
 }
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
+
+#include <math.h> // For sqrtl()
+
 /**
  * Update statistic on the socket based on the newly calculated network delay
  * and clock synchronization error
@@ -135,7 +138,7 @@ lf_stat_ll calculate_socket_stat(struct socket_stat_t* socket_stat) {
 
   return stats;
 }
-#endif
+#endif // _LF_CLOCK_SYNC_COLLECT_STATS
 
 /**
  * Reset statistics on the socket.
@@ -201,7 +204,7 @@ uint16_t setup_clock_synchronization_with_rti() {
 #else // No runtime clock synchronization. Send port -1 or 0 instead.
 #ifdef _LF_CLOCK_SYNC_INITIAL
   port_to_return = 0u;
-#endif
+#endif // _LF_CLOCK_SYNC_INITIAL
 #endif // _LF_CLOCK_SYNC_ON
   return port_to_return;
 }
@@ -389,7 +392,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS // Enabled by default
   // Update RTI's socket stats
   update_socket_stat(&_lf_rti_socket_stat, network_round_trip_delay, estimated_clock_error);
-#endif
+#endif // _LF_CLOCK_SYNC_COLLECT_STATS
 
   // FIXME: Enable alternative regression mechanism here.
   LF_PRINT_DEBUG("Clock sync: Adjusting clock offset running average by " PRINTF_TIME ".",
@@ -412,13 +415,13 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
       reset_socket_stat(&_lf_rti_socket_stat);
       return;
     }
-#endif
+#endif // _LF_CLOCK_SYNC_COLLECT_STATS
     // The number of received T4 messages has reached _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL
     // which means we can now adjust the clock offset.
     // For the AVG algorithm, history is a running average and can be directly
-    // applied
+    // applied.
     adjust_lf_clock_sync_offset(_lf_rti_socket_stat.history);
-    // @note AVG and SD will be zero if collect-stats is set to false
+    // @note AVG and SD will be zero if _LF_CLOCK_SYNC_COLLECT_STATS is set to false
     LF_PRINT_LOG("Clock sync:"
                  " New offset: " PRINTF_TIME "."
                  " Round trip delay to RTI (now): " PRINTF_TIME "."
@@ -527,17 +530,17 @@ void* listen_to_rti_UDP_thread(void* args) {
 
 // If clock synchronization is enabled, provide implementations. If not
 // just empty implementations that should be optimized away.
-#if defined(FEDERATED) && defined(_LF_CLOCK_SYNC_ON)
-void clock_sync_apply_offset(instant_t* t) { *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
+#if defined(_LF_CLOCK_SYNC_ON) || defined(_LF_CLOCK_SYNC_INITIAL)
+void clock_sync_add_offset(instant_t* t) { *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
 
-void clock_sync_remove_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
+void clock_sync_subtract_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
 
 void clock_sync_set_constant_bias(interval_t offset) { _lf_clock_sync_constant_bias = offset; }
 #else
-void clock_sync_apply_offset(instant_t* t) { (void)t; }
-void clock_sync_remove_offset(instant_t* t) { (void)t; }
+// Empty implementations of clock_sync_add_offset and clock_sync_subtract_offset
+// are in clock.c.
 void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
-#endif
+#endif // (defined(_LF_CLOCK_SYNC_ON) || defined(_LF_CLOCK_SYNC_INITIAL)
 
 /**
  * Create the thread responsible for handling clock synchronization
@@ -557,4 +560,4 @@ int create_clock_sync_thread(lf_thread_t* thread_id) {
   return 0;
 }
 
-#endif
+#endif // FEDERATED
