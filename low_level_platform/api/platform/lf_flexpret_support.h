@@ -46,15 +46,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <flexpret/flexpret.h>
 
-
-/**
- * printf.h does not include definitions of vfprintf, so to avoid linking
- * newlib's vfprintf we replace all occurrances of it with just printf
- * 
- */
-#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES_HARD 0
-#define vfprintf(fp, fmt, args) vprintf(fmt, args)
-
 /**
  * Like nRF52, for FlexPRET, each mutex will control an interrupt.
  *
@@ -128,5 +119,6 @@ typedef fp_cond_t lf_cond_t;
 // Likewise, fprintf is used to print to `stderr`, but FlexPRET has no `stderr`
 // We instead redirect its output to normal printf
 #define fprintf(stream, fmt, ...) printf(fmt, ##__VA_ARGS__)
+#define vfprintf(fp, fmt, args) vprintf(fmt, args)
 
 #endif // LF_FLEXPRET_SUPPORT_H
