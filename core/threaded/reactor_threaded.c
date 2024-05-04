@@ -225,6 +225,8 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
   LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
   // Control value for the i-controller
   static interval_t error_control = NSEC(0);
+  // Do not incorporate the first lag measurement. It's an outlier due to initilizations
+  static int flag = false;
   interval_t wait_until_time = logical_time;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
   // Apply the STA to the logical time
@@ -237,9 +239,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
   }
 #endif
   if (!fast) {
-    if (error_control < NSEC(0)) {
-      error_control = NSEC(0);
-    }
+    error_control = LF_MAX(error_control, NSEC(0));
     // Subtract the control value from the requested wait_until_time
     interval_t wait_until_time_with_adjustment = wait_until_time - error_control;
     instant_t now = lf_time_physical();
@@ -250,7 +250,6 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
     if (wait_until_time < now) {
       return true;
     } else if (wait_until_time_with_adjustment < now && wait_until_time > now) {
-      error_control = error_control - (((now - wait_until_time_with_adjustment) * KI_MUL) / KI_DIV);
       while (wait_until_time > lf_time_physical())
         ;
       return true;
@@ -277,7 +276,11 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
 
       // Calculate the lag and update the control value
       instant_t lag = lf_time_physical() - wait_until_time;
-      error_control = error_control + ((lag * KI_MUL) / KI_DIV);
+      if (flag && lag <= _min_timer_period) {
+        error_control = error_control + ((lag * KI_MUL) / KI_DIV);
+      } else {
+        flag = true;
+      }
 
       // Check if the requested time is passed, if not busy wait
       if (lf_time_physical() > wait_until_time) {

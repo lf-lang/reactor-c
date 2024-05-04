@@ -55,6 +55,7 @@ extern const char** default_argv;
 extern instant_t duration;
 extern bool fast;
 extern bool keepalive_specified;
+extern instant_t _min_timer_period;
 
 #ifdef FEDERATED_DECENTRALIZED
 extern interval_t lf_fed_STA_offset;

@@ -87,6 +87,9 @@ instant_t duration = -1LL;
 /** Indicator of whether the keepalive command-line option was given. */
 bool keepalive_specified = false;
 
+/** The minimum period of triggered timers, used as an upperbound on the lag for wait_until */
+instant_t _min_timer_period = FOREVER; 
+
 void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head) {
   void* mem = calloc(count, size);
   if (mem == NULL)
@@ -306,6 +309,10 @@ void _lf_pop_events(environment_t* env) {
 
     // If the trigger is a periodic timer, create a new event for its next execution.
     if (event->trigger->is_timer && event->trigger->period > 0LL) {
+      // Update the min timer 
+      if (_min_timer_period > event->trigger->period) {
+        _min_timer_period = event->trigger->period;
+      } 
       // Reschedule the trigger.
       lf_schedule_trigger(env, event->trigger, event->trigger->period, NULL);
     }
