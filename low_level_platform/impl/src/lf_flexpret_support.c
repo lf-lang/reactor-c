@@ -1,3 +1,4 @@
+#if defined(PLATFORM_FLEXPRET)
 /*************
 Copyright (c) 2021, The University of California at Berkeley.
 Redistribution and use in source and binary forms, with or without modification,
@@ -192,3 +193,5 @@ void initialize_lf_thread_id() {
   // which can be fetched with `read_hartid`.
 }
 #endif
+
+#endif // PLATFORM_FLEXPRET
