@@ -28,21 +28,21 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * FlexPRET API support for the C target of Lingua Franca.
  *
  * This is based on lf_nrf_support.h in icyphy/lf-buckler.
- *  
+ *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
- * @author{Shaokai Lin <shaokai@berkeley.edu>} 
+ * @author{Shaokai Lin <shaokai@berkeley.edu>}
  */
 
 #ifndef LF_FLEXPRET_SUPPORT_H
 #define LF_FLEXPRET_SUPPORT_H
 
-#include <stdint.h>     // For fixed-width integral types
-#include <time.h>       // For CLOCK_MONOTONIC
+#include <stdint.h> // For fixed-width integral types
+#include <time.h>   // For CLOCK_MONOTONIC
 #include <stdbool.h>
-#include <stdarg.h>     // Defines va_list
-#include <stdio.h>      // Defines FILE
-#include <string.h>     // Defines strlen
+#include <stdarg.h> // Defines va_list
+#include <stdio.h>  // Defines FILE
+#include <string.h> // Defines strlen
 
 #include <flexpret/flexpret.h>
 
@@ -51,12 +51,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * The mutex holds the interrupt number.
  * For example, a mutex might be defined for the GPIOTE peripheral interrupt number
- * 
+ *
  * When initialized, the interrupt is inserted into a global linked list
  * for disabling and enabling all interrupts during sleep functions.
  * - All interrupts are disabled by default after initialization
  * - Priority levels are restricted between (0-7)
- * 
+ *
  */
 
 // Define PRINTF_TIME and PRINTF_MICROSTEP, which are the printf
@@ -74,7 +74,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // for time and microsteps, you can simply define
 // PRINTF_TIME and PRINTF_MICROSTEP directly in the same file that
 // defines the types _instant_t, _interval_t, and _microstep_t.
-#include <inttypes.h>  // Needed to define PRId64 and PRIu32
+#include <inttypes.h> // Needed to define PRId64 and PRIu32
 #define PRINTF_TIME "%" PRId64
 #define PRINTF_MICROSTEP "%" PRIu32
 
