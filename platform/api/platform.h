@@ -9,8 +9,6 @@
  * @copyright Copyright (c) 2024
  */
 
-#include "low_level_platform.h"
-
 /**
  * @brief Pointer to the platform-specific implementation of a mutex.
  */
