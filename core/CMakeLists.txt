@@ -62,6 +62,7 @@ if (DEFINED LF_TRACE)
     message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
     target_link_libraries(reactor-c PUBLIC lf::trace-api)
     target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN}")
+    target_link_libraries(reactor-c PRIVATE dl)
 endif()
 
 include(${LF_ROOT}/version/api/CMakeLists.txt)
