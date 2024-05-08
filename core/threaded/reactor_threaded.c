@@ -194,6 +194,9 @@ void lf_set_present(lf_port_base_t* port) {
   }
 }
 
+// Forward declaration. See federate.h
+void synchronize_with_other_federates(environment_t* env);
+
 /**
  * Wait until physical time matches or exceeds the specified logical time,
  * unless -fast is given. For decentralized coordination, this function will
