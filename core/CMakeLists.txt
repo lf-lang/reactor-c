@@ -58,11 +58,13 @@ if (DEFINED LF_TRACE)
     if(NOT LF_TRACE_PLUGIN)
         set(LF_TRACE_PLUGIN lf::trace-impl)
         include(${LF_ROOT}/trace/impl/CMakeLists.txt)
+    else()
+        # We must also link with libdl which enables dynamic loading of modules.
+        # This is Linux-specific.
+        target_link_libraries(reactor-c PRIVATE ${LF_TRACE_PLUGIN} dl)
     endif()
-    message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
+    message(STATUS "Linking trace plugin library ${LF_TRACE_PLUGIN} and dl")
     target_link_libraries(reactor-c PUBLIC lf::trace-api)
-    target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN}")
-    target_link_libraries(reactor-c PRIVATE dl)
 endif()
 
 include(${LF_ROOT}/version/api/CMakeLists.txt)
