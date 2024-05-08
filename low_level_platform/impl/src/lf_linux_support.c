@@ -45,9 +45,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #else
 #include "lf_POSIX_threads_support.c"
 
-int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
-  // First verify that we have num_cores>cpu_number
-  if (lf_available_cores() <= cpu_number) {
+int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
+  // Sanitize input
+  if (lf_available_cores() <= 0 || cpu_number >= (size_t)lf_available_cores()) {
     return -1;
   }
 
@@ -60,7 +60,7 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
 }
 
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
-  int posix_policy, min_pri, max_pri, final_priority;
+  int posix_policy, min_pri, max_pri, final_priority, res;
   struct sched_param schedparam;
 
   if (priority > LF_SCHED_MAX_PRIORITY || priority < LF_SCHED_MIN_PRIORITY) {
@@ -68,8 +68,9 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
   }
 
   // Get the current scheduling policy
-  if (pthread_getschedparam(thread, &posix_policy, &schedparam) != 0) {
-    return -1;
+  res = pthread_getschedparam(thread, &posix_policy, &schedparam);
+  if (res != 0) {
+    return res;
   }
 
   min_pri = sched_get_priority_min(posix_policy);
@@ -87,24 +88,34 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
 }
 
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
-  int posix_policy;
+  int posix_policy, res;
+  bool set_priority;
   struct sched_param schedparam;
 
   // Get the current scheduling policy
-  if (pthread_getschedparam(thread, &posix_policy, &schedparam) != 0) {
-    return -1;
+  res = pthread_getschedparam(thread, &posix_policy, &schedparam);
+  if (res != 0) {
+    return res;
   }
 
-  // Update the policy
+  // Update the policy, and initially set the priority to max.
+  // The priority value is later updated. Initializing it
+  // is just to avoid code duplication.
   switch (policy->policy) {
   case LF_SCHED_FAIR:
     posix_policy = SCHED_OTHER;
+    schedparam.sched_priority = 0;
+    set_priority = false;
     break;
   case LF_SCHED_TIMESLICE:
     posix_policy = SCHED_RR;
+    schedparam.sched_priority = sched_get_priority_max(SCHED_RR);
+    set_priority = true;
     break;
   case LF_SCHED_PRIORITY:
     posix_policy = SCHED_FIFO;
+    schedparam.sched_priority = sched_get_priority_max(SCHED_FIFO);
+    set_priority = true;
     break;
   default:
     return -1;
@@ -112,13 +123,17 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
   }
 
   // Write it back
-  if (pthread_setschedparam(thread, posix_policy, &schedparam) != 0) {
-    return -3;
+  res = pthread_setschedparam(thread, posix_policy, &schedparam);
+  if (res != 0) {
+    return res;
   }
 
-  // Set the priority
-  if (lf_thread_set_priority(thread, policy->priority) != 0) {
-    return -1;
+  // Set the priority of we chose a RT scheduler
+  if (set_priority) {
+    res = lf_thread_set_priority(thread, policy->priority);
+    if (res != 0) {
+      return res;
+    }
   }
 
   return 0;

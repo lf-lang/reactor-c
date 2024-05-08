@@ -162,7 +162,7 @@ typedef struct {
  * @param cpu_number the CPU ID
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
+int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number);
 
 /**
  * @brief Set the priority of a thread.
