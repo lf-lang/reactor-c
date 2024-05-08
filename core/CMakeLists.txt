@@ -63,7 +63,7 @@ if (DEFINED LF_TRACE)
         # This is Linux-specific.
         target_link_libraries(reactor-c PRIVATE ${LF_TRACE_PLUGIN} dl)
     endif()
-    message(STATUS "Linking trace plugin library ${LF_TRACE_PLUGIN} and dl")
+    message(STATUS "Linking trace plugin library ${LF_TRACE_PLUGIN}")
     target_link_libraries(reactor-c PUBLIC lf::trace-api)
 endif()
 
