@@ -1121,36 +1121,50 @@ void handle_timestamp(federate_info_t* my_fed) {
 
     //// Algorithm for computing the effective_start_time of a joining transient
     // The effective_start_time will be the max among all the following tags:
-    //  - At tag: (joining time, 0 microstep)
-    //  - The latest completed logical tag + 1 microstep
-    //  - The latest granted tag + 1 microstep, of every downstream federate
-    //  - The latest provisionnaly granted tag + 1 microstep, of every downstream federate
+    //  1. At tag: (joining time, 0 microstep)
+    //  2. The latest completed logical tag + 1 microstep
+    //  3. The latest granted (P)TAG + 1 microstep, of every downstream federate
+    //  4. The maximun tag of messages from the upstream federates + 1 microstep
 
+    // Condition 1.
     my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
 
-    if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) > 0) {
+    // Condition 2.
+    // FIXME: Not sure if this corner case can happen, but better to be on the safe side.
+    if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) >= 0) {
       my_fed->effective_start_tag = my_fed->enclave.completed;
       my_fed->effective_start_tag.microstep++;
     }
 
-    // Iterate over the downstream federates
+    // Condition 3. Iterate over the downstream federates
     for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
       federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.downstream[j]);
 
-      // Ignore this federate if it has resigned.
-      if (downstream->enclave.state == NOT_CONNECTED) {
-        continue;
-      }
-
       // Get the max over the TAG of the downstreams
-      if (lf_tag_compare(downstream->enclave.last_granted, my_fed->effective_start_tag) > 0) {
+      if (lf_tag_compare(downstream->enclave.last_granted, my_fed->effective_start_tag) >= 0) {
         my_fed->effective_start_tag = downstream->enclave.last_granted;
         my_fed->effective_start_tag.microstep++;
       }
 
       // Get the max over the PTAG of the downstreams
-      if (lf_tag_compare(downstream->enclave.last_provisionally_granted, my_fed->effective_start_tag) > 0) {
+      if (lf_tag_compare(downstream->enclave.last_provisionally_granted, my_fed->effective_start_tag) >= 0) {
         my_fed->effective_start_tag = downstream->enclave.last_provisionally_granted;
+        my_fed->effective_start_tag.microstep++;
+      }
+    }
+
+    // Condition 4. Iterate over the messages from the upstream federates
+    for (int j = 0; j < my_fed->enclave.num_upstream; j++) {
+      federate_info_t* upstream = GET_FED_INFO(my_fed->enclave.upstream[j]);
+
+      // Get the max over the TAG of the upstreams
+      size_t queue_size = pqueue_tag_size(upstream->in_transit_message_tags);
+      pqueue_t* pq = (pqueue_t*)(upstream->in_transit_message_tags);
+      pqueue_tag_element_t* message_with_max_tag = (pqueue_tag_element_t*)(pq->d[queue_size]);
+      tag_t max_tag = message_with_max_tag->tag;
+
+      if (lf_tag_compare(max_tag, my_fed->effective_start_tag) >= 0) {
+        my_fed->effective_start_tag = max_tag;
         my_fed->effective_start_tag.microstep++;
       }
     }
