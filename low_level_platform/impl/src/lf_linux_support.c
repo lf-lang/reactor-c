@@ -37,13 +37,67 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/lf_linux_support.h"
 #include "platform/lf_platform_util.h"
 #include "low_level_platform.h"
-
 #include "platform/lf_unix_clock_support.h"
+
+#include <stdio.h>
+#include <linux/kernel.h>
+#include <linux/types.h>
+#include <linux/unistd.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/syscall.h>
+#include <time.h>
+#include <unistd.h>
+#include <signal.h>
+#include <linux/sched.h>
+
+/* Use the proper syscall numbers */
+#ifdef __x86_64__
+#define __NR_sched_setattr 314
+#define __NR_sched_getattr 315
+#endif
+
+#ifdef __i386__
+#define __NR_sched_setattr 351
+#define __NR_sched_getattr 352
+#endif
+
+#ifdef __arm__
+#define __NR_sched_setattr 380
+#define __NR_sched_getattr 381
+#endif
 
 #if defined LF_SINGLE_THREADED
 #include "lf_os_single_threaded_support.c"
 #else
 #include "lf_POSIX_threads_support.c"
+
+struct sched_attr {
+  __u32 size;
+
+  __u32 sched_policy;
+  __u64 sched_flags;
+
+  /* SCHED_NORMAL, SCHED_BATCH */
+  __s32 sched_nice;
+
+  /* SCHED_FIFO, SCHED_RR */
+  __u32 sched_priority;
+
+  /* SCHED_DEADLINE (nsec) */
+  __u64 sched_runtime;
+  __u64 sched_deadline;
+  __u64 sched_period;
+};
+
+static int sched_setattr(pid_t pid, const struct sched_attr* attr, unsigned int flags) {
+  return syscall(__NR_sched_setattr, pid, attr, flags);
+}
+
+// static int sched_getattr(pid_t pid, struct sched_attr* attr, unsigned int size, unsigned int flags) {
+//   return syscall(__NR_sched_getattr, pid, attr, size, flags);
+// }
 
 int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
   // Create a CPU-set consisting of only the desired CPU
@@ -86,6 +140,8 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
   int posix_policy, res;
   bool set_priority;
   struct sched_param schedparam;
+  struct sched_attr attr;
+  unsigned int flags;
 
   // Get the current scheduling policy
   res = pthread_getschedparam(thread, &posix_policy, &schedparam);
@@ -112,6 +168,19 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
     schedparam.sched_priority = sched_get_priority_max(SCHED_FIFO);
     set_priority = true;
     break;
+  case LF_SCHED_DEADLINE:
+    // FIXME: Unify the setting of scheduling policy
+    flags = 0;
+    attr.size = sizeof(attr);
+    attr.sched_flags = SCHED_FLAG_DL_OVERRUN;
+    attr.sched_nice = 0;
+    attr.sched_priority = 0;
+    attr.sched_policy = SCHED_DEADLINE;
+    attr.sched_runtime = policy->time_slice;
+    attr.sched_period = policy->period;
+    attr.sched_deadline = policy->deadline;
+    return sched_setattr(0, &attr, flags);
+
   default:
     return -1;
     break;

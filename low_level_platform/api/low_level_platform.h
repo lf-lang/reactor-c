@@ -149,12 +149,15 @@ typedef enum {
   LF_SCHED_FAIR,      // Non real-time scheduling policy. Corresponds to SCHED_OTHER
   LF_SCHED_TIMESLICE, // Real-time, time-slicing priority-based policty. Corresponds to SCHED_RR.
   LF_SCHED_PRIORITY,  // Real-time, priority-only based scheduling. Corresponds to SCHED_FIFO.
+  LF_SCHED_DEADLINE,  // Real-time, priority-only based scheduling. Corresponds to SCHED_DEADLINE.
 } lf_scheduling_policy_type_t;
 
 typedef struct {
   lf_scheduling_policy_type_t policy; // The scheduling policy
   int priority;                       // The priority, if applicable
-  interval_t time_slice;              // The time-slice allocated, if applicable.
+  interval_t time_slice;              // The time-slice/run-time applicable to TIMESLICE and DEADLINE
+  interval_t deadline;                // Only relevant for DEADLINE
+  interval_t period;                  // Only relevant for DEADLINE
 } lf_scheduling_policy_t;
 
 /**
