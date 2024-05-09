@@ -190,7 +190,7 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
 /**
  * Real-time scheduling API not implemented for Windows.
  */
-int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) { return -1; }
+int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) { return -1; }
 
 int lf_thread_set_priority(lf_thread_t thread, int priority) { return -1; }
 

@@ -1,4 +1,3 @@
-#if defined STANDALONE_RTI
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -272,7 +271,7 @@ static void multiple_nodes() {
   assert(test_rti.scheduling_nodes[1]->all_downstreams[1] == 3);  // node[3] is a downstream node of node[3].
 }
 
-int main(int argc, char** argv) {
+int main() {
   initialize_rti_common(&test_rti);
 
   // Tests for the function update_min_delays_upstream() and update_all_downstreams()
@@ -283,4 +282,3 @@ int main(int argc, char** argv) {
   two_nodes_normal_delay();
   multiple_nodes();
 }
-#endif
