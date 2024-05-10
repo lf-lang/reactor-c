@@ -150,7 +150,10 @@ int lf_available_cores() {
 }
 
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
-  // TODO: Decide between HRTT or SRTT
+  /**
+   * Need to select between HRTT or SRTT; see
+   * https://github.com/lf-lang/reactor-c/issues/421
+   */
   return fp_thread_create(HRTT, thread, lf_thread, arguments);
 }
 
