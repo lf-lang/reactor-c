@@ -27,11 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * FlexPRET API support for the C target of Lingua Franca.
  *
- * This is based on lf_nrf_support.h in icyphy/lf-buckler.
- *
- * @author{Soroush Bateni <soroush@utdallas.edu>}
- * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
- * @author{Shaokai Lin <shaokai@berkeley.edu>}
+ * @author{Magnus Mæhlum <magnmaeh@stud.ntnu.no>}
  */
 
 #ifndef LF_FLEXPRET_SUPPORT_H
