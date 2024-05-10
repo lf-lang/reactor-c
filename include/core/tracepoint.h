@@ -353,7 +353,8 @@ static inline void tracepoint_federate_from_federate(trace_event_t event_type, i
   (void)partner_id;
   (void)tag;
 }
-static inline void lf_tracing_global_init(char* process_name, char* process_names, int process_id, int max_num_local_threads) {
+static inline void lf_tracing_global_init(char* process_name, char* process_names, int process_id,
+                                          int max_num_local_threads) {
   (void)process_name;
   (void)process_names;
   (void)process_id;
