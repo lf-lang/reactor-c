@@ -199,7 +199,7 @@ static void test_fill_with_deleted_items() {
   hashset_destroy(set);
 }
 
-int main(int argc, char* argv[]) {
+int main() {
   trivial();
   test_gaps();
   test_exceptions();
@@ -207,8 +207,6 @@ int main(int argc, char* argv[]) {
   test_iterating();
   test_fill_with_deleted_items();
 
-  (void)argc;
-  (void)argv;
   printf("Tests passed.\n");
   return 0;
 }

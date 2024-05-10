@@ -143,7 +143,9 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
       LF_MUTEX_UNLOCK(mutex);
     }
     if (format != NULL) {
+      va_start(args, format);
       lf_print_error_system_failure(format, args);
+      va_end(args);
     } else {
       lf_print_error_system_failure("Failed to read from socket.");
     }
@@ -209,7 +211,9 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
       LF_MUTEX_UNLOCK(mutex);
     }
     if (format != NULL) {
+      va_start(args, format);
       lf_print_error_system_failure(format, args);
+      va_end(args);
     } else {
       lf_print_error("Failed to write to socket. Closing it.");
     }

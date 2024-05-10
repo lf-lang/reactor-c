@@ -112,7 +112,7 @@ if(DEFINED FEDERATED_AUTHENTICATED)
     target_link_libraries(reactor-c PUBLIC OpenSSL::SSL)
 endif()
 
-if(DEFINED _LF_CLOCK_SYNC_ON)
+if(DEFINED FEDERATED)
   find_library(MATH_LIBRARY m)
   if(MATH_LIBRARY)
     target_link_libraries(reactor-c PUBLIC ${MATH_LIBRARY})
