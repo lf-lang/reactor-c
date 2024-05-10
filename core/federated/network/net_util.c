@@ -105,7 +105,7 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
       continue;
     } else if (more < 0) {
       // A more serious error occurred.
-      lf_print_error("Reading from socket %d failed. With error: `%s`",socket, strerror(errno));
+      lf_print_error("Reading from socket %d failed. With error: `%s`", socket, strerror(errno));
       return -1;
     } else if (more == 0) {
       // EOF received.
@@ -178,7 +178,7 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
       continue;
     } else if (more < 0) {
       // A more serious error occurred.
-      lf_print_error("Writing to socket %d failed. With error: `%s`",socket, strerror(errno));
+      lf_print_error("Writing to socket %d failed. With error: `%s`", socket, strerror(errno));
       return -1;
     }
     bytes_written += more;

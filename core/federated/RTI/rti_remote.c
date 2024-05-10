@@ -387,7 +387,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   LF_MUTEX_LOCK(&rti_mutex);
 
   // If the destination federate is no longer connected, issue a warning,
-  // remove the message from the socket and return. 
+  // remove the message from the socket and return.
   federate_info_t* fed = GET_FED_INFO(federate_id);
   if (fed->enclave.state == NOT_CONNECTED) {
     lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.", federate_id);
@@ -408,7 +408,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
         bytes_to_read = FED_COM_BUFFER_SIZE;
       }
       read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, buffer, NULL,
-                                    "RTI failed to clear message chunks.");
+                                     "RTI failed to clear message chunks.");
       total_bytes_read += bytes_to_read;
     }
     LF_MUTEX_UNLOCK(&rti_mutex);
