@@ -61,6 +61,9 @@ target_link_libraries(${RTI_LIB} PUBLIC lf::platform-impl)
 include(${LF_ROOT}/trace/api/CMakeLists.txt)
 target_link_libraries(${RTI_LIB} PUBLIC lf::trace-api)
 
+include(${LF_ROOT}/trace/api/types/CMakeLists.txt)
+target_link_libraries(${RTI_LIB} PUBLIC lf::trace-api-types)
+
 include(${LF_ROOT}/trace/impl/CMakeLists.txt)
 target_link_libraries(${RTI_LIB} PUBLIC  lf::trace-impl)
 
