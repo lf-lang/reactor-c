@@ -4,7 +4,6 @@ add_executable(tracepoint-to-rs ${CMAKE_CURRENT_LIST_DIR}/src/tracepoint_to_rs.c
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
 include(${LF_ROOT}/trace/api/CMakeLists.txt)
 include(${LF_ROOT}/version/api/CMakeLists.txt)
-include(${LF_ROOT}/trace/api/types/CMakeLists.txt)
 target_link_libraries(tracepoint-to-rs PUBLIC lf::trace-api)
 target_link_libraries(tracepoint-to-rs PUBLIC lf::version-api)
 target_link_libraries(tracepoint-to-rs PUBLIC lf::trace-api-types)
