@@ -32,7 +32,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "util.h"
+
+#if defined(PLATFORM_FLEXPRET)
+/**
+ * For FlexPRET specifically, the header file contains macro overrides for
+ * `fprintf` and `vfprintf`, which reduces code size. Those are not applied
+ * unless the header file is included.
+ */
 #include "low_level_platform.h"
+#endif // defined(PLATFORM_FLEXPRET)
 
 #ifndef STANDALONE_RTI
 #include "environment.h"
