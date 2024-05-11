@@ -253,7 +253,8 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
   }
 }
 
-void lf_tracing_global_init(char* file_name_prefix, int fedid, int max_num_local_threads) {
+void lf_tracing_global_init(char* process_name, char* process_names, int fedid, int max_num_local_threads) {
+  (void)process_names;
   trace_mutex = lf_platform_mutex_new();
   if (!trace_mutex) {
     fprintf(stderr, "WARNING: Failed to initialize trace mutex.\n");
@@ -261,10 +262,10 @@ void lf_tracing_global_init(char* file_name_prefix, int fedid, int max_num_local
   }
   process_id = fedid;
   char filename[100];
-  if (strcmp(file_name_prefix, "rti") == 0) {
-    sprintf(filename, "%s.lft", file_name_prefix);
+  if (strcmp(process_name, "rti") == 0) {
+    sprintf(filename, "%s.lft", process_name);
   } else {
-    sprintf(filename, "%s%d.lft", file_name_prefix, process_id);
+    sprintf(filename, "%s_%d.lft", process_name, process_id);
   }
   trace_new(filename);
   start_trace(&trace, max_num_local_threads);
