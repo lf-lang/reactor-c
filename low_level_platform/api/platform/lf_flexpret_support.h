@@ -64,11 +64,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //     printf("Tag is " PRINTF_TAG "\n", time_value, microstep);
 #define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
 
-#include <errno.h>
-
-// The underlying physical clock for Linux
-#define _LF_CLOCK CLOCK_MONOTONIC
-
 #if !defined(LF_SINGLE_THREADED)
 typedef fp_lock_t lf_mutex_t;
 typedef fp_thread_t lf_thread_t;
