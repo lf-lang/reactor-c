@@ -1,39 +1,3 @@
-# This is a cmake build script providing a solution for compiling
-# the RTI in this directory..
-#
-# Usage:
-#
-# To compile with cmake, run the following commands:
-#
-# $> mkdir build && cd build
-# $> cmake ../
-# $> make
-# $> sudo make install
-#
-# This create a binary RTI in the current working directory. Please put this in
-# a directory that is on the path.
-#
-# To enable DEBUG messages, use the following build commands instead:
-#
-# $> mkdir build && cd build
-# $> cmake -DCMAKE_BUILD_TYPE=DEBUG ../
-# $> make
-# $> sudo make install
-#
-# If you would like to go back to non-DEBUG mode, you would have to remove all
-# contents of the `build` folder.
-
-# To enable simple HMAC-based authentication of federates,
-# add `-DAUTH=ON` option to the cmake command as shown below:
-#
-# $> mkdir build && cd build
-# $> cmake -DAUTH=ON ../
-# $> make
-# $> sudo make install
-#
-# If you would like to go back to non-AUTH mode, you would have to remove all
-# contents of the `build` folder.
-
 cmake_minimum_required(VERSION 3.12)
 project(RTI VERSION 1.0.0 LANGUAGES C)
 
@@ -43,21 +7,13 @@ endif()
 
 set(CoreLib ../../../core)
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
-
 set(IncludeDir ../../../include/core)
-include_directories(../../../include)
-include_directories(${IncludeDir})
-include_directories(${IncludeDir}/federated)
-include_directories(${IncludeDir}/federated/network)
-include_directories(${IncludeDir}/modal_models)
-include_directories(${IncludeDir}/utils)
-include_directories(/usr/local/include)
+set(RTI_LIB rti_lib)
+set(RTI_MAIN RTI)
 
-
-# Declare a new executable target and list all its sources
-add_executable(
-    RTI
-    main.c
+# Add common RTI functionality to a static library. This is done to simplify
+# the building of unit tests.
+add_library(${RTI_LIB} STATIC
     rti_common.c
     rti_remote.c
     ${CoreLib}/tracepoint.c
@@ -74,7 +30,17 @@ IF(COMM_TYPE MATCHES ON)
     set(COMM_TYPE TCP)
 ENDIF()
 
-IF(NOT DEFINED LOG_LEVEL)
+# Add the main target which will link with the library.
+add_executable(${RTI_MAIN} main.c)
+
+target_include_directories(${RTI_LIB} PUBLIC ../../../include)
+target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir})
+target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/federated)
+target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/federated/network)
+target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/modal_models)
+target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/utils)
+
+if (NOT DEFINED LOG_LEVEL)
     set(LOG_LEVEL 0)
 ENDIF(NOT DEFINED LOG_LEVEL)
 
@@ -83,70 +49,87 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     message("-- Building RTI with DEBUG messages enabled")
     set(LOG_LEVEL 4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
-target_compile_definitions(RTI PUBLIC LOG_LEVEL=${LOG_LEVEL})
+target_compile_definitions(${RTI_LIB} PUBLIC LOG_LEVEL=${LOG_LEVEL})
 
 include(${LF_ROOT}/version/api/CMakeLists.txt)
-target_link_libraries(RTI lf::version-api)
+target_link_libraries(${RTI_LIB} PUBLIC lf::version-api)
 
 include(${LF_ROOT}/logging/api/CMakeLists.txt)
-target_link_libraries(RTI lf::logging-api)
+target_link_libraries(${RTI_LIB} PUBLIC lf::logging-api)
 
 include(${LF_ROOT}/tag/api/CMakeLists.txt)
-target_link_libraries(RTI lf::tag-api)
+target_link_libraries(${RTI_LIB} PUBLIC lf::tag-api)
 
 include(${LF_ROOT}/platform/api/CMakeLists.txt)
-target_link_libraries(RTI lf::platform-api)
+target_link_libraries(${RTI_LIB} PUBLIC lf::platform-api)
 
 include(${LF_ROOT}/platform/impl/CMakeLists.txt)
-target_link_libraries(RTI lf::platform-impl)
+target_link_libraries(${RTI_LIB} PUBLIC lf::platform-impl)
 
 include(${LF_ROOT}/trace/api/CMakeLists.txt)
-target_link_libraries(RTI lf::trace-api)
+target_link_libraries(${RTI_LIB} PUBLIC lf::trace-api)
 
 include(${LF_ROOT}/trace/impl/CMakeLists.txt)
-target_link_libraries(RTI lf::trace-impl)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::trace-impl)
 
 include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
-target_link_libraries(RTI lf::low-level-platform-impl)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-impl)
 
 include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
-target_link_libraries(RTI lf::low-level-platform-api)
-
-# Set FEDERATED to get federated compilation support
-target_compile_definitions(RTI PUBLIC FEDERATED=1)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-api)
 
 include(${IncludeDir}/federated/network/CMakeLists.txt)
-target_link_libraries(RTI lf::network-api)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::network-api)
 
 include(${CoreLib}/federated/network/CMakeLists.txt)
-target_link_libraries(RTI lf::network-impl)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::network-impl)
 
 # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
-target_compile_definitions(RTI PUBLIC STANDALONE_RTI=1)
+target_compile_definitions(${RTI_LIB} PUBLIC STANDALONE_RTI=1)
 
-target_compile_definitions(RTI PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
+# Set FEDERATED to get federated compilation support
+target_compile_definitions(${RTI_LIB} PUBLIC FEDERATED=1)
+target_compile_definitions(${RTI_LIB} PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
 target_compile_definitions(RTI PUBLIC COMM_TYPE_${COMM_TYPE})
 
 # Set RTI Tracing
-target_compile_definitions(RTI PUBLIC RTI_TRACE)
+target_compile_definitions(${RTI_LIB} PUBLIC RTI_TRACE)
 
 # Warnings as errors
-target_compile_options(RTI PUBLIC -Werror)
+target_compile_options(${RTI_LIB} PUBLIC -Werror)
+
 # Find threads and link to it
 find_package(Threads REQUIRED)
-target_link_libraries(RTI Threads::Threads)
+target_link_libraries(${RTI_LIB} PUBLIC Threads::Threads)
 
 # Option for enabling federate authentication by RTI.
 option(AUTH "Federate authentication by RTI enabled." OFF)
 IF(AUTH MATCHES ON)
-  add_compile_definitions(__RTI_AUTH__)
+  target_compile_definitions(${RTI_LIB} PUBLIC __RTI_AUTH__)
   # Find OpenSSL and link to it
   find_package(OpenSSL REQUIRED)
-  target_link_libraries(RTI OpenSSL::SSL)
+  target_link_libraries(${RTI_LIB} PUBLIC OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)
+
+# Link the main target with the library.
+target_link_libraries(${RTI_MAIN} PRIVATE ${RTI_LIB})
 
 install(
     TARGETS RTI
     DESTINATION bin
 )
+
+# Build unit tests
+enable_testing()
+set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
+set(TEST_SRCS
+    ${TEST_DIR}/rti_common_test.c
+)
+foreach(TEST_SRC ${TEST_SRCS})
+    get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
+    add_executable(${TEST_NAME} ${TEST_SRC})
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+    target_link_libraries(${TEST_NAME} PUBLIC ${RTI_LIB})
+    target_include_directories(${TEST_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+endforeach()
