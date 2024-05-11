@@ -38,48 +38,81 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 static int critical_section_num_nested[FP_THREADS] = THREAD_ARRAY_INITIALIZER(0);
 
-/**
- * @return 0 for success, or -1 for failure
- */
+static volatile bool _lf_async_event_occurred = false;
 
-static volatile uint32_t last_time = 0;
-static volatile uint64_t epoch = 0;
 #define EPOCH_DURATION_NS (1ULL << 32)
+
 int _lf_clock_gettime(instant_t* t) {
-  uint32_t now = rdtime();
-  if (now < last_time) {
-    epoch += EPOCH_DURATION_NS;
-  }
-  *t = now + epoch;
-  last_time = now;
+  *t = (instant_t) rdtime64();
   return 0;
 }
 
-int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
-  int ret = 0;
-  if (wakeup_time < 0) {
-    return ret;
+int _lf_sleep_common(instant_t wakeup_time, bool interruptable) {
+  // Store the number of epochs; i.e., how many times the 32-bit timer
+  // will overflow
+  uint32_t wakeup_time_epochs = 0;
+  uint32_t wakeup_time_after_epochs = 0;
+  uint32_t sleep_start = rdtime();
+
+  if (wakeup_time > (instant_t) EPOCH_DURATION_NS) {
+    wakeup_time_epochs = wakeup_time / EPOCH_DURATION_NS;
+    wakeup_time_after_epochs = wakeup_time % EPOCH_DURATION_NS;
+    
+    if (wakeup_time < sleep_start) {
+      // This means we need to do another epoch
+      wakeup_time_epochs++;
+    }
+  } else {
+    wakeup_time_epochs = 0;
+    wakeup_time_after_epochs = wakeup_time;
+    if (wakeup_time < sleep_start) {
+      // Nothing to do; should not happen
+      //LF_PRINT_DEBUG("FlexPRET: _lf_sleep_common called with wakeup_time < current time\n");
+      return 0;
+    }
   }
 
+  const uint32_t max_uint32_value = 0xFFFFFFFF;
+  _lf_async_event_occurred = false;
+
+  for (uint32_t i = 0; i < wakeup_time_epochs; i++) {
+    // The first sleep until will only be partial
+    if (interruptable) {
+      // Can be interrupted
+      fp_wait_until(max_uint32_value);
+      if (_lf_async_event_occurred) break;
+    } else {
+      // Cannot be interrupted
+      fp_delay_until(max_uint32_value);
+    }
+  }
+
+  if (interruptable) {
+    if (!_lf_async_event_occurred) {
+      fp_wait_until(wakeup_time_after_epochs);
+    }
+  } else {
+    // Cannot be interrupted
+    fp_delay_until(wakeup_time_after_epochs);
+  }
+
+  return _lf_async_event_occurred;
+}
+
+int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
   // Enable interrupts and execute wait until instruction
   lf_critical_section_exit(env);
 
   // Wait until will stop sleep if interrupt occurs
-  fp_wait_until(wakeup_time);
-
-  if ((instant_t)rdtime64() < wakeup_time) {
-    // Interrupt occurred because we did not wait full wakeup_time
-    ret = -1;
-  }
+  int ret = _lf_sleep_common(wakeup_time, true);
 
   lf_critical_section_enter(env);
   return ret;
 }
 
 int lf_sleep(interval_t sleep_duration) {
-  // FIXME: Handle sleep durations exceeding 32bit
-  fp_delay_for(sleep_duration);
-  return 0;
+  interval_t sleep_until = rdtime64() + sleep_duration;
+  return _lf_sleep_common(sleep_until, false);
 }
 
 /**
@@ -126,20 +159,13 @@ int lf_enable_interrupts_nested() {
  *  set appropriately (see `man 2 clock_nanosleep`).
  */
 int lf_nanosleep(interval_t requested_time) {
-  instant_t t;
-  _lf_clock_gettime(&t);
-  instant_t expire_time = t + requested_time;
-  while (t < expire_time) {
-    _lf_clock_gettime(&t);
-  }
-  return 0;
+  return lf_sleep(requested_time);
 }
 
 #if defined(LF_SINGLE_THREADED)
 
 int _lf_single_threaded_notify_of_event() {
-  // No need to do anything, because an interrupt will cancel wait until
-  // This is specific to FlexPRET
+  _lf_async_event_occurred = true;
   return 0;
 }
 
@@ -186,7 +212,7 @@ int lf_cond_signal(lf_cond_t* cond) { return fp_cond_signal(cond); }
 int lf_cond_wait(lf_cond_t* cond) { return fp_cond_wait(cond); }
 
 int _lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
-  return fp_cond_timed_wait(cond, absolute_time_ns);
+  return (fp_cond_timed_wait(cond, absolute_time_ns) == FP_TIMEOUT) ? LF_TIMEOUT : 0;
 }
 
 int lf_thread_id() { return read_hartid(); }
