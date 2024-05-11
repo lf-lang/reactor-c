@@ -37,70 +37,7 @@
 #include "net_common.h"
 #endif // FEDERATED
 
-/**
- * Trace event types. If you update this, be sure to update the
- * string representation below. Also, create a tracepoint function
- * for each event type.
- */
-typedef enum {
-  reaction_starts,
-  reaction_ends,
-  reaction_deadline_missed,
-  schedule_called,
-  user_event,
-  user_value,
-  worker_wait_starts,
-  worker_wait_ends,
-  scheduler_advancing_time_starts,
-  scheduler_advancing_time_ends,
-  federated, // Everything below this is for tracing federated interactions.
-  // Sending messages
-  send_ACK,
-  send_FAILED,
-  send_TIMESTAMP,
-  send_NET,
-  send_LTC,
-  send_STOP_REQ,
-  send_STOP_REQ_REP,
-  send_STOP_GRN,
-  send_FED_ID,
-  send_PTAG,
-  send_TAG,
-  send_REJECT,
-  send_RESIGN,
-  send_PORT_ABS,
-  send_CLOSE_RQ,
-  send_TAGGED_MSG,
-  send_P2P_TAGGED_MSG,
-  send_MSG,
-  send_P2P_MSG,
-  send_ADR_AD,
-  send_ADR_QR,
-  // Receiving messages
-  receive_ACK,
-  receive_FAILED,
-  receive_TIMESTAMP,
-  receive_NET,
-  receive_LTC,
-  receive_STOP_REQ,
-  receive_STOP_REQ_REP,
-  receive_STOP_GRN,
-  receive_FED_ID,
-  receive_PTAG,
-  receive_TAG,
-  receive_REJECT,
-  receive_RESIGN,
-  receive_PORT_ABS,
-  receive_CLOSE_RQ,
-  receive_TAGGED_MSG,
-  receive_P2P_TAGGED_MSG,
-  receive_MSG,
-  receive_P2P_MSG,
-  receive_ADR_AD,
-  receive_ADR_QR,
-  receive_UNIDENTIFIED,
-  NUM_EVENT_TYPES
-} trace_event_t;
+#include "trace_types.h"
 
 #ifdef LF_TRACE
 
@@ -416,8 +353,10 @@ static inline void tracepoint_federate_from_federate(trace_event_t event_type, i
   (void)partner_id;
   (void)tag;
 }
-static inline void lf_tracing_global_init(char* file_name_prefix, int process_id, int max_num_local_threads) {
-  (void)file_name_prefix;
+static inline void lf_tracing_global_init(char* process_name, char* process_names, int process_id,
+                                          int max_num_local_threads) {
+  (void)process_name;
+  (void)process_names;
   (void)process_id;
   (void)max_num_local_threads;
 }
