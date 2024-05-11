@@ -8,7 +8,7 @@ var trace_8h =
       [ "trace_trigger", "d1/d1b/trace_8h.html#aeec3d6d67240b942f12f5d8770698ae3a5c05f73b365f900def1359524b9ce5a0", null ],
       [ "trace_user", "d1/d1b/trace_8h.html#aeec3d6d67240b942f12f5d8770698ae3a8fa30d4c503d93cecf4234a4d648ed79", null ]
     ] ],
-    [ "lf_tracing_global_init", "d1/d1b/trace_8h.html#a88f437f39d7522d245fd1bfe36aa2127", null ],
+    [ "lf_tracing_global_init", "d1/d1b/trace_8h.html#a1098d9744b99a07d115e48d873de000d", null ],
     [ "lf_tracing_global_shutdown", "d1/d1b/trace_8h.html#a8a5d5ec80d2716ea7848193647cdadcd", null ],
     [ "lf_tracing_register_trace_event", "d1/d1b/trace_8h.html#a15969599d7817596e12dcceb8c145551", null ],
     [ "lf_tracing_set_start_time", "d1/d1b/trace_8h.html#a4270e37a116b1ebac46ad126b2fc277d", null ],
