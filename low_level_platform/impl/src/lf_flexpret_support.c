@@ -43,7 +43,7 @@ static volatile bool _lf_async_event_occurred = false;
 #define EPOCH_DURATION_NS (1ULL << 32)
 
 int _lf_clock_gettime(instant_t* t) {
-  *t = (instant_t) rdtime64();
+  *t = (instant_t)rdtime64();
   return 0;
 }
 
@@ -54,10 +54,10 @@ int _lf_sleep_common(instant_t wakeup_time, bool interruptable) {
   uint32_t wakeup_time_after_epochs = 0;
   uint32_t sleep_start = rdtime();
 
-  if (wakeup_time > (instant_t) EPOCH_DURATION_NS) {
+  if (wakeup_time > (instant_t)EPOCH_DURATION_NS) {
     wakeup_time_epochs = wakeup_time / EPOCH_DURATION_NS;
     wakeup_time_after_epochs = wakeup_time % EPOCH_DURATION_NS;
-    
+
     if (wakeup_time < sleep_start) {
       // This means we need to do another epoch
       wakeup_time_epochs++;
@@ -67,7 +67,7 @@ int _lf_sleep_common(instant_t wakeup_time, bool interruptable) {
     wakeup_time_after_epochs = wakeup_time;
     if (wakeup_time < sleep_start) {
       // Nothing to do; should not happen
-      //LF_PRINT_DEBUG("FlexPRET: _lf_sleep_common called with wakeup_time < current time\n");
+      // LF_PRINT_DEBUG("FlexPRET: _lf_sleep_common called with wakeup_time < current time\n");
       return 0;
     }
   }
@@ -80,7 +80,8 @@ int _lf_sleep_common(instant_t wakeup_time, bool interruptable) {
     if (interruptable) {
       // Can be interrupted
       fp_wait_until(max_uint32_value);
-      if (_lf_async_event_occurred) break;
+      if (_lf_async_event_occurred)
+        break;
     } else {
       // Cannot be interrupted
       fp_delay_until(max_uint32_value);
@@ -158,9 +159,7 @@ int lf_enable_interrupts_nested() {
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
  *  set appropriately (see `man 2 clock_nanosleep`).
  */
-int lf_nanosleep(interval_t requested_time) {
-  return lf_sleep(requested_time);
-}
+int lf_nanosleep(interval_t requested_time) { return lf_sleep(requested_time); }
 
 #if defined(LF_SINGLE_THREADED)
 
