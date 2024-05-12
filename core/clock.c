@@ -8,9 +8,13 @@
 #include "clock.h"
 #include "low_level_platform.h"
 
-#if defined(_LF_CLOCK_SYNC_ON)
+#if defined(_LF_CLOCK_SYNC_ON) || defined(_LF_CLOCK_SYNC_INITIAL)
 #include "clock-sync.h"
-#endif
+#else
+// Provide empty implementations of these functions.
+void clock_sync_add_offset(instant_t* t) { (void)t; }
+void clock_sync_subtract_offset(instant_t* t) { (void)t; }
+#endif // defined(_LF_CLOCK_SYNC_ON) || defined(_LF_CLOCK_SYNC_INITIAL)
 
 static instant_t last_read_physical_time = NEVER;
 
@@ -20,9 +24,7 @@ int lf_clock_gettime(instant_t* now) {
   if (res != 0) {
     return -1;
   }
-#if defined(_LF_CLOCK_SYNC_ON)
-  clock_sync_apply_offset(now);
-#endif
+  clock_sync_add_offset(now);
   do {
     // Atomically fetch the last read value. This is done with
     // atomics to guarantee that it works on 32bit platforms as well.
@@ -42,19 +44,15 @@ int lf_clock_gettime(instant_t* now) {
 }
 
 int lf_clock_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
-#if defined(_LF_CLOCK_SYNC_ON)
   // Remove any clock sync offset and call the Platform API.
-  clock_sync_remove_offset(&wakeup_time);
-#endif
+  clock_sync_subtract_offset(&wakeup_time);
   return _lf_interruptable_sleep_until_locked(env, wakeup_time);
 }
 
 #if !defined(LF_SINGLE_THREADED)
 int lf_clock_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
-#if defined(_LF_CLOCK_SYNC_ON)
   // Remove any clock sync offset and call the Platform API.
-  clock_sync_remove_offset(&wakeup_time);
-#endif
+  clock_sync_subtract_offset(&wakeup_time);
   return _lf_cond_timedwait(cond, wakeup_time);
 }
-#endif
+#endif // !defined(LF_SINGLE_THREADED)

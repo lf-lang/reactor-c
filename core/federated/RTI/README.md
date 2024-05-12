@@ -8,6 +8,11 @@ make
 sudo make install
 ```
 
+To run the unit tests
+```bash
+make test
+```
+
 **Note:** To enable DEBUG messages, use the following build commands instead:
 
 ```bash
@@ -47,3 +52,4 @@ docker login -u [username]
 ```
 
 To authenticate, request a PAT on [DockerHub](https://hub.docker.com/settings/security).
+
