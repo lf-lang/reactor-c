@@ -161,7 +161,7 @@ void reset_socket_stat(struct socket_stat_t* socket_stat) {
  *   will be sent.
  */
 uint16_t setup_clock_synchronization_with_rti() {
-  uint16_t port_to_return = UINT16_MAX;  // Default if clock sync is off.
+  uint16_t port_to_return = UINT16_MAX; // Default if clock sync is off.
 #if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   // Initialize the UDP socket
   _lf_rti_socket_UDP = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -201,7 +201,7 @@ uint16_t setup_clock_synchronization_with_rti() {
   if (setsockopt(_lf_rti_socket_UDP, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
     lf_print_error("Failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
   }
-#elif (LF_CLOCK_SYNC == LF_CLOCK_SYNC_INIT) 
+#elif (LF_CLOCK_SYNC == LF_CLOCK_SYNC_INIT)
   port_to_return = 0u;
 #endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   return port_to_return;
@@ -534,7 +534,7 @@ void clock_sync_add_offset(instant_t* t) { *t += (_lf_clock_sync_offset + _lf_cl
 void clock_sync_subtract_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
 
 void clock_sync_set_constant_bias(interval_t offset) { _lf_clock_sync_constant_bias = offset; }
-#else // i.e. (LF_CLOCK_SYNC < LF_CLOCK_SYNC_INIT)
+#else  // i.e. (LF_CLOCK_SYNC < LF_CLOCK_SYNC_INIT)
 // Empty implementations of clock_sync_add_offset and clock_sync_subtract_offset
 // are in clock.c.
 void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
@@ -552,7 +552,7 @@ int create_clock_sync_thread(lf_thread_t* thread_id) {
 #if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   // One for UDP messages if clock synchronization is enabled for this federate
   return lf_thread_create(thread_id, listen_to_rti_UDP_thread, NULL);
-#else // i.e. (LF_CLOCK_SYNC < LF_CLOCK_SYNC_ON)
+#else  // i.e. (LF_CLOCK_SYNC < LF_CLOCK_SYNC_ON)
   (void)thread_id; // Suppress unused parameter warning.
 #endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   return 0;
