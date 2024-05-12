@@ -1,4 +1,4 @@
-set(UTIL_SOURCES vector.c pqueue_base.c pqueue_tag.c pqueue.c util.c)
+set(UTIL_SOURCES vector.c pqueue_base.c pqueue_tag.c pqueue_reaction.c pqueue.c util.c)
 
 if(NOT DEFINED LF_SINGLE_THREADED)
   list(APPEND UTIL_SOURCES lf_semaphore.c)

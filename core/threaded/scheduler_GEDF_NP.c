@@ -41,7 +41,7 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t* scheduler, reaction
   LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %zu.", reaction_level);
   LF_MUTEX_LOCK(&scheduler->array_of_mutexes[reaction_level]);
   LF_PRINT_DEBUG("Scheduler: Locked the mutex for level %zu.", reaction_level);
-  pqueue_insert(((pqueue_t**)scheduler->triggered_reactions)[reaction_level], (void*)reaction);
+  pqueue_reaction_insert(((pqueue_reaction_t**)scheduler->triggered_reactions)[reaction_level], (void*)reaction);
   LF_MUTEX_UNLOCK(&scheduler->array_of_mutexes[reaction_level]);
 }
 
@@ -53,7 +53,7 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t* scheduler, reaction
  * threads.
  */
 int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
-  pqueue_t* tmp_queue = NULL;
+  pqueue_reaction_t* tmp_queue = NULL;
   // Note: All the threads are idle, which means that they are done inserting
   // reactions. Therefore, the reaction queues can be accessed without locking
   // a mutex.
@@ -62,11 +62,11 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
     LF_PRINT_DEBUG("Waiting with curr_reaction_level %zu.", scheduler->next_reaction_level);
     try_advance_level(scheduler->env, &scheduler->next_reaction_level);
 
-    tmp_queue = ((pqueue_t**)scheduler->triggered_reactions)[scheduler->next_reaction_level - 1];
-    size_t reactions_to_execute = pqueue_size(tmp_queue);
+    tmp_queue = ((pqueue_reaction_t**)scheduler->triggered_reactions)[scheduler->next_reaction_level - 1];
+    size_t reactions_to_execute = pqueue_reaction_size(tmp_queue);
 
     if (reactions_to_execute) {
-      scheduler->executing_reactions = tmp_queue;
+      scheduler->executing_reactions = (void*)tmp_queue;
       return reactions_to_execute;
     }
   }
@@ -84,7 +84,7 @@ void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
   // while accessing the executing queue (which is pointing to one of the
   // reaction queues).
   size_t workers_to_awaken =
-      LF_MIN(scheduler->number_of_idle_workers, pqueue_size((pqueue_t*)scheduler->executing_reactions));
+      LF_MIN(scheduler->number_of_idle_workers, pqueue_reaction_size((pqueue_reaction_t*)scheduler->executing_reactions));
   LF_PRINT_DEBUG("Scheduler: Notifying %zu workers.", workers_to_awaken);
   scheduler->number_of_idle_workers -= workers_to_awaken;
   LF_PRINT_DEBUG("Scheduler: New number of idle workers: %zu.", scheduler->number_of_idle_workers);
@@ -116,7 +116,7 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
   environment_t* env = scheduler->env;
 
   // Executing queue must be empty when this is called.
-  assert(pqueue_size((pqueue_t*)scheduler->executing_reactions) == 0);
+  assert(pqueue_reaction_size((pqueue_reaction_t*)scheduler->executing_reactions) == 0);
 
   // Loop until it's time to stop or work has been distributed
   while (true) {
@@ -195,7 +195,7 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
   }
   lf_scheduler_t* scheduler = env->scheduler;
 
-  scheduler->triggered_reactions = calloc((scheduler->max_reaction_level + 1), sizeof(pqueue_t*));
+  scheduler->triggered_reactions = calloc((scheduler->max_reaction_level + 1), sizeof(pqueue_reaction_t*));
 
   scheduler->array_of_mutexes = (lf_mutex_t*)calloc((scheduler->max_reaction_level + 1), sizeof(lf_mutex_t));
 
@@ -207,14 +207,12 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
       }
     }
     // Initialize the reaction queues
-    ((pqueue_t**)scheduler->triggered_reactions)[i] =
-        pqueue_init(queue_size, in_reverse_order, get_reaction_index, get_reaction_position, set_reaction_position,
-                    reaction_matches, print_reaction);
+    ((pqueue_reaction_t**)scheduler->triggered_reactions)[i] = pqueue_reaction_init(queue_size);
     // Initialize the mutexes for the reaction queues
     LF_MUTEX_INIT(&scheduler->array_of_mutexes[i]);
   }
 
-  scheduler->executing_reactions = ((pqueue_t**)scheduler->triggered_reactions)[0];
+  scheduler->executing_reactions = ((pqueue_reaction_t**)scheduler->triggered_reactions)[0];
 }
 
 /**
@@ -227,7 +225,8 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
   //     pqueue_free(scheduler->triggered_reactions[j]);
   //     FIXME: This is causing weird memory errors.
   // }
-  pqueue_free((pqueue_t*)scheduler->executing_reactions);
+  // FIXME: This only frees the last executed reaction queue.
+  pqueue_reaction_free((pqueue_reaction_t*)scheduler->executing_reactions);
   lf_semaphore_destroy(scheduler->semaphore);
 }
 
@@ -251,7 +250,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
     LF_PRINT_DEBUG("Scheduler: Worker %d trying to lock the mutex for level %zu.", worker_number, current_level);
     LF_MUTEX_LOCK(&scheduler->array_of_mutexes[current_level]);
     LF_PRINT_DEBUG("Scheduler: Worker %d locked the mutex for level %zu.", worker_number, current_level);
-    reaction_t* reaction_to_return = (reaction_t*)pqueue_pop((pqueue_t*)scheduler->executing_reactions);
+    reaction_t* reaction_to_return = (reaction_t*)pqueue_reaction_pop((pqueue_reaction_t*)scheduler->executing_reactions);
     LF_MUTEX_UNLOCK(&scheduler->array_of_mutexes[current_level]);
 
     if (reaction_to_return != NULL) {

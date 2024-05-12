@@ -62,6 +62,7 @@ typedef pqueue_t pqueue_tag_t;
 
 /**
  * @brief Callback comparison function for the tag-based priority queue.
+ * 
  * Return -1 if the first argument is less than second, 0 if the two arguments are the same,
  * and 1 otherwise.
  * This function is of type pqueue_cmp_pri_f.
@@ -209,9 +210,10 @@ void pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e);
 void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t);
 
 /**
- * Dump the queue and it's internal structure.
+ * @brief Dump the queue and it's internal structure.
  * @internal
- * debug function only
+ * 
+ * This is a debug function only.
  * @param q the queue
  */
 void pqueue_tag_dump(pqueue_tag_t* q);

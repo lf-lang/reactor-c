@@ -37,6 +37,7 @@
 #define ENVIRONMENT_H
 
 #include "lf_types.h"
+#include "pqueue_reaction.h"
 #include "low_level_platform.h"
 #include "tracepoint.h"
 
@@ -94,7 +95,7 @@ typedef struct environment_t {
   watchdog_t** watchdogs;
   int worker_thread_count;
 #if defined(LF_SINGLE_THREADED)
-  pqueue_t* reaction_q;
+  pqueue_reaction_t* reaction_q;
 #else
   int num_workers;
   lf_thread_t* thread_ids;

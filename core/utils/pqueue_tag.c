@@ -19,18 +19,22 @@
 
 /**
  * @brief Callback function to get the priority of an element.
+ * 
  * Return the pointer argument cast to pqueue_pri_t because the
  * element is also the priority. This function is of type pqueue_get_pri_f.
  * @param element A pointer to a pqueue_tag_element_t, cast to void*.
+ * @return The element, cast to pqueue_pri_t.
  */
 static pqueue_pri_t pqueue_tag_get_priority(void* element) { return (pqueue_pri_t)element; }
 
 /**
  * @brief Callback function to determine whether two elements are equivalent.
+ * 
  * Return 1 if the tags contained by given elements are identical, 0 otherwise.
  * This function is of type pqueue_eq_elem_f.
  * @param element1 A pointer to a pqueue_tag_element_t, cast to void*.
  * @param element2 A pointer to a pqueue_tag_element_t, cast to void*.
+ * @return 1 if the tags contained by given elements are identical, 0 otherwise.
  */
 static int pqueue_tag_matches(void* element1, void* element2) {
   return lf_tag_compare(((pqueue_tag_element_t*)element1)->tag, ((pqueue_tag_element_t*)element2)->tag) == 0;
@@ -38,13 +42,16 @@ static int pqueue_tag_matches(void* element1, void* element2) {
 
 /**
  * @brief Callback function to return the position of an element.
+ * 
  * This function is of type pqueue_get_pos_f.
  * @param element A pointer to a pqueue_tag_element_t, cast to void*.
+ * @return The position of the element in the queue.
  */
 static size_t pqueue_tag_get_position(void* element) { return ((pqueue_tag_element_t*)element)->pos; }
 
 /**
  * @brief Callback function to set the position of an element.
+ * 
  * This function is of type pqueue_set_pos_f.
  * @param element A pointer to a pqueue_tag_element_t, cast to void*.
  * @param pos The position.
@@ -53,6 +60,7 @@ static void pqueue_tag_set_position(void* element, size_t pos) { ((pqueue_tag_el
 
 /**
  * @brief Callback function to print information about an element.
+ * 
  * This is a function of type pqueue_print_entry_f.
  * @param element A pointer to a pqueue_tag_element_t, cast to void*.
  */

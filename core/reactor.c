@@ -86,7 +86,7 @@ int wait_until(environment_t* env, instant_t wakeup_time) {
 void lf_print_snapshot(environment_t* env) {
   if (LOG_LEVEL > LOG_LEVEL_LOG) {
     LF_PRINT_DEBUG(">>> START Snapshot");
-    pqueue_dump(env->reaction_q, env->reaction_q->prt);
+    pqueue_reaction_dump(env->reaction_q);
     LF_PRINT_DEBUG(">>> END Snapshot");
   }
 }
@@ -114,7 +114,7 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
     LF_PRINT_DEBUG("Enqueueing downstream reaction %s, which has level %lld.", reaction->name,
                    reaction->index & 0xffffLL);
     reaction->status = queued;
-    if (pqueue_insert(env->reaction_q, reaction) != 0) {
+    if (pqueue_reaction_insert(env->reaction_q, reaction) != 0) {
       lf_print_error_and_exit("Could not insert reaction into reaction_q");
     }
   }
@@ -131,9 +131,9 @@ int _lf_do_step(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   // Invoke reactions.
-  while (pqueue_size(env->reaction_q) > 0) {
+  while (pqueue_reaction_size(env->reaction_q) > 0) {
     // lf_print_snapshot();
-    reaction_t* reaction = (reaction_t*)pqueue_pop(env->reaction_q);
+    reaction_t* reaction = (reaction_t*)pqueue_reaction_pop(env->reaction_q);
     reaction->status = running;
 
     LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".", reaction->name,

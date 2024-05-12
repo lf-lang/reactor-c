@@ -90,13 +90,9 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
 static void environment_init_single_threaded(environment_t* env) {
 #ifdef LF_SINGLE_THREADED
   // Reaction queue ordered first by deadline, then by level.
-  // The index of the reaction holds the deadline in the 48 most significant bits,
-  // the level in the 16 least significant bits.
-  env->reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index, get_reaction_position,
-                                set_reaction_position, reaction_matches, print_reaction);
-
+  env->reaction_q = pqueue_reaction_init(INITIAL_REACT_QUEUE_SIZE);
 #else
-  (void)env;
+  (void)env; // Suppress unused parameter warning.
 #endif
 }
 
@@ -164,7 +160,7 @@ static void environment_free_threaded(environment_t* env) {
 
 static void environment_free_single_threaded(environment_t* env) {
 #ifdef LF_SINGLE_THREADED
-  pqueue_free(env->reaction_q);
+  pqueue_reaction_free(env->reaction_q);
 #else
   (void)env;
 #endif
@@ -220,6 +216,13 @@ void environment_init_tags(environment_t* env, instant_t start_time, interval_t 
     stop_tag.microstep = 0;
   }
   env->stop_tag = stop_tag;
+}
+
+// Local function for the recycle_q.
+static int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
+  (void)thiz;
+  (void)that;
+  return 0;
 }
 
 int environment_init(environment_t* env, const char* name, int id, int num_workers, int num_timers,

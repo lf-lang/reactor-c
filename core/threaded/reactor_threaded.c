@@ -967,10 +967,7 @@ void lf_print_snapshot(environment_t* env) {
   if (LOG_LEVEL > LOG_LEVEL_LOG) {
     LF_PRINT_DEBUG(">>> START Snapshot");
     LF_PRINT_DEBUG("Pending:");
-    // pqueue_dump(reaction_q, print_reaction); FIXME: reaction_q is not
-    // accessible here
     LF_PRINT_DEBUG("Event queue size: %zu. Contents:", pqueue_tag_size(env->event_q));
-    // FIXME: There is no pqueue_tag_dump now
     pqueue_tag_dump(env->event_q);
     LF_PRINT_DEBUG(">>> END Snapshot");
   }
