@@ -1871,7 +1871,7 @@ void lf_create_server(int specified_port) {
   LF_PRINT_LOG("Creating a socket server on port %d.", port);
 
   netdrv_t* my_netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
-  create_server(my_netdrv, 1, specified_port); // 1 for FED
+  create_server(my_netdrv, FED, specified_port); // 1 for FED
 
   // TODO: NEED to fix.
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", get_my_port(my_netdrv));
