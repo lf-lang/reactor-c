@@ -52,7 +52,6 @@
 typedef struct socket_priv_t {
   int port; // my port number
   int socket_descriptor;
-  int proto;
   uint16_t user_specified_port;
 
   // The connected other side's info.
