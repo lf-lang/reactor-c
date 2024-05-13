@@ -32,14 +32,7 @@ static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int client_id);
  * @return netdrv_t*
  */
 netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
-  netdrv_t* drv = malloc(sizeof(netdrv_t));
-  if (!drv) {
-    lf_print_error_and_exit("Falied to malloc netdrv_t.");
-  }
-  memset(drv, 0, sizeof(netdrv_t));
-  drv->read_remaining_bytes = 0;
-  drv->federate_id = federate_id;
-  drv->federation_id = federation_id;
+  netdrv_t* drv = initialize_common_netdrv(federate_id, federation_id);
 
   // Initialize priv.
   MQTT_priv_t* priv = MQTT_priv_init();
@@ -73,8 +66,8 @@ void close_netdrv(netdrv_t* drv) {
  * @param port The port is NULL here.
  * @return int
  */
-int create_server(netdrv_t* drv, int server_type, uint16_t port) {
-  if (server_type == 0) {
+int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
+  if (server_type == RTI) {
   } // JUST TO PASS COMPILER.
   if (port == 0) {
   } // JUST TO PASS COMPILER.

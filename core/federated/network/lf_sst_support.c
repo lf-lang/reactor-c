@@ -18,14 +18,7 @@ static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, u
                                   unsigned int* var_len_int_buf_size);
 
 netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
-  if(federate_id == 0) {} //JUST TO PASS COMPILER.
-  if(federation_id == NULL) {} //JUST TO PASS COMPILER.
-  netdrv_t* drv = malloc(sizeof(netdrv_t));
-  if (!drv) {
-    lf_print_error_and_exit("Falied to malloc netdrv_t.");
-  }
-  memset(drv, 0, sizeof(netdrv_t));
-  drv->read_remaining_bytes = 0;
+  netdrv_t* drv = initialize_common_netdrv(federate_id, federation_id);
 
   // Initialize priv.
   sst_priv_t* sst_priv = sst_priv_init();
@@ -44,7 +37,7 @@ void close_netdrv(netdrv_t* drv) {
 }
 
 // Port will be NULL on MQTT.
-int create_server(netdrv_t* drv, int server_type, uint16_t port) {
+int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   SST_ctx_t* ctx = init_SST(RTI_config_path);
   sst_priv->sst_ctx = ctx;

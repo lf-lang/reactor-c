@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <netdb.h>
@@ -13,17 +12,7 @@
 static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int* state);
 
 netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
-  printf("\n\t[TCP PROTOCOL]\n\n");
-  netdrv_t* drv = malloc(sizeof(netdrv_t));
-  if (!drv) {
-    lf_print_error_and_exit("Falied to malloc netdrv_t.");
-  }
-  memset(drv, 0, sizeof(netdrv_t));
-  // drv->read = socket_read;
-  // drv->write = socket_write;
-  drv->read_remaining_bytes = 0;
-  drv->federate_id = federate_id;
-  drv->federation_id = federation_id;
+  netdrv_t* drv = initialize_common_netdrv(federate_id, federation_id);
 
   // Initialize priv.
   socket_priv_t* priv = TCP_socket_priv_init();
@@ -39,9 +28,9 @@ void close_netdrv(netdrv_t* drv) {
 }
 
 // This only creates TCP servers not UDP.
-int create_server(netdrv_t* drv, int server_type, uint16_t port) {
+int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  return create_TCP_server(priv, server_type, port);
+  return create_TCP_server(priv, (int) server_type, port);
 }
 
 /**
