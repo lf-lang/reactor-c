@@ -1,7 +1,21 @@
 #include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "netdriver.h"
 #include "util.h"
+
+netdrv_t* initialize_common_netdrv(int federate_id, const char* federation_id) {
+  netdrv_t* drv = malloc(sizeof(netdrv_t));
+  if (!drv) {
+    lf_print_error_and_exit("Falied to malloc netdrv_t.");
+  }
+  memset(drv, 0, sizeof(netdrv_t));
+  drv->read_remaining_bytes = 0;
+  drv->federate_id = federate_id;
+  drv->federation_id = federation_id;
+  return drv;
+}
 
 /**
  * Write the specified number of bytes to the specified netdriver using write_to_netdriver

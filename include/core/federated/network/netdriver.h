@@ -16,7 +16,7 @@
 typedef enum netdrv_type_t { NETDRV, UDP } netdrv_type_t;
 
 // Just doing 0 for RTI, 1 for FED
-// typedef enum server_type_t { RTI, FED } server_type_t; 
+typedef enum server_type_t { RTI, FED } server_type_t;
 
 typedef struct netdrv_t {
   void* priv;
@@ -26,63 +26,61 @@ typedef struct netdrv_t {
 } netdrv_t;
 
 /**
- * @brief Allocate memory for the netdriver, and save the federate_id, and federation_id used for the netdriver.
- * 
- * @param federate_id 
- * @param federation_id 
- * @return netdrv_t* 
+ * @brief Allocate memory for the netdriver, save the federate_id, and federation_id used for the netdriver.
+ * If the netdriver belongs to the RTI, the federtae_id is -1.
+ * @param federate_id
+ * @param federation_id
+ * @return netdrv_t*
  */
 netdrv_t* initialize_netdrv(int federate_id, const char* federation_id);
 
+netdrv_t* initialize_common_netdrv(int federate_id, const char* federation_id);
+
 /**
  * @brief Close connections, and free allocated memory.
- * 
- * @param drv 
+ *
+ * @param drv
  */
 void close_netdrv(netdrv_t* drv);
 
-
 // Port will be NULL on MQTT.
 /**
- * @brief Create a netdriver server. This is such as a server socket which accepts connections. However this is only the creation of the server netdriver.
- * 
- * @param drv 
- * @param server_type 
- * @param port 
- * @return int 
+ * @brief Create a netdriver server. This is such as a server socket which accepts connections. However this is only the
+ * creation of the server netdriver.
+ *
+ * @param drv
+ * @param server_type
+ * @param port
+ * @return int
  */
-int create_server(netdrv_t* drv, int server_type, uint16_t port);
+int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
 
 /**
- * @brief Creates a communications session. 
- * 
- * @param netdrv 
- * @return netdrv_t* 
+ * @brief Creates a communications session.
+ *
+ * @param netdrv
+ * @return netdrv_t*
  */
 netdrv_t* establish_communication_session(netdrv_t* netdrv);
 
 /**
  * @brief Create a netdriver client.
- * 
- * @param drv 
+ *
+ * @param drv
  */
 void create_client(netdrv_t* drv);
 
 /**
  * @brief Request connect to the target server.
- * 
- * @param drv 
- * @return int 
+ *
+ * @param drv
+ * @return int
  */
 int connect_to_netdrv(netdrv_t* drv);
 
-
-
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
 
-
 int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
-
 
 void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
@@ -90,9 +88,7 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
 // Return 0 when connection lost. -1 on error. > 0 bytes read.
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length);
 
-
 ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length);
-
 
 void read_from_netdrv_fail_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length, lf_mutex_t* mutex,
                                     char* format, ...);
@@ -110,8 +106,6 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr);
 
 // Returns socket number of clock_sync_server.
 int create_clock_sync_server(uint16_t* clock_sync_port);
-
-
 
 /**
  * Without blocking, peek at the specified socket and, if there is
