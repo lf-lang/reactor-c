@@ -16,6 +16,9 @@
 #include "net_util.h"
 #include "socket_common.h"
 
+// Global variable defined in reactor_common.c:
+extern bool _lf_termination_executed;
+
 socket_priv_t* TCP_socket_priv_init() {
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));
   if (!priv) {
@@ -29,9 +32,7 @@ socket_priv_t* TCP_socket_priv_init() {
   return priv;
 }
 
-void TCP_socket_open(socket_priv_t* priv) {
-  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
-}
+void TCP_socket_open(socket_priv_t* priv) { priv->socket_descriptor = create_real_time_tcp_socket_errexit(); }
 
 void TCP_socket_close(socket_priv_t* priv) {
   if (priv->socket_descriptor > 0) {
@@ -147,7 +148,6 @@ int create_TCP_server(socket_priv_t* priv, int server_type, uint16_t port) {
   return 1;
 }
 
-
 // Returns clock sync UDP socket.
 int create_clock_sync_server(uint16_t* clock_sync_port) {
   // Create UDP socket.
@@ -210,7 +210,7 @@ int create_clock_sync_server(uint16_t* clock_sync_port) {
   return socket_descriptor;
 }
 
-int connect_to_socket(int sock, char* hostname, int port, uint16_t user_specified_port){
+int connect_to_socket(int sock, char* hostname, int port, uint16_t user_specified_port) {
   struct addrinfo hints;
   struct addrinfo* result;
   int ret = -1;
@@ -223,24 +223,32 @@ int connect_to_socket(int sock, char* hostname, int port, uint16_t user_specifie
   hints.ai_next = NULL;
   hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
 
-  int count_retries = 0;
-  while (count_retries++ < CONNECT_MAX_RETRIES) {
+  int used_port = (user_specified_port == 0) ? port : user_specified_port;
+
+  instant_t start_connect = lf_time_physical();
+  while (!_lf_termination_executed) {
+    if (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
+      lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
+      break;
+    }
     // Convert port number to string.
     char str[6];
-    sprintf(str, "%u", port);
+    sprintf(str, "%u", used_port);
 
     // Get address structure matching hostname and hints criteria, and
     // set port to the port number provided in str. There should only
     // ever be one matching address structure, and we connect to that.
     if (getaddrinfo(hostname, (const char*)&str, &hints, &result)) {
-      lf_print_error_and_exit("No host matching given hostname: %s", hostname);
+      lf_print_error("No host matching given hostname: %s", hostname);
+      break;
     }
     ret = connect(sock, result->ai_addr, result->ai_addrlen);
     if (ret < 0) {
       lf_sleep(CONNECT_RETRY_INTERVAL);
       if (user_specified_port == 0) {
-        port++;
+        used_port++;
       }
+      lf_print_warning("Could not connect. Will try again every" PRINTF_TIME "nanoseconds.\n", CONNECT_RETRY_INTERVAL);
       continue;
     } else {
       break;
@@ -249,4 +257,3 @@ int connect_to_socket(int sock, char* hostname, int port, uint16_t user_specifie
   freeaddrinfo(result);
   return ret;
 }
-
