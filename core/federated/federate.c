@@ -1628,7 +1628,7 @@ void lf_terminate_execution(environment_t* env) {
  * @param remote_federate_id
  * @return int
  */
-static int get_remote_federate_port_from_RTI(uint16_t remote_federate_id) {
+static int get_remote_federate_info_from_RTI(uint16_t remote_federate_id) {
   // The buffer is used for both sending and receiving replies.
   // The size is what is needed for receiving replies.
   unsigned char buffer[sizeof(int32_t) + sizeof(struct in_addr) + 1];
@@ -1688,7 +1688,10 @@ static int get_remote_federate_port_from_RTI(uint16_t remote_federate_id) {
 void lf_connect_to_federate(uint16_t remote_federate_id) {
   int result = -1;
 
-  int port = get_remote_federate_port_from_RTI(remote_federate_id);
+  // Initialize the netdriver to connect the remote federate.
+  netdrv_t* netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
+  create_connector(netdrv);
+  int port = get_remote_federate_info_from_RTI(remote_federate_id);
 
   uint16_t uport = (uint16_t)port;
 
@@ -1698,8 +1701,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
   // Iterate until we either successfully connect or we exceed the CONNECT_TIMEOUT
   start_connect = lf_time_physical();
-  netdrv_t* netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
-  create_client(netdrv);
+
   set_host_name(netdrv, hostname);
   set_port(netdrv, uport);
   result = connect_to_netdrv(netdrv);
@@ -1769,7 +1771,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
   // Initialize netdriver to rti.
   _fed.netdrv_to_rti = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id); // set memory.
-  create_client(_fed.netdrv_to_rti);
+  create_connector(_fed.netdrv_to_rti);
   set_host_name(_fed.netdrv_to_rti, hostname);
   set_port(_fed.netdrv_to_rti, uport);
   set_specified_port(_fed.netdrv_to_rti, port);
@@ -1880,7 +1882,7 @@ void lf_create_server(int specified_port) {
   LF_PRINT_LOG("Creating a socket server on port %d.", port);
 
   netdrv_t* my_netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
-  create_server(my_netdrv, FED, specified_port); // 1 for FED
+  create_listener(my_netdrv, FED, specified_port); // 1 for FED
 
   // TODO: NEED to fix.
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", get_my_port(my_netdrv));

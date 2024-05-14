@@ -37,7 +37,7 @@ void close_netdrv(netdrv_t* drv) {
 }
 
 // Port will be NULL on MQTT.
-int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
+int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   SST_ctx_t* ctx = init_SST(RTI_config_path);
   sst_priv->sst_ctx = ctx;
@@ -84,7 +84,7 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   return ret_netdrv;
 }
 
-void create_client(netdrv_t* drv) {
+void create_connector(netdrv_t* drv) {
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   SST_ctx_t* ctx = init_SST((const char*)sst_config_path);
 

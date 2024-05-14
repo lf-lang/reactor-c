@@ -1453,7 +1453,7 @@ int start_rti_server(uint16_t port) {
   // Initialize RTI's netdriver. The ID is -1 for the RTI.
   rti_remote->rti_netdrv = initialize_netdrv(-1, rti_remote->federation_id);
   // Create the RTI's netdriver.
-  rc = create_server(rti_remote->rti_netdrv, RTI, port); // 0 for RTI
+  rc = create_listener(rti_remote->rti_netdrv, RTI, port); // 0 for RTI
   lf_print("RTI: Listening for federates.");
   // Create the clocksync's netdriver.
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {

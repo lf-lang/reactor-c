@@ -53,7 +53,7 @@ void close_netdrv(netdrv_t* drv);
  * @param port
  * @return int
  */
-int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port);
+int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port);
 
 /**
  * @brief Creates a communications session.
@@ -68,7 +68,7 @@ netdrv_t* establish_communication_session(netdrv_t* netdrv);
  *
  * @param drv
  */
-void create_client(netdrv_t* drv);
+void create_connector(netdrv_t* drv);
 
 /**
  * @brief Request connect to the target server.

@@ -66,7 +66,7 @@ void close_netdrv(netdrv_t* drv) {
  * @param port The port is NULL here.
  * @return int
  */
-int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
+int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   if (server_type == RTI) {
   } // JUST TO PASS COMPILER.
   if (port == 0) {
@@ -154,7 +154,7 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
  *
  * @param drv
  */
-void create_client(netdrv_t* drv) {
+void create_connector(netdrv_t* drv) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   set_MQTTClient_id(MQTT_priv, drv->federate_id);
   int rc;

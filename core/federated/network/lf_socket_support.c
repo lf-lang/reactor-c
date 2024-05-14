@@ -28,7 +28,7 @@ void close_netdrv(netdrv_t* drv) {
 }
 
 // This only creates TCP servers not UDP.
-int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
+int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   return create_TCP_server(priv, (int)server_type, port);
 }
@@ -71,7 +71,7 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   return ret_netdrv;
 }
 
-void create_client(netdrv_t* drv) {
+void create_connector(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   TCP_socket_open(priv);
 }
