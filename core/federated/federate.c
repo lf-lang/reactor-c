@@ -391,12 +391,12 @@ static void close_inbound_netdrv(int fed_id, int flag) {
   LF_MUTEX_LOCK(&netdrv_mutex);
   if (_fed.netdrv_for_inbound_p2p_connections[fed_id] != NULL) {
     if (flag >= 0) {
-    //     if (flag > 0) {
-    //         shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
-    //     } else {
-    //         // Have received EOF from the other end. Send EOF to the other end.
-    //         shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_WR);
-    //     }
+      //     if (flag > 0) {
+      //         shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
+      //     } else {
+      //         // Have received EOF from the other end. Send EOF to the other end.
+      //         shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_WR);
+      //     }
     }
     // close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
     // _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
@@ -463,8 +463,9 @@ static int handle_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, s
   unsigned short port_id;
   unsigned short federate_id;
   size_t length;
-    //TODO: JUST FOR COMPILER.
-  if(fed_id==0){}
+  // TODO: JUST FOR COMPILER.
+  if (fed_id == 0) {
+  }
   extract_header(buffer, &port_id, &federate_id, &length);
   size_t header_length = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
   // Check if the message is intended for this federate
@@ -815,15 +816,15 @@ static void close_outbound_netdrv(int fed_id, int flag) {
     // // Close the socket by sending a FIN packet indicating that no further writes
     // // are expected.  Then read until we get an EOF indication.
     if (flag >= 0) {
-    //     // SHUT_WR indicates no further outgoing messages.
-    //     shutdown(_fed.sockets_for_outbound_p2p_connections[fed_id], SHUT_WR);
-    //     if (flag > 0) {
-    //         // Have not received EOF yet. read until we get an EOF or error indication.
-    //         // This compensates for delayed ACKs and disabling of Nagles algorithm
-    //         // by delaying exiting until the shutdown is complete.
-    //         unsigned char message[32];
-    //         while (read(_fed.sockets_for_outbound_p2p_connections[fed_id], &message, 32) > 0);
-    //     }
+      //     // SHUT_WR indicates no further outgoing messages.
+      //     shutdown(_fed.sockets_for_outbound_p2p_connections[fed_id], SHUT_WR);
+      //     if (flag > 0) {
+      //         // Have not received EOF yet. read until we get an EOF or error indication.
+      //         // This compensates for delayed ACKs and disabling of Nagles algorithm
+      //         // by delaying exiting until the shutdown is complete.
+      //         unsigned char message[32];
+      //         while (read(_fed.sockets_for_outbound_p2p_connections[fed_id], &message, 32) > 0);
+      //     }
     }
     // close(_fed.sockets_for_outbound_p2p_connections[fed_id]);
     // _fed.sockets_for_outbound_p2p_connections[fed_id] = -1;
@@ -1623,11 +1624,11 @@ void lf_terminate_execution(environment_t* env) {
 
 /**
  * @brief Ask the RTI for port number of the remote federate.
- * 
- * @param remote_federate_id 
- * @return int 
+ *
+ * @param remote_federate_id
+ * @return int
  */
-static int get_remote_federate_port_from_RTI(uint16_t remote_federate_id){
+static int get_remote_federate_port_from_RTI(uint16_t remote_federate_id) {
   // The buffer is used for both sending and receiving replies.
   // The size is what is needed for receiving replies.
   unsigned char buffer[sizeof(int32_t) + sizeof(struct in_addr) + 1];
@@ -1702,10 +1703,9 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   set_host_name(netdrv, hostname);
   set_port(netdrv, uport);
   result = connect_to_netdrv(netdrv);
-  if (result != 0 ) {
+  if (result != 0) {
     LF_PRINT_LOG("Failed to connect.");
   }
-
 
   // Connect was successful.
   size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
@@ -1768,7 +1768,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   }
 
   // Initialize netdriver to rti.
-  _fed.netdrv_to_rti = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);       // set memory.
+  _fed.netdrv_to_rti = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id); // set memory.
   create_client(_fed.netdrv_to_rti);
   set_host_name(_fed.netdrv_to_rti, hostname);
   set_port(_fed.netdrv_to_rti, uport);
@@ -1891,6 +1891,8 @@ void lf_create_server(int specified_port) {
   // Trace the event when tracing is enabled. This will not be sent in MQTT.
   tracepoint_federate_to_rti(send_ADR_AD, _lf_my_fed_id, NULL);
 
+  // Send the federate's information to the RTI, for inbound connection. For TCP, it will send the port, and for MQTT it
+  // will do nothing.
   send_address_advertisement_to_RTI(my_netdrv, _fed.netdrv_to_rti);
 }
 
@@ -1965,7 +1967,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // unsigned char federation_id_length = buffer[header_length - 1];
     // char remote_federation_id[federation_id_length];
     // bytes_read = read_from_netdrv(client_fed_netdrv, (unsigned char*)remote_federation_id, federation_id_length);
-    if (bytes_read <= 0 || (strncmp(federation_metadata.federation_id, (const char *) buffer + header_length,
+    if (bytes_read <= 0 || (strncmp(federation_metadata.federation_id, (const char*)buffer + header_length,
                                     strnlen(federation_metadata.federation_id, 255)) != 0)) {
       lf_print_warning("Received invalid federation ID. Closing socket.");
       if (bytes_read > 0) {
@@ -2015,7 +2017,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       // Failed to create a listening thread.
       LF_MUTEX_LOCK(&netdrv_mutex);
       if (_fed.netdrv_for_inbound_p2p_connections[remote_fed_id] != NULL) {
-            close_netdrv(_fed.netdrv_for_inbound_p2p_connections[remote_fed_id]);
+        close_netdrv(_fed.netdrv_for_inbound_p2p_connections[remote_fed_id]);
         _fed.netdrv_for_inbound_p2p_connections[remote_fed_id] = NULL;
       }
       LF_MUTEX_UNLOCK(&netdrv_mutex);
@@ -2421,10 +2423,9 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     tracepoint_federate_to_rti(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
   }
 
-
-//TODO: THIS IS ONLY TEMPORARY... NEED TO FIX!!
+  // TODO: THIS IS ONLY TEMPORARY... NEED TO FIX!!
   size_t sender_length = length + header_length;
-  unsigned char *sender = malloc(sender_length);
+  unsigned char* sender = malloc(sender_length);
   memcpy(sender, header_buffer, header_length);
   memcpy(sender + header_length, message, length);
   // int bytes_written = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
