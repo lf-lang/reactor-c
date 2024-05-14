@@ -117,6 +117,14 @@ int create_clock_sync_server(uint16_t* clock_sync_port);
  */
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
 
+/**
+ * @brief Send ADDRESS_ADVERTISEMENT message to RTI.
+ * 
+ * @param fed_drv 
+ * @param rti_drv 
+ */
+void send_address_advertisement_to_RTI(netdrv_t* fed_drv, netdrv_t* rti_drv);
+
 ////////////////////////////
 
 #endif /* NETDRIVER_H */
