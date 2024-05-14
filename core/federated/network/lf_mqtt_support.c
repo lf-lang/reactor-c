@@ -31,8 +31,8 @@ static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int client_id);
  *
  * @return netdrv_t*
  */
-netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
-  netdrv_t* drv = initialize_common_netdrv(federate_id, federation_id);
+netdrv_t* initialize_netdrv(int my_federate_id, const char* federation_id) {
+  netdrv_t* drv = initialize_common_netdrv(my_federate_id, federation_id);
 
   // Initialize priv.
   MQTT_priv_t* priv = MQTT_priv_init();
@@ -105,48 +105,48 @@ int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
  * @param netdrv
  * @return netdrv_t*
  */
-netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
-  netdrv_t* ret_netdrv = initialize_netdrv(-2, my_netdrv->federation_id);
-  // MQTT_priv_t* my_priv = (MQTT_priv_t*)my_netdrv->priv;
-  MQTT_priv_t* ret_priv = (MQTT_priv_t*)ret_netdrv->priv;
+netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
+  netdrv_t* connector_nedrv = initialize_netdrv(-2, listener_netdrv->federation_id);
+  // MQTT_priv_t* listener_priv = (MQTT_priv_t*)listener_netdrv->priv;
+  MQTT_priv_t* connector_priv = (MQTT_priv_t*)connector_nedrv->priv;
   unsigned char buffer[1 + sizeof(uint16_t)];
-  read_from_netdrv_fail_on_error(my_netdrv, buffer, 1 + sizeof(uint16_t), NULL, "MQTT receive failed.");
+  read_from_netdrv_fail_on_error(listener_netdrv, buffer, 1 + sizeof(uint16_t), NULL, "MQTT receive failed.");
   if (buffer[0] != MSG_TYPE_MQTT_JOIN) {
     lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_JOIN.");
   }
   uint16_t fed_id = extract_uint16(buffer + 1);
-  ret_netdrv->federate_id = (int)fed_id;
+  connector_nedrv->federate_id = (int)fed_id;
 
-  set_MQTTServer_id(ret_priv, my_netdrv->federate_id, ret_netdrv->federate_id);
+  set_MQTTServer_id(connector_priv, listener_netdrv->federate_id, connector_nedrv->federate_id);
   int rc;
-  if ((rc = MQTTClient_create(&ret_priv->client, ADDRESS, ret_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
+  if ((rc = MQTTClient_create(&connector_priv->client, ADDRESS, connector_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
       MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to create client, return code %d\n", rc);
   }
 
-  ret_priv->conn_opts.keepAliveInterval = 20;
-  ret_priv->conn_opts.cleansession = 1;
-  if ((rc = MQTTClient_connect(ret_priv->client, &ret_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
+  connector_priv->conn_opts.keepAliveInterval = 20;
+  connector_priv->conn_opts.cleansession = 1;
+  if ((rc = MQTTClient_connect(connector_priv->client, &connector_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to connect, return code %d\n", rc);
   }
 
-  char* topic_to_subscribe = create_topic_federation_id_fed_id_to_rti(ret_netdrv->federation_id, fed_id);
-  if ((rc = MQTTClient_subscribe(ret_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
+  char* topic_to_subscribe = create_topic_federation_id_fed_id_to_rti(connector_nedrv->federation_id, fed_id);
+  if ((rc = MQTTClient_subscribe(connector_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to subscribe, return code %d\n", rc);
   }
   LF_PRINT_LOG("Subscribing on topic %s.", topic_to_subscribe);
   free(topic_to_subscribe);
 
-  ret_priv->topic_name = (const char*)create_topic_federation_id_rti_to_fed_id(ret_netdrv->federation_id, fed_id);
+  connector_priv->topic_name = (const char*)create_topic_federation_id_rti_to_fed_id(connector_nedrv->federation_id, fed_id);
   buffer[0] = MSG_TYPE_MQTT_ACCEPT;
-  encode_uint16((uint16_t)ret_netdrv->federate_id, buffer + 1);
-  write_to_netdrv_fail_on_error(ret_netdrv, 1 + sizeof(uint16_t), buffer, NULL,
-                                "Failed to send MSG_TYPE_MQTT_ACCEPT to federate %d", ret_netdrv->federate_id);
-  read_from_netdrv_fail_on_error(ret_netdrv, buffer, 1, NULL, "MQTT receive failed.");
+  encode_uint16((uint16_t)connector_nedrv->federate_id, buffer + 1);
+  write_to_netdrv_fail_on_error(connector_nedrv, 1 + sizeof(uint16_t), buffer, NULL,
+                                "Failed to send MSG_TYPE_MQTT_ACCEPT to federate %d", connector_nedrv->federate_id);
+  read_from_netdrv_fail_on_error(connector_nedrv, buffer, 1, NULL, "MQTT receive failed.");
   if (buffer[0] != MSG_TYPE_MQTT_ACCEPT_ACK) {
     lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_ACCEPT_ACK.");
   }
-  return ret_netdrv;
+  return connector_nedrv;
 }
 
 /**

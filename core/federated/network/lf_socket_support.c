@@ -11,8 +11,8 @@
 
 static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int* state);
 
-netdrv_t* initialize_netdrv(int federate_id, const char* federation_id) {
-  netdrv_t* drv = initialize_common_netdrv(federate_id, federation_id);
+netdrv_t* initialize_netdrv(int my_federate_id, const char* federation_id) {
+  netdrv_t* drv = initialize_common_netdrv(my_federate_id, federation_id);
 
   // Initialize priv.
   socket_priv_t* priv = TCP_socket_priv_init();
@@ -38,23 +38,23 @@ int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
  * 2. Establishes communication session.
 
 **/
-netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
+netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
   // -2 is for uninitialized value.
-  netdrv_t* ret_netdrv = initialize_netdrv(-2, my_netdrv->federation_id);
-  socket_priv_t* my_priv = (socket_priv_t*)my_netdrv->priv;
-  socket_priv_t* ret_priv = (socket_priv_t*)ret_netdrv->priv;
+  netdrv_t* connector_nedrv = initialize_netdrv(-2, listener_netdrv->federation_id);
+  socket_priv_t* listener_priv = (socket_priv_t*)listener_netdrv->priv;
+  socket_priv_t* connector_priv = (socket_priv_t*)connector_nedrv->priv;
   // Wait for an incoming connection request.
   struct sockaddr client_fd;
   uint32_t client_length = sizeof(client_fd);
   // The following blocks until a client connects.
   while (1) {
-    ret_priv->socket_descriptor = accept(my_priv->socket_descriptor, &client_fd, &client_length);
-    if (ret_priv->socket_descriptor >= 0) {
+    connector_priv->socket_descriptor = accept(listener_priv->socket_descriptor, &client_fd, &client_length);
+    if (connector_priv->socket_descriptor >= 0) {
       // Got a socket
       break;
-    } else if (ret_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-      lf_print_error_and_exit("Failed to accept the socket. %s. ret_priv->socket_descriptor = %d", strerror(errno),
-                              ret_priv->socket_descriptor);
+    } else if (connector_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+      lf_print_error_and_exit("Failed to accept the socket. %s. connector_priv->socket_descriptor = %d", strerror(errno),
+                              connector_priv->socket_descriptor);
     } else {
       // Try again
       lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
@@ -67,8 +67,8 @@ netdrv_t* establish_communication_session(netdrv_t* my_netdrv) {
   // 1) Decentralized coordination - handle_address_query() - Sends the port number and address of the federate.
   // 2) Clock synchronization - send_physical_clock - Send through UDP.
   struct sockaddr_in* pV4_addr = (struct sockaddr_in*)&client_fd;
-  ret_priv->server_ip_addr = pV4_addr->sin_addr;
-  return ret_netdrv;
+  connector_priv->server_ip_addr = pV4_addr->sin_addr;
+  return connector_nedrv;
 }
 
 void create_connector(netdrv_t* drv) {

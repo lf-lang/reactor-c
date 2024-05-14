@@ -21,18 +21,18 @@ typedef enum server_type_t { RTI, FED } server_type_t;
 typedef struct netdrv_t {
   void* priv;
   unsigned int read_remaining_bytes;
-  int federate_id;
+  int my_federate_id; // The RTI is -1, and unitialized is -2.
   const char* federation_id;
 } netdrv_t;
 
 /**
- * @brief Allocate memory for the netdriver, save the federate_id, and federation_id used for the netdriver.
+ * @brief Allocate memory for the netdriver, save my_federate_id, and federation_id used for the netdriver.
  * If the netdriver belongs to the RTI, the federtae_id is -1.
- * @param federate_id
+ * @param my_federate_id
  * @param federation_id
  * @return netdrv_t*
  */
-netdrv_t* initialize_netdrv(int federate_id, const char* federation_id);
+netdrv_t* initialize_netdrv(int my_federate_id, const char* federation_id);
 
 netdrv_t* initialize_common_netdrv(int federate_id, const char* federation_id);
 
@@ -56,12 +56,12 @@ void close_netdrv(netdrv_t* drv);
 int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port);
 
 /**
- * @brief Creates a communications session.
+ * @brief Creates a communication session. It uses the listener_netdrv to listen to connections, and return a connector_nedrv
  *
- * @param netdrv
+ * @param listener_netdrv
  * @return netdrv_t*
  */
-netdrv_t* establish_communication_session(netdrv_t* netdrv);
+netdrv_t* establish_communication_session(netdrv_t* listener_netdrv);
 
 /**
  * @brief Create a netdriver client.

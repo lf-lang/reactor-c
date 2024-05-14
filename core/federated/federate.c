@@ -1701,9 +1701,10 @@ static int get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdrv
   assert(port > 0);
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, buffer + 1 + sizeof(int32_t), hostname, INET_ADDRSTRLEN);
-  LF_PRINT_LOG("Received address %s port %d for federate %d from RTI.", hostname, uport, remote_federate_id);
+  LF_PRINT_LOG("Received address %s port %d for federate %d from RTI.", hostname, port, remote_federate_id);
   set_host_name(fed_netdrv, hostname);
-  set_port(fed_netdrv, uport);
+  // Must set as specified port. Or else, the port will be increased when connecting to the other federate.
+  set_specified_port(fed_netdrv, port);
   #elif defined(COMM_TYPE_MQTT)
   // Do not send port.
   #endif
@@ -1721,16 +1722,9 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   netdrv_t* netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
   create_connector(netdrv);
   get_remote_federate_info_from_RTI(remote_federate_id, _fed.netdrv_to_rti, netdrv);
-
-  uint16_t uport = (uint16_t)port;
-
-
-  // Iterate until we either successfully connect or we exceed the CONNECT_TIMEOUT
-  instant_t start_connect = lf_time_physical();
-
   result = connect_to_netdrv(netdrv);
   if (result != 0) {
-    LF_PRINT_LOG("Failed to connect.");
+    lf_print_error("Failed to connect to federate %d.", remote_federate_id);
   }
 
   // Connect was successful.
