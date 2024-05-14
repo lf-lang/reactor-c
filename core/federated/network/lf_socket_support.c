@@ -30,7 +30,7 @@ void close_netdrv(netdrv_t* drv) {
 // This only creates TCP servers not UDP.
 int create_server(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  return create_TCP_server(priv, (int) server_type, port);
+  return create_TCP_server(priv, (int)server_type, port);
 }
 
 /**
@@ -79,7 +79,8 @@ void create_client(netdrv_t* drv) {
 int connect_to_netdrv(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
 
-  int ret = connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port, priv->user_specified_port);
+  int ret =
+      connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port, priv->user_specified_port);
   return ret;
 }
 
@@ -272,6 +273,23 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
     return 0;
   else
     return bytes_read;
+}
+
+/**
+ * @brief Send the server port number to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
+ *
+ * @param drv
+ */
+void send_address_advertisement_to_RTI(netdrv_t* fed_drv, netdrv_t* rti_drv) {
+  unsigned char buffer[sizeof(int32_t) + 1];
+  buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
+  encode_int32(get_my_port(fed_drv), &(buffer[1]));
+
+  // No need for a mutex because we have the only handle on this socket.
+  write_to_netdrv_fail_on_error(rti_drv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
+                                "Failed to send address advertisement.");
+
+  LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(fed_drv));
 }
 
 // ------------------Helper Functions------------------ //

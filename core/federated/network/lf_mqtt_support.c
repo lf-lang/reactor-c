@@ -177,6 +177,7 @@ void create_client(netdrv_t* drv) {
  * @param drv
  * @return int
  */
+//TODO: Suppport Decentralized
 int connect_to_netdrv(netdrv_t* drv) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   int rc;
@@ -334,6 +335,8 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   } // JUST TO PASS COMPILER.
   return 0;
 }
+
+void send_address_advertisement_to_RTI(netdrv_t* fed_drv, netdrv_t* rti_drv) {}
 
 // ------------------Helper Functions------------------ //
 

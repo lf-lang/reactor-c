@@ -4,8 +4,6 @@
 #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
 #include <netinet/tcp.h> // TCP_NODELAY
 
-#include "tag.h"
-
 /**
  * The timeout time in ns for TCP operations.
  * Default value is 10 secs.
@@ -50,8 +48,8 @@
 #define RTI_DEFAULT_UDP_PORT 15061u
 
 typedef struct socket_priv_t {
-  int port; // my port number
   int socket_descriptor;
+  uint16_t port; // my port number // TODO: Only used in federate.c to send federate's port.
   uint16_t user_specified_port;
 
   // The connected other side's info.

@@ -1621,20 +1621,18 @@ void lf_terminate_execution(environment_t* env) {
   }
 }
 
-//////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////
-// Public functions (declared in federate.h, in alphabetical order)
-
-// TODO: DONGHA: Handling address queries must be changed. Just leaving port and ip_addr now.
-void lf_connect_to_federate(uint16_t remote_federate_id) {
-  int result = -1;
-
-  // Ask the RTI for port number of the remote federate.
+/**
+ * @brief Ask the RTI for port number of the remote federate.
+ * 
+ * @param remote_federate_id 
+ * @return int 
+ */
+static int get_remote_federate_port_from_RTI(uint16_t remote_federate_id){
   // The buffer is used for both sending and receiving replies.
   // The size is what is needed for receiving replies.
   unsigned char buffer[sizeof(int32_t) + sizeof(struct in_addr) + 1];
   int port = -1;
-  int count_tries = 0;
+  instant_t start_connect = lf_time_physical();
   while (port == -1 && !_lf_termination_executed) {
     buffer[0] = MSG_TYPE_ADDRESS_QUERY;
     // NOTE: Sending messages in little endian.
@@ -1650,7 +1648,6 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
     // Read RTI's response.
-    // TODO: Fix two reads.
     read_from_netdrv_fail_on_error(_fed.netdrv_to_rti, buffer, sizeof(int32_t) + sizeof(struct in_addr) + 1, NULL,
                                    "Failed to read the requested port number and IP address for federate %d from RTI.",
                                    remote_federate_id);
@@ -1670,8 +1667,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // remote federate has not yet sent an MSG_TYPE_ADDRESS_ADVERTISEMENT message to the RTI.
     // Sleep for some time before retrying.
     if (port == -1) {
-      //TODO: NEED TO CHANGE 
-      if (count_tries++ >= CONNECT_MAX_RETRIES) {
+      if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
         lf_print_error_and_exit("TIMEOUT obtaining IP/port for federate %d from the RTI.", remote_federate_id);
       }
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
@@ -1680,14 +1676,27 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   }
   assert(port < 65536);
   assert(port > 0);
+  return port;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+// Public functions (declared in federate.h, in alphabetical order)
+
+// TODO: DONGHA: Handling address queries must be changed. Just leaving port and ip_addr now.
+void lf_connect_to_federate(uint16_t remote_federate_id) {
+  int result = -1;
+
+  int port = get_remote_federate_port_from_RTI(remote_federate_id);
+
   uint16_t uport = (uint16_t)port;
 
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, buffer + 1 + sizeof(int32_t), hostname, INET_ADDRSTRLEN);
   LF_PRINT_LOG("Received address %s port %d for federate %d from RTI.", hostname, uport, remote_federate_id);
 
-  // Iterate until we either successfully connect or exceed the number of
-  // attempts given by CONNECT_MAX_RETRIES.
+  // Iterate until we either successfully connect or we exceed the CONNECT_TIMEOUT
+  start_connect = lf_time_physical();
   netdrv_t* netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
   create_client(netdrv);
   set_host_name(netdrv, hostname);
@@ -1876,23 +1885,13 @@ void lf_create_server(int specified_port) {
   // TODO: NEED to fix.
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", get_my_port(my_netdrv));
 
-  // Send the server port number to the RTI
-  // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
-  unsigned char buffer[sizeof(int32_t) + 1];
-  buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
-  encode_int32(get_my_port(my_netdrv), &(buffer[1]));
+  // Set the global server netdriver.
+  _fed.my_netdrv = my_netdrv;
 
-  // Trace the event when tracing is enabled
+  // Trace the event when tracing is enabled. This will not be sent in MQTT.
   tracepoint_federate_to_rti(send_ADR_AD, _lf_my_fed_id, NULL);
 
-  // No need for a mutex because we have the only handle on this socket.
-  write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
-                                "Failed to send address advertisement.");
-
-  LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(my_netdrv));
-
-  // Set the global server socket
-  _fed.my_netdrv = my_netdrv;
+  send_address_advertisement_to_RTI(my_netdrv, _fed.netdrv_to_rti);
 }
 
 void lf_enqueue_port_absent_reactions(environment_t* env) {

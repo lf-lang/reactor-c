@@ -96,11 +96,14 @@ int connect_to_netdrv(netdrv_t* drv) {
   session_key_list_t* s_key_list = get_session_key(sst_priv->sst_ctx, NULL);
   // Does not increases RTI port number.
   int sock = create_real_time_tcp_socket_errexit();
-  int ret = connect_to_socket(sock, sst_priv->sst_ctx->config->entity_server_ip_addr, atoi(sst_priv->sst_ctx->config->entity_server_port_num), 0); // Not supporting user_specified_port yet.
+  // TODO: To support Decentralized, this should chagne.
+  int ret = connect_to_socket(sock, sst_priv->sst_ctx->config->entity_server_ip_addr,
+                              atoi(sst_priv->sst_ctx->config->entity_server_port_num),
+                              0); // Not supporting user_specified_port yet.
   if (ret != 0) {
     return ret;
   }
-  SST_session_ctx_t *session_ctx = secure_connect_to_server_with_socket(&s_key_list->s_key[0], sock);
+  SST_session_ctx_t* session_ctx = secure_connect_to_server_with_socket(&s_key_list->s_key[0], sock);
   sst_priv->session_ctx = session_ctx;
   return 1;
 }
@@ -115,7 +118,8 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
 }
 
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
-  if(buffer_length == 0) {}//JUST TO PASS COMPILER.
+  if (buffer_length == 0) {
+  } // JUST TO PASS COMPILER.
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
   unsigned char sst_buffer[1024];
   ssize_t bytes_read = 0;
@@ -207,9 +211,30 @@ void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr) {
 }
 
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
-  if(drv == NULL) {} //JUST TO PASS COMPILER.
-  if(result == NULL) {} //JUST TO PASS COMPILER.
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
+  if (result == NULL) {
+  } // JUST TO PASS COMPILER.
   return 0;
+}
+
+// TODO: This is repeated in socket support.c. Want it to be in socket_common.c, however, socket_common.h does no
+// include write_to_netdrv_fail_on_error.
+/**
+ * @brief Send the server port number to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
+ *
+ * @param drv
+ */
+void send_address_advertisement_to_RTI(netdrv_t* fed_drv, netdrv_t* rti_drv) {
+  unsigned char buffer[sizeof(int32_t) + 1];
+  buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
+  encode_int32(get_my_port(fed_drv), &(buffer[1]));
+
+  // No need for a mutex because we have the only handle on this socket.
+  write_to_netdrv_fail_on_error(rti_drv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
+                                "Failed to send address advertisement.");
+
+  LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(fed_drv));
 }
 
 // ------------------Helper Functions------------------ //
