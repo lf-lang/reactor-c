@@ -14,6 +14,7 @@
 
 /**
  * @brief Advance to the next level.
+ * 
  * For federated runtimes, this function should
  * stall the advance until we know that we can safely execute the next level
  * given knowledge about upstream network port statuses.
