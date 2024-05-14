@@ -336,8 +336,6 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   return 0;
 }
 
-void send_address_advertisement_to_RTI(netdrv_t* fed_drv, netdrv_t* rti_drv) {}
-
 // ------------------Helper Functions------------------ //
 
 static MQTT_priv_t* MQTT_priv_init() {

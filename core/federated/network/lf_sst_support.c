@@ -218,25 +218,6 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   return 0;
 }
 
-// TODO: This is repeated in socket support.c. Want it to be in socket_common.c, however, socket_common.h does no
-// include write_to_netdrv_fail_on_error.
-/**
- * @brief Send the server port number to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
- *
- * @param drv
- */
-void send_address_advertisement_to_RTI(netdrv_t* fed_drv, netdrv_t* rti_drv) {
-  unsigned char buffer[sizeof(int32_t) + 1];
-  buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
-  encode_int32(get_my_port(fed_drv), &(buffer[1]));
-
-  // No need for a mutex because we have the only handle on this socket.
-  write_to_netdrv_fail_on_error(rti_drv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
-                                "Failed to send address advertisement.");
-
-  LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(fed_drv));
-}
-
 // ------------------Helper Functions------------------ //
 
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }

@@ -1623,12 +1623,34 @@ void lf_terminate_execution(environment_t* env) {
 }
 
 /**
+ * @brief Send the server port number to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
+ *
+ * @param drv
+ */
+void send_address_advertisement_to_RTI(netdrv_t* fed_drv, netdrv_t* rti_drv) {
+  #if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
+  unsigned char buffer[sizeof(int32_t) + 1];
+  buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
+  encode_int32(get_my_port(fed_drv), &(qbuffer[1]));
+
+  // No need for a mutex because we have the only handle on this socket.
+  write_to_netdrv_fail_on_error(rti_drv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
+                                "Failed to send address advertisement.");
+
+  LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(fed_drv));
+  #elif defined(COMM_TYPE_MQTT)
+  // Do not send port.
+  #endif
+}
+
+/**
  * @brief Ask the RTI for port number of the remote federate.
  *
  * @param remote_federate_id
  * @return int
  */
-static int get_remote_federate_info_from_RTI(uint16_t remote_federate_id) {
+static int get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdrv_t* rti_netdrv, netdrv_t* fed_netdrv) {
+  #if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
   // The buffer is used for both sending and receiving replies.
   // The size is what is needed for receiving replies.
   unsigned char buffer[sizeof(int32_t) + sizeof(struct in_addr) + 1];
@@ -1644,12 +1666,12 @@ static int get_remote_federate_info_from_RTI(uint16_t remote_federate_id) {
     tracepoint_federate_to_rti(send_ADR_QR, _lf_my_fed_id, NULL);
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, sizeof(uint16_t) + 1, buffer, &lf_outbound_netdrv_mutex,
+    write_to_netdrv_fail_on_error(rti_netdrv, sizeof(uint16_t) + 1, buffer, &lf_outbound_netdrv_mutex,
                                   "Failed to send address query for federate %d to RTI.", remote_federate_id);
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
     // Read RTI's response.
-    read_from_netdrv_fail_on_error(_fed.netdrv_to_rti, buffer, sizeof(int32_t) + sizeof(struct in_addr) + 1, NULL,
+    read_from_netdrv_fail_on_error(rti_netdrv, buffer, sizeof(int32_t) + sizeof(struct in_addr) + 1, NULL,
                                    "Failed to read the requested port number and IP address for federate %d from RTI.",
                                    remote_federate_id);
 
@@ -1677,7 +1699,14 @@ static int get_remote_federate_info_from_RTI(uint16_t remote_federate_id) {
   }
   assert(port < 65536);
   assert(port > 0);
-  return port;
+  char hostname[INET_ADDRSTRLEN];
+  inet_ntop(AF_INET, buffer + 1 + sizeof(int32_t), hostname, INET_ADDRSTRLEN);
+  LF_PRINT_LOG("Received address %s port %d for federate %d from RTI.", hostname, uport, remote_federate_id);
+  set_host_name(fed_netdrv, hostname);
+  set_port(fed_netdrv, uport);
+  #elif defined(COMM_TYPE_MQTT)
+  // Do not send port.
+  #endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1691,19 +1720,14 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   // Initialize the netdriver to connect the remote federate.
   netdrv_t* netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
   create_connector(netdrv);
-  int port = get_remote_federate_info_from_RTI(remote_federate_id);
+  get_remote_federate_info_from_RTI(remote_federate_id, _fed.netdrv_to_rti, netdrv);
 
   uint16_t uport = (uint16_t)port;
 
-  char hostname[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, buffer + 1 + sizeof(int32_t), hostname, INET_ADDRSTRLEN);
-  LF_PRINT_LOG("Received address %s port %d for federate %d from RTI.", hostname, uport, remote_federate_id);
 
   // Iterate until we either successfully connect or we exceed the CONNECT_TIMEOUT
-  start_connect = lf_time_physical();
+  instant_t start_connect = lf_time_physical();
 
-  set_host_name(netdrv, hostname);
-  set_port(netdrv, uport);
   result = connect_to_netdrv(netdrv);
   if (result != 0) {
     LF_PRINT_LOG("Failed to connect.");
