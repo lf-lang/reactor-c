@@ -60,8 +60,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     zephyr_library_sources(${LF_LOW_LEVEL_PLATFORM_FILES})
     zephyr_library_link_libraries(kernel)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
-    target_link_libraries(lf-low-level-platform-api INTERFACE fp-sdk-if)
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+    target_link_libraries(lf-low-level-platform-impl PRIVATE fp-sdk)
 
     if (DEFINED NUMBER_OF_WORKERS)
         # Verify that FlexPRET has the number of requested workers

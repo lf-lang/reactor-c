@@ -33,13 +33,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LF_FLEXPRET_SUPPORT_H
 #define LF_FLEXPRET_SUPPORT_H
 
-#include <stdint.h> // For fixed-width integral types
-#include <time.h>   // For CLOCK_MONOTONIC
-#include <stdbool.h>
-#include <stdarg.h> // Defines va_list
-#include <stdio.h>  // Defines FILE
-#include <string.h> // Defines strlen
-
 #include <flexpret/flexpret.h>
 
 /**

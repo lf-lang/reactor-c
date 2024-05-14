@@ -31,7 +31,9 @@
 #define TRACEPOINT_H
 
 #include "lf_types.h"
+#if !defined(PLATFORM_FLEXPRET)
 #include <stdio.h>
+#endif
 
 #ifdef FEDERATED
 #include "net_common.h"

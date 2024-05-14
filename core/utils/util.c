@@ -33,21 +33,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util.h"
 
-#if defined(PLATFORM_FLEXPRET)
+#if !defined(PLATFORM_FLEXPRET)
+#include <stdio.h>
+#else
 /**
- * For FlexPRET specifically, the header file contains macro overrides for
- * `fprintf` and `vfprintf`, which reduces code size. Those are not applied
- * unless the header file is included.
+ * For FlexPRET specifically, a small footprint version of printf is used
  */
-#include "low_level_platform.h"
-#endif // defined(PLATFORM_FLEXPRET)
+#include <printf/printf.h>
+/**
+ * Also, fflush and stdout are not provided so we just implement stubs
+ * 
+ */
+#define stdout (void *)(1)
+int fflush(void *stream) { (void) stream; return 0; }
+#endif // PLATFORM_FLEXPRET
 
 #ifndef STANDALONE_RTI
 #include "environment.h"
 #endif
 
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h> // Defines memcpy()
