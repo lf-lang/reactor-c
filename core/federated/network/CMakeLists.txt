@@ -1,5 +1,6 @@
 add_library(lf-network-impl STATIC)
 add_library(lf::network-impl ALIAS lf-network-impl)
+target_link_libraries(lf-network-impl PUBLIC lf-logging-api)
 if(COMM_TYPE MATCHES MQTT)
     # $ git clone https://github.com/eclipse/paho.mqtt.c.git
     # $ cd paho.mqtt.c.git
@@ -10,13 +11,11 @@ if(COMM_TYPE MATCHES MQTT)
     # It will be installed in /usr/local/lib
     find_package(eclipse-paho-mqtt-c REQUIRED)
     target_link_libraries(lf-network-impl PRIVATE lf::network-api eclipse-paho-mqtt-c::paho-mqtt3a eclipse-paho-mqtt-c::paho-mqtt3c)
-    target_link_libraries(lf-network-impl PUBLIC lf-logging-api)
     # $ apt-get install libssl-dev
     # find_package(OpenSSL REQUIRED)
     # target_link_libraries(lf-network-impl PUBLIC OpenSSL::SSL)
 else()
     target_link_libraries(lf-network-impl PRIVATE lf::network-api)
-    target_link_libraries(lf-network-impl PUBLIC lf-logging-api)
 endif()
 
 include_directories(/usr/local/include)
