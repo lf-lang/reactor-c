@@ -8,10 +8,11 @@
 #include "clock.h"
 #include "low_level_platform.h"
 
+// If we are federated, include clock-sync API (and implementation)
 #if defined(FEDERATED)
 #include "clock-sync.h"
 #else
-// Provide empty implementations of these functions.
+// In the unfederated case, just provide empty implementations.
 void clock_sync_add_offset(instant_t* t) { (void)t; }
 void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 #endif // defined(FEDERATED)
