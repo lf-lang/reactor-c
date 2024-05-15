@@ -1,6 +1,10 @@
 #ifndef TRACE_H
 #define TRACE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -10,7 +14,7 @@
  * @brief Return a description of the compile-time properties of the current
  * plugin.
  */
-version_t lf_version_tracing();
+const version_t* lf_version_tracing();
 
 /**
  * Identifier for what is in the object table.
@@ -81,5 +85,9 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr);
  * calling this procedure is undefined behavior.
  */
 void lf_tracing_global_shutdown();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // TRACE_H
