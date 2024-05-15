@@ -1706,7 +1706,8 @@ static int get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdrv
   // Must set as specified port. Or else, the port will be increased when connecting to the other federate.
   set_specified_port(fed_netdrv, port);
   #elif defined(COMM_TYPE_MQTT)
-  // Do not send port.
+  // Do not send port for MQTT. It only needs to know the target federate's ID.
+  set_target_id(fed_netdrv, remote_federate_id);
   #endif
 }
 
@@ -1793,6 +1794,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   set_host_name(_fed.netdrv_to_rti, hostname);
   set_port(_fed.netdrv_to_rti, uport);
   set_specified_port(_fed.netdrv_to_rti, port);
+  set_target_id(_fed.netdrv_to_rti, -1);
 
   if (connect_to_netdrv(_fed.netdrv_to_rti) < 0) {
     lf_print_error_and_exit("Failed to connect() to RTI after %d tries.", CONNECT_MAX_RETRIES);

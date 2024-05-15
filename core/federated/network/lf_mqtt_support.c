@@ -182,7 +182,7 @@ int connect_to_netdrv(netdrv_t* drv) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   int rc;
 
-  uint16_t listenerID;
+  uint16_t listenerID = MQTT_priv->target_id;
 
   MQTT_priv->topic_name = (const char*)create_topic_federation_id_listener_id(drv->federation_id, listenerID);
   unsigned char buffer[1 + sizeof(uint16_t)];
@@ -343,6 +343,11 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   if (result == NULL) {
   } // JUST TO PASS COMPILER.
   return 0;
+}
+
+void set_target_id(netdrv_t* drv, uint16_t federate_id) {
+  MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
+  MQTT_priv->target_id = federate_id;
 }
 
 // ------------------Helper Functions------------------ //

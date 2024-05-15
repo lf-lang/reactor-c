@@ -218,6 +218,13 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   return 0;
 }
 
+void set_target_id(netdrv_t* drv, uint16_t federate_id){
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
+  if (federate_id == 0) {
+  } // JUST TO PASS COMPILER.
+}
+
 // ------------------Helper Functions------------------ //
 
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }

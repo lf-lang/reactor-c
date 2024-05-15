@@ -8,6 +8,7 @@
 #include "net_common.h"
 #include "net_util.h"
 #include "netdriver.h"
+#include "lf_socket_support.h"
 
 static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int* state);
 
@@ -274,6 +275,14 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   else
     return bytes_read;
 }
+
+void set_target_id(netdrv_t* drv, uint16_t federate_id){
+  if (drv == NULL) {
+  } // JUST TO PASS COMPILER.
+  if (federate_id == 0) {
+  } // JUST TO PASS COMPILER.
+}
+
 
 // ------------------Helper Functions------------------ //
 

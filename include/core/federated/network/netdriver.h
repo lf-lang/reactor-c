@@ -56,7 +56,8 @@ void close_netdrv(netdrv_t* drv);
 int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port);
 
 /**
- * @brief Creates a communication session. It uses the listener_netdrv to listen to connections, and return a connector_nedrv
+ * @brief Creates a communication session. It uses the listener_netdrv to listen to connections, and return a
+ * connector_nedrv
  *
  * @param listener_netdrv
  * @return netdrv_t*
@@ -103,10 +104,6 @@ void set_host_name(netdrv_t* drv, const char* hostname);
 void set_port(netdrv_t* drv, int port);
 void set_specified_port(netdrv_t* drv, int port);
 void set_ip_addr(netdrv_t* drv, struct in_addr ip_addr);
-
-// Returns socket number of clock_sync_server.
-int create_clock_sync_server(uint16_t* clock_sync_port);
-
 /**
  * Without blocking, peek at the specified socket and, if there is
  * anything on the queue, put its first byte at the specified address and return 1.
@@ -116,6 +113,17 @@ int create_clock_sync_server(uint16_t* clock_sync_port);
  * @param result Pointer to where to put the first byte available on the socket.
  */
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
+
+/**
+ * @brief Set the target id to connect. This is only used in MQTT.
+ *
+ * @param drv
+ * @param federate_id
+ */
+void set_target_id(netdrv_t* drv, uint16_t federate_id);
+
+// Returns socket number of clock_sync_server.
+int create_clock_sync_server(uint16_t* clock_sync_port);
 
 ////////////////////////////
 

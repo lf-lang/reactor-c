@@ -16,8 +16,9 @@
 #include "net_util.h"
 #include "socket_common.h"
 
-// Global variable defined in reactor_common.c:
-extern bool _lf_termination_executed;
+// TODO: Not working...
+// // Global variable defined in reactor_common.c:
+// extern bool _lf_termination_executed;
 
 socket_priv_t* TCP_socket_priv_init() {
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));
@@ -226,7 +227,8 @@ int connect_to_socket(int sock, char* hostname, int port, uint16_t user_specifie
   int used_port = (user_specified_port == 0) ? port : user_specified_port;
 
   instant_t start_connect = lf_time_physical();
-  while (!_lf_termination_executed) {
+  // while (!_lf_termination_executed) { // Not working...
+  while(1) {
     if (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
       lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
       break;

@@ -10,6 +10,7 @@ typedef struct MQTT_priv_t {
   MQTTClient_connectOptions conn_opts; // = MQTTClient_connectOptions_initializer;
   const char* topic_name;
   char client_id[20];
+  uint16_t target_id;
 } MQTT_priv_t;
 
 #endif // LF_MQTT_SUPPORT_H
