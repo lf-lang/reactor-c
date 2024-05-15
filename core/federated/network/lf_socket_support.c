@@ -11,7 +11,7 @@
 
 static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int* state);
 
-netdrv_t* initialize_netdrv(int my_federate_id, const char* federation_id) {
+netdrv_t* initialize_netdrv(uint16_t my_federate_id, const char* federation_id) {
   netdrv_t* drv = initialize_common_netdrv(my_federate_id, federation_id);
 
   // Initialize priv.

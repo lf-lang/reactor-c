@@ -1089,7 +1089,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* netdrv) {
     }
   }
   federate_info_t* fed = GET_FED_INFO(fed_id);
-  netdrv->federate_id = (int) fed_id;
+  netdrv->my_federate_id = (uint16_t) fed_id;
   fed->fed_netdrv = netdrv;
 
 // TODO: Make this work for only TCP.

@@ -21,7 +21,7 @@ typedef enum server_type_t { RTI, FED } server_type_t;
 typedef struct netdrv_t {
   void* priv;
   unsigned int read_remaining_bytes;
-  int my_federate_id; // The RTI is -1, and unitialized is -2.
+  uint16_t my_federate_id; // The RTI is -1, and unitialized is -2.
   const char* federation_id;
 } netdrv_t;
 
@@ -32,9 +32,9 @@ typedef struct netdrv_t {
  * @param federation_id
  * @return netdrv_t*
  */
-netdrv_t* initialize_netdrv(int my_federate_id, const char* federation_id);
+netdrv_t* initialize_netdrv(uint16_t my_federate_id, const char* federation_id);
 
-netdrv_t* initialize_common_netdrv(int federate_id, const char* federation_id);
+netdrv_t* initialize_common_netdrv(uint16_t federate_id, const char* federation_id);
 
 /**
  * @brief Close connections, and free allocated memory.
