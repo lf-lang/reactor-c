@@ -105,7 +105,7 @@ tag_t lf_tag(void* env);
 tag_t lf_tag_add(tag_t a, tag_t b);
 
 /**
- * Adds an interval to an instant, checks for overflows and underflows.
+ * @brief Return the sum of an interval and an instant, saturating on overflow and underflow.
  *
  * @param a
  * @param b
