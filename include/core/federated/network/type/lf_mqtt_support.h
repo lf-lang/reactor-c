@@ -1,6 +1,7 @@
 #ifndef LF_MQTT_SUPPORT_H
 #define LF_MQTT_SUPPORT_H
 
+#include <stdint.h>
 #include <MQTTClient.h>
 
 #define MQTT_RTI_RESIGNED 88
