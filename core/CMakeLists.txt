@@ -156,7 +156,7 @@ message(STATUS "Applying preprocessor definitions...")
 define(_LF_CLOCK_SYNC_ATTENUATION)
 define(_LF_CLOCK_SYNC_COLLECT_STATS)
 define(_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL)
-define(LF_CLOCK_SYNC) # 0 for off, 1 for init, 2 for on.
+define(LF_CLOCK_SYNC) # 1 for OFF, 2 for INIT and 3 for ON.
 define(_LF_CLOCK_SYNC_PERIOD_NS)
 define(_LF_FEDERATE_NAMES_COMMA_SEPARATED)
 define(ADVANCE_MESSAGE_INTERVAL)
