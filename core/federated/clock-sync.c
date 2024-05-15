@@ -529,9 +529,13 @@ void* listen_to_rti_UDP_thread(void* args) {
 // If clock synchronization is enabled, provide implementations. If not
 // just empty implementations that should be optimized away.
 #if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_INIT)
-void clock_sync_add_offset(instant_t* t) { *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
+void clock_sync_add_offset(instant_t* t) {
+  *t = lf_time_add(*t, (_lf_clock_sync_offset + _lf_clock_sync_constant_bias));
+}
 
-void clock_sync_subtract_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
+void clock_sync_subtract_offset(instant_t* t) {
+  *t = lf_time_add(*t, -(_lf_clock_sync_offset + _lf_clock_sync_constant_bias));
+}
 
 void clock_sync_set_constant_bias(interval_t offset) { _lf_clock_sync_constant_bias = offset; }
 #else  // i.e. (LF_CLOCK_SYNC < LF_CLOCK_SYNC_INIT)
