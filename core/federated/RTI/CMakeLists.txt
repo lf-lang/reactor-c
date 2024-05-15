@@ -87,6 +87,16 @@ target_compile_options(${RTI_LIB} PUBLIC -Werror)
 find_package(Threads REQUIRED)
 target_link_libraries(${RTI_LIB} PUBLIC Threads::Threads)
 
+include_directories(include)
+message("CMAKE_CURRENT_LIST_DIR = ${CMAKE_CURRENT_LIST_DIR}")
+add_library(rust_rti SHARED IMPORTED)
+set_target_properties(rust_rti PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/include"
+    IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/lib/librust_rti.so"
+)
+
+target_link_libraries(${RTI_LIB} PUBLIC rust_rti)
+
 # Option for enabling federate authentication by RTI.
 option(AUTH "Federate authentication by RTI enabled." OFF)
 IF(AUTH MATCHES ON)

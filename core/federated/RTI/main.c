@@ -47,6 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Or we could bootstrap and implement it using Lingua Franca.
  */
 
+#include "rust_rti.h"
 #include "rti_remote.h"
 #include "net_util.h"
 #include <signal.h> // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
@@ -275,6 +276,9 @@ int process_args(int argc, const char* argv[]) {
   return 1;
 }
 int main(int argc, const char* argv[]) {
+  lf_print_info("[[[ Start Rust RTI ]]]");
+  run_rust_rti();
+  /*
   initialize_lf_thread_id();
   initialize_RTI(&rti);
 
@@ -341,5 +345,6 @@ int main(int argc, const char* argv[]) {
   // Even if the RTI is exiting normally, it should report an error code if one of the
   // federates has reported an error.
   return (int)_lf_federate_reports_error;
+  */
 }
 #endif // STANDALONE_RTI
