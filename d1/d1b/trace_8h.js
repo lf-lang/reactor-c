@@ -13,5 +13,5 @@ var trace_8h =
     [ "lf_tracing_register_trace_event", "d1/d1b/trace_8h.html#a15969599d7817596e12dcceb8c145551", null ],
     [ "lf_tracing_set_start_time", "d1/d1b/trace_8h.html#a4270e37a116b1ebac46ad126b2fc277d", null ],
     [ "lf_tracing_tracepoint", "d1/d1b/trace_8h.html#aa6e591a66e342a77860e9d3050680446", null ],
-    [ "lf_version_tracing", "d1/d1b/trace_8h.html#a2cfa1ddb7da69004049315e0b6b5d882", null ]
+    [ "lf_version_tracing", "d1/d1b/trace_8h.html#a8ab5f9fb3d5e1d867dec2d2949e69d7c", null ]
 ];
