@@ -73,6 +73,8 @@ tag_t lf_tag_add(tag_t a, tag_t b) {
   tag_t result = {.time = res, .microstep = a.microstep + b.microstep};
 
   // If microsteps overflows
+  // FIXME: What should be the resulting tag in case of microstep overflow.
+  //  see https://github.com/lf-lang/reactor-c/issues/430
   if (result.microstep < a.microstep) {
     return FOREVER_TAG;
   }
