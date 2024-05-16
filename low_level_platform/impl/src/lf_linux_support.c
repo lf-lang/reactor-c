@@ -35,16 +35,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define _GNU_SOURCE // Needed to get access to Linux thread-scheduling API
 #include "platform/lf_linux_support.h"
-#include "platform/lf_platform_util.h"
 #include "low_level_platform.h"
 #include "platform/lf_unix_clock_support.h"
+#include "util.h"
 
 #if defined LF_SINGLE_THREADED
 #include "lf_os_single_threaded_support.c"
 #else
 #include "lf_POSIX_threads_support.c"
 
+/******************************************************************************/
 // The following includes and defines are needed to configure SCHED_DEADLINE.
+// Refer to the bottom of https://www.kernel.org/doc/Documentation/scheduler/sched-deadline.txt
+// for the source of this code.
 
 #include <linux/kernel.h>
 #include <linux/types.h>
@@ -58,7 +61,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <signal.h>
 #include <linux/sched.h>
 
-/* Use the proper syscall numbers */
+#include <stdio.h>
+
+/* XXX Use the proper syscall numbers */
 #ifdef __x86_64__
 #define __NR_sched_setattr 314
 #define __NR_sched_getattr 315
@@ -99,10 +104,9 @@ struct sched_attr {
 static int sched_setattr(pid_t pid, const struct sched_attr* attr, unsigned int flags) {
   return syscall(__NR_sched_setattr, pid, attr, flags);
 }
-
-static int sched_getattr(pid_t pid, struct sched_attr* attr, unsigned int size, unsigned int flags) {
-  return syscall(__NR_sched_getattr, pid, attr, size, flags);
-}
+// End of code copied from
+// https://www.kernel.org/doc/Documentation/scheduler/sched-deadline.txt
+/******************************************************************************/
 
 int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
   // Create a CPU-set consisting of only the desired CPU
@@ -127,22 +131,28 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
     return res;
   }
 
-  min_pri = sched_get_priority_min(posix_policy);
-  max_pri = sched_get_priority_max(posix_policy);
+  switch (posix_policy) {
+  case SCHED_FIFO:
+  case SCHED_RR:
+    min_pri = sched_get_priority_min(posix_policy);
+    max_pri = sched_get_priority_max(posix_policy);
+    break;
+  case SCHED_DEADLINE:
+  case SCHED_OTHER: // We do not support retrival of niceness level yet.
+  default:
+    return -1;
+  }
+
   if (min_pri == -1 || max_pri == -1) {
     return -1;
   }
 
   final_priority = map_value(priority, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY, min_pri, max_pri);
-  if (final_priority < 0) {
-    return -1;
-  }
-
   return pthread_setschedprio(thread, final_priority);
 }
 
 int lf_thread_get_priority(lf_thread_t thread) {
-  int posix_policy, min_pri, max_pri, final_priority, res;
+  int posix_policy, min_pri, max_pri, res;
   struct sched_param schedparam;
 
   // Get the current scheduling policy
@@ -151,15 +161,23 @@ int lf_thread_get_priority(lf_thread_t thread) {
     return res;
   }
 
-  min_pri = sched_get_priority_min(posix_policy);
-  max_pri = sched_get_priority_max(posix_policy);
+  switch (posix_policy) {
+  case SCHED_FIFO:
+  case SCHED_RR:
+    min_pri = sched_get_priority_min(posix_policy);
+    max_pri = sched_get_priority_max(posix_policy);
+    break;
+  case SCHED_DEADLINE:
+  case SCHED_OTHER: // We do not support setting niceness yet.
+  default:
+    return -1;
+  }
+
   if (min_pri == -1 || max_pri == -1) {
     return -1;
   }
 
-  final_priority = map_value(schedparam.sched_priority, min_pri, max_pri, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY);
-
-  return pthread_setschedprio(thread, final_priority);
+  return map_value(schedparam.sched_priority, min_pri, max_pri, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY);
 }
 
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
@@ -195,7 +213,9 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
     set_priority = true;
     break;
   case LF_SCHED_DEADLINE:
-    // FIXME: Unify the setting of scheduling policy
+    // NOTE: SCHED_DEADLINE cannot be configured on a per-thread basis
+    // and appears affect all threads in the process. I think later their
+    // policy can be changed.
     flags = 0;
     attr.size = sizeof(attr);
     attr.sched_flags = SCHED_FLAG_DL_OVERRUN;

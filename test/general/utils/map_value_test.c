@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-
-#include "platform/lf_platform_util.h"
+#include "util.h"
 
 int main() {
   int res;

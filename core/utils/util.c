@@ -46,6 +46,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h> // Defines va_list
 #include <time.h>   // Defines nanosleep()
 #include <stdbool.h>
+#include <math.h>
 
 #ifndef NUMBER_OF_FEDERATES
 #define NUMBER_OF_FEDERATES 1
@@ -213,4 +214,13 @@ void lf_print_error_system_failure(const char* format, ...) {
 void lf_register_print_function(print_message_function_t* function, int log_level) {
   print_message_function = function;
   print_message_level = log_level;
+}
+
+static double _round(double d) { return floor(d + 0.5); }
+
+int map_value(int value, int src_min, int src_max, int dest_min, int dest_max) {
+  // Perform the linear mapping. Since we are working with integers, it is
+  // important to multiply before we divide
+  double slope = 1.0 * (dest_max - dest_min) / (src_max - src_min);
+  return dest_min + _round(slope * (value - src_min));
 }

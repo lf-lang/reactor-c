@@ -78,7 +78,7 @@ int lf_critical_section_exit(environment_t* env);
 
 // Worker priorities range from 0 to 99 where 99 is the highest priority.
 #define LF_SCHED_MAX_PRIORITY 99
-#define LF_SCHED_MIN_PRIORITY 0
+#define LF_SCHED_MIN_PRIORITY 1
 
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.

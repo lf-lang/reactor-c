@@ -194,4 +194,9 @@ void lf_vprint_error_and_exit(const char* format, va_list args) ATTRIBUTE_FORMAT
  */
 #define LF_CRITICAL_SECTION_EXIT(env) LF_ASSERT(!lf_critical_section_exit(env), "Could not exit critical section")
 
+/**
+ * @brief Maps a value from source range   into a destination priority range.
+ */
+int map_value(int value, int src_min, int src_max, int dest_min, int dest_max);
+
 #endif /* UTIL_H */

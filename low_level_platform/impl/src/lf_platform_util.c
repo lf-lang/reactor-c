@@ -1,11 +1,5 @@
 #include "low_level_platform.h"
-#include "platform/lf_platform_util.h"
-
-int map_value(int value, int src_min, int src_max, int dest_min, int dest_max) {
-  // Perform the linear mapping. Since we are working with integers, it is
-  // important to multiply before we divide
-  return dest_min + (((value - src_min) * (dest_max - dest_min)) / (src_max - src_min));
-}
+#include <stdio.h>
 
 #ifndef PLATFORM_ZEPHYR // on Zephyr, this is handled separately
 #ifndef LF_SINGLE_THREADED
