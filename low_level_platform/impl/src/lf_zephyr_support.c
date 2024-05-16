@@ -168,7 +168,8 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
     return -1;
   }
 
-  final_priority = map_priorities(priority, CONFIG_NUM_PREEMPT_PRIORITIES - 1, 0);
+  final_priority =
+      map_value(priority, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY, CONFIG_NUM_PREEMPT_PRIORITIES - 1, 0);
   if (final_priority < 0) {
     return -1;
   }

@@ -1,16 +1,10 @@
 #include "low_level_platform.h"
 #include "platform/lf_platform_util.h"
 
-int map_priorities(int priority, int dest_min, int dest_max) {
-  // Check if priority is within the legal range
-  if (priority < LF_SCHED_MIN_PRIORITY || priority > LF_SCHED_MAX_PRIORITY) {
-    return -1;
-  }
-
+int map_value(int value, int src_min, int src_max, int dest_min, int dest_max) {
   // Perform the linear mapping. Since we are working with integers, it is
   // important to multiply before we divide
-  return dest_min + (((priority - LF_SCHED_MIN_PRIORITY) * (dest_max - dest_min)) /
-                     (LF_SCHED_MAX_PRIORITY - LF_SCHED_MIN_PRIORITY));
+  return dest_min + (((value - src_min) * (dest_max - dest_min)) / (src_max - src_min));
 }
 
 #ifndef PLATFORM_ZEPHYR // on Zephyr, this is handled separately
