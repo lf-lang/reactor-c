@@ -39,7 +39,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "low_level_platform.h"
 #include "platform/lf_unix_clock_support.h"
 
-#include <stdio.h>
+#if defined LF_SINGLE_THREADED
+#include "lf_os_single_threaded_support.c"
+#else
+#include "lf_POSIX_threads_support.c"
+
+// The following includes and defines are needed to configure SCHED_DEADLINE.
+
 #include <linux/kernel.h>
 #include <linux/types.h>
 #include <linux/unistd.h>
@@ -68,11 +74,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __NR_sched_getattr 381
 #endif
 
-#if defined LF_SINGLE_THREADED
-#include "lf_os_single_threaded_support.c"
-#else
-#include "lf_POSIX_threads_support.c"
-
+/**
+ * This structure must be defined and passed to the
+ * syscall to configure SCHED_DEADLINE.
+ */
 struct sched_attr {
   __u32 size;
 
@@ -95,9 +100,9 @@ static int sched_setattr(pid_t pid, const struct sched_attr* attr, unsigned int 
   return syscall(__NR_sched_setattr, pid, attr, flags);
 }
 
-// static int sched_getattr(pid_t pid, struct sched_attr* attr, unsigned int size, unsigned int flags) {
-//   return syscall(__NR_sched_getattr, pid, attr, size, flags);
-// }
+static int sched_getattr(pid_t pid, struct sched_attr* attr, unsigned int size, unsigned int flags) {
+  return syscall(__NR_sched_getattr, pid, attr, size, flags);
+}
 
 int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
   // Create a CPU-set consisting of only the desired CPU
@@ -180,7 +185,6 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
     attr.sched_period = policy->period;
     attr.sched_deadline = policy->deadline;
     return sched_setattr(0, &attr, flags);
-
   default:
     return -1;
     break;
