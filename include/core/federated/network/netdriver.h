@@ -120,7 +120,7 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
  * @param drv
  * @param federate_id
  */
-void set_target_id(netdrv_t* drv, uint16_t federate_id);
+void set_target_id(netdrv_t* drv, int federate_id);
 
 // Returns socket number of clock_sync_server.
 int create_clock_sync_server(uint16_t* clock_sync_port);

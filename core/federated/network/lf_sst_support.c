@@ -218,7 +218,7 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   return 0;
 }
 
-void set_target_id(netdrv_t* drv, uint16_t federate_id){
+void set_target_id(netdrv_t* drv, int federate_id){
   if (drv == NULL) {
   } // JUST TO PASS COMPILER.
   if (federate_id == 0) {
