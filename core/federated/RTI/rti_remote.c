@@ -1746,7 +1746,6 @@ void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
-    // FIXME: Gives error freeing memory not allocated!!!!
     scheduling_node_t* node = scheduling_nodes[i];
     if (node->upstream != NULL)
       free(node->upstream);
