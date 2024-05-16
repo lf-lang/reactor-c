@@ -1627,20 +1627,24 @@ void lf_terminate_execution(environment_t* env) {
  *
  * @param drv
  */
-void send_address_advertisement_to_RTI(netdrv_t* fed_drv, netdrv_t* rti_drv) {
-  #if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
+void send_address_advertisement_to_RTI(netdrv_t* fed_netdrv, netdrv_t* rti_netdrv) {
+#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
   unsigned char buffer[sizeof(int32_t) + 1];
   buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
-  encode_int32(get_my_port(fed_drv), &(qbuffer[1]));
+  encode_int32(get_my_port(fed_netdrv), &(buffer[1]));
 
   // No need for a mutex because we have the only handle on this socket.
-  write_to_netdrv_fail_on_error(rti_drv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
+  write_to_netdrv_fail_on_error(rti_netdrv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
                                 "Failed to send address advertisement.");
 
-  LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(fed_drv));
-  #elif defined(COMM_TYPE_MQTT)
-  // Do not send port.
-  #endif
+  LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(fed_netdrv));
+#elif defined(COMM_TYPE_MQTT)
+// Do not send port.
+  if (fed_netdrv == NULL) {
+  } // JUST TO PASS COMPILER.
+  if (rti_netdrv == NULL) {
+  } // JUST TO PASS COMPILER.
+#endif
 }
 
 /**
@@ -1649,8 +1653,8 @@ void send_address_advertisement_to_RTI(netdrv_t* fed_drv, netdrv_t* rti_drv) {
  * @param remote_federate_id
  * @return int
  */
-static int get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdrv_t* rti_netdrv, netdrv_t* fed_netdrv) {
-  #if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
+static void get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdrv_t* rti_netdrv, netdrv_t* fed_netdrv) {
+#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
   // The buffer is used for both sending and receiving replies.
   // The size is what is needed for receiving replies.
   unsigned char buffer[sizeof(int32_t) + sizeof(struct in_addr) + 1];
@@ -1705,10 +1709,12 @@ static int get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdrv
   set_host_name(fed_netdrv, hostname);
   // Must set as specified port. Or else, the port will be increased when connecting to the other federate.
   set_specified_port(fed_netdrv, port);
-  #elif defined(COMM_TYPE_MQTT)
+#elif defined(COMM_TYPE_MQTT)
   // Do not send port for MQTT. It only needs to know the target federate's ID.
   set_target_id(fed_netdrv, remote_federate_id);
-  #endif
+  if (rti_netdrv == NULL) {
+  } // JUST TO PASS COMPILER.
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1729,6 +1735,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   }
 
   // Connect was successful.
+
+  // Send P2P message to target federate.
   size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
   unsigned char* buf = (unsigned char*)malloc(1 + sizeof(uint16_t) + 1 + federation_id_length);
   buf[0] = MSG_TYPE_P2P_SENDING_FED_ID;
@@ -1755,7 +1763,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     lf_print_error_and_exit("Received MSG_TYPE_REJECT message from remote federate (%d).", buf[1]);
     result = -1;
   } else {
-    lf_print("Connected to federate %d, port %d.", remote_federate_id, port);
+    lf_print("Connected to federate %d.", remote_federate_id);
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
   }

@@ -17,7 +17,7 @@ static sst_priv_t* sst_priv_init();
 static void var_length_int_to_num(unsigned char* buf, unsigned int buf_length, unsigned int* num,
                                   unsigned int* var_len_int_buf_size);
 
-netdrv_t* initialize_netdrv(uint16_t my_federate_id, const char* federation_id) {
+netdrv_t* initialize_netdrv(int my_federate_id, const char* federation_id) {
   netdrv_t* drv = initialize_common_netdrv(my_federate_id, federation_id);
 
   // Initialize priv.

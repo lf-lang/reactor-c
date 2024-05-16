@@ -1366,9 +1366,7 @@ void lf_connect_to_federates(netdrv_t* rti_netdrv) {
     if (rti_remote->authentication_enabled) {
       if (!authenticate_federate(fed_netdrv)) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
-
         close_netdrv(fed_netdrv);
-
         // Ignore the federate that failed authentication.
         i--;
         continue;
@@ -1416,7 +1414,6 @@ void lf_connect_to_federates(netdrv_t* rti_netdrv) {
 void* respond_to_erroneous_connections(void* nothing) {
   initialize_lf_thread_id();
   while (true) {
-    // TODO: DONGHA: Need to fix. Do we need accept as api?
     netdrv_t* fed_netdrv = establish_communication_session(rti_remote->rti_netdrv);
 
     if (fed_netdrv == NULL)
@@ -1508,8 +1505,6 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->all_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";
   rti_remote->user_specified_port = 0;
-  // rti_remote->final_port_TCP = 0;
-  // rti_remote->socket_descriptor_TCP = -1;
   rti_remote->clock_sync_port = UINT16_MAX;
   rti_remote->clock_sync_socket = -1;
   rti_remote->clock_sync_global_status = clock_sync_init;

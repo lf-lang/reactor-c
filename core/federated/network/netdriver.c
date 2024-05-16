@@ -5,7 +5,7 @@
 #include "netdriver.h"
 #include "util.h"
 
-netdrv_t* initialize_common_netdrv(uint16_t my_federate_id, const char* federation_id) {
+netdrv_t* initialize_common_netdrv(int my_federate_id, const char* federation_id) {
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {
     lf_print_error_and_exit("Falied to malloc netdrv_t.");
