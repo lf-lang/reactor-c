@@ -182,6 +182,15 @@ int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number);
 int lf_thread_set_priority(lf_thread_t thread, int priority);
 
 /**
+ * @brief Get the priority of a thread
+ * Priority ranges from LF_SCHED_PRIORITY_MIN to LF_SCHED_PRIORITY_MAX
+ *
+ * @param thread The thread.
+ * @return The priority of the thread
+ */
+int lf_thread_get_priority(lf_thread_t thread);
+
+/**
  * @brief Set the scheduling policy of a thread. This is based on the scheduling
  * concept from Linux explained here: https://man7.org/linux/man-pages/man7/sched.7.html
  * A scheduling policy is specific to a thread/worker. We have three policies

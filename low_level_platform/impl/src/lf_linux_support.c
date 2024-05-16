@@ -133,10 +133,31 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
     return -1;
   }
 
-  final_priority = map_priorities(priority, min_pri, max_pri);
+  final_priority = map_value(priority, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY, min_pri, max_pri);
   if (final_priority < 0) {
     return -1;
   }
+
+  return pthread_setschedprio(thread, final_priority);
+}
+
+int lf_thread_get_priority(lf_thread_t thread) {
+  int posix_policy, min_pri, max_pri, final_priority, res;
+  struct sched_param schedparam;
+
+  // Get the current scheduling policy
+  res = pthread_getschedparam(thread, &posix_policy, &schedparam);
+  if (res != 0) {
+    return res;
+  }
+
+  min_pri = sched_get_priority_min(posix_policy);
+  max_pri = sched_get_priority_max(posix_policy);
+  if (min_pri == -1 || max_pri == -1) {
+    return -1;
+  }
+
+  final_priority = map_value(schedparam.sched_priority, min_pri, max_pri, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY);
 
   return pthread_setschedprio(thread, final_priority);
 }
