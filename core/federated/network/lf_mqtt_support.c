@@ -75,11 +75,10 @@ int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   if ((rc = MQTTClient_create(&MQTT_priv->client, ADDRESS, MQTT_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
       MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to create client, return code %d\n", rc);
-    exit(EXIT_FAILURE);
   }
 
-  MQTT_priv->conn_opts.keepAliveInterval = 20;
-  MQTT_priv->conn_opts.cleansession = 1;
+  MQTT_priv->conn_opts.keepAliveInterval = MQTTkeepAliveInterval;
+  MQTT_priv->conn_opts.cleansession = MQTTcleansession;
   if ((rc = MQTTClient_connect(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to connect, return code %d\n", rc);
   }
@@ -87,68 +86,79 @@ int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   if ((rc = MQTTClient_subscribe(MQTT_priv->client, MQTT_priv->topic_name, QOS)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to subscribe, return code %d\n", rc);
   }
+  int64_t current_physical_time = lf_time_physical();
   LF_PRINT_LOG("Subscribing on topic %s.", MQTT_priv->topic_name);
+  LF_PRINT_LOG("PHYSICAL_TIME ON SUBSCRIBING TOPIC: " PRINTF_TIME, current_physical_time);
 
   return 1;
 }
 
 /**
  * @brief
- * 1. Each federate publishes fed_id to {Federation_ID}_RTI
- * 2. fed_{n} subscribes to “{Federation_Id}_RTI_to_fed_{n}”.
- * 3. RTI subscribes to “{Federation_Id}_fed_{n}_to_RTI”.
+ * This function returns a connector netdriver using the listener netdriver.
+ * 1. Each federate publishes fed_id to {Federation_ID}_{listenerID}
+ * 2. fed_{n} subscribes to “{Federation_Id}_{listenerID}_to_fed_{n}”.
+ * 3. Listener subscribes to “{Federation_Id}_fed_{n}_to_{listenerID}”.
  * Check lf_socket_support.c for example.
 
  * @param netdrv
  * @return netdrv_t*
  */
 netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
-  unsigned char buffer[1 + sizeof(uint16_t)];
-  LF_PRINT_LOG("RTI READING.");
-  read_from_netdrv_fail_on_error(listener_netdrv, buffer, 1 + sizeof(uint16_t), NULL, "MQTT receive failed.");
-  
+  // Create connector netdriver which will communicate with the connector.
   netdrv_t* connector_nedrv = initialize_netdrv(-2, listener_netdrv->federation_id);
-  // MQTT_priv_t* listener_priv = (MQTT_priv_t*)listener_netdrv->priv;
   MQTT_priv_t* connector_priv = (MQTT_priv_t*)connector_nedrv->priv;
-  LF_PRINT_LOG("RTI READ SUCCESS.");
+
+  // Step1: The listener first waits for a MSG_TYPE_MQTT_JOIN message, through the topic federationID_listenerID.
+  unsigned char buffer[1 + sizeof(uint16_t)];
+  read_from_netdrv_fail_on_error(listener_netdrv, buffer, 1 + sizeof(uint16_t), NULL, "MQTT receive failed.");
   if (buffer[0] != MSG_TYPE_MQTT_JOIN) {
     lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_JOIN.");
   }
   uint16_t fed_id = extract_uint16(buffer + 1);
-  connector_nedrv->my_federate_id = (int)fed_id;
+  LF_PRINT_LOG("Received MSG_TYPE_MQTT_JOIN message from federate %d.", fed_id);
 
+  // The conncetor netdriver connects to the broker.
+  connector_nedrv->my_federate_id = (int)fed_id;
   set_MQTTServer_id(connector_priv, listener_netdrv->my_federate_id, connector_nedrv->my_federate_id);
   int rc;
   if ((rc = MQTTClient_create(&connector_priv->client, ADDRESS, connector_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE,
                               NULL)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to create client, return code %d\n", rc);
   }
-
   connector_priv->conn_opts.keepAliveInterval = 20;
   connector_priv->conn_opts.cleansession = 1;
   if ((rc = MQTTClient_connect(connector_priv->client, &connector_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to connect, return code %d\n", rc);
   }
-    // Subscribe to topic: federationID_fedID_to_listenorID
-  char* topic_to_subscribe = create_topic_federation_id_A_to_B(connector_nedrv->federation_id, fed_id, listener_netdrv->my_federate_id);
+
+  // Subscribe to topic: federationID_fedID_to_listenerID
+  // This is the channel where the federate sends messages to the listener.
+  char* topic_to_subscribe =
+      create_topic_federation_id_A_to_B(connector_nedrv->federation_id, fed_id, listener_netdrv->my_federate_id);
 
   if ((rc = MQTTClient_subscribe(connector_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to subscribe, return code %d\n", rc);
   }
   LF_PRINT_LOG("Subscribing on topic %s.", topic_to_subscribe);
-  free(topic_to_subscribe);
 
+  // Step2: The listener sends a MSG_TYPE_MQTT_ACCEPT message to the federate.
   // Publish to topic: federationID_listenerID_to_fedID
-  connector_priv->topic_name =
-      (const char*)create_topic_federation_id_A_to_B(connector_nedrv->federation_id, listener_netdrv->my_federate_id, fed_id);
+  connector_priv->topic_name = (const char*)create_topic_federation_id_A_to_B(connector_nedrv->federation_id,
+                                                                              listener_netdrv->my_federate_id, fed_id);
   buffer[0] = MSG_TYPE_MQTT_ACCEPT;
   encode_uint16((uint16_t)connector_nedrv->my_federate_id, buffer + 1);
+  LF_PRINT_LOG("Publishing MSG_TYPE_MQTT_ACCEPT message on topic %s.", connector_priv->topic_name);
   write_to_netdrv_fail_on_error(connector_nedrv, 1 + sizeof(uint16_t), buffer, NULL,
                                 "Failed to send MSG_TYPE_MQTT_ACCEPT to federate %d", connector_nedrv->my_federate_id);
+
+  // Step3: The listner receives the MSG_TYPE_MQTT_ACCEPT_ACK message from the federate.
   read_from_netdrv_fail_on_error(connector_nedrv, buffer, 1, NULL, "MQTT receive failed.");
   if (buffer[0] != MSG_TYPE_MQTT_ACCEPT_ACK) {
     lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_ACCEPT_ACK.");
   }
+  LF_PRINT_LOG("Receiving MSG_TYPE_MQTT_ACCEPT_ACK message on topic %s.", topic_to_subscribe);
+  free(topic_to_subscribe);
   return connector_nedrv;
 }
 
@@ -164,11 +174,10 @@ void create_connector(netdrv_t* drv) {
   if ((rc = MQTTClient_create(&MQTT_priv->client, ADDRESS, MQTT_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
       MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to create client, return code %d\n", rc);
-    exit(EXIT_FAILURE);
   }
 
-  MQTT_priv->conn_opts.keepAliveInterval = 20;
-  MQTT_priv->conn_opts.cleansession = 1;
+  MQTT_priv->conn_opts.keepAliveInterval = MQTTkeepAliveInterval;
+  MQTT_priv->conn_opts.cleansession = MQTTcleansession;
   if ((rc = MQTTClient_connect(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to connect, return code %d\n", rc);
   }
@@ -185,40 +194,53 @@ int connect_to_netdrv(netdrv_t* drv) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   int rc;
 
-  uint16_t listenerID = MQTT_priv->target_id;
+  // Subscribe to topic: federationID_listenerID_to_fedID
+  // This should be done before sending the MSG_TYPE_MQTT_JOIN message, because the listener publishing the
+  // MSG_TYPE_MQTT_ACCEPT message at topic federationID_listenerID_to_fedID can be faster than the connector subscribing
+  // to the topic.
+  char* topic_to_subscribe =
+      create_topic_federation_id_A_to_B(drv->federation_id, MQTT_priv->target_id, drv->my_federate_id);
 
-  MQTT_priv->topic_name = (const char*)create_topic_federation_id_listener_id(drv->federation_id, listenerID);
+  if ((rc = MQTTClient_subscribe(MQTT_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
+    lf_print_error_and_exit("Failed to subscribe, return code %d\n", rc);
+  }
+  LF_PRINT_LOG("Subscribed on topic %s.", topic_to_subscribe);
+
+  // Step1: The federate sends a MSG_TYPE_MQTT_JOIN message including it's federateID to the listener.
+  // Publish to topic: federationID_listenorID
+  MQTT_priv->topic_name = (const char*)create_topic_federation_id_listener_id(drv->federation_id, MQTT_priv->target_id);
   unsigned char buffer[1 + sizeof(uint16_t)];
   buffer[0] = MSG_TYPE_MQTT_JOIN;
-  lf_print_log("Federate_id: %d", drv->my_federate_id);
   encode_uint16((uint16_t)drv->my_federate_id, buffer + 1);
+  LF_PRINT_LOG("Publishing MSG_TYPE_MQTT_JOIN message with federateID %d on topic %s.", drv->my_federate_id,
+               MQTT_priv->topic_name);
   write_to_netdrv_fail_on_error(drv, 1 + sizeof(uint16_t), buffer, NULL,
                                 "Failed to write my_federate_id to listener for connection through MQTT.");
   free((char*)MQTT_priv->topic_name);
 
-  // Subscribe to topic: federationID_listenerID_to_fedID
-  char* topic_to_subscribe = create_topic_federation_id_A_to_B(drv->federation_id, listenerID, drv->my_federate_id);
-  
-  if ((rc = MQTTClient_subscribe(MQTT_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
-    lf_print_error_and_exit("Failed to subscribe, return code %d\n", rc);
-  }
-  LF_PRINT_LOG("Subscribing on topic %s.", topic_to_subscribe);
-  free(topic_to_subscribe);
-
-  // Publish to topic: federationID_fedID_to_listenorID
-  MQTT_priv->topic_name =
-      (const char*)create_topic_federation_id_A_to_B(drv->federation_id, drv->my_federate_id, listenerID);
+  // Step2: Receive MSG_TYPE_MQTT_ACCEPT from listener, which sends the connector's federateID.
+  // Receive from topic: federationID_listenerID_to_fedID
   read_from_netdrv_fail_on_error(drv, buffer, 1 + sizeof(uint16_t), NULL, "Failed to read MSG_TYPE_MQTT_ACCEPT.");
   if (buffer[0] != MSG_TYPE_MQTT_ACCEPT) {
     lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_ACCEPT.");
   }
+  LF_PRINT_LOG("Receiving MSG_TYPE_MQTT_ACCEPT message on topic %s.", topic_to_subscribe);
+  free(topic_to_subscribe);
+
+  // Compare the received federateID with my federateID.
   uint16_t temp_fed_id = extract_uint16(buffer + 1);
   if (drv->my_federate_id != temp_fed_id) {
-    lf_print_error_and_exit("Wrong federate id. Received %d\n", temp_fed_id);
+    lf_print_error_and_exit("Wrong federate ID. Received %d\n", temp_fed_id);
   }
+
+  // Step3: Send MSG_TYPE_MQTT_ACCEPT_ACK message to the listener.
+  // Publish to topic: federationID_fedID_to_listenorID
+  MQTT_priv->topic_name =
+      (const char*)create_topic_federation_id_A_to_B(drv->federation_id, drv->my_federate_id, MQTT_priv->target_id);
   buffer[0] = MSG_TYPE_MQTT_ACCEPT_ACK;
   write_to_netdrv_fail_on_error(drv, 1, buffer, NULL,
                                 "Failed to write MSG_TYPE_MQTT_ACCEPT_ACK_to RTI for connection through MQTT.");
+  LF_PRINT_LOG("Publishing MSG_TYPE_MQTT_ACCEPT_ACK_to message on topic %s.", MQTT_priv->topic_name);
   return 0;
 }
 
@@ -235,22 +257,16 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   MQTTClient_message pubmsg = MQTTClient_message_initializer;
   MQTTClient_deliveryToken token;
   int rc;
-  // pubmsg.payload = (void*)base64_encode(buffer, num_bytes, &pubmsg.payloadlen);
   pubmsg.payload = (void*)buffer;
   pubmsg.payloadlen = num_bytes;
   pubmsg.qos = QOS;
   pubmsg.retained = 0;
 
-  // TESTING
-  lf_print_log("num_bytes: %ld", num_bytes);
-  // int decoded_length;
-  // unsigned char* decoded = base64_decode(pubmsg.payload, pubmsg.payloadlen, &decoded_length);
-  // pubmsg.payloadlen does not include null terminator. Only characters.
   if ((rc = MQTTClient_publishMessage(MQTT_priv->client, MQTT_priv->topic_name, &pubmsg, &token)) !=
       MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to publish message, return code %d\n", rc);
   }
-  // LF_PRINT_LOG("Message publishing on topic %s is %.*s", MQTT_priv->topic_name, pubmsg.payloadlen,
+  // LF_PRINT_DEBUG("Message publishing on topic %s is %.*s", MQTT_priv->topic_name, pubmsg.payloadlen,
   //              (char*)(pubmsg.payload));
   rc = MQTTClient_waitForCompletion(MQTT_priv->client, token, TIMEOUT);
   int bytes_written = pubmsg.payloadlen;
@@ -272,22 +288,6 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   if (buffer[0] == MQTT_RTI_RESIGNED) {
     return 0;
   }
-  // int decoded_length;
-  // unsigned char* decoded = base64_decode(message->payload, message->payloadlen, &decoded_length);
-  // lf_print_log("decoded_length: %d", decoded_length);
-  // if (decoded_length == buffer_length + 1) {
-  //   decoded_length--;
-  //   lf_print_log("decoded_length -- : %d", decoded_length);
-  // }
-
-  // if (buffer_length < decoded_length) {
-  //   lf_print_error("Buffer to read is too short.");
-  //   return -1;
-  // }
-  // // LF_PRINT_LOG("Message received on topic %s is %.*s", topicName, message->payloadlen, (char*)(message->payload));
-
-  // memcpy(buffer, decoded, decoded_length);
-  // free(decoded);
 
   memcpy(buffer, (unsigned char*)message->payload, message->payloadlen);
   int bytes_read = message->payloadlen;
@@ -348,7 +348,7 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   return 0;
 }
 
-void set_target_id(netdrv_t* drv, uint16_t federate_id) {
+void set_target_id(netdrv_t* drv, int federate_id) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   MQTT_priv->target_id = federate_id;
 }
@@ -394,7 +394,6 @@ static char* create_topic_federation_id_listener_id(const char* federation_id, i
   return result;
 }
 
-
 static char* create_topic_federation_id_A_to_B(const char* federation_id, int A, int B) {
   int max_length;
   char* result;
@@ -427,10 +426,9 @@ static char* create_topic_federation_id_A_to_B(const char* federation_id, int A,
   } else {
     snprintf(result, max_length, "%s_fed_%d_to_fed_%d", federation_id, A, B);
   }
-  
+
   return result;
 }
-
 
 static void set_MQTTServer_id(MQTT_priv_t* MQTT_priv, int my_id, int client_id) {
   if (my_id == -1 && client_id == -1) {
