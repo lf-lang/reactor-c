@@ -10,7 +10,7 @@
 
 // #include <MQTTClient.h>
 
-#define ADDRESS "tcp://10.218.100.147:1883"
+#define ADDRESS "tcp://127.0.0.1:1883"
 #define QOS 2
 #define TIMEOUT 10000L
 
@@ -212,19 +212,46 @@ int connect_to_netdrv(netdrv_t* drv) {
   unsigned char buffer[1 + sizeof(uint16_t)];
   buffer[0] = MSG_TYPE_MQTT_JOIN;
   encode_uint16((uint16_t)drv->my_federate_id, buffer + 1);
-  LF_PRINT_LOG("Publishing MSG_TYPE_MQTT_JOIN message with federateID %d on topic %s.", drv->my_federate_id,
-               MQTT_priv->topic_name);
-  write_to_netdrv_fail_on_error(drv, 1 + sizeof(uint16_t), buffer, NULL,
-                                "Failed to write my_federate_id to listener for connection through MQTT.");
-  free((char*)MQTT_priv->topic_name);
+  // The connect_to_netdrv() can be called in the federates before the establish_communication_session() is called in
+  // the RTI. The MQTT QOS2 ensures the message to arrive to the subscribed client, but this can be called even before
+  // the netdriver was initialized in the RTI side. Thus, the federate must retry sending messages to the RTI until it
+  // replies the MSG_TYPE_MQTT_ACCEPT message. The connect retry interval (500 msecs) should be shorter than the read
+  // timeout time (which is 10 secs), thus it does not use read_from_netdrv().
+  instant_t start_connect = lf_time_physical();
+  while (1) {
+    if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
+      lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
+      return -1;
+    }
+    LF_PRINT_LOG("Publishing MSG_TYPE_MQTT_JOIN message with federateID %d on topic %s.", drv->my_federate_id,
+                 MQTT_priv->topic_name);
+    write_to_netdrv_fail_on_error(drv, 1 + sizeof(uint16_t), buffer, NULL,
+                                  "Failed to write my_federate_id to listener for connection through MQTT.");
 
-  // Step2: Receive MSG_TYPE_MQTT_ACCEPT from listener, which sends the connector's federateID.
-  // Receive from topic: federationID_listenerID_to_fedID
-  read_from_netdrv_fail_on_error(drv, buffer, 1 + sizeof(uint16_t), NULL, "Failed to read MSG_TYPE_MQTT_ACCEPT.");
+    // Step2: Receive MSG_TYPE_MQTT_ACCEPT from listener, which sends the connector's federateID.
+    // Receive from topic: federationID_listenerID_to_fedID
+    char* topicName = NULL;
+    int topicLen;
+    int temp_rc;
+    MQTTClient_message* message = NULL;
+    if ((temp_rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, CONNECT_RETRY_INTERVAL)) !=
+        MQTTCLIENT_SUCCESS) {
+      lf_print_error("Failed to receive MSG_TYPE_MQTT_ACCEPT message, return code %d\n", temp_rc);
+      MQTTClient_free(topicName);
+      MQTTClient_freeMessage(&message);
+      continue;
+    } else {
+      memcpy(buffer, (unsigned char*)message->payload, message->payloadlen);
+      MQTTClient_free(topicName);
+      MQTTClient_freeMessage(&message);
+      break;
+    }
+  }
   if (buffer[0] != MSG_TYPE_MQTT_ACCEPT) {
     lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_ACCEPT.");
   }
   LF_PRINT_LOG("Receiving MSG_TYPE_MQTT_ACCEPT message on topic %s.", topic_to_subscribe);
+  free((char*)MQTT_priv->topic_name);
   free(topic_to_subscribe);
 
   // Compare the received federateID with my federateID.
@@ -268,7 +295,9 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   }
   // LF_PRINT_DEBUG("Message publishing on topic %s is %.*s", MQTT_priv->topic_name, pubmsg.payloadlen,
   //              (char*)(pubmsg.payload));
-  rc = MQTTClient_waitForCompletion(MQTT_priv->client, token, TIMEOUT);
+  if ((rc = MQTTClient_waitForCompletion(MQTT_priv->client, token, TIMEOUT)) != MQTTCLIENT_SUCCESS) {
+    lf_print_error_and_exit("Failed to complete publish message, return code %d\n", rc);
+  }
   int bytes_written = pubmsg.payloadlen;
   return bytes_written;
 }
@@ -281,11 +310,14 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   int topicLen;
   MQTTClient_message* message = NULL;
   int rc;
+  LF_PRINT_LOG("RECEIVING message from federateID %d", drv->my_federate_id);
   if ((rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 1000000)) != MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to receive message, return code %d\n", rc);
   }
+  LF_PRINT_LOG("RECEIVED message from federateID %d", drv->my_federate_id);
 
   if (buffer[0] == MQTT_RTI_RESIGNED) {
+    LF_PRINT_LOG("Received MQTT_RTI_RESIGNED message from federateID %d", drv->my_federate_id);
     return 0;
   }
 
