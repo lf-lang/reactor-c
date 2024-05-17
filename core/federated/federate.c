@@ -1838,7 +1838,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
     }
     encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
     // Next send the federation ID length.
-    // The federation ID is limited to 255 bytes.
+    // The federation ID is limited to 255 bytes. The overhead of memcpy() is acceptable.
     buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
     memcpy(buffer + 2 + sizeof(uint16_t), (unsigned char*)federation_metadata.federation_id, federation_id_length);
     // Trace the event when tracing is enabled
