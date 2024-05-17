@@ -68,6 +68,7 @@ tag_t lf_tag_add(tag_t a, tag_t b) {
   }
 
   if (b.time > 0) {
+    // NOTE: The reason for handling this case is to "reset" the microstep counter at each after delay.
     a.microstep = 0; // Ignore microstep of first arg if time of second is > 0.
   }
   tag_t result = {.time = res, .microstep = a.microstep + b.microstep};
