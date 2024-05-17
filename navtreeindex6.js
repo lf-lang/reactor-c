@@ -1,5 +1,11 @@
 var NAVTREEINDEX6 =
 {
+"db/d93/structtrace__t.html#aab68198dcf13161dffb8a39285e693ab":[11,0,53,3],
+"db/d93/structtrace__t.html#ad1afb005351e0f9e3d2311b8f5834a77":[11,0,53,5],
+"db/d93/structtrace__t.html#ae72f1b1928c3c85a72931ecae82a9ebe":[11,0,53,2],
+"db/d93/structtrace__t.html#af9731cfda2463140b7d07ef98274e619":[11,0,53,8],
+"db/dab/structdeque__node__t.html":[11,0,6],
+"db/dab/structdeque__node__t.html#a58cba1a8e684d42188bfd7bc029137d9":[11,0,6,2],
 "db/dab/structdeque__node__t.html#acb76ff2d2cf94776a57a57350554d110":[11,0,6,0],
 "db/dab/structdeque__node__t.html#af0b3f351d6dab10d51b9f79092ee17f6":[11,0,6,1],
 "db/dc1/trace__types_8h.html":[12,0,9,0,0,0],
@@ -243,11 +249,5 @@ var NAVTREEINDEX6 =
 "dc/d69/fedsd_8py.html#abba69004e20049f1729bd98f20e0a5c8":[12,0,10,0,1,0,21],
 "dc/d69/fedsd_8py.html#abff13643ad275a1b2050bc41ecf71466":[12,0,10,0,1,0,23],
 "dc/d69/fedsd_8py.html#abff51717b8d1ae6c628aaa6f4978e67e":[12,0,10,0,1,0,55],
-"dc/d69/fedsd_8py.html#ac2922b91dea303c728ad5b1e7e89758a":[12,0,10,0,1,0,16],
-"dc/d69/fedsd_8py.html#ac2b65a7ae5230b21e264f488eab666f7":[12,0,10,0,1,0,49],
-"dc/d69/fedsd_8py.html#aca6667b958e64772d570d15c4d40cea2":[12,0,10,0,1,0,34],
-"dc/d69/fedsd_8py.html#acc1571f3663aedaf586927a1c8f5eae7":[12,0,10,0,1,0,33],
-"dc/d69/fedsd_8py.html#acc91e5d14fca7b185cdbb94cc6578d61":[12,0,10,0,1,0,15],
-"dc/d69/fedsd_8py.html#ad2d36c000394fdf22db523c799f4252a":[12,0,10,0,1,0,7],
-"dc/d69/fedsd_8py.html#ad7c9235053b4ce8b4fdda05fbe135115":[12,0,10,0,1,0,41]
+"dc/d69/fedsd_8py.html#ac2922b91dea303c728ad5b1e7e89758a":[12,0,10,0,1,0,16]
 };

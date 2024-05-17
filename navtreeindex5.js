@@ -1,11 +1,17 @@
 var NAVTREEINDEX5 =
 {
-"d9/dd5/clock-sync_8h.html#a834b31e00e677a23b6a86119b7a2fe59":[12,0,1,1,0,1,15],
+"d9/dd5/clock-sync_8h.html#a6d31f2c4caa9ee12f2e1e018f9e6e1f0":[12,0,1,1,0,1,17],
+"d9/dd5/clock-sync_8h.html#a742c3183fb89d811377514d09e526b8f":[12,0,1,1,0,1,7],
+"d9/dd5/clock-sync_8h.html#a7e49fed082ec884e26d761e1c4f0d428":[12,0,1,1,0,1,9],
+"d9/dd5/clock-sync_8h.html#a7ed4e5f2a4216fdf6d76eafcab5b49b7":[12,0,1,1,0,1,6],
+"d9/dd5/clock-sync_8h.html#a834b31e00e677a23b6a86119b7a2fe59":[12,0,1,1,0,1,19],
+"d9/dd5/clock-sync_8h.html#aa9efe35bfc06d22220c852574c4a5feb":[12,0,1,1,0,1,8],
 "d9/dd5/clock-sync_8h.html#ab0eeaea19d6e5c9217a4eed928c32141":[12,0,1,1,0,1,3],
-"d9/dd5/clock-sync_8h.html#ac094b53ced87d3cbd617a66591f4282a":[12,0,1,1,0,1,10],
-"d9/dd5/clock-sync_8h.html#ace14df89540b56b069c6c619e8f37493":[12,0,1,1,0,1,11],
-"d9/dd5/clock-sync_8h.html#ae267d03a5f2263604459ca4c1aef2c2c":[12,0,1,1,0,1,14],
-"d9/dd5/clock-sync_8h.html#af5fb44eb0db80b9dfa61399bdab8b85c":[12,0,1,1,0,1,9],
+"d9/dd5/clock-sync_8h.html#ab36196523f89c0d8f30c1965b458beb6":[12,0,1,1,0,1,5],
+"d9/dd5/clock-sync_8h.html#ac094b53ced87d3cbd617a66591f4282a":[12,0,1,1,0,1,14],
+"d9/dd5/clock-sync_8h.html#ace14df89540b56b069c6c619e8f37493":[12,0,1,1,0,1,15],
+"d9/dd5/clock-sync_8h.html#ae267d03a5f2263604459ca4c1aef2c2c":[12,0,1,1,0,1,18],
+"d9/dd5/clock-sync_8h.html#af5fb44eb0db80b9dfa61399bdab8b85c":[12,0,1,1,0,1,13],
 "d9/dd5/clock-sync_8h_source.html":[12,0,1,1,0,1],
 "d9/dd5/mixed__radix_8c.html":[12,0,0,7],
 "d9/dd5/mixed__radix_8c.html#a0402727c71049a3b200c1f9fbfdfcb41":[12,0,0,7,2],
@@ -243,11 +249,5 @@ var NAVTREEINDEX5 =
 "db/d93/structtrace__t.html#a2ad765032dc6d7b9720f0856638377f1":[11,0,53,0],
 "db/d93/structtrace__t.html#a3db03886576cda7f921deb2ad4d5f334":[11,0,53,7],
 "db/d93/structtrace__t.html#a426ed536efec1716ea83318cb98fde9d":[11,0,53,6],
-"db/d93/structtrace__t.html#a664588114539c0e557206f521028db9f":[11,0,53,1],
-"db/d93/structtrace__t.html#aab68198dcf13161dffb8a39285e693ab":[11,0,53,3],
-"db/d93/structtrace__t.html#ad1afb005351e0f9e3d2311b8f5834a77":[11,0,53,5],
-"db/d93/structtrace__t.html#ae72f1b1928c3c85a72931ecae82a9ebe":[11,0,53,2],
-"db/d93/structtrace__t.html#af9731cfda2463140b7d07ef98274e619":[11,0,53,8],
-"db/dab/structdeque__node__t.html":[11,0,6],
-"db/dab/structdeque__node__t.html#a58cba1a8e684d42188bfd7bc029137d9":[11,0,6,2]
+"db/d93/structtrace__t.html#a664588114539c0e557206f521028db9f":[11,0,53,1]
 };
