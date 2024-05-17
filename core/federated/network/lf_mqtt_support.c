@@ -234,7 +234,7 @@ int connect_to_netdrv(netdrv_t* drv) {
     int topicLen;
     int temp_rc;
     MQTTClient_message* message = NULL;
-    if ((temp_rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, CONNECT_RETRY_INTERVAL)) !=
+    if ((temp_rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 500)) != //CONNECT_RETRY_INTERVAL Does not work...
         MQTTCLIENT_SUCCESS) {
       lf_print_error("Failed to receive MSG_TYPE_MQTT_ACCEPT message, return code %d\n", temp_rc);
       MQTTClient_free(topicName);

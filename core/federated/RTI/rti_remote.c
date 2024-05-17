@@ -628,6 +628,7 @@ void handle_timestamp(federate_info_t* my_fed, unsigned char* buffer) {
     tracepoint_rti_from_federate(receive_TIMESTAMP, my_fed->enclave.id, &tag);
   }
   LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ".", timestamp);
+  LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ". fro federate %d", timestamp, my_fed->fed_netdrv->my_federate_id);
 
   LF_MUTEX_LOCK(&rti_mutex);
   rti_remote->num_feds_proposed_start++;
@@ -1144,7 +1145,7 @@ static int receive_connection_information(netdrv_t* netdrv, uint16_t fed_id) {
                                  fed_id);
 
   if (connection_info_buffer[0] != MSG_TYPE_NEIGHBOR_STRUCTURE) {
-    lf_print_error("RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
+    lf_print_error("RTI was expecting a MSG_TYPE_NEIGHBOR_STRUCTURE message from federate %d. Got %u instead. "
                    "Rejecting federate.",
                    fed_id, connection_info_buffer[0]);
     send_reject(netdrv, UNEXPECTED_MESSAGE);
