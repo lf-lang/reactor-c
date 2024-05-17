@@ -1187,6 +1187,8 @@ void termination(void) {
 #endif
     lf_free_all_reactors();
 
+    lf_tracing_global_shutdown();
+
     // Free up memory associated with environment.
     // Do this last so that printed warnings don't access freed memory.
     for (int i = 0; i < num_envs; i++) {
@@ -1196,7 +1198,6 @@ void termination(void) {
     free_local_rti();
 #endif
   }
-  lf_tracing_global_shutdown();
 }
 
 index_t lf_combine_deadline_and_level(interval_t deadline, int level) {
