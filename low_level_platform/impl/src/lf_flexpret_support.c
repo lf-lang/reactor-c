@@ -79,11 +79,15 @@ int _lf_sleep_common(instant_t wakeup_time, bool interruptable) {
     // The first sleep until will only be partial
     if (interruptable) {
       // Can be interrupted
+      // NOTE: Does not work until this issue is resolved:
+      // https://github.com/pretis/flexpret/issues/93
       fp_wait_until(max_uint32_value);
       if (_lf_async_event_occurred)
         break;
     } else {
       // Cannot be interrupted
+      // NOTE: Does not work until this issue is resolved:
+      // https://github.com/pretis/flexpret/issues/93
       fp_delay_until(max_uint32_value);
     }
   }
