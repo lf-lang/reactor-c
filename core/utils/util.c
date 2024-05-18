@@ -42,10 +42,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <printf/printf.h>
 /**
  * Also, fflush and stdout are not provided so we just implement stubs
- * 
+ *
  */
-#define stdout (void *)(1)
-int fflush(void *stream) { (void) stream; return 0; }
+#define stdout (void*)(1)
+int fflush(void* stream) {
+  (void)stream;
+  return 0;
+}
 #endif // PLATFORM_FLEXPRET
 
 #ifndef STANDALONE_RTI

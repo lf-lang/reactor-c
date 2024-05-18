@@ -63,8 +63,10 @@ typedef fp_thread_t lf_thread_t;
 typedef fp_cond_t lf_cond_t;
 #endif
 
-// FlexPRET has no tty
-#define NO_TTY
+// This will filter out some unecessary calls to standard library functions
+// and save code space
+#define NO_CLI
+#define MINIMAL_STDLIB
 
 // Likewise, fprintf is used to print to `stderr`, but FlexPRET has no `stderr`
 // We instead redirect its output to normal printf
