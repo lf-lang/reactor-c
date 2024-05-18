@@ -55,13 +55,26 @@ lf_enable_compiler_warnings(reactor-c)
 
 if (DEFINED LF_TRACE)
     include(${LF_ROOT}/trace/api/CMakeLists.txt)
-    if(NOT LF_TRACE_PLUGIN)
-        set(LF_TRACE_PLUGIN lf::trace-impl)
-        include(${LF_ROOT}/trace/impl/CMakeLists.txt)
-    endif()
-    message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
     target_link_libraries(reactor-c PUBLIC lf::trace-api)
-    target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN}")
+    # If the user specified an external trace plugin. Find it and link with it
+    if (LF_TRACE_PLUGIN)
+        message(STATUS "Linking trace plugin library ${LF_TRACE_PLUGIN}")
+        find_library(TRACE_LIB NAMES ${LF_TRACE_PLUGIN} HINTS "${LF_ROOT}")
+        if (NOT TRACE_LIB)
+            message(FATAL_ERROR "The trace plugin library ${LF_TRACE_PLUGIN} not found")
+        endif()
+        # We also link with libdl because it is needed for some platforms.
+        # TODO: Figure out why this is the case and how to avoid it.
+        target_link_libraries(reactor-c PRIVATE ${TRACE_LIB} dl)
+    else()
+    # If not, use the default implementation
+        message(STATUS "Linking with default trace implementation")
+        include(${LF_ROOT}/trace/impl/CMakeLists.txt)
+        target_link_libraries(reactor-c PRIVATE lf::trace-impl)
+    endif()
+else()
+    include(${LF_ROOT}/trace/api/types/CMakeLists.txt)
+    target_link_libraries(reactor-c PUBLIC lf::trace-api-types)
 endif()
 
 include(${LF_ROOT}/version/api/CMakeLists.txt)
@@ -128,8 +141,9 @@ target_compile_definitions(reactor-c PRIVATE INITIAL_EVENT_QUEUE_SIZE=${INITIAL_
 target_compile_definitions(reactor-c PRIVATE INITIAL_REACT_QUEUE_SIZE=${INITIAL_REACT_QUEUE_SIZE})
 target_compile_definitions(reactor-c PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
-# Macro for translating a command-line argument into compile definition for
-# reactor-c lib
+# If variable X is defined in cMake (set using SET()) or passed in as a command-line
+# argument using -DX=<value>, then make it a compiler flag for reactor-c so that X
+# is also defined in the C code for reactor-c.
 macro(define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
@@ -142,9 +156,9 @@ message(STATUS "Applying preprocessor definitions...")
 define(_LF_CLOCK_SYNC_ATTENUATION)
 define(_LF_CLOCK_SYNC_COLLECT_STATS)
 define(_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL)
-define(_LF_CLOCK_SYNC_INITIAL)
-define(_LF_CLOCK_SYNC_ON)
+define(LF_CLOCK_SYNC) # 1 for OFF, 2 for INIT and 3 for ON.
 define(_LF_CLOCK_SYNC_PERIOD_NS)
+define(_LF_FEDERATE_NAMES_COMMA_SEPARATED)
 define(ADVANCE_MESSAGE_INTERVAL)
 define(EXECUTABLE_PREAMBLE)
 define(FEDERATED_CENTRALIZED)
