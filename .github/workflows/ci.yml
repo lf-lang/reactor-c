@@ -55,13 +55,15 @@ jobs:
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
     if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
 
-  lf-default-flexpret:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-flexpret-tests.yml@master
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'flexpret') }}
+  # TODO: Comment in when FlexPRET tests are added to main LF repo: 
+  # https://github.com/lf-lang/lingua-franca/pull/2262
+  #lf-default-flexpret:
+  #  needs: [fetch-lf]
+  #  uses: lf-lang/lingua-franca/.github/workflows/c-flexpret-tests.yml@master
+  #  with:
+  #    runtime-ref: ${{ github.ref }}
+  #    compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #  if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'flexpret') }}
 
   lf-default:
     needs: [fetch-lf]
