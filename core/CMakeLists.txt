@@ -141,8 +141,9 @@ target_compile_definitions(reactor-c PRIVATE INITIAL_EVENT_QUEUE_SIZE=${INITIAL_
 target_compile_definitions(reactor-c PRIVATE INITIAL_REACT_QUEUE_SIZE=${INITIAL_REACT_QUEUE_SIZE})
 target_compile_definitions(reactor-c PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
-# Macro for translating a command-line argument into compile definition for
-# reactor-c lib
+# If variable X is defined in cMake (set using SET()) or passed in as a command-line
+# argument using -DX=<value>, then make it a compiler flag for reactor-c so that X
+# is also defined in the C code for reactor-c.
 macro(define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
@@ -155,8 +156,7 @@ message(STATUS "Applying preprocessor definitions...")
 define(_LF_CLOCK_SYNC_ATTENUATION)
 define(_LF_CLOCK_SYNC_COLLECT_STATS)
 define(_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL)
-define(_LF_CLOCK_SYNC_INITIAL)
-define(_LF_CLOCK_SYNC_ON)
+define(LF_CLOCK_SYNC) # 1 for OFF, 2 for INIT and 3 for ON.
 define(_LF_CLOCK_SYNC_PERIOD_NS)
 define(_LF_FEDERATE_NAMES_COMMA_SEPARATED)
 define(ADVANCE_MESSAGE_INTERVAL)

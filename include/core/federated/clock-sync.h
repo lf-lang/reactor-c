@@ -35,6 +35,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "low_level_platform.h"
 
+// Clock synchronization defaults to performing clock synchronization only at initialization.
+#define LF_CLOCK_SYNC_OFF 1
+#define LF_CLOCK_SYNC_INIT 2
+#define LF_CLOCK_SYNC_ON 3
+
+#ifndef LF_CLOCK_SYNC
+#define LF_CLOCK_SYNC LF_CLOCK_SYNC_INIT
+#endif
+
 /**
  * Number of required clock sync T4 messages per synchronization
  * interval. The offset to the clock will not be adjusted until

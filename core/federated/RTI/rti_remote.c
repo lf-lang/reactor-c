@@ -1738,9 +1738,14 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->stop_in_progress = false;
 }
 
+// The RTI includes clock.c, which requires the following functions that are defined
+// in clock-sync.c.  But clock-sync.c is not included in the standalone RTI.
+// Provide empty implementations of these functions.
+void clock_sync_add_offset(instant_t* t) { (void)t; }
+void clock_sync_subtract_offset(instant_t* t) { (void)t; }
+
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
-    // FIXME: Gives error freeing memory not allocated!!!!
     scheduling_node_t* node = scheduling_nodes[i];
     if (node->upstream != NULL)
       free(node->upstream);
