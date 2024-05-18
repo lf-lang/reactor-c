@@ -227,7 +227,7 @@ int process_args(int argc, const char* argv[]) {
       }
       i++;
       long num_federates = strtol(argv[i], NULL, 10);
-      if (num_federates == 0L || num_federates == LONG_MAX || num_federates == LONG_MIN) {
+      if (num_federates <= 0L || num_federates == LONG_MAX || num_federates == LONG_MIN) {
         lf_print_error("--number_of_federates needs a valid positive integer argument.");
         usage(argc, argv);
         return 0;
@@ -289,16 +289,6 @@ int process_args(int argc, const char* argv[]) {
       return 0;
     }
   }
-  if (rti.base.number_of_scheduling_nodes == 0) {
-    lf_print_error("--number_of_federates needs a valid positive integer argument.");
-    usage(argc, argv);
-    return 0;
-  }
-  if (rti.number_of_transient_federates >= rti.base.number_of_scheduling_nodes) {
-    lf_print_error("--number_of_transient_federates cannot be higher or equal to the number of federates.");
-    usage(argc, argv);
-    return 0;
-  }
   return 1;
 }
 int main(int argc, const char* argv[]) {
@@ -334,7 +324,7 @@ int main(int argc, const char* argv[]) {
     // sync thread. Add 1 for the thread that responds to erroneous
     // connections attempted after initialization phase has completed. Add 1
     // for the main thread.
-    lf_tracing_global_init("rti", -1, _lf_number_of_workers * 2 + 3);
+    lf_tracing_global_init("rti", NULL, -1, _lf_number_of_workers * 2 + 3);
     lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
   }
 

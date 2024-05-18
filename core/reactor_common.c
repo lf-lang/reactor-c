@@ -1038,26 +1038,26 @@ int process_args(int argc, const char* argv[]) {
  * core runtime.
  */
 #ifdef LF_TRACE
-static void check_version(version_t version) {
+static void check_version(const version_t* version) {
 #ifdef LF_SINGLE_THREADED
-  LF_ASSERT(version.build_config.single_threaded == TRIBOOL_TRUE ||
-                version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.single_threaded == TRIBOOL_TRUE ||
+                version->build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
             "expected single-threaded version");
 #else
-  LF_ASSERT(version.build_config.single_threaded == TRIBOOL_FALSE ||
-                version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.single_threaded == TRIBOOL_FALSE ||
+                version->build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
             "expected multi-threaded version");
 #endif
 #ifdef NDEBUG
-  LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_FALSE ||
-                version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.build_type_is_debug == TRIBOOL_FALSE ||
+                version->build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
             "expected release version");
 #else
-  LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_TRUE ||
-                version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.build_type_is_debug == TRIBOOL_TRUE ||
+                version->build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
             "expected debug version");
 #endif
-  LF_ASSERT(version.build_config.log_level == LOG_LEVEL || version.build_config.log_level == INT_MAX,
+  LF_ASSERT(version->build_config.log_level == LOG_LEVEL || version->build_config.log_level == INT_MAX,
             "expected log level %d", LOG_LEVEL);
   // assert(!version.core_version_name || strcmp(version.core_version_name, CORE_SHA) == 0); // TODO: provide CORE_SHA
 }
@@ -1079,14 +1079,15 @@ void initialize_global(void) {
   int num_envs = _lf_get_environments(&envs);
   int max_threads_tracing = envs[0].num_workers * num_envs + 1; // add 1 for the main thread
 #endif
+
 #if defined(FEDERATED)
   // NUMBER_OF_FEDERATES is an upper bound on the number of upstream federates
   // -- threads are spawned to listen to upstream federates. Add 1 for the
   // clock sync thread and add 1 for the staa thread
   max_threads_tracing += NUMBER_OF_FEDERATES + 2;
-  lf_tracing_global_init("federate__", FEDERATE_ID, max_threads_tracing);
+  lf_tracing_global_init(envs[0].name, _LF_FEDERATE_NAMES_COMMA_SEPARATED, FEDERATE_ID, max_threads_tracing);
 #else
-  lf_tracing_global_init("trace_", 0, max_threads_tracing);
+  lf_tracing_global_init("main", NULL, 0, max_threads_tracing);
 #endif
   // Call the code-generated function to initialize all actions, timers, and ports
   // This is done for all environments/enclaves at the same time.
@@ -1186,6 +1187,8 @@ void termination(void) {
 #endif
     lf_free_all_reactors();
 
+    lf_tracing_global_shutdown();
+
     // Free up memory associated with environment.
     // Do this last so that printed warnings don't access freed memory.
     for (int i = 0; i < num_envs; i++) {
@@ -1195,7 +1198,6 @@ void termination(void) {
     free_local_rti();
 #endif
   }
-  lf_tracing_global_shutdown();
 }
 
 index_t lf_combine_deadline_and_level(interval_t deadline, int level) {
