@@ -59,7 +59,7 @@ jobs:
   # https://github.com/lf-lang/lingua-franca/pull/2262
   lf-default-flexpret:
     needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-flexpret-tests.yml@add-flexpret-support
+    uses: magnmaeh/lingua-franca/.github/workflows/c-flexpret-tests.yml@add-flexpret-support
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
