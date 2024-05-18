@@ -68,8 +68,30 @@ typedef fp_cond_t lf_cond_t;
 #define NO_CLI
 #define MINIMAL_STDLIB
 
+/**
+ * Need to include `stdio` here, because we #define `fprintf` and `vfprintf` below.
+ * Since stdio.h contains declarations for these functions, including it
+ * after will result in the following:
+ *
+ * #define fprintf(s, f, ...) printf(f, ##__VA_ARGS__)
+ *
+ * int	fprintf (FILE *__restrict, const char *__restrict, ...)
+ *             _ATTRIBUTE ((__format__ (__printf__, 2, 3)));
+ *
+ * Which the preprocessor will replace with:
+ *
+ * int	printf (FILE *__restrict, const char *__restrict, ...)
+ *             _ATTRIBUTE ((__format__ (__printf__, 2, 3)));
+ *
+ * Which will yield an error.
+ *
+ */
+#include <stdio.h>
+
 // Likewise, fprintf is used to print to `stderr`, but FlexPRET has no `stderr`
 // We instead redirect its output to normal printf
+// Note: Most compilers do not support passing this on the command line, so CMake
+//       will drop it if you try... But that would be the better option.
 #define fprintf(stream, fmt, ...) printf(fmt, ##__VA_ARGS__)
 #define vfprintf(fp, fmt, args) vprintf(fmt, args)
 

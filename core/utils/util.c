@@ -33,23 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util.h"
 
-#if !defined(PLATFORM_FLEXPRET)
 #include <stdio.h>
-#else
-/**
- * For FlexPRET specifically, a small footprint version of printf is used
- */
-#include <printf/printf.h>
-/**
- * Also, fflush and stdout are not provided so we just implement stubs
- *
- */
-#define stdout (void*)(1)
-int fflush(void* stream) {
-  (void)stream;
-  return 0;
-}
-#endif // PLATFORM_FLEXPRET
 
 #ifndef STANDALONE_RTI
 #include "environment.h"
