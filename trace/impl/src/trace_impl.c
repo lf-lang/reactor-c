@@ -24,6 +24,17 @@ static lf_platform_mutex_ptr_t trace_mutex;
 static trace_t trace;
 static int process_id;
 static int64_t start_time;
+static version_t version = {.build_config =
+                                {
+                                    .single_threaded = TRIBOOL_DOES_NOT_MATTER,
+#ifdef NDEBUG
+                                    .build_type_is_debug = TRIBOOL_FALSE,
+#else
+                                    .build_type_is_debug = TRIBOOL_TRUE,
+#endif
+                                    .log_level = LOG_LEVEL,
+                                },
+                            .core_version_name = NULL};
 
 // PRIVATE HELPERS ***********************************************************
 
@@ -192,21 +203,7 @@ static void stop_trace(trace_t* trace) {
 
 // IMPLEMENTATION OF VERSION API *********************************************
 
-version_t lf_version_tracing() {
-  return (version_t){
-      .build_config =
-          (build_config_t){
-              .single_threaded = TRIBOOL_DOES_NOT_MATTER,
-#ifdef NDEBUG
-              .build_type_is_debug = TRIBOOL_FALSE,
-#else
-              .build_type_is_debug = TRIBOOL_TRUE,
-#endif
-              .log_level = LOG_LEVEL,
-          },
-      .core_version_name = NULL,
-  };
-}
+const version_t* lf_version_tracing() { return &version; }
 
 // IMPLEMENTATION OF TRACE API ***********************************************
 
