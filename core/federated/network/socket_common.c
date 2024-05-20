@@ -250,7 +250,7 @@ int connect_to_socket(int sock, char* hostname, int port, uint16_t user_specifie
       if (user_specified_port == 0) {
         used_port++;
       }
-      lf_print_warning("Could not connect. Will try again every" PRINTF_TIME "nanoseconds.\n", CONNECT_RETRY_INTERVAL);
+      lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds.\n", CONNECT_RETRY_INTERVAL);
       continue;
     } else {
       break;
