@@ -39,20 +39,46 @@ tag_t lf_tag(void* env) {
   return ((environment_t*)env)->current_tag;
 }
 
+instant_t lf_time_add(instant_t a, interval_t b) {
+  if (a == NEVER || b == NEVER) {
+    return NEVER;
+  }
+  if (a == FOREVER || b == FOREVER) {
+    return FOREVER;
+  }
+  instant_t res = a + b;
+  // Check for overflow
+  if (res < a && b > 0) {
+    return FOREVER;
+  }
+  // Check for underflow
+  if (res > a && b < 0) {
+    return NEVER;
+  }
+  return res;
+}
+
 tag_t lf_tag_add(tag_t a, tag_t b) {
-  if (a.time == NEVER || b.time == NEVER)
-    return NEVER_TAG;
-  if (a.time == FOREVER || b.time == FOREVER)
+  instant_t res = lf_time_add(a.time, b.time);
+  if (res == FOREVER) {
     return FOREVER_TAG;
-  if (b.time > 0)
+  }
+  if (res == NEVER) {
+    return NEVER_TAG;
+  }
+
+  if (b.time > 0) {
+    // NOTE: The reason for handling this case is to "reset" the microstep counter at each after delay.
     a.microstep = 0; // Ignore microstep of first arg if time of second is > 0.
-  tag_t result = {.time = a.time + b.time, .microstep = a.microstep + b.microstep};
-  if (result.microstep < a.microstep)
+  }
+  tag_t result = {.time = res, .microstep = a.microstep + b.microstep};
+
+  // If microsteps overflows
+  // FIXME: What should be the resulting tag in case of microstep overflow.
+  //  see https://github.com/lf-lang/reactor-c/issues/430
+  if (result.microstep < a.microstep) {
     return FOREVER_TAG;
-  if (result.time < a.time && b.time > 0)
-    return FOREVER_TAG;
-  if (result.time > a.time && b.time < 0)
-    return NEVER_TAG;
+  }
   return result;
 }
 
