@@ -43,40 +43,11 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t* scheduler, reaction
 }
 
 /**
- * @brief Distribute any reaction that is ready to execute to idle worker
- * thread(s).
- *
- * @return Number of reactions that were successfully distributed to worker
- * threads.
- */
-int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
-  pqueue_t* tmp_queue = NULL;
-  // Note: All the worker threads are idle, which means that they are done inserting
-  // reactions. Therefore, the reaction queue can be accessed without locking
-  // a mutex.
-
-  while (scheduler->next_reaction_level <= scheduler->max_reaction_level) {
-    LF_PRINT_DEBUG("Waiting with curr_reaction_level %zu.", scheduler->next_reaction_level);
-    try_advance_level(scheduler->env, &scheduler->next_reaction_level);
-
-    tmp_queue = ((pqueue_t**)scheduler->triggered_reactions)[scheduler->next_reaction_level - 1];
-    size_t reactions_to_execute = pqueue_size(tmp_queue);
-
-    if (reactions_to_execute) {
-      scheduler->executing_reactions = tmp_queue;
-      return reactions_to_execute;
-    }
-  }
-
-  return 0;
-}
-
-/**
  * @brief If there is work to be done, notify workers individually.
  *
  * This assumes that the caller is not holding any thread mutexes.
  */
-void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
+static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
   // Note: All threads are idle. Therefore, there is no need to lock the mutex
   // while accessing the executing queue (which is pointing to one of the
   // reaction queues).
@@ -132,7 +103,27 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
       LF_MUTEX_UNLOCK(&env->mutex);
     }
 
-    if (_lf_sched_distribute_ready_reactions(scheduler) > 0) {
+    int num_reactions = 0;
+    pqueue_t* tmp_queue = NULL;
+    // Note: All the worker threads are idle, which means that they are done inserting
+    // reactions. Therefore, the reaction queue can be accessed without locking
+    // a mutex.
+
+    while (scheduler->next_reaction_level <= scheduler->max_reaction_level) {
+      LF_PRINT_DEBUG("Waiting with curr_reaction_level %zu.", scheduler->next_reaction_level);
+      try_advance_level(scheduler->env, &scheduler->next_reaction_level);
+
+      tmp_queue = ((pqueue_t**)scheduler->triggered_reactions)[scheduler->next_reaction_level - 1];
+      size_t reactions_to_execute = pqueue_size(tmp_queue);
+
+      if (reactions_to_execute) {
+        scheduler->executing_reactions = tmp_queue;
+        num_reactions = reactions_to_execute;
+        break;
+      }
+    }
+
+    if (num_reactions > 0) {
       _lf_sched_notify_workers(scheduler);
       break;
     }
@@ -149,7 +140,7 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
  * @param worker_number The worker number of the worker thread asking for work
  * to be assigned to it.
  */
-void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
+static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
   // Increment the number of idle workers by 1 and check if this is the last
   // worker thread to become idle.
   if (((size_t)lf_atomic_add_fetch32((int32_t*)&scheduler->number_of_idle_workers, 1)) ==
@@ -161,8 +152,7 @@ void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
   } else {
     // Not the last thread to become idle.
     // Wait for work to be released.
-    LF_PRINT_DEBUG("Scheduler: Worker %zu is trying to acquire the scheduling "
-                   "semaphore.",
+    LF_PRINT_DEBUG("Scheduler: Worker %zu is trying to acquire the scheduling semaphore.",
                    worker_number);
     lf_semaphore_acquire(scheduler->semaphore);
     LF_PRINT_DEBUG("Scheduler: Worker %zu acquired the scheduling semaphore.", worker_number);
@@ -197,6 +187,7 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
   scheduler->array_of_mutexes = (lf_mutex_t*)calloc(1, sizeof(lf_mutex_t));
 
   // Initialize the reaction queue.
+  size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
   ((pqueue_t**)scheduler->triggered_reactions)[0] =
       pqueue_init(queue_size, in_reverse_order, get_reaction_index, get_reaction_position, set_reaction_position,
                   reaction_matches, print_reaction);

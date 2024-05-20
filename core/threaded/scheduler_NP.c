@@ -80,7 +80,7 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t* scheduler, reaction
  *
  * @return 1 if any reaction is ready. 0 otherwise.
  */
-int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
+static int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
   // Note: All the threads are idle, which means that they are done inserting
   // reactions. Therefore, the reaction vectors can be accessed without
   // locking a mutex.
@@ -107,7 +107,7 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
  *
  * This assumes that the caller is not holding any thread mutexes.
  */
-void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
+static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
   // Calculate the number of workers that we need to wake up, which is the
   // number of reactions enabled at this level.
   // Note: All threads are idle. Therefore, there is no need to lock the mutex while accessing the index for the
@@ -182,7 +182,7 @@ void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
  * @param worker_number The worker number of the worker thread asking for work
  * to be assigned to it.
  */
-void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
+static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
   // Increment the number of idle workers by 1 and check if this is the last
   // worker thread to become idle.
   if (lf_atomic_add_fetch32((int32_t*)&scheduler->number_of_idle_workers, 1) == (int)scheduler->number_of_workers) {
