@@ -7,7 +7,7 @@
 #define MQTTkeepAliveInterval 20
 #define MQTTcleansession 1
 
-#define MQTT_RTI_RESIGNED 88
+#define MQTT_RESIGNED 88
 
 typedef struct MQTT_priv_t {
   MQTTClient client;
