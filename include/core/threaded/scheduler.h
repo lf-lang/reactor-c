@@ -76,6 +76,7 @@ void lf_sched_free(lf_scheduler_t* scheduler);
  * This function blocks until it can return a ready reaction for worker thread
  * 'worker_number' or it is time for the worker thread to stop and exit (where a
  * NULL value would be returned).
+ * This function assumes that the environment mutex is not locked.
  *
  * @param scheduler The scheduler
  * @param worker_number For the calling worker thread.

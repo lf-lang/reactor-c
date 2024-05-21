@@ -861,7 +861,11 @@ void try_advance_level(environment_t* env, volatile size_t* next_reaction_level)
 }
 
 /**
- * The main looping logic of each LF worker thread.
+ * @brief The main looping logic of each LF worker thread.
+ * 
+ * This function returns when the scheduler's lf_sched_get_ready_reaction()
+ * implementation returns NULL, indicating that there are no more reactions to execute.
+ * 
  * This function assumes the caller does not hold the mutex lock on the environment.
  *
  * @param env Environment within which we are executing.

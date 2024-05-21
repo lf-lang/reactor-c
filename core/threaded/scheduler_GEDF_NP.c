@@ -33,6 +33,7 @@ typedef struct custom_scheduler_data_t {
   pqueue_t* reaction_q;
   lf_cond_t reaction_q_changed;
   size_t current_level;
+  bool solo_holds_mutex; // Indicates sole thread holds the mutex.
 } custom_scheduler_data_t;
 
 /////////////////// Scheduler Private API /////////////////////////
@@ -93,20 +94,8 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
-/**
- * @brief Ask the scheduler for one more reaction.
- *
- * This function blocks until it can return a ready reaction for worker thread
- * 'worker_number' or it is time for the worker thread to stop and exit (where a
- * NULL value would be returned).
- * 
- * This function assumes that the environment mutex is not locked.
- * @param scheduler The scheduler instance.
- * @param worker_number The worker number.
- * @return A reaction for the worker to execute. NULL if the calling worker thread should exit.
- */
+
 reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number) {
-  
   // Need to lock the environment mutex.
   LF_PRINT_DEBUG("Scheduler: Worker %d locking environment mutex.", worker_number);
   LF_MUTEX_LOCK(&scheduler->env->mutex);
@@ -124,6 +113,16 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
             worker_number, scheduler->custom_data->current_level);
         // Remove the reaction from the queue.
         pqueue_pop(scheduler->custom_data->reaction_q);
+
+        // If there is another reaction at the current level and an idle thread, then
+        // notify an idle thread.
+        reaction_t* next_reaction = (reaction_t*)pqueue_peek(scheduler->custom_data->reaction_q);
+        if (next_reaction != NULL
+            && LF_LEVEL(next_reaction->index) == scheduler->custom_data->current_level
+            && scheduler->number_of_idle_workers > 0) {
+          // Notify an idle thread.
+          LF_COND_SIGNAL(&scheduler->custom_data->reaction_q_changed);
+        }
         LF_MUTEX_UNLOCK(&scheduler->env->mutex);
         return reaction_to_return;
       } else {
@@ -141,8 +140,6 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
           }
           LF_PRINT_DEBUG("Scheduler: Advancing to next reaction level %zu.",
               scheduler->custom_data->current_level);
-          // Notify other workers that we are at the next level.
-          LF_COND_BROADCAST(&scheduler->custom_data->reaction_q_changed);
         } else {
           // Some workers are still working on reactions on the current level.
           // Wait for them to finish.
@@ -163,14 +160,19 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         LF_PRINT_DEBUG("Scheduler: Worker %d is advancing the tag.", worker_number);
         // Advance the tag.
         scheduler->custom_data->current_level = 0;
+        // Set a flag in the scheduler that the lock is held by the sole executing thread.
+        // This prevents acquiring the mutex in lf_scheduler_trigger_reaction.
+        scheduler->custom_data->solo_holds_mutex = true;
         if (_lf_sched_advance_tag_locked(scheduler)) {
           LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
           scheduler->should_stop = true;
+          scheduler->custom_data->solo_holds_mutex = false;
+          // Notify all threads that the stop tag has been reached.
           LF_COND_BROADCAST(&scheduler->custom_data->reaction_q_changed);
           break;
         }
+        scheduler->custom_data->solo_holds_mutex = false;
         try_advance_level(scheduler->env, &scheduler->custom_data->current_level);
-        LF_COND_BROADCAST(&scheduler->custom_data->reaction_q_changed);
       } else {
         // Some other workers are still working on reactions on the current level.
         // Wait for them to finish.
@@ -188,37 +190,13 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
   return NULL;
 }
 
-/**
- * @brief Inform the scheduler that worker thread 'worker_number' is done
- * executing the 'done_reaction'.
- *
- * @param worker_number The worker number for the worker thread that has
- * finished executing 'done_reaction'.
- * @param done_reaction The reaction that is done.
- */
 void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
-  (void)worker_number;
+  (void)worker_number; // Suppress unused parameter warning.
   if (!lf_atomic_bool_compare_and_swap32((int32_t*)&done_reaction->status, queued, inactive)) {
     lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.", done_reaction->status, queued);
   }
 }
 
-/**
- * @brief Inform the scheduler that worker thread 'worker_number' would like to
- * trigger 'reaction' at the current tag.
- *
- * If a worker number is not available (e.g., this function is not called by a
- * worker thread), -1 should be passed as the 'worker_number'.
- *
- * The scheduler will ensure that the same reaction is not triggered twice in
- * the same tag.
- *
- * @param reaction The reaction to trigger at the current tag.
- * @param worker_number The ID of the worker that is making this call. 0 should
- * be used if there is only one worker (e.g., when the program is using the
- *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
- *  worker number does not make sense (e.g., the caller is not a worker thread).
- */
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
   (void)worker_number;  // Suppress unused parameter warning.
   if (reaction == NULL || !lf_atomic_bool_compare_and_swap32((int32_t*)&reaction->status, inactive, queued)) {
@@ -226,15 +204,26 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
   }
   LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.", reaction->name, LF_LEVEL(reaction->index));
 
-  // FIXME: Mutex not needed when pulling from the event queue.
-  LF_PRINT_DEBUG("Scheduler: Locking mutex for environment.");
-  LF_MUTEX_LOCK(&scheduler->env->mutex);
-  LF_PRINT_DEBUG("Scheduler: Locked mutex for environment.");
-
+  // Mutex not needed when pulling from the event queue.
+  if (!scheduler->custom_data->solo_holds_mutex) {
+    LF_PRINT_DEBUG("Scheduler: Locking mutex for environment.");
+    LF_MUTEX_LOCK(&scheduler->env->mutex);
+    LF_PRINT_DEBUG("Scheduler: Locked mutex for environment.");
+  }
   pqueue_insert(scheduler->custom_data->reaction_q, (void*)reaction);
-  // Notify any idle workers of the new reaction.
-  LF_COND_BROADCAST(&scheduler->custom_data->reaction_q_changed);
+  if (!scheduler->custom_data->solo_holds_mutex) {
+    // If this is called from a reaction execution, then the triggered reaction
+    // has one level higher than the current level. No need to notify idle threads.
+    // But in federated execution, it could be called because of message arrival.
+    // Also, in modal models, reset and startup reactions may be triggered.
+#if defined(FEDERATED) || defined(MODAL)
+    reaction_t* triggered_reaction = (reaction_t*)pqueue_peek(scheduler->custom_data->reaction_q);
+    if (LF_LEVEL(triggered_reaction->index) == scheduler->custom_data->current_level) {
+      LF_COND_SIGNAL(&scheduler->custom_data->reaction_q_changed);
+    }
+#endif // FEDERATED || MODAL
 
-  LF_MUTEX_UNLOCK(&scheduler->env->mutex);
+    LF_MUTEX_UNLOCK(&scheduler->env->mutex);
+  }
 }
 #endif // SCHEDULER == SCHED_GEDF_NP
