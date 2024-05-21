@@ -77,23 +77,18 @@ int max_level_allowed_to_advance;
  * and the _fed global variable refers to that instance.
  */
 
-// TODO: DONGHA: Need to change socket_related. socket_TCP_RTI, server_socket, server_port
-federate_instance_t _fed = {
-    // .socket_TCP_RTI = -1,
-    .number_of_inbound_p2p_connections = 0,
-    .inbound_netdriv_listeners = NULL,
-    .number_of_outbound_p2p_connections = 0,
-    .inbound_p2p_handling_thread_id = 0,
-    .server_socket = -1,
-    .server_port = -1,
-    .last_TAG = {.time = NEVER, .microstep = 0u},
-    .is_last_TAG_provisional = false,
-    .has_upstream = false,
-    .has_downstream = false,
-    .received_stop_request_from_rti = false,
-    .last_sent_LTC = {.time = NEVER, .microstep = 0u},
-    .last_sent_NET = {.time = NEVER, .microstep = 0u},
-    .min_delay_from_physical_action_to_federate_output = NEVER};
+federate_instance_t _fed = {.number_of_inbound_p2p_connections = 0,
+                            .inbound_netdriv_listeners = NULL,
+                            .number_of_outbound_p2p_connections = 0,
+                            .inbound_p2p_handling_thread_id = 0,
+                            .last_TAG = {.time = NEVER, .microstep = 0u},
+                            .is_last_TAG_provisional = false,
+                            .has_upstream = false,
+                            .has_downstream = false,
+                            .received_stop_request_from_rti = false,
+                            .last_sent_LTC = {.time = NEVER, .microstep = 0u},
+                            .last_sent_NET = {.time = NEVER, .microstep = 0u},
+                            .min_delay_from_physical_action_to_federate_output = NEVER};
 
 // TODO: DONGHA: Need to change host and port.
 federation_metadata_t federation_metadata = {
@@ -140,7 +135,7 @@ static void send_tag(unsigned char type, tag_t tag) {
 
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   if (_fed.netdrv_to_rti == NULL) {
-    lf_print_warning("Socket is no longer connected. Dropping message.");
+    lf_print_warning("Netdriver is no longer connected. Dropping message.");
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
     return;
   }
@@ -154,8 +149,8 @@ static void send_tag(unsigned char type, tag_t tag) {
 }
 
 /**
- * Return true if either the socket to the RTI is broken or the socket is
- * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
+ * Return true if either the netdriver to the RTI is broken or the netdriver is
+ * alive and the first unread byte on the netdriver's queue is MSG_TYPE_FAILED.
  */
 static bool rti_failed() {
   unsigned char first_byte;
@@ -377,15 +372,15 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 }
 
 /**
- * Close the socket that receives incoming messages from the
+ * Close the netdriver that receives incoming messages from the
  * specified federate ID. This function should be called when a read
- * of incoming socket fails or when an EOF is received.
+ * of incoming netdriver fails or when an EOF is received.
  * It can also be called when the receiving end wants to stop communication,
  * in which case, flag should be 1.
  *
  * @param fed_id The ID of the peer federate sending messages to this
  *  federate.
- * @param flag 0 if an EOF was received, -1 if a socket error occurred, 1 otherwise.
+ * @param flag 0 if an EOF was received, -1 if a netdriver error occurred, 1 otherwise.
  */
 static void close_inbound_netdrv(int fed_id, int flag) {
   LF_MUTEX_LOCK(&netdrv_mutex);
@@ -453,7 +448,7 @@ static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t int
  * Handle a message being received from a remote federate.
  *
  * This function assumes the caller does not hold the mutex lock.
- * @param socket Pointer to the socket to read the message from.
+ * @param netdrv Pointer to the netdrv to read the message from.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure.
  */
@@ -509,9 +504,9 @@ static int handle_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, s
  * will not advance to the tag of the message if it is in the future, or
  * the tag will not advance at all if the tag of the message is
  * now or in the past.
- * @param socket Pointer to the socket to read the message from.
+ * @param netdrv Pointer to the netdrv to read the message from.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
- * @return 0 on successfully reading the message, -1 on failure (e.g. due to socket closed).
+ * @return 0 on successfully reading the message, -1 on failure (e.g. due to netdrv closed).
  */
 static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, ssize_t bytes_read) {
   // Environment is always the one corresponding to the top-level scheduling enclave.
@@ -640,10 +635,10 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
     if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0 && env->execution_started) {
       lf_print_error("Received message too late. Already at stop tag.\n"
                      "    Current tag is " PRINTF_TAG " and intended tag is " PRINTF_TAG ".\n"
-                     "    Discarding message and closing the socket.",
+                     "    Discarding message and closing the netdrv.",
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
-      // Close socket, reading any incoming data and discarding it.
+      // Close netdrv, reading any incoming data and discarding it.
       close_inbound_netdrv(fed_id, 1);
     } else {
       // Need to use intended_tag here, not actual_tag, so that STP violations are detected.
@@ -673,7 +668,7 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
  * This just sets the last known status tag of the port specified
  * in the message.
  *
- * @param socket Pointer to the socket to read the message from
+ * @param buffer
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure to complete the read.
  */
@@ -711,10 +706,9 @@ static int handle_port_absent_message(unsigned char* buffer, int fed_id) {
  * peer federate and calls the appropriate handling function for
  * each message type. If an error occurs or an EOF is received
  * from the peer, then this procedure sets the corresponding
- * socket in _fed.sockets_for_inbound_p2p_connections
+ * netdrv in _fed.netdrv_for_inbound_p2p_connections
  * to -1 and returns, terminating the thread.
  * @param _args The remote federate ID (cast to void*).
- * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
  *  This procedure frees the memory pointed to before returning.
  */
 static void* listen_to_federates(void* _args) {
@@ -733,15 +727,15 @@ static void* listen_to_federates(void* _args) {
 
   // Listen for messages from the federate.
   while (1) {
-    bool socket_closed = false;
+    bool netdrv_closed = false;
     // Read one byte to get the message type.
     LF_PRINT_DEBUG("Waiting for a P2P message on netdrv");
     ssize_t bytes_read = read_from_netdrv_close_on_error(netdrv, buffer, FED_COM_BUFFER_SIZE);
     if (bytes_read <= 0) {
-      // Socket has been closed.
-      lf_print("Socket from federate %d is closed.", fed_id);
+      // netdrv has been closed.
+      lf_print("Netdriver from federate %d is closed.", fed_id);
       // Stop listening to this federate.
-      socket_closed = true;
+      netdrv_closed = true;
       break;
     }
     LF_PRINT_DEBUG("Received a P2P message on netdrv of type %d.", buffer[0]);
@@ -752,27 +746,27 @@ static void* listen_to_federates(void* _args) {
       if (handle_message(netdrv, fed_id, buffer + 1, bytes_read - 1)) {
         // Failed to complete the reading of a message on a physical connection.
         lf_print_warning("Failed to complete reading of message on physical connection.");
-        socket_closed = true;
+        netdrv_closed = true;
       }
       break;
     case MSG_TYPE_P2P_TAGGED_MESSAGE:
       LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
       if (handle_tagged_message(netdrv, fed_id, buffer + 1, bytes_read - 1)) {
         // P2P tagged messages are only used in decentralized coordination, and
-        // it is not a fatal error if the socket is closed before the whole message is read.
+        // it is not a fatal error if the netdriver is closed before the whole message is read.
         // But this thread should exit.
         lf_print_warning("Failed to complete reading of tagged message.");
-        socket_closed = true;
+        netdrv_closed = true;
       }
       break;
     case MSG_TYPE_PORT_ABSENT:
       LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
       if (handle_port_absent_message(buffer + 1, fed_id)) {
         // P2P tagged messages are only used in decentralized coordination, and
-        // it is not a fatal error if the socket is closed before the whole message is read.
+        // it is not a fatal error if the netdriver is closed before the whole message is read.
         // But this thread should exit.
         lf_print_warning("Failed to complete reading of tagged message.");
-        socket_closed = true;
+        netdrv_closed = true;
       }
       break;
     default:
@@ -784,8 +778,8 @@ static void* listen_to_federates(void* _args) {
       tracepoint_federate_from_federate(receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
       break; // while loop
     }
-    if (socket_closed) {
-      // NOTE: For decentralized execution, once this socket is closed, we could
+    if (netdrv_closed) {
+      // NOTE: For decentralized execution, once this netdriver is closed, we could
       // update last known tags of all ports connected to the specified federate to FOREVER_TAG,
       // which would eliminate the need to wait for STAA to assume an input is absent.
       // However, at this time, we don't know which ports correspond to which upstream federates.
@@ -799,12 +793,12 @@ static void* listen_to_federates(void* _args) {
 }
 
 /**
- * Close the socket that sends outgoing messages to the
+ * Close the netdriver that sends outgoing messages to the
  * specified federate ID. This function acquires the lf_outbound_netdrv_mutex mutex lock
  * if _lf_normal_termination is true and otherwise proceeds without the lock.
  * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
- * @param flag 0 if the socket has received EOF, 1 if not, -1 if abnormal termination.
+ * @param flag 0 if the netdriver has received EOF, 1 if not, -1 if abnormal termination.
  */
 // TODO: DONGHA: NEED TO FIX
 static void close_outbound_netdrv(int fed_id, int flag) {
@@ -926,7 +920,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // Send the timestamp marker first.
   send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
 
-  // Read bytes from the socket. We need 9 bytes.
+  // Read bytes from the netdriver. We need 9 bytes.
   // Buffer for message ID plus timestamp.
   size_t buffer_length = 1 + sizeof(instant_t);
   unsigned char buffer[buffer_length];
@@ -1329,7 +1323,7 @@ static void handle_stop_request_message(unsigned char* buffer) {
   // or we have previously sent a stop request to the RTI,
   // then we have already blocked tag advance in enclaves.
   // Do not do this twice. The record of whether the first has occurred
-  // is guarded by the outbound socket mutex.
+  // is guarded by the outbound netdriver mutex.
   // The second is guarded by the global mutex.
   // Note that the RTI should not send stop requests more than once to federates.
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
@@ -1491,7 +1485,7 @@ static void* listen_to_rti_TCP(void* args) {
       break;
     case MSG_TYPE_CLOCK_SYNC_T1:
     case MSG_TYPE_CLOCK_SYNC_T4:
-      lf_print_error("Federate %d received unexpected clock sync message from RTI on TCP socket.", _lf_my_fed_id);
+      lf_print_error("Federate %d received unexpected clock sync message from RTI on netdriver.", _lf_my_fed_id);
       break;
     default:
       lf_print_error_and_exit("Received from RTI an unrecognized TCP message type: %hhx.", buffer[0]);
@@ -1556,12 +1550,13 @@ static bool bounded_NET(tag_t* tag) {
 // An empty version of this function is code generated for unfederated execution.
 
 /**
- * Close sockets used to communicate with other federates, if they are open,
+ * Close netdrivers used to communicate with other federates, if they are open,
  * and send a MSG_TYPE_RESIGN message to the RTI. This implements the function
  * defined in reactor.h. For unfederated execution, the code generator
  * generates an empty implementation.
  * @param env The environment of the federate
  */
+//TODO: Fix here.
 void lf_terminate_execution(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
 
@@ -1577,29 +1572,29 @@ void lf_terminate_execution(environment_t* env) {
     }
   }
 
-  LF_PRINT_DEBUG("Closing incoming P2P sockets.");
-  // Close any incoming P2P sockets that are still open.
+  LF_PRINT_DEBUG("Closing incoming P2P netdrivers.");
+  // Close any incoming P2P netdrivers that are still open.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
     close_inbound_netdrv(i, 1);
-    // Ignore errors. Mark the socket closed.
+    // Ignore errors. Mark the netdriver closed.
     _fed.netdrv_for_inbound_p2p_connections[i] = NULL;
   }
 
   // Check for all outgoing physical connections in
-  // _fed.sockets_for_outbound_p2p_connections and
+  // _fed.netdrv_for_outbound_p2p_connections and
   // if the socket ID is not -1, the connection is still open.
-  // Send an EOF by closing the socket here.
+  // Send an EOF by closing the netdriver here.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
 
     // Close outbound connections, in case they have not closed themselves.
     // This will result in EOF being sent to the remote federate, except for
-    // abnormal termination, in which case it will just close the socket.
+    // abnormal termination, in which case it will just close the netdriver.
     int flag = _lf_normal_termination ? 1 : -1;
     close_outbound_netdrv(i, flag);
   }
 
-  LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
-  // Wait for each inbound socket listener thread to close.
+  LF_PRINT_DEBUG("Waiting for inbound p2p netdrviers listener threads.");
+  // Wait for each inbound netdriver listener thread to close.
   if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_netdriv_listeners != NULL) {
     LF_PRINT_LOG("Waiting for %zu threads listening for incoming messages to exit.",
                  _fed.number_of_inbound_p2p_connections);
@@ -1609,7 +1604,7 @@ void lf_terminate_execution(environment_t* env) {
     }
   }
 
-  LF_PRINT_DEBUG("Waiting for RTI's socket listener threads.");
+  LF_PRINT_DEBUG("Waiting for RTI's netdriver listener threads.");
   // Wait for the thread listening for messages from the RTI to close.
   lf_thread_join(_fed.RTI_netdrv_listener, NULL);
 
@@ -1633,13 +1628,13 @@ void send_address_advertisement_to_RTI(netdrv_t* fed_netdrv, netdrv_t* rti_netdr
   buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
   encode_int32(get_my_port(fed_netdrv), &(buffer[1]));
 
-  // No need for a mutex because we have the only handle on this socket.
+  // No need for a mutex because we have the only handle on this netdriver.
   write_to_netdrv_fail_on_error(rti_netdrv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
                                 "Failed to send address advertisement.");
 
   LF_PRINT_DEBUG("Sent port %d to the RTI.", get_my_port(fed_netdrv));
 #elif defined(COMM_TYPE_MQTT)
-// Do not send port.
+  // Do not send port.
   if (fed_netdrv == NULL) {
   } // JUST TO PASS COMPILER.
   if (rti_netdrv == NULL) {
@@ -1844,7 +1839,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_FED_ID, _lf_my_fed_id, NULL);
 
-    // No need for a mutex here because no other threads are writing to this socket.
+    // No need for a mutex here because no other threads are writing to this netdriver.
     if (write_to_netdrv(_fed.netdrv_to_rti, 2 + sizeof(uint16_t) + federation_id_length, buffer) <= 0) {
       continue; // Try again, possibly on a new port.
     }
@@ -1904,16 +1899,10 @@ void lf_connect_to_rti(const char* hostname, int port) {
 }
 
 // TODO: DONGHA: NEED to make specified port work.
+// specified_port is 0 on default.
 void lf_create_server(int specified_port) {
-  assert(specified_port <= UINT16_MAX && specified_port >= 0);
-  uint16_t port = (uint16_t)specified_port;
-  LF_PRINT_LOG("Creating a socket server on port %d.", port);
-
   netdrv_t* my_netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
   create_listener(my_netdrv, FED, specified_port); // 1 for FED
-
-  // TODO: NEED to fix.
-  LF_PRINT_LOG("Server for communicating with other federates started using port %d.", get_my_port(my_netdrv));
 
   // Set the global server netdriver.
   _fed.my_netdrv = my_netdrv;
@@ -1978,7 +1967,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     unsigned char buffer[256]; // TODO: NEED TO CHECK. Doesn't allow super long federation IDs.
     ssize_t bytes_read = read_from_netdrv(client_fed_netdrv, (unsigned char*)&buffer, header_length);
     if (bytes_read <= 0 || buffer[0] != MSG_TYPE_P2P_SENDING_FED_ID) {
-      lf_print_warning("Federate received invalid first message on P2P socket. Closing socket.");
+      lf_print_warning("Federate received invalid first message on P2P netdriver. Closing netdriver.");
       if (bytes_read > 0) {
         // Wrong message received.
         unsigned char response[2];
@@ -1999,7 +1988,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // bytes_read = read_from_netdrv(client_fed_netdrv, (unsigned char*)remote_federation_id, federation_id_length);
     if (bytes_read <= 0 || (strncmp(federation_metadata.federation_id, (const char*)buffer + header_length,
                                     strnlen(federation_metadata.federation_id, 255)) != 0)) {
-      lf_print_warning("Received invalid federation ID. Closing socket.");
+      lf_print_warning("Received invalid federation ID. Closing netdriver.");
       if (bytes_read > 0) {
         unsigned char response[2];
         response[0] = MSG_TYPE_REJECT;
@@ -2021,10 +2010,10 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     tracepoint_federate_to_federate(receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
 
     // Once we record the socket_id here, all future calls to close() on
-    // the socket should be done while holding the netdrv_mutex, and this array
+    // the netdriver should be done while holding the netdrv_mutex, and this array
     // element should be reset to -1 during that critical section.
     // Otherwise, there can be race condition where, during termination,
-    // two threads attempt to simultaneously close the socket.
+    // two threads attempt to simultaneously close the netdriver.
     _fed.netdrv_for_inbound_p2p_connections[remote_fed_id] = client_fed_netdrv;
 
     // Send an MSG_TYPE_ACK message.
@@ -2373,7 +2362,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
                  stop_tag.microstep);
 
     if (_fed.netdrv_to_rti == NULL) {
-      lf_print_warning("Socket is no longer connected. Dropping message.");
+      lf_print_warning("Netdriver is no longer connected. Dropping message.");
       LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
       return -1;
     }
@@ -2444,7 +2433,6 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
 
   netdrv_t* netdrv;
-  // int* socket;
   if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
     netdrv = _fed.netdrv_for_outbound_p2p_connections[federate];
     tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);

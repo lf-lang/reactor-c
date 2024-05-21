@@ -42,9 +42,6 @@
 /** Time allowed for federates to reply to stop request. */
 #define MAX_TIME_FOR_REPLY_TO_STOP_REQUEST SEC(30)
 
-// TODO: Need to be fixed later.
-// #include "lf_socket_support.h"
-
 /////////////////////////////////////////////
 //// Data structures
 
@@ -68,13 +65,6 @@ typedef struct federate_info_t {
   pqueue_tag_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
                                          // yet processed. This record is ordered based on the time
                                          // value of each message for a more efficient access.
-  // char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
-  // int32_t server_port;                   // port number of the socket server of the federate
-  //                                        // if it has any incoming direct connections from other federates.
-  //                                        // The port number will be -1 if there is no server or if the
-  //                                        // RTI has not been informed of the port number.
-  // struct in_addr server_ip_addr;         // Information about the IP address of the socket
-  //                                        // server of the federate.
   netdrv_t* fed_netdrv; // The netdriver that the RTI handling each federate.
 } federate_info_t;
 
@@ -109,7 +99,7 @@ typedef struct rti_remote_t {
    * This gets set to true exactly once before the program exits.
    * It is marked volatile because the write is not guarded by a mutex.
    * The main thread makes this true, then calls shutdown and close on
-   * the socket, which will cause accept() to return with an error code
+   * the netdriver, which will cause accept() to return with an error code
    * in respond_to_erroneous_connections().
    */
   volatile bool all_federates_exited;
@@ -124,7 +114,7 @@ typedef struct rti_remote_t {
   netdrv_t* rti_netdrv;
 
   /************* TCP server information *************/
-  /** The desired port specified by the user on the command line. */
+  /** The desired port specified by the user on the command line. This only works for TCP connections.*/
   uint16_t user_specified_port;
 
   /************* Clock synchronization server information *************/
@@ -265,7 +255,7 @@ void handle_stop_request_reply(federate_info_t* fed, unsigned char* buffer);
  * Handle address query messages.
  * This function reads the body of a MSG_TYPE_ADDRESS_QUERY (@see net_common.h) message
  * which is the requested destination federate ID and replies with the stored
- * port value for the socket server of that federate. The port values
+ * port value for the netdriver server of that federate. The port values
  * are initialized to -1. If no MSG_TYPE_ADDRESS_ADVERTISEMENT message has been received from
  * the destination federate, the RTI will simply reply with -1 for the port.
  * The sending federate is responsible for checking back with the RTI after a
@@ -281,7 +271,7 @@ void handle_address_query(uint16_t fed_id, unsigned char* buffer);
  * field of the _RTI.federates[federate_id] array of structs.
  *
  * The server_hostname and server_ip_addr fields are assigned
- * in lf_connect_to_federates() upon accepting the socket
+ * in lf_connect_to_federates() upon accepting the netdriver
  * from the remote federate.
  *
  * This function assumes the caller does not hold the mutex.
@@ -340,13 +330,13 @@ void* clock_synchronization_thread(void* noargs);
 /**
  * Thread handling TCP communication with a federate.
  * @param fed A pointer to the federate's struct that has the
- *  socket descriptor for the federate.
+ *  netdriver for the federate.
  */
 void* federate_info_thread_TCP(void* fed);
 
 /**
- * Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
- * @param socket_id Pointer to the socket ID.
+ * Send a MSG_TYPE_REJECT message to the specified netdriver and close the netdriver.
+ * @param netdrv Pointer to the netdriver.
  * @param error_code An error code.
  */
 // TODO: Update comments.
@@ -356,7 +346,7 @@ void send_reject(netdrv_t* netdrv, unsigned char error_code);
  * Wait for one incoming connection request from each federate,
  * and upon receiving it, create a thread to communicate with
  * that federate. Return when all federates have connected.
- * @param socket_descriptor The socket on which to accept connections.
+ * @param rti_netdrv The netdriver on which to accept connections.
  */
 // TODO: Update comments.
 void lf_connect_to_federates(netdrv_t* rti_netdrv);
@@ -375,17 +365,17 @@ void* respond_to_erroneous_connections(void* nothing);
 void initialize_federate(federate_info_t* fed, uint16_t id);
 
 /**
- * Start the socket server for the runtime infrastructure (RTI).
- * @param port The port on which to listen for socket connections, or
+ * Start the netdriver server for the runtime infrastructure (RTI).
+ * @param user_specified_port The port on which to listen for netdriver connections, or
  *  0 to use the default port range.
  */
-int start_rti_server(uint16_t port);
+int start_rti_server(uint16_t user_specified_port);
 
-// /**
-//  * Start the runtime infrastructure (RTI) interaction with the federates
-//  * and wait for the federates to exit.
-//  * @param netdrv The netdrv returned by start_rti_server().
-//  */
+/**
+ * Start the runtime infrastructure (RTI) interaction with the federates
+ * and wait for the federates to exit.
+ * @param netdrv The netdrv returned by start_rti_server().
+ */
 void wait_for_federates(netdrv_t* netdrv);
 
 /**

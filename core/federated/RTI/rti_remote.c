@@ -1432,19 +1432,18 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   fed->in_transit_message_tags = pqueue_tag_init(10);
 }
 
-int start_rti_server(uint16_t port) {
-  int rc;
+int start_rti_server(uint16_t user_specified_port) {
   _lf_initialize_clock();
   // Initialize RTI's netdriver. The ID is -1 for the RTI.
   rti_remote->rti_netdrv = initialize_netdrv(-1, rti_remote->federation_id);
-  // Create the RTI's netdriver.
-  rc = create_listener(rti_remote->rti_netdrv, RTI, port); // 0 for RTI
+  // Create the RTI's netdriver. The user_specified_port will be 0 when not specified.
+  create_listener(rti_remote->rti_netdrv, RTI, user_specified_port); // 0 for RTI
   lf_print("RTI: Listening for federates.");
   // Create the clocksync's netdriver.
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
     rti_remote->clock_sync_socket = create_clock_sync_server(&rti_remote->clock_sync_port);
   }
-  return rc;
+  return 1;
 }
 
 void wait_for_federates(netdrv_t* netdrv) {
