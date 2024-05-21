@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "util.h"
 #include "net_common.h"
@@ -87,10 +88,15 @@ int create_real_time_tcp_socket_errexit() {
   return sock;
 }
 
+// The port will be 0, for both RTI and federate server when nothing is specified.
+// If the RTI port is 0 (not specified), it will use RTI_DEFAULT_PORT as default.
+// If the federate server's port is 0 (not specified), the OS will assign the port.
 int create_TCP_server(socket_priv_t* priv, int server_type, uint16_t port) {
-  // Federate always has a specified port. The RTI can get a specified port by user input.
+  assert(port <= UINT16_MAX && port >= 0);
   uint16_t specified_port = port;
-  if (specified_port == 0 && server_type == 0) { // 0 for RTI
+
+  // When server type is RTI, and port is not specified, set port as RTI_DEFAULT_PORT.
+  if (server_type == 0 && specified_port == 0) { // 0 for RTI
     port = RTI_DEFAULT_PORT;
   }
 
@@ -108,24 +114,30 @@ int create_TCP_server(socket_priv_t* priv, int server_type, uint16_t port) {
   server_fd.sin_port = htons(port);
 
   int result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  // Try repeatedly to bind to a port.
-  int count = 1;
 
+  // If bind failed, try repeatedly to bind to a port.
+  int count = 1;
   while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
+    // If port is not specified, we try the incremented port number.
     if (specified_port == 0) {
       lf_print_warning("Failed to get port %d.", port);
       port++;
-      if (port >= RTI_DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
+      // If the RTI server's port is incremented until the upper bound, we retry the RTI_DEFAULT_PORT.
+      if (server_type == 0 && port >= RTI_DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) {
         port = RTI_DEFAULT_PORT;
+      }
       lf_print_warning("Try again with port %d.", port);
       server_fd.sin_port = htons(port);
       // Do not sleep.
-    } else {
-      lf_print("RTI failed to get port %d. Will try again.", port);
+    }
+    // If the port is specified, we do not increment and try again after a PORT_BIND_RETRY_INTERVAL.
+    else {
+      lf_print("Failed to get port %d. Will try again.", port);
       lf_sleep(PORT_BIND_RETRY_INTERVAL);
     }
     result = bind(priv->socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
   }
+
   if (result != 0) {
     lf_print_error_and_exit("Failed to bind the socket. Port %d is not available. ", port);
   }
@@ -135,8 +147,8 @@ int create_TCP_server(socket_priv_t* priv, int server_type, uint16_t port) {
   listen(priv->socket_descriptor, 128);
 
   // Set the port into priv->port.
-  if (specified_port == 0 && server_type == 1) { // 1 for FED
-    // Need to retrieve the port number assigned by the OS.
+  // If the federate server has no specified port, we need to retrieve the port number assigned by the OS.
+  if (server_type == 1 && specified_port == 0) { // 1 for FED
     struct sockaddr_in assigned;
     socklen_t addr_len = sizeof(assigned);
     if (getsockname(priv->socket_descriptor, (struct sockaddr*)&assigned, &addr_len) < 0) {
@@ -146,6 +158,8 @@ int create_TCP_server(socket_priv_t* priv, int server_type, uint16_t port) {
   } else {
     priv->port = port;
   }
+
+  LF_PRINT_LOG("Server for communicating with other federates started using port %d.", priv->port);
   return 1;
 }
 
@@ -250,7 +264,8 @@ int connect_to_socket(int sock, char* hostname, int port, uint16_t user_specifie
       if (user_specified_port == 0) {
         used_port++;
       }
-      lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds.\n", CONNECT_RETRY_INTERVAL);
+      lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds.\n",
+                       CONNECT_RETRY_INTERVAL);
       continue;
     } else {
       break;
