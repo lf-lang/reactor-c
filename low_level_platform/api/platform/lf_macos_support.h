@@ -39,6 +39,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if !defined LF_SINGLE_THREADED
 #include "lf_POSIX_threads_support.h"
+
+/* The constants used for I-controller for lag regulation under reactor_threaded.c wait_until function.
+The lag gets multiplied by KI_MUL and divided by KI_DIV before incorporated into control value.
+Currently no lag control support in this platform. */
+#define KI_DIV 1
+#define KI_MUL 0
+
 #endif
 
 #endif // LF_MACOS_SUPPORT_H

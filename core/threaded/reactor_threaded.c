@@ -197,7 +197,8 @@ void lf_set_present(lf_port_base_t* port) {
 /**
  * Wait until physical time matches or exceeds the specified logical time,
  * unless -fast is given. For decentralized coordination, this function will
- * add the STA offset to the wait time.
+ * add the STA offset to the wait time. For lag control, this function will implement
+ * an I-controller to regulate the lag introduced by the underlying sleep function.
  *
  * If an event is put on the event queue during the wait, then the wait is
  * interrupted and this function returns false. It also returns false if the
@@ -222,6 +223,10 @@ void lf_set_present(lf_port_base_t* port) {
  */
 bool wait_until(instant_t logical_time, lf_cond_t* condition) {
   LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
+  // Control value for the i-controller
+  static interval_t error_control = NSEC(0);
+  // Do not incorporate the first lag measurement. It's an outlier due to initilizations
+  static int flag = false;
   interval_t wait_until_time = logical_time;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
   // Apply the STA to the logical time
@@ -234,11 +239,19 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
   }
 #endif
   if (!fast) {
-    // Check whether we actually need to wait, or if we have already passed the timepoint.
-    interval_t wait_duration = wait_until_time - lf_time_physical();
-    if (wait_duration < MIN_SLEEP_DURATION) {
-      LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION " PRINTF_TIME ". Skipping wait.",
-                     wait_duration, MIN_SLEEP_DURATION);
+    error_control = LF_MAX(error_control, NSEC(0));
+    // Subtract the control value from the requested wait_until_time
+    interval_t wait_until_time_with_adjustment = wait_until_time - error_control;
+    instant_t now = lf_time_physical();
+
+    // If the requested time is already passed, return
+    // If the adjusted wait time is already passed, but the requested wait time
+    // didn't come yet, then adjust the control value and busy wait until the requested time.
+    if (wait_until_time < now) {
+      return true;
+    } else if (wait_until_time_with_adjustment < now && wait_until_time > now) {
+      while (wait_until_time > lf_time_physical())
+        ;
       return true;
     }
 
@@ -247,7 +260,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
     // returns 0 if it is awakened before the timeout. Hence, we want to run
     // it repeatedly until either it returns non-zero or the current
     // physical time matches or exceeds the logical time.
-    if (lf_clock_cond_timedwait(condition, wait_until_time) != LF_TIMEOUT) {
+    if (lf_clock_cond_timedwait(condition, wait_until_time_with_adjustment) != LF_TIMEOUT) {
       LF_PRINT_DEBUG("-------- wait_until interrupted before timeout.");
 
       // Wait did not time out, which means that there
@@ -259,8 +272,24 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
       return false;
     } else {
       // Reached timeout.
-      LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", wait_duration);
-      return true;
+      LF_PRINT_DEBUG("-------- Returned from wait, having waited until " PRINTF_TIME " ns.", wait_until_time);
+
+      // Calculate the lag and update the control value
+      instant_t lag = lf_time_physical() - wait_until_time;
+      if (flag && lag <= _min_timer_period) {
+        error_control = error_control + ((lag * KI_MUL) / KI_DIV);
+      } else {
+        flag = true;
+      }
+
+      // Check if the requested time is passed, if not busy wait
+      if (lf_time_physical() > wait_until_time) {
+        return true;
+      } else {
+        while (wait_until_time > lf_time_physical())
+          ;
+        return true;
+      }
     }
   }
   return true;
