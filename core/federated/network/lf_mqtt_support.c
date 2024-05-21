@@ -130,22 +130,22 @@ netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
   instant_t start_connect = lf_time_physical();
   int rc;
   unsigned char buffer[1 + sizeof(uint16_t)];
-  uint16_t fed_id = 1000; //TODO: FIX.
+  uint16_t fed_id = 1000; // TODO: FIX.
   char* topic_to_subscribe = NULL;
+  // Step1: The listener first waits for a MSG_TYPE_MQTT_JOIN message, through the topic federationID_listenerID.
+
+  read_from_netdrv_fail_on_error(listener_netdrv, buffer, 1 + sizeof(uint16_t), NULL, "MQTT receive failed.");
+  if (buffer[0] != MSG_TYPE_MQTT_JOIN) {
+    lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_JOIN.");
+  }
+  fed_id = extract_uint16(buffer + 1);
+  LF_PRINT_LOG("Received MSG_TYPE_MQTT_JOIN message from federate %d.", fed_id);
+
   while (1) {
     if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
       lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
       break;
     }
-    // Step1: The listener first waits for a MSG_TYPE_MQTT_JOIN message, through the topic federationID_listenerID.
-
-    read_from_netdrv_fail_on_error(listener_netdrv, buffer, 1 + sizeof(uint16_t), NULL, "MQTT receive failed.");
-    if (buffer[0] != MSG_TYPE_MQTT_JOIN) {
-      lf_print_error_and_exit("Wrong message type... Expected MSG_TYPE_MQTT_JOIN.");
-    }
-    fed_id = extract_uint16(buffer + 1);
-    LF_PRINT_LOG("Received MSG_TYPE_MQTT_JOIN message from federate %d.", fed_id);
-
     // The conncetor netdriver connects to the broker.
     connector_nedrv->my_federate_id = (int)fed_id;
     LF_PRINT_DEBUG("Setting up MQTTServer_id for federate %d.", fed_id);
@@ -169,6 +169,7 @@ netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
     LF_PRINT_DEBUG("Connecting MQTTClient for federate %d.", fed_id);
     if ((rc = MQTT_connect_with_retry(connector_priv->client, &connector_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
       MQTTClient_destroy(&connector_priv->client);
+      free(topic_to_subscribe);
       lf_print_error("Failed to connect, return code %d\n", rc);
       continue;
     }
