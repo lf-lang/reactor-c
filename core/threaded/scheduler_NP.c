@@ -130,7 +130,7 @@ static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
  * @brief Signal all worker threads that it is time to stop.
  *
  */
-void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
+static void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
   scheduler->should_stop = true;
   lf_semaphore_release(scheduler->semaphore, (scheduler->number_of_workers - 1));
 }
@@ -143,7 +143,7 @@ void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
  *
  * This function assumes the caller does not hold the 'mutex' lock.
  */
-void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
+static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
   // Reset the index
   environment_t* env = scheduler->env;
   scheduler->indexes[scheduler->next_reaction_level - 1] = 0;

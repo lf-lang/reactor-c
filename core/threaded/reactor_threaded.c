@@ -862,7 +862,7 @@ void try_advance_level(environment_t* env, volatile size_t* next_reaction_level)
 
 /**
  * The main looping logic of each LF worker thread.
- * This function assumes the caller holds the mutex lock.
+ * This function assumes the caller does not hold the mutex lock on the environment.
  *
  * @param env Environment within which we are executing.
  * @param worker_number The number assigned to this worker thread
