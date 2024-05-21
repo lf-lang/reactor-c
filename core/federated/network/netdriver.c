@@ -33,6 +33,7 @@ int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
     // Netdrv has probably been closed from the other side.
     // Shut down and close the netdrv from this side.
     close_netdrv(drv);
+    return -1;
   }
   return bytes_written;
 }

@@ -628,7 +628,8 @@ void handle_timestamp(federate_info_t* my_fed, unsigned char* buffer) {
     tracepoint_rti_from_federate(receive_TIMESTAMP, my_fed->enclave.id, &tag);
   }
   LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ".", timestamp);
-  LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ". fro federate %d", timestamp, my_fed->fed_netdrv->my_federate_id);
+  LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ". fro federate %d", timestamp,
+                 my_fed->fed_netdrv->my_federate_id);
 
   LF_MUTEX_LOCK(&rti_mutex);
   rti_remote->num_feds_proposed_start++;
@@ -883,23 +884,6 @@ static void handle_federate_resign(federate_info_t* my_fed) {
   // Indicate that there will no further events from this federate.
   my_fed->enclave.next_event = FOREVER_TAG;
 
-  // TODO: Needs discussion.
-  // // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-  // // the close should happen when receiving a 0 length message from the other end.
-  // // Here, we just signal the other side that no further writes to the socket are
-  // // forthcoming, which should result in the other end getting a zero-length reception.
-  // shutdown(my_fed->socket, SHUT_WR);
-
-  // // Wait for the federate to send an EOF or a socket error to occur.
-  // // Discard any incoming bytes. Normally, this read should return 0 because
-  // // the federate is resigning and should itself invoke shutdown.
-  // unsigned char buffer[10];
-  // while (read(my_fed->socket, buffer, 10) > 0)
-  ;
-
-  // // We can now safely close the socket.
-  // close(my_fed->socket); //  from unistd.h
-
   close_netdrv(my_fed->fed_netdrv);
 
   // Check downstream federates to see whether they should now be granted a TAG.
@@ -1090,7 +1074,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* netdrv) {
     }
   }
   federate_info_t* fed = GET_FED_INFO(fed_id);
-  netdrv->my_federate_id = (uint16_t) fed_id;
+  netdrv->my_federate_id = (uint16_t)fed_id;
   fed->fed_netdrv = netdrv;
 
 // TODO: Make this work for only TCP.
@@ -1518,10 +1502,9 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->base.tracing_enabled = false;
   rti_remote->stop_in_progress = false;
 
-// #ifdef OPENSSL_REQUIRED
-//   OPENSSL_init_crypto(OPENSSL_INIT_NO_ATEXIT, NULL);
-// #endif
-
+  // #ifdef OPENSSL_REQUIRED
+  //   OPENSSL_init_crypto(OPENSSL_INIT_NO_ATEXIT, NULL);
+  // #endif
 }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
