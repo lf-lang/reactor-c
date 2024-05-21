@@ -383,9 +383,10 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   int topicLen;
   MQTTClient_message* message = NULL;
   int rc;
+  int bytes_read;
   LF_PRINT_LOG("RECEIVING message from federateID %d", drv->my_federate_id);
 
-  rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 1000000);
+  rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 10000);
   if (rc != MQTTCLIENT_SUCCESS) {
     lf_print_error("Failed to receive message, return code %d.", rc);
     if (topicName) {
@@ -420,6 +421,41 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
     }
     return bytes_read;
   }
+  instant_t start_receive = lf_time_physical();
+  while (1) {
+    if (CHECK_TIMEOUT(start_receive, CONNECT_TIMEOUT)) {
+      lf_print_error("Failed to receive with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
+      bytes_read = -1;
+      break;
+    }
+    rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 1000);
+    if (rc != MQTTCLIENT_SUCCESS) {
+      lf_print_error("Failed to receive message, return code %d.", rc);
+      continue;
+    } else if (message == NULL) {
+      // This means the call succeeded but no message was received within the timeout
+      lf_print_log("No message received within the MQTTClient_receive() timeout period.");
+      continue;
+    } else {
+      // Successfully received a message
+      lf_print_log("Successfully received message, return code %d.", rc);
+      memcpy(buffer, (unsigned char*)message->payload, message->payloadlen);
+      bytes_read = message->payloadlen;
+      LF_PRINT_LOG("RECEIVED message from federateID %d", drv->my_federate_id);
+      if (buffer[0] == MQTT_RESIGNED) {
+        LF_PRINT_LOG("Received MQTT_RESIGNED message from federateID %d", drv->my_federate_id);
+        bytes_read = 0;
+      }
+      break;
+    }
+  }
+  if (topicName) {
+    MQTTClient_free(topicName);
+  }
+  if (message) {
+    MQTTClient_freeMessage(&message);
+  }
+  return bytes_read;
 }
 
 char* get_host_name(netdrv_t* drv) {
