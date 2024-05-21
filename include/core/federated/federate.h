@@ -37,7 +37,7 @@ typedef struct federate_instance_t {
    * This is set by lf_connect_to_rti(), which must be called before other
    * functions that communicate with the rti are called.
    */
-  int netdrv_to_rti;
+  netdrv_t* netdrv_to_rti;
 
   /**
    * Thread listening for incoming messages from the RTI.
