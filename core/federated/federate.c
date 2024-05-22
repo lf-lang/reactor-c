@@ -382,6 +382,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  *  federate.
  * @param flag 0 if an EOF was received, -1 if a netdriver error occurred, 1 otherwise.
  */
+//TODO: need discussion here.
 static void close_inbound_netdrv(int fed_id, int flag) {
   LF_MUTEX_LOCK(&netdrv_mutex);
   if (_fed.netdrv_for_inbound_p2p_connections[fed_id] != NULL) {
@@ -798,12 +799,12 @@ static void* listen_to_federates(void* _args) {
  * if _lf_normal_termination is true and otherwise proceeds without the lock.
  * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
- * @param flag 0 if the netdriver has received EOF, 1 if not, -1 if abnormal termination.
+ * @param flag 1 if normal termination, -1 if abnormal termination.
  */
-// TODO: DONGHA: NEED TO FIX
+// TODO: DONGHA: Need discussion here.
 static void close_outbound_netdrv(int fed_id, int flag) {
   assert(fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
-  if (_lf_normal_termination) {
+  if (flag) {
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   }
   if (_fed.netdrv_for_outbound_p2p_connections[fed_id] != NULL) {
@@ -825,7 +826,7 @@ static void close_outbound_netdrv(int fed_id, int flag) {
     close_netdrv(_fed.netdrv_for_outbound_p2p_connections[fed_id]);
     _fed.netdrv_for_outbound_p2p_connections[fed_id] = NULL;
   }
-  if (_lf_normal_termination) {
+  if (flag) {
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   }
 }
@@ -1418,7 +1419,7 @@ static void handle_rti_failed_message(void) { exit(1); }
  * When messages arrive, this calls the appropriate handler.
  * @param args Ignored
  */
-static void* listen_to_rti_TCP(void* args) {
+static void* listen_to_rti(void* args) {
   (void)args;
   initialize_lf_thread_id();
   // Buffer for incoming messages.
@@ -2496,7 +2497,7 @@ void lf_synchronize_with_other_federates(void) {
   // @note Up until this point, the federate has been listening for messages
   //  from the RTI in a sequential manner in the main thread. From now on, a
   //  separate thread is created to allow for asynchronous communication.
-  lf_thread_create(&_fed.RTI_netdrv_listener, listen_to_rti_TCP, NULL);
+  lf_thread_create(&_fed.RTI_netdrv_listener, listen_to_rti, NULL);
   lf_thread_t thread_id;
   if (create_clock_sync_thread(&thread_id)) {
     lf_print_warning("Failed to create thread to handle clock synchronization.");

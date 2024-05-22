@@ -385,42 +385,6 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   int rc;
   int bytes_read;
   LF_PRINT_LOG("RECEIVING message from federateID %d", drv->my_federate_id);
-
-  rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 10000);
-  if (rc != MQTTCLIENT_SUCCESS) {
-    lf_print_error("Failed to receive message, return code %d.", rc);
-    if (topicName) {
-      MQTTClient_free(topicName);
-    }
-    if (message) {
-      MQTTClient_freeMessage(&message);
-    }
-    return -1;
-  } else if (message == NULL) {
-    // This means the call succeeded but no message was received within the timeout
-    lf_print_log("No message received within the timeout period.");
-    if (topicName) {
-      MQTTClient_free(topicName);
-    }
-    return -1;
-  } else {
-    // Successfully received a message
-    lf_print_log("Successfully received message, return code %d.", rc);
-    memcpy(buffer, (unsigned char*)message->payload, message->payloadlen);
-    int bytes_read = message->payloadlen;
-    if (topicName) {
-      MQTTClient_free(topicName);
-    }
-    if (message) {
-      MQTTClient_freeMessage(&message);
-    }
-    LF_PRINT_LOG("RECEIVED message from federateID %d", drv->my_federate_id);
-    if (buffer[0] == MQTT_RESIGNED) {
-      LF_PRINT_LOG("Received MQTT_RESIGNED message from federateID %d", drv->my_federate_id);
-      return 0;
-    }
-    return bytes_read;
-  }
   instant_t start_receive = lf_time_physical();
   while (1) {
     if (CHECK_TIMEOUT(start_receive, CONNECT_TIMEOUT)) {

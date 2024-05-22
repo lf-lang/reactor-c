@@ -73,7 +73,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     tracepoint_rti_to_federate(send_TAG, e->id, &tag);
   }
   // This function is called in notify_advance_grant_if_safe(), which is a long
-  // function. During this call, the socket might close, causing the following write_to_socket
+  // function. During this call, the netdriver might close, causing the following write_to_netdrv
   // to fail. Consider a failure here a soft failure and update the federate's status.
   if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer) <= 0) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
@@ -106,7 +106,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     tracepoint_rti_to_federate(send_PTAG, e->id, &tag);
   }
   // This function is called in notify_advance_grant_if_safe(), which is a long
-  // function. During this call, the socket might close, causing the following write_to_socket
+  // function. During this call, the netdriver might close, causing the following write_to_netdrv
   // to fail. Consider a failure here a soft failure and update the federate's status.
   if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer) <= 0) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
@@ -165,7 +165,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
   }
 
   // Need to acquire the mutex lock to ensure that the thread handling
-  // messages coming from the socket connected to the destination does not
+  // messages coming from the netdriver connected to the destination does not
   // issue a TAG before this message has been forwarded.
   LF_MUTEX_LOCK(&rti_mutex);
 
@@ -247,7 +247,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   }
 
   // Need to acquire the mutex lock to ensure that the thread handling
-  // messages coming from the socket connected to the destination does not
+  // messages coming from the netdriver connected to the destination does not
   // issue a TAG before this message has been forwarded.
   LF_MUTEX_LOCK(&rti_mutex);
 
@@ -862,13 +862,13 @@ static void handle_federate_failed(federate_info_t* my_fed) {
  *
  * This function assumes the caller does not hold the mutex.
  *
+ * //TODO: Change comments.
  * @note At this point, the RTI might have outgoing messages to the federate. This
  * function thus first performs a shutdown on the socket, which sends an EOF. It then
  * waits for the remote socket to be closed before closing the socket itself.
  *
  * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
  */
-// TODO: NEEDS TO BE CHANGED.
 static void handle_federate_resign(federate_info_t* my_fed) {
   // Nothing more to do. Close the socket and exit.
   LF_MUTEX_LOCK(&rti_mutex);
@@ -910,8 +910,8 @@ void* federate_info_thread_TCP(void* fed) {
     // Read no more than one byte to get the message type.
     ssize_t bytes_read = read_from_netdrv(my_fed->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
     if (bytes_read <= 0) {
-      // Socket is closed
-      lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
+      // Netdriver is closed
+      lf_print_warning("RTI: Netdriver to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
@@ -931,7 +931,7 @@ void* federate_info_thread_TCP(void* fed) {
       handle_timed_message(my_fed, buffer, FED_COM_BUFFER_SIZE, bytes_read);
       break;
     case MSG_TYPE_RESIGN:
-      // handle_federate_resign(my_fed);
+      handle_federate_resign(my_fed);
       return NULL;
     case MSG_TYPE_NEXT_EVENT_TAG:
       handle_next_event_tag(my_fed, buffer + 1);
@@ -951,7 +951,7 @@ void* federate_info_thread_TCP(void* fed) {
       handle_federate_failed(my_fed);
       return NULL;
     default:
-      lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->enclave.id,
+      lf_print_error("RTI received from federate %d an unrecognized message type: %u.", my_fed->enclave.id,
                      buffer[0]);
       if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(receive_UNIDENTIFIED, my_fed->enclave.id, NULL);
@@ -959,8 +959,8 @@ void* federate_info_thread_TCP(void* fed) {
     }
   }
 
-  // Nothing more to do. Close the socket and exit.
-  // Prevent multiple threads from closing the same socket at the same time.
+  // Nothing more to do. Close the netdriver and exit.
+  // Prevent multiple threads from closing the same netdriver at the same time.
   LF_MUTEX_LOCK(&rti_mutex);
   close_netdrv(my_fed->fed_netdrv);
   LF_MUTEX_UNLOCK(&rti_mutex);
@@ -975,7 +975,7 @@ void send_reject(netdrv_t* netdrv, unsigned char error_code) {
   LF_MUTEX_LOCK(&rti_mutex);
   // NOTE: Ignore errors on this response.
   if (write_to_netdrv(netdrv, 2, response) <= 0) {
-    lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
+    lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the netdriver.");
   }
   // Shutdown and close the netdrv.
   close_netdrv(netdrv);
@@ -987,8 +987,7 @@ void send_reject(netdrv_t* netdrv, unsigned char error_code) {
  * a federate ID and a federation ID. If the federation ID
  * matches this federation, send an MSG_TYPE_ACK and otherwise send
  * a MSG_TYPE_REJECT message.
- * @param socket_id Pointer to the socket on which to listen.
- * @param client_fd The socket address.
+ * @param netdrv_t Pointer to the netdriver on which to listen.
  * @return The federate ID for success or -1 for failure.
  */
 // TODO: UPDATE comments.
@@ -998,7 +997,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* netdrv) {
   // Read bytes from the socket. We need 4 bytes.
 
   if (read_from_netdrv_close_on_error(netdrv, buffer, 256) <= 0) { // TODO: check length.
-    lf_print_error("RTI failed to read from accepted socket.");
+    lf_print_error("RTI failed to read from accepted netdriver.");
     return -1;
   }
 
@@ -1184,7 +1183,6 @@ static int receive_connection_information(netdrv_t* netdrv, uint16_t fed_id) {
   return 1;
 }
 
-// TODO: NEEDS TO BE FIXED!!
 /**
  * Listen for a MSG_TYPE_UDP_PORT message, and upon receiving it, set up
  * clock synchronization and perform the initial clock synchronization.
@@ -1193,7 +1191,7 @@ static int receive_connection_information(netdrv_t* netdrv, uint16_t fed_id) {
  * up to perform runtime clock synchronization using the UDP port number
  * specified in the payload to communicate with the federate's clock
  * synchronization logic.
- * @param socket_id The socket on which to listen.
+ * @param socket_id The netdriver on which to listen.
  * @param fed_id The federate ID.
  * @return 1 for success, 0 for failure.
  */
@@ -1231,7 +1229,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* netdrv, uint16_t 
           size_t message_size = 1 + sizeof(int32_t);
           unsigned char buffer[message_size];
           read_from_netdrv_fail_on_error(netdrv, buffer, message_size, NULL,
-                                         "Socket to federate %d unexpectedly closed.", fed_id);
+                                         "Netdriver to federate %d unexpectedly closed.", fed_id);
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
             int32_t fed_id = extract_int32(&(buffer[1]));
             assert(fed_id > -1);
@@ -1275,7 +1273,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* netdrv, uint16_t 
 /**
  * Authenticate incoming federate by performing HMAC-based authentication.
  *
- * @param socket Socket for the incoming federate tryting to authenticate.
+ * @param fed_netdrv Netdriver for the incoming federate tryting to authenticate.
  * @return True if authentication is successful and false otherwise.
  */
 static bool authenticate_federate(netdrv_t* fed_netdrv) {
@@ -1453,7 +1451,7 @@ void wait_for_federates(netdrv_t* netdrv) {
   // All federates have connected.
   lf_print("RTI: All expected federates have connected. Starting execution.");
 
-  // The socket server will not continue to accept connections after all the federates
+  // The netdriver server will not continue to accept connections after all the federates
   // have joined.
   // In case some other federation's federates are trying to join the wrong
   // federation, need to respond. Start a separate thread to do that.

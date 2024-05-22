@@ -177,11 +177,13 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
         lf_print_warning("Reading from socket failed. Will try again.");
         lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
         continue;
-      } else if (bytes_read <= 0) {
+      } else if (bytes_read < 0) {
+        return -1;
+      } else if (bytes_read == 0) {
         // An error occurred without those three error codes.
         // https://stackoverflow.com/questions/42188128/does-reading-from-a-socket-wait-or-get-eof
         // bytes_read == 0 means disconnected.
-        return -1;
+        return 0;
       }
       bytes_to_read -= bytes_read;
       total_bytes_read += bytes_read;
