@@ -553,7 +553,6 @@ void handle_stop_request_reply(federate_info_t* fed, unsigned char* buffer) {
 
 //////////////////////////////////////////////////
 
-// TODO: The whole message needs to be changed. It should not be port and IP specific.
 void handle_address_query(uint16_t fed_id, unsigned char* buffer) {
   federate_info_t* fed = GET_FED_INFO(fed_id);
 
@@ -951,8 +950,7 @@ void* federate_info_thread_TCP(void* fed) {
       handle_federate_failed(my_fed);
       return NULL;
     default:
-      lf_print_error("RTI received from federate %d an unrecognized message type: %u.", my_fed->enclave.id,
-                     buffer[0]);
+      lf_print_error("RTI received from federate %d an unrecognized message type: %u.", my_fed->enclave.id, buffer[0]);
       if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(receive_UNIDENTIFIED, my_fed->enclave.id, NULL);
       }
@@ -1200,8 +1198,14 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* netdrv, uint16_t 
   // clock synchronization. This message will tell the RTI whether the federate
   // is doing clock synchronization, and if it is, what port to use for UDP.
   LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_UDP_PORT from federate %d.", fed_id);
-  unsigned char response[1 + sizeof(uint16_t)];
-  read_from_netdrv_fail_on_error(netdrv, response, 1 + sizeof(uint16_t), NULL,
+  size_t buffer_size;
+#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
+  buffer_size = 1 + sizeof(uint16_t);
+#elif defined(COMM_TYPE_MQTT)
+  buffer_size = 1 + sizeof(uint16_t) + INET_ADDRSTRLEN;
+#endif
+  unsigned char response[buffer_size];
+  read_from_netdrv_fail_on_error(netdrv, response, buffer_size, NULL,
                                  "RTI failed to read MSG_TYPE_UDP_PORT message from federate %d.", fed_id);
   if (response[0] != MSG_TYPE_UDP_PORT) {
     lf_print_error("RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
@@ -1248,10 +1252,14 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* netdrv, uint16_t 
         // If no runtime clock sync, no need to set up the UDP port.
         // Initialize the UDP_addr field of the federate struct
         // TODO: DONGHA - Need to know the ip_address of the federate.
-        //
         fed->UDP_addr.sin_family = AF_INET;
         fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
+
+#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
         fed->UDP_addr.sin_addr = *get_ip_addr(netdrv);
+#elif defined(COMM_TYPE_MQTT)
+        inet_pton(AF_INET, &(response[1 + sizeof(uint16_t)]), &(fed->UDP_addr.sin_addr));
+#endif
       } else {
         // Disable clock sync after initial round.
         fed->clock_synchronization_enabled = false;

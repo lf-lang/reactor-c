@@ -392,7 +392,7 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
       bytes_read = -1;
       break;
     }
-    rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 1000);
+    rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 10000);
     if (rc != MQTTCLIENT_SUCCESS) {
       lf_print_error("Failed to receive message, return code %d.", rc);
       continue;

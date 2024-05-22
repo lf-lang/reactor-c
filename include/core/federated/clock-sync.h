@@ -141,7 +141,7 @@ void reset_socket_stat(struct socket_stat_t* socket_stat);
  *
  * @return port number to be sent to the RTI
  */
-uint16_t setup_clock_synchronization_with_rti(void);
+uint16_t setup_clock_synchronization_with_rti(struct sockaddr_in* federate_UDP_addr);
 
 /**
  * Synchronize the initial physical clock with the RTI.

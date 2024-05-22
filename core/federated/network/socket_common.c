@@ -10,7 +10,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include "util.h"
 #include "net_common.h"
@@ -92,7 +91,6 @@ int create_real_time_tcp_socket_errexit() {
 // If the RTI port is 0 (not specified), it will use RTI_DEFAULT_PORT as default.
 // If the federate server's port is 0 (not specified), the OS will assign the port.
 int create_TCP_server(socket_priv_t* priv, int server_type, uint16_t port) {
-  assert(port <= UINT16_MAX && port >= 0);
   uint16_t specified_port = port;
 
   // When server type is RTI, and port is not specified, set port as RTI_DEFAULT_PORT.

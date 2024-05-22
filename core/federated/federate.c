@@ -382,7 +382,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  *  federate.
  * @param flag 0 if an EOF was received, -1 if a netdriver error occurred, 1 otherwise.
  */
-//TODO: need discussion here.
+// TODO: need discussion here.
 static void close_inbound_netdrv(int fed_id, int flag) {
   LF_MUTEX_LOCK(&netdrv_mutex);
   if (_fed.netdrv_for_inbound_p2p_connections[fed_id] != NULL) {
@@ -1557,7 +1557,6 @@ static bool bounded_NET(tag_t* tag) {
  * generates an empty implementation.
  * @param env The environment of the federate
  */
-//TODO: Fix here.
 void lf_terminate_execution(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
 
@@ -1886,20 +1885,32 @@ void lf_connect_to_rti(const char* hostname, int port) {
   // @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
   lf_send_neighbor_structure_to_RTI(_fed.netdrv_to_rti);
 
-  // TODO: DONGHA: Handle UDP Clock sync.
-  uint16_t udp_port = setup_clock_synchronization_with_rti();
+  // The IP address of the federate is known to the RTI when using TCP connections, while
+  // establish_communication_session(). However, when using MQTT, the federate has to send it's IP address to the RTI to
+  // do UDP clock synchronization. Thus, it sends the IPv4 address after the UDP port number.
+  struct sockaddr_in federate_UDP_addr;
+  uint16_t udp_port = setup_clock_synchronization_with_rti(&federate_UDP_addr);
 
-  // Write the returned port number to the RTI
-  unsigned char UDP_port_number[1 + sizeof(uint16_t)];
+  size_t buffer_size = 1 + sizeof(uint16_t) + INET_ADDRSTRLEN;
+  unsigned char UDP_port_number[buffer_size];
   UDP_port_number[0] = MSG_TYPE_UDP_PORT;
   encode_uint16(udp_port, &(UDP_port_number[1]));
+#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
+  // Write the returned port number to the RTI
   write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, 1 + sizeof(uint16_t), UDP_port_number, NULL,
                                 "Failed to send the UDP port number to the RTI.");
+#elif defined(COMM_TYPE_MQTT)
+  // Write the returned port number and IPv4 address to the RTI.
+  // If the clock-sync is init or off, it will fill it to 0.0.0.0.
+  inet_ntop(AF_INET, &federate_UDP_addr, (char*)&(UDP_port_number[1 + sizeof(uint16_t)]), INET_ADDRSTRLEN);
 
+  // Write the buffer to the network driver
+  write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, buffer_size, UDP_port_number, NULL,
+                                "Failed to send the UDP port number and IPv4 address to the RTI.");
+#endif
   lf_print("Connected to RTI at %s:%d.", hostname, uport);
 }
 
-// TODO: DONGHA: NEED to make specified port work.
 // specified_port is 0 on default.
 void lf_create_server(int specified_port) {
   netdrv_t* my_netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
