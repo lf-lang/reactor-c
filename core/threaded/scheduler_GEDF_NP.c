@@ -28,6 +28,10 @@
 #include "tracepoint.h"
 #include "util.h"
 
+#ifdef FEDERATED
+#include "federate.h"
+#endif
+
 // Data specific to the GEDF scheduler.
 typedef struct custom_scheduler_data_t {
   pqueue_t* reaction_q;
