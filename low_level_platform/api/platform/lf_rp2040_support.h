@@ -10,7 +10,8 @@
 #include <pico/stdlib.h>
 #include <pico/sync.h>
 
-#define NO_TTY
+#define NO_CLI
+#define MINIMAL_STDLIB
 
 // Defines for formatting time in printf for pico
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
