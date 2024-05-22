@@ -85,11 +85,6 @@ typedef struct lf_scheduler_t {
   volatile bool should_stop;
 
   /**
-   * @brief Hold triggered reactions.
-   */
-  void* triggered_reactions;
-
-  /**
    * @brief An array of atomic indexes.
    *
    * Can be used to avoid race conditions. Schedulers are allowed to to use as

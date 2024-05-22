@@ -78,9 +78,6 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
   }
   lf_scheduler_t* scheduler = env->scheduler;
 
-  // Just one reaction queue and mutex for each environment.
-  scheduler->triggered_reactions = calloc(1, sizeof(pqueue_t*));
-
   scheduler->custom_data = (custom_scheduler_data_t*)calloc(1, sizeof(custom_scheduler_data_t));
 
   // Initialize the reaction queue.
@@ -100,10 +97,6 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
  * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free(lf_scheduler_t* scheduler) {
-  // for (size_t j = 0; j <= scheduler->max_reaction_level; j++) {
-  //     pqueue_free(scheduler->triggered_reactions[j]);
-  //     FIXME: This is causing weird memory errors.
-  // }
   pqueue_free((pqueue_t*)scheduler->custom_data->reaction_q);
   free(scheduler->custom_data);
 }
