@@ -32,7 +32,6 @@ bool init_sched_instance(environment_t* env, lf_scheduler_t** instance, size_t n
     }
   }
 
-  (*instance)->semaphore = lf_semaphore_new(0);
   (*instance)->number_of_workers = number_of_workers;
   (*instance)->next_reaction_level = 1;
 

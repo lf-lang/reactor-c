@@ -42,8 +42,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "lf_semaphore.h"
 #include <stdbool.h>
+#include <stddef.h> // for size_t
 
 #define DEFAULT_MAX_REACTION_LEVEL 100
 
@@ -64,20 +64,6 @@ typedef struct lf_scheduler_t {
    *
    */
   size_t max_reaction_level;
-
-  /**
-   * @brief Used by the scheduler to signal the maximum number of worker
-   * threads that should be executing work at the same time.
-   *
-   * Initially, the count is set to 0. Maximum value of count should be
-   * `number_of_workers`.
-   *
-   * For example, if the scheduler releases the semaphore with a count of 4,
-   * no more than 4 worker threads should wake up to process reactions.
-   *
-   * FIXME: specific comment
-   */
-  lf_semaphore_t* semaphore;
 
   /**
    * @brief Indicate whether the program should stop

@@ -32,6 +32,10 @@ typedef struct custom_scheduler_data_t {
   reaction_t** executing_reactions;
   lf_mutex_t* array_of_mutexes;
   reaction_t*** triggered_reactions;
+  lf_semaphore_t* semaphore; // Signal the maximum number of worker threads that should
+                             // be executing work at the same time.  Initially 0.
+                             // For example, if the scheduler releases the semaphore with a count of 4,
+                             // no more than 4 worker threads should wake up to process reactions.
 } custom_scheduler_data_t;
 
 /////////////////// Scheduler Private API /////////////////////////
@@ -129,7 +133,7 @@ static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
   if (workers_to_awaken > 1) {
     // Notify all the workers except the worker thread that has called this
     // function.
-    lf_semaphore_release(scheduler->semaphore, (workers_to_awaken - 1));
+    lf_semaphore_release(scheduler->custom_data->semaphore, (workers_to_awaken - 1));
   }
 }
 
@@ -139,7 +143,7 @@ static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
  */
 static void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
   scheduler->should_stop = true;
-  lf_semaphore_release(scheduler->semaphore, (scheduler->number_of_workers - 1));
+  lf_semaphore_release(scheduler->custom_data->semaphore, (scheduler->number_of_workers - 1));
 }
 
 /**
@@ -184,7 +188,7 @@ static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* schedul
  *
  * If the calling worker thread is the last to become idle, it will call on the
  * scheduler to distribute work. Otherwise, it will wait on
- * 'scheduler->semaphore'.
+ * 'scheduler->custom_data->semaphore'.
  *
  * @param worker_number The worker number of the worker thread asking for work
  * to be assigned to it.
@@ -199,10 +203,8 @@ static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_num
     _lf_scheduler_try_advance_tag_and_distribute(scheduler);
   } else {
     // Not the last thread to become idle. Wait for work to be released.
-    LF_PRINT_DEBUG("Scheduler: Worker %zu is trying to acquire the scheduling "
-                   "semaphore.",
-                   worker_number);
-    lf_semaphore_acquire(scheduler->semaphore);
+    LF_PRINT_DEBUG("Scheduler: Worker %zu is trying to acquire the scheduling semaphore.", worker_number);
+    lf_semaphore_acquire(scheduler->custom_data->semaphore);
     LF_PRINT_DEBUG("Scheduler: Worker %zu acquired the scheduling semaphore.", worker_number);
   }
 }
@@ -250,6 +252,8 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
   env->scheduler->custom_data->array_of_mutexes
       = (lf_mutex_t*)calloc((env->scheduler->max_reaction_level + 1), sizeof(lf_mutex_t));
 
+  env->scheduler->custom_data->semaphore = lf_semaphore_new(0);
+
   env->scheduler->indexes
       = (volatile int*)calloc((env->scheduler->max_reaction_level + 1), sizeof(volatile int));
 
@@ -286,8 +290,8 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
     free(scheduler->custom_data->triggered_reactions);
   }
   free(scheduler->custom_data->array_of_mutexes);
+  lf_semaphore_destroy(scheduler->custom_data->semaphore);
   free(scheduler->custom_data);
-  lf_semaphore_destroy(scheduler->semaphore);
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
