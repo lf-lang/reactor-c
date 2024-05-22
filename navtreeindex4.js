@@ -1,5 +1,7 @@
 var NAVTREEINDEX4 =
 {
+"d7/de8/hashmap__test_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4":[12,0,8,0,0,0,3],
+"d7/dff/scheduler__sync__tag__advance_8h.html":[12,0,1,1,2,3],
 "d7/dff/scheduler__sync__tag__advance_8h.html#a5ee7c21a8b90bb09784f221c1de4d9c9":[12,0,1,1,2,3,3],
 "d7/dff/scheduler__sync__tag__advance_8h.html#ad96dd94446ff66184dcf0f8f65cdb4f0":[12,0,1,1,2,3,2],
 "d7/dff/scheduler__sync__tag__advance_8h.html#ae380207e938ff035c16b39335d7d46d2":[12,0,1,1,2,3,0],
@@ -42,7 +44,7 @@ var NAVTREEINDEX4 =
 "d8/d4b/structlf__action__base__t.html#aaa41924b6862c8128e8ea02b1c964c52":[11,0,18,0],
 "d8/d4b/structlf__action__base__t.html#aacf5d85cce69c1ed02a1717a3fcbb46e":[11,0,18,4],
 "d8/d4b/structlf__action__base__t.html#abf564683446cb923e96bef03be159fac":[11,0,18,2],
-"d8/d5f/lf__macos__support_8c.html":[12,0,4,1,0,6],
+"d8/d5f/lf__macos__support_8c.html":[12,0,4,1,0,7],
 "d8/d60/trace__to__csv_8c.html":[12,0,10,0,4],
 "d8/d60/trace__to__csv_8c.html#a0ffac77b479b7e93faf906f50c4b6a95":[12,0,10,0,4,5],
 "d8/d60/trace__to__csv_8c.html#a2960eb597f48f3b59bbb850b47e895ff":[12,0,10,0,4,14],
@@ -217,7 +219,7 @@ var NAVTREEINDEX4 =
 "d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9":[11,0,33,2],
 "d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c":[11,0,33,0],
 "d9/dad/structlf__wav__t.html#ade6c01f216604eef5d88c937972ab052":[11,0,33,1],
-"d9/daf/lf__zephyr__clock__counter_8c.html":[12,0,4,1,0,14],
+"d9/daf/lf__zephyr__clock__counter_8c.html":[12,0,4,1,0,15],
 "d9/dc7/trace__util_8h.html":[12,0,10,0,7],
 "d9/dc7/trace__util_8h.html#a139bc891db3edc74b0d9f49d1cec20b9":[12,0,10,0,7,5],
 "d9/dc7/trace__util_8h.html#a14da003f17f3fb32043a735158a234c5":[12,0,10,0,7,3],
@@ -247,7 +249,5 @@ var NAVTREEINDEX4 =
 "d9/dd5/clock-sync_8h.html#a3eba5f95a19f86a70d9d11fd2c736dd1":[12,0,1,1,0,1,20],
 "d9/dd5/clock-sync_8h.html#a4b9290ecd850995c857e04746aa45d10":[12,0,1,1,0,1,2],
 "d9/dd5/clock-sync_8h.html#a4f1aaaa9e0b74867ba6b60eb962dfca6":[12,0,1,1,0,1,12],
-"d9/dd5/clock-sync_8h.html#a532da6f271eb75c9ac745571b995c404":[12,0,1,1,0,1,1],
-"d9/dd5/clock-sync_8h.html#a61a60645f99ef4792703a4df024ca8a1":[12,0,1,1,0,1,21],
-"d9/dd5/clock-sync_8h.html#a6b3edec4d337711a2e914c9f5581ce1c":[12,0,1,1,0,1,11]
+"d9/dd5/clock-sync_8h.html#a532da6f271eb75c9ac745571b995c404":[12,0,1,1,0,1,1]
 };

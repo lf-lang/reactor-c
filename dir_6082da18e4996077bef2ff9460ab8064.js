@@ -5,6 +5,7 @@ var dir_6082da18e4996077bef2ff9460ab8064 =
     [ "lf_atomic_gcc_clang.c", "d0/d8e/lf__atomic__gcc__clang_8c.html", null ],
     [ "lf_atomic_irq.c", "d6/d89/lf__atomic__irq_8c.html", null ],
     [ "lf_atomic_windows.c", "d9/d58/lf__atomic__windows_8c.html", null ],
+    [ "lf_flexpret_support.c", "dd/da9/lf__flexpret__support_8c.html", null ],
     [ "lf_linux_support.c", "d4/dba/lf__linux__support_8c.html", null ],
     [ "lf_macos_support.c", "d8/d5f/lf__macos__support_8c.html", null ],
     [ "lf_nrf52_support.c", "d4/d25/lf__nrf52__support_8c.html", null ],
