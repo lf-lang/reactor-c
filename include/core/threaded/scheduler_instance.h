@@ -90,14 +90,6 @@ typedef struct lf_scheduler_t {
   void* triggered_reactions;
 
   /**
-   * @brief Mutex used to protect the reaction queue.
-   *
-   * Can be used to avoid race conditions. Schedulers are allowed to
-   * initialize as many mutexes as they deem fit.
-   */
-  lf_mutex_t* array_of_mutexes;
-
-  /**
    * @brief An array of atomic indexes.
    *
    * Can be used to avoid race conditions. Schedulers are allowed to to use as

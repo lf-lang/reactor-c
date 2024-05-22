@@ -80,7 +80,6 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
 
   // Just one reaction queue and mutex for each environment.
   scheduler->triggered_reactions = calloc(1, sizeof(pqueue_t*));
-  scheduler->array_of_mutexes = (lf_mutex_t*)calloc(1, sizeof(lf_mutex_t));
 
   scheduler->custom_data = (custom_scheduler_data_t*)calloc(1, sizeof(custom_scheduler_data_t));
 
