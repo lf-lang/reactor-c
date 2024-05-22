@@ -287,12 +287,6 @@ void lf_request_stop(void) {
 }
 
 /**
- * Return false.
- * @param reaction The reaction.
- */
-bool _lf_is_blocked_by_executing_reaction(void) { return false; }
-
-/**
  * The main loop of the LF program.
  *
  * An unambiguous function name that can be called
