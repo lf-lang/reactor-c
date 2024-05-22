@@ -1072,8 +1072,13 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
   LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
   struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
+
+#ifdef MINIMAL_STDLIB
+  lf_print("---- Start execution ----");
+#else
   lf_print("---- Start execution at time %s---- plus %ld nanoseconds", ctime(&physical_time_timespec.tv_sec),
            physical_time_timespec.tv_nsec);
+#endif // MINIMAL_STDLIB
 
   // Create and initialize the environments for each enclave
   lf_create_environments();
