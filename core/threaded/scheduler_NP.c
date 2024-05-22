@@ -27,7 +27,13 @@
 #include "util.h"
 #include "reactor_threaded.h"
 
+// Data specific to the NP scheduler.
+typedef struct custom_scheduler_data_t {
+  reaction_t** executing_reactions;
+} custom_scheduler_data_t;
+
 /////////////////// Scheduler Private API /////////////////////////
+
 /**
  * @brief Insert 'reaction' into
  * scheduler->triggered_reactions at the appropriate level.
@@ -88,12 +94,12 @@ static int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
     LF_PRINT_DEBUG("Waiting with curr_reaction_level %zu.", scheduler->next_reaction_level);
     try_advance_level(scheduler->env, &scheduler->next_reaction_level);
 
-    scheduler->executing_reactions =
+    scheduler->custom_data->executing_reactions =
         (void*)((reaction_t***)scheduler->triggered_reactions)[scheduler->next_reaction_level - 1];
 
     LF_PRINT_DEBUG("Start of rxn queue at %zu is %p", scheduler->next_reaction_level - 1,
-                   (void*)((reaction_t**)scheduler->executing_reactions)[0]);
-    if (((reaction_t**)scheduler->executing_reactions)[0] != NULL) {
+                   (void*)((reaction_t**)scheduler->custom_data->executing_reactions)[0]);
+    if (((reaction_t**)scheduler->custom_data->executing_reactions)[0] != NULL) {
       // There is at least one reaction to execute
       return 1;
     }
@@ -201,6 +207,7 @@ static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_num
 }
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
+
 /**
  * @brief Initialize the scheduler.
  *
@@ -235,6 +242,8 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
 
   env->scheduler->triggered_reactions = calloc((env->scheduler->max_reaction_level + 1), sizeof(reaction_t**));
 
+  env->scheduler->custom_data = (custom_scheduler_data_t*)calloc(1, sizeof(custom_scheduler_data_t));
+
   env->scheduler->array_of_mutexes = (lf_mutex_t*)calloc((env->scheduler->max_reaction_level + 1), sizeof(lf_mutex_t));
 
   env->scheduler->indexes = (volatile int*)calloc((env->scheduler->max_reaction_level + 1), sizeof(volatile int));
@@ -254,8 +263,7 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
     // Initialize the mutexes for the reaction vectors
     LF_MUTEX_INIT(&env->scheduler->array_of_mutexes[i]);
   }
-
-  env->scheduler->executing_reactions = (void*)((reaction_t***)env->scheduler->triggered_reactions)[0];
+  env->scheduler->custom_data->executing_reactions = ((reaction_t***)env->scheduler->triggered_reactions)[0];
 }
 
 /**
@@ -270,7 +278,7 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
     }
     free(scheduler->triggered_reactions);
   }
-
+  free(scheduler->custom_data);
   lf_semaphore_destroy(scheduler->semaphore);
 }
 
@@ -302,8 +310,8 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
       LF_PRINT_DEBUG("Scheduler: Worker %d popping reaction with level %zu, index "
                      "for level: %d.",
                      worker_number, current_level, current_level_q_index);
-      reaction_to_return = ((reaction_t**)scheduler->executing_reactions)[current_level_q_index];
-      ((reaction_t**)scheduler->executing_reactions)[current_level_q_index] = NULL;
+      reaction_to_return = scheduler->custom_data->executing_reactions[current_level_q_index];
+      scheduler->custom_data->executing_reactions[current_level_q_index] = NULL;
     }
 #ifdef FEDERATED
     lf_mutex_unlock(&scheduler->array_of_mutexes[current_level]);

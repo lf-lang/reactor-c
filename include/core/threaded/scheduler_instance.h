@@ -106,11 +106,6 @@ typedef struct lf_scheduler_t {
   volatile int* indexes;
 
   /**
-   * @brief Hold currently executing reactions.
-   */
-  void* executing_reactions;
-
-  /**
    * @brief Hold reactions temporarily.
    */
   void* transfer_reactions;
