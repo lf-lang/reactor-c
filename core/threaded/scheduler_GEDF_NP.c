@@ -118,20 +118,19 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
     reaction_t* reaction_to_return = (reaction_t*)pqueue_peek(scheduler->custom_data->reaction_q);
     if (reaction_to_return != NULL) {
       // Found a reaction.  Check the level.  Notice that because of deadlines, the current level
-      // may advance to the maximum and then back down to 0. 
+      // may advance to the maximum and then back down to 0.
       if (LF_LEVEL(reaction_to_return->index) == scheduler->custom_data->current_level) {
         // Found a reaction at the current level.
-        LF_PRINT_DEBUG("Scheduler: Worker %d found a reaction at level %zu.",
-            worker_number, scheduler->custom_data->current_level);
+        LF_PRINT_DEBUG("Scheduler: Worker %d found a reaction at level %zu.", worker_number,
+                       scheduler->custom_data->current_level);
         // Remove the reaction from the queue.
         pqueue_pop(scheduler->custom_data->reaction_q);
 
         // If there is another reaction at the current level and an idle thread, then
         // notify an idle thread.
         reaction_t* next_reaction = (reaction_t*)pqueue_peek(scheduler->custom_data->reaction_q);
-        if (next_reaction != NULL
-            && LF_LEVEL(next_reaction->index) == scheduler->custom_data->current_level
-            && scheduler->number_of_idle_workers > 0) {
+        if (next_reaction != NULL && LF_LEVEL(next_reaction->index) == scheduler->custom_data->current_level &&
+            scheduler->number_of_idle_workers > 0) {
           // Notify an idle thread.
           LF_COND_SIGNAL(&scheduler->custom_data->reaction_q_changed);
         }
@@ -139,8 +138,8 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         return reaction_to_return;
       } else {
         // Found a reaction at a level other than the current level.
-        LF_PRINT_DEBUG("Scheduler: Worker %d found a reaction at level %lld. Current level is %zu",
-            worker_number, LF_LEVEL(reaction_to_return->index), scheduler->custom_data->current_level);
+        LF_PRINT_DEBUG("Scheduler: Worker %d found a reaction at level %lld. Current level is %zu", worker_number,
+                       LF_LEVEL(reaction_to_return->index), scheduler->custom_data->current_level);
         // We need to wait to advance to the next level or get a new reaction at the current level.
         if (scheduler->number_of_idle_workers == scheduler->number_of_workers - 1) {
           // All other workers are idle.  Advance to the next level.
@@ -149,13 +148,12 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
             // having been given precedence over levels.  Reset the current level to 1.
             scheduler->custom_data->current_level = 0;
           }
-          LF_PRINT_DEBUG("Scheduler: Advancing to next reaction level %zu.",
-              scheduler->custom_data->current_level);
+          LF_PRINT_DEBUG("Scheduler: Advancing to next reaction level %zu.", scheduler->custom_data->current_level);
 #ifdef FEDERATED
           // In case there are blocking network input reactions at this level, stall.
           lf_stall_advance_level_federation_locked(scheduler->env, scheduler->custom_data->current_level);
 #endif
-      } else {
+        } else {
           // Some workers are still working on reactions on the current level.
           // Wait for them to finish.
           wait_for_other_workers_to_finish(scheduler, worker_number);
@@ -209,7 +207,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 }
 
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
-  (void)worker_number;  // Suppress unused parameter warning.
+  (void)worker_number; // Suppress unused parameter warning.
   if (reaction == NULL || !lf_atomic_bool_compare_and_swap32((int32_t*)&reaction->status, inactive, queued)) {
     return;
   }

@@ -28,7 +28,7 @@ void logical_tag_complete(tag_t tag_to_send);
 
 /**
  * @brief Return true if the worker should stop now; false otherwise.
- * 
+ *
  * This function assumes the caller holds the mutex lock.
  * @param sched The scheduler instance to check.
  */
@@ -36,7 +36,7 @@ bool should_stop_locked(lf_scheduler_t* sched);
 
 /**
  * @brief Advance the tag to the next tag on the event queue
- * 
+ *
  * This will also pop events for the newly acquired tag and trigger
  * the enabled reactions using the scheduler.
  *
