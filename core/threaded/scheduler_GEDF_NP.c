@@ -43,7 +43,7 @@ typedef struct custom_scheduler_data_t {
  * @param scheduler The scheduler.
  * @param worker_number The number of the worker thread.
  */
-static void inline wait_for_other_workers_to_finish(lf_scheduler_t* scheduler, int worker_number) {
+inline static void wait_for_other_workers_to_finish(lf_scheduler_t* scheduler, int worker_number) {
   scheduler->number_of_idle_workers++;
   tracepoint_worker_wait_starts(scheduler->env, worker_number);
   LF_COND_WAIT(&scheduler->custom_data->reaction_q_changed);
