@@ -38,6 +38,18 @@ typedef struct custom_scheduler_data_t {
 
 /////////////////// Scheduler Private API /////////////////////////
 
+/**
+ * @brief Mark the calling thread idle and wait for notification of change to the reaction queue.
+ * @param scheduler The scheduler.
+ * @param worker_number The number of the worker thread.
+ */
+static void inline wait_for_other_workers_to_finish(lf_scheduler_t* scheduler, int worker_number) {
+  scheduler->number_of_idle_workers++;
+  tracepoint_worker_wait_starts(scheduler->env, worker_number);
+  LF_COND_WAIT(&scheduler->custom_data->reaction_q_changed);
+  tracepoint_worker_wait_ends(scheduler->env, worker_number);
+  scheduler->number_of_idle_workers--;
+}
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 /**
@@ -132,22 +144,21 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         // We need to wait to advance to the next level or get a new reaction at the current level.
         if (scheduler->number_of_idle_workers == scheduler->number_of_workers - 1) {
           // All other workers are idle.  Advance to the next level.
-          try_advance_level(scheduler->env, &scheduler->custom_data->current_level);
-          if (scheduler->custom_data->current_level > scheduler->max_reaction_level) {
+          if (++scheduler->custom_data->current_level > scheduler->max_reaction_level) {
             // Since the reaction queue is not empty, we must be cycling back to level 0 due to deadlines
-            // having been given precedence over levels.  Reset the next level to 1.
+            // having been given precedence over levels.  Reset the current level to 1.
             scheduler->custom_data->current_level = 0;
           }
           LF_PRINT_DEBUG("Scheduler: Advancing to next reaction level %zu.",
               scheduler->custom_data->current_level);
-        } else {
+#ifdef FEDERATED
+          // In case there are blocking network input reactions at this level, stall.
+          lf_stall_advance_level_federation_locked(scheduler->env, scheduler->custom_data->current_level);
+#endif
+      } else {
           // Some workers are still working on reactions on the current level.
           // Wait for them to finish.
-          scheduler->number_of_idle_workers++;
-          tracepoint_worker_wait_starts(scheduler->env, worker_number);
-          LF_COND_WAIT(&scheduler->custom_data->reaction_q_changed);
-          tracepoint_worker_wait_ends(scheduler->env, worker_number);
-          scheduler->number_of_idle_workers--;
+          wait_for_other_workers_to_finish(scheduler, worker_number);
         }
       }
     } else {
@@ -159,7 +170,6 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         // Last thread to go idle
         LF_PRINT_DEBUG("Scheduler: Worker %d is advancing the tag.", worker_number);
         // Advance the tag.
-        scheduler->custom_data->current_level = 0;
         // Set a flag in the scheduler that the lock is held by the sole executing thread.
         // This prevents acquiring the mutex in lf_scheduler_trigger_reaction.
         scheduler->custom_data->solo_holds_mutex = true;
@@ -172,15 +182,16 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
           break;
         }
         scheduler->custom_data->solo_holds_mutex = false;
-        try_advance_level(scheduler->env, &scheduler->custom_data->current_level);
+        // Reset the level to 0.
+        scheduler->custom_data->current_level = 0;
+#ifdef FEDERATED
+        // In case there are blocking network input reactions at this level, stall.
+        lf_stall_advance_level_federation_locked(scheduler->env, scheduler->custom_data->current_level);
+#endif
       } else {
         // Some other workers are still working on reactions on the current level.
         // Wait for them to finish.
-        scheduler->number_of_idle_workers++;
-        tracepoint_worker_wait_starts(scheduler->env, worker_number);
-        LF_COND_WAIT(&scheduler->custom_data->reaction_q_changed);
-        tracepoint_worker_wait_ends(scheduler->env, worker_number);
-        scheduler->number_of_idle_workers--;
+        wait_for_other_workers_to_finish(scheduler, worker_number);
       }
     }
   }
