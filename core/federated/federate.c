@@ -2611,7 +2611,7 @@ void lf_set_federation_id(const char* fid) { federation_metadata.federation_id =
 void lf_spawn_staa_thread() { lf_thread_create(&_fed.staaSetter, update_ports_from_staa_offsets, NULL); }
 #endif // FEDERATED_DECENTRALIZED
 
-void lf_stall_advance_level_federation_locked(environment_t* env, size_t level) {
+void lf_stall_advance_level_federation_locked(size_t level) {
   LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", level, max_level_allowed_to_advance);
   while (((int)level) >= max_level_allowed_to_advance) {
     lf_cond_wait(&lf_port_status_changed);
@@ -2623,7 +2623,7 @@ void lf_stall_advance_level_federation(environment_t* env, size_t level) {
   LF_PRINT_DEBUG("Acquiring the environment mutex.");
   LF_MUTEX_LOCK(&env->mutex);
   LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", level, max_level_allowed_to_advance);
-  lf_stall_advance_level_federation_locked(env, level);
+  lf_stall_advance_level_federation_locked(level);
   LF_MUTEX_UNLOCK(&env->mutex);
 }
 

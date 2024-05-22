@@ -151,7 +151,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
           LF_PRINT_DEBUG("Scheduler: Advancing to next reaction level %zu.", scheduler->custom_data->current_level);
 #ifdef FEDERATED
           // In case there are blocking network input reactions at this level, stall.
-          lf_stall_advance_level_federation_locked(scheduler->env, scheduler->custom_data->current_level);
+          lf_stall_advance_level_federation_locked(scheduler->custom_data->current_level);
 #endif
         } else {
           // Some workers are still working on reactions on the current level.
@@ -184,7 +184,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         scheduler->custom_data->current_level = 0;
 #ifdef FEDERATED
         // In case there are blocking network input reactions at this level, stall.
-        lf_stall_advance_level_federation_locked(scheduler->env, scheduler->custom_data->current_level);
+        lf_stall_advance_level_federation_locked(scheduler->custom_data->current_level);
 #endif
       } else {
         // Some other workers are still working on reactions on the current level.

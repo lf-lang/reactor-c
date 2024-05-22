@@ -498,10 +498,9 @@ void lf_stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
  * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex lock.
- * @param env The environment (which should always be the top-level environment).
  * @param level The level to which we would like to advance.
  */
-void lf_stall_advance_level_federation_locked(environment_t* env, size_t level);
+void lf_stall_advance_level_federation_locked(size_t level);
 
 /**
  * @brief Synchronize the start with other federates via the RTI.
