@@ -18,8 +18,8 @@
 #include "reactor_common.h"
 #include "environment.h"
 
-// Embedded platforms with no TTY shouldnt have signals
-#if !defined(NO_TTY)
+// Embedded platforms with no command line interface shouldnt have signals
+#if !defined(NO_CLI)
 #include <signal.h> // To trap ctrl-c and invoke termination().
 #endif
 
@@ -319,8 +319,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // The above handles only "normal" termination (via a call to exit).
     // As a consequence, we need to also trap Ctrl-C, which issues a SIGINT,
     // and cause it to call exit.
-    // Embedded platforms with NO_TTY have no concept of a signal; for those, we exclude this call.
-#ifndef NO_TTY
+    // Embedded platforms with NO_CLI have no concept of a signal; for those, we exclude this call.
+#ifndef NO_CLI
     signal(SIGINT, exit);
 #endif
     // Create and initialize the environment
