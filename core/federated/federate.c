@@ -936,7 +936,14 @@ static void rti_address(const char* hostname, uint16_t port, struct addrinfo** r
   // Get address structure matching hostname and hints criteria, and
   // set port to the port number provided in str. There should only
   // ever be one matching address structure, and we connect to that.
-  if (getaddrinfo(hostname, (const char*)&str, &hints, result)) {
+  instant_t start_connect = lf_time_physical();
+  int ret = getaddrinfo(hostname, (const char*)&str, &hints, result);
+  while (ret && !CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT) && !_lf_termination_executed) {
+      lf_print_warning("Could not resolve RTI host name: %s. Trying again ...", hostname);
+      lf_sleep(CONNECT_RETRY_INTERVAL);
+      ret = getaddrinfo(hostname, (const char*)&str, &hints, result);
+  }
+  if(ret) {
     lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
   }
 }
@@ -1733,6 +1740,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
       if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
         lf_print_error_and_exit("TIMEOUT obtaining IP/port for federate %d from the RTI.", remote_federate_id);
       }
+      lf_print_warning("Could not retrieve IP/port for federate %d from the RTI.", remote_federate_id);
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
       lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
     }
