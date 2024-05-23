@@ -208,7 +208,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * A federate will retry every CONNECT_RETRY_INTERVAL seconds until
  * CONNECTION_TIMEOUT expires.
  */
-#define CONNECT_TIMEOUT MINUTES(1)
+#define CONNECT_TIMEOUT MINUTES(3)
 
 /**
  * Maximum number of port addresses that a federate will try to connect to the RTI on.
