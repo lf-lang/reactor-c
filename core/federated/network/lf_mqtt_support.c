@@ -21,10 +21,9 @@
 static MQTT_priv_t* MQTT_priv_init();
 static char* create_topic_federation_id_listener_id(const char* federation_id, int listener_id);
 static char* create_topic_federation_id_A_to_B(const char* federation_id, int A, int B);
-static void set_MQTTServer_id(MQTT_priv_t* MQTT_priv, int my_id, int client_id);
-static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int client_id);
-// int MQTT_connect_with_retry(MQTTClient client, MQTTClient_connectOptions* conn_opts);
-// int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos);
+static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int my_id, int target_id);
+int MQTT_connect_with_retry(MQTTClient client, MQTTClient_connectOptions* conn_opts);
+int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos);
 
 void log_callback(enum MQTTCLIENT_TRACE_LEVELS level, char* message) {
   (void)level; // Explicitly mark the parameter as unused
@@ -64,6 +63,9 @@ void close_netdrv(netdrv_t* drv) {
     lf_print("Failed to disconnect, return code %d.", rc);
   }
   MQTTClient_destroy(&MQTT_priv->client);
+  if (MQTT_priv->topic_name) {
+    free(MQTT_priv->topic_name);
+  }
 }
 
 /**
@@ -77,39 +79,43 @@ void close_netdrv(netdrv_t* drv) {
  * @return int
  */
 int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
+  MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   if (server_type == RTI) {
-  } // JUST TO PASS COMPILER.
+    
+  }
+  else {
+
+  }
   if (port == 0) {
   } // JUST TO PASS COMPILER.
-  MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
 
   // Target is not available for listeners. We set it to -2 if it is uninitialized or unavailable. This is used when
   // close_netdrv() is called.
   MQTT_priv->target_id = -2;
   // If RTI calls this, it will be -1. If federate server calls, it will be it's federate ID.
-  set_MQTTServer_id(MQTT_priv, drv->my_federate_id, drv->my_federate_id);
+  set_MQTTClient_id(MQTT_priv, drv->my_federate_id, drv->my_federate_id);
+
   int rc;
+
   if ((rc = MQTTClient_create(&MQTT_priv->client, ADDRESS, MQTT_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
       MQTTCLIENT_SUCCESS) {
-    lf_print_error_and_exit("Failed to create client, return code %d.", rc);
+    lf_print_error_and_exit("Failed to create client during create_listener(), return code %d.", rc);
   }
-
-  MQTT_priv->conn_opts.keepAliveInterval = MQTTkeepAliveInterval;
-  MQTT_priv->conn_opts.cleansession = MQTTcleansession;
-  if ((rc = MQTTClient_connect(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
+  LF_PRINT_DEBUG("Connecting MQTTClient %s to broker.", MQTT_priv->client_id);
+  if ((rc = MQTT_connect_with_retry(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
     MQTTClient_destroy(&MQTT_priv->client);
-    lf_print_error_and_exit("Failed to connect, return code %d. Check if MQTT broker is available.", rc);
+    lf_print_error_and_exit(
+        "Failed to connect during create_listener(), return code %d. Check if MQTT broker is available.", rc);
   }
-  MQTT_priv->topic_name = (const char*)create_topic_federation_id_listener_id(drv->federation_id, drv->my_federate_id);
-  if ((rc = MQTTClient_subscribe(MQTT_priv->client, MQTT_priv->topic_name, QOS)) != MQTTCLIENT_SUCCESS) {
+  LF_PRINT_DEBUG("Connected MQTTClient %s to broker, return code %d.",MQTT_priv->client_id, rc);
+  MQTT_priv->topic_name = create_topic_federation_id_listener_id(drv->federation_id, drv->my_federate_id);
+  LF_PRINT_DEBUG("Subscribing on topic %s.", MQTT_priv->topic_name);
+  if ((rc = MQTT_subscribe_with_retry(MQTT_priv->client, MQTT_priv->topic_name, QOS)) != MQTTCLIENT_SUCCESS) {
     MQTTClient_disconnect(MQTT_priv->client, TIMEOUT);
     MQTTClient_destroy(&MQTT_priv->client);
-    lf_print_error_and_exit("Failed to subscribe, return code %d.", rc);
+    lf_print_error_and_exit("Failed to subscribe during create_listener(), return code %d.", rc);
   }
-  int64_t current_physical_time = lf_time_physical();
-  LF_PRINT_LOG("Subscribing on topic %s.", MQTT_priv->topic_name);
-  LF_PRINT_LOG("PHYSICAL_TIME ON SUBSCRIBING TOPIC: " PRINTF_TIME, current_physical_time);
-
+  LF_PRINT_DEBUG("Subscribed on topic %s, return code %d.", MQTT_priv->topic_name, rc);
   return 1;
 }
 
@@ -146,56 +152,43 @@ netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
   uint16_t fed_id = extract_uint16(buffer + 1);
   LF_PRINT_LOG("Received MSG_TYPE_MQTT_JOIN message from federate %d.", fed_id);
 
-  // The conncetor netdriver connects to the broker.
+  // The connector netdriver connects to the broker.
   connector_nedrv->my_federate_id = (int)fed_id;
-  LF_PRINT_DEBUG("Setting up MQTTServer_id for federate %d.", fed_id);
-  set_MQTTServer_id(connector_priv, listener_netdrv->my_federate_id, connector_nedrv->my_federate_id);
-  LF_PRINT_DEBUG("Setup MQTTServer_id for federate %d as %s.", fed_id, connector_priv->client_id);
+  LF_PRINT_DEBUG("Setting up MQTTClient_id to target federate %d.", fed_id);
+  // If RTI calls this, it will be RTI_targetfedID. If federate calls this, it will be myfedID_targetfedID
+  set_MQTTClient_id(connector_priv, listener_netdrv->my_federate_id, connector_nedrv->my_federate_id);
+  LF_PRINT_DEBUG("Setup MQTTClient_id to target federate %d as %s.", fed_id, connector_priv->client_id);
 
-  LF_PRINT_DEBUG("Creating topic for federate %d.", fed_id);
+  LF_PRINT_DEBUG("Creating topic to target federate %d.", fed_id);
   // Subscribe to topic: federationID_fedID_to_listenerID
   // This is the channel where the federate sends messages to the listener.
   topic_to_subscribe =
       create_topic_federation_id_A_to_B(connector_nedrv->federation_id, fed_id, listener_netdrv->my_federate_id);
 
-  LF_PRINT_DEBUG("Creating MQTTClient for federate %d.", fed_id);
+  LF_PRINT_DEBUG("Creating MQTTClient to target federate %d.", fed_id);
   if ((rc = MQTTClient_create(&connector_priv->client, ADDRESS, connector_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE,
                               NULL)) != MQTTCLIENT_SUCCESS) {
-    lf_print_error("Failed to create client, return code %d.", rc);
+    lf_print_error_and_exit("Failed to create client during establish_communication_session(), return code %d.", rc);
   }
-  connector_priv->conn_opts.keepAliveInterval = MQTTkeepAliveInterval;
-  connector_priv->conn_opts.cleansession = MQTTcleansession;
-  instant_t start_connect = lf_time_physical();
-  while (1) {
-    if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-      lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
-      break;
-    }
-    LF_PRINT_DEBUG("Connecting MQTTClient for federate %d.", fed_id);
-    if ((rc = MQTTClient_connect(connector_priv->client, &connector_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
-      MQTTClient_destroy(&connector_priv->client);
-      free(topic_to_subscribe);
-      lf_print_error("Failed to connect, return code %d.", rc);
-      continue;
-    }
-    LF_PRINT_DEBUG("Connected, return code %d.", rc);
-    LF_PRINT_LOG("Starting subscribe");
-    if ((rc = MQTTClient_subscribe(connector_priv->client, (const char*)topic_to_subscribe, QOS)) !=
-        MQTTCLIENT_SUCCESS) {
-      MQTTClient_disconnect(connector_priv->client, TIMEOUT);
-      MQTTClient_destroy(&connector_priv->client);
-      free(topic_to_subscribe);
-      lf_print_error("Failed to subscribe, return code %d.", rc);
-      continue;
-    }
-    LF_PRINT_DEBUG("Subscribed on topic %s, return code %d.", topic_to_subscribe, rc);
-    break;
+
+  LF_PRINT_DEBUG("Connecting MQTTClient %s to broker.", connector_priv->client_id);
+  if ((rc = MQTT_connect_with_retry(connector_priv->client, &connector_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
+    MQTTClient_destroy(&connector_priv->client);
+    lf_print_error_and_exit("Failed to connect during establish_communication_session(), return code %d.", rc);
   }
+  LF_PRINT_DEBUG("Connected MQTTClient %s to broker, return code %d.", connector_priv->client_id, rc);
+  LF_PRINT_DEBUG("Subscribing on topic %s.", topic_to_subscribe);
+  if ((rc = MQTT_subscribe_with_retry(connector_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
+    MQTTClient_disconnect(connector_priv->client, TIMEOUT);
+    MQTTClient_destroy(&connector_priv->client);
+    lf_print_error_and_exit("Failed to subscribe during establish_communication_session(), return code %d.", rc);
+  }
+  LF_PRINT_DEBUG("Subscribed on topic %s, return code %d.", topic_to_subscribe, rc);
 
   // Step2: The listener sends a MSG_TYPE_MQTT_ACCEPT message to the federate.
   // Publish to topic: federationID_listenerID_to_fedID
-  connector_priv->topic_name = (const char*)create_topic_federation_id_A_to_B(connector_nedrv->federation_id,
-                                                                              listener_netdrv->my_federate_id, fed_id);
+  connector_priv->topic_name =
+      create_topic_federation_id_A_to_B(connector_nedrv->federation_id, listener_netdrv->my_federate_id, fed_id);
   buffer[0] = MSG_TYPE_MQTT_ACCEPT;
   encode_uint16((uint16_t)connector_nedrv->my_federate_id, buffer + 1);
   LF_PRINT_LOG("Publishing MSG_TYPE_MQTT_ACCEPT message on topic %s.", connector_priv->topic_name);
@@ -219,19 +212,19 @@ netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
  */
 void create_connector(netdrv_t* drv) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
-  set_MQTTClient_id(MQTT_priv, drv->my_federate_id);
+  // Only federates call this. It will be myfedID_RTI or myfedID_targetfedID.
+  set_MQTTClient_id(MQTT_priv, drv->my_federate_id, MQTT_priv->target_id);
   int rc;
   if ((rc = MQTTClient_create(&MQTT_priv->client, ADDRESS, MQTT_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
       MQTTCLIENT_SUCCESS) {
     lf_print_error_and_exit("Failed to create client, return code %d.", rc);
   }
-
-  MQTT_priv->conn_opts.keepAliveInterval = MQTTkeepAliveInterval;
-  MQTT_priv->conn_opts.cleansession = MQTTcleansession;
-  if ((rc = MQTTClient_connect(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
+  LF_PRINT_DEBUG("Connecting MQTTClient %s to broker.", MQTT_priv->client_id);
+  if ((rc = MQTT_connect_with_retry(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
     MQTTClient_destroy(&MQTT_priv->client);
-    lf_print_error_and_exit("Failed to connect, return code %d. Check if MQTT broker is available.", rc);
+    lf_print_error_and_exit("Failed to connect during create_connector(), return code %d. Check if MQTT broker is available.", rc);
   }
+  LF_PRINT_DEBUG("Connected MQTTClient %s to broker, return code %d.", MQTT_priv->client_id, rc);
 }
 /**
  * @brief Federate publishes it's federate ID to "{Federation_ID}_RTI", then subscribes to
@@ -252,20 +245,22 @@ int connect_to_netdrv(netdrv_t* drv) {
   char* topic_to_subscribe =
       create_topic_federation_id_A_to_B(drv->federation_id, MQTT_priv->target_id, drv->my_federate_id);
 
-  if ((rc = MQTTClient_subscribe(MQTT_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
+  LF_PRINT_DEBUG("Subscribing on topic %s.", topic_to_subscribe);
+  if ((rc = MQTT_subscribe_with_retry(MQTT_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
     MQTTClient_disconnect(MQTT_priv->client, TIMEOUT);
     MQTTClient_destroy(&MQTT_priv->client);
     free(topic_to_subscribe);
-    lf_print_error_and_exit("Failed to subscribe, return code %d.", rc);
+    lf_print_error_and_exit("Failed to subscribe during connect_to_netdrv(), return code %d.", rc);
   }
-  LF_PRINT_LOG("Subscribed on topic %s.", topic_to_subscribe);
+  LF_PRINT_DEBUG("Subscribed on topic %s, return code %d.", topic_to_subscribe, rc);
 
   // Step1: The federate sends a MSG_TYPE_MQTT_JOIN message including it's federateID to the listener.
   // Publish to topic: federationID_listenerID
-  MQTT_priv->topic_name = (const char*)create_topic_federation_id_listener_id(drv->federation_id, MQTT_priv->target_id);
+  MQTT_priv->topic_name = create_topic_federation_id_listener_id(drv->federation_id, MQTT_priv->target_id);
   unsigned char buffer[1 + sizeof(uint16_t)];
   buffer[0] = MSG_TYPE_MQTT_JOIN;
   encode_uint16((uint16_t)drv->my_federate_id, buffer + 1);
+
   // The connect_to_netdrv() can be called in the federates before the establish_communication_session() is called in
   // the RTI. The MQTT QOS2 ensures the message to arrive to the subscribed client, but this can be called even before
   // the netdriver was initialized in the RTI side. Thus, the federate must retry sending messages to the RTI until it
@@ -274,7 +269,7 @@ int connect_to_netdrv(netdrv_t* drv) {
   instant_t start_connect = lf_time_physical();
   while (1) {
     if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-      lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
+      lf_print_error("Failed to handshake with target with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
       return -1;
     }
     LF_PRINT_LOG("Publishing MSG_TYPE_MQTT_JOIN message with federateID %d on topic %s.", drv->my_federate_id,
@@ -336,7 +331,7 @@ int connect_to_netdrv(netdrv_t* drv) {
   // Step3: Send MSG_TYPE_MQTT_ACCEPT_ACK message to the listener.
   // Publish to topic: federationID_fedID_to_listenorID
   MQTT_priv->topic_name =
-      (const char*)create_topic_federation_id_A_to_B(drv->federation_id, drv->my_federate_id, MQTT_priv->target_id);
+      create_topic_federation_id_A_to_B(drv->federation_id, drv->my_federate_id, MQTT_priv->target_id);
   buffer[0] = MSG_TYPE_MQTT_ACCEPT_ACK;
   write_to_netdrv_fail_on_error(drv, 1, buffer, NULL,
                                 "Failed to write MSG_TYPE_MQTT_ACCEPT_ACK_to RTI for connection through MQTT.");
@@ -384,7 +379,7 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   MQTTClient_message* message = NULL;
   int rc;
   int bytes_read;
-  LF_PRINT_LOG("RECEIVING message from federateID %d", drv->my_federate_id);
+  // LF_PRINT_LOG("RECEIVING message from federateID %d", drv->my_federate_id);
   instant_t start_receive = lf_time_physical();
   while (1) {
     if (CHECK_TIMEOUT(start_receive, CONNECT_TIMEOUT)) {
@@ -395,17 +390,19 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
     rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 10000);
     if (rc != MQTTCLIENT_SUCCESS) {
       lf_print_error("Failed to receive message, return code %d.", rc);
+      lf_sleep(CONNECT_RETRY_INTERVAL);
       continue;
     } else if (message == NULL) {
       // This means the call succeeded but no message was received within the timeout
       lf_print_log("No message received within the MQTTClient_receive() timeout period.");
+      lf_sleep(CONNECT_RETRY_INTERVAL);
       continue;
     } else {
       // Successfully received a message
       lf_print_log("Successfully received message, return code %d.", rc);
       memcpy(buffer, (unsigned char*)message->payload, message->payloadlen);
       bytes_read = message->payloadlen;
-      LF_PRINT_LOG("RECEIVED message from federateID %d", drv->my_federate_id);
+      // LF_PRINT_LOG("RECEIVED message from federateID %d", drv->my_federate_id);
       if (buffer[0] == MQTT_RESIGNED) {
         LF_PRINT_LOG("Received MQTT_RESIGNED message from federateID %d", drv->my_federate_id);
         bytes_read = 0;
@@ -489,6 +486,9 @@ static MQTT_priv_t* MQTT_priv_init() {
   memset(MQTT_priv, 0, sizeof(MQTT_priv_t));
   MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
   memcpy(&MQTT_priv->conn_opts, &conn_opts, sizeof(MQTTClient_connectOptions));
+  MQTT_priv->conn_opts.keepAliveInterval = MQTTkeepAliveInterval;
+  MQTT_priv->conn_opts.cleansession = MQTTcleansession;
+  MQTT_priv->conn_opts.connectTimeout = MQTTconnectTimeout;
   return MQTT_priv;
 }
 
@@ -515,7 +515,7 @@ static char* create_topic_federation_id_listener_id(const char* federation_id, i
   if (listener_id == -1) {
     snprintf(result, max_length, "%s_RTI", federation_id);
   } else {
-    snprintf(result, max_length, "%s_fed__%d", federation_id, listener_id);
+    snprintf(result, max_length, "%s_fed_%d", federation_id, listener_id);
   }
   return result;
 }
@@ -556,54 +556,50 @@ static char* create_topic_federation_id_A_to_B(const char* federation_id, int A,
   return result;
 }
 
-static void set_MQTTServer_id(MQTT_priv_t* MQTT_priv, int my_id, int client_id) {
-  if (my_id == -1 && client_id == -1) {
+static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int my_id, int target_id) {
+  if (my_id == -1 && target_id == -1) {
     strcat(MQTT_priv->client_id, "RTI_RTI");
   } else if (my_id == -1) {
-    sprintf(MQTT_priv->client_id, "RTI_%d", client_id);
+    sprintf(MQTT_priv->client_id, "RTI_fed_%d", target_id);
+  } else if (target_id == -1) {
+    sprintf(MQTT_priv->client_id, "fed_%d_RTI", my_id);
   } else {
-    sprintf(MQTT_priv->client_id, "fed%d_fed%d", my_id, client_id);
+    sprintf(MQTT_priv->client_id, "fed_%d_fed_%d", my_id, target_id);
   }
 }
 
-static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int client_id) { sprintf(MQTT_priv->client_id, "%d", client_id); }
+int MQTT_connect_with_retry(MQTTClient client, MQTTClient_connectOptions* conn_opts) {
+  int rc = -1;
+  instant_t start_connect = lf_time_physical();
+  while (1) {
+    if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
+      lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
+      break;
+    }
+    if ((rc = MQTTClient_connect(client, conn_opts)) != MQTTCLIENT_SUCCESS) {
+      lf_print_error("Failed to connect, return code %d. Retrying to connect.", rc);
+      lf_sleep(CONNECT_RETRY_INTERVAL);
+      continue;
+    }
+    break;
+  }
+  return rc;
+}
 
-// int MQTT_connect_with_retry(MQTTClient client, MQTTClient_connectOptions* conn_opts) {
-//   int rc;
-//   int retries = 0;
-//   instant_t start_connect = lf_time_physical();
-//   while (1) {
-//     if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-//       lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
-//       break;
-//     }
-//   if ((rc = MQTTClient_connect(client, conn_opts)) != MQTTCLIENT_SUCCESS) {
-//     LF_PRINT_LOG("Failed to connect to MQTT broker, return code %d.", rc);
-//     retries++;
-//     if (retries >= MAX_RETRIES) {
-//       LF_PRINT_LOG("Max retries reached. Giving up.");
-//       return rc;
-//     }
-//     lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds.",
-//     CONNECT_RETRY_INTERVAL); lf_sleep(CONNECT_RETRY_INTERVAL);
-//   }
-//   return MQTTCLIENT_SUCCESS;
-// }
-
-// int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos) {
-//   int rc;
-//   int retries = 0;
-
-//   while ((rc = MQTTClient_subscribe(client, topic, qos)) != MQTTCLIENT_SUCCESS) {
-//     LF_PRINT_LOG("Failed to subscribe to MQTT broker, return code %d.", rc);
-//     retries++;
-//     if (retries >= MAX_RETRIES) {
-//       LF_PRINT_LOG("Max retries reached. Giving up.");
-//       return rc;
-//     }
-//     lf_print_warning("Could not subscribe to topic. Will try again every " PRINTF_TIME " nanoseconds.",
-//                      CONNECT_RETRY_INTERVAL);
-//     lf_sleep(CONNECT_RETRY_INTERVAL);
-//   }
-//   return MQTTCLIENT_SUCCESS;
-// }
+int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos) {
+  int rc = -1;
+  instant_t start_connect = lf_time_physical();
+  while (1) {
+    if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
+      lf_print_error("Failed to subscribe with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
+      break;
+    }
+    if ((rc = MQTTClient_subscribe(client, topic, qos)) != MQTTCLIENT_SUCCESS) {
+      lf_print_error("Failed to subscribe, return code %d. Retrying to subscribe.", rc);
+      lf_sleep(CONNECT_RETRY_INTERVAL);
+      continue;
+    }
+    break;
+  }
+  return rc;
+}

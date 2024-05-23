@@ -1649,6 +1649,7 @@ void send_address_advertisement_to_RTI(netdrv_t* fed_netdrv, netdrv_t* rti_netdr
  * @return int
  */
 static void get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdrv_t* rti_netdrv, netdrv_t* fed_netdrv) {
+// Do not send port for MQTT. It only needs to know the target federate's ID.
 #if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
   // The buffer is used for both sending and receiving replies.
   // The size is what is needed for receiving replies.
@@ -1705,10 +1706,10 @@ static void get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdr
   // Must set as specified port. Or else, the port will be increased when connecting to the other federate.
   set_specified_port(fed_netdrv, port);
 #elif defined(COMM_TYPE_MQTT)
-  // Do not send port for MQTT. It only needs to know the target federate's ID.
-  set_target_id(fed_netdrv, remote_federate_id);
-  if (rti_netdrv == NULL) {
-  } // JUST TO PASS COMPILER.
+  // // Do not send port for MQTT. It only needs to know the target federate's ID.
+  // set_target_id(fed_netdrv, remote_federate_id);
+  // if (rti_netdrv == NULL) {
+  // } // JUST TO PASS COMPILER.
 #endif
 }
 
@@ -1722,6 +1723,9 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
   // Initialize the netdriver to connect the remote federate.
   netdrv_t* netdrv = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id);
+#if defined(COMM_TYPE_MQTT)
+  set_target_id(netdrv, remote_federate_id);
+#endif
   create_connector(netdrv);
   get_remote_federate_info_from_RTI(remote_federate_id, _fed.netdrv_to_rti, netdrv);
   result = connect_to_netdrv(netdrv);
@@ -1793,11 +1797,11 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
   // Initialize netdriver to rti.
   _fed.netdrv_to_rti = initialize_netdrv(_lf_my_fed_id, federation_metadata.federation_id); // set memory.
-  create_connector(_fed.netdrv_to_rti);
   set_host_name(_fed.netdrv_to_rti, hostname);
   set_port(_fed.netdrv_to_rti, uport);
   set_specified_port(_fed.netdrv_to_rti, port);
   set_target_id(_fed.netdrv_to_rti, -1);
+  create_connector(_fed.netdrv_to_rti);
 
   if (connect_to_netdrv(_fed.netdrv_to_rti) < 0) {
     lf_print_error_and_exit("Failed to connect() to RTI after %d tries.", CONNECT_MAX_RETRIES);
