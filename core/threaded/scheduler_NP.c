@@ -243,19 +243,17 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
 
   LF_PRINT_DEBUG("Scheduler: Max reaction level: %zu", env->scheduler->max_reaction_level);
 
-  env->scheduler->custom_data
-      = (custom_scheduler_data_t*)calloc(1, sizeof(custom_scheduler_data_t));
+  env->scheduler->custom_data = (custom_scheduler_data_t*)calloc(1, sizeof(custom_scheduler_data_t));
 
-  env->scheduler->custom_data->triggered_reactions
-      = (reaction_t***)calloc((env->scheduler->max_reaction_level + 1), sizeof(reaction_t**));
+  env->scheduler->custom_data->triggered_reactions =
+      (reaction_t***)calloc((env->scheduler->max_reaction_level + 1), sizeof(reaction_t**));
 
-  env->scheduler->custom_data->array_of_mutexes
-      = (lf_mutex_t*)calloc((env->scheduler->max_reaction_level + 1), sizeof(lf_mutex_t));
+  env->scheduler->custom_data->array_of_mutexes =
+      (lf_mutex_t*)calloc((env->scheduler->max_reaction_level + 1), sizeof(lf_mutex_t));
 
   env->scheduler->custom_data->semaphore = lf_semaphore_new(0);
 
-  env->scheduler->indexes
-      = (volatile int*)calloc((env->scheduler->max_reaction_level + 1), sizeof(volatile int));
+  env->scheduler->indexes = (volatile int*)calloc((env->scheduler->max_reaction_level + 1), sizeof(volatile int));
 
   size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
   for (size_t i = 0; i <= env->scheduler->max_reaction_level; i++) {
@@ -265,16 +263,14 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
       }
     }
     // Initialize the reaction vectors
-    env->scheduler->custom_data->triggered_reactions[i]
-        = (reaction_t**)calloc(queue_size, sizeof(reaction_t*));
+    env->scheduler->custom_data->triggered_reactions[i] = (reaction_t**)calloc(queue_size, sizeof(reaction_t*));
 
     LF_PRINT_DEBUG("Scheduler: Initialized vector of reactions for level %zu with size %zu", i, queue_size);
 
     // Initialize the mutexes for the reaction vectors
     LF_MUTEX_INIT(&env->scheduler->custom_data->array_of_mutexes[i]);
   }
-  env->scheduler->custom_data->executing_reactions
-      = env->scheduler->custom_data->triggered_reactions[0];
+  env->scheduler->custom_data->executing_reactions = env->scheduler->custom_data->triggered_reactions[0];
 }
 
 /**
