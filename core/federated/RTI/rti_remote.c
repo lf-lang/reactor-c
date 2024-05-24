@@ -1489,6 +1489,8 @@ void initialize_RTI(rti_remote_t* rti) {
   LF_COND_INIT(&received_start_times, &rti_mutex);
   LF_COND_INIT(&sent_start_time, &rti_mutex);
 
+  LF_MUTEX_INIT(&netdrv_mutex);
+
   initialize_rti_common(&rti_remote->base);
   rti_remote->base.mutex = &rti_mutex;
 
