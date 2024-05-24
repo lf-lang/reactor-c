@@ -16,14 +16,11 @@
 typedef struct edf_sched_node {
     instant_t abs_d;
     uint pri;
-    edf_sched_node* left;
-    edf_sched_node* right;
+    struct edf_sched_node* left;
+    struct edf_sched_node* right;
     lf_thread_t thread_id; 
 } edf_sched_node;
 
-edf_sched_node* edf_elements = NULL; 
-edf_sched_node* edf_LL_head = NULL;
-// edf_sched_node* edf_LL_tail = NULL;
 /**
  * @brief Advance to the next level.
  * For federated runtimes, this function should

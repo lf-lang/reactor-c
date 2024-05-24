@@ -167,6 +167,9 @@ void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
     LF_PRINT_DEBUG("Scheduler: Worker %zu is trying to acquire the scheduling "
                    "semaphore.",
                    worker_number);
+    // setting the priority to the maximum to be sure to be
+    // woken up when new reactions are available
+    lf_thread_set_priority(lf_thread_self(), 99);
     lf_semaphore_acquire(scheduler->semaphore);
     LF_PRINT_DEBUG("Scheduler: Worker %zu acquired the scheduling semaphore.", worker_number);
   }
