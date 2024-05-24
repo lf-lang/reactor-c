@@ -1,8 +1,8 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author{Marten Lohstroh <marten@berkeley.edu>}
- * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @author Soroush Bateni
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
