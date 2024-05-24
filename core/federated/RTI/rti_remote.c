@@ -627,8 +627,6 @@ void handle_timestamp(federate_info_t* my_fed, unsigned char* buffer) {
     tracepoint_rti_from_federate(receive_TIMESTAMP, my_fed->enclave.id, &tag);
   }
   LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ".", timestamp);
-  LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ". fro federate %d", timestamp,
-                 my_fed->fed_netdrv->my_federate_id);
 
   LF_MUTEX_LOCK(&rti_mutex);
   rti_remote->num_feds_proposed_start++;
