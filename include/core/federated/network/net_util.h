@@ -167,7 +167,6 @@ uint32_t extract_uint32(unsigned char* bytes);
 /**
  * Mutex protecting socket close operations.
  */
-extern lf_mutex_t netdrv_mutex;
 
 /**
  * Extract the core header information that all messages between
