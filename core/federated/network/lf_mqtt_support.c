@@ -18,12 +18,16 @@
 #define MAX_RETRIES 5 // Number of retry attempts
 #define RETRY_DELAY 2 // Delay between attempts in seconds
 
+lf_mutex_t lf_outbound_netdrv_mutex;
+
+
 static MQTT_priv_t* MQTT_priv_init();
 static char* create_topic_federation_id_listener_id(const char* federation_id, int listener_id);
-static char* create_topic_federation_id_A_to_B(const char* federation_id, int A, int B);
-static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int my_id, int target_id);
+static char* create_topic_federation_id_A_to_B(const char* federation_id, int A, int B, int flag);
+static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int my_id, int target_id, int flag);
 int MQTT_connect_with_retry(MQTTClient client, MQTTClient_connectOptions* conn_opts);
-int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos);
+// int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos);
+int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos, int flag);
 
 void log_callback(enum MQTTCLIENT_TRACE_LEVELS level, char* message) {
   (void)level; // Explicitly mark the parameter as unused
@@ -81,11 +85,7 @@ void close_netdrv(netdrv_t* drv) {
 int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   if (server_type == RTI) {
-    
-  }
-  else {
-
-  }
+  } // JUST TO PASS COMPILER.
   if (port == 0) {
   } // JUST TO PASS COMPILER.
 
@@ -93,7 +93,7 @@ int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
   // close_netdrv() is called.
   MQTT_priv->target_id = -2;
   // If RTI calls this, it will be -1. If federate server calls, it will be it's federate ID.
-  set_MQTTClient_id(MQTT_priv, drv->my_federate_id, drv->my_federate_id);
+  set_MQTTClient_id(MQTT_priv, drv->my_federate_id, drv->my_federate_id, -1);
 
   int rc;
 
@@ -107,10 +107,10 @@ int create_listener(netdrv_t* drv, server_type_t server_type, uint16_t port) {
     lf_print_error_and_exit(
         "Failed to connect during create_listener(), return code %d. Check if MQTT broker is available.", rc);
   }
-  LF_PRINT_DEBUG("Connected MQTTClient %s to broker, return code %d.",MQTT_priv->client_id, rc);
+  LF_PRINT_DEBUG("Connected MQTTClient %s to broker, return code %d.", MQTT_priv->client_id, rc);
   MQTT_priv->topic_name = create_topic_federation_id_listener_id(drv->federation_id, drv->my_federate_id);
-  LF_PRINT_DEBUG("Subscribing on topic %s.", MQTT_priv->topic_name);
-  if ((rc = MQTT_subscribe_with_retry(MQTT_priv->client, MQTT_priv->topic_name, QOS)) != MQTTCLIENT_SUCCESS) {
+  LF_PRINT_DEBUG("create_listener(): MQTTClient %s Subscribing on topic %s.", MQTT_priv->client_id, MQTT_priv->topic_name);
+  if ((rc = MQTT_subscribe_with_retry(MQTT_priv->client, MQTT_priv->topic_name, QOS, 1)) != MQTTCLIENT_SUCCESS) {
     MQTTClient_disconnect(MQTT_priv->client, TIMEOUT);
     MQTTClient_destroy(&MQTT_priv->client);
     lf_print_error_and_exit("Failed to subscribe during create_listener(), return code %d.", rc);
@@ -156,14 +156,16 @@ netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
   connector_nedrv->my_federate_id = (int)fed_id;
   LF_PRINT_DEBUG("Setting up MQTTClient_id to target federate %d.", fed_id);
   // If RTI calls this, it will be RTI_targetfedID. If federate calls this, it will be myfedID_targetfedID
-  set_MQTTClient_id(connector_priv, listener_netdrv->my_federate_id, connector_nedrv->my_federate_id);
+  set_MQTTClient_id(connector_priv, listener_netdrv->my_federate_id, connector_nedrv->my_federate_id, -1);
   LF_PRINT_DEBUG("Setup MQTTClient_id to target federate %d as %s.", fed_id, connector_priv->client_id);
 
   LF_PRINT_DEBUG("Creating topic to target federate %d.", fed_id);
   // Subscribe to topic: federationID_fedID_to_listenerID
+  // When centralized, this will be federationID_fedID_to_RTI
+  // When decentralized, this will be federationID_CONN_{targetfedID}_to_LIST_{myfedID}
   // This is the channel where the federate sends messages to the listener.
   topic_to_subscribe =
-      create_topic_federation_id_A_to_B(connector_nedrv->federation_id, fed_id, listener_netdrv->my_federate_id);
+      create_topic_federation_id_A_to_B(connector_nedrv->federation_id, fed_id, listener_netdrv->my_federate_id, 1);
 
   LF_PRINT_DEBUG("Creating MQTTClient to target federate %d.", fed_id);
   if ((rc = MQTTClient_create(&connector_priv->client, ADDRESS, connector_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE,
@@ -177,8 +179,9 @@ netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
     lf_print_error_and_exit("Failed to connect during establish_communication_session(), return code %d.", rc);
   }
   LF_PRINT_DEBUG("Connected MQTTClient %s to broker, return code %d.", connector_priv->client_id, rc);
-  LF_PRINT_DEBUG("Subscribing on topic %s.", topic_to_subscribe);
-  if ((rc = MQTT_subscribe_with_retry(connector_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
+  LF_PRINT_DEBUG("establish_communication_session(): MQTTClient %s Subscribing on topic %s.", connector_priv->client_id, topic_to_subscribe);
+  if ((rc = MQTT_subscribe_with_retry(connector_priv->client, (const char*)topic_to_subscribe, QOS, 2)) !=
+      MQTTCLIENT_SUCCESS) {
     MQTTClient_disconnect(connector_priv->client, TIMEOUT);
     MQTTClient_destroy(&connector_priv->client);
     lf_print_error_and_exit("Failed to subscribe during establish_communication_session(), return code %d.", rc);
@@ -187,8 +190,10 @@ netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
 
   // Step2: The listener sends a MSG_TYPE_MQTT_ACCEPT message to the federate.
   // Publish to topic: federationID_listenerID_to_fedID
+  // When centralized, this will be federationID_RTI_to_fedID
+  // When decentralized, this will be federateionID_LIST_{myfedID}_to_CONN_{targetfedID}
   connector_priv->topic_name =
-      create_topic_federation_id_A_to_B(connector_nedrv->federation_id, listener_netdrv->my_federate_id, fed_id);
+      create_topic_federation_id_A_to_B(connector_nedrv->federation_id, listener_netdrv->my_federate_id, fed_id, -1);
   buffer[0] = MSG_TYPE_MQTT_ACCEPT;
   encode_uint16((uint16_t)connector_nedrv->my_federate_id, buffer + 1);
   LF_PRINT_LOG("Publishing MSG_TYPE_MQTT_ACCEPT message on topic %s.", connector_priv->topic_name);
@@ -213,7 +218,7 @@ netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
 void create_connector(netdrv_t* drv) {
   MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
   // Only federates call this. It will be myfedID_RTI or myfedID_targetfedID.
-  set_MQTTClient_id(MQTT_priv, drv->my_federate_id, MQTT_priv->target_id);
+  set_MQTTClient_id(MQTT_priv, drv->my_federate_id, MQTT_priv->target_id, 1);
   int rc;
   if ((rc = MQTTClient_create(&MQTT_priv->client, ADDRESS, MQTT_priv->client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL)) !=
       MQTTCLIENT_SUCCESS) {
@@ -222,7 +227,8 @@ void create_connector(netdrv_t* drv) {
   LF_PRINT_DEBUG("Connecting MQTTClient %s to broker.", MQTT_priv->client_id);
   if ((rc = MQTT_connect_with_retry(MQTT_priv->client, &MQTT_priv->conn_opts)) != MQTTCLIENT_SUCCESS) {
     MQTTClient_destroy(&MQTT_priv->client);
-    lf_print_error_and_exit("Failed to connect during create_connector(), return code %d. Check if MQTT broker is available.", rc);
+    lf_print_error_and_exit(
+        "Failed to connect during create_connector(), return code %d. Check if MQTT broker is available.", rc);
   }
   LF_PRINT_DEBUG("Connected MQTTClient %s to broker, return code %d.", MQTT_priv->client_id, rc);
 }
@@ -242,11 +248,13 @@ int connect_to_netdrv(netdrv_t* drv) {
   // This should be done before sending the MSG_TYPE_MQTT_JOIN message, because the listener publishing the
   // MSG_TYPE_MQTT_ACCEPT message at topic federationID_listenerID_to_fedID can be faster than the connector subscribing
   // to the topic.
+  // When centralized, this will be federationID_RTI_to_fedID
+  // When decentralized, this will be federateionID_LIST_{targetfedID}_to_CONN_{myfedID}
   char* topic_to_subscribe =
-      create_topic_federation_id_A_to_B(drv->federation_id, MQTT_priv->target_id, drv->my_federate_id);
+      create_topic_federation_id_A_to_B(drv->federation_id, MQTT_priv->target_id, drv->my_federate_id, -1);
 
-  LF_PRINT_DEBUG("Subscribing on topic %s.", topic_to_subscribe);
-  if ((rc = MQTT_subscribe_with_retry(MQTT_priv->client, (const char*)topic_to_subscribe, QOS)) != MQTTCLIENT_SUCCESS) {
+  LF_PRINT_DEBUG("connect_to_netdrv(): MQTTClient %s Subscribing on topic %s.", MQTT_priv->client_id, topic_to_subscribe);
+  if ((rc = MQTT_subscribe_with_retry(MQTT_priv->client, (const char*)topic_to_subscribe, QOS, 3)) != MQTTCLIENT_SUCCESS) {
     MQTTClient_disconnect(MQTT_priv->client, TIMEOUT);
     MQTTClient_destroy(&MQTT_priv->client);
     free(topic_to_subscribe);
@@ -330,8 +338,10 @@ int connect_to_netdrv(netdrv_t* drv) {
 
   // Step3: Send MSG_TYPE_MQTT_ACCEPT_ACK message to the listener.
   // Publish to topic: federationID_fedID_to_listenorID
+  // When centralized, this will be federationID_fedID_to_RTI
+  // When decentralized, this will be federationID_CONN_{myfedID}_to_LIST_{targetfedID}
   MQTT_priv->topic_name =
-      create_topic_federation_id_A_to_B(drv->federation_id, drv->my_federate_id, MQTT_priv->target_id);
+      create_topic_federation_id_A_to_B(drv->federation_id, drv->my_federate_id, MQTT_priv->target_id, 1);
   buffer[0] = MSG_TYPE_MQTT_ACCEPT_ACK;
   write_to_netdrv_fail_on_error(drv, 1, buffer, NULL,
                                 "Failed to write MSG_TYPE_MQTT_ACCEPT_ACK_to RTI for connection through MQTT.");
@@ -520,21 +530,25 @@ static char* create_topic_federation_id_listener_id(const char* federation_id, i
   return result;
 }
 
-static char* create_topic_federation_id_A_to_B(const char* federation_id, int A, int B) {
-  int max_length;
+static char* create_topic_federation_id_A_to_B(const char* federation_id, int A, int B, int flag) {
+  int max_length = 0;
   char* result;
   if (A == -2 || B == -2) {
     lf_print_error_and_exit("The ID used for the MQTT topic is not initalized.");
     return NULL;
   }
-
   // Determine the maximum length of the resulting string
+  // If either the ID includes -1, then the flag does not matter.
   if (A == -1) {
     max_length = snprintf(NULL, 0, "%s_RTI_to_fed_%d", federation_id, B) + 1; // +1 for null terminator
   } else if (B == -1) {
     max_length = snprintf(NULL, 0, "%s_fed_%d_to_RTI", federation_id, A) + 1; // +1 for null terminator
-  } else {
-    max_length = snprintf(NULL, 0, "%s_fed_%d_to_fed_%d", federation_id, A, B) + 1; // +1 for null terminator
+  }
+
+  else if (flag == 1) {
+    max_length = snprintf(NULL, 0, "%s_CONN_fed_%d_to_LIST_fed_%d", federation_id, A, B) + 1; // +1 for null terminator
+  } else if (flag == -1) {
+    max_length = snprintf(NULL, 0, "%s_LIST_fed_%d_to_CONN_fed_%d", federation_id, A, B) + 1; // +1 for null terminator
   }
 
   // Allocate memory for the resulting string
@@ -549,22 +563,31 @@ static char* create_topic_federation_id_A_to_B(const char* federation_id, int A,
     snprintf(result, max_length, "%s_RTI_to_fed_%d", federation_id, B);
   } else if (B == -1) {
     snprintf(result, max_length, "%s_fed_%d_to_RTI", federation_id, A);
-  } else {
-    snprintf(result, max_length, "%s_fed_%d_to_fed_%d", federation_id, A, B);
   }
-
+  else if (flag == 1) {
+    snprintf(result, max_length, "%s_CONN_fed_%d_to_LIST_fed_%d", federation_id, A, B);
+  } else if (flag == -1) {
+    snprintf(result, max_length, "%s_LIST_fed_%d_to_CONN_fed_%d", federation_id, A, B);
+  }
   return result;
 }
 
-static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int my_id, int target_id) {
+static void set_MQTTClient_id(MQTT_priv_t* MQTT_priv, int my_id, int target_id, int flag) {
+  // When the flag is 0, it is for centralized communication.
+
   if (my_id == -1 && target_id == -1) {
     strcat(MQTT_priv->client_id, "RTI_RTI");
   } else if (my_id == -1) {
     sprintf(MQTT_priv->client_id, "RTI_fed_%d", target_id);
   } else if (target_id == -1) {
     sprintf(MQTT_priv->client_id, "fed_%d_RTI", my_id);
-  } else {
-    sprintf(MQTT_priv->client_id, "fed_%d_fed_%d", my_id, target_id);
+  }
+
+  // When the flag is 1, it means
+  else if (flag == 1) {
+    sprintf(MQTT_priv->client_id, "CONN_fed_%d_LIST_fed_%d", my_id, target_id);
+  } else if (flag == -1) {
+    sprintf(MQTT_priv->client_id, "LIST_fed_%d_CONN_fed_%d", my_id, target_id);
   }
 }
 
@@ -573,11 +596,11 @@ int MQTT_connect_with_retry(MQTTClient client, MQTTClient_connectOptions* conn_o
   instant_t start_connect = lf_time_physical();
   while (1) {
     if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-      lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
+      lf_print_warning("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
       break;
     }
     if ((rc = MQTTClient_connect(client, conn_opts)) != MQTTCLIENT_SUCCESS) {
-      lf_print_error("Failed to connect, return code %d. Retrying to connect.", rc);
+      lf_print_warning("Failed to connect, return code %d. Retrying to connect.", rc);
       lf_sleep(CONNECT_RETRY_INTERVAL);
       continue;
     }
@@ -586,16 +609,18 @@ int MQTT_connect_with_retry(MQTTClient client, MQTTClient_connectOptions* conn_o
   return rc;
 }
 
-int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos) {
+// int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos) {
+int MQTT_subscribe_with_retry(MQTTClient client, const char* topic, int qos, int flag) {
   int rc = -1;
   instant_t start_connect = lf_time_physical();
   while (1) {
     if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-      lf_print_error("Failed to subscribe with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
+      lf_print_warning("Failed to subscribe with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
       break;
     }
     if ((rc = MQTTClient_subscribe(client, topic, qos)) != MQTTCLIENT_SUCCESS) {
-      lf_print_error("Failed to subscribe, return code %d. Retrying to subscribe.", rc);
+      // lf_print_warning("Failed to subscribe, return code %d. Retrying to subscribe.", rc);
+      lf_print_warning("Failed to subscribe, return code %d. Retrying to subscribe. Flag: %d", rc, flag);
       lf_sleep(CONNECT_RETRY_INTERVAL);
       continue;
     }

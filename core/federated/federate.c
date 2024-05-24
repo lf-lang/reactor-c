@@ -1706,7 +1706,11 @@ static void get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdr
   // Must set as specified port. Or else, the port will be increased when connecting to the other federate.
   set_specified_port(fed_netdrv, port);
 #elif defined(COMM_TYPE_MQTT)
-  // // Do not send port for MQTT. It only needs to know the target federate's ID.
+
+  // Do not send port for MQTT. It only needs to know the target federate's ID.
+  (void) remote_federate_id;
+  (void) rti_netdrv;
+  (void) fed_netdrv; 
   // set_target_id(fed_netdrv, remote_federate_id);
   // if (rti_netdrv == NULL) {
   // } // JUST TO PASS COMPILER.
