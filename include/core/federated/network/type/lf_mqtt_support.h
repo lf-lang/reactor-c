@@ -13,7 +13,7 @@
 typedef struct MQTT_priv_t {
   MQTTClient client;
   MQTTClient_connectOptions conn_opts; // = MQTTClient_connectOptions_initializer;
-  char* topic_name;
+  char* topic_name_to_send;
   char client_id[32];
   int target_id; // Must be int. Not uint_16_t. -1 stands for RTI, -2 means uninitialized.
 } MQTT_priv_t;
