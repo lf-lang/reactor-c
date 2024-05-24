@@ -1,8 +1,8 @@
 /**
- * @file scheduler_sync_tag_advance.h
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @author Edward A. Lee <eal@berkeley.edu>
- * @author Marten Lohstroh <marten@berkeley.edu>
+ * @file
+ * @author Soroush Bateni
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
  * @brief API used to advance tag globally.
  * @copyright (c) 2020-2024, The University of California at Berkeley and The University of Texas at Dallas
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
