@@ -1562,7 +1562,7 @@ void lf_terminate_execution(environment_t* env) {
 
   // For an abnormal termination (e.g. a SIGINT), we need to send a
   // MSG_TYPE_FAILED message to the RTI, but we should not acquire a mutex.
-  if (_fed.netdrv_to_rti != 0) {
+  if (_fed.netdrv_to_rti != NULL) {
     if (_lf_normal_termination) {
       tracepoint_federate_to_rti(send_RESIGN, _lf_my_fed_id, &env->current_tag);
       send_resign_signal();
@@ -1711,9 +1711,6 @@ static void get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdr
   (void) remote_federate_id;
   (void) rti_netdrv;
   (void) fed_netdrv; 
-  // set_target_id(fed_netdrv, remote_federate_id);
-  // if (rti_netdrv == NULL) {
-  // } // JUST TO PASS COMPILER.
 #endif
 }
 
@@ -2063,7 +2060,6 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }
-
     received_federates++;
   }
 
