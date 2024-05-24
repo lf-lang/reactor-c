@@ -1,12 +1,20 @@
 /**
  * @file
- * @author{Soroush Bateni <soroush@utdallas.edu>}
- * @author{Edward A. Lee <eal@berkeley.edu>}
- * @author{Marten Lohstroh <marten@berkeley.edu>}
+ * @author Soroush Bateni
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Global Earliest Deadline First (GEDF) non-preemptive scheduler for the
  * threaded runtime of the C target of Lingua Franca.
+ *
+ * At each tag, this scheduler prioritizes reactions with the smallest (inferred) deadline.
+ * An inferred deadline for reaction _R_ is either an explicitly declared deadline or the declared deadline of
+ * a reaction that depends on _R_. This scheduler is non-preemptive, meaning that once a worker thread starts
+ * executing a reaction, it will execute that reaction to completion. The underlying thread scheduler, of
+ * course, could preempt the execution in favor of some other worker thread.
+ * This scheduler does not take into account execution times of reactions.
+ * Moreover, it does not prioritize reactions across distinct tags.
  */
 #include "lf_types.h"
 
@@ -221,7 +229,7 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
     // has one level higher than the current level. No need to notify idle threads.
     // But in federated execution, it could be called because of message arrival.
     // Also, in modal models, reset and startup reactions may be triggered.
-#if defined(FEDERATED) || defined(MODAL)
+#if defined(FEDERATED) || (defined(MODAL) && !defined(LF_SINGLE_THREADED))
     reaction_t* triggered_reaction = (reaction_t*)pqueue_peek(scheduler->custom_data->reaction_q);
     if (LF_LEVEL(triggered_reaction->index) == scheduler->custom_data->current_level) {
       LF_COND_SIGNAL(&scheduler->custom_data->reaction_q_changed);
