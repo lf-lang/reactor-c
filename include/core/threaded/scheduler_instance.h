@@ -68,11 +68,6 @@ typedef struct lf_scheduler_t {
    */
   volatile size_t number_of_idle_workers;
 
-  /**
-   * @brief The next level of reactions to execute.
-   */
-  volatile size_t next_reaction_level;
-
   // Pointer to an optional custom data structure that each scheduler can define.
   // The type is forward declared here and must be declared again in the scheduler source file
   // Is not touched by `init_sched_instance` and must be initialized by each scheduler that needs it

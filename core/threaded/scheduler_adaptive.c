@@ -21,11 +21,13 @@
 #include "environment.h"
 #include "util.h"
 
+#ifdef FEDERATED
+#include "federate.h"
+#endif
+
 #ifndef MAX_REACTION_LEVEL
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
 #endif
-
-void try_advance_level(environment_t* env, volatile size_t* next_reaction_level);
 
 /////////////////// Forward declarations /////////////////////////
 extern bool fast;
@@ -435,7 +437,10 @@ static void advance_level_and_unlock(lf_scheduler_t* scheduler, size_t worker) {
         return;
       }
     } else {
-      try_advance_level(scheduler->env, &worker_assignments->current_level);
+#ifdef FEDERATED
+      lf_stall_advance_level_federation(scheduler->env, worker_assignments->current_level);
+#endif
+      worker_assignments->current_level++;
       set_level(scheduler, worker_assignments->current_level);
     }
     size_t total_num_reactions = get_num_reactions(scheduler);
