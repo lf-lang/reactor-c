@@ -2612,17 +2612,16 @@ void lf_spawn_staa_thread() { lf_thread_create(&_fed.staaSetter, update_ports_fr
 #endif // FEDERATED_DECENTRALIZED
 
 void lf_stall_advance_level_federation_locked(size_t level) {
-  LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", level, max_level_allowed_to_advance);
+  LF_PRINT_DEBUG("Waiting for MLAA %d to exceed level %zu.", max_level_allowed_to_advance, level);
   while (((int)level) >= max_level_allowed_to_advance) {
     lf_cond_wait(&lf_port_status_changed);
   };
-  LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %zu.", max_level_allowed_to_advance, level);
+  LF_PRINT_DEBUG("Exiting wait with MLAA %d and level %zu.", max_level_allowed_to_advance, level);
 }
 
 void lf_stall_advance_level_federation(environment_t* env, size_t level) {
   LF_PRINT_DEBUG("Acquiring the environment mutex.");
   LF_MUTEX_LOCK(&env->mutex);
-  LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", level, max_level_allowed_to_advance);
   lf_stall_advance_level_federation_locked(level);
   LF_MUTEX_UNLOCK(&env->mutex);
 }
