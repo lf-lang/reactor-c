@@ -27,6 +27,10 @@
 #include "util.h"
 #include "reactor_threaded.h"
 
+#ifdef FEDERATED
+#include "federate.h"
+#endif
+
 // Data specific to the NP scheduler.
 typedef struct custom_scheduler_data_t {
   reaction_t** executing_reactions;
