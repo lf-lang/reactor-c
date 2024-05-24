@@ -118,6 +118,10 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
 }
 
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
+  if (drv == NULL) {
+    lf_print_warning("Netdriver is closed, returning -1.");
+    return -1;
+  }
   if (buffer_length == 0) {
   } // JUST TO PASS COMPILER.
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
@@ -218,7 +222,7 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
   return 0;
 }
 
-void set_target_id(netdrv_t* drv, int federate_id){
+void set_target_id(netdrv_t* drv, int federate_id) {
   if (drv == NULL) {
   } // JUST TO PASS COMPILER.
   if (federate_id == 0) {

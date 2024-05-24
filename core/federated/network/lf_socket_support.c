@@ -26,6 +26,8 @@ netdrv_t* initialize_netdrv(int my_federate_id, const char* federation_id) {
 void close_netdrv(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   TCP_socket_close(priv);
+  free(priv);
+  free(drv);
 }
 
 // This only creates TCP servers not UDP.
@@ -140,6 +142,10 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
  * @return 0 for success, 1 for EOF, and -1 for an error.
  */
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
+  if (drv == NULL) {
+    lf_print_warning("Netdriver is closed, returning -1.");
+    return -1;
+  }
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
 
   size_t bytes_to_read;        // The bytes to read in future.
