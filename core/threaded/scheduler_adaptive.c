@@ -1,6 +1,6 @@
 /**
  * @file
- * @author{Peter Donovan <peterdonovan@berkeley.edu>}
+ * @author Peter Donovan
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief This is a non-priority-driven scheduler. See scheduler.h for documentation.
@@ -684,7 +684,6 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
   worker_assignments_free(scheduler);
   data_collection_free(scheduler);
   free(scheduler->custom_data);
-  lf_semaphore_destroy(scheduler->semaphore);
 }
 
 ///////////////////////// Scheduler Worker API ///////////////////////////////
