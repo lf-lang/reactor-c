@@ -1387,10 +1387,10 @@ static void send_resign_signal() {
   size_t bytes_to_write = 1;
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_RESIGN;
-  // LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   write_to_netdrv_fail_on_error(_fed.netdrv_to_rti, bytes_to_write, &(buffer[0]), &lf_outbound_netdrv_mutex,
                                 "Failed to send MSG_TYPE_RESIGN.");
-  // LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   LF_PRINT_LOG("Resigned.");
 }
 
