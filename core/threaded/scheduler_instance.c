@@ -1,3 +1,14 @@
+/**
+ * @file
+ * @author Soroush Bateni
+ * @author Edward A. Lee
+ * @copyright (c) 2022-2024, The University of Texas at Dallas and The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Common scheduler functions.
+ *
+ * This file defines functions that are common across multiple schedulers.
+ */
+
 #include <assert.h>
 #include "scheduler_instance.h"
 #include "environment.h"
