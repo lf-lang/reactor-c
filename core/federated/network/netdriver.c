@@ -5,6 +5,8 @@
 #include "netdriver.h"
 #include "util.h"
 
+lf_mutex_t netdrv_mutex;
+
 netdrv_t* initialize_common_netdrv(int my_federate_id, const char* federation_id) {
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {

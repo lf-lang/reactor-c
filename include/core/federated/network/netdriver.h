@@ -13,6 +13,9 @@
 #include "lf_sst_support.h"
 #endif
 
+extern lf_mutex_t netdrv_mutex;
+
+
 typedef enum netdrv_type_t { NETDRV, UDP } netdrv_type_t;
 
 // Just doing 0 for RTI, 1 for FED

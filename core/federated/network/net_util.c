@@ -43,7 +43,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <netinet/tcp.h> // TCP_NODELAY
 
 #include "net_util.h"
-// #include "util.h"
 
 // Define socket functions only for federated execution.
 #ifdef FEDERATED
@@ -52,7 +51,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_FEDERATES 1
 #endif
 
-lf_mutex_t netdrv_mutex;
 
 #endif // FEDERATED
 
