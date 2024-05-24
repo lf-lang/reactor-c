@@ -83,9 +83,12 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
  */
 ssize_t read_from_netdrv_close_on_error(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
   ssize_t bytes_read = read_from_netdrv(drv, buffer, buffer_length);
-  if (bytes_read <= 0) {
-    close_netdrv(drv);
+  if (bytes_read < 0) {
     return -1;
+  }
+  if (bytes_read == 0) {
+    // close_netdrv(drv);
+    return 0;
   }
   return bytes_read;
 }
