@@ -34,8 +34,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LF_NRF52_SUPPORT_H
 #define LF_NRF52_SUPPORT_H
 
-// This embedded platform has no TTY suport
-#define NO_TTY
+// This embedded platform has no command line interface
+#define NO_CLI
+#define MINIMAL_STDLIB
 
 #include <stdint.h> // For fixed-width integral types
 #include <stdbool.h>
