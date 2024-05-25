@@ -35,7 +35,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/lf_rp2040_support.h"
 #include "low_level_platform.h"
-#include "utils/util.h"
 #include "tag.h"
 
 #include <pico/stdlib.h>
@@ -216,10 +215,7 @@ int _lf_single_threaded_notify_of_event() {
  * @brief Get the number of cores on the host machine.
  */
 int lf_available_cores() {
-  // Right now, runtime creates 1 main thread and 1 worker thread
-  // In the future, this may be changed to 2 (if main thread also functions
-  // as a worker thread)
-  return 1;
+  return 2;
 }
 
 static void *(*thread_1) (void *);
@@ -309,6 +305,13 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
   return acquired_permit ? 0 : LF_TIMEOUT;
 }
 
-#endif // LF_SINGLE_THREADED
+void initialize_lf_thread_id() {}
+
+int lf_thread_id() {
+  return get_core_num();
+}
+
+
+#endif // !LF_SINGLE_THREADED
 
 #endif // PLATFORM_RP2040

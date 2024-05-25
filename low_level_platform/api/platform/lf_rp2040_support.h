@@ -7,7 +7,6 @@
 #ifndef LF_RP2040_SUPPORT_H
 #define LF_RP2040_SUPPORT_H
 
-#include <pico/stdlib.h>
 #include <pico/sync.h>
 
 #define NO_CLI
