@@ -276,32 +276,40 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
   return 0;
 }
 
+// condition variables "notify" threads using a semaphore per core.
+// although there are only two cores, may not use just a single semaphore
+// as a cond_broadcast may be called from within an interrupt
 int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
-  sem_init(&(cond->sema), 0, 1);
+  for (int i = 0; i < NUM_CORES; i++) {
+    sem_init(&(cond->notifs[i]), 0, 1);
+  }
   cond->mutex = mutex;
   return 0;
 }
 
 int lf_cond_broadcast(lf_cond_t* cond) {
-  sem_reset(&(cond->sema), 1);
+  for (int i = 0; i < NUM_CORES; i++) {
+    sem_reset(&(cond->notifs[i]), 1);
+  }
   return 0;
 }
 
 int lf_cond_signal(lf_cond_t* cond) {
-  sem_reset(&(cond->sema), 1);
-  return 0;
+  return lf_cond_broadcast(cond); // spurious wakeups, but that's ok
 }
 
 int lf_cond_wait(lf_cond_t* cond) {
+  semaphore_t* mailbox = &(cond->notifs[get_core_num()]);
   lf_mutex_unlock(cond->mutex);
-  sem_acquire_blocking(&(cond->sema));
+  sem_acquire_blocking(mailbox);
   lf_mutex_lock(cond->mutex);
   return 0;
 }
 
 int _lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+  semaphore_t* mailbox = &(cond->notifs[get_core_num()]);
   absolute_time_t a = from_us_since_boot(absolute_time_ns / 1000);
-  bool acquired_permit = sem_acquire_block_until(&(cond->sema), a);
+  bool acquired_permit = sem_acquire_block_until(mailbox, a);
   return acquired_permit ? 0 : LF_TIMEOUT;
 }
 

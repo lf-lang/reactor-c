@@ -7,6 +7,7 @@
 #ifndef LF_RP2040_SUPPORT_H
 #define LF_RP2040_SUPPORT_H
 
+#include <pico/stdlib.h>
 #include <pico/sync.h>
 
 #define NO_CLI
@@ -25,7 +26,7 @@
 
 typedef recursive_mutex_t lf_mutex_t;
 typedef struct {
-    semaphore_t sema;
+    semaphore_t notifs[NUM_CORES];
     lf_mutex_t* mutex;
 } lf_cond_t;
 typedef int lf_thread_t;
