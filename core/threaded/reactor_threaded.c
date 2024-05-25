@@ -245,6 +245,12 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
       return true;
     }
 
+    // setting the priority to the maximum to be sure to be
+    // woken up as soon as the sleep time terminates (because there
+    // might be other worker threads from different enclaves having
+    // higher priority than what the current thread has)
+    lf_thread_set_priority(lf_thread_self(), LF_SCHED_MAX_PRIORITY);
+
     // We do the sleep on the cond var so we can be awakened by the
     // asynchronous scheduling of a physical action. lf_clock_cond_timedwait
     // returns 0 if it is awakened before the timeout. Hence, we want to run
@@ -903,7 +909,7 @@ void remove_from_edf_ll(lf_thread_t my_id) {
  * with the EDF rule.
  * First, the algorithm tries to shift the nodes to the right of the position
  * where current has been inserted. If this is not possible (the tail
- * of the LL has priority 99 and there is no space to shift the previous
+ * of the LL has priority 98 and there is no space to shift the previous
  * elements), the function tries to shift the nodes to the left. If
  * this again is not possible (the head of the LL has priority 2 and
  * there is no space to shift the following elements), the function
@@ -920,20 +926,20 @@ bool shift_edf_priorities(edf_sched_node* current) {
   edf_sched_node* ptr = after; 
   // count the number of times the while loop executes, so you can distribute
   // the priority space you find across the threads in the linked list
-  uint counter = 1;
+  int counter = 1;
   // set to true if we can find a shifting spot
-  bool flag = false;
+  bool shifted = false;
   while (ptr) {
     counter++;
-    if (!ptr->right && ptr->pri != 99) {
-      // if until the tail we cannot find a shifting spot, and the tail is not 99
-      // this means the tail can be shifted to 99
-      flag = true;
-      uint diff = 99 - ptr->left->pri;
+    if (!ptr->right && ptr->pri != LF_SCHED_MAX_PRIORITY - 1) {
+      // if until the tail we cannot find a shifting spot, and the tail is not 98
+      // this means the tail can be shifted to 98
+      shifted = true;
+      int diff = LF_SCHED_MAX_PRIORITY - 1 - ptr->left->pri;
       // the formula is explained in the else-if case
-      uint incr = (diff - 1) / (counter + 1) + 1;
+      int incr = (diff - 1) / (counter + 1) + 1;
       // change the tail's priority
-      ptr->pri = 99;
+      ptr->pri = LF_SCHED_MAX_PRIORITY - 1;
       lf_thread_set_priority(ptr->thread_id, ptr->pri);
       
       // change the priorities of node from tail to the current thread
@@ -948,16 +954,16 @@ bool shift_edf_priorities(edf_sched_node* current) {
       break;
 
     } else if (ptr->right) {
-      uint diff = ptr->right->pri - ptr->pri;
+      int diff = ptr->right->pri - ptr->pri;
       if (diff > 1) {
         // eureka! we found shifting spot
-        flag = true;
+        shifted = true;
         // calculate the increment interval:
         // # diff - 1 is the extra space to distribute equally
         // (-1 because we guarantee a space of at least 1 between ptr and ptr->right);
         // # counter + 1 is the number of spaces between "counter" elements in the LL;
         // # +1 replaces the ceiling (not exactly but still ok);
-        uint incr = (diff - 1) / (counter + 1) + 1;
+        int incr = (diff - 1) / (counter + 1) + 1;
         // shift every node's priority from this spot to the spot
         // we inserted the current thread, starting from the right
         do {
@@ -973,7 +979,7 @@ bool shift_edf_priorities(edf_sched_node* current) {
     ptr = ptr->right;
   }
   
-  if (!flag) {
+  if (!shifted) {
     // if flag is still false, this mean we couldn't find any shifting spot on the right side
     // we need to check left (this is a copy of the above code with the needed edits... debeatable)
     ptr = before;
@@ -983,10 +989,10 @@ bool shift_edf_priorities(edf_sched_node* current) {
       if (!ptr->left && ptr->pri != 2) {
         // if until the head we cannot find a shifting spot, and the head is not 2
         // (1 is reserved for reactions w/o deadline) this means the head can be shifted
-        flag = true;
-        uint diff = ptr->right->pri - 2;
+        shifted = true;
+        int diff = ptr->right->pri - 2;
         // usual formula to spread priorities
-        uint incr = (diff - 1) / (counter + 1) + 1;
+        int incr = (diff - 1) / (counter + 1) + 1;
         // change the head's priority
         ptr->pri = 2;
         lf_thread_set_priority(ptr->thread_id, ptr->pri);
@@ -1002,12 +1008,12 @@ bool shift_edf_priorities(edf_sched_node* current) {
         break;
         
       } else if (ptr->left) {
-        uint diff = ptr->pri - ptr->left->pri;
+        int diff = ptr->pri - ptr->left->pri;
         if (diff > 1) {
           // eureka! we found shifting spot
-          flag = true;
+          shifted = true;
           // usual formula to spread priorities
-          uint incr = (diff - 1) / (counter + 1) + 1;
+          int incr = (diff - 1) / (counter + 1) + 1;
           // shift every node's priority from this spot to the spot
           // we inserted the current thread, starting from the left
           do {
@@ -1023,12 +1029,17 @@ bool shift_edf_priorities(edf_sched_node* current) {
       ptr = ptr->left;
     }
   }
-  return flag; 
+  return shifted; 
 }
 
 /**
- * Function to assign a priority value to the worker thread serving
- * current_reaction_to_execute. The value is determined by EDF.
+ * Function to assign a priority value between 1 and 98 to the worker thread
+ * serving current_reaction_to_execute. The value is determined by EDF.
+ * Priority 1 is assigned to worker threads executing reactions without deadline,
+ * while priority 99 is reserved for worker threads waiting on the semaphore
+ * (for the scheduler to advance tag) or sleeping with wait_until. The reason
+ * for the highest priority is to be sure that the awakening of these threads is not
+ * delayed by the other worker threads executing reactions (even in different enclaves).
  * @param env the environment within which we are executing.
  * @param current_reaction_to_execute the reaction the current worker thread is about to serve.
 */
@@ -1058,6 +1069,7 @@ void assign_edf_priority(environment_t* env, reaction_t* current_reaction_to_exe
     // if there is no head -- then the current thread is the head
     if (!edf_ll_head) {
       edf_ll_head = current;
+      // FIXME: make sure this is an appropriate value
       current->pri = 50;
 
       LF_PRINT_LOG("No worker threads running, reaction %s is the head of the list and "
@@ -1066,7 +1078,7 @@ void assign_edf_priority(environment_t* env, reaction_t* current_reaction_to_exe
       // there is a head in the LL
       
       // assuming the edf_element was not in the linked list anymore
-      // (removed on the completion of the previous served reaction)
+      // (removed at the completion of the previously executed reaction)
 
       edf_sched_node* ptr = edf_ll_head;
       // find the spot that the current thread needs to insert itself
@@ -1083,26 +1095,31 @@ void assign_edf_priority(environment_t* env, reaction_t* current_reaction_to_exe
           if (temp) {
             LF_PRINT_LOG("Insertion not at the beginning of the list");
             temp->right = current;
+            // if there is enough space to assign a priority value between ptr and temp
             if (ptr->pri - temp->pri >= 2) {
               // distancing the priority by 3 from the lowest if there is enough space
               // (because it's likely that as time passes, newly coming deadlines will be bigger)
-              uint incr = (ptr->pri - temp->pri >= 4) ? 3 : (ptr->pri - temp->pri - 1);
+              int incr = (ptr->pri - temp->pri >= 4) ? 3 : (ptr->pri - temp->pri - 1);
               current->pri = current->left->pri + incr;
               LF_PRINT_LOG("Assigned priority %d to reaction %s", current->pri, current_reaction_to_execute->name);
             } else {
               // shift elements to find a proper priority value
               LF_PRINT_LOG("Shifting");
-              shift_edf_priorities(current);
+              if (!shift_edf_priorities(current)) {
+                lf_print_error_and_exit("More threads than priority values. Aborting.");
+              }
             }
           } else { // if the insertion is at the beginning of the list
             LF_PRINT_LOG("Insertion at the beginning of the list");
             edf_ll_head = current;
+            // distancing the priority by 5 from ptr (if there is enough space)
             current->pri = (ptr->pri - 5 >= 2) ? (ptr->pri - 5) : 2;
           }
 
           break;
         } else if (ptr->right == NULL) {
-          // this node needs to be added as the tail of the LL
+          // this reaction has the earliest deadline in the list =>
+          // it needs to be added as the tail of the LL
           LF_PRINT_LOG("No reactions having shorter deadline, adding %s as the tail of the LL", current_reaction_to_execute->name);
           
           // ptr is the current tail of the LL (cannot be null)
@@ -1110,16 +1127,19 @@ void assign_edf_priority(environment_t* env, reaction_t* current_reaction_to_exe
           current->left = ptr;
           ptr->right = current;
 
-          if (99 - ptr->pri >= 2) {
+          if (LF_SCHED_MAX_PRIORITY - ptr->pri >= 2) {
             // distancing the priority by 3 from the lowest if there is enough space
             // (because it's likely that as time passes, newly coming deadlines will be bigger)
-            uint incr = (99 - ptr->pri >= 4) ? 3 : (99 - ptr->pri - 1);
+            // the maximum priority is LF_SCHED_MAX_PRIORITY - 1 (on Linux it's 98)
+            int incr = (LF_SCHED_MAX_PRIORITY - 1 - ptr->pri >= 4) ? 3 : (LF_SCHED_MAX_PRIORITY - 1 - ptr->pri - 1);
             current->pri = current->left->pri + incr;
             LF_PRINT_LOG("Assigned priority %d to reaction %s", current->pri, current_reaction_to_execute->name);
           } else {
             // shift elements to find a proper priority value
             LF_PRINT_LOG("Shifting (only left)");
-            shift_edf_priorities(current);
+            if (!shift_edf_priorities(current)) {
+              lf_print_error_and_exit("More threads than priority values. Aborting.");
+            }
           }
 
           break;
@@ -1129,7 +1149,7 @@ void assign_edf_priority(environment_t* env, reaction_t* current_reaction_to_exe
       }
       
     }
-    // TODO: evaluate the possibility to set the priority outside the cs
+
     lf_thread_set_priority(lf_thread_self(), edf_elements[lf_thread_id()].pri);
     lf_critical_section_exit(GLOBAL_ENVIRONMENT);
   }
