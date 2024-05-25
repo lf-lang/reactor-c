@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 #include "low_level_platform.h"
-#include "platform.h"
+#include "../api/platform.h"
 
 // MUTEXES *********************************************************************
 
