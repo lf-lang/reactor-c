@@ -26,8 +26,8 @@
 
 typedef recursive_mutex_t lf_mutex_t;
 typedef struct {
-    semaphore_t notifs[NUM_CORES];
-    lf_mutex_t* mutex;
+  semaphore_t notifs[NUM_CORES];
+  lf_mutex_t* mutex;
 } lf_cond_t;
 typedef int lf_thread_t;
 

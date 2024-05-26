@@ -31,8 +31,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
  */
 
-
-
 #include "platform/lf_rp2040_support.h"
 #include "low_level_platform.h"
 #include "tag.h"
@@ -202,7 +200,7 @@ int lf_enable_interrupts_nested() {
 int _lf_single_threaded_notify_of_event() {
   // notify main sleep loop of event
   if (sem_release(&_lf_sem_irq_event)) {
-      return 0;
+    return 0;
   }
   return 1;
 }
@@ -214,11 +212,9 @@ int _lf_single_threaded_notify_of_event() {
 /**
  * @brief Get the number of cores on the host machine.
  */
-int lf_available_cores() {
-  return 2;
-}
+int lf_available_cores() { return 2; }
 
-static void *(*thread_1) (void *);
+static void* (*thread_1)(void*);
 static void* thread_1_args;
 static int num_create_threads_called = 0;
 static semaphore_t thread_1_done;
@@ -231,7 +227,7 @@ void core1_entry() {
   sem_reset(&thread_1_done, 1);
 }
 
-int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
   // make sure this fn is only called once
   if (num_create_threads_called != 0) {
     return 1;
@@ -247,16 +243,16 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
 
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
   if (thread != MAGIC_THREAD1_ID) {
-      return 1;
+    return 1;
   }
   sem_acquire_blocking(&thread_1_done);
   // release in case join is called again
   if (!sem_release(&thread_1_done)) {
-      // shouldn't be possible; lf_thread_join is only called from main thread
-      return 1;
+    // shouldn't be possible; lf_thread_join is only called from main thread
+    return 1;
   }
   if (thread_return) {
-      *thread_return = thread_1_return;
+    *thread_return = thread_1_return;
   }
   return 0;
 }
@@ -315,10 +311,7 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
 
 void initialize_lf_thread_id() {}
 
-int lf_thread_id() {
-  return get_core_num();
-}
-
+int lf_thread_id() { return get_core_num(); }
 
 #endif // !LF_SINGLE_THREADED
 
