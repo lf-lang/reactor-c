@@ -1133,7 +1133,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   // main thread worker (first worker thread of first environment)
   void* main_thread_exit_status = NULL;
   if (num_envs > 0 && envs[0].num_workers > 0) {
-    environment_t *env = &envs[0];
+    environment_t* env = &envs[0];
     main_thread_exit_status = worker(env);
   }
 
