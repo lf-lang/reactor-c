@@ -94,7 +94,9 @@ int lf_enable_interrupts_nested() {
 #define NUMBER_OF_WATCHDOGS 0
 #endif
 
-#define NUMBER_OF_THREADS (NUMBER_OF_WORKERS + USER_THREADS + NUMBER_OF_WATCHDOGS)
+// Number of additional threads that will be created
+// One worker will run on the main thread, so for N workers, only (N - 1) worker threads should be created
+#define NUMBER_OF_THREADS ((NUMBER_OF_WORKERS - 1) + USER_THREADS + NUMBER_OF_WATCHDOGS)
 
 K_MUTEX_DEFINE(thread_mutex);
 
