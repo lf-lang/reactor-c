@@ -1,6 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"d7/de8/hashmap__test_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4":[12,0,8,0,0,0,3],
 "d7/dff/scheduler__sync__tag__advance_8h.html":[12,0,1,1,2,3],
 "d7/dff/scheduler__sync__tag__advance_8h.html#a5ee7c21a8b90bb09784f221c1de4d9c9":[12,0,1,1,2,3,3],
 "d7/dff/scheduler__sync__tag__advance_8h.html#ad96dd94446ff66184dcf0f8f65cdb4f0":[12,0,1,1,2,3,2],
@@ -249,5 +248,6 @@ var NAVTREEINDEX4 =
 "d9/dd5/clock-sync_8h.html#a3eba5f95a19f86a70d9d11fd2c736dd1":[12,0,1,1,0,1,20],
 "d9/dd5/clock-sync_8h.html#a4b9290ecd850995c857e04746aa45d10":[12,0,1,1,0,1,2],
 "d9/dd5/clock-sync_8h.html#a4f1aaaa9e0b74867ba6b60eb962dfca6":[12,0,1,1,0,1,12],
-"d9/dd5/clock-sync_8h.html#a532da6f271eb75c9ac745571b995c404":[12,0,1,1,0,1,1]
+"d9/dd5/clock-sync_8h.html#a532da6f271eb75c9ac745571b995c404":[12,0,1,1,0,1,1],
+"d9/dd5/clock-sync_8h.html#a61a60645f99ef4792703a4df024ca8a1":[12,0,1,1,0,1,21]
 };
