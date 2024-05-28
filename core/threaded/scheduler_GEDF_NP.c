@@ -55,7 +55,7 @@ typedef struct custom_scheduler_data_t {
  * @param scheduler The scheduler.
  * @param worker_number The number of the worker thread.
  */
-inline static void wait_for_other_workers_to_finish(lf_scheduler_t* scheduler, int worker_number) {
+inline static void wait_for_reaction_queue_updates(lf_scheduler_t* scheduler, int worker_number) {
   scheduler->number_of_idle_workers++;
   tracepoint_worker_wait_starts(scheduler->env, worker_number);
   LF_COND_WAIT(&scheduler->custom_data->reaction_q_changed);
@@ -63,6 +63,49 @@ inline static void wait_for_other_workers_to_finish(lf_scheduler_t* scheduler, i
   scheduler->number_of_idle_workers--;
 }
 
+/**
+ * @brief Assuming this is the last worker to go idle, advance the tag.
+ * @param scheduler The scheduler.
+ * @return Non-zero if the stop tag has been reached.
+ */
+static int advance_tag(lf_scheduler_t* scheduler) {
+  // Set a flag in the scheduler that the lock is held by the sole executing thread.
+  // This prevents acquiring the mutex in lf_scheduler_trigger_reaction.
+  scheduler->custom_data->solo_holds_mutex = true;
+  if (_lf_sched_advance_tag_locked(scheduler)) {
+    LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
+    scheduler->should_stop = true;
+    scheduler->custom_data->solo_holds_mutex = false;
+    // Notify all threads that the stop tag has been reached.
+    LF_COND_BROADCAST(&scheduler->custom_data->reaction_q_changed);
+    return 1;
+  }
+  scheduler->custom_data->solo_holds_mutex = false;
+  // Reset the level to 0.
+  scheduler->custom_data->current_level = 0;
+#ifdef FEDERATED
+  // In case there are blocking network input reactions at this level, stall.
+  lf_stall_advance_level_federation_locked(scheduler->custom_data->current_level);
+#endif
+  return 0;
+}
+
+/** 
+ * @brief Assuming all other workers are idle, advance to the next level.
+ * @param scheduler The scheduler.
+ */
+static void advance_level(lf_scheduler_t* scheduler) {
+  if (++scheduler->custom_data->current_level > scheduler->max_reaction_level) {
+    // Since the reaction queue is not empty, we must be cycling back to level 0 due to deadlines
+    // having been given precedence over levels.  Reset the current level to 1.
+    scheduler->custom_data->current_level = 0;
+  }
+  LF_PRINT_DEBUG("Scheduler: Advancing to next reaction level %zu.", scheduler->custom_data->current_level);
+#ifdef FEDERATED
+  // In case there are blocking network input reactions at this level, stall.
+  lf_stall_advance_level_federation_locked(scheduler->custom_data->current_level);
+#endif
+}
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 /**
  * @brief Initialize the scheduler.
@@ -147,20 +190,11 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         // We need to wait to advance to the next level or get a new reaction at the current level.
         if (scheduler->number_of_idle_workers == scheduler->number_of_workers - 1) {
           // All other workers are idle.  Advance to the next level.
-          if (++scheduler->custom_data->current_level > scheduler->max_reaction_level) {
-            // Since the reaction queue is not empty, we must be cycling back to level 0 due to deadlines
-            // having been given precedence over levels.  Reset the current level to 1.
-            scheduler->custom_data->current_level = 0;
-          }
-          LF_PRINT_DEBUG("Scheduler: Advancing to next reaction level %zu.", scheduler->custom_data->current_level);
-#ifdef FEDERATED
-          // In case there are blocking network input reactions at this level, stall.
-          lf_stall_advance_level_federation_locked(scheduler->custom_data->current_level);
-#endif
+          advance_level(scheduler);
         } else {
           // Some workers are still working on reactions on the current level.
           // Wait for them to finish.
-          wait_for_other_workers_to_finish(scheduler, worker_number);
+          wait_for_reaction_queue_updates(scheduler, worker_number);
         }
       }
     } else {
@@ -171,29 +205,14 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
       if (scheduler->number_of_idle_workers == scheduler->number_of_workers - 1) {
         // Last thread to go idle
         LF_PRINT_DEBUG("Scheduler: Worker %d is advancing the tag.", worker_number);
-        // Advance the tag.
-        // Set a flag in the scheduler that the lock is held by the sole executing thread.
-        // This prevents acquiring the mutex in lf_scheduler_trigger_reaction.
-        scheduler->custom_data->solo_holds_mutex = true;
-        if (_lf_sched_advance_tag_locked(scheduler)) {
-          LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
-          scheduler->should_stop = true;
-          scheduler->custom_data->solo_holds_mutex = false;
-          // Notify all threads that the stop tag has been reached.
-          LF_COND_BROADCAST(&scheduler->custom_data->reaction_q_changed);
+        if (advance_tag(scheduler)) {
+          // Stop tag has been reached.
           break;
         }
-        scheduler->custom_data->solo_holds_mutex = false;
-        // Reset the level to 0.
-        scheduler->custom_data->current_level = 0;
-#ifdef FEDERATED
-        // In case there are blocking network input reactions at this level, stall.
-        lf_stall_advance_level_federation_locked(scheduler->custom_data->current_level);
-#endif
       } else {
         // Some other workers are still working on reactions on the current level.
         // Wait for them to finish.
-        wait_for_other_workers_to_finish(scheduler, worker_number);
+        wait_for_reaction_queue_updates(scheduler, worker_number);
       }
     }
   }
