@@ -178,7 +178,11 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         reaction_t* next_reaction = (reaction_t*)pqueue_peek(scheduler->custom_data->reaction_q);
         if (next_reaction != NULL && LF_LEVEL(next_reaction->index) == scheduler->custom_data->current_level &&
             scheduler->number_of_idle_workers > 0) {
-          // Notify an idle thread.
+          // Notify an idle thread. Note that we could do a broadcast here, but it's probably not
+          // a good idea because all workers awakened need to acquire the same mutex to examine the
+          // reaction queue. Only one of them will acquire the mutex, and that worker can check whether
+          // there are further reactions on the same level that warrant waking another worker thread.
+          // So we opt to wake one other worker here rather than broadcasting.
           LF_COND_SIGNAL(&scheduler->custom_data->reaction_q_changed);
         }
         LF_MUTEX_UNLOCK(&scheduler->env->mutex);
