@@ -162,10 +162,8 @@ Functions</h2></td></tr>
 <tr class="separator:a2c11b17740bdc30694ea62c0960d1ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b3be80932590a67d7e07f1a62b13c29" id="r_a3b3be80932590a67d7e07f1a62b13c29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3b3be80932590a67d7e07f1a62b13c29">_lf_worker_invoke_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>)</td></tr>
 <tr class="separator:a3b3be80932590a67d7e07f1a62b13c29"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5fdda22cb08d864a229c84f1ba995b21" id="r_a5fdda22cb08d864a229c84f1ba995b21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5fdda22cb08d864a229c84f1ba995b21">try_advance_level</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">volatile</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> *next_reaction_level)</td></tr>
-<tr class="memdesc:a5fdda22cb08d864a229c84f1ba995b21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance to the next level. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses.  <br /></td></tr>
-<tr class="separator:a5fdda22cb08d864a229c84f1ba995b21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea898ec61472010683510639516c731a" id="r_aea898ec61472010683510639516c731a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aea898ec61472010683510639516c731a">_lf_worker_do_work</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>)</td></tr>
+<tr class="memdesc:aea898ec61472010683510639516c731a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The main looping logic of each LF worker thread.  <br /></td></tr>
 <tr class="separator:aea898ec61472010683510639516c731a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15b16453216ed29570af03009e7c7c63" id="r_a15b16453216ed29570af03009e7c7c63"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15b16453216ed29570af03009e7c7c63">worker</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">arg</a>)</td></tr>
 <tr class="separator:a15b16453216ed29570af03009e7c7c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -201,11 +199,11 @@ Variables</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Runtime infrastructure for the threaded version of the C target of Lingua Franca. </p>
-<dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd>
 <dd>
-{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
+Marten Lohstroh </dd>
 <dd>
-{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd></dl>
+Soroush Bateni </dd></dl>
 <dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2024, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a2759df05e92b68f74325190e9a6aca13" name="a2759df05e92b68f74325190e9a6aca13"></a>
@@ -463,7 +461,10 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The main looping logic of each LF worker thread. This function assumes the caller holds the mutex lock.</p>
+
+<p>The main looping logic of each LF worker thread. </p>
+<p>This function returns when the scheduler's <a class="el" href="../../dd/d52/scheduler___g_e_d_f___n_p_8c.html#a95107b668caa59d5bca9fff1af21e7fb" title="Ask the scheduler for one more reaction.">lf_sched_get_ready_reaction()</a> implementation returns NULL, indicating that there are no more reactions to execute.</p>
+<p>This function assumes the caller does not hold the mutex lock on the environment.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
@@ -860,36 +861,6 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The tag to which it is safe to advance. </dd></dl>
-
-</div>
-</div>
-<a id="a5fdda22cb08d864a229c84f1ba995b21" name="a5fdda22cb08d864a229c84f1ba995b21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5fdda22cb08d864a229c84f1ba995b21">&#9670;&#160;</a></span>try_advance_level()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> try_advance_level </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">volatile</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> *</td>          <td class="paramname"><span class="paramname"><em>next_reaction_level</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Advance to the next level. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>The environment. </td></tr>
-    <tr><td class="paramname">next_reaction_level</td><td>The place to store the next reaction level. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>

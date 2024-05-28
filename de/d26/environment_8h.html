@@ -100,6 +100,9 @@ $(function(){initNavTree('de/d26/environment_8h.html','../../'); initResizable()
   <div class="headertitle"><div class="title">environment.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>API for the environment data structure.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../da/dfb/low__level__platform_8h_source.html">low_level_platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/db9/tracepoint_8h_source.html">tracepoint.h</a>&quot;</code><br />
@@ -148,19 +151,10 @@ Functions</h2></td></tr>
 <tr class="separator:ac109cd752121228507a95495a1eb6d8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Erling R. Jellum (<a href="#" onclick="location.href='mai'+'lto:'+'erl'+'in'+'g.r'+'.j'+'ell'+'um'+'@nt'+'nu'+'.no'; return false;">erlin<span class="obfuscator">.nosp@m.</span>g.r.<span class="obfuscator">.nosp@m.</span>jellu<span class="obfuscator">.nosp@m.</span>m@nt<span class="obfuscator">.nosp@m.</span>nu.no</a>)</dd></dl>
-<h1><a class="anchor" id="LICENSE"></a>
-LICENSE</h1>
-<p>Copyright (c) 2023, The Norwegian University of Science and Technology.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<h1><a class="anchor" id="DESCRIPTION"></a>
-Functions intitializing and freeing memory for environments.</h1>
-<p>"context" within which the reactors are executed. The environment contains data structures which are shared among the reactors such as priority queues, the current logical tag, the worker scheduler, and a lot of meta data. Each reactor stores a pointer to its environment on its self-struct. If a LF program has multiple scheduling enclaves, then each enclave will have its own environment. </p>
+<div class="textblock"><p>API for the environment data structure. </p>
+<dl class="section author"><dt>Author</dt><dd>Erling R. Jellum </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2023, The Norwegian University of Science and Technology. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
+<p>This is an API for creating and destroying environments. An environment is the "context" within which the reactors are executed. The environment contains data structures which are shared among the reactors such as priority queues, the current logical tag, the worker scheduler, and a lot of meta data. Each reactor stores a pointer to its environment on its self-struct. If a LF program has multiple scheduling enclaves, then each enclave will have its own environment. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="afaff13b938d14da158c3fa1424358353" name="afaff13b938d14da158c3fa1424358353"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afaff13b938d14da158c3fa1424358353">&#9670;&#160;</a></span>GLOBAL_ENVIRONMENT</h2>

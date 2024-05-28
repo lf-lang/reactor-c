@@ -197,6 +197,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a971322f63f26490a27bdd9006c05b8fe" id="r_a971322f63f26490a27bdd9006c05b8fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a971322f63f26490a27bdd9006c05b8fe">lf_stall_advance_level_federation</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">level</a>)</td></tr>
 <tr class="memdesc:a971322f63f26490a27bdd9006c05b8fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait until inputs statuses are known up to and including the specified level.  <br /></td></tr>
 <tr class="separator:a971322f63f26490a27bdd9006c05b8fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0f2188d27dfffa9fbbd417bed9305ea" id="r_ab0f2188d27dfffa9fbbd417bed9305ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab0f2188d27dfffa9fbbd417bed9305ea">lf_stall_advance_level_federation_locked</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">level</a>)</td></tr>
+<tr class="memdesc:ab0f2188d27dfffa9fbbd417bed9305ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Version of <a class="el" href="#a971322f63f26490a27bdd9006c05b8fe" title="Wait until inputs statuses are known up to and including the specified level.">lf_stall_advance_level_federation()</a> that assumes the caller holds the mutex lock.  <br /></td></tr>
+<tr class="separator:ab0f2188d27dfffa9fbbd417bed9305ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a965db733286db780c46aef446cd5b040" id="r_a965db733286db780c46aef446cd5b040"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a965db733286db780c46aef446cd5b040">lf_synchronize_with_other_federates</a> ()</td></tr>
 <tr class="memdesc:a965db733286db780c46aef446cd5b040"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronize the start with other federates via the RTI.  <br /></td></tr>
 <tr class="separator:a965db733286db780c46aef446cd5b040"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -808,6 +811,31 @@ Anirudh Rengarajsm </dd></dl>
 <p>Specifically, wait until the specified level is less that the max level allowed to advance (MLAA). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>The environment (which should always be the top-level environment). </td></tr>
+    <tr><td class="paramname">level</td><td>The level to which we would like to advance. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab0f2188d27dfffa9fbbd417bed9305ea" name="ab0f2188d27dfffa9fbbd417bed9305ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0f2188d27dfffa9fbbd417bed9305ea">&#9670;&#160;</a></span>lf_stall_advance_level_federation_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_stall_advance_level_federation_locked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a></td>          <td class="paramname"><span class="paramname"><em>level</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Version of <a class="el" href="#a971322f63f26490a27bdd9006c05b8fe" title="Wait until inputs statuses are known up to and including the specified level.">lf_stall_advance_level_federation()</a> that assumes the caller holds the mutex lock. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
     <tr><td class="paramname">level</td><td>The level to which we would like to advance. </td></tr>
   </table>
   </dd>

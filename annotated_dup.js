@@ -6,6 +6,7 @@ var annotated_dup =
     [ "_lf_tag_advancement_barrier", "d7/dc7/struct__lf__tag__advancement__barrier.html", "d7/dc7/struct__lf__tag__advancement__barrier" ],
     [ "allocation_record_t", "d8/df0/structallocation__record__t.html", "d8/df0/structallocation__record__t" ],
     [ "build_config_t", "dc/d4f/structbuild__config__t.html", "dc/d4f/structbuild__config__t" ],
+    [ "custom_scheduler_data_t", "df/d9e/structcustom__scheduler__data__t.html", "df/d9e/structcustom__scheduler__data__t" ],
     [ "deque_node_t", "db/dab/structdeque__node__t.html", "db/dab/structdeque__node__t" ],
     [ "deque_t", "da/df2/structdeque__t.html", "da/df2/structdeque__t" ],
     [ "environment_t", "d2/d01/structenvironment__t.html", "d2/d01/structenvironment__t" ],

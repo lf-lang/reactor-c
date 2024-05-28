@@ -108,7 +108,7 @@ $(function(){initNavTree('d2/dd8/scheduler_8h.html','../../'); initResizable(); 
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a0ebe8d7670a73a6572c7152d31e1fb62" id="r_a0ebe8d7670a73a6572c7152d31e1fb62"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0ebe8d7670a73a6572c7152d31e1fb62">lf_sched_init</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> number_of_workers, <a class="el" href="../../dc/da2/structsched__params__t.html">sched_params_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">parameters</a>)</td></tr>
-<tr class="memdesc:a0ebe8d7670a73a6572c7152d31e1fb62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default value that is assumed to be the maximum reaction level in the program.  <br /></td></tr>
+<tr class="memdesc:a0ebe8d7670a73a6572c7152d31e1fb62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the scheduler.  <br /></td></tr>
 <tr class="separator:a0ebe8d7670a73a6572c7152d31e1fb62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2139bc60dc5be91d750d5e877af07843" id="r_a2139bc60dc5be91d750d5e877af07843"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2139bc60dc5be91d750d5e877af07843">lf_sched_free</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *scheduler)</td></tr>
 <tr class="memdesc:a2139bc60dc5be91d750d5e877af07843"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the memory used by the scheduler.  <br /></td></tr>
@@ -125,18 +125,11 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Scheduler API for the threaded C runtime. </p>
-<p>Copyright (c) 2022, The University of Texas at Dallas. Copyright (c) 2022, The University of California at Berkeley.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<dl class="section author"><dt>Author</dt><dd>Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a> </dd></dl>
-<p>A scheduler for the threaded runtime of reactor-c should provide an implementation for functions that are defined in this header file.</p>
-<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2022, The University of Texas at Dallas. </dd>
+<dl class="section author"><dt>Author</dt><dd>Soroush Bateni </dd>
 <dd>
-Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
+Edward A. Lee </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2022-2024, The University of Texas at Dallas and The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
+<p>A scheduler for the threaded runtime of reactor-c should provide an implementation for functions that are defined in this header file. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="a485e4339d95d23ae5bcbb06c244e7145" name="a485e4339d95d23ae5bcbb06c244e7145"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a485e4339d95d23ae5bcbb06c244e7145">&#9670;&#160;</a></span>lf_sched_done_with_reaction()</h2>
@@ -218,7 +211,7 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 </div><div class="memdoc">
 
 <p>Ask the scheduler for one more reaction. </p>
-<p>This function blocks until it can return a ready reaction for worker thread 'worker_number' or it is time for the worker thread to stop and exit (where a NULL value would be returned).</p>
+<p>This function blocks until it can return a ready reaction for worker thread 'worker_number' or it is time for the worker thread to stop and exit (where a NULL value would be returned). This function assumes that the environment mutex is not locked.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">scheduler</td><td>The scheduler </td></tr>
@@ -262,9 +255,7 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Default value that is assumed to be the maximum reaction level in the program. </p>
-<p>Can be overriden by passing the appropriate <code>parameters</code> argument to <code>lf_sched_init</code>.</p>
-<p>Initialize the scheduler.</p>
+<p>Initialize the scheduler. </p>
 <p>This has to be called before other functions of the scheduler can be used. If the scheduler is already initialized, this will be a no-op.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -274,7 +265,6 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
   </table>
   </dd>
 </dl>
-<p>Default value that is assumed to be the maximum reaction level in the program.</p>
 <p>This has to be called before other functions of the scheduler can be used. If the scheduler is already initialized, this will be a no-op.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -317,15 +307,6 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">scheduler</td><td>The scheduler </td></tr>
-    <tr><td class="paramname">reaction</td><td>The reaction to trigger at the current tag. </td></tr>
-    <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the single-threaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread).</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If a worker number is not available (e.g., this function is not called by a worker thread), -1 should be passed as the 'worker_number'.</p>
-<p>The scheduler will ensure that the same reaction is not triggered twice in the same tag.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
     <tr><td class="paramname">reaction</td><td>The reaction to trigger at the current tag. </td></tr>
     <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the single-threaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread).</td></tr>
   </table>

@@ -100,8 +100,11 @@ $(function(){initNavTree('d6/dee/scheduler__instance_8h.html','../../'); initRes
   <div class="headertitle"><div class="title">scheduler_instance.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="../../d8/dc4/lf__semaphore_8h_source.html">lf_semaphore.h</a>&quot;</code><br />
-<code>#include &lt;stdbool.h&gt;</code><br />
+
+<p>Common scheduler parameters.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &lt;stddef.h&gt;</code><br />
 </div>
 <p><a href="../../d6/dee/scheduler__instance_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -125,7 +128,7 @@ Macros</h2></td></tr>
 Typedefs</h2></td></tr>
 <tr class="memitem:aa47b54e9e041dfe1b75fffceb1051466" id="r_aa47b54e9e041dfe1b75fffceb1051466"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> environment_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa47b54e9e041dfe1b75fffceb1051466">environment_t</a></td></tr>
 <tr class="separator:aa47b54e9e041dfe1b75fffceb1051466"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b87d9f4ab1631bfa6dbea7f81bfdd38" id="r_a3b87d9f4ab1631bfa6dbea7f81bfdd38"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="#a3b87d9f4ab1631bfa6dbea7f81bfdd38">custom_scheduler_data_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3b87d9f4ab1631bfa6dbea7f81bfdd38">custom_scheduler_data_t</a></td></tr>
+<tr class="memitem:a3b87d9f4ab1631bfa6dbea7f81bfdd38" id="r_a3b87d9f4ab1631bfa6dbea7f81bfdd38"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> custom_scheduler_data_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3b87d9f4ab1631bfa6dbea7f81bfdd38">custom_scheduler_data_t</a></td></tr>
 <tr class="separator:a3b87d9f4ab1631bfa6dbea7f81bfdd38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0199f9b027e13cf08095d91fe798c663" id="r_a0199f9b027e13cf08095d91fe798c663"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> lf_scheduler_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0199f9b027e13cf08095d91fe798c663">lf_scheduler_t</a></td></tr>
 <tr class="memdesc:a0199f9b027e13cf08095d91fe798c663"><td class="mdescLeft">&#160;</td><td class="mdescRight">Paramters used in schedulers of the threaded reactor C runtime.  <br /></td></tr>
@@ -137,7 +140,14 @@ Functions</h2></td></tr>
 <tr class="memdesc:a763b254fdbe81abb51ce307567969306"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize <code>instance</code> using the provided information.  <br /></td></tr>
 <tr class="separator:a763b254fdbe81abb51ce307567969306"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Common scheduler parameters. </p>
+<dl class="section author"><dt>Author</dt><dd>Soroush Bateni </dd>
+<dd>
+Edward A. Lee </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2022-2024, The University of Texas at Dallas and The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
+<p>This file defines data types and functions that are common across multiple schedulers. </p>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a7c3f7c6b1c85f7572b42fa34fa853973" name="a7c3f7c6b1c85f7572b42fa34fa853973"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7c3f7c6b1c85f7572b42fa34fa853973">&#9670;&#160;</a></span>DEFAULT_MAX_REACTION_LEVEL</h2>
 
@@ -174,7 +184,7 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="#a3b87d9f4ab1631bfa6dbea7f81bfdd38">custom_scheduler_data_t</a> <a class="el" href="#a3b87d9f4ab1631bfa6dbea7f81bfdd38">custom_scheduler_data_t</a></td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> custom_scheduler_data_t custom_scheduler_data_t</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -533,7 +533,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wait for condition variable "cond" to be signaled or broadcast. "mutex" is assumed to be locked before.</p>
+<p>Wait for condition variable "cond" to be signaled or broadcast. The cond-&gt;mutex is assumed to be locked when this is called.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
 
 </div>

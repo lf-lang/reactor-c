@@ -1,6 +1,5 @@
 var structreaction__t =
 [
-    [ "chain_id", "d2/d35/structreaction__t.html#a17396c4b05ab4d58296b88ea0258b88f", null ],
     [ "deadline", "d2/d35/structreaction__t.html#a9dbda39c51da25a63258a83793f97cd8", null ],
     [ "deadline_violation_handler", "d2/d35/structreaction__t.html#a487aaa96abda17f7184c07ccd1e870b2", null ],
     [ "function", "d2/d35/structreaction__t.html#afd6087e8a7d3cc46b430d4187128896c", null ],
