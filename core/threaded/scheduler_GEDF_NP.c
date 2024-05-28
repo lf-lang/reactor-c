@@ -90,7 +90,7 @@ static int advance_tag(lf_scheduler_t* scheduler) {
   return 0;
 }
 
-/** 
+/**
  * @brief Assuming all other workers are idle, advance to the next level.
  * @param scheduler The scheduler.
  */
