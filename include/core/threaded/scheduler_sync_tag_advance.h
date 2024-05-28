@@ -1,27 +1,12 @@
-/*************
-Copyright (c) 2022, The University of Texas at Dallas.
-Copyright (c) 2022, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
+/**
+ * @file
+ * @author Soroush Bateni
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @brief API used to advance tag globally.
+ * @copyright (c) 2020-2024, The University of California at Berkeley and The University of Texas at Dallas
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ */
 
 #ifndef SCHEDULER_SYNC_TAG_ADVANCE_H
 #define SCHEDULER_SYNC_TAG_ADVANCE_H
@@ -31,8 +16,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "scheduler_instance.h"
 
-/////////////////// External Functions /////////////////////////
-void _lf_next_locked(struct environment_t* env);
 /**
  * Placeholder for code-generated function that will, in a federated
  * execution, be used to coordinate the advancement of tag. It will notify
@@ -42,7 +25,25 @@ void _lf_next_locked(struct environment_t* env);
  * @param tag_to_send The tag to send.
  */
 void logical_tag_complete(tag_t tag_to_send);
+
+/**
+ * @brief Return true if the worker should stop now; false otherwise.
+ *
+ * This function assumes the caller holds the mutex lock.
+ * @param sched The scheduler instance to check.
+ */
 bool should_stop_locked(lf_scheduler_t* sched);
+
+/**
+ * @brief Advance the tag to the next tag on the event queue
+ *
+ * This will also pop events for the newly acquired tag and trigger
+ * the enabled reactions using the scheduler.
+ *
+ * This function assumes the caller holds the environment mutex lock.
+ * @param sched The scheduler instance to check.
+ * @return True if the worker thread should exit. False otherwise.
+ */
 bool _lf_sched_advance_tag_locked(lf_scheduler_t* sched);
 
 #endif // LF_C11_THREADS_SUPPORT_H

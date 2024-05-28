@@ -1,8 +1,8 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author{Marten Lohstroh <marten@berkeley.edu>}
- * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @author Soroush Bateni
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
@@ -850,19 +850,13 @@ void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_
   reaction->is_STP_violated = false;
 }
 
-void try_advance_level(environment_t* env, volatile size_t* next_reaction_level) {
-#ifdef FEDERATED
-  lf_stall_advance_level_federation(env, *next_reaction_level);
-#else
-  (void)env;
-#endif
-  if (*next_reaction_level < SIZE_MAX)
-    *next_reaction_level += 1;
-}
-
 /**
- * The main looping logic of each LF worker thread.
- * This function assumes the caller holds the mutex lock.
+ * @brief The main looping logic of each LF worker thread.
+ *
+ * This function returns when the scheduler's lf_sched_get_ready_reaction()
+ * implementation returns NULL, indicating that there are no more reactions to execute.
+ *
+ * This function assumes the caller does not hold the mutex lock on the environment.
  *
  * @param env Environment within which we are executing.
  * @param worker_number The number assigned to this worker thread
@@ -882,10 +876,9 @@ void _lf_worker_do_work(environment_t* env, int worker_number) {
   while ((current_reaction_to_execute = lf_sched_get_ready_reaction(env->scheduler, worker_number)) != NULL) {
     // Got a reaction that is ready to run.
     LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
-                   "level: %lld, is input reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
+                   "level: %lld, is input reaction: %d, and deadline " PRINTF_TIME ".",
                    worker_number, current_reaction_to_execute->name, LF_LEVEL(current_reaction_to_execute->index),
-                   current_reaction_to_execute->is_an_input_reaction, current_reaction_to_execute->chain_id,
-                   current_reaction_to_execute->deadline);
+                   current_reaction_to_execute->is_an_input_reaction, current_reaction_to_execute->deadline);
 
     bool violation = _lf_worker_handle_violations(env, worker_number, current_reaction_to_execute);
 

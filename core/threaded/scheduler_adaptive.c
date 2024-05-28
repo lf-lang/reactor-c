@@ -1,6 +1,6 @@
 /**
  * @file
- * @author{Peter Donovan <peterdonovan@berkeley.edu>}
+ * @author Peter Donovan
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief This is a non-priority-driven scheduler. See scheduler.h for documentation.
@@ -21,11 +21,13 @@
 #include "environment.h"
 #include "util.h"
 
+#ifdef FEDERATED
+#include "federate.h"
+#endif
+
 #ifndef MAX_REACTION_LEVEL
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
 #endif
-
-void try_advance_level(environment_t* env, volatile size_t* next_reaction_level);
 
 /////////////////// Forward declarations /////////////////////////
 extern bool fast;
@@ -435,7 +437,10 @@ static void advance_level_and_unlock(lf_scheduler_t* scheduler, size_t worker) {
         return;
       }
     } else {
-      try_advance_level(scheduler->env, &worker_assignments->current_level);
+#ifdef FEDERATED
+      lf_stall_advance_level_federation(scheduler->env, worker_assignments->current_level);
+#endif
+      worker_assignments->current_level++;
       set_level(scheduler, worker_assignments->current_level);
     }
     size_t total_num_reactions = get_num_reactions(scheduler);
@@ -684,7 +689,6 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
   worker_assignments_free(scheduler);
   data_collection_free(scheduler);
   free(scheduler->custom_data);
-  lf_semaphore_destroy(scheduler->semaphore);
 }
 
 ///////////////////////// Scheduler Worker API ///////////////////////////////
