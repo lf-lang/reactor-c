@@ -7,6 +7,7 @@
 #include "netdriver.h"
 #include "lf_mqtt_support.h"
 #include "MQTTClientPersistence.h" // For logging
+// #include "reactor_common.h"
 
 // #include <MQTTClient.h>
 
@@ -16,6 +17,8 @@
 
 #define MAX_RETRIES 5 // Number of retry attempts
 #define RETRY_DELAY 2 // Delay between attempts in seconds
+
+extern bool _lf_termination_executed;
 
 static MQTT_priv_t* MQTT_priv_init();
 static char* create_topic_federation_id_listener_id(const char* federation_id, int listener_id);
@@ -446,13 +449,13 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   int topicLen = 0;
   MQTTClient_message* message = NULL;
   int rc;
-  int bytes_read;
+  int bytes_read = -1;
   // LF_PRINT_LOG("RECEIVING message from federateID %d", MQTT_priv->target_id);
   instant_t start_receive = lf_time_physical();
-  while (1) {
+  while (!_lf_termination_executed) {
     if (CHECK_TIMEOUT(start_receive, CONNECT_TIMEOUT)) {
       lf_print_error("Failed to receive with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
-      bytes_read = -1;
+      // bytes_read = -1;
       break;
     }
     MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
@@ -460,25 +463,7 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
     // and calls lf_terminate_execution(), closing inbound and outbound netdrivers are first before waiting for the
     // threads to join. In this case, the federates may not receive the MQTT_resign message and just get closed. So this
     // must needs a mutex to avoid segmentation faults, happening during MQTT_receive
-    LF_MUTEX_LOCK(&netdrv_mutex);
-    if (drv == NULL) {
-      lf_print_warning("drv is closed, returning -1.");
-      return -1;
-    }
-    if (drv->priv == NULL) {
-      lf_print_warning("drv->priv is closed, returning -1.");
-      return -1;
-    }
-    if (MQTT_priv == NULL) {
-      lf_print_warning("MQTT_priv is closed, returning -1.");
-      return -1;
-    }
-    if (MQTT_priv->client == NULL) {
-      lf_print_warning("MQTT_priv->client is closed, returning -1.");
-      return -1;
-    }
-    rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 10000);
-    LF_MUTEX_UNLOCK(&netdrv_mutex);
+    rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 5000);
     if (rc != MQTTCLIENT_SUCCESS) {
       lf_print_warning("Failed to receive message, return code %d.", rc);
       lf_sleep(CONNECT_RETRY_INTERVAL);

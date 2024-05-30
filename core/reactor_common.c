@@ -1117,7 +1117,8 @@ void initialize_global(void) {
  * Flag to prevent termination function from executing twice and to signal to background
  * threads to terminate.
  */
-bool _lf_termination_executed = false;
+// bool _lf_termination_executed = false;
+extern bool _lf_termination_executed;
 
 /** Flag used to disable cleanup operations on abnormal termination. */
 bool _lf_normal_termination = false;

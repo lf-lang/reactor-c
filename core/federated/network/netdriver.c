@@ -7,6 +7,12 @@
 
 lf_mutex_t netdrv_mutex;
 
+/**
+ * Flag to prevent termination function from executing twice and to signal to background
+ * threads to terminate.
+ */
+bool _lf_termination_executed = false;
+
 netdrv_t* initialize_common_netdrv(int my_federate_id, const char* federation_id) {
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (!drv) {
