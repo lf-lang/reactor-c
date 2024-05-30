@@ -80,7 +80,7 @@ void _lf_decrement_tag_barrier_locked(environment_t* env);
 
 /**
  * @brief The number of cores to use.
- * 
+ *
  * If the target parameter number_of_cores is set, it will override this default.
  */
 #ifndef LF_NUMBER_OF_CORES
@@ -89,7 +89,7 @@ void _lf_decrement_tag_barrier_locked(environment_t* env);
 
 /**
  * @brief The thread scheduling policy to use.
- * 
+ *
  * This should be one of   LF_SCHED_FAIR, LF_SCHED_TIMESLICE, or LF_SCHED_PRIORITY.
  * The default is LF_SCHED_FAIR, which corresponds to the Linux SCHED_OTHER.
  * LF_SCHED_TIMESLICE corresponds to Linux SCHED_RR, and LF_SCHED_PRIORITY corresponds

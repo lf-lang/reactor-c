@@ -121,7 +121,7 @@ lf_thread_t lf_thread_self();
 /**
  * @brief Create a new thread and start execution of the function lf_thread
  * with the specified arguments.
- * 
+ *
  * The new handle is stored in thread_id.
  *
  * @return 0 on success, platform-specific error number otherwise.
@@ -177,7 +177,7 @@ int lf_thread_set_priority(lf_thread_t thread, int priority);
 
 /**
  * @brief Set the scheduling policy of a thread.
- * 
+ *
  * This is based on the scheduling
  * concept from Linux explained here: https://man7.org/linux/man-pages/man7/sched.7.html
  * A scheduling policy is specific to a thread/worker. We have three policies

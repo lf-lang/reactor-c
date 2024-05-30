@@ -86,7 +86,7 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
 
 /**
  * @brief Set priorities and core bindings for the specified worker thread, if appropriate.
- * 
+ *
  * @param scheduler The scheduler.
  * @param thread_index The worker thread index, from 0 to number_of_workers - 1.
  */

@@ -1110,8 +1110,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     lf_print("Environment %u: ---- Intializing start tag", env->id);
     _lf_initialize_start_tag(env);
 
-    lf_print("Environment %u: ---- Spawning %d workers on %d cores.",
-        env->id, env->num_workers, LF_NUMBER_OF_CORES);
+    lf_print("Environment %u: ---- Spawning %d workers on %d cores.", env->id, env->num_workers, LF_NUMBER_OF_CORES);
 
     for (int j = 0; j < env->num_workers; j++) {
       if (i == 0 && j == 0) {
@@ -1132,7 +1131,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Unlock mutex and allow threads proceed
     LF_MUTEX_UNLOCK(&env->mutex);
   }
-  
 
   // main thread worker (first worker thread of first environment)
   void* main_thread_exit_status = NULL;

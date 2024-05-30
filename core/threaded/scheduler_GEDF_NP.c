@@ -51,15 +51,15 @@ typedef struct custom_scheduler_data_t {
 } custom_scheduler_data_t;
 
 typedef struct edf_sched_node_t {
-    instant_t abs_d;
-    uint32_t pri;
-    struct edf_sched_node_t* left;
-    struct edf_sched_node_t* right;
-    lf_thread_t thread_id; 
+  instant_t abs_d;
+  uint32_t pri;
+  struct edf_sched_node_t* left;
+  struct edf_sched_node_t* right;
+  lf_thread_t thread_id;
 } edf_sched_node_t;
 
 // Linked list of worker threads sorted by priority.
-static edf_sched_node_t* edf_elements = NULL; 
+static edf_sched_node_t* edf_elements = NULL;
 static edf_sched_node_t* edf_ll_head = NULL;
 
 /////////////////// Scheduler Private API /////////////////////////
@@ -112,7 +112,7 @@ static int advance_tag(lf_scheduler_t* scheduler) {
 /**
  * @brief Shift the priority of elements in the linked list (LL) to assign
  * to current (freshly inserted in the LL) a priority value complying with the EDF rule.
- * 
+ *
  * First, the algorithm tries to shift the nodes to the right of the position
  * where current has been inserted. If this is not possible (the tail
  * of the LL has priority 98 and there is no space to shift the previous
@@ -120,16 +120,16 @@ static int advance_tag(lf_scheduler_t* scheduler) {
  * this again is not possible (the head of the LL has priority 2 and
  * there is no space to shift the following elements), the function
  * returns false (true otherwise).
- * 
+ *
  * @param current: the node to which to assign a priority value after shifting
- * 
+ *
  * @return true if the shift (either right or left) was possible and a priority
  * value was assigned to current; false otherwise.
-*/
+ */
 static bool shift_edf_priorities(edf_sched_node_t* current) {
   edf_sched_node_t* before = current->left;
   edf_sched_node_t* after = current->right;
-  edf_sched_node_t* ptr = after; 
+  edf_sched_node_t* ptr = after;
   // count the number of times the while loop executes, so you can distribute
   // the priority space you find across the threads in the linked list
   int counter = 1;
@@ -147,7 +147,7 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
       // change the tail's priority
       ptr->pri = LF_SCHED_MAX_PRIORITY - 1;
       lf_thread_set_priority(ptr->thread_id, ptr->pri);
-      
+
       // change the priorities of node from tail to the current thread
       // to keep the relative priorities while shifting and system-calling
       ptr = ptr->left;
@@ -156,7 +156,7 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
         lf_thread_set_priority(ptr->thread_id, ptr->pri);
         ptr = ptr->left;
       } while (ptr != current);
-      
+
       break;
 
     } else if (ptr->right) {
@@ -177,14 +177,14 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
           lf_thread_set_priority(ptr->thread_id, ptr->pri);
           ptr = ptr->left;
         } while (ptr != current);
-        
+
         // since we found a spot and shifted priorities, we don't need to continue with the while loop
         break;
       }
-    } 
+    }
     ptr = ptr->right;
   }
-  
+
   if (!shifted) {
     // if flag is still false, this mean we couldn't find any shifting spot on the right side
     // we need to check left (this is a copy of the above code with the needed edits... debeatable)
@@ -202,7 +202,7 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
         // change the head's priority
         ptr->pri = 2;
         lf_thread_set_priority(ptr->thread_id, ptr->pri);
-        
+
         // change the priorities of node from head to the current thread
         ptr = ptr->right;
         do {
@@ -210,9 +210,9 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
           lf_thread_set_priority(ptr->thread_id, ptr->pri);
           ptr = ptr->right;
         } while (ptr != current);
-        
+
         break;
-        
+
       } else if (ptr->left) {
         int diff = ptr->pri - ptr->left->pri;
         if (diff > 1) {
@@ -227,38 +227,38 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
             lf_thread_set_priority(ptr->thread_id, ptr->pri);
             ptr = ptr->right;
           } while (ptr != current);
-          
+
           // since we found a spot and shifted priorities, we don't need to continue with the while loop
           break;
         }
-      } 
+      }
       ptr = ptr->left;
     }
   }
-  return shifted; 
+  return shifted;
 }
 
 /**
  * @brief Assign a priority value between 1 and 98 to the current worker thread.
- * 
+ *
  * The priority is determined by the current_reaction_to_execute using EDF.
  * Priority 1 is assigned to worker threads executing reactions without a deadline,
  * while priority 99 is reserved for worker threads waiting for work. The reason
  * for the highest priority is to be sure that the awakening of these threads is not
  * delayed by the other worker threads executing reactions (even in different enclaves).
- * 
+ *
  * This function enters a critical section so the mutex lock should not be held on the
  * environment when this is called.
- * 
+ *
  * @param env The environment within which we are executing.
  * @param current_reaction_to_execute The reaction the current worker thread is about to serve.
  * @param worker_number The worker number of the current worker thread.
-*/
+ */
 static void assign_edf_priority(environment_t* env, reaction_t* current_reaction_to_execute, int worker_number) {
   LF_PRINT_LOG("Assigning priority to reaction %s", current_reaction_to_execute->name);
 
   // Examine the reaction's (inferred) deadline to set this thread's priority.
-  interval_t inferred_deadline = (interval_t) (current_reaction_to_execute->index >> 16);
+  interval_t inferred_deadline = (interval_t)(current_reaction_to_execute->index >> 16);
   // If there is no deadline, set the priority to 1.
   if (inferred_deadline >= (FOREVER >> 16) << 16) {
     LF_PRINT_LOG("Reaction %s has no deadline, setting its priority to 1", current_reaction_to_execute->name);
@@ -269,7 +269,8 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
   } else {
     // Get the absolute deadline to implement EDF.
     instant_t absolute_deadline = (env->current_tag.time + inferred_deadline);
-    LF_PRINT_LOG("Reaction %s has inferred deadline " PRINTF_TIME, current_reaction_to_execute->name, absolute_deadline);
+    LF_PRINT_LOG("Reaction %s has inferred deadline " PRINTF_TIME, current_reaction_to_execute->name,
+                 absolute_deadline);
     // Need to know the priorities of running threads and the absolute deadline associated with it
     // and choose a priority that is in between those with earlier deadlines and those with larger deadlines.
     edf_sched_node_t* current = &edf_elements[worker_number];
@@ -284,10 +285,11 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
       current->pri = 50;
 
       LF_PRINT_LOG("No worker threads running, reaction %s is the head of the list and "
-                      "gets priority %d", current_reaction_to_execute->name, current->pri);
-    } else { 
+                   "gets priority %d",
+                   current_reaction_to_execute->name, current->pri);
+    } else {
       // there is a head in the LL
-      
+
       // assuming the edf_element was not in the linked list anymore
       // (removed at the completion of the previously executed reaction)
 
@@ -331,8 +333,9 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
         } else if (ptr->right == NULL) {
           // this reaction has the earliest deadline in the list =>
           // it needs to be added as the tail of the LL
-          LF_PRINT_LOG("No reactions having shorter deadline, adding %s as the tail of the LL", current_reaction_to_execute->name);
-          
+          LF_PRINT_LOG("No reactions having shorter deadline, adding %s as the tail of the LL",
+                       current_reaction_to_execute->name);
+
           // ptr is the current tail of the LL (cannot be null)
           current->right = NULL;
           current->left = ptr;
@@ -365,9 +368,9 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
 /**
  * @brief Remove the edf_sched_node_t element indexed by my_id from the LL and reset deadline and priority.
  * @param my_id LF thread ID of the element to remove from the LL
-*/
+ */
 static void remove_from_edf_ll(lf_thread_t my_id) {
-  edf_sched_node_t* ptr = edf_ll_head; 
+  edf_sched_node_t* ptr = edf_ll_head;
   // if the thread is already on the LL -- remove the old one
   while (ptr) {
     if (ptr->thread_id == my_id) {
@@ -378,7 +381,7 @@ static void remove_from_edf_ll(lf_thread_t my_id) {
         ptr->right->left = ptr->left;
       }
 
-      // my node was the head of the LL      
+      // my node was the head of the LL
       if (ptr == edf_ll_head) {
         edf_ll_head = ptr->right;
       }
@@ -433,7 +436,7 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
   environment_t* top_level_env;
   int num_envs = _lf_get_environments(&top_level_env);
   if (top_level_env == env) {
-    edf_elements = (edf_sched_node_t *) calloc(num_envs * top_level_env->num_workers, sizeof(edf_sched_node_t));   
+    edf_elements = (edf_sched_node_t*)calloc(num_envs * top_level_env->num_workers, sizeof(edf_sched_node_t));
   }
   LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
   if (!init_sched_instance(env, &env->scheduler, number_of_workers, params)) {
@@ -483,10 +486,8 @@ void lf_sched_configure_worker(lf_scheduler_t* scheduler, int worker_number) {
   edf_elements[worker_number].right = NULL;
 
   // FIXME: Use the target property to set the policy.
-  lf_scheduling_policy_t policy = {
-    .priority = 80, // FIXME: determine good priority
-    .policy = LF_THREAD_POLICY
-  };
+  lf_scheduling_policy_t policy = {.priority = 80, // FIXME: determine good priority
+                                   .policy = LF_THREAD_POLICY};
   LF_PRINT_LOG("Setting thread policy to %d", LF_THREAD_POLICY);
   int ret = lf_thread_set_scheduling_policy(lf_thread_self(), &policy);
   if (ret != 0) {
@@ -496,14 +497,16 @@ void lf_sched_configure_worker(lf_scheduler_t* scheduler, int worker_number) {
 #if LF_NUMBER_OF_CORES > 0
   // Pin the thread to cores starting at the highest numbered core.
   static int core_number = -1;
-  if (core_number < 0) core_number = lf_available_cores() - 1;
+  if (core_number < 0)
+    core_number = lf_available_cores() - 1;
   ret = lf_thread_set_cpu(env->thread_ids[worker_number], core_number);
   if (ret != 0) {
     lf_print_error_and_exit("Couldn't bind thread-%u to core %d.", i, core_number);
   }
   LF_PRINT_LOG("Using core_number %d", core_number);
   core_number--;
-  if (core_number < lf_available_cores() - LF_NUMBER_OF_CORES) core_number = lf_available_cores() - 1;
+  if (core_number < lf_available_cores() - LF_NUMBER_OF_CORES)
+    core_number = lf_available_cores() - 1;
 #endif // LF_NUMBER_OF_CORES > 0
 }
 
@@ -540,7 +543,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         }
         LF_MUTEX_UNLOCK(&scheduler->env->mutex);
         if (LF_THREAD_POLICY > LF_SCHED_FAIR) {
-          assign_edf_priority(scheduler->env, reaction_to_return, worker_number);    
+          assign_edf_priority(scheduler->env, reaction_to_return, worker_number);
         }
         return reaction_to_return;
       } else {
