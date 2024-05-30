@@ -1,8 +1,8 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author{Marten Lohstroh <marten@berkeley.edu>}
- * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @author Soroush Bateni
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
@@ -46,9 +46,6 @@ extern instant_t start_time;
  * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
  */
 lf_mutex_t global_mutex;
-
-edf_sched_node* edf_elements = NULL; 
-edf_sched_node* edf_ll_head = NULL;
 
 void _lf_increment_tag_barrier_locked(environment_t* env, tag_t future_tag) {
   assert(env != GLOBAL_ENVIRONMENT);
@@ -859,316 +856,18 @@ void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_
   reaction->is_STP_violated = false;
 }
 
-void try_advance_level(environment_t* env, volatile size_t* next_reaction_level) {
-#ifdef FEDERATED
-  lf_stall_advance_level_federation(env, *next_reaction_level);
-#else
-  (void)env;
-#endif
-  if (*next_reaction_level < SIZE_MAX)
-    *next_reaction_level += 1;
-}
-
 /**
- * Function to remove the edf_sched_node element indexed
- * by my_id from the LL and reset deadline and priority
- * @param my_id LF thread ID of the element to remove from the LL
-*/
-void remove_from_edf_ll(lf_thread_t my_id) {
-  LF_PRINT_LOG("Removing thread %ld from the EDF LL.", my_id);
-  edf_sched_node* ptr = edf_ll_head; 
-  // if the thread is already on the LL -- remove the old one
-  while (ptr) {
-    if (ptr->thread_id == my_id) {
-      if (ptr->left) {
-        ptr->left->right = ptr->right;
-      }
-      if (ptr->right) {
-        ptr->right->left = ptr->left;
-      }
-
-      // my node was the head of the LL      
-      if (ptr == edf_ll_head) {
-        edf_ll_head = ptr->right;
-      }
-
-      ptr->abs_d = FOREVER;
-      ptr->pri = 1;
-      ptr->left = ptr->right = NULL;
-
-      break;
-    } else {
-      ptr = ptr->right;
-    }
-  }
-}
-
-/**
- * Function that shifts the priority of elements in the LL to assign
- * to current (freshly inserted in the LL) a priority value complying 
- * with the EDF rule.
- * First, the algorithm tries to shift the nodes to the right of the position
- * where current has been inserted. If this is not possible (the tail
- * of the LL has priority 98 and there is no space to shift the previous
- * elements), the function tries to shift the nodes to the left. If
- * this again is not possible (the head of the LL has priority 2 and
- * there is no space to shift the following elements), the function
- * returns false (true otherwise).
- * 
- * @param current: the node to which to assign a priority value after shifting
- * 
- * @return true if the shift (either right or left) was possible and a priority
- * value was assigned to current; false otherwise.
-*/
-bool shift_edf_priorities(edf_sched_node* current) {
-  edf_sched_node* before = current->left;
-  edf_sched_node* after = current->right;
-  edf_sched_node* ptr = after; 
-  // count the number of times the while loop executes, so you can distribute
-  // the priority space you find across the threads in the linked list
-  int counter = 1;
-  // set to true if we can find a shifting spot
-  bool shifted = false;
-  while (ptr) {
-    counter++;
-    if (!ptr->right && ptr->pri != LF_SCHED_MAX_PRIORITY - 1) {
-      // if until the tail we cannot find a shifting spot, and the tail is not 98
-      // this means the tail can be shifted to 98
-      shifted = true;
-      int diff = LF_SCHED_MAX_PRIORITY - 1 - ptr->left->pri;
-      // the formula is explained in the else-if case
-      int incr = (diff - 1) / (counter + 1) + 1;
-      // change the tail's priority
-      ptr->pri = LF_SCHED_MAX_PRIORITY - 1;
-      lf_thread_set_priority(ptr->thread_id, ptr->pri);
-      
-      // change the priorities of node from tail to the current thread
-      // to keep the relative priorities while shifting and system-calling
-      ptr = ptr->left;
-      do {
-        ptr->pri = ptr->right->pri - incr;
-        lf_thread_set_priority(ptr->thread_id, ptr->pri);
-        ptr = ptr->left;
-      } while (ptr != current);
-      
-      break;
-
-    } else if (ptr->right) {
-      int diff = ptr->right->pri - ptr->pri;
-      if (diff > 1) {
-        // eureka! we found shifting spot
-        shifted = true;
-        // calculate the increment interval:
-        // # diff - 1 is the extra space to distribute equally
-        // (-1 because we guarantee a space of at least 1 between ptr and ptr->right);
-        // # counter + 1 is the number of spaces between "counter" elements in the LL;
-        // # +1 replaces the ceiling (not exactly but still ok);
-        int incr = (diff - 1) / (counter + 1) + 1;
-        // shift every node's priority from this spot to the spot
-        // we inserted the current thread, starting from the right
-        do {
-          ptr->pri = ptr->right->pri - incr;
-          lf_thread_set_priority(ptr->thread_id, ptr->pri);
-          ptr = ptr->left;
-        } while (ptr != current);
-        
-        // since we found a spot and shifted priorities, we don't need to continue with the while loop
-        break;
-      }
-    } 
-    ptr = ptr->right;
-  }
-  
-  if (!shifted) {
-    // if flag is still false, this mean we couldn't find any shifting spot on the right side
-    // we need to check left (this is a copy of the above code with the needed edits... debeatable)
-    ptr = before;
-    counter = 1;
-    while (ptr) {
-      counter++;
-      if (!ptr->left && ptr->pri != 2) {
-        // if until the head we cannot find a shifting spot, and the head is not 2
-        // (1 is reserved for reactions w/o deadline) this means the head can be shifted
-        shifted = true;
-        int diff = ptr->right->pri - 2;
-        // usual formula to spread priorities
-        int incr = (diff - 1) / (counter + 1) + 1;
-        // change the head's priority
-        ptr->pri = 2;
-        lf_thread_set_priority(ptr->thread_id, ptr->pri);
-        
-        // change the priorities of node from head to the current thread
-        ptr = ptr->right;
-        do {
-          ptr->pri = ptr->left->pri + incr;
-          lf_thread_set_priority(ptr->thread_id, ptr->pri);
-          ptr = ptr->right;
-        } while (ptr != current);
-        
-        break;
-        
-      } else if (ptr->left) {
-        int diff = ptr->pri - ptr->left->pri;
-        if (diff > 1) {
-          // eureka! we found shifting spot
-          shifted = true;
-          // usual formula to spread priorities
-          int incr = (diff - 1) / (counter + 1) + 1;
-          // shift every node's priority from this spot to the spot
-          // we inserted the current thread, starting from the left
-          do {
-            ptr->pri = ptr->left->pri + incr;
-            lf_thread_set_priority(ptr->thread_id, ptr->pri);
-            ptr = ptr->right;
-          } while (ptr != current);
-          
-          // since we found a spot and shifted priorities, we don't need to continue with the while loop
-          break;
-        }
-      } 
-      ptr = ptr->left;
-    }
-  }
-  return shifted; 
-}
-
-/**
- * Function to assign a priority value between 1 and 98 to the worker thread
- * serving current_reaction_to_execute. The value is determined by EDF.
- * Priority 1 is assigned to worker threads executing reactions without deadline,
- * while priority 99 is reserved for worker threads waiting on the semaphore
- * (for the scheduler to advance tag) or sleeping with wait_until. The reason
- * for the highest priority is to be sure that the awakening of these threads is not
- * delayed by the other worker threads executing reactions (even in different enclaves).
- * @param env the environment within which we are executing.
- * @param current_reaction_to_execute the reaction the current worker thread is about to serve.
-*/
-void assign_edf_priority(environment_t* env, reaction_t* current_reaction_to_execute) {
-  LF_PRINT_LOG("Assigning priority to reaction %s", current_reaction_to_execute->name);
-
-  // Examine the reaction's (inferred) deadline to set this thread's priority.
-  interval_t inferred_deadline = (interval_t) (current_reaction_to_execute->index >> 16);
-  // If there is no deadline, set the priority to 1.
-  if (inferred_deadline >= (FOREVER >> 16) << 16) {
-    LF_PRINT_LOG("Reaction %s has no deadline, setting its priority to 1", current_reaction_to_execute->name);
-    // All reactions without (inferred) deadlines result in a thread priority of 1.
-    lf_thread_set_priority(lf_thread_self(), 1);
-    // assuming the edf_element was not in the linked list anymore
-    // (removed on the completion of the previous served reaction)
-  } else {
-    // Get the absolute deadline to implement EDF.
-    instant_t absolute_deadline = (env->current_tag.time + inferred_deadline);
-    LF_PRINT_LOG("Reaction %s has inferred deadline %ld", current_reaction_to_execute->name, absolute_deadline);
-    // Need to know the priorities of running threads and the absolute deadline associated with it
-    // and choose a priority that is in between those with earlier deadlines and those with larger deadlines.
-    edf_sched_node* current = &edf_elements[lf_thread_id()];
-    current->abs_d = absolute_deadline;
-
-    lf_critical_section_enter(GLOBAL_ENVIRONMENT);
-    LF_PRINT_LOG("In the CS for reaction %s", current_reaction_to_execute->name);
-    // if there is no head -- then the current thread is the head
-    if (!edf_ll_head) {
-      edf_ll_head = current;
-      // FIXME: make sure this is an appropriate value
-      current->pri = 50;
-
-      LF_PRINT_LOG("No worker threads running, reaction %s is the head of the list and "
-                      "gets priority %d", current_reaction_to_execute->name, current->pri);
-    } else { 
-      // there is a head in the LL
-      
-      // assuming the edf_element was not in the linked list anymore
-      // (removed at the completion of the previously executed reaction)
-
-      edf_sched_node* ptr = edf_ll_head;
-      // find the spot that the current thread needs to insert itself
-      while (ptr) {
-        // the LL is from lowest priority to the highest priority
-        if (ptr->abs_d < absolute_deadline) {
-          LF_PRINT_LOG("Found a reaction having shorter deadline: %ld", ptr->abs_d);
-          // change the pointers to insert the current thread
-          edf_sched_node* temp = ptr->left;
-          ptr->left = current;
-          current->right = ptr;
-          current->left = temp;
-          // if the insertion is not at the beginning of the list
-          if (temp) {
-            LF_PRINT_LOG("Insertion not at the beginning of the list");
-            temp->right = current;
-            // if there is enough space to assign a priority value between ptr and temp
-            if (ptr->pri - temp->pri >= 2) {
-              // distancing the priority by 3 from the lowest if there is enough space
-              // (because it's likely that as time passes, newly coming deadlines will be bigger)
-              int incr = (ptr->pri - temp->pri >= 4) ? 3 : (ptr->pri - temp->pri - 1);
-              current->pri = current->left->pri + incr;
-              LF_PRINT_LOG("Assigned priority %d to reaction %s", current->pri, current_reaction_to_execute->name);
-            } else {
-              // shift elements to find a proper priority value
-              LF_PRINT_LOG("Shifting");
-              if (!shift_edf_priorities(current)) {
-                lf_print_error_and_exit("More threads than priority values. Aborting.");
-              }
-            }
-          } else { // if the insertion is at the beginning of the list
-            LF_PRINT_LOG("Insertion at the beginning of the list");
-            edf_ll_head = current;
-            // distancing the priority by 5 from ptr (if there is enough space)
-            current->pri = (ptr->pri - 5 >= 2) ? (ptr->pri - 5) : 2;
-          }
-
-          break;
-        } else if (ptr->right == NULL) {
-          // this reaction has the earliest deadline in the list =>
-          // it needs to be added as the tail of the LL
-          LF_PRINT_LOG("No reactions having shorter deadline, adding %s as the tail of the LL", current_reaction_to_execute->name);
-          
-          // ptr is the current tail of the LL (cannot be null)
-          current->right = NULL;
-          current->left = ptr;
-          ptr->right = current;
-
-          if (LF_SCHED_MAX_PRIORITY - ptr->pri >= 2) {
-            // distancing the priority by 3 from the lowest if there is enough space
-            // (because it's likely that as time passes, newly coming deadlines will be bigger)
-            // the maximum priority is LF_SCHED_MAX_PRIORITY - 1 (on Linux it's 98)
-            int incr = (LF_SCHED_MAX_PRIORITY - 1 - ptr->pri >= 4) ? 3 : (LF_SCHED_MAX_PRIORITY - 1 - ptr->pri - 1);
-            current->pri = current->left->pri + incr;
-            LF_PRINT_LOG("Assigned priority %d to reaction %s", current->pri, current_reaction_to_execute->name);
-          } else {
-            // shift elements to find a proper priority value
-            LF_PRINT_LOG("Shifting (only left)");
-            if (!shift_edf_priorities(current)) {
-              lf_print_error_and_exit("More threads than priority values. Aborting.");
-            }
-          }
-
-          break;
-        }
-
-        ptr = ptr->right;
-      }
-      
-    }
-
-    lf_thread_set_priority(lf_thread_self(), edf_elements[lf_thread_id()].pri);
-    lf_critical_section_exit(GLOBAL_ENVIRONMENT);
-  }
-}
-
-/**
- * The main looping logic of each LF worker thread.
- * This function assumes the caller holds the mutex lock.
+ * @brief The main looping logic of each LF worker thread.
+ *
+ * This function returns when the scheduler's lf_sched_get_ready_reaction()
+ * implementation returns NULL, indicating that there are no more reactions to execute.
+ *
+ * This function assumes the caller does not hold the mutex lock on the environment.
  *
  * @param env Environment within which we are executing.
  * @param worker_number The number assigned to this worker thread
  */
 static void _lf_worker_do_work(environment_t* env, int worker_number) {
-  //TODO: add if defined
-  // environment_t* envs;
-  // int num_envs = _lf_get_environments(&envs);
-  // static int a[1];
-  // static edf_sched_node a[2][3];
-  // edf_sched_node b[num_envs][2];
   assert(env != GLOBAL_ENVIRONMENT);
 
   // Keep track of whether we have decremented the idle thread count.
@@ -1183,14 +882,9 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
   while ((current_reaction_to_execute = lf_sched_get_ready_reaction(env->scheduler, worker_number)) != NULL) {
     // Got a reaction that is ready to run.
     LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
-                   "level: %lld, is input reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
+                   "level: %lld, is input reaction: %d, and deadline " PRINTF_TIME ".",
                    worker_number, current_reaction_to_execute->name, LF_LEVEL(current_reaction_to_execute->index),
-                   current_reaction_to_execute->is_an_input_reaction, current_reaction_to_execute->chain_id,
-                   current_reaction_to_execute->deadline);
-  
-    if (LF_THREAD_POLICY > LF_SCHED_FAIR) {
-      assign_edf_priority(env, current_reaction_to_execute);    
-    }
+                   current_reaction_to_execute->is_an_input_reaction, current_reaction_to_execute->deadline);
 
     bool violation = _lf_worker_handle_violations(env, worker_number, current_reaction_to_execute);
 
@@ -1198,11 +892,6 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
       // Invoke the reaction function.
       _lf_worker_invoke_reaction(env, worker_number, current_reaction_to_execute);
     }
-
-    lf_critical_section_enter(GLOBAL_ENVIRONMENT);
-    lf_thread_t my_id = lf_thread_self();
-    remove_from_edf_ll(my_id);
-    lf_critical_section_exit(GLOBAL_ENVIRONMENT);
 
     LF_PRINT_DEBUG("Worker %d: Done with reaction %s.", worker_number, current_reaction_to_execute->name);
 
@@ -1221,11 +910,6 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
 void* worker(void* arg) {
   initialize_lf_thread_id();
   environment_t* env = (environment_t*)arg;
-  edf_elements[lf_thread_id()].abs_d = FOREVER;
-  edf_elements[lf_thread_id()].pri = 1;
-  edf_elements[lf_thread_id()].thread_id = lf_thread_self();
-  edf_elements[lf_thread_id()].left = NULL;
-  edf_elements[lf_thread_id()].right = NULL;
   LF_MUTEX_LOCK(&env->mutex);
 
   int worker_number = env->worker_thread_count++;
@@ -1296,43 +980,6 @@ void lf_print_snapshot(environment_t* env) {
   // Do nothing.
 }
 #endif // NDEBUG
-
-// Start threads in the thread pool.
-void start_threads(environment_t* env) {
-  assert(env != GLOBAL_ENVIRONMENT);
-
-  LF_PRINT_LOG("Starting %u worker threads in environment", env->num_workers);
-  for (int i = 0; i < env->num_workers; i++) {
-    if (lf_thread_create(&env->thread_ids[i], worker, env) != 0) {
-      lf_print_error_and_exit("Could not start thread-%u", i);
-    }
-    // FIXME: Use the target property to set the policy.
-    lf_scheduling_policy_t policy = {
-      .priority = 80, // FIXME: determine good priority
-      .policy = LF_THREAD_POLICY
-    };
-    LF_PRINT_LOG("Setting thread policy to %d", LF_THREAD_POLICY);
-    int ret = lf_thread_set_scheduling_policy(env->thread_ids[i], &policy);
-    if (ret != 0) {
-      lf_print_error_and_exit("Couldn't set the scheduling policy. Try running the program with sudo rights.");
-    }
-
-    int number_of_cores = LF_NUMBER_OF_CORES;
-    LF_PRINT_LOG("Using %d cores", number_of_cores);
-    if (number_of_cores > 0) {
-      // Pin the thread to cores starting at the highest numbered core.
-      static int core_number = -1;
-      if (core_number < 0) core_number = lf_available_cores() - 1;
-      ret = lf_thread_set_cpu(env->thread_ids[i], core_number);
-      if (ret != 0) {
-        lf_print_error_and_exit("Couldn't bind thread-%u to core %d.", i, core_number);
-      }
-      LF_PRINT_LOG("Using core_number %d", core_number);
-      core_number--;
-      if (core_number < lf_available_cores() - LF_NUMBER_OF_CORES) core_number = lf_available_cores() - 1;
-    }
-  }
-}
 
 /**
  * @brief Determine the number of workers.
@@ -1433,16 +1080,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   environment_t* envs;
   int num_envs = _lf_get_environments(&envs);
 
-  //TODO: if defined
-  environment_t* env_0 = &envs[0];
-  edf_elements = (edf_sched_node *) malloc(sizeof(edf_sched_node) * num_envs * env_0->num_workers); 
-  edf_elements[lf_thread_id()].abs_d = FOREVER;
-  edf_elements[lf_thread_id()].pri = 1;
-  edf_elements[lf_thread_id()].thread_id = lf_thread_self();
-  edf_elements[lf_thread_id()].left = NULL;
-  edf_elements[lf_thread_id()].right = NULL;
-  
-
 #if defined LF_ENCLAVES
   initialize_local_rti(envs, num_envs);
 #endif
@@ -1473,25 +1110,54 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     lf_print("Environment %u: ---- Intializing start tag", env->id);
     _lf_initialize_start_tag(env);
 
-    lf_print("Environment %u: ---- Spawning %d workers.", env->id, env->num_workers);
-    start_threads(env);
+    lf_print("Environment %u: ---- Spawning %d workers on %d cores.",
+        env->id, env->num_workers, LF_NUMBER_OF_CORES);
+
+    for (int j = 0; j < env->num_workers; j++) {
+      if (i == 0 && j == 0) {
+        // The first worker thread of the first environment will be
+        // run on the main thread, rather than creating a new thread.
+        // This is important for bare-metal platforms, who can't
+        // afford to have the main thread sit idle.
+        env->thread_ids[0] = lf_thread_self();
+        lf_sched_configure_worker(env->scheduler, 0);
+        continue;
+      }
+      if (lf_thread_create(&env->thread_ids[j], worker, env) != 0) {
+        lf_print_error_and_exit("Could not start thread-%u", j);
+      }
+      lf_sched_configure_worker(env->scheduler, j);
+    }
+
     // Unlock mutex and allow threads proceed
     LF_MUTEX_UNLOCK(&env->mutex);
   }
   
+
+  // main thread worker (first worker thread of first environment)
+  void* main_thread_exit_status = NULL;
+  if (num_envs > 0 && envs[0].num_workers > 0) {
+    environment_t* env = &envs[0];
+    main_thread_exit_status = worker(env);
+  }
 
   for (int i = 0; i < num_envs; i++) {
     // Wait for the worker threads to exit.
     environment_t* env = &envs[i];
     void* worker_thread_exit_status = NULL;
     int ret = 0;
-    for (int i = 0; i < env->num_workers; i++) {
-      int failure = lf_thread_join(env->thread_ids[i], &worker_thread_exit_status);
-      if (failure) {
-        lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
+    for (int j = 0; j < env->num_workers; j++) {
+      if (i == 0 && j == 0) {
+        // main thread worker
+        worker_thread_exit_status = main_thread_exit_status;
+      } else {
+        int failure = lf_thread_join(env->thread_ids[j], &worker_thread_exit_status);
+        if (failure) {
+          lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
+        }
       }
       if (worker_thread_exit_status != NULL) {
-        lf_print_error("---- Worker %d reports error code %p", i, worker_thread_exit_status);
+        lf_print_error("---- Worker %d reports error code %p", j, worker_thread_exit_status);
         ret = 1;
       }
     }

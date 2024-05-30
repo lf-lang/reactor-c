@@ -119,15 +119,12 @@ int lf_available_cores();
 lf_thread_t lf_thread_self();
 
 /**
- * Create a new thread, starting with execution of lf_thread
- * getting passed arguments. The new handle is stored in thread_id.
+ * @brief Create a new thread and start execution of the function lf_thread
+ * with the specified arguments.
+ * 
+ * The new handle is stored in thread_id.
  *
  * @return 0 on success, platform-specific error number otherwise.
- */
-int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments);
-
-/**
- * @brief Helper function for creating a thread.
  */
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments);
 
@@ -239,7 +236,7 @@ int lf_cond_signal(lf_cond_t* cond);
 
 /**
  * Wait for condition variable "cond" to be signaled or broadcast.
- * "mutex" is assumed to be locked before.
+ * The cond->mutex is assumed to be locked when this is called.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
