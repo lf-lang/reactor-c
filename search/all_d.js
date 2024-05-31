@@ -32,8 +32,8 @@ var searchData=
   ['notifs_29',['notifs',['../dd/d67/structlf__cond__t.html#acb05d14f72578d24e33e87da32986377',1,'lf_cond_t']]],
   ['nsec_30',['NSEC',['../d2/dcd/tag_8h.html#a8c561c4985495c722ac86b55b3d9bbb3',1,'tag.h']]],
   ['nsecs_31',['NSECS',['../d2/dcd/tag_8h.html#aea80ae7708f69d05cd44126f08a08cf3',1,'tag.h']]],
-  ['num_5fchannels_32',['num_channels',['../d1/d3f/structlf__wav__format__t.html#a94176b96fa481451960f8b727746a886',1,'lf_wav_format_t::num_channels'],['../d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018',1,'lf_waveform_t::num_channels']]],
-  ['num_5fchannels_33',['NUM_CHANNELS',['../d1/dcb/audio__loop_8h.html#ae5597ce31d23d11493e6e674fe257d73',1,'audio_loop.h']]],
+  ['num_5fchannels_32',['NUM_CHANNELS',['../d1/dcb/audio__loop_8h.html#ae5597ce31d23d11493e6e674fe257d73',1,'audio_loop.h']]],
+  ['num_5fchannels_33',['num_channels',['../d1/d3f/structlf__wav__format__t.html#a94176b96fa481451960f8b727746a886',1,'lf_wav_format_t::num_channels'],['../d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018',1,'lf_waveform_t::num_channels']]],
   ['num_5fdestinations_34',['num_destinations',['../da/de8/structlf__port__base__t.html#abb1d021a0d2668988d927e9754b699dc',1,'lf_port_base_t::num_destinations'],['../d9/d8c/structlf__port__internal__t.html#a7948ecbc67381ccbe57c033272d6544f',1,'lf_port_internal_t::num_destinations']]],
   ['num_5fentries_35',['num_entries',['../d6/df3/hashmap_8h.html#abf777aba6f6200c8f2fe2b88d58208d8',1,'hashmap.h']]],
   ['num_5fevent_5ftypes_36',['NUM_EVENT_TYPES',['../db/dc1/trace__types_8h.html#ab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134',1,'trace_types.h']]],
@@ -50,6 +50,6 @@ var searchData=
   ['number_5fof_5finbound_5fp2p_5fconnections_47',['number_of_inbound_p2p_connections',['../d6/d7a/structfederate__instance__t.html#a6b728a970ccb1ef778dbb9779582d2f2',1,'federate_instance_t']]],
   ['number_5fof_5foutbound_5fp2p_5fconnections_48',['number_of_outbound_p2p_connections',['../d6/d7a/structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c',1,'federate_instance_t']]],
   ['number_5fof_5freactions_49',['number_of_reactions',['../d6/d13/structtrigger__t.html#a53bebeaf8708d9dbe859df99972fb667',1,'trigger_t']]],
-  ['number_5fof_5fworkers_50',['number_of_workers',['../da/d7a/structlf__scheduler__t.html#a572c014dd84577ccddc5478b4c1194fd',1,'lf_scheduler_t']]],
-  ['number_5fof_5fworkers_51',['NUMBER_OF_WORKERS',['../d5/dbc/reactor__threaded_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;reactor_threaded.c'],['../dd/d52/scheduler___g_e_d_f___n_p_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_GEDF_NP.c'],['../da/d2a/scheduler___n_p_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_NP.c'],['../d6/dee/scheduler__instance_8h.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_instance.h'],['../d8/dc4/lf__semaphore_8h.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;lf_semaphore.h']]]
+  ['number_5fof_5fworkers_50',['NUMBER_OF_WORKERS',['../d5/dbc/reactor__threaded_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;reactor_threaded.c'],['../dd/d52/scheduler___g_e_d_f___n_p_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_GEDF_NP.c'],['../da/d2a/scheduler___n_p_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_NP.c'],['../d6/dee/scheduler__instance_8h.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_instance.h'],['../d8/dc4/lf__semaphore_8h.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;lf_semaphore.h']]],
+  ['number_5fof_5fworkers_51',['number_of_workers',['../da/d7a/structlf__scheduler__t.html#a572c014dd84577ccddc5478b4c1194fd',1,'lf_scheduler_t']]]
 ];

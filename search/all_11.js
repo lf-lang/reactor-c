@@ -87,7 +87,7 @@ var searchData=
   ['rti_5fuser_84',['rti_user',['../d5/d4f/structfederation__metadata__t.html#acb5d86838516db68d87a30babcce36dd',1,'federation_metadata_t']]],
   ['run_5faudio_5floop_85',['run_audio_loop',['../da/d0e/audio__loop__linux_8c.html#a0a702f74aa9344a8cbd0b376c4d8a1c7',1,'run_audio_loop(void *ignored):&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#a0a702f74aa9344a8cbd0b376c4d8a1c7',1,'run_audio_loop(void *ignored):&#160;audio_loop_mac.c']]],
   ['run_5ftest_86',['run_test',['../d7/de8/hashmap__test_8c.html#a1927481089505c826545cfc92b0556c3',1,'run_test(hashmap_object2int_t *h, int *distribution):&#160;hashmap_test.c'],['../d1/d88/vector__test_8c.html#a00798a17cd6799beb6d7b37540e46af0',1,'run_test(vector_t *v, int *distribution):&#160;vector_test.c']]],
-  ['running_87',['running',['../d6/d1d/lf__types_8h.html#a6e496c05213aa4bcbc0055ceee7808faab514bba77fe136c3a3b6f56b818f7b0c',1,'lf_types.h']]],
-  ['running_88',['Running',['../dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md16',1,'']]],
+  ['running_87',['Running',['../dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md16',1,'']]],
+  ['running_88',['running',['../d6/d1d/lf__types_8h.html#a6e496c05213aa4bcbc0055ceee7808faab514bba77fe136c3a3b6f56b818f7b0c',1,'lf_types.h']]],
   ['runtime_20implementation_20in_20c_89',['Reactor-C: A reactor runtime implementation in C',['../d3/dcc/md__r_e_a_d_m_e.html#autotoc_md4',1,'']]]
 ];

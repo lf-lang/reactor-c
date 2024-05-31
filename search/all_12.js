@@ -2,8 +2,8 @@ var searchData=
 [
   ['sam_0',['SAM',['../d3/d79/lf__arduino__support_8h.html#a0184d5fd98854f0e40eef3a27de91fed',1,'lf_arduino_support.h']]],
   ['samd_1',['SAMD',['../d3/d79/lf__arduino__support_8h.html#a5eed5c828e076621e5274450cdc6c32b',1,'lf_arduino_support.h']]],
-  ['sample_5frate_2',['sample_rate',['../d1/d3f/structlf__wav__format__t.html#a0c32112d0731f41f6997ebbd647ae8f4',1,'lf_wav_format_t']]],
-  ['sample_5frate_3',['SAMPLE_RATE',['../d1/dcb/audio__loop_8h.html#a4b76a0c2859cfd819a343a780070ee2b',1,'audio_loop.h']]],
+  ['sample_5frate_2',['SAMPLE_RATE',['../d1/dcb/audio__loop_8h.html#a4b76a0c2859cfd819a343a780070ee2b',1,'audio_loop.h']]],
+  ['sample_5frate_3',['sample_rate',['../d1/d3f/structlf__wav__format__t.html#a0c32112d0731f41f6997ebbd647ae8f4',1,'lf_wav_format_t']]],
   ['scale_4',['scale',['../d6/d1e/namespacefedsd.html#ae5ba8ed38b1b62ab3cce546f674a623f',1,'fedsd']]],
   ['scale_5ffactor_5',['SCALE_FACTOR',['../df/dfa/vector_8c.html#adb1f1d5b685f5a444190abe4ac18d972',1,'vector.c']]],
   ['sched_5fadaptive_6',['SCHED_ADAPTIVE',['../d6/d1d/lf__types_8h.html#a7516169f705d99222725e6970f0ec703',1,'lf_types.h']]],
