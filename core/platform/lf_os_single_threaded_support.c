@@ -12,7 +12,10 @@
  */
 
 #if defined(_THREADS_H) || defined(_PTHREAD_H)
-    #error Usage of threads in the single-threaded runtime is not safe.
+    // Shaokai: Super hack. Disable error message for now because we are pulling
+    // in scheduler_static.c from the threaded runtime. No threading feature
+    // will actually be used.
+    // #error Usage of threads in the single-threaded runtime is not safe.
 #endif
 
 /**

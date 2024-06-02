@@ -80,7 +80,9 @@ int lf_critical_section_exit(environment_t* env);
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
 #if defined (LF_SINGLE_THREADED)
+#if !(defined SCHEDULER && SCHEDULER == SCHED_STATIC)
     typedef void lf_mutex_t;
+#endif
     /** 
      * @brief Disable interrupts with support for nested calls
      * @return 0 on success
@@ -97,7 +99,9 @@ int lf_critical_section_exit(environment_t* env);
      * @return 0 on success
      */
     int _lf_single_threaded_notify_of_event();
-#else 
+// #else
+#endif // Include the function headers below even for LF_SINGLE_THREADED
+
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
 
@@ -186,7 +190,7 @@ int lf_cond_wait(lf_cond_t* cond);
  *  number otherwise.
  */
 int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time);
-#endif
+// #endif
 
 /**
  * Initialize the LF clock. Must be called before using other clock-related APIs.

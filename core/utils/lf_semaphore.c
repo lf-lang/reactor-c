@@ -1,4 +1,4 @@
-#if !defined(LF_SINGLE_THREADED)
+// #if !defined(LF_SINGLE_THREADED)
 /* Semaphore utility for reactor C. */
 
 /*************
@@ -101,4 +101,4 @@ void lf_semaphore_destroy(lf_semaphore_t* semaphore) {
     assert(semaphore != NULL);
     free(semaphore);
 }
-#endif
+// #endif

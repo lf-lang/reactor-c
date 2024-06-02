@@ -40,6 +40,17 @@ include(utils/CMakeLists.txt)
 include(modal_models/CMakeLists.txt)
 include(platform/CMakeLists.txt)
 
+# In single-threaded mode, if the static scheduler is used,
+# include the static scheduler from the threaded folder.
+# This, however, shows that the scheduler abstraction is failing
+# for the static scheduler, because single-threaded execution
+# should not pull files from the threaded folder.
+if (DEFINED LF_SINGLE_THREADED AND SCHEDULER STREQUAL "SCHED_STATIC")
+    list(APPEND REACTORC_SOURCES utils/lf_semaphore.c)
+    list(APPEND REACTORC_SOURCES threaded/scheduler_instance.c)
+    list(APPEND REACTORC_SOURCES threaded/scheduler_static.c)
+endif()
+
 # Print sources used for compilation
 list(JOIN REACTORC_SOURCES ", " PRINTABLE_SOURCE_LIST)
 message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})

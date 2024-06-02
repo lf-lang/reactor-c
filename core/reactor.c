@@ -18,6 +18,11 @@
 #include "reactor_common.h"
 #include "environment.h"
 
+#if defined(SCHEDULER) && SCHEDULER == SCHED_STATIC
+#include "scheduler.h"
+#include "scheduler_instructions.h"
+#endif
+
 // Embedded platforms with no TTY shouldnt have signals
 #if !defined(NO_TTY)
 #include <signal.h> // To trap ctrl-c and invoke termination().
@@ -358,9 +363,40 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         LF_PRINT_DEBUG("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
         env->execution_started = true;
+
+#if defined(SCHEDULER) && SCHEDULER == SCHED_STATIC
+        lf_sched_init(env, 1, NULL);
+        printf("Executing static schedule\n");
+        int             worker_number       = 0;
+        const inst_t*   current_schedule    = env->scheduler->static_schedules[worker_number];
+        reaction_t*     returned_reaction   = NULL;
+        bool            exit_loop           = false;
+        size_t*         pc                  = &env->scheduler->pc[worker_number];
+
+        function_virtual_instruction_t func;
+        opcode_t        opcode;
+        operand_t       op1;
+        operand_t       op2;
+        operand_t       op3;
+        bool            debug;
+
+        while (!exit_loop) {
+            func = current_schedule[*pc].func;
+            // opcode = current_schedule[*pc].opcode; // FIXME: Opcode is unused.
+            op1 = current_schedule[*pc].op1;
+            op2 = current_schedule[*pc].op2;
+            op3 = current_schedule[*pc].op3;
+            debug = current_schedule[*pc].debug;
+
+            // Execute the current instruction
+            func(env->scheduler, worker_number, op1, op2, op3, debug, pc,
+                        &returned_reaction, &exit_loop);
+        }
+#else
         if (_lf_do_step(env)) {
             while (next(env) != 0);
         }
+#endif
         _lf_normal_termination = true;
         return 0;
     } else {

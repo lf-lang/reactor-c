@@ -97,6 +97,9 @@ typedef struct environment_t {
     int worker_thread_count;
 #if defined(LF_SINGLE_THREADED)
     pqueue_t *reaction_q;
+    // Shaokai: Single-threaded also needs this if static scheduler is used.
+    lf_scheduler_t* scheduler;
+    lf_mutex_t mutex;
 #else
     int num_workers;
     lf_thread_t* thread_ids;

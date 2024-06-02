@@ -37,13 +37,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Use 64-bit times and 32-bit unsigned microsteps
 #include "lf_tag_64_32.h"
 
-#if !defined LF_SINGLE_THREADED
+// Shaokai: Super hack to get static scheduler running on single-threaded mode.
+// #if !defined LF_SINGLE_THREADED || (defined LF_SINGLE_THREADED && defined SCHEDULER && SCHEDULER == SCHED_STATIC)
     #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
         // (Not C++11 or later) or no threads support
         #include "lf_POSIX_threads_support.h"
     #else
         #include "lf_C11_threads_support.h"
     #endif
-#endif
+// #endif
 
 #endif // LF_MACOS_SUPPORT_H

@@ -26,7 +26,10 @@ bool init_sched_instance(
         *instance =
             (lf_scheduler_t*)calloc(1, sizeof(lf_scheduler_t));
     }
+
+#if !defined(LF_SINGLE_THREADED)
     LF_MUTEX_UNLOCK(&env->mutex);
+#endif
 
     if (params == NULL || params->num_reactions_per_level_size == 0) {
         (*instance)->max_reaction_level = DEFAULT_MAX_REACTION_LEVEL;

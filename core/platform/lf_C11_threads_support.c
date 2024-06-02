@@ -1,4 +1,4 @@
-#if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
+// #if (!defined(LF_SINGLE_THREADED) || (defined LF_SINGLE_THREADED && defined SCHEDULER && SCHEDULER == SCHED_STATIC)) && !defined(PLATFORM_ARDUINO)
 #include "platform.h"
 #include "lf_C11_threads_support.h"
 #include <threads.h>
@@ -66,4 +66,4 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     }
     return return_value;
 }
-#endif
+// #endif

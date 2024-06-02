@@ -1,7 +1,5 @@
-#if !defined(LF_SINGLE_THREADED)
 /*************
-Copyright (c) 2022, The University of Texas at Dallas. Copyright (c) 2022, The
-University of California at Berkeley.
+Copyright (c) 2024, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -41,9 +39,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform.h"
 #include "reactor_common.h"
+
+#ifndef LF_SINGLE_THREADED
 #include "scheduler_instance.h"
+#else
+// Forward declaration so that lf_scheduler_t is visible in
+// scheduler_instructions.h
+typedef struct lf_scheduler_t lf_scheduler_t;
+#include "lf_types.h"
+#include "scheduler_instructions.h"
+#endif
+
 #include "scheduler_static_functions.h"
-#include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
 #include "semaphore.h"
 #include "tag.h"
@@ -527,5 +534,4 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *
  */
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {}
-#endif
 #endif
