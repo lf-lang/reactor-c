@@ -109,7 +109,7 @@ target_link_libraries(lf-low-level-platform-impl PRIVATE lf::low-level-platform-
 target_link_libraries(lf-low-level-platform-impl PUBLIC lf-logging-api)
 
 target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
-message(STATUS "Applying preprocessor definitions to platform...")
+message(STATUS "Applying preprocessor definitions to low-level-platform...")
 macro(low_level_platform_define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
