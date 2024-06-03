@@ -134,16 +134,14 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
   sem_reset(&_lf_sem_irq_event, 0);
   // create us boot wakeup time
   target = from_us_since_boot((uint64_t)(wakeup_time / 1000));
-  // Enable interrupts. NOTE: It would be nice to use the macro LF_CRITICAL_SECTION_EXIT,
-  // but there seems to be no way to #include "util.h" that works in this file.
+  // Enable interrupts.
   lf_critical_section_exit(env);
   // blocked sleep
   // return on timeout or on processor event
   if (sem_acquire_block_until(&_lf_sem_irq_event, target)) {
     ret_code = -1;
   }
-  // Disable interrupts. NOTE: It would be nice to use the macro LF_CRITICAL_SECTION_ENTER,
-  // but there seems to be no way to #include "util.h" that works in this file.
+  // Disable interrupts.
   lf_critical_section_enter(env);
   return ret_code;
 }
