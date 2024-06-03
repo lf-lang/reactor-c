@@ -257,7 +257,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
   if (!_lf_async_event) {
     return 0;
   } else {
-    LF_PRINT_DEBUG("Sleep got interrupted...\n");
+    // LF_PRINT_DEBUG("Sleep got interrupted...\n");
     return -1;
   }
 }
