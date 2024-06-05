@@ -85,11 +85,8 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number);
 
 /**
- * @brief Set priorities and core bindings for the specified worker thread, if appropriate.
- *
- * @param scheduler The scheduler.
- * @param worker_index The worker thread index, from 0 to number_of_workers - 1.
+ * @brief Initialize priority and set core binding for the calling worker thread, if appropriate.
  */
-void lf_sched_configure_worker(lf_scheduler_t* scheduler, int worker_index);
+void lf_sched_configure_worker();
 
 #endif // LF_SCHEDULER_H

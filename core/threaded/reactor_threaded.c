@@ -909,6 +909,8 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
  */
 void* worker(void* arg) {
   initialize_lf_thread_id();
+  lf_sched_configure_worker();
+
   environment_t* env = (environment_t*)arg;
   LF_MUTEX_LOCK(&env->mutex);
 
@@ -1019,7 +1021,6 @@ void determine_number_of_workers(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
-  initialize_lf_thread_id();
   // Invoke the function that optionally provides default command-line options.
   lf_set_default_command_line_options();
 
@@ -1119,13 +1120,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // This is important for bare-metal platforms, who can't
         // afford to have the main thread sit idle.
         env->thread_ids[0] = lf_thread_self();
-        lf_sched_configure_worker(env->scheduler, 0);
         continue;
       }
       if (lf_thread_create(&env->thread_ids[j], worker, env) != 0) {
         lf_print_error_and_exit("Could not start thread-%u", j);
       }
-      lf_sched_configure_worker(env->scheduler, j);
     }
 
     // Unlock mutex and allow threads proceed

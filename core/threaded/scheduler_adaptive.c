@@ -693,7 +693,7 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
 
 ///////////////////////// Scheduler Worker API ///////////////////////////////
 
-void lf_sched_configure_worker(lf_scheduler_t* scheduler, int thread_index) {}
+void lf_sched_configure_worker() {}
 
 reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number) {
   assert(worker_number >= 0);

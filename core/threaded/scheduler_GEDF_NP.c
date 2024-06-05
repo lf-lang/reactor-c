@@ -252,10 +252,9 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
  *
  * @param env The environment within which we are executing.
  * @param current_reaction_to_execute The reaction the current worker thread is about to serve.
- * @param worker_number The worker number of the current worker thread.
  */
-static void assign_edf_priority(environment_t* env, reaction_t* current_reaction_to_execute, int worker_number) {
-  LF_PRINT_LOG("Assigning priority to reaction %s", current_reaction_to_execute->name);
+static void assign_edf_priority(environment_t* env, reaction_t* current_reaction_to_execute) {
+  LF_PRINT_LOG("Assigning priority to reaction %s (thread %d, %ld)", current_reaction_to_execute->name, lf_thread_id(), lf_thread_self());
 
   // Examine the reaction's (inferred) deadline to set this thread's priority.
   interval_t inferred_deadline = (interval_t)(current_reaction_to_execute->index >> 16);
@@ -273,7 +272,7 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
                  absolute_deadline);
     // Need to know the priorities of running threads and the absolute deadline associated with it
     // and choose a priority that is in between those with earlier deadlines and those with larger deadlines.
-    edf_sched_node_t* current = &edf_elements[worker_number];
+    edf_sched_node_t* current = &edf_elements[lf_thread_id()];
     current->abs_d = absolute_deadline;
 
     lf_critical_section_enter(GLOBAL_ENVIRONMENT);
@@ -360,7 +359,7 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
         ptr = ptr->right;
       }
     }
-    lf_thread_set_priority(lf_thread_self(), edf_elements[worker_number].pri);
+    lf_thread_set_priority(lf_thread_self(), edf_elements[lf_thread_id()].pri);
     lf_critical_section_exit(GLOBAL_ENVIRONMENT);
   }
 }
@@ -431,6 +430,12 @@ static void advance_level(lf_scheduler_t* scheduler) {
 void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t* params) {
   assert(env != GLOBAL_ENVIRONMENT);
 
+  LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
+  if (!init_sched_instance(env, &env->scheduler, number_of_workers, params)) {
+    // Already initialized
+    return;
+  }
+  
   // Environment 0 (top level) is responsible for allocating the array that stores the
   // information about worker thread priorities and deadlines.
   environment_t* top_level_env;
@@ -438,11 +443,7 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
   if (top_level_env == env) {
     edf_elements = (edf_sched_node_t*)calloc(num_envs * top_level_env->num_workers, sizeof(edf_sched_node_t));
   }
-  LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
-  if (!init_sched_instance(env, &env->scheduler, number_of_workers, params)) {
-    // Already initialized
-    return;
-  }
+  
   lf_scheduler_t* scheduler = env->scheduler;
 
   scheduler->custom_data = (custom_scheduler_data_t*)calloc(1, sizeof(custom_scheduler_data_t));
@@ -477,36 +478,34 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
 
-void lf_sched_configure_worker(lf_scheduler_t* scheduler, int worker_number) {
-  // Set default worker thread properties.
-  edf_elements[worker_number].abs_d = FOREVER;
-  edf_elements[worker_number].pri = 1;
-  edf_elements[worker_number].thread_id = lf_thread_self();
-  edf_elements[worker_number].left = NULL;
-  edf_elements[worker_number].right = NULL;
+void lf_sched_configure_worker() {
+// Set default worker thread properties.
+edf_elements[lf_thread_id()].abs_d = FOREVER;
+edf_elements[lf_thread_id()].pri = 1;
+edf_elements[lf_thread_id()].thread_id = lf_thread_self();
+edf_elements[lf_thread_id()].left = NULL;
+edf_elements[lf_thread_id()].right = NULL;
 
-  // FIXME: Use the target property to set the policy.
-  lf_scheduling_policy_t policy = {.priority = 80, // FIXME: determine good priority
-                                   .policy = LF_THREAD_POLICY};
-  LF_PRINT_LOG("Setting thread policy to %d", LF_THREAD_POLICY);
-  int ret = lf_thread_set_scheduling_policy(lf_thread_self(), &policy);
-  if (ret != 0) {
-    lf_print_warning("Couldn't set the scheduling policy. Try running the program with sudo rights.");
-  }
+// Use the target property to set the policy.
+lf_scheduling_policy_t policy = {.priority = 80, // FIXME: determine good priority
+                                  .policy = LF_THREAD_POLICY};
+LF_PRINT_LOG("Setting thread policy to %d to thread %d", LF_THREAD_POLICY, lf_thread_id());
+int ret = lf_thread_set_scheduling_policy(lf_thread_self(), &policy);
+if (ret != 0) {
+  lf_print_warning("Couldn't set the scheduling policy. Try running the program with sudo rights.");
+}
 
 #if LF_NUMBER_OF_CORES > 0
-  // Pin the thread to cores starting at the highest numbered core.
-  static int core_number = -1;
-  if (core_number < 0)
-    core_number = lf_available_cores() - 1;
-  ret = lf_thread_set_cpu(env->thread_ids[worker_number], core_number);
+  // Pin the thread to cores starting from the highest numbered core using
+  // the assigned thread id: small thread id => high core number. Still,
+  // respecting the constraint on the specified number of cores the program can use.
+  int core_number = lf_available_cores() - 1 - (lf_thread_id() % LF_NUMBER_OF_CORES);
+
+  ret = lf_thread_set_cpu(lf_thread_self(), core_number);
   if (ret != 0) {
-    lf_print_error_and_exit("Couldn't bind thread-%u to core %d.", i, core_number);
+    lf_print_error_and_exit("Couldn't bind thread-%u to core %d.", lf_thread_id(), core_number);
   }
-  LF_PRINT_LOG("Using core_number %d", core_number);
-  core_number--;
-  if (core_number < lf_available_cores() - LF_NUMBER_OF_CORES)
-    core_number = lf_available_cores() - 1;
+  LF_PRINT_LOG("Thread %d using core_number %d", lf_thread_id(), core_number);
 #endif // LF_NUMBER_OF_CORES > 0
 }
 
@@ -543,7 +542,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         }
         LF_MUTEX_UNLOCK(&scheduler->env->mutex);
         if (LF_THREAD_POLICY > LF_SCHED_FAIR) {
-          assign_edf_priority(scheduler->env, reaction_to_return, worker_number);
+          assign_edf_priority(scheduler->env, reaction_to_return);
         }
         return reaction_to_return;
       } else {

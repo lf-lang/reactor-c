@@ -301,10 +301,7 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
 
-void lf_sched_configure_worker(lf_scheduler_t* scheduler, int worker_index) {
-  (void)scheduler; // Suppress compiler warning about unused parameter.
-  (void)worker_index; // Suppress compiler warning about unused parameter.
-}
+void lf_sched_configure_worker() {}
 
 reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number) {
   // Iterate until the stop tag is reached or reaction vectors are empty
