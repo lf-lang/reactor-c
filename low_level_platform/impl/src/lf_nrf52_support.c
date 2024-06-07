@@ -73,9 +73,9 @@ static const nrfx_timer_t g_lf_timer_inst = NRFX_TIMER_INSTANCE(3);
 static volatile uint32_t _lf_time_us_high = 0;
 
 /**
- * Flag passed to sd_nvic_critical_region_*
+ * Flag used to count nested interrupt disables.
  */
-uint8_t _lf_nested_region = 0;
+static volatile uint8_t _lf_nested_count = 0;
 
 /**
  * @brief Handle LF timer interrupts
@@ -266,14 +266,27 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
  * @brief Enter critical section. Let NRF Softdevice handle nesting
  * @return int
  */
-int lf_enable_interrupts_nested() { return sd_nvic_critical_region_enter(&_lf_nested_region); }
+int lf_enable_interrupts_nested() {
+  if (_lf_nested_count == 0) return 1; // Error. Interrupts have not been disabled.
+  _lf_nested_count--;
+  __enable_irq();
+  // FIXME: If softdevice is enabled, do the following:
+  // return sd_nvic_critical_region_exit(&_lf_nested_count);
+  return 0;
+}
 
 /**
  * @brief Exit citical section. Let NRF SoftDevice handle nesting
  *
  * @return int
  */
-int lf_disable_interrupts_nested() { return sd_nvic_critical_region_exit(_lf_nested_region); }
+int lf_disable_interrupts_nested() {
+  _lf_nested_count++;
+  __disable_irq();
+  // FIXME: If softdevice is enabled, do the following:
+  // return sd_nvic_critical_region_enter(_lf_nested_count);
+  return 0;
+}
 
 /**
  * @brief Set global flag to true so that sleep will return when woken
