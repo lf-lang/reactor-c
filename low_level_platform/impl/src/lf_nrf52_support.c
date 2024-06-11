@@ -193,12 +193,12 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
 
 /**
  * @brief Sleep until the given wakeup time.
- * 
+ *
  * There are a couple of edge cases to consider:
  *  1. Wakeup time is already past
  *  2. Implied sleep duration is below `LF_MAX_SLEEP_NS` threshold
  *  3. Implied sleep duration is above `LF_MAX_SLEEP_NS` limit
- * 
+ *
  * This function assumes the caller is in a critical section, so interrupts are disabled.
  * It may exit the critical section while waiting for an event, but it will re-enter the
  * critical section before returning.
@@ -273,7 +273,8 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
  * @return 0
  */
 int lf_enable_interrupts_nested() {
-  if (_lf_nested_count == 0) return 1; // Error. Interrupts have not been disabled.
+  if (_lf_nested_count == 0)
+    return 1; // Error. Interrupts have not been disabled.
   _lf_nested_count--;
   __enable_irq();
   // FIXME: If softdevice is enabled, do the following:
