@@ -94,7 +94,7 @@ void lf_timer_event_handler(nrf_timer_event_t event_type, void* p_context) {
   if (event_type == NRF_TIMER_EVENT_COMPARE2) {
     _lf_sleep_interrupted = false;
   } else if (event_type == NRF_TIMER_EVENT_COMPARE3) {
-    _lf_time_us_high = +1;
+    _lf_time_us_high += 1;
   }
 }
 
@@ -192,13 +192,19 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
 }
 
 /**
- * @brief Sleep until the given wakeup time. There are a couple of edge cases to consider
+ * @brief Sleep until the given wakeup time.
+ * 
+ * There are a couple of edge cases to consider:
  *  1. Wakeup time is already past
  *  2. Implied sleep duration is below `LF_MAX_SLEEP_NS` threshold
  *  3. Implied sleep duration is above `LF_MAX_SLEEP_NS` limit
+ * 
+ * This function assumes the caller is in a critical section, so interrupts are disabled.
+ * It may exit the critical section while waiting for an event, but it will re-enter the
+ * critical section before returning.
  *
  * @param wakeup_time The time instant at which to wake up.
- * @return int 0 if sleep completed, or -1 if it was interrupted.
+ * @return 0 if sleep completed, or -1 if it was interrupted.
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
   instant_t now;
@@ -264,7 +270,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
 
 /**
  * @brief Enter critical section. Let NRF Softdevice handle nesting
- * @return int
+ * @return 0
  */
 int lf_enable_interrupts_nested() {
   if (_lf_nested_count == 0) return 1; // Error. Interrupts have not been disabled.
