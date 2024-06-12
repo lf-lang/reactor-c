@@ -176,6 +176,11 @@ int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number);
 int lf_thread_set_priority(lf_thread_t thread, int priority);
 
 /**
+ * DEBUGGING
+ */
+int lf_thread_get_priority(lf_thread_t thread);
+
+/**
  * @brief Set the scheduling policy of a thread.
  *
  * This is based on the scheduling

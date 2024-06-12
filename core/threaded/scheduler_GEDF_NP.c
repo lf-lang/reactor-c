@@ -25,6 +25,26 @@
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
+#ifndef EDF_INITIAL_PRIO
+#define EDF_INITIAL_PRIO 50
+#endif // EDF_INITIAL_PRIO
+
+#ifndef EDF_PRIO_SPACING
+#define EDF_PRIO_SPACING 3
+#endif // EDF_PRIO_SPACING
+
+#ifndef EDF_MIN_PRIO
+#define EDF_MIN_PRIO (LF_SCHED_MIN_PRIORITY + 2)
+#endif // EDF_MIN_PRIO
+
+#ifndef EDF_MAX_PRIO
+#define EDF_MAX_PRIO (LF_SCHED_MAX_PRIORITY - 2)
+#endif // EDF_MAX_PRIO
+
+#ifndef EDF_SLEEP_PRIO
+#define EDF_SLEEP_PRIO (LF_SCHED_MAX_PRIORITY - 1)
+#endif // EDF_SLEEP_PRIO
+
 #include <assert.h>
 #include <stdint.h> // For uint32_t
 
@@ -74,7 +94,7 @@ inline static void wait_for_reaction_queue_updates(lf_scheduler_t* scheduler, in
 
   // Set the priority to the maximum to be sure to be woken up when new reactions are available.
   // FIXME: Should only do this if the number of threads is greater than the number of cores.
-  lf_thread_set_priority(lf_thread_self(), LF_SCHED_MAX_PRIORITY);
+  lf_thread_set_priority(lf_thread_self(), EDF_SLEEP_PRIO);
 
   tracepoint_worker_wait_starts(scheduler->env, worker_number);
   LF_COND_WAIT(&scheduler->custom_data->reaction_q_changed);
@@ -119,7 +139,10 @@ static int advance_tag(lf_scheduler_t* scheduler) {
  * elements), the function tries to shift the nodes to the left. If
  * this again is not possible (the head of the LL has priority 2 and
  * there is no space to shift the following elements), the function
- * returns false (true otherwise).
+ * returns false (true otherwise). 
+ * 
+ * The calling thread must own the lock of the
+ * global mutex before calling this function.
  *
  * @param current: the node to which to assign a priority value after shifting
  *
@@ -135,34 +158,51 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
   int counter = 1;
   // set to true if we can find a shifting spot
   bool shifted = false;
+  LF_PRINT_LOG("EDF: attempting to shift right");
   while (ptr) {
     counter++;
-    if (!ptr->right && ptr->pri != LF_SCHED_MAX_PRIORITY - 1) {
+    if (!ptr->right && ptr->pri != EDF_MAX_PRIO) {
       // if until the tail we cannot find a shifting spot, and the tail is not 98
       // this means the tail can be shifted to 98
+      LF_PRINT_LOG("EDF: got to the tail that is gonna be shifted to MAX");
       shifted = true;
-      int diff = LF_SCHED_MAX_PRIORITY - 1 - ptr->left->pri;
+
+      int diff = EDF_MAX_PRIO;
+      // in the case I haven't incremented ptr and immediately
+      // got to the tail (i.e., current == ptr->left), I need to use
+      // before-after as priority interval to compute the diff
+      if (ptr->left != current) {
+        diff -= ptr->left->pri;
+      } else {
+        diff -= ptr->left->left->pri;
+      }
       // the formula is explained in the else-if case
       int incr = (diff - 1) / (counter + 1) + 1;
+      LF_PRINT_LOG("EDF: shifting increment is %d: diff = %d, counter = %d", incr, diff, counter);
+      
       // change the tail's priority
-      ptr->pri = LF_SCHED_MAX_PRIORITY - 1;
+      LF_PRINT_LOG("EDF: shifting thread %ld from %d to %d", ptr->thread_id, ptr->pri, EDF_MAX_PRIO);
+      ptr->pri = EDF_MAX_PRIO;
+      
       lf_thread_set_priority(ptr->thread_id, ptr->pri);
 
       // change the priorities of node from tail to the current thread
       // to keep the relative priorities while shifting and system-calling
-      ptr = ptr->left;
+      LF_PRINT_LOG("EDF: shifting the nodes before tail to make room for the new one");
       do {
+        ptr = ptr->left;
+        LF_PRINT_LOG("EDF: shifting thread %ld from %d to %d", ptr->thread_id, ptr->pri, ptr->right->pri - incr);
         ptr->pri = ptr->right->pri - incr;
         lf_thread_set_priority(ptr->thread_id, ptr->pri);
-        ptr = ptr->left;
       } while (ptr != current);
-
+      LF_PRINT_LOG("EDF: finished shifting");
       break;
 
     } else if (ptr->right) {
       int diff = ptr->right->pri - ptr->pri;
       if (diff > 1) {
         // eureka! we found shifting spot
+        LF_PRINT_LOG("EDF: found a shifting spot between thread %ld (pri %d) and thread %ld (pri %d)", ptr->thread_id, ptr->pri, ptr->right->thread_id, ptr->right->pri);
         shifted = true;
         // calculate the increment interval:
         // # diff - 1 is the extra space to distribute equally
@@ -172,10 +212,12 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
         int incr = (diff - 1) / (counter + 1) + 1;
         // shift every node's priority from this spot to the spot
         // we inserted the current thread, starting from the right
+        ptr = ptr->right;
         do {
+          ptr = ptr->left;
+          LF_PRINT_LOG("EDF: shifting thread %ld from %d to %d", ptr->thread_id, ptr->pri, ptr->right->pri - incr);
           ptr->pri = ptr->right->pri - incr;
           lf_thread_set_priority(ptr->thread_id, ptr->pri);
-          ptr = ptr->left;
         } while (ptr != current);
 
         // since we found a spot and shifted priorities, we don't need to continue with the while loop
@@ -186,29 +228,43 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
   }
 
   if (!shifted) {
-    // if flag is still false, this mean we couldn't find any shifting spot on the right side
+    LF_PRINT_LOG("EDF: right-shift failed, attempting to shift left");
+    // if flag is still false, this means we couldn't find any shifting spot on the right side
     // we need to check left (this is a copy of the above code with the needed edits... debeatable)
     ptr = before;
     counter = 1;
     while (ptr) {
       counter++;
-      if (!ptr->left && ptr->pri != 2) {
+      if (!ptr->left && ptr->pri != EDF_MIN_PRIO) {
         // if until the head we cannot find a shifting spot, and the head is not 2
         // (1 is reserved for reactions w/o deadline) this means the head can be shifted
+        LF_PRINT_LOG("EDF: got to the head that is gonna be shifted to 2");
         shifted = true;
-        int diff = ptr->right->pri - 2;
+
+        int diff = - EDF_MIN_PRIO;
+        // in the case I haven't incremented ptr and immediately
+        // got to the head (i.e., current == ptr->right), I need to use
+        // before-after as priority interval to compute the diff
+        if (ptr->left != current) {
+          diff += ptr->right->pri;
+        } else {
+          diff += ptr->right->right->pri;
+        }
+
         // usual formula to spread priorities
         int incr = (diff - 1) / (counter + 1) + 1;
         // change the head's priority
-        ptr->pri = 2;
+        LF_PRINT_LOG("EDF: shifting thread %ld from %d to %d", ptr->thread_id, ptr->pri, 2);
+        ptr->pri = EDF_MIN_PRIO;
         lf_thread_set_priority(ptr->thread_id, ptr->pri);
 
         // change the priorities of node from head to the current thread
-        ptr = ptr->right;
+        
         do {
+          ptr = ptr->right;
+          LF_PRINT_LOG("EDF: shifting thread %ld from %d to %d", ptr->thread_id, ptr->pri, ptr->left->pri + incr);
           ptr->pri = ptr->left->pri + incr;
           lf_thread_set_priority(ptr->thread_id, ptr->pri);
-          ptr = ptr->right;
         } while (ptr != current);
 
         break;
@@ -217,15 +273,19 @@ static bool shift_edf_priorities(edf_sched_node_t* current) {
         int diff = ptr->pri - ptr->left->pri;
         if (diff > 1) {
           // eureka! we found shifting spot
+          LF_PRINT_LOG("EDF: found a shifting spot between thread %ld (pri %d) and thread %ld (pri %d)", ptr->thread_id, ptr->pri, ptr->left->thread_id, ptr->left->pri);
           shifted = true;
           // usual formula to spread priorities
           int incr = (diff - 1) / (counter + 1) + 1;
           // shift every node's priority from this spot to the spot
           // we inserted the current thread, starting from the left
+          
+          ptr = ptr->left;
           do {
+            ptr = ptr->right;
+            LF_PRINT_LOG("EDF: shifting thread %ld from %d to %d", ptr->thread_id, ptr->pri, ptr->left->pri + incr);
             ptr->pri = ptr->left->pri + incr;
             lf_thread_set_priority(ptr->thread_id, ptr->pri);
-            ptr = ptr->right;
           } while (ptr != current);
 
           // since we found a spot and shifted priorities, we don't need to continue with the while loop
@@ -275,13 +335,13 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
     edf_sched_node_t* current = &edf_elements[lf_thread_id()];
     current->abs_d = absolute_deadline;
 
+    LF_PRINT_LOG("Attempt to enter the CS from reaction %s with priority %d", current_reaction_to_execute->name, lf_thread_get_priority(lf_thread_self()));
     lf_critical_section_enter(GLOBAL_ENVIRONMENT);
     LF_PRINT_LOG("In the CS for reaction %s", current_reaction_to_execute->name);
     // if there is no head -- then the current thread is the head
     if (!edf_ll_head) {
       edf_ll_head = current;
-      // FIXME: make sure this is an appropriate value
-      current->pri = 50;
+      current->pri = EDF_INITIAL_PRIO;
 
       LF_PRINT_LOG("No worker threads running, reaction %s is the head of the list and "
                    "gets priority %d",
@@ -311,7 +371,7 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
             if (ptr->pri - temp->pri >= 2) {
               // distancing the priority by 3 from the lowest if there is enough space
               // (because it's likely that as time passes, newly coming deadlines will be bigger)
-              int incr = (ptr->pri - temp->pri >= 4) ? 3 : (ptr->pri - temp->pri - 1);
+              int incr = (ptr->pri - temp->pri >= EDF_PRIO_SPACING + 1) ? EDF_PRIO_SPACING : (ptr->pri - temp->pri - 1);
               current->pri = current->left->pri + incr;
               LF_PRINT_LOG("Assigned priority %d to reaction %s", current->pri, current_reaction_to_execute->name);
             } else {
@@ -324,8 +384,16 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
           } else { // if the insertion is at the beginning of the list
             LF_PRINT_LOG("Insertion at the beginning of the list");
             edf_ll_head = current;
-            // distancing the priority by 5 from ptr (if there is enough space)
-            current->pri = (ptr->pri - 5 >= 2) ? (ptr->pri - 5) : 2;
+
+            if (ptr->pri == EDF_MIN_PRIO) {
+              // need to shift right
+              if (!shift_edf_priorities(current)) {
+                lf_print_error_and_exit("More threads than priority values. Aborting.");
+              }
+            } else {
+              // distancing the priority by 3 from ptr (if there is enough space)
+              current->pri = (ptr->pri - EDF_PRIO_SPACING >= EDF_MIN_PRIO) ? (ptr->pri - EDF_PRIO_SPACING) : EDF_MIN_PRIO;
+            }
           }
 
           break;
@@ -340,11 +408,11 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
           current->left = ptr;
           ptr->right = current;
 
-          if (LF_SCHED_MAX_PRIORITY - ptr->pri >= 2) {
+          if (EDF_MAX_PRIO - ptr->pri >= 1) {
             // distancing the priority by 3 from the lowest if there is enough space
             // (because it's likely that as time passes, newly coming deadlines will be bigger)
             // the maximum priority is LF_SCHED_MAX_PRIORITY - 1 (on Linux it's 98)
-            int incr = (LF_SCHED_MAX_PRIORITY - 1 - ptr->pri >= 4) ? 3 : (LF_SCHED_MAX_PRIORITY - 1 - ptr->pri - 1);
+            int incr = (EDF_MAX_PRIO - ptr->pri >= EDF_PRIO_SPACING + 1) ? EDF_PRIO_SPACING : (EDF_MAX_PRIO - ptr->pri);
             current->pri = current->left->pri + incr;
             LF_PRINT_LOG("Assigned priority %d to reaction %s", current->pri, current_reaction_to_execute->name);
           } else {
@@ -360,7 +428,9 @@ static void assign_edf_priority(environment_t* env, reaction_t* current_reaction
       }
     }
     lf_thread_set_priority(lf_thread_self(), edf_elements[lf_thread_id()].pri);
+    LF_PRINT_LOG("About to exit the CS for reaction %s with priority %d", current_reaction_to_execute->name, lf_thread_get_priority(lf_thread_self()));
     lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+    LF_PRINT_LOG("Out of the CS for reaction %s with priority %d", current_reaction_to_execute->name, lf_thread_get_priority(lf_thread_self()));
   }
 }
 
@@ -487,7 +557,7 @@ edf_elements[lf_thread_id()].left = NULL;
 edf_elements[lf_thread_id()].right = NULL;
 
 // Use the target property to set the policy.
-lf_scheduling_policy_t policy = {.priority = 80, // FIXME: determine good priority
+lf_scheduling_policy_t policy = {.priority = EDF_SLEEP_PRIO,
                                   .policy = LF_THREAD_POLICY};
 LF_PRINT_LOG("Setting thread policy to %d to thread %d", LF_THREAD_POLICY, lf_thread_id());
 int ret = lf_thread_set_scheduling_policy(lf_thread_self(), &policy);
@@ -589,10 +659,13 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
   if (!lf_atomic_bool_compare_and_swap32((int32_t*)&done_reaction->status, queued, inactive)) {
     lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.", done_reaction->status, queued);
   }
+  LF_PRINT_LOG("Attempt to enter the CS from reaction %s with priority %d", done_reaction->name, lf_thread_get_priority(lf_thread_self()));
   lf_critical_section_enter(GLOBAL_ENVIRONMENT);
+  LF_PRINT_LOG("In the CS from reaction %s", done_reaction->name);
   lf_thread_t my_id = lf_thread_self();
   remove_from_edf_ll(my_id);
   lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+  LF_PRINT_LOG("Out of the CS for reaction %s with priority %d", done_reaction->name, lf_thread_get_priority(lf_thread_self()));
 }
 
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {

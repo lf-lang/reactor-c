@@ -246,7 +246,8 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
     // woken up as soon as the sleep time terminates (because there
     // might be other worker threads from different enclaves having
     // higher priority than what the current thread has)
-    lf_thread_set_priority(lf_thread_self(), LF_SCHED_MAX_PRIORITY);
+    // FIXME: use the same constant defined for the GEDF scheduler
+    lf_thread_set_priority(lf_thread_self(), LF_SCHED_MAX_PRIORITY - 1);
 
     // We do the sleep on the cond var so we can be awakened by the
     // asynchronous scheduling of a physical action. lf_clock_cond_timedwait

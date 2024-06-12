@@ -54,6 +54,16 @@ int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
   return pthread_setaffinity_np(thread, sizeof(cpu_set), &cpu_set);
 }
 
+int lf_thread_get_priority(lf_thread_t thread) {
+  struct sched_param schedparam;
+  int policy;
+
+  // Get the current scheduling policy
+  pthread_getschedparam(thread, &policy, &schedparam);
+  
+  return schedparam.sched_priority;
+}
+
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
   int posix_policy, min_pri, max_pri, final_priority, res;
   struct sched_param schedparam;
