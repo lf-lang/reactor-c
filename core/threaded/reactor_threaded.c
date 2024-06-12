@@ -242,6 +242,13 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
       return true;
     }
 
+    // setting the priority to the maximum to be sure to be
+    // woken up as soon as the sleep time terminates (because there
+    // might be other worker threads from different enclaves having
+    // higher priority than what the current thread has)
+    // FIXME: use the same constant defined for the GEDF scheduler
+    lf_thread_set_priority(lf_thread_self(), LF_SCHED_MAX_PRIORITY - 1);
+
     // We do the sleep on the cond var so we can be awakened by the
     // asynchronous scheduling of a physical action. lf_clock_cond_timedwait
     // returns 0 if it is awakened before the timeout. Hence, we want to run
@@ -861,7 +868,7 @@ void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_
  * @param env Environment within which we are executing.
  * @param worker_number The number assigned to this worker thread
  */
-void _lf_worker_do_work(environment_t* env, int worker_number) {
+static void _lf_worker_do_work(environment_t* env, int worker_number) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   // Keep track of whether we have decremented the idle thread count.
@@ -903,6 +910,8 @@ void _lf_worker_do_work(environment_t* env, int worker_number) {
  */
 void* worker(void* arg) {
   initialize_lf_thread_id();
+  lf_sched_configure_worker();
+
   environment_t* env = (environment_t*)arg;
   LF_MUTEX_LOCK(&env->mutex);
 
@@ -1013,7 +1022,6 @@ void determine_number_of_workers(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
-  initialize_lf_thread_id();
   // Invoke the function that optionally provides default command-line options.
   lf_set_default_command_line_options();
 
@@ -1104,7 +1112,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     lf_print("Environment %u: ---- Intializing start tag", env->id);
     _lf_initialize_start_tag(env);
 
-    lf_print("Environment %u: ---- Spawning %d workers.", env->id, env->num_workers);
+    lf_print("Environment %u: ---- Spawning %d workers on %d cores.", env->id, env->num_workers, LF_NUMBER_OF_CORES);
 
     for (int j = 0; j < env->num_workers; j++) {
       if (i == 0 && j == 0) {
@@ -1112,6 +1120,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // run on the main thread, rather than creating a new thread.
         // This is important for bare-metal platforms, who can't
         // afford to have the main thread sit idle.
+        env->thread_ids[0] = lf_thread_self();
         continue;
       }
       if (lf_thread_create(&env->thread_ids[j], worker, env) != 0) {

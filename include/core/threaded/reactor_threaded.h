@@ -78,6 +78,27 @@ void _lf_increment_tag_barrier_locked(environment_t* env, tag_t future_tag);
  */
 void _lf_decrement_tag_barrier_locked(environment_t* env);
 
+/**
+ * @brief The number of cores to use.
+ *
+ * If the target parameter number_of_cores is set, it will override this default.
+ */
+#ifndef LF_NUMBER_OF_CORES
+#define LF_NUMBER_OF_CORES 0
+#endif
+
+/**
+ * @brief The thread scheduling policy to use.
+ *
+ * This should be one of   LF_SCHED_FAIR, LF_SCHED_TIMESLICE, or LF_SCHED_PRIORITY.
+ * The default is LF_SCHED_FAIR, which corresponds to the Linux SCHED_OTHER.
+ * LF_SCHED_TIMESLICE corresponds to Linux SCHED_RR, and LF_SCHED_PRIORITY corresponds
+ * to SCHED_FIFO.
+ */
+#ifndef LF_THREAD_POLICY
+#define LF_THREAD_POLICY LF_SCHED_FAIR
+#endif
+
 int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag);
 void lf_synchronize_with_other_federates(void);
 bool wait_until(instant_t logical_time_ns, lf_cond_t* condition);

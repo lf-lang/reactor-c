@@ -34,6 +34,13 @@ int lf_mutex_init(lf_mutex_t* mutex) {
   // of the predicate.”  This seems like a bug in the implementation of
   // pthreads. Maybe it has been fixed?
   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+
+  // Initialize the mutex protocol to INHERIT:
+  // a thread t1 owning the mutex, when it is preempted by a
+  // higher-priority thread t2 that tries to get the lock on the
+  // same mutex, inherits t2's priority.
+  pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT);
+
   return pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
 }
 
