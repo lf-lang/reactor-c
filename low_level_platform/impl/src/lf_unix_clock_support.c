@@ -6,6 +6,8 @@
 #include "logging.h"
 #include "platform/lf_unix_clock_support.h"
 
+instant_t MIN_SLEEP_DURATION;
+
 instant_t convert_timespec_to_ns(struct timespec tp) { return ((instant_t)tp.tv_sec) * BILLION + tp.tv_nsec; }
 
 struct timespec convert_ns_to_timespec(instant_t t) {
@@ -23,6 +25,7 @@ void _lf_initialize_clock() {
   }
 
   lf_print("---- System clock resolution: %ld nsec", res.tv_nsec);
+  MIN_SLEEP_DURATION = NSEC(res.tv_nsec);
 }
 
 /**

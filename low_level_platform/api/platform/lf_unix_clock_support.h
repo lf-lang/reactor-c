@@ -1,6 +1,8 @@
 #include <time.h>
 #include <errno.h>
 
+extern instant_t MIN_SLEEP_DURATION;
+
 /**
  * @brief Convert a _lf_time_spec_t ('tp') to an instant_t representation in
  * nanoseconds.
