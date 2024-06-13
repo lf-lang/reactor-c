@@ -39,8 +39,13 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_rp2040_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
+    set(LF_LOW_LEVEL_PLATFORM_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_flexpret_support.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
+    )
 else()
-    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Zephyr, Nrf52 and RP2040.")
+    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Linux, MacOS, Nrf52, RP2040, Windows, and Zephyr.")
 endif()
 
 list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/lf_platform_util.c)
@@ -54,6 +59,40 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     zephyr_library_named(lf-low-level-platform-impl)
     zephyr_library_sources(${LF_LOW_LEVEL_PLATFORM_FILES})
     zephyr_library_link_libraries(kernel)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+    if (DEFINED NUMBER_OF_WORKERS)
+        if (${NUMBER_OF_WORKERS} GREATER 2)
+            message(FATAL_ERROR "RP2040 can have at most 2 workers (one per core).\
+                Number of requested workers is ${NUMBER_OF_WORKERS}.")
+        endif()
+    endif()
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+    target_link_libraries(lf-low-level-platform-impl PRIVATE fp-sdk)
+
+    if (DEFINED NUMBER_OF_WORKERS)
+        # Verify that FlexPRET has the number of requested workers
+        # That information is available in the SDK's hwconfig
+        include($ENV{FP_SDK_PATH}/flexpret/hwconfig.cmake)
+        if (NOT DEFINED THREADS)
+            message(FATAL_ERROR
+                "Missing FlexPRET hardware configuration; check that FlexPRET has \
+                been installed to the SDK."
+            )
+        endif()
+
+        math(EXPR FLEXPRET_AVAILABLE_WORKERS "${THREADS} - 1")
+
+        if (${NUMBER_OF_WORKERS} GREATER ${FLEXPRET_AVAILABLE_WORKERS})
+            message(FATAL_ERROR
+                "Number of requested workers (${NUMBER_OF_WORKERS}) is higher \
+                than FlexPRET's number of available workers \
+                (${FLEXPRET_AVAILABLE_WORKERS}). Note that FlexPRET uses \
+                hardware threads, not the usual software threads"
+            )
+        endif()
+    endif()
 else()
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
     # Link the platform to a threading library

@@ -520,7 +520,7 @@ bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti
 }
 
 void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info) {
-  const char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9.]{1,255})(:([0-9]{1,5}))?";
+  const char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9._-]{1,255})(:([0-9]{1,5}))?";
   size_t max_groups = 6;
   // The group indices of each field of interest in the regex.
   int user_gid = 2, host_gid = 3, port_gid = 5;

@@ -39,7 +39,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <zephyr/kernel.h>
 
-#define NO_TTY
+#define NO_CLI
+#define MINIMAL_STDLIB
 #if !defined(LF_SINGLE_THREADED)
 
 typedef struct k_mutex lf_mutex_t;

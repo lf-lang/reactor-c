@@ -1,8 +1,8 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author{Marten Lohstroh <marten@berkeley.edu>}
- * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @author Soroush Bateni
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
@@ -11,16 +11,6 @@
 #define REACTOR_THREADED_H
 
 #include "lf_types.h"
-
-/**
- * @brief Advance to the next level.
- * For federated runtimes, this function should
- * stall the advance until we know that we can safely execute the next level
- * given knowledge about upstream network port statuses.
- * @param env The environment.
- * @param next_reaction_level The place to store the next reaction level.
- */
-void try_advance_level(environment_t* env, volatile size_t* next_reaction_level);
 
 /**
  * Enqueue port absent reactions that will send a PORT_ABSENT

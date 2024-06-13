@@ -50,6 +50,8 @@ int lf_critical_section_exit(environment_t* env);
 #include "platform/lf_nrf52_support.h"
 #elif defined(PLATFORM_RP2040)
 #include "platform/lf_rp2040_support.h"
+#elif defined(PLATFORM_FLEXPRET)
+#include "platform/lf_flexpret_support.h"
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Windows platforms
 #include "platform/lf_windows_support.h"
@@ -232,7 +234,7 @@ int lf_cond_signal(lf_cond_t* cond);
 
 /**
  * Wait for condition variable "cond" to be signaled or broadcast.
- * "mutex" is assumed to be locked before.
+ * The cond->mutex is assumed to be locked when this is called.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */

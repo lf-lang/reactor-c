@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <zephyr/kernel.h>
+#include <errno.h>
 
 #include "platform/lf_zephyr_support.h"
 #include "low_level_platform.h"
@@ -86,6 +87,10 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     return 0;
   }
 
+  // Reset the semaphore. This is safe to do before we leave the critical
+  // section.
+  k_sem_reset(&sleeping_sem);
+
   if (lf_critical_section_exit(env)) {
     lf_print_error_and_exit("Failed to exit critical section.");
   }
@@ -96,11 +101,18 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     lf_print_error_and_exit("Failed to exit critical section.");
   }
 
-  if (res < 0 || async_event == true) {
+  if (res == 0) {
+    // We got the semaphore, this means there should be a new event
+    if (!async_event) {
+      lf_print_warning("Sleep was interrupted, but no new event");
+    }
     async_event = false;
     return -1;
-  } else {
+  } else if (res == -EAGAIN) {
+    // This means we timed out and have reached our wakeup instant.
     return 0;
+  } else {
+    lf_print_error_and_exit("k_sem_take returned %d", res);
   }
 }
 
