@@ -30,24 +30,28 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
+#define _GNU_SOURCE
 #include "lf_macos_support.h"
 #include "platform.h"
 #include "tag.h"
 
 #if defined LF_SINGLE_THREADED
-    #include "lf_os_single_threaded_support.c"
+#include "lf_os_single_threaded_support.c"
+#else
+#include "lf_POSIX_threads_support.c"
+
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
+    return -1;
+}
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
+    return -1;
+}
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t *policy) {
+    return -1;
+}
 #endif
-
-#if !defined LF_SINGLE_THREADED
-    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
-        // (Not C++11 or later) or no threads support
-        #include "lf_POSIX_threads_support.c"
-    #else
-        #include "lf_C11_threads_support.c"
-    #endif
-#endif
-
-
 
 #include "lf_unix_clock_support.h"
 
