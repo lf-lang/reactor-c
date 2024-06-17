@@ -88,6 +88,9 @@ typedef struct environment_t {
   tag_t** _lf_intended_tag_fields;
   int _lf_intended_tag_fields_size;
 #endif             // FEDERATED
+#if defined(FEDERATED_CENTRALIZED)
+  bool need_to_send_LTC;
+#endif             // FEDERATED_CENTRALIZED
 #ifdef LF_ENCLAVES // TODO: Consider dropping #ifdef
   enclave_info_t* enclave_info;
 #endif
