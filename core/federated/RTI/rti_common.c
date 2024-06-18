@@ -292,19 +292,16 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     e->last_granted = next_event_tag;
   }
   // Check downstream scheduling_nodes to see whether they should now be granted a TAG.
-  // To handle cycles, need to create a boolean array to keep
-  // track of which downstream scheduling_nodes have been visited.
-  // FIXME: As we have all_downstreams field now, we don't need the function notify_downstream_davnace_grnat_if_safe.
   update_all_downstreams(e);
-  bool* visited = (bool*)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
-  notify_downstream_advance_grant_if_safe(e, visited);
-  free(visited);
+  for (int i = 0; i < rti_common->num_all_downstreams; i++) {
+    scheduling_node_t* downstream = rti_common->scheduling_nodes[e->num_all_downstreams[i]];
+    notify_advance_grant_if_safe(downstream);
+  }
 
-  // Send DNET to the node's upstreams if needed
+  // Send DNET to the node e's upstream federates if needed
   for (int i = 0; i < e->num_all_upstreams; i++) {
     int target_upstream_id = e->all_upstreams[i];
     if (target_upstream_id == e->id) {
-      // FIXME: This shouldn't be entered, but currently, it's entered.
       continue;
     }
     send_downstream_next_event_tag_if_needed(rti_common->scheduling_nodes[target_upstream_id], e->id);
@@ -460,18 +457,18 @@ void update_all_downstreams(scheduling_node_t* node) {
 }
 
 tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay) {
-  // FIXME: FOREVER - FOREVER is not handled.
   // (A.t, A.m) - (B.t - B.m)
-  // The least B is (0, 0) which indicates NEVER delay.
+  // B cannot be NEVER_TAG as (0, 0) denotes no delay.
+  // Also, we assume B is not FOREVER_TAG because FOREVER_TAG delay means that there is no connection.
   // 1) If A.t = NEVER, return NEVER.
   // 2) If A.t = FOREVER, return FOREVER.
   // 3) A.t is not NEVER neither FOREVER
   //   a) If A < B (A.t < B.t or A.t == B.t and A.m < B.m) return NEVER
   //   b) A >= B
-  //     i)  If A.m < B.m return (A.t - B.t - 1, UINT_MAX)
-  //     ii) If A.m >= B.m
-  //         If B.t is 0 return (A.t, A.m - B.m)
-  //         Else, return (A.t - B.t, UINT_MAX)
+  //     i)   If A.t >= B.t = 0 and A.m >= B.m return (A.t - B.t, A.m - B.m)
+  //     ii)  If A.t >= B.t > 0 and A.m >= B.m return (A.t - B.t, UINT_MAX)
+  //     iii) If A.t >= B.t > 0 and A.m < B.m return (A.t - B.t - 1, UINT_MAX)
+
   if (received_tag.time == NEVER || lf_tag_compare(received_tag, minimum_delay) < 0)
     return NEVER_TAG;
   if (received_tag.time == FOREVER)

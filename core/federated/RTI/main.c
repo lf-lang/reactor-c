@@ -318,7 +318,7 @@ int main(int argc, const char* argv[]) {
   // Allocate memory for the federates
   int n = rti.base.number_of_scheduling_nodes;
   rti.base.scheduling_nodes = (scheduling_node_t**)calloc(n, sizeof(scheduling_node_t*));
-  // Allocate memory for min_delays.
+  // Allocate memory for the array of min_delays.
   rti.base.min_delays = (tag_t*)calloc((n * n), sizeof(tag_t));
   for (uint16_t i = 0; i < n; i++) {
     for (uint16_t j = 0; j < n; j++) {
