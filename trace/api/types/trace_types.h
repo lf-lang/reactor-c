@@ -72,7 +72,7 @@ typedef enum {
   receive_P2P_MSG,
   receive_ADR_AD,
   receive_ADR_QR,
-  received_DNET,
+  receive_DNET,
   receive_UNIDENTIFIED,
   NUM_EVENT_TYPES
 } trace_event_t;
