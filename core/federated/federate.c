@@ -124,7 +124,7 @@ static void send_time(unsigned char type, instant_t time) {
 /**
  * Send a tag to the RTI.
  * This function acquires the lf_outbound_socket_mutex.
- * @param type The message type (MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LATEST_TAG_COMPLETE).
+ * @param type The message type (MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LATEST_TAG_CONFIRMED).
  * @param tag The tag.
  */
 static void send_tag(unsigned char type, tag_t tag) {
@@ -1274,7 +1274,7 @@ static void handle_provisional_tag_advance_grant() {
     // TAG. In either case, we know that at the PTAG tag, all outputs
     // have either been sent or are absent, so we can send an LTC.
     // Send an LTC to indicate absent outputs.
-    lf_latest_tag_complete(PTAG);
+    lf_latest_tag_confirmed(PTAG);
     // Nothing more to do.
     LF_MUTEX_UNLOCK(&env->mutex);
     return;
@@ -2199,7 +2199,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   return NULL;
 }
 
-void lf_latest_tag_complete(tag_t tag_to_send) {
+void lf_latest_tag_confirmed(tag_t tag_to_send) {
   environment_t* env;
   _lf_get_environments(&env);
   int compare_with_last_LTC = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
@@ -2207,9 +2207,9 @@ void lf_latest_tag_complete(tag_t tag_to_send) {
   if (compare_with_last_LTC >= 0 || !env->need_to_send_LTC) {
     return;
   }
-  LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.", tag_to_send.time - start_time,
+  LF_PRINT_LOG("Sending Latest Tag Confirmed (LTC) " PRINTF_TAG " to the RTI.", tag_to_send.time - start_time,
                tag_to_send.microstep);
-  send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, tag_to_send);
+  send_tag(MSG_TYPE_LATEST_TAG_CONFIRMED, tag_to_send);
   _fed.last_sent_LTC = tag_to_send;
 }
 
