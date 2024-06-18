@@ -2235,10 +2235,8 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 }
 
 void lf_latest_tag_complete(tag_t tag_to_send) {
-  environment_t* env;
-  _lf_get_environments(&env);
   int compare_with_last_LTC = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
-  if (compare_with_last_LTC >= 0 || !env->need_to_send_LTC) {
+  if (compare_with_last_LTC >= 0) {
     return;
   }
   LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.", tag_to_send.time - start_time,

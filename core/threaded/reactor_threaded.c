@@ -879,11 +879,6 @@ void _lf_worker_do_work(environment_t* env, int worker_number) {
                    "level: %lld, is input reaction: %d, and deadline " PRINTF_TIME ".",
                    worker_number, current_reaction_to_execute->name, LF_LEVEL(current_reaction_to_execute->index),
                    current_reaction_to_execute->is_an_input_reaction, current_reaction_to_execute->deadline);
-#ifdef FEDERATED
-    if (current_reaction_to_execute->is_an_input_reaction) {
-      env->need_to_send_LTC = true;
-    }
-#endif // FEDERATED
 
     bool violation = _lf_worker_handle_violations(env, worker_number, current_reaction_to_execute);
 

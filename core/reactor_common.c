@@ -210,8 +210,6 @@ void _lf_start_time_step(environment_t* env) {
     }
 #endif // FEDERATED_DECENTRALIZED
 
-    env->need_to_send_LTC = false;
-
     // Reset absent fields on network ports because
     // their status is unknown
     lf_reset_status_fields_on_input_port_triggers();

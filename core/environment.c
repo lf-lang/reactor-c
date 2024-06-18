@@ -126,8 +126,6 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
     env->_lf_intended_tag_fields = NULL;
     env->_lf_intended_tag_fields_size = 0;
   }
-#elif FEDERATED_CENTRALIZED
-  env->need_to_send_LTC = false;
 #else
   (void)env;
   (void)num_is_present_fields;
