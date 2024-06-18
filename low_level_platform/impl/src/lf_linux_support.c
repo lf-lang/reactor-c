@@ -46,11 +46,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_POSIX_threads_support.c"
 
 int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
-  // Sanitize input
-  if (lf_available_cores() <= 0 || cpu_number >= (size_t)lf_available_cores()) {
-    return -1;
-  }
-
   // Create a CPU-set consisting of only the desired CPU
   cpu_set_t cpu_set;
   CPU_ZERO(&cpu_set);

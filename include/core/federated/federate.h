@@ -507,6 +507,12 @@ void lf_spawn_staa_thread(void);
 void lf_stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
+ * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex lock.
+ * @param level The level to which we would like to advance.
+ */
+void lf_stall_advance_level_federation_locked(size_t level);
+
+/**
  * @brief Synchronize the start with other federates via the RTI.
  *
  * This assumes that a connection to the RTI is already made

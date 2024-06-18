@@ -95,17 +95,17 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
     return -1;
   }
   ssize_t bytes_read = 0;
-  int retry_count = 0;
   while (bytes_read < (ssize_t)num_bytes) {
     ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-    if (more < 0 && retry_count++ < NUM_SOCKET_RETRIES && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
+    if (more < 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
       // Those error codes set by the socket indicates
       // that we should try again (@see man errno).
-      lf_print_warning("Reading from socket failed. Will try again.");
+      LF_PRINT_DEBUG("Reading from socket %d failed with error: `%s`. Will try again.", socket, strerror(errno));
       lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
       continue;
     } else if (more < 0) {
       // A more serious error occurred.
+      lf_print_error("Reading from socket %d failed. With error: `%s`", socket, strerror(errno));
       return -1;
     } else if (more == 0) {
       // EOF received.
@@ -173,11 +173,12 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
       // The error codes EAGAIN or EWOULDBLOCK indicate
       // that we should try again (@see man errno).
       // The error code EINTR means the system call was interrupted before completing.
-      LF_PRINT_DEBUG("Writing to socket was blocked. Will try again.");
+      LF_PRINT_DEBUG("Writing to socket %d was blocked. Will try again.", socket);
       lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
       continue;
     } else if (more < 0) {
       // A more serious error occurred.
+      lf_print_error("Writing to socket %d failed. With error: `%s`", socket, strerror(errno));
       return -1;
     }
     bytes_written += more;
@@ -519,7 +520,7 @@ bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti
 }
 
 void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info) {
-  const char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9.]{1,255})(:([0-9]{1,5}))?";
+  const char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9._-]{1,255})(:([0-9]{1,5}))?";
   size_t max_groups = 6;
   // The group indices of each field of interest in the regex.
   int user_gid = 2, host_gid = 3, port_gid = 5;

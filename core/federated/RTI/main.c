@@ -307,7 +307,7 @@ int main(int argc, const char* argv[]) {
     // sync thread. Add 1 for the thread that responds to erroneous
     // connections attempted after initialization phase has completed. Add 1
     // for the main thread.
-    lf_tracing_global_init("rti", -1, _lf_number_of_workers * 2 + 3);
+    lf_tracing_global_init("rti", NULL, -1, _lf_number_of_workers * 2 + 3);
     lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
   }
 

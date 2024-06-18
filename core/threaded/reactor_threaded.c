@@ -1,8 +1,8 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author{Marten Lohstroh <marten@berkeley.edu>}
- * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @author Soroush Bateni
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
@@ -850,19 +850,13 @@ void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_
   reaction->is_STP_violated = false;
 }
 
-void try_advance_level(environment_t* env, volatile size_t* next_reaction_level) {
-#ifdef FEDERATED
-  lf_stall_advance_level_federation(env, *next_reaction_level);
-#else
-  (void)env;
-#endif
-  if (*next_reaction_level < SIZE_MAX)
-    *next_reaction_level += 1;
-}
-
 /**
- * The main looping logic of each LF worker thread.
- * This function assumes the caller holds the mutex lock.
+ * @brief The main looping logic of each LF worker thread.
+ *
+ * This function returns when the scheduler's lf_sched_get_ready_reaction()
+ * implementation returns NULL, indicating that there are no more reactions to execute.
+ *
+ * This function assumes the caller does not hold the mutex lock on the environment.
  *
  * @param env Environment within which we are executing.
  * @param worker_number The number assigned to this worker thread
@@ -882,10 +876,9 @@ void _lf_worker_do_work(environment_t* env, int worker_number) {
   while ((current_reaction_to_execute = lf_sched_get_ready_reaction(env->scheduler, worker_number)) != NULL) {
     // Got a reaction that is ready to run.
     LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
-                   "level: %lld, is input reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
+                   "level: %lld, is input reaction: %d, and deadline " PRINTF_TIME ".",
                    worker_number, current_reaction_to_execute->name, LF_LEVEL(current_reaction_to_execute->index),
-                   current_reaction_to_execute->is_an_input_reaction, current_reaction_to_execute->chain_id,
-                   current_reaction_to_execute->deadline);
+                   current_reaction_to_execute->is_an_input_reaction, current_reaction_to_execute->deadline);
 #ifdef FEDERATED
     if (current_reaction_to_execute->is_an_input_reaction) {
       env->need_to_send_LTC = true;
@@ -987,18 +980,6 @@ void lf_print_snapshot(environment_t* env) {
 }
 #endif // NDEBUG
 
-// Start threads in the thread pool.
-void start_threads(environment_t* env) {
-  assert(env != GLOBAL_ENVIRONMENT);
-
-  LF_PRINT_LOG("Starting %u worker threads in environment", env->num_workers);
-  for (int i = 0; i < env->num_workers; i++) {
-    if (lf_thread_create(&env->thread_ids[i], worker, env) != 0) {
-      lf_print_error_and_exit("Could not start thread-%u", i);
-    }
-  }
-}
-
 /**
  * @brief Determine the number of workers.
  */
@@ -1077,8 +1058,13 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
   LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
   struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
+
+#ifdef MINIMAL_STDLIB
+  lf_print("---- Start execution ----");
+#else
   lf_print("---- Start execution at time %s---- plus %ld nanoseconds", ctime(&physical_time_timespec.tv_sec),
            physical_time_timespec.tv_nsec);
+#endif // MINIMAL_STDLIB
 
   // Create and initialize the environments for each enclave
   lf_create_environments();
@@ -1124,9 +1110,29 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     _lf_initialize_start_tag(env);
 
     lf_print("Environment %u: ---- Spawning %d workers.", env->id, env->num_workers);
-    start_threads(env);
+
+    for (int j = 0; j < env->num_workers; j++) {
+      if (i == 0 && j == 0) {
+        // The first worker thread of the first environment will be
+        // run on the main thread, rather than creating a new thread.
+        // This is important for bare-metal platforms, who can't
+        // afford to have the main thread sit idle.
+        continue;
+      }
+      if (lf_thread_create(&env->thread_ids[j], worker, env) != 0) {
+        lf_print_error_and_exit("Could not start thread-%u", j);
+      }
+    }
+
     // Unlock mutex and allow threads proceed
     LF_MUTEX_UNLOCK(&env->mutex);
+  }
+
+  // main thread worker (first worker thread of first environment)
+  void* main_thread_exit_status = NULL;
+  if (num_envs > 0 && envs[0].num_workers > 0) {
+    environment_t* env = &envs[0];
+    main_thread_exit_status = worker(env);
   }
 
   for (int i = 0; i < num_envs; i++) {
@@ -1134,13 +1140,18 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     environment_t* env = &envs[i];
     void* worker_thread_exit_status = NULL;
     int ret = 0;
-    for (int i = 0; i < env->num_workers; i++) {
-      int failure = lf_thread_join(env->thread_ids[i], &worker_thread_exit_status);
-      if (failure) {
-        lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
+    for (int j = 0; j < env->num_workers; j++) {
+      if (i == 0 && j == 0) {
+        // main thread worker
+        worker_thread_exit_status = main_thread_exit_status;
+      } else {
+        int failure = lf_thread_join(env->thread_ids[j], &worker_thread_exit_status);
+        if (failure) {
+          lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
+        }
       }
       if (worker_thread_exit_status != NULL) {
-        lf_print_error("---- Worker %d reports error code %p", i, worker_thread_exit_status);
+        lf_print_error("---- Worker %d reports error code %p", j, worker_thread_exit_status);
         ret = 1;
       }
     }

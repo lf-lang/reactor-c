@@ -415,11 +415,10 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   // issue a TAG before this message has been forwarded.
   LF_MUTEX_LOCK(&rti_mutex);
 
-  // If the destination federate is no longer connected, issue a warning
-  // and return.
+  // If the destination federate is no longer connected, issue a warning,
+  // remove the message from the socket and return.
   federate_info_t* fed = GET_FED_INFO(federate_id);
   if (fed->enclave.state == NOT_CONNECTED) {
-    LF_MUTEX_UNLOCK(&rti_mutex);
     lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.", federate_id);
     LF_PRINT_LOG("Fed status: next_event " PRINTF_TAG ", "
                  "completed " PRINTF_TAG ", "
@@ -430,6 +429,18 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                  fed->enclave.last_granted.time - start_time, fed->enclave.last_granted.microstep,
                  fed->enclave.last_provisionally_granted.time - start_time,
                  fed->enclave.last_provisionally_granted.microstep);
+    // If the message was larger than the buffer, we must empty out the remainder also.
+    size_t total_bytes_read = bytes_read;
+    while (total_bytes_read < total_bytes_to_read) {
+      bytes_to_read = total_bytes_to_read - total_bytes_read;
+      if (bytes_to_read > FED_COM_BUFFER_SIZE) {
+        bytes_to_read = FED_COM_BUFFER_SIZE;
+      }
+      read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, buffer, NULL,
+                                     "RTI failed to clear message chunks.");
+      total_bytes_read += bytes_to_read;
+    }
+    LF_MUTEX_UNLOCK(&rti_mutex);
     return;
   }
 
@@ -1102,7 +1113,7 @@ void* federate_info_thread_TCP(void* fed) {
     int read_failed = read_from_socket(my_fed->socket, 1, buffer);
     if (read_failed) {
       // Socket is closed
-      lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
+      lf_print_error("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
       my_fed->socket = -1;
       // FIXME: We need better error handling here, but do not stop execution here.
@@ -1754,9 +1765,14 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->stop_in_progress = false;
 }
 
+// The RTI includes clock.c, which requires the following functions that are defined
+// in clock-sync.c.  But clock-sync.c is not included in the standalone RTI.
+// Provide empty implementations of these functions.
+void clock_sync_add_offset(instant_t* t) { (void)t; }
+void clock_sync_subtract_offset(instant_t* t) { (void)t; }
+
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
-    // FIXME: Gives error freeing memory not allocated!!!!
     scheduling_node_t* node = scheduling_nodes[i];
     if (node->immediate_upstreams != NULL)
       free(node->immediate_upstreams);
