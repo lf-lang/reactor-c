@@ -1170,13 +1170,15 @@ void handle_timestamp(federate_info_t* my_fed) {
 
       // Get the max over the TAG of the upstreams
       size_t queue_size = pqueue_tag_size(upstream->in_transit_message_tags);
-      pqueue_t* pq = (pqueue_t*)(upstream->in_transit_message_tags);
-      pqueue_tag_element_t* message_with_max_tag = (pqueue_tag_element_t*)(pq->d[queue_size]);
-      tag_t max_tag = message_with_max_tag->tag;
+      if (queue_size != 0) {
+        pqueue_t* pq = (pqueue_t*)(upstream->in_transit_message_tags);
+        pqueue_tag_element_t* message_with_max_tag = (pqueue_tag_element_t*)(pq->d[queue_size]);
+        tag_t max_tag = message_with_max_tag->tag;
 
-      if (lf_tag_compare(max_tag, my_fed->effective_start_tag) >= 0) {
-        my_fed->effective_start_tag = max_tag;
-        my_fed->effective_start_tag.microstep++;
+        if (lf_tag_compare(max_tag, my_fed->effective_start_tag) >= 0) {
+          my_fed->effective_start_tag = max_tag;
+          my_fed->effective_start_tag.microstep++;
+        }
       }
     }
 
@@ -2132,7 +2134,6 @@ void send_stop(federate_info_t* fed) {
 }
 
 void* lf_connect_to_transient_federates_thread(void* nothing) {
-  initialize_lf_thread_id();
   // This loop will continue to accept connections of transient federates, as
   // soon as there is room, or enable hot swap
 
