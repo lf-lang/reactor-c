@@ -293,8 +293,8 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
   }
   // Check downstream scheduling_nodes to see whether they should now be granted a TAG.
   update_all_downstreams(e);
-  for (int i = 0; i < rti_common->num_all_downstreams; i++) {
-    scheduling_node_t* downstream = rti_common->scheduling_nodes[e->num_all_downstreams[i]];
+  for (int i = 0; i < e->num_all_downstreams; i++) {
+    scheduling_node_t* downstream = rti_common->scheduling_nodes[e->all_downstreams[i]];
     notify_advance_grant_if_safe(downstream);
   }
 
