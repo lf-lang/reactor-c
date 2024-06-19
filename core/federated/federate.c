@@ -1702,6 +1702,7 @@ static void get_remote_federate_info_from_RTI(uint16_t remote_federate_id, netdr
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, buffer + 1 + sizeof(int32_t), hostname, INET_ADDRSTRLEN);
   LF_PRINT_LOG("Received address %s port %d for federate %d from RTI.", hostname, port, remote_federate_id);
+  // Set the target federate's hostname and port to the netdriver.
   set_host_name(fed_netdrv, hostname);
   // Must set as specified port. Or else, the port will be increased when connecting to the other federate.
   set_specified_port(fed_netdrv, port);
