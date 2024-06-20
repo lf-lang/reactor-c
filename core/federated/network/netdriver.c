@@ -5,6 +5,8 @@
 #include "netdriver.h"
 #include "util.h"
 
+// Mutex lock held while performing socket close operations.
+// A deadlock can occur if two threads simulataneously attempt to close the same netdriver.
 lf_mutex_t netdrv_mutex;
 
 /**

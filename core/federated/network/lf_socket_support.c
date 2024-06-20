@@ -56,8 +56,8 @@ netdrv_t* establish_communication_session(netdrv_t* listener_netdrv) {
       // Got a socket
       break;
     } else if (connector_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-      lf_print_error_and_exit("Failed to accept the socket. %s. connector_priv->socket_descriptor = %d", strerror(errno),
-                              connector_priv->socket_descriptor);
+      lf_print_error_and_exit("Failed to accept the socket. %s. connector_priv->socket_descriptor = %d",
+                              strerror(errno), connector_priv->socket_descriptor);
     } else {
       // Try again
       lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
@@ -139,7 +139,7 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
  * @param socket The socket ID.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to put the bytes.
- * @return 0 for success, 1 for EOF, and -1 for an error.
+ * @return 0 for success, 1 for EOF, and -1 for an rerror.
  */
 ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_length) {
   if (drv == NULL) {
@@ -173,8 +173,7 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
 
   for (;;) {
     retry_count = 0;
-    while (bytes_to_read > 0) {
-      // TODO: Check buffer_length.
+    while (bytes_to_read > 0 && bytes_to_read <= buffer_length) {
       bytes_read = read(priv->socket_descriptor, buffer + total_bytes_read, bytes_to_read);
       if (bytes_read < 0 &&                                              // If)  Error has occurred,
           retry_count++ < NUM_SOCKET_RETRIES &&                          // there are left retry counts,
@@ -283,13 +282,12 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
     return bytes_read;
 }
 
-void set_target_id(netdrv_t* drv, int federate_id){
+void set_target_id(netdrv_t* drv, int federate_id) {
   if (drv == NULL) {
   } // JUST TO PASS COMPILER.
   if (federate_id == 0) {
   } // JUST TO PASS COMPILER.
 }
-
 
 // ------------------Helper Functions------------------ //
 
