@@ -208,8 +208,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
-void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer, size_t buffer_length,
-                          ssize_t bytes_read) {
+void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer, ssize_t bytes_read) {
   size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(int64_t) + sizeof(uint32_t);
   // Extract the header information. of the sender
   uint16_t reactor_port_id;
@@ -251,11 +250,10 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   // issue a TAG before this message has been forwarded.
   LF_MUTEX_LOCK(&rti_mutex);
 
-  // If the destination federate is no longer connected, issue a warning
-  // and return.
+  // If the destination federate is no longer connected, issue a warning,
+  // remove the message from the socket and return.
   federate_info_t* fed = GET_FED_INFO(federate_id);
   if (fed->enclave.state == NOT_CONNECTED) {
-    LF_MUTEX_UNLOCK(&rti_mutex);
     lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.", federate_id);
     LF_PRINT_LOG("Fed status: next_event " PRINTF_TAG ", "
                  "completed " PRINTF_TAG ", "
@@ -266,6 +264,12 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                  fed->enclave.last_granted.time - start_time, fed->enclave.last_granted.microstep,
                  fed->enclave.last_provisionally_granted.time - start_time,
                  fed->enclave.last_provisionally_granted.microstep);
+    // If the message was larger than the buffer, we must empty out the remainder also.
+    while (sending_federate->fed_netdrv->read_remaining_bytes > 0) {
+      read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, buffer, FED_COM_BUFFER_SIZE, NULL,
+                                     "RTI failed to clear message chunks.");
+    }
+    LF_MUTEX_UNLOCK(&rti_mutex);
     return;
   }
 
@@ -287,8 +291,8 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                                 "RTI failed to forward message to federate %d.", federate_id);
 
   while (sending_federate->fed_netdrv->read_remaining_bytes > 0) {
-    ssize_t bytes_read_again =
-        read_from_netdrv_close_on_error(sending_federate->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
+    ssize_t bytes_read_again = read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, buffer, FED_COM_BUFFER_SIZE,
+                                                              NULL, "RTI failed to read message chunks.");
     write_to_netdrv_fail_on_error(fed->fed_netdrv, bytes_read_again, buffer, &rti_mutex,
                                   "RTI failed to forward message to federate %d.", federate_id);
   }
@@ -908,7 +912,7 @@ void* federate_info_thread_TCP(void* fed) {
     ssize_t bytes_read = read_from_netdrv(my_fed->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
     if (bytes_read <= 0) {
       // Netdriver is closed
-      lf_print_warning("RTI: Netdriver to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
+      lf_print_error("RTI: Netdriver to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
@@ -925,7 +929,7 @@ void* federate_info_thread_TCP(void* fed) {
       handle_address_ad(my_fed->enclave.id, buffer + 1);
       break;
     case MSG_TYPE_TAGGED_MESSAGE:
-      handle_timed_message(my_fed, buffer, FED_COM_BUFFER_SIZE, bytes_read);
+      handle_timed_message(my_fed, buffer, bytes_read);
       break;
     case MSG_TYPE_RESIGN:
       handle_federate_resign(my_fed);
@@ -1514,7 +1518,6 @@ void initialize_RTI(rti_remote_t* rti) {
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
-    // FIXME: Gives error freeing memory not allocated!!!!
     scheduling_node_t* node = scheduling_nodes[i];
     if (node->upstream != NULL)
       free(node->upstream);

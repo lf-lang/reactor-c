@@ -129,7 +129,7 @@ typedef void* lf_thread_t;
 #define LLONG_MIN (-LLONG_MAX - 1LL)
 #define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
 
-// Arduinos are embedded platforms with no tty
-#define NO_TTY
+// Arduinos are embedded platforms with no command line interface
+#define NO_CLI
 
 #endif // LF_ARDUINO_SUPPORT_H

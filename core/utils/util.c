@@ -33,12 +33,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util.h"
 
+#include <stdio.h>
+
 #ifndef STANDALONE_RTI
 #include "environment.h"
 #endif
 
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h> // Defines memcpy()

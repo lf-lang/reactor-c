@@ -162,8 +162,8 @@ void reset_socket_stat(struct socket_stat_t* socket_stat) {
  *   will be sent.
  */
 uint16_t setup_clock_synchronization_with_rti(struct sockaddr_in* federate_UDP_addr) {
-  uint16_t port_to_return = UINT16_MAX;
-#ifdef _LF_CLOCK_SYNC_ON
+  uint16_t port_to_return = UINT16_MAX; // Default if clock sync is off.
+#if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   // Initialize the UDP socket
   _lf_rti_socket_UDP = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
   federate_UDP_addr->sin_family = AF_INET;
@@ -200,11 +200,9 @@ uint16_t setup_clock_synchronization_with_rti(struct sockaddr_in* federate_UDP_a
   if (setsockopt(_lf_rti_socket_UDP, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
     lf_print_error("Failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
   }
-#else // No runtime clock synchronization. Send port -1 or 0 instead.
-#ifdef _LF_CLOCK_SYNC_INITIAL
+#elif (LF_CLOCK_SYNC == LF_CLOCK_SYNC_INIT)
   port_to_return = 0u;
-#endif // _LF_CLOCK_SYNC_INITIAL
-#endif // _LF_CLOCK_SYNC_ON
+#endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   (void) federate_UDP_addr; // To pass unused-value warning.
   return port_to_return;
 }
@@ -541,17 +539,21 @@ void* listen_to_rti_UDP_thread(void* args) {
 
 // If clock synchronization is enabled, provide implementations. If not
 // just empty implementations that should be optimized away.
-#if defined(_LF_CLOCK_SYNC_ON) || defined(_LF_CLOCK_SYNC_INITIAL)
-void clock_sync_add_offset(instant_t* t) { *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
+#if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_INIT)
+void clock_sync_add_offset(instant_t* t) {
+  *t = lf_time_add(*t, (_lf_clock_sync_offset + _lf_clock_sync_constant_bias));
+}
 
-void clock_sync_subtract_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
+void clock_sync_subtract_offset(instant_t* t) {
+  *t = lf_time_add(*t, -(_lf_clock_sync_offset + _lf_clock_sync_constant_bias));
+}
 
 void clock_sync_set_constant_bias(interval_t offset) { _lf_clock_sync_constant_bias = offset; }
-#else
-// Empty implementations of clock_sync_add_offset and clock_sync_subtract_offset
-// are in clock.c.
+#else  // i.e. (LF_CLOCK_SYNC < LF_CLOCK_SYNC_INIT)
+void clock_sync_add_offset(instant_t* t) { (void)t; }
+void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
-#endif // (defined(_LF_CLOCK_SYNC_ON) || defined(_LF_CLOCK_SYNC_INITIAL)
+#endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_INIT)
 
 /**
  * Create the thread responsible for handling clock synchronization
@@ -562,12 +564,12 @@ void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
  * \ingroup agroup
  */
 int create_clock_sync_thread(lf_thread_t* thread_id) {
-#ifdef _LF_CLOCK_SYNC_ON
+#if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   // One for UDP messages if clock synchronization is enabled for this federate
   return lf_thread_create(thread_id, listen_to_rti_UDP_thread, NULL);
-#else
-  (void)thread_id;
-#endif // _LF_CLOCK_SYNC_ON
+#else  // i.e. (LF_CLOCK_SYNC < LF_CLOCK_SYNC_ON)
+  (void)thread_id; // Suppress unused parameter warning.
+#endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   return 0;
 }
 
