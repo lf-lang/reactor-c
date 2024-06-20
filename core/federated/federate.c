@@ -2696,9 +2696,9 @@ char* lf_get_federates_bin_directory() {
   bin_directory_defined = true;
 #endif
   if (bin_directory_defined) {
-    return LF_FEDERATES_BIN_DIRECTORY;
+    return (LF_FEDERATES_BIN_DIRECTORY);
   }
-  return {NULL};
+  return NULL;
 }
 
 const char* lf_get_federation_id() { return federation_metadata.federation_id; }
