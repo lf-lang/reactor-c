@@ -24,6 +24,17 @@ static lf_platform_mutex_ptr_t trace_mutex;
 static trace_t trace;
 static int process_id;
 static int64_t start_time;
+static version_t version = {.build_config =
+                                {
+                                    .single_threaded = TRIBOOL_DOES_NOT_MATTER,
+#ifdef NDEBUG
+                                    .build_type_is_debug = TRIBOOL_FALSE,
+#else
+                                    .build_type_is_debug = TRIBOOL_TRUE,
+#endif
+                                    .log_level = LOG_LEVEL,
+                                },
+                            .core_version_name = NULL};
 
 // PRIVATE HELPERS ***********************************************************
 
@@ -192,21 +203,7 @@ static void stop_trace(trace_t* trace) {
 
 // IMPLEMENTATION OF VERSION API *********************************************
 
-version_t lf_version_tracing() {
-  return (version_t){
-      .build_config =
-          (build_config_t){
-              .single_threaded = TRIBOOL_DOES_NOT_MATTER,
-#ifdef NDEBUG
-              .build_type_is_debug = TRIBOOL_FALSE,
-#else
-              .build_type_is_debug = TRIBOOL_TRUE,
-#endif
-              .log_level = LOG_LEVEL,
-          },
-      .core_version_name = NULL,
-  };
-}
+const version_t* lf_version_tracing() { return &version; }
 
 // IMPLEMENTATION OF TRACE API ***********************************************
 
@@ -253,7 +250,8 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
   }
 }
 
-void lf_tracing_global_init(char* file_name_prefix, int fedid, int max_num_local_threads) {
+void lf_tracing_global_init(char* process_name, char* process_names, int fedid, int max_num_local_threads) {
+  (void)process_names;
   trace_mutex = lf_platform_mutex_new();
   if (!trace_mutex) {
     fprintf(stderr, "WARNING: Failed to initialize trace mutex.\n");
@@ -261,10 +259,10 @@ void lf_tracing_global_init(char* file_name_prefix, int fedid, int max_num_local
   }
   process_id = fedid;
   char filename[100];
-  if (strcmp(file_name_prefix, "rti") == 0) {
-    sprintf(filename, "%s.lft", file_name_prefix);
+  if (strcmp(process_name, "rti") == 0) {
+    sprintf(filename, "%s.lft", process_name);
   } else {
-    sprintf(filename, "%s%d.lft", file_name_prefix, process_id);
+    sprintf(filename, "%s_%d.lft", process_name, process_id);
   }
   trace_new(filename);
   start_trace(&trace, max_num_local_threads);

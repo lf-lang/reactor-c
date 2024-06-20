@@ -35,7 +35,7 @@ void test_get(hashmap_object2int_t* h) {
   if (desired.value != found) {
     // It is possible that two distinct values were associated with the same key. Search the
     // "mock" array to check if this is the case.
-    for (size_t i = mock_size - 1; i >= 0; i--) {
+    for (int i = (int)mock_size - 1; i >= 0; i--) {
       if (mock[i].key == desired.key) {
         if (mock[i].value == found)
           return; // Everything is OK.

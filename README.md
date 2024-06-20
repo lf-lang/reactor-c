@@ -41,6 +41,11 @@ To run tests for the multithreaded runtime, provide a nonzero number of workers
 when invoking `cmake`. For example:
 
 - `cmake .. -DNUMBER_OF_WORKERS=2`
+- `cmake --build .`
+- `sudo make test`
+
+Note that one of the tests in the multithreaded test suite requires sudo because
+it changes the scheduling policy and priorities.
 
 To define/undefine other preprocessor definitions such as `LOG_LEVEL`, pass them as
 arguments to `cmake` in the same way as with `NUMBER_OF_WORKERS`, using the same

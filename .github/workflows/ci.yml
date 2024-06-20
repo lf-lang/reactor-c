@@ -55,6 +55,14 @@ jobs:
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
     if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
 
+  lf-default-flexpret:
+   needs: [fetch-lf]
+   uses: lf-lang/lingua-franca/.github/workflows/c-flexpret-tests.yml@master
+   with:
+     runtime-ref: ${{ github.ref }}
+     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+   if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'flexpret') }}
+
   lf-default:
     needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master

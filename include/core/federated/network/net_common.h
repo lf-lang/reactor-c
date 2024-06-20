@@ -295,6 +295,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  this order:
  *  * One byte equal to MSG_TYPE_FED_IDS.
  *  * Two bytes (ushort) giving the federate ID.
+ *  * One byte giving the type of the federate (1 if transient, 0 if persistent)
  *  * One byte (uchar) giving the length N of the federation ID.
  *  * N bytes containing the federation ID.
  *  Each federate needs to have a unique ID between 0 and

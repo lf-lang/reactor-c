@@ -503,6 +503,12 @@ void lf_spawn_staa_thread(void);
 void lf_stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
+ * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex lock.
+ * @param level The level to which we would like to advance.
+ */
+void lf_stall_advance_level_federation_locked(size_t level);
+
+/**
  * @brief Synchronize the start with other federates via the RTI.
  *
  * This assumes that a connection to the RTI is already made
@@ -528,38 +534,5 @@ void lf_synchronize_with_other_federates();
  * @return True if the MLAA changed.
  */
 bool lf_update_max_level(tag_t tag, bool is_provisional);
-
-/**
- * @brief Stop the execution of a federate.
- * Every enclave within the federate will stop at one microstep later than its
- * current tag. Unlike lf_request_stop(), this process does not require any
- * involvement from the RTI, nor does it necessitate any consensus.
- *
- * This function is particularly useful for testing transient federates.
- */
-void lf_stop();
-
-/**
- * @brief Return the directory containing the executables of the individual
- * federates.
- */
-char* lf_get_federates_bin_directory();
-
-/**
- * @brief Returns the federation id.
- *
- * This function is useful for creating federates on runtime.
- */
-char* lf_get_federation_id();
-
-/**
- * @brief Returns the effective start time of the federate. The start_time of persistent
- * federates is equal to their effective_start_time. Transient federates, however,
- * have their effective_start_time higher or equal to their start_time.
- */
-instant_t lf_get_effective_start_time();
-
-/** @brief Returns the start time of the federate. */
-instant_t lf_get_start_time();
 
 #endif // FEDERATE_H

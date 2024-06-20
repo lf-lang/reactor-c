@@ -1,4 +1,3 @@
-#if defined STANDALONE_RTI
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -246,7 +245,7 @@ static void multiple_nodes() {
   assert(lf_tag_compare(test_rti.scheduling_nodes[3]->min_delays[0].min_delay, (tag_t){NSEC(3), 0}) == 0);
 }
 
-int main(int argc, char** argv) {
+int main() {
   initialize_rti_common(&test_rti);
 
   // Tests for the function update_min_delays_upstream()
@@ -257,4 +256,3 @@ int main(int argc, char** argv) {
   two_nodes_normal_delay();
   multiple_nodes();
 }
-#endif

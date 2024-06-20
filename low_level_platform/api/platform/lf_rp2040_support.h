@@ -10,7 +10,8 @@
 #include <pico/stdlib.h>
 #include <pico/sync.h>
 
-#define NO_TTY
+#define NO_CLI
+#define MINIMAL_STDLIB
 
 // Defines for formatting time in printf for pico
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
@@ -19,5 +20,17 @@
 
 #define LF_TIME_BUFFER_LENGTH 80
 #define _LF_TIMEOUT 1
+
+#ifndef LF_SINGLE_THREADED
+#warning "Threaded support on rp2040 is still experimental"
+
+typedef recursive_mutex_t lf_mutex_t;
+typedef struct {
+  semaphore_t notifs[NUM_CORES];
+  lf_mutex_t* mutex;
+} lf_cond_t;
+typedef int lf_thread_t;
+
+#endif // LF_SINGLE_THREADED
 
 #endif // LF_PICO_SUPPORT_H

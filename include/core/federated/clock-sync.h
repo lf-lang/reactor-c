@@ -35,6 +35,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "low_level_platform.h"
 
+// Clock synchronization defaults to performing clock synchronization only at initialization.
+#define LF_CLOCK_SYNC_OFF 1
+#define LF_CLOCK_SYNC_INIT 2
+#define LF_CLOCK_SYNC_ON 3
+
+#ifndef LF_CLOCK_SYNC
+#define LF_CLOCK_SYNC LF_CLOCK_SYNC_INIT
+#endif
+
 /**
  * Number of required clock sync T4 messages per synchronization
  * interval. The offset to the clock will not be adjusted until
@@ -47,6 +56,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Runtime clock offset updates will be divided by this number. */
 #ifndef _LF_CLOCK_SYNC_ATTENUATION
 #define _LF_CLOCK_SYNC_ATTENUATION 10
+#endif
+
+/** By default, collect statistics on clock synchronization. */
+#ifndef _LF_CLOCK_SYNC_COLLECT_STATS
+#define _LF_CLOCK_SYNC_COLLECT_STATS true
 #endif
 
 /**
@@ -121,7 +135,7 @@ void update_socket_stat(struct socket_stat_t* socket_stat, long long network_del
  * @return An lf_stat_ll struct with relevant information.
  */
 struct lf_stat_ll calculate_socket_stat(struct socket_stat_t* socket_stat);
-#endif
+#endif // _LF_CLOCK_SYNC_COLLECT_STATS
 
 /**
  * Reset statistics on the socket.
@@ -202,13 +216,13 @@ int create_clock_sync_thread(lf_thread_t* thread_id);
  * @brief Add the current clock synchronization offset to a specified timestamp.
  * @param t Pointer to the timestamp to which to add the offset.
  */
-void clock_sync_apply_offset(instant_t* t);
+void clock_sync_add_offset(instant_t* t);
 
 /**
  * @brief Subtract the clock synchronization offset from a timestamp.
  * @param t The timestamp from which to subtract the current clock sync offset.
  */
-void clock_sync_remove_offset(instant_t* t);
+void clock_sync_subtract_offset(instant_t* t);
 
 /**
  * Set a fixed offset to the physical clock.

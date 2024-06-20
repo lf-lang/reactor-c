@@ -105,6 +105,15 @@ tag_t lf_tag(void* env);
 tag_t lf_tag_add(tag_t a, tag_t b);
 
 /**
+ * @brief Return the sum of an interval and an instant, saturating on overflow and underflow.
+ *
+ * @param a
+ * @param b
+ * @return instant_t
+ */
+instant_t lf_time_add(instant_t a, interval_t b);
+
+/**
  * Compare two tags. Return -1 if the first is less than
  * the second, 0 if they are equal, and +1 if the first is
  * greater than the second. A tag is greater than another if
@@ -194,6 +203,14 @@ instant_t lf_time_physical_elapsed(void);
  * @return A time instant.
  */
 instant_t lf_time_start(void);
+
+/**
+ * Return the tag at which the execution effectively started.
+ * Most of the time, this will default to {.time = start_time, .microstep: 0}.
+ * When the reactor is a transient federate, however, the value will be different.
+ * @return A tag.
+ */
+tag_t lf_tag_start_effective(void);
 
 /**
  * For user-friendly reporting of time values, the buffer length required.

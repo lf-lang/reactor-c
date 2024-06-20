@@ -31,13 +31,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
  */
 
-#if !defined(LF_SINGLE_THREADED)
-#error "Only the single-threaded runtime has support for RP2040"
-#endif
-
 #include "platform/lf_rp2040_support.h"
 #include "low_level_platform.h"
-#include "utils/util.h"
 #include "tag.h"
 
 #include <pico/stdlib.h>
@@ -67,6 +62,8 @@ static uint32_t _lf_num_nested_crit_sec = 0;
  */
 void _lf_initialize_clock(void) {
   // init stdio lib
+  // may fail, but failure may be ok/expected if printing is not needed
+  // (i.e. if neither USB nor UART are enabled)
   stdio_init_all();
   // init sync structs
   critical_section_init(&_lf_crit_sec);
@@ -137,15 +134,15 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
   sem_reset(&_lf_sem_irq_event, 0);
   // create us boot wakeup time
   target = from_us_since_boot((uint64_t)(wakeup_time / 1000));
-  // allow interrupts
-  LF_CRITICAL_SECTION_EXIT(env);
+  // Enable interrupts.
+  lf_critical_section_exit(env);
   // blocked sleep
   // return on timeout or on processor event
   if (sem_acquire_block_until(&_lf_sem_irq_event, target)) {
     ret_code = -1;
   }
-  // remove interrupts
-  LF_CRITICAL_SECTION_ENTER(env);
+  // Disable interrupts.
+  lf_critical_section_enter(env);
   return ret_code;
 }
 
@@ -161,7 +158,7 @@ int lf_disable_interrupts_nested() {
     return 1;
   }
   // check crit sec count
-  // enter non-rentrant state by disabling interrupts
+  // enter non-reentrant state by disabling interrupts
   // lock second core execution
   if (_lf_num_nested_crit_sec == 0) {
     // block if associated spin lock in use
@@ -202,9 +199,120 @@ int lf_enable_interrupts_nested() {
  */
 int _lf_single_threaded_notify_of_event() {
   // notify main sleep loop of event
-  sem_release(&_lf_sem_irq_event);
+  if (sem_release(&_lf_sem_irq_event)) {
+    return 0;
+  }
+  return 1;
+}
+
+#else // LF_SINGLE_THREADED
+
+#warning "Threaded runtime on RP2040 is still experimental"
+
+/**
+ * @brief Get the number of cores on the host machine.
+ */
+int lf_available_cores() { return 2; }
+
+static void* (*thread_1)(void*);
+static void* thread_1_args;
+static int num_create_threads_called = 0;
+static semaphore_t thread_1_done;
+static void* thread_1_return;
+
+#define MAGIC_THREAD1_ID 314159
+
+void core1_entry() {
+  thread_1_return = thread_1(thread_1_args);
+  sem_reset(&thread_1_done, 1);
+}
+
+int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
+  // make sure this fn is only called once
+  if (num_create_threads_called != 0) {
+    return 1;
+  }
+  thread_1 = lf_thread;
+  thread_1_args = arguments;
+  num_create_threads_called += 1;
+  sem_init(&thread_1_done, 0, 1);
+  multicore_launch_core1(core1_entry);
+  *thread = MAGIC_THREAD1_ID;
   return 0;
 }
-#endif // LF_SINGLE_THREADED
+
+int lf_thread_join(lf_thread_t thread, void** thread_return) {
+  if (thread != MAGIC_THREAD1_ID) {
+    return 1;
+  }
+  sem_acquire_blocking(&thread_1_done);
+  // release in case join is called again
+  if (!sem_release(&thread_1_done)) {
+    // shouldn't be possible; lf_thread_join is only called from main thread
+    return 1;
+  }
+  if (thread_return) {
+    *thread_return = thread_1_return;
+  }
+  return 0;
+}
+
+int lf_mutex_init(lf_mutex_t* mutex) {
+  recursive_mutex_init(mutex);
+  return 0;
+}
+
+int lf_mutex_lock(lf_mutex_t* mutex) {
+  recursive_mutex_enter_blocking(mutex);
+  return 0;
+}
+
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+  recursive_mutex_exit(mutex);
+  return 0;
+}
+
+// condition variables "notify" threads using a semaphore per core.
+// although there are only two cores, may not use just a single semaphore
+// as a cond_broadcast may be called from within an interrupt
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+  for (int i = 0; i < NUM_CORES; i++) {
+    sem_init(&(cond->notifs[i]), 0, 1);
+  }
+  cond->mutex = mutex;
+  return 0;
+}
+
+int lf_cond_broadcast(lf_cond_t* cond) {
+  for (int i = 0; i < NUM_CORES; i++) {
+    sem_reset(&(cond->notifs[i]), 1);
+  }
+  return 0;
+}
+
+int lf_cond_signal(lf_cond_t* cond) {
+  return lf_cond_broadcast(cond); // spurious wakeups, but that's ok
+}
+
+int lf_cond_wait(lf_cond_t* cond) {
+  semaphore_t* mailbox = &(cond->notifs[get_core_num()]);
+  lf_mutex_unlock(cond->mutex);
+  sem_acquire_blocking(mailbox);
+  lf_mutex_lock(cond->mutex);
+  return 0;
+}
+
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+  semaphore_t* mailbox = &(cond->notifs[get_core_num()]);
+  absolute_time_t a = from_us_since_boot(absolute_time_ns / 1000);
+  bool acquired_permit = sem_acquire_block_until(mailbox, a);
+  return acquired_permit ? 0 : LF_TIMEOUT;
+}
+
+void initialize_lf_thread_id() {}
+
+int lf_thread_id() { return get_core_num(); }
+
+#endif // !LF_SINGLE_THREADED
 
 #endif // PLATFORM_RP2040

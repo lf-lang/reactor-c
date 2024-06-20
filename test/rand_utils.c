@@ -12,7 +12,7 @@
  */
 void perturb(int* src, size_t size, int* out) {
   out[size - 1] = src[size - 1];
-  for (int a = 0; a < size - 1; a += 2) {
+  for (size_t a = 0; a < size - 1; a += 2) {
     int min = src[a] < src[a + 1] ? src[a] : src[a + 1];
     int diff = rand() % (min * 2) - min;
     out[a] = src[a] + diff;

@@ -140,13 +140,15 @@ void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
 }
 
 void lf_watchdog_stop(watchdog_t* watchdog) {
-  // If the watchdog isnt active, then it is no reason to stop it.
+  // Assumes reactor mutex is already held.
+  watchdog->expiration = NEVER;
+
+  // If lf_watchdog_stop is called very close to lf_watchdog_start, it might
+  // not have had the time to wake up and start sleeping.
   if (!watchdog->active) {
     return;
   }
 
-  // Assumes reactor mutex is already held.
-  watchdog->expiration = NEVER;
   LF_COND_SIGNAL(&watchdog->cond);
 }
 
