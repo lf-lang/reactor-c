@@ -449,9 +449,14 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
   int topicLen = 0;
   MQTTClient_message* message = NULL;
   int rc;
-  int bytes_read = -1;
+  int bytes_read = 0;
   // LF_PRINT_LOG("RECEIVING message from federateID %d", MQTT_priv->target_id);
   instant_t start_receive = lf_time_physical();
+  // If the netdrv was closed from the outside during termination, segmentation faults happen. When federate executes
+  // and calls lf_terminate_execution(), closing inbound and outbound netdrivers are first before waiting for the
+  // threads to join. In this case, the federates may not receive the MQTT_resign message and just get closed. The
+  // close_outbound_netdrv() and close_inbound_netdrv() functions hold a mutex lock, so this just needs to check the
+  // _lf_termination_executed status befor restarting the loop.
   while (!_lf_termination_executed) {
     if (CHECK_TIMEOUT(start_receive, CONNECT_TIMEOUT)) {
       lf_print_error("Failed to receive with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
@@ -459,10 +464,6 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
       break;
     }
     MQTT_priv_t* MQTT_priv = (MQTT_priv_t*)drv->priv;
-    // If the netdrv was closed from the outside during termination, segmentation faults happen. When federate executes
-    // and calls lf_terminate_execution(), closing inbound and outbound netdrivers are first before waiting for the
-    // threads to join. In this case, the federates may not receive the MQTT_resign message and just get closed. So this
-    // must needs a mutex to avoid segmentation faults, happening during MQTT_receive
     rc = MQTTClient_receive(MQTT_priv->client, &topicName, &topicLen, &message, 5000);
     if (rc != MQTTCLIENT_SUCCESS) {
       lf_print_warning("Failed to receive message, return code %d.", rc);
