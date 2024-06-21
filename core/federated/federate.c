@@ -2204,7 +2204,14 @@ void lf_latest_tag_confirmed(tag_t tag_to_send) {
   _lf_get_environments(&env);
   int compare_with_last_LTC = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
 
-  if (compare_with_last_LTC >= 0 || !env->need_to_send_LTC) {
+  if (compare_with_last_LTC >= 0) {
+    return;
+  }
+
+  if (!env->need_to_send_LTC) {
+    LF_PRINT_LOG("Skip sending Latest Tag Confirmed (LTC) to the RTI because there was no tagged messages with the "
+                 "tag " PRINTF_TAG " that this federate has received.",
+                 tag_to_send.time - start_time, tag_to_send.microstep);
     return;
   }
   LF_PRINT_LOG("Sending Latest Tag Confirmed (LTC) " PRINTF_TAG " to the RTI.", tag_to_send.time - start_time,
