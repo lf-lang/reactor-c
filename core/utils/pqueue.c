@@ -35,5 +35,5 @@ void set_reaction_position(void* reaction, size_t pos) { ((reaction_t*)reaction)
 
 void print_reaction(void* reaction) {
   reaction_t* r = (reaction_t*)reaction;
-  LF_PRINT_DEBUG("%s: index: %llx, reaction: %p", r->name, r->index, reaction);
+  LF_PRINT_DEBUG("%s: index: %" PRIxPTR ", reaction: %p", r->name, r->index, reaction);
 }
