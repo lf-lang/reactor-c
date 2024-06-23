@@ -1686,8 +1686,6 @@ void wait_for_federates(int socket_descriptor) {
     lf_print("RTI: Federate %d thread exited.", fed->enclave.id);
   }
 
-  lf_thread_join(responder_thread, &thread_exit_status);
-
   rti_remote->all_federates_exited = true;
 
   // Shutdown and close the socket that is listening for incoming connections
