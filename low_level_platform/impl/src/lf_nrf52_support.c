@@ -268,6 +268,9 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
   }
 }
 
+// Definition required by sd_nvic_critical_region_enter() and exit() below.
+nrf_nvic_state_t nrf_nvic_state = {0};
+
 /**
  * @brief Enter critical section. Let NRF Softdevice handle nesting
  * @return 0
@@ -276,10 +279,10 @@ int lf_enable_interrupts_nested() {
   if (_lf_nested_count == 0)
     return 1; // Error. Interrupts have not been disabled.
   _lf_nested_count--;
-  __enable_irq();
-  // FIXME: If softdevice is enabled, do the following:
-  // return sd_nvic_critical_region_exit(&_lf_nested_count);
-  return 0;
+  return sd_nvic_critical_region_exit(0);
+  // FIXME: If softdevice is not enabled, do the following instead of above:
+  // __enable_irq();
+  // return 0;
 }
 
 /**
@@ -289,10 +292,11 @@ int lf_enable_interrupts_nested() {
  */
 int lf_disable_interrupts_nested() {
   _lf_nested_count++;
-  __disable_irq();
-  // FIXME: If softdevice is enabled, do the following:
-  // return sd_nvic_critical_region_enter(_lf_nested_count);
-  return 0;
+  uint8_t success = 0;
+  return sd_nvic_critical_region_enter(&success);
+  // FIXME: If softdevice is not enabled, do the following instead of the above:
+  // __disable_irq();
+  // return 0;
 }
 
 /**
