@@ -9,7 +9,6 @@ var pqueue__base_8h =
     [ "pqueue_print_entry_f", "d6/d51/pqueue__base_8h.html#a884902da135214a6167f1536ad4ed4bc", null ],
     [ "pqueue_set_pos_f", "d6/d51/pqueue__base_8h.html#afdc8f52cbc45181ef375df22917bc4f9", null ],
     [ "pqueue_t", "d6/d51/pqueue__base_8h.html#a05e211b59fd9be5939218e11d1132167", null ],
-    [ "pqueue_change_priority", "d6/d51/pqueue__base_8h.html#a7dfaa607ca404b915355d4b123c669ee", null ],
     [ "pqueue_dump", "d6/d51/pqueue__base_8h.html#add0fae8523cca210f1574586e82cf7dd", null ],
     [ "pqueue_empty_into", "d6/d51/pqueue__base_8h.html#aa0f5e3d63138880461b1f04dc2d4f48a", null ],
     [ "pqueue_find_equal_same_priority", "d6/d51/pqueue__base_8h.html#a9bb9cb0e5f41746db17b7581f5fe0559", null ],
