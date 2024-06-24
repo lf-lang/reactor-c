@@ -923,7 +923,7 @@ void* clock_synchronization_thread(void* noargs) {
       send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, UDP);
 
       // Listen for reply message, which should be T3.
-      size_t message_size = 1 + sizeof(int32_t);
+      size_t message_size = 1 + sizeof(uint16_t);
       unsigned char buffer[message_size];
       // Maximum number of messages that we discard before giving up on this cycle.
       // If the T3 message from this federate does not arrive and we keep receiving
@@ -935,7 +935,7 @@ void* clock_synchronization_thread(void* noargs) {
         // If any errors occur, either discard the message or the clock sync round.
         if (!read_failed) {
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
-            int32_t fed_id_2 = extract_int32(&(buffer[1]));
+            int32_t fed_id_2 = (int32_t) extract_uint16(&(buffer[1]));
             // Check that this message came from the correct federate.
             if (fed_id_2 != fed->enclave.id) {
               // Message is from the wrong federate. Discard the message.
