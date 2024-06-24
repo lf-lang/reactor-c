@@ -58,7 +58,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The ID of this federate. For a non-federated execution, this will be -1.
  * For a federated execution, it will be assigned in the generated code.
  */
-int _lf_my_fed_id = -1;
+int32_t _lf_my_fed_id = -1;
 
 /**
  * If non-null, this function will be used instead of the printf to
