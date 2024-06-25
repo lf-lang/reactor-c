@@ -1429,8 +1429,6 @@ static int receive_udp_message_and_set_up_clock_sync(int* socket_id, uint16_t fe
                                          "Socket to federate %d unexpectedly closed.", fed_id);
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
             uint16_t fed_id = extract_uint16(&(buffer[1]));
-            assert(fed_id > -1);
-            assert(fed_id < 65536);
             LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
             handle_physical_clock_sync_message(fed, TCP);
           } else {
