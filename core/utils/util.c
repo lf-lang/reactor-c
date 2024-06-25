@@ -69,7 +69,7 @@ print_message_function_t* print_message_function = NULL;
 /** The level of messages to redirect to print_message_function. */
 int print_message_level = -1;
 
-int lf_fed_id() { return _lf_my_fed_id; }
+int32_t lf_fed_id() { return _lf_my_fed_id; }
 
 // Declaration needed to attach attributes to suppress warnings of the form:
 // "warning: function '_lf_message_print' might be a candidate for 'gnu_printf'
