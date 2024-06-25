@@ -1112,6 +1112,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // run on the main thread, rather than creating a new thread.
         // This is important for bare-metal platforms, who can't
         // afford to have the main thread sit idle.
+        env->thread_ids[j] = lf_thread_self();
         continue;
       }
       if (lf_thread_create(&env->thread_ids[j], worker, env) != 0) {
