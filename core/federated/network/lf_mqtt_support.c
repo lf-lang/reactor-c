@@ -477,6 +477,7 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
     } else {
       // Successfully received a message
       lf_print_log("Successfully received message, return code %d.", rc);
+      // TODO: NEED to add compare with buffer_length. Also actions.
       memcpy(buffer, (unsigned char*)message->payload, message->payloadlen);
       bytes_read = message->payloadlen;
       // LF_PRINT_LOG("RECEIVED message from federateID %d", MQTT_priv->target_id);

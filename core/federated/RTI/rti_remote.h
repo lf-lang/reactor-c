@@ -65,7 +65,7 @@ typedef struct federate_info_t {
   pqueue_tag_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
                                          // yet processed. This record is ordered based on the time
                                          // value of each message for a more efficient access.
-  netdrv_t* fed_netdrv; // The netdriver that the RTI handling each federate.
+  netdrv_t* fed_netdrv;                  // The netdriver that the RTI handling each federate.
 } federate_info_t;
 
 /**
@@ -207,8 +207,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
  * @param sending_federate The sending federate.
  * @param buffer The buffer to read into (the first byte is already there).
  */
-void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer, size_t buffer_length,
-                          ssize_t bytes_read);
+void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer, ssize_t bytes_read);
 
 /**
  * Handle a latest tag complete (LTC) message. @see

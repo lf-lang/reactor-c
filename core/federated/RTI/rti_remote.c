@@ -291,8 +291,10 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                                 "RTI failed to forward message to federate %d.", federate_id);
 
   while (sending_federate->fed_netdrv->read_remaining_bytes > 0) {
-    ssize_t bytes_read_again = read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, buffer, FED_COM_BUFFER_SIZE,
-                                                              NULL, "RTI failed to read message chunks.");
+    ssize_t bytes_read_again = read_from_netdrv(sending_federate->fed_netdrv, buffer, FED_COM_BUFFER_SIZE);
+    if (bytes_read_again <= 0) {
+      lf_print_error_and_exit("RTI failed to read message chunks.");
+    }
     write_to_netdrv_fail_on_error(fed->fed_netdrv, bytes_read_again, buffer, &rti_mutex,
                                   "RTI failed to forward message to federate %d.", federate_id);
   }
