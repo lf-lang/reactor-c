@@ -112,7 +112,7 @@ int register_user_trace_event(void* self, char* description);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_reaction_ends(env, reaction, worker)                                                                \
-  call_tracepoint(reaction_ends, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, 0)
+  call_tracepoint(reaction_ends, reaction->self, env->current_tag, worker, worker, reaction->number, NULL, NULL, reaction->deadline)
 
 /**
  * Trace a call to schedule.
