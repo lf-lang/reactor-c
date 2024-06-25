@@ -162,9 +162,7 @@ PyObject* py_request_stop(PyObject* self, PyObject* args) {
   return Py_None;
 }
 
-PyObject* py_source_directory(PyObject* self, PyObject* args) {
-  return PyUnicode_DecodeFSDefault(LF_SOURCE_DIRECTORY);
-}
+PyObject* py_source_directory(PyObject* self, PyObject* args) { return PyUnicode_DecodeFSDefault(LF_SOURCE_DIRECTORY); }
 
 PyObject* py_package_directory(PyObject* self, PyObject* args) {
   return PyUnicode_DecodeFSDefault(LF_PACKAGE_DIRECTORY);
@@ -307,14 +305,15 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
  * @see schedule_copy
  * @see request_stop
  */
-static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {{"start", py_main, METH_VARARGS, NULL},
-                                                        {"schedule_copy", py_schedule_copy, METH_VARARGS, NULL},
-                                                        {"tag", py_lf_tag, METH_NOARGS, NULL},
-                                                        {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
-                                                        {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
-                                                        {"source_directory", py_source_directory, METH_NOARGS, "Source directory path for .lf file"},
-                                                        {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
-                                                        {NULL, NULL, 0, NULL}};
+static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
+    {"start", py_main, METH_VARARGS, NULL},
+    {"schedule_copy", py_schedule_copy, METH_VARARGS, NULL},
+    {"tag", py_lf_tag, METH_NOARGS, NULL},
+    {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
+    {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
+    {"source_directory", py_source_directory, METH_NOARGS, "Source directory path for .lf file"},
+    {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
+    {NULL, NULL, 0, NULL}};
 
 /**
  * Define the Lingua Franca module.
