@@ -245,7 +245,6 @@ int process_args(int argc, const char* argv[]) {
         usage(argc, argv);
         return 0;
       }
-      // TODO: Need to fix
       rti.user_specified_port = (uint16_t)RTI_port;
     } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--clock_sync") == 0) {
       if (argc < i + 2) {
@@ -334,7 +333,6 @@ int main(int argc, const char* argv[]) {
     rti.base.scheduling_nodes[i] = (scheduling_node_t*)fed_info;
   }
 
-  // TODO: Need to add user_specified_port
   if (start_rti_server(rti.user_specified_port)) {
     wait_for_federates(rti.rti_netdrv);
     normal_termination = true;

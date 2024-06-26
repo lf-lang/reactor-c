@@ -32,10 +32,6 @@
 #include <openssl/hmac.h> // For HMAC authentication.
 #endif
 
-// #ifdef OPENSSL_REQUIRED
-//   #include <openssl/crypto.h>
-// #endif
-
 #include "lf_types.h"
 #include "pqueue_tag.h"
 
