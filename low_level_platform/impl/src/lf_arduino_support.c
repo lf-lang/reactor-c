@@ -174,9 +174,6 @@ lf_thread_t lf_thread_self() {
   // Not implemented. Although Arduino mbed provides a ThisThread API and a
   // get_id() function, it does not provide a way to get the current thread as a
   // Thread object.
-  // N.B. This wrong implementation will eventually cause hard-to-debug
-  // segfaults, but it unblocks us from conveniently implementing features for
-  // other platforms, and it does not break existing features for Arduino.
   return NULL;
 }
 
