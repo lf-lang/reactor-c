@@ -179,9 +179,7 @@ int lf_available_cores() {
 }
 
 lf_thread_t lf_thread_self() {
-  // N.B. This wrong implementation will eventually cause hard-to-debug
-  // segfaults, but it unblocks us from conveniently implementing features for
-  // other platforms, and it does not break existing features for FlexPRET.
+  // Not implemented.
   return NULL;
 }
 
