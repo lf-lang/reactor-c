@@ -170,6 +170,16 @@ typedef void* (*lf_function_t)(void*);
  */
 int lf_available_cores() { return 1; }
 
+lf_thread_t lf_thread_self() {
+  // Not implemented. Although Arduino mbed provides a ThisThread API and a
+  // get_id() function, it does not provide a way to get the current thread as a
+  // Thread object.
+  // N.B. This wrong implementation will eventually cause hard-to-debug
+  // segfaults, but it unblocks us from conveniently implementing features for
+  // other platforms, and it does not break existing features for Arduino.
+  return NULL;
+}
+
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
   lf_thread_t t = thread_new();
   long int start = thread_start(t, *lf_thread, arguments);
