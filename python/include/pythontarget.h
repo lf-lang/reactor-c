@@ -102,6 +102,22 @@ PyObject* py_schedule_copy(PyObject* self, PyObject* args);
  */
 PyObject* py_request_stop(PyObject* self, PyObject* args);
 
+/**
+ * @brief Return the source directory path (where the main .lf file is) as a string.
+ * @param self The lf object.
+ * @param args Empty.
+ * @return PyObject* A Python string.
+ */
+PyObject* py_source_directory(PyObject* self, PyObject* args);
+
+/**
+ * @brief Return the root project directory path as a string.
+ * @param self The lf object.
+ * @param args Empty.
+ * @return PyObject* A Python string.
+ */
+PyObject* py_package_directory(PyObject* self, PyObject* args);
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 PyObject* py_main(PyObject* self, PyObject* args);
