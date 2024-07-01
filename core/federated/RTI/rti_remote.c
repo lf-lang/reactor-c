@@ -935,7 +935,7 @@ void* clock_synchronization_thread(void* noargs) {
         // If any errors occur, either discard the message or the clock sync round.
         if (!read_failed) {
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
-            int32_t fed_id_2 = (int32_t)extract_uint16(&(buffer[1]));
+            uint16_t fed_id_2 = extract_uint16(&(buffer[1]));
             // Check that this message came from the correct federate.
             if (fed_id_2 != fed->enclave.id) {
               // Message is from the wrong federate. Discard the message.
