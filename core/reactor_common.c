@@ -828,6 +828,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         violation = true;
         // Invoke the local handler, if there is one.
         reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;
+        tracepoint_reaction_starts(env, downstream_to_execute_now, worker);
         if (handler != NULL) {
           // Assume the mutex is still not held.
           (*handler)(downstream_to_execute_now->self);
@@ -836,6 +837,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
           // triggered reactions into the queue or execute them directly if possible.
           schedule_output_reactions(env, downstream_to_execute_now, worker);
         }
+        tracepoint_reaction_ends(env, downstream_to_execute_now, worker);
       }
     }
     if (!violation) {

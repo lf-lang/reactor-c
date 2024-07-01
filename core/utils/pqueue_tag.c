@@ -153,7 +153,7 @@ void pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) { pqueue_remove
 void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t) {
   tag_t head = pqueue_tag_peek_tag(q);
   while (lf_tag_compare(head, FOREVER_TAG) < 0 && lf_tag_compare(head, t) <= 0) {
-    pqueue_tag_pop(q);
+    pqueue_tag_pop_tag(q);
     head = pqueue_tag_peek_tag(q);
   }
 }
