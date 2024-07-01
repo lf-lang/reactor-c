@@ -162,6 +162,8 @@ int lf_available_cores() {
   return sysinfo.dwNumberOfProcessors;
 }
 
+lf_thread_t lf_thread_self() { return GetCurrentThread(); }
+
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
   uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
   *thread = (HANDLE)handle;
