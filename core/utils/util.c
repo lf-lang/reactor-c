@@ -58,7 +58,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The ID of this federate. For a non-federated execution, this will be -1.
  * For a federated execution, it will be assigned in the generated code.
  */
-int32_t _lf_my_fed_id = -1;
+uint16_t _lf_my_fed_id;
 
 /**
  * If non-null, this function will be used instead of the printf to
@@ -69,7 +69,7 @@ print_message_function_t* print_message_function = NULL;
 /** The level of messages to redirect to print_message_function. */
 int print_message_level = -1;
 
-int32_t lf_fed_id() { return _lf_my_fed_id; }
+uint16_t lf_fed_id() { return _lf_my_fed_id; }
 
 // Declaration needed to attach attributes to suppress warnings of the form:
 // "warning: function '_lf_message_print' might be a candidate for 'gnu_printf'
