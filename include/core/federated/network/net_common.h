@@ -39,7 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * put into its code by the code generator (i.e., it attempts to
  * open a TCP connection).  If an explicit port is given in the `at` clause
  * on the `federated reactor` statement, it will use that port. Otherwise, it will
- * use DEFAULT_PORT.
+ * use RTI_DEFAULT_PORT.
  *
  * When it has successfully opened a TCP connection, the first message it sends
  * to the RTI is a MSG_TYPE_FED_IDS message, which contains the ID of this federate
@@ -180,18 +180,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NET_COMMON_H
 
 /**
- * The timeout time in ns for TCP operations.
- * Default value is 10 secs.
- */
-#define TCP_TIMEOUT_TIME SEC(10)
-
-/**
- * The timeout time in ns for UDP operations.
- * Default value is 1 sec.
- */
-#define UDP_TIMEOUT_TIME SEC(1)
-
-/**
  * Size of the buffer used for messages sent between federates.
  * This is used by both the federates and the rti, so message lengths
  * should generally match.
@@ -203,6 +191,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define CONNECT_RETRY_INTERVAL MSEC(500)
 
+
+//TODO: NEED TO ERASE!!! CHECK CONFLICTS.
+/**
+ * Bound on the number of retries to connect to the RTI.
+ * A federate will retry every CONNECT_RETRY_INTERVAL seconds
+ * this many times before giving up.
+ */
+#define CONNECT_MAX_RETRIES 100
+
 /**
  * Bound on the number of retries to connect to the RTI.
  * A federate will retry every CONNECT_RETRY_INTERVAL seconds until
@@ -211,41 +208,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CONNECT_TIMEOUT MINUTES(1)
 
 /**
- * Maximum number of port addresses that a federate will try to connect to the RTI on.
- * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
- * on the number of RTIs that can be running on the same host.
- */
-#define MAX_NUM_PORT_ADDRESSES 16
-
-/**
  * Time that a federate waits before asking
  * the RTI again for the port and IP address of a federate
  * (an MSG_TYPE_ADDRESS_QUERY message) after the RTI responds that it
  * does not know.  This allows time for federates to start separately.
  */
 #define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)
-
-/**
- * Time to wait before re-attempting to bind to a port.
- * When a process closes, the network stack typically waits between 30 and 120
- * seconds before releasing the port.  This is to allow for delayed packets so
- * that a new process does not receive packets from a previous process.
- * Here, we limit the retries to 60 seconds.
- */
-#define PORT_BIND_RETRY_INTERVAL SEC(1)
-
-/**
- * Number of attempts to bind to a port before giving up.
- */
-#define PORT_BIND_RETRY_LIMIT 60
-
-/**
- * Default port number for the RTI.
- * Unless a specific port has been specified by the LF program in the "at"
- * for the RTI or on the command line, when the RTI starts up, it will attempt
- * to open a socket server on this port.
- */
-#define DEFAULT_PORT 15045u
 
 /**
  * Delay the start of all federates by this amount.
@@ -347,6 +315,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FED_RESPONSE 102
 
+// TODO: Need to be moved.
 /**
  * The randomly created nonce size will be 8 bytes.
  */
@@ -366,6 +335,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_TIMESTAMP 2
 #define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(int64_t))
 
+// TODO: Deprecated.
 /** Byte identifying a message to forward to another federate.
  *  The next two bytes will be the ID of the destination port.
  *  The next two bytes are the destination federate ID.
@@ -669,6 +639,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Byte identifying that the federate or the RTI has failed.
  */
 #define MSG_TYPE_FAILED 25
+
+#define MSG_TYPE_MQTT_JOIN 26
+
+#define MSG_TYPE_MQTT_ACCEPT 27
+
+#define MSG_TYPE_MQTT_ACCEPT_ACK 28
 
 /////////////////////////////////////////////
 //// Rejection codes
