@@ -1747,10 +1747,17 @@ void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
     scheduling_node_t* node = scheduling_nodes[i];
-    if (node->upstream != NULL)
+    if (node->upstream != NULL) {
       free(node->upstream);
-    if (node->downstream != NULL)
+      free(node->upstream_delay);
+    }
+    if (node->min_delays != NULL) {
+      free(node->min_delays);
+    }
+    if (node->downstream != NULL) {
       free(node->downstream);
+    }
+    free(node);
   }
   free(scheduling_nodes);
 }
