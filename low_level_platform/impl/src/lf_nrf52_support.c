@@ -39,9 +39,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 
 #include "platform/lf_nrf52_support.h"
-#include "../platform.h"
-#include "../utils/util.h"
-#include "../tag.h"
+#include "low_level_platform.h"
+#include "tag.h"
 
 #include "nrf.h"
 #include "nrfx_timer.h"
@@ -74,9 +73,9 @@ static const nrfx_timer_t g_lf_timer_inst = NRFX_TIMER_INSTANCE(3);
 static volatile uint32_t _lf_time_us_high = 0;
 
 /**
- * Flag passed to sd_nvic_critical_region_*
+ * Flag used to count nested interrupt disables.
  */
-uint8_t _lf_nested_region = 0;
+static volatile uint8_t _lf_nested_count = 0;
 
 /**
  * @brief Handle LF timer interrupts
@@ -95,7 +94,7 @@ void lf_timer_event_handler(nrf_timer_event_t event_type, void* p_context) {
   if (event_type == NRF_TIMER_EVENT_COMPARE2) {
     _lf_sleep_interrupted = false;
   } else if (event_type == NRF_TIMER_EVENT_COMPARE3) {
-    _lf_time_us_high = +1;
+    _lf_time_us_high += 1;
   }
 }
 
@@ -193,13 +192,19 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
 }
 
 /**
- * @brief Sleep until the given wakeup time. There are a couple of edge cases to consider
+ * @brief Sleep until the given wakeup time.
+ *
+ * There are a couple of edge cases to consider:
  *  1. Wakeup time is already past
  *  2. Implied sleep duration is below `LF_MAX_SLEEP_NS` threshold
  *  3. Implied sleep duration is above `LF_MAX_SLEEP_NS` limit
  *
+ * This function assumes the caller is in a critical section, so interrupts are disabled.
+ * It may exit the critical section while waiting for an event, but it will re-enter the
+ * critical section before returning.
+ *
  * @param wakeup_time The time instant at which to wake up.
- * @return int 0 if sleep completed, or -1 if it was interrupted.
+ * @return 0 if sleep completed, or -1 if it was interrupted.
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
   instant_t now;
@@ -258,23 +263,41 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
   if (!_lf_async_event) {
     return 0;
   } else {
-    LF_PRINT_DEBUG("Sleep got interrupted...\n");
+    // LF_PRINT_DEBUG("Sleep got interrupted...\n");
     return -1;
   }
 }
 
+// Definition required by sd_nvic_critical_region_enter() and exit() below.
+nrf_nvic_state_t nrf_nvic_state = {0};
+
 /**
  * @brief Enter critical section. Let NRF Softdevice handle nesting
- * @return int
+ * @return 0
  */
-int lf_enable_interrupts_nested() { return sd_nvic_critical_region_enter(&_lf_nested_region); }
+int lf_enable_interrupts_nested() {
+  if (_lf_nested_count == 0)
+    return 1; // Error. Interrupts have not been disabled.
+  _lf_nested_count--;
+  return sd_nvic_critical_region_exit(0);
+  // FIXME: If softdevice is not enabled, do the following instead of above:
+  // __enable_irq();
+  // return 0;
+}
 
 /**
  * @brief Exit citical section. Let NRF SoftDevice handle nesting
  *
  * @return int
  */
-int lf_disable_interrupts_nested() { return sd_nvic_critical_region_exit(_lf_nested_region); }
+int lf_disable_interrupts_nested() {
+  _lf_nested_count++;
+  uint8_t success = 0;
+  return sd_nvic_critical_region_enter(&success);
+  // FIXME: If softdevice is not enabled, do the following instead of the above:
+  // __disable_irq();
+  // return 0;
+}
 
 /**
  * @brief Set global flag to true so that sleep will return when woken

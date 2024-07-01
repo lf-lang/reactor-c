@@ -1,4 +1,4 @@
-/* nRF52832 API support for the C target of Lingua Franca. */
+/* nRF52 API support for the C target of Lingua Franca. */
 
 /*************
 Copyright (c) 2021, The University of California at Berkeley.
@@ -24,11 +24,12 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** nrf52 API support for the C target of Lingua Franca.
+/**
+ * nRF52 API support for the C target of Lingua Franca.
  *
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
- *  @author{Abhi Gundrala <gundralaa@berkeley.edu>}
- *  @author{Erling Rennemo Jellum <erling.r.jellum@ntnu.no>}
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
+ * @author{Erling Rennemo Jellum <erling.r.jellum@ntnu.no>}
  */
 
 #ifndef LF_NRF52_SUPPORT_H

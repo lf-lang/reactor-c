@@ -164,6 +164,7 @@ int _lf_do_step(environment_t* env) {
         // Deadline violation has occurred.
         violation = true;
         // Invoke the local handler, if there is one.
+        tracepoint_reaction_starts(env, reaction, 0);
         reaction_function_t handler = reaction->deadline_violation_handler;
         if (handler != NULL) {
           (*handler)(reaction->self);
@@ -171,6 +172,7 @@ int _lf_do_step(environment_t* env) {
           // triggered reactions into the queue.
           schedule_output_reactions(env, reaction, 0);
         }
+        tracepoint_reaction_ends(env, reaction, 0);
       }
     }
 
