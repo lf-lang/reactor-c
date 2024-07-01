@@ -2201,15 +2201,13 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 
 void lf_latest_tag_confirmed(tag_t tag_to_send) {
   environment_t* env;
-  _lf_get_environments(&env);
   int compare_with_last_LTC = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
-
   if (compare_with_last_LTC >= 0) {
-    return;
+    return; // Already sent this or later tag.
   }
-
+  _lf_get_environments(&env);
   if (!env->need_to_send_LTC) {
-    LF_PRINT_LOG("Skip sending Latest Tag Confirmed (LTC) to the RTI because there was no tagged messages with the "
+    LF_PRINT_LOG("Skip sending Latest Tag Confirmed (LTC) to the RTI because there was no tagged message with the "
                  "tag " PRINTF_TAG " that this federate has received.",
                  tag_to_send.time - start_time, tag_to_send.microstep);
     return;
