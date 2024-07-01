@@ -696,4 +696,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** HMAC authentication failed. */
 #define HMAC_DOES_NOT_MATCH 6
 
+/** RTI not executed using -a or --auth option. */
+#define RTI_NOT_EXECUTED_WITH_AUTH 7
+
 #endif /* NET_COMMON_H */

@@ -1198,6 +1198,9 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
       // If the connection is a peer-to-peer connection between two
       // federates, reject the connection with the WRONG_SERVER error.
       send_reject(socket_id, WRONG_SERVER);
+    } else if (buffer[0] == MSG_TYPE_FED_NONCE) {
+      send_reject(socket_id, RTI_NOT_EXECUTED_WITH_AUTH);
+      lf_print_error("RTI not executed with HMAC authentication option using -a or --auth.");
     } else {
       send_reject(socket_id, UNEXPECTED_MESSAGE);
     }

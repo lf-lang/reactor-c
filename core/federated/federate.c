@@ -862,6 +862,9 @@ static int perform_hmac_authentication() {
     if (received[0] == MSG_TYPE_FAILED) {
       lf_print_error("RTI has failed.");
       return -1;
+    } else if (received[0] == MSG_TYPE_REJECT && received[1] == RTI_NOT_EXECUTED_WITH_AUTH) {
+      lf_print_error("RTI is not executed with HMAC option.");
+      return -1;
     } else {
       lf_print_error("Received unexpected response %u from the RTI (see net_common.h).", received[0]);
       return -1;
