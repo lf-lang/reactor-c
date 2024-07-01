@@ -277,7 +277,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
   // Reply will have the federate ID as a payload.
   unsigned char reply_buffer[1 + sizeof(uint16_t)];
   reply_buffer[0] = MSG_TYPE_CLOCK_SYNC_T3;
-  encode_uint16((uint16_t)_lf_my_fed_id, &(reply_buffer[1]));
+  encode_uint16(_lf_my_fed_id, &(reply_buffer[1]));
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
