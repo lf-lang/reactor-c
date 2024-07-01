@@ -112,23 +112,29 @@ void _lf_message_print(const char* prefix, const char* format, va_list args,
     // interleaved between threads.
     // vprintf() is a version that takes an arg list rather than multiple args.
     char* message;
+    if (_lf_my_fed_id < 0) {
+      size_t length = strlen(prefix) + strlen(format) + 32;
+      message = (char*)malloc(length + 1);
+      snprintf(message, length, "%s%s\n", prefix, format);
+    } else {
 #if defined STANDALONE_RTI
-    size_t length = strlen(prefix) + strlen(format) + 37;
-    message = (char*)malloc(length + 1);
-    snprintf(message, length, "RTI: %s%s\n", prefix, format);
+      size_t length = strlen(prefix) + strlen(format) + 37;
+      message = (char*)malloc(length + 1);
+      snprintf(message, length, "RTI: %s%s\n", prefix, format);
 #else
-    // Get the federate name from the top-level environment, which by convention is the first.
-    environment_t* envs;
-    _lf_get_environments(&envs);
-    char* name = envs->name;
-    size_t length = strlen(prefix) + strlen(format) + +strlen(name) + 32;
-    message = (char*)malloc(length + 1);
-    // If the name has prefix "federate__", strip that out.
-    if (strncmp(name, "federate__", 10) == 0)
-      name += 10;
+      // Get the federate name from the top-level environment, which by convention is the first.
+      environment_t* envs;
+      _lf_get_environments(&envs);
+      char* name = envs->name;
+      size_t length = strlen(prefix) + strlen(format) + +strlen(name) + 32;
+      message = (char*)malloc(length + 1);
+      // If the name has prefix "federate__", strip that out.
+      if (strncmp(name, "federate__", 10) == 0)
+        name += 10;
 
-    snprintf(message, length, "Fed %d (%s): %s%s\n", _lf_my_fed_id, name, prefix, format);
+      snprintf(message, length, "Fed %d (%s): %s%s\n", _lf_my_fed_id, name, prefix, format);
 #endif // STANDALONE_RTI
+    }
     if (print_message_function == NULL) {
       // NOTE: Send all messages to stdout, not to stderr, so that ordering makes sense.
       vfprintf(stdout, message, args);
