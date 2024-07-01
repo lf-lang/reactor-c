@@ -1795,10 +1795,6 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
       size_t buffer_length = 1 + sizeof(uint16_t) + 1;
       unsigned char buffer[buffer_length];
       buffer[0] = MSG_TYPE_P2P_SENDING_FED_ID;
-      if (_lf_my_fed_id > UINT16_MAX) {
-        // This error is very unlikely to occur.
-        lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX);
-      }
       encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(buffer[1]));
       unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
       buffer[sizeof(uint16_t) + 1] = federation_id_length;
@@ -1918,9 +1914,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
     unsigned char buffer[4];
     buffer[0] = MSG_TYPE_FED_IDS;
     // Next send the federate ID.
-    if (_lf_my_fed_id > UINT16_MAX) {
-      lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX);
-    }
     encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
     // Next send the federation ID length.
     // The federation ID is limited to 255 bytes.
