@@ -1166,6 +1166,7 @@ void termination(void) {
       }
     }
   }
+  lf_tracing_global_shutdown();
   // Skip most cleanup on abnormal termination.
   if (_lf_normal_termination) {
     _lf_free_all_tokens(); // Must be done before freeing reactors.
@@ -1188,8 +1189,6 @@ void termination(void) {
     }
 #endif
     lf_free_all_reactors();
-
-    lf_tracing_global_shutdown();
 
     // Free up memory associated with environment.
     // Do this last so that printed warnings don't access freed memory.
