@@ -162,10 +162,24 @@ PyObject* py_request_stop(PyObject* self, PyObject* args) {
   return Py_None;
 }
 
-PyObject* py_source_directory(PyObject* self, PyObject* args) { return PyUnicode_DecodeFSDefault(LF_SOURCE_DIRECTORY); }
+PyObject* py_source_directory(PyObject* self, PyObject* args) {
+#ifndef LF_SOURCE_DIRECTORY
+  // This should not occur.
+  PyErr_SetString(PyExc_RuntimeError, "LF_SOURCE_DIRECTORY constant is not defined.");
+  return NULL;
+#else
+  return PyUnicode_DecodeFSDefault(LF_SOURCE_DIRECTORY);
+#endif
+}
 
 PyObject* py_package_directory(PyObject* self, PyObject* args) {
+#ifndef LF_PACKAGE_DIRECTORY
+  // This should not occur.
+  PyErr_SetString(PyExc_RuntimeError, "LF_PACKAGE_DIRECTORY constant is not defined.");
+  return NULL;
+#else
   return PyUnicode_DecodeFSDefault(LF_PACKAGE_DIRECTORY);
+#endif
 }
 
 /**
