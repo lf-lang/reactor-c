@@ -134,7 +134,7 @@ static size_t cond_of(size_t worker) {
 static void set_level(lf_scheduler_t* scheduler, size_t level) {
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   assert(level < worker_assignments->num_levels);
-  assert(0 <= (long long) level);
+  assert(0 <= (long long)level);
   data_collection_end_level(scheduler, worker_assignments->current_level, worker_assignments->num_workers);
   worker_assignments->current_level = level;
   worker_assignments->num_reactions_by_worker = worker_assignments->num_reactions_by_worker_by_level[level];
@@ -224,7 +224,7 @@ static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
     if (old_num_reactions <= 0)
       return NULL;
   } while ((current_num_reactions = lf_atomic_val_compare_and_swap32(
-                (int32_t*) (worker_assignments->num_reactions_by_worker + worker), old_num_reactions,
+                (int32_t*)(worker_assignments->num_reactions_by_worker + worker), old_num_reactions,
                 (index = old_num_reactions - 1))) != old_num_reactions);
   return worker_assignments->reactions_by_worker[worker][index];
 #endif
@@ -238,9 +238,9 @@ static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
  */
 static reaction_t* worker_assignments_get_or_lock(lf_scheduler_t* scheduler, size_t worker) {
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
-  assert((long long) worker >= 0);
+  assert((long long)worker >= 0);
   // assert(worker < num_workers);  // There are edge cases where this doesn't hold.
-  assert((long long) worker_assignments->num_reactions_by_worker[worker] >= 0);
+  assert((long long)worker_assignments->num_reactions_by_worker[worker] >= 0);
   reaction_t* ret;
   while (true) {
     if ((ret = get_reaction(scheduler, worker)))
