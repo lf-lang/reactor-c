@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 project(RTI VERSION 1.0.0 LANGUAGES C)
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(OPENSSL_ROOT_DIR "/usr/local/lib64")
+endif()
+
 set(CoreLib ../../../core)
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
 set(IncludeDir ../../../include/core)
@@ -16,11 +20,15 @@ add_library(${RTI_LIB} STATIC
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
     ${CoreLib}/clock.c
-    ${CoreLib}/federated/network/net_util.c
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
 )
+
+option(COMM_TYPE "Communication type between RTI and federate(s)." ON)
+IF(COMM_TYPE MATCHES ON)
+    set(COMM_TYPE TCP)
+ENDIF()
 
 # Add the main target which will link with the library.
 add_executable(${RTI_MAIN} main.c)
@@ -70,12 +78,20 @@ target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-impl)
 include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
 target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-api)
 
+include(${IncludeDir}/federated/network/CMakeLists.txt)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::network-api)
+
+include(${CoreLib}/federated/network/CMakeLists.txt)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::network-impl)
+
 # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
 target_compile_definitions(${RTI_LIB} PUBLIC STANDALONE_RTI=1)
 
 # Set FEDERATED to get federated compilation support
 target_compile_definitions(${RTI_LIB} PUBLIC FEDERATED=1)
 target_compile_definitions(${RTI_LIB} PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
+
+target_compile_definitions(RTI PUBLIC COMM_TYPE_${COMM_TYPE})
 
 # Set RTI Tracing
 target_compile_definitions(${RTI_LIB} PUBLIC RTI_TRACE)

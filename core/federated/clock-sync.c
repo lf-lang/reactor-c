@@ -37,6 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h>
 
 #include "low_level_platform.h"
 #include "clock-sync.h"
@@ -160,33 +161,31 @@ void reset_socket_stat(struct socket_stat_t* socket_stat) {
  *  If clock synchronization is set to on, a reserved UDP port number
  *   will be sent.
  */
-uint16_t setup_clock_synchronization_with_rti() {
+uint16_t setup_clock_synchronization_with_rti(struct sockaddr_in* federate_UDP_addr) {
   uint16_t port_to_return = UINT16_MAX; // Default if clock sync is off.
 #if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   // Initialize the UDP socket
   _lf_rti_socket_UDP = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-  // Initialize the necessary information for the UDP address
-  struct sockaddr_in federate_UDP_addr;
-  federate_UDP_addr.sin_family = AF_INET;
-  federate_UDP_addr.sin_port = htons(0u); // Port 0 indicates to bind that
+  federate_UDP_addr->sin_family = AF_INET;
+  federate_UDP_addr->sin_port = htons(0u); // Port 0 indicates to bind that
                                           // it can assign any port to this
                                           // socket. This is okay because
                                           // the port number is then sent
                                           // to the RTI.
-  federate_UDP_addr.sin_addr.s_addr = INADDR_ANY;
-  if (bind(_lf_rti_socket_UDP, (struct sockaddr*)&federate_UDP_addr, sizeof(federate_UDP_addr)) < 0) {
+  federate_UDP_addr->sin_addr.s_addr = INADDR_ANY;
+  if (bind(_lf_rti_socket_UDP, (struct sockaddr*)federate_UDP_addr, sizeof(*federate_UDP_addr)) < 0) {
     lf_print_error_system_failure("Failed to bind its UDP socket.");
   }
   // Retrieve the port number that was assigned by the operating system
-  socklen_t addr_length = sizeof(federate_UDP_addr);
-  if (getsockname(_lf_rti_socket_UDP, (struct sockaddr*)&federate_UDP_addr, &addr_length) == -1) {
+  socklen_t addr_length = sizeof(*federate_UDP_addr);
+  if (getsockname(_lf_rti_socket_UDP, (struct sockaddr*)federate_UDP_addr, &addr_length) == -1) {
     // FIXME: Send 0 UDP_PORT message instead of exiting.
     // That will disable clock synchronization.
     lf_print_error_system_failure("Failed to retrieve UDP port.");
   }
-  LF_PRINT_DEBUG("Assigned UDP port number %u to its socket.", ntohs(federate_UDP_addr.sin_port));
+  LF_PRINT_DEBUG("Assigned UDP port number %u to its socket.", ntohs(federate_UDP_addr->sin_port));
 
-  port_to_return = ntohs(federate_UDP_addr.sin_port);
+  port_to_return = ntohs(federate_UDP_addr->sin_port);
 
   // Set the option for this socket to reuse the same address
   int option_value = 1;
@@ -204,10 +203,11 @@ uint16_t setup_clock_synchronization_with_rti() {
 #elif (LF_CLOCK_SYNC == LF_CLOCK_SYNC_INIT)
   port_to_return = 0u;
 #endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
+  (void) federate_UDP_addr; // To pass unused-value warning.
   return port_to_return;
 }
 
-void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
+void synchronize_initial_physical_clock_with_rti(netdrv_t* netdrv_to_rti) {
   LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
   size_t message_size = 1 + sizeof(instant_t);
@@ -215,7 +215,7 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
 
   for (int i = 0; i < _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL; i++) {
     // The first message expected from the RTI is MSG_TYPE_CLOCK_SYNC_T1
-    read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
+    read_from_netdrv_fail_on_error(netdrv_to_rti, buffer, message_size, NULL,
                                    "Federate %d did not get the initial clock synchronization message T1 from the RTI.",
                                    _lf_my_fed_id);
 
@@ -229,12 +229,12 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
     // Handle the message and send a reply T3 message.
     // NOTE: No need to acquire the mutex lock during initialization because only
     // one thread is running.
-    if (handle_T1_clock_sync_message(buffer, *rti_socket_TCP, receive_time) != 0) {
+    if (handle_T1_clock_sync_message(buffer, netdrv_to_rti, NETDRV, receive_time) != 0) {
       lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
     }
 
     // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-    read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
+    read_from_netdrv_fail_on_error(netdrv_to_rti, buffer, message_size, NULL,
                                    "Federate %d did not get the clock synchronization message T4 from the RTI.",
                                    _lf_my_fed_id);
 
@@ -244,7 +244,7 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
     }
 
     // Handle the message.
-    handle_T4_clock_sync_message(buffer, *rti_socket_TCP, receive_time);
+    handle_T4_clock_sync_message(buffer, netdrv_to_rti, NETDRV, receive_time);
   }
 
   LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
@@ -261,7 +261,7 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
  * @param t2 The physical time at which the T1 message was received.
  * @return 0 if T3 reply is successfully sent, -1 otherwise.
  */
-int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2) {
+int handle_T1_clock_sync_message(unsigned char* buffer, void* netdrv_or_sock, netdrv_type_t netdrv_type, instant_t t2) {
   // Extract the payload
   instant_t t1 = extract_int64(&(buffer[1]));
 
@@ -281,7 +281,13 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
-  if (write_to_socket(socket, 1 + sizeof(int), reply_buffer)) {
+  int ret = -1;
+  if (netdrv_type == NETDRV) {
+    ret = write_to_netdrv((netdrv_t*)netdrv_or_sock, 1 + sizeof(int), reply_buffer);
+  } else if (netdrv_type == UDP) {
+    ret = write(*(int*)netdrv_or_sock, reply_buffer, 1 + sizeof(int));
+  }
+  if (ret <= 0) {
     lf_print_error("Clock sync: Failed to send T3 message to RTI.");
     return -1;
   }
@@ -309,7 +315,10 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
  * @param socket The socket (either _lf_rti_socket_TCP or _lf_rti_socket_UDP).
  * @param r4 The physical time at which this T4 message was received.
  */
-void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r4) {
+
+// TODO: DONGHA: Need to check here...
+void handle_T4_clock_sync_message(unsigned char* buffer, void* netdrv_or_sock, netdrv_type_t netdrv_type,
+                                  instant_t r4) {
   // Increment the number of received T4 messages
   _lf_rti_socket_stat.received_T4_messages_in_current_sync_window++;
 
@@ -338,17 +347,19 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
 
   // The adjustment to the clock offset (to be calculated)
   interval_t adjustment = 0;
+
+  // TODO: DONGHA: CHECK here.
   // If the socket is _lf_rti_socket_UDP, then
   // after sending T4, the RTI sends a "coded probe" message,
   // which can be used to filter out noise.
-  if (socket == _lf_rti_socket_UDP) {
+  if (netdrv_type == UDP) {
     // Read the coded probe message.
     // We can reuse the same buffer.
-    int read_failed = read_from_socket(socket, 1 + sizeof(instant_t), buffer);
+    int bytes_read = read(*(int*)netdrv_or_sock, buffer, 1 + sizeof(instant_t));
 
     instant_t r5 = lf_time_physical();
 
-    if (read_failed || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
+    if (bytes_read <= 0 || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
       lf_print_warning("Clock sync: Did not get the expected coded probe message from the RTI. "
                        "Skipping clock synchronization round.");
       return;
@@ -500,7 +511,7 @@ void* listen_to_rti_UDP_thread(void* args) {
           break;
         }
         connected = true;
-        if (handle_T1_clock_sync_message(buffer, _lf_rti_socket_UDP, receive_time) != 0) {
+        if (handle_T1_clock_sync_message(buffer, &_lf_rti_socket_UDP, UDP, receive_time) != 0) {
           // Failed to send T3 reply. Wait for the next T1.
           waiting_for_T1 = true;
           continue;
@@ -513,7 +524,7 @@ void* listen_to_rti_UDP_thread(void* args) {
         continue;
       }
     } else if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T4) {
-      handle_T4_clock_sync_message(buffer, _lf_rti_socket_UDP, receive_time);
+      handle_T4_clock_sync_message(buffer, &_lf_rti_socket_UDP, UDP, receive_time);
       waiting_for_T1 = true;
     } else {
       lf_print_warning("Clock sync: Received from RTI an unexpected UDP message type: %u. "

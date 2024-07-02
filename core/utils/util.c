@@ -51,9 +51,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_FEDERATES 1
 #endif
 
-/** Number of nanoseconds to sleep before retrying a socket read. */
-#define SOCKET_READ_RETRY_INTERVAL 1000000
-
 /**
  * The ID of this federate. For a non-federated execution, this will be -1.
  * For a federated execution, it will be assigned in the generated code.
