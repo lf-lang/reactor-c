@@ -33,8 +33,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "platform/lf_zephyr_support.h"
 #include "platform/lf_zephyr_board_support.h"
-#include "platform/lf_platform_util.h"
 #include "low_level_platform.h"
+#include "util.h"
 #include "tag.h"
 
 #include <zephyr/kernel.h>
@@ -170,7 +170,8 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
     return -1;
   }
 
-  final_priority = map_priorities(priority, CONFIG_NUM_PREEMPT_PRIORITIES - 1, 0);
+  final_priority =
+      map_value(priority, LF_SCHED_MIN_PRIORITY, LF_SCHED_MAX_PRIORITY, CONFIG_NUM_PREEMPT_PRIORITIES - 1, 0);
   if (final_priority < 0) {
     return -1;
   }
@@ -199,6 +200,7 @@ int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* 
     break;
   }
   case LF_SCHED_FAIR:
+  case LF_SCHED_DEADLINE: // TODO: Provide Zephyr implementation for this.
   default:
     return -1;
     break;

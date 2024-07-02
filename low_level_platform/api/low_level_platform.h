@@ -78,7 +78,7 @@ int lf_critical_section_exit(environment_t* env);
 
 // Worker priorities range from 0 to 99 where 99 is the highest priority.
 #define LF_SCHED_MAX_PRIORITY 99
-#define LF_SCHED_MIN_PRIORITY 0
+#define LF_SCHED_MIN_PRIORITY 1
 
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
@@ -149,12 +149,15 @@ typedef enum {
   LF_SCHED_FAIR,      // Non real-time scheduling policy. Corresponds to SCHED_OTHER
   LF_SCHED_TIMESLICE, // Real-time, time-slicing priority-based policty. Corresponds to SCHED_RR.
   LF_SCHED_PRIORITY,  // Real-time, priority-only based scheduling. Corresponds to SCHED_FIFO.
+  LF_SCHED_DEADLINE,  // Real-time, priority-only based scheduling. Corresponds to SCHED_DEADLINE.
 } lf_scheduling_policy_type_t;
 
 typedef struct {
   lf_scheduling_policy_type_t policy; // The scheduling policy
   int priority;                       // The priority, if applicable
-  interval_t time_slice;              // The time-slice allocated, if applicable.
+  interval_t time_slice;              // The time-slice/run-time applicable to TIMESLICE and DEADLINE
+  interval_t deadline;                // Only relevant for DEADLINE
+  interval_t period;                  // Only relevant for DEADLINE
 } lf_scheduling_policy_t;
 
 /**
@@ -177,6 +180,15 @@ int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number);
  * @return int 0 on success, platform-specific error otherwise
  */
 int lf_thread_set_priority(lf_thread_t thread, int priority);
+
+/**
+ * @brief Get the priority of a thread
+ * Priority ranges from LF_SCHED_PRIORITY_MIN to LF_SCHED_PRIORITY_MAX
+ *
+ * @param thread The thread.
+ * @return The priority of the thread
+ */
+int lf_thread_get_priority(lf_thread_t thread);
 
 /**
  * @brief Set the scheduling policy of a thread. This is based on the scheduling

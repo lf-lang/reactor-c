@@ -38,7 +38,7 @@ foreach(FILE ${TEST_FILES})
     target_link_libraries(${NAME} PRIVATE lf::low-level-platform-impl)
     target_link_libraries(
         ${NAME} PRIVATE
-        ${CoreLib} ${Lib}
+        ${CoreLib} ${Lib} m
     )
     target_include_directories(${NAME} PRIVATE ${TEST_DIR})
     # Warnings as errors

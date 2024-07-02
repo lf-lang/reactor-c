@@ -87,6 +87,12 @@ target_compile_options(${RTI_LIB} PUBLIC -Werror)
 find_package(Threads REQUIRED)
 target_link_libraries(${RTI_LIB} PUBLIC Threads::Threads)
 
+# Find math librasy and link to it
+find_library(MATH_LIBRARY m)
+if(MATH_LIBRARY)
+	target_link_libraries(${RTI_LIB} PUBLIC ${MATH_LIBRARY})
+endif()
+
 # Option for enabling federate authentication by RTI.
 option(AUTH "Federate authentication by RTI enabled." OFF)
 IF(AUTH MATCHES ON)

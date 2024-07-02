@@ -2,7 +2,7 @@
 FROM alpine:latest
 COPY . /lingua-franca
 WORKDIR /lingua-franca/core/federated/RTI
-RUN set -ex && apk add --no-cache gcc musl-dev cmake make && \
+RUN set -ex && apk add --no-cache gcc musl-dev cmake make linux-headers && \
     mkdir container && \
     cd container && \
     cmake ../ && \

@@ -122,11 +122,9 @@ if(DEFINED FEDERATED_AUTHENTICATED)
     target_link_libraries(reactor-c PUBLIC OpenSSL::SSL)
 endif()
 
-if(DEFINED FEDERATED)
-  find_library(MATH_LIBRARY m)
-  if(MATH_LIBRARY)
-    target_link_libraries(reactor-c PUBLIC ${MATH_LIBRARY})
-  endif()
+find_library(MATH_LIBRARY m)
+if(MATH_LIBRARY)
+  target_link_libraries(reactor-c PUBLIC ${MATH_LIBRARY})
 endif()
 
 # Unless specified otherwise initial event queue and reaction queue to size 10
