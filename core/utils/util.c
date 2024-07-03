@@ -58,7 +58,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The ID of this federate. For a non-federated execution, this will be -1.
  * For a federated execution, it will be assigned in the generated code.
  */
-uint16_t _lf_my_fed_id;
+uint16_t _lf_my_fed_id = 0xffff;
 
 /**
  * If non-null, this function will be used instead of the printf to
@@ -112,7 +112,7 @@ void _lf_message_print(const char* prefix, const char* format, va_list args,
     // interleaved between threads.
     // vprintf() is a version that takes an arg list rather than multiple args.
     char* message;
-    if (_lf_my_fed_id < 0) {
+    if (_lf_my_fed_id == 0xffff) {
       size_t length = strlen(prefix) + strlen(format) + 32;
       message = (char*)malloc(length + 1);
       snprintf(message, length, "%s%s\n", prefix, format);
