@@ -129,6 +129,12 @@ Functions</h2></td></tr>
 <tr class="separator:ab49affc958f705d9e33c5e3463848bda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a013caac994b0b05697d0006bf8efcf" id="r_a1a013caac994b0b05697d0006bf8efcf"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1a013caac994b0b05697d0006bf8efcf">py_request_stop</a> (PyObject *self, PyObject *args)</td></tr>
 <tr class="separator:a1a013caac994b0b05697d0006bf8efcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a404e79a0075157b3406b3f3d3936b0fd" id="r_a404e79a0075157b3406b3f3d3936b0fd"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a404e79a0075157b3406b3f3d3936b0fd">py_source_directory</a> (PyObject *self, PyObject *args)</td></tr>
+<tr class="memdesc:a404e79a0075157b3406b3f3d3936b0fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the source directory path (where the main .lf file is) as a string.  <br /></td></tr>
+<tr class="separator:a404e79a0075157b3406b3f3d3936b0fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7a9ed2af2b471cf5b08aa20eeac0ee9" id="r_ad7a9ed2af2b471cf5b08aa20eeac0ee9"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad7a9ed2af2b471cf5b08aa20eeac0ee9">py_package_directory</a> (PyObject *self, PyObject *args)</td></tr>
+<tr class="memdesc:ad7a9ed2af2b471cf5b08aa20eeac0ee9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the root project directory path as a string.  <br /></td></tr>
+<tr class="separator:ad7a9ed2af2b471cf5b08aa20eeac0ee9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e9d48e0ec9b0ebfefbff60a41be1fee" id="r_a3e9d48e0ec9b0ebfefbff60a41be1fee"><td class="memItemLeft" align="right" valign="top">const char **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3e9d48e0ec9b0ebfefbff60a41be1fee">_lf_py_parse_argv_impl</a> (PyObject *py_argv, size_t *argc)</td></tr>
 <tr class="separator:a3e9d48e0ec9b0ebfefbff60a41be1fee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a04c634f3fee09457b62236afb85ce090" id="r_a04c634f3fee09457b62236afb85ce090"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a04c634f3fee09457b62236afb85ce090">py_initialize_interpreter</a> (void)</td></tr>
@@ -431,6 +437,37 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="ad7a9ed2af2b471cf5b08aa20eeac0ee9" name="ad7a9ed2af2b471cf5b08aa20eeac0ee9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7a9ed2af2b471cf5b08aa20eeac0ee9">&#9670;&#160;</a></span>py_package_directory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PyObject * py_package_directory </td>
+          <td>(</td>
+          <td class="paramtype">PyObject *</td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PyObject *</td>          <td class="paramname"><span class="paramname"><em>args</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the root project directory path as a string. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The lf object. </td></tr>
+    <tr><td class="paramname">args</td><td>Empty. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PyObject* A Python string. </dd></dl>
+
+</div>
+</div>
 <a id="a1a013caac994b0b05697d0006bf8efcf" name="a1a013caac994b0b05697d0006bf8efcf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1a013caac994b0b05697d0006bf8efcf">&#9670;&#160;</a></span>py_request_stop()</h2>
 
@@ -504,6 +541,37 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>Schedule an action to occur with the specified value and time offset with a copy of the specified value. See <a class="el" href="../../dc/d85/reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a> for documentation. </p>
+
+</div>
+</div>
+<a id="a404e79a0075157b3406b3f3d3936b0fd" name="a404e79a0075157b3406b3f3d3936b0fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a404e79a0075157b3406b3f3d3936b0fd">&#9670;&#160;</a></span>py_source_directory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PyObject * py_source_directory </td>
+          <td>(</td>
+          <td class="paramtype">PyObject *</td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PyObject *</td>          <td class="paramname"><span class="paramname"><em>args</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the source directory path (where the main .lf file is) as a string. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The lf object. </td></tr>
+    <tr><td class="paramname">args</td><td>Empty. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>PyObject* A Python string. </dd></dl>
 
 </div>
 </div>
