@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"db/dab/structdeque__node__t.html#af0b3f351d6dab10d51b9f79092ee17f6":[11,0,7,1],
 "db/dc1/trace__types_8h.html":[12,0,9,0,0,0],
 "db/dc1/trace__types_8h.html#ab02e9e69539d60297cedb38c2193a453":[12,0,9,0,0,0,0],
 "db/dc1/trace__types_8h.html#ab02e9e69539d60297cedb38c2193a453a0422fad861a51f83258d104e6b34fdad":[12,0,9,0,0,0,0,9],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "dc/d69/fedsd_8py.html#ac2922b91dea303c728ad5b1e7e89758a":[12,0,10,0,1,0,16],
 "dc/d69/fedsd_8py.html#ac2b65a7ae5230b21e264f488eab666f7":[12,0,10,0,1,0,49],
 "dc/d69/fedsd_8py.html#aca6667b958e64772d570d15c4d40cea2":[12,0,10,0,1,0,34],
-"dc/d69/fedsd_8py.html#acc1571f3663aedaf586927a1c8f5eae7":[12,0,10,0,1,0,33],
-"dc/d69/fedsd_8py.html#acc91e5d14fca7b185cdbb94cc6578d61":[12,0,10,0,1,0,15]
+"dc/d69/fedsd_8py.html#acc1571f3663aedaf586927a1c8f5eae7":[12,0,10,0,1,0,33]
 };

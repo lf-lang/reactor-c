@@ -53,6 +53,7 @@ var net__common_8h =
     [ "NONCE_LENGTH", "d9/da6/net__common_8h.html#a6771c37605e49c8faae7898797f254b7", null ],
     [ "PORT_BIND_RETRY_INTERVAL", "d9/da6/net__common_8h.html#af11c9d6cd02e9e78e38a848cf75205cb", null ],
     [ "PORT_BIND_RETRY_LIMIT", "d9/da6/net__common_8h.html#a04c08dc0b0733010f3190bf6df123433", null ],
+    [ "RTI_NOT_EXECUTED_WITH_AUTH", "d9/da6/net__common_8h.html#ae546b6c6176fe607616181e144364f2b", null ],
     [ "SHA256_HMAC_LENGTH", "d9/da6/net__common_8h.html#abd435507a255ff2571133013bdf93bd2", null ],
     [ "TCP_TIMEOUT_TIME", "d9/da6/net__common_8h.html#ab1edbb864391382835b9ad71408c5c53", null ],
     [ "UDP_TIMEOUT_TIME", "d9/da6/net__common_8h.html#aac9f4a449d302b4f39e69a14b3a4c8d5", null ],

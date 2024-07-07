@@ -1,5 +1,6 @@
 var NAVTREEINDEX5 =
 {
+"d9/dd5/clock-sync_8h.html#a742c3183fb89d811377514d09e526b8f":[12,0,1,1,0,1,7],
 "d9/dd5/clock-sync_8h.html#a7e49fed082ec884e26d761e1c4f0d428":[12,0,1,1,0,1,9],
 "d9/dd5/clock-sync_8h.html#a7ed4e5f2a4216fdf6d76eafcab5b49b7":[12,0,1,1,0,1,6],
 "d9/dd5/clock-sync_8h.html#a834b31e00e677a23b6a86119b7a2fe59":[12,0,1,1,0,1,19],
@@ -248,6 +249,5 @@ var NAVTREEINDEX5 =
 "db/d93/structtrace__t.html#af9731cfda2463140b7d07ef98274e619":[11,0,54,8],
 "db/dab/structdeque__node__t.html":[11,0,7],
 "db/dab/structdeque__node__t.html#a58cba1a8e684d42188bfd7bc029137d9":[11,0,7,2],
-"db/dab/structdeque__node__t.html#acb76ff2d2cf94776a57a57350554d110":[11,0,7,0],
-"db/dab/structdeque__node__t.html#af0b3f351d6dab10d51b9f79092ee17f6":[11,0,7,1]
+"db/dab/structdeque__node__t.html#acb76ff2d2cf94776a57a57350554d110":[11,0,7,0]
 };
