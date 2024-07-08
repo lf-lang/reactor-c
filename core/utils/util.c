@@ -58,7 +58,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The ID of this federate. For a non-federated execution, this will be -1.
  * For a federated execution, it will be assigned in the generated code.
  */
-uint16_t _lf_my_fed_id = 0xffff;
+uint16_t _lf_my_fed_id = UINT16_MAX;  // Federate IDs are counted up from 0. If we hit this, we have too many.
 
 /**
  * If non-null, this function will be used instead of the printf to
