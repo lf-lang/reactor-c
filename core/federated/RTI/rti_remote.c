@@ -29,6 +29,7 @@
 #include "rti_remote.h"
 #include "net_util.h"
 #include <string.h>
+#include "clock.h" // For lf_clock_cond_timedwait()
 
 // Global variables defined in tag.c:
 extern instant_t start_time;
@@ -56,10 +57,103 @@ bool _lf_federate_reports_error = false;
 lf_mutex_t rti_mutex;
 lf_cond_t received_start_times;
 lf_cond_t sent_start_time;
+lf_cond_t updated_delayed_grants;
 
 extern int lf_critical_section_enter(environment_t* env) { return lf_mutex_lock(&rti_mutex); }
 
 extern int lf_critical_section_exit(environment_t* env) { return lf_mutex_unlock(&rti_mutex); }
+
+// Utility functions to simplify the call of pqueue_tag routines.
+// These functions mainly do the casting.
+// FIXME: Should we remove the queue parameter from the functions?
+
+/**
+ * @brief Creates a priority queue of delayed grants that is sorted by tags.
+ *
+ * @param nbr_delayed_grants The size.
+ * @return The dynamically allocated queue or NULL.
+ */
+pqueue_delayed_grants_t* pqueue_delayed_grants_init(uint16_t nbr_delayed_grants) {
+  return (pqueue_delayed_grants_t*)pqueue_tag_init((size_t)nbr_delayed_grants);
+}
+
+/**
+ * @brief Return the size of the queue.
+ *
+ * @param q The queue.
+ * @return The size.
+ */
+size_t pqueue_delayed_grants_size(pqueue_delayed_grants_t* q) { return pqueue_tag_size((pqueue_tag_t*)q); }
+
+/**
+ * @brief Insert an\ delayed grant element into the queue.
+ *
+ * @param q The queue.
+ * @param e The delayed grant element to insert.
+ * @return 0 on success
+ */
+int pqueue_delayed_grants_insert(pqueue_delayed_grants_t* q, pqueue_delayed_grant_element_t* d) {
+  return pqueue_tag_insert((pqueue_tag_t*)q, (void*)d);
+}
+
+/**
+ * @brief Pop the least-tag element from the queue.
+ *
+ * @param q The queue.
+ * @return NULL on error, otherwise the entry
+ */
+pqueue_delayed_grant_element_t* pqueue_delayed_grants_pop(pqueue_delayed_grants_t* q) {
+  return (pqueue_delayed_grant_element_t*)pqueue_tag_pop((pqueue_tag_t*)q);
+}
+
+/**
+ * @brief Return highest-ranking element without removing it.
+ *
+ * @param q The queue.
+ * @return NULL on if the queue is empty, otherwise the delayed grant element.
+ */
+pqueue_delayed_grant_element_t* pqueue_delayed_grants_peek(pqueue_delayed_grants_t* q) {
+  return (pqueue_delayed_grant_element_t*)pqueue_tag_peek((pqueue_tag_t*)q);
+}
+
+/**
+ * @brief Free all memory used by the queue including elements that are marked dynamic.
+ *
+ * @param q The queue.
+ */
+void pqueue_delayed_grants_free(pqueue_delayed_grants_t* q) { pqueue_tag_free((pqueue_tag_t*)q); }
+
+/**
+ * @brief Remove an item from the delayed grants queue.
+ *
+ * @param q The queue.
+ * @param e The entry to remove.
+ */
+void pqueue_delayed_grants_remove(pqueue_delayed_grants_t* q, pqueue_delayed_grant_element_t* e) {
+  pqueue_tag_remove((pqueue_tag_t*)q, (void*)e);
+}
+
+// Function that does not exist in pqueue_tag.c
+/**
+ * @brief Return the first item with the specified federate id or NULL if there is none.
+ * @param q The queue.
+ * @param fed_id The federate id.
+ * @return An entry with the specified federate if or NULL if there isn't one.
+ */
+pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_delayed_grants_t* q, uint16_t fed_id) {
+  pqueue_delayed_grant_element_t* dge;
+  if (!q || q->size == 1)
+    return NULL;
+  for (int i = 1; i < q->size; i++) {
+    dge = (pqueue_delayed_grant_element_t*)q->d[i];
+    if (dge) {
+      if (dge->fed_id == fed_id) {
+        return dge;
+      }
+    }
+  }
+  return NULL;
+}
 
 /**
  * Create a server and enable listening for socket connections.
@@ -188,6 +282,69 @@ static int create_rti_server(uint16_t port, socket_type_t socket_type) {
 }
 
 /**
+ * @brief Insert the delayed grant into the delayed_grants queue.
+ *
+ * The insertion will cause the broadcast to cause the delayed_grants_thread to
+ * account for the update.
+ *
+ * In case there is already a grant for that federate, keep the soonest one.
+ * FIXME: Is that correct?
+ *
+ * @param fed The federate.
+ * @param tag The tag to grant.
+ * @param is_provisional State whther the grant is provisional.
+ */
+static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provisional) {
+  // Check wether there is already a pending grant,
+  // and check the pending provisional grant as well
+  // Iterate over the
+  LF_MUTEX_LOCK(&rti_mutex);
+  pqueue_delayed_grant_element_t* dge =
+      pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, fed->enclave.id);
+  if (dge == NULL) {
+    pqueue_delayed_grant_element_t* dge =
+        (pqueue_delayed_grant_element_t*)malloc(sizeof(pqueue_delayed_grant_element_t));
+    dge->base.is_dynamic = 1;
+    dge->base.tag = tag;
+    dge->fed_id = fed->enclave.id;
+    dge->is_provisional = is_provisional;
+    pqueue_delayed_grants_insert(rti_remote->delayed_grants, dge);
+    LF_PRINT_LOG("RTI: Inserting a delayed grant of " PRINTF_TAG " for federate %d.", dge->base.tag.time - start_time,
+                 dge->base.tag.microstep, dge->fed_id);
+    lf_cond_signal(&updated_delayed_grants);
+  } else {
+    // FIXME: Decide what to do in this case...
+    // TODO: do it!
+  }
+  LF_MUTEX_UNLOCK(&rti_mutex);
+}
+
+/**
+ * @brief Cancel a delayed grant by removing it from delayed_grants queue.
+ *
+ * The removal will cause the broadcast to cause the delayed_grants_thread to
+ * account for the update.
+ *
+ * In case there is already a grant for that federte, keep the soonest one.
+ * FIXME: Is that correct?
+ *
+ * @param fed The federate.
+ */
+
+void notify_grant_canceled(federate_info_t* fed) {
+  LF_MUTEX_LOCK(&rti_mutex);
+  pqueue_delayed_grant_element_t* dge =
+      pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, fed->enclave.id);
+  if (dge != NULL) {
+    pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
+    LF_PRINT_LOG("RTI: Canceling the delayed grant of " PRINTF_TAG " for federate %d.", dge->base.tag.time - start_time,
+                 dge->base.tag.microstep, dge->fed_id);
+    lf_cond_signal(&updated_delayed_grants);
+  }
+  LF_MUTEX_UNLOCK(&rti_mutex);
+}
+
+/**
  * Find the number of non connected upstream transients
  * @param fed The federate
  * @return the number of non connected upstream transients
@@ -236,59 +393,6 @@ static void notify_tag_advance_grant_immediate(scheduling_node_t* e, tag_t tag) 
   }
 }
 
-/**
- * @brief Thread that sleeps for a period of time, and then wakes up to check if
- * a tag advance grant needs to be sent. That is, if the pending tag has not
- * been reset to NEVER_TAG, the tag advance grant will be immediate.
- *
- * @param federate the federate whose tag advance grant needs to be delayed.
- */
-static void* pending_grant_thread(void* federate) {
-  federate_info_t* fed = (federate_info_t*)federate;
-
-  interval_t sleep_interval = fed->pending_grant.time - lf_time_physical();
-  if (sleep_interval > 0) {
-    lf_sleep(sleep_interval);
-  }
-
-  lf_mutex_lock(&rti_mutex);
-
-  // If the pending grant has become NEVER_TAG, then this means that it should
-  // not be sent.
-  if (lf_tag_compare(fed->pending_grant, NEVER_TAG) != 0) {
-    notify_tag_advance_grant_immediate(&(fed->enclave), fed->pending_grant);
-    fed->pending_grant = NEVER_TAG;
-  }
-  lf_mutex_unlock(&rti_mutex);
-  return NULL;
-}
-
-/**
- * Notify a tag advance grant (TAG) message to the specified federate after
- * the physical time reaches the tag. A thread is created to this end.
- *
- * If a provisionl tag advance grant is pending, cancel it. If there is another
- * pending tag advance grant, do not proceed with the thread creation.
- *
- * @param fed The federate.
- * @param tag The tag to grant.
- */
-static void notify_tag_advance_grant_delayed(federate_info_t* fed, tag_t tag) {
-  // Check wether there is already a pending grant
-  // And check the pending provisional grant as well
-  lf_mutex_lock(&rti_mutex);
-  if (lf_tag_compare(fed->pending_grant, NEVER_TAG) == 0) {
-    // If a tag is issued, then stop any possible provisional tag grant
-    fed->pending_grant = tag;
-    fed->pending_provisional_grant = NEVER_TAG;
-    lf_thread_create(&(fed->pending_grant_thread_id), pending_grant_thread, fed);
-  } else {
-    // If there is already a pending tag grant, then let it be sent first
-    // FIXME: Is this correct?
-  }
-  lf_mutex_unlock(&rti_mutex);
-}
-
 void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   if (e->state == NOT_CONNECTED || lf_tag_compare(tag, e->last_granted) <= 0 ||
       lf_tag_compare(tag, e->last_provisionally_granted) <= 0) {
@@ -311,7 +415,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     notify_tag_advance_grant_immediate(e, tag);
   } else {
     if (get_num_absent_upstream_transients(fed) > 0) {
-      notify_tag_advance_grant_delayed(fed, tag);
+      notify_grant_delayed(fed, tag, false);
     } else {
       notify_tag_advance_grant_immediate(e, tag);
     }
@@ -379,56 +483,6 @@ static void notify_provisional_tag_advance_grant_immediate(scheduling_node_t* e,
   }
 }
 
-/**
- * Thread that sleeps for a period of time, and then wakes up to check if
- * a provisional tag advance grant needs to be sent. That is, if the pending
- * provisional tag have not been reset to NEVER_TAG, the provisional tag advance
- * grant will be immediate.
- *
- * @param federate the federate whose provisional tag advance grant needs to be delayed.
- */
-static void* pending_provisional_grant_thread(void* federate) {
-  federate_info_t* fed = (federate_info_t*)federate;
-
-  interval_t sleep_interval = fed->pending_provisional_grant.time - lf_time_physical();
-  if (sleep_interval > 0) {
-    lf_sleep(sleep_interval);
-  }
-
-  lf_mutex_lock(&rti_mutex);
-
-  // If the pending grant becomes NEVER_TAG, then this means that it should
-  // not be sent
-  if (lf_tag_compare(fed->pending_provisional_grant, NEVER_TAG) != 0) {
-    notify_provisional_tag_advance_grant_immediate(&(fed->enclave), fed->pending_provisional_grant);
-    fed->pending_provisional_grant = NEVER_TAG;
-  }
-  lf_mutex_unlock(&rti_mutex);
-  return NULL;
-}
-
-/**
- * Notify a provisional tag advance grant (PTAG) message to the specified federate
- * after the physical time reaches the tag. A thread is created to this end.
- *
- * If a tag advance grant or a provisional one is pending, then do not proceed
- * with the thread creation.
- *
- * @param fed The federate.
- * @param tag The provisional tag to grant.
- */
-static void notify_provisional_tag_advance_grant_delayed(federate_info_t* fed, tag_t tag) {
-  // Proceed with the delayed provisional tag grant notification only if
-  // there is no pending grant and no provisional pending grant
-  LF_MUTEX_LOCK(&rti_mutex);
-  if ((lf_tag_compare(fed->pending_grant, NEVER_TAG) == 0) &&
-      (lf_tag_compare(fed->pending_provisional_grant, NEVER_TAG) >= 0)) {
-    fed->pending_provisional_grant = tag;
-    lf_thread_create(&(fed->pending_provisional_grant_thread_id), pending_provisional_grant_thread, fed);
-  }
-  LF_MUTEX_UNLOCK(&rti_mutex);
-}
-
 void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   if (e->state == NOT_CONNECTED || lf_tag_compare(tag, e->last_granted) <= 0 ||
       lf_tag_compare(tag, e->last_provisionally_granted) <= 0) {
@@ -448,7 +502,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     notify_provisional_tag_advance_grant_immediate(e, tag);
   } else {
     if (get_num_absent_upstream_transients(fed) > 0) {
-      notify_provisional_tag_advance_grant_delayed(fed, tag);
+      notify_grant_delayed(fed, tag, true);
     } else {
       notify_provisional_tag_advance_grant_immediate(e, tag);
     }
@@ -1078,37 +1132,53 @@ void handle_timestamp(federate_info_t* my_fed) {
 
     //// Algorithm for computing the effective_start_time of a joining transient
     // The effective_start_time will be the max among all the following tags:
-    //  - At tag: (joining time, 0 microstep)
-    //  - The latest completed logical tag + 1 microstep
-    //  - The latest granted tag + 1 microstep, of every downstream federate
-    //  - The latest provisionnaly granted tag + 1 microstep, of every downstream federate
+    //  1. At tag: (joining time, 0 microstep)
+    //  2. The latest completed logical tag + 1 microstep
+    //  3. The latest granted (P)TAG + 1 microstep, of every downstream federate
+    //  4. The maximun tag of messages from the upstream federates + 1 microstep
 
+    // Condition 1.
     my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
 
-    if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) > 0) {
+    // Condition 2.
+    // FIXME: Not sure if this corner case can happen, but better to be on the safe side.
+    if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) >= 0) {
       my_fed->effective_start_tag = my_fed->enclave.completed;
       my_fed->effective_start_tag.microstep++;
     }
 
-    // Iterate over the downstream federates
+    // Condition 3. Iterate over the downstream federates
     for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
       federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.downstream[j]);
 
-      // Ignore this federate if it has resigned.
-      if (downstream->enclave.state == NOT_CONNECTED) {
-        continue;
-      }
-
       // Get the max over the TAG of the downstreams
-      if (lf_tag_compare(downstream->enclave.last_granted, my_fed->effective_start_tag) > 0) {
+      if (lf_tag_compare(downstream->enclave.last_granted, my_fed->effective_start_tag) >= 0) {
         my_fed->effective_start_tag = downstream->enclave.last_granted;
         my_fed->effective_start_tag.microstep++;
       }
 
       // Get the max over the PTAG of the downstreams
-      if (lf_tag_compare(downstream->enclave.last_provisionally_granted, my_fed->effective_start_tag) > 0) {
+      if (lf_tag_compare(downstream->enclave.last_provisionally_granted, my_fed->effective_start_tag) >= 0) {
         my_fed->effective_start_tag = downstream->enclave.last_provisionally_granted;
         my_fed->effective_start_tag.microstep++;
+      }
+    }
+
+    // Condition 4. Iterate over the messages from the upstream federates
+    for (int j = 0; j < my_fed->enclave.num_upstream; j++) {
+      federate_info_t* upstream = GET_FED_INFO(my_fed->enclave.upstream[j]);
+
+      // Get the max over the TAG of the upstreams
+      size_t queue_size = pqueue_tag_size(upstream->in_transit_message_tags);
+      if (queue_size != 0) {
+        pqueue_t* pq = (pqueue_t*)(upstream->in_transit_message_tags);
+        pqueue_tag_element_t* message_with_max_tag = (pqueue_tag_element_t*)(pq->d[queue_size]);
+        tag_t max_tag = message_with_max_tag->tag;
+
+        if (lf_tag_compare(max_tag, my_fed->effective_start_tag) >= 0) {
+          my_fed->effective_start_tag = max_tag;
+          my_fed->effective_start_tag.microstep++;
+        }
       }
     }
 
@@ -1122,16 +1192,12 @@ void handle_timestamp(federate_info_t* my_fed) {
         continue;
       }
 
-      // Check the pending tag grant, if any, and keep it only if it is
+      // Check the pending grants, if any, and keep it only if it is
       // sonner than the effective start tag
-      if (lf_tag_compare(downstream->pending_grant, NEVER_TAG) != 0 &&
-          lf_tag_compare(downstream->pending_grant, my_fed->effective_start_tag) > 0) {
-        downstream->pending_grant = NEVER_TAG;
-      }
-      // Same for the possible pending provisional tag grant
-      if (lf_tag_compare(downstream->pending_provisional_grant, NEVER_TAG) != 0 &&
-          lf_tag_compare(downstream->pending_provisional_grant, my_fed->effective_start_tag) > 0) {
-        downstream->pending_provisional_grant = NEVER_TAG;
+      pqueue_delayed_grant_element_t* dge =
+          pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, downstream->enclave.id);
+      if (dge != NULL && lf_tag_compare(dge->base.tag, my_fed->effective_start_tag) > 0) {
+        pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
       }
     }
 
@@ -1452,8 +1518,6 @@ void* federate_info_thread_TCP(void* fed) {
   close(my_fed->socket); //  from unistd.h
   // Manual clean, in case of a transient federate
   if (my_fed->is_transient) {
-    // FIXME: Aren't there transit messages anymore???
-    // free_in_transit_message_q(my_fed->in_transit_message_tags);
     lf_print("RTI: Transient Federate %d thread exited.", my_fed->enclave.id);
 
     // Update the number of connected transient federates
@@ -1678,6 +1742,11 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
 /**
  * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
  * out the relevant information in the federate's struct.
+ *
+ * In case of a hot swap, check that no changes were made to the connections, compared
+ * to the first instance that joigned. This means that the first instance to join
+ * __is__ the reference.
+ *
  * @return 1 on success and 0 on failure.
  */
 static int receive_connection_information(int* socket_id, uint16_t fed_id) {
@@ -1694,11 +1763,18 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
     send_reject(socket_id, UNEXPECTED_MESSAGE);
     return 0;
   } else {
-    federate_info_t* fed;
-    if (hot_swap_in_progress) {
-      fed = hot_swap_federate;
-    } else {
-      fed = GET_FED_INFO(fed_id);
+    // In case of a transient federate that is joining again, or a hot swap, then
+    // check that the connection information did not change.
+    federate_info_t* fed = GET_FED_INFO(fed_id);
+    federate_info_t* temp_fed = NULL;
+    if (lf_tag_compare(fed->effective_start_tag, NEVER_TAG) != 0) {
+      if (hot_swap_in_progress) {
+        fed = hot_swap_federate;
+      } else {
+        temp_fed = (federate_info_t*)calloc(1, sizeof(federate_info_t));
+        initialize_federate(temp_fed, fed_id);
+        fed = temp_fed;
+      }
     }
     // Read the number of upstream and downstream connections
     fed->enclave.num_upstream = extract_int32(&(connection_info_header[1]));
@@ -1750,6 +1826,46 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
       }
 
       free(connections_info_body);
+    }
+
+    // NOTE: In this design, changes in the connections are not allowed. This means that the first
+    //       instance to join __is__ the reference. If this policy is to be changed, then it is in
+    //       the following lines will be updated accordingly.
+    if (hot_swap_in_progress || temp_fed != NULL) {
+      if (temp_fed == NULL) {
+        temp_fed = hot_swap_federate;
+      }
+      // Now, compare the previous and the new neighberhood structure
+      // Start with the number of upstreams and downstreams
+      bool reject = false;
+      if ((fed->enclave.num_upstream != temp_fed->enclave.num_upstream) ||
+          (fed->enclave.num_downstream != temp_fed->enclave.num_downstream)) {
+        reject = true;
+      } else {
+        // Then check all upstreams and their delays
+        for (int i = 0; i < fed->enclave.num_upstream; i++) {
+          if ((fed->enclave.upstream[i] != temp_fed->enclave.upstream[i]) ||
+              (fed->enclave.upstream_delay[i] != temp_fed->enclave.upstream_delay[i])) {
+            reject = true;
+            break;
+          }
+        }
+        if (!reject) {
+          // Finally, check all downstream federates
+          for (int i = 0; i < fed->enclave.num_downstream; i++) {
+            if (fed->enclave.downstream[i] != temp_fed->enclave.downstream[i]) {
+              reject = true;
+              break;
+            }
+          }
+        }
+      }
+      if (reject) {
+        if (temp_fed != hot_swap_federate) {
+          free(temp_fed);
+        }
+        return 0;
+      }
     }
   }
   LF_PRINT_DEBUG("RTI received neighbor structure from federate %d.", fed_id);
@@ -2033,16 +2149,16 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
     // The following blocks until a federate connects.
     int socket_id = -1;
     while (1) {
-      // if (!rti_remote->all_persistent_federates_exited) {
-      //   return NULL;
-      // }
+      if (rti_remote->all_persistent_federates_exited) {
+        return NULL;
+      }
       socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
       if (socket_id >= 0) {
         // Got a socket
         break;
       } else {
-        // Try again
-        lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+        // Continue trying
+        lf_print("RTI failed to accept the socket. %s. Continue trying.", strerror(errno));
         continue;
       }
     }
@@ -2074,8 +2190,6 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
 
         // Then send STOP
         federate_info_t* fed_old = GET_FED_INFO(fed_id);
-        hot_swap_federate->enclave.completed = fed_old->enclave.completed;
-
         LF_PRINT_LOG("RTI: Send MSG_TYPE_STOP to old federate %d.", fed_id);
         send_stop(fed_old);
         LF_MUTEX_UNLOCK(&rti_mutex);
@@ -2096,16 +2210,17 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // synchronization messages.
         lf_thread_create(&(hot_swap_federate->thread_id), federate_info_thread_TCP, hot_swap_federate);
 
+        LF_MUTEX_LOCK(&rti_mutex);
         // Redirect the federate in rti_remote
         rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*)hot_swap_federate;
 
         // Free the old federate memory and reset the Hot wap indicators
-        // FIXME: Is this enough to free the memory allocated to the federate?
+        pqueue_tag_free(fed_old->in_transit_message_tags);
         free(fed_old);
-        lf_mutex_lock(&rti_mutex);
+        hot_swap_federate = NULL;
         hot_swap_in_progress = false;
-        lf_mutex_unlock(&rti_mutex);
-
+        hot_swap_old_resigned = false;
+        LF_MUTEX_UNLOCK(&rti_mutex);
         lf_print("RTI: Hot swap succeeded for federate %d.", fed_id);
       } else {
         lf_mutex_unlock(&rti_mutex);
@@ -2134,6 +2249,58 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
       }
     }
   }
+  return NULL;
+}
+
+/**
+ * This thread is responsible for managing the priority queue of delayed grants to be issued.
+ * It waits until the current time matches the highest priority tag time in the queue.
+ * If reached, it notifies the grant immediately. If, however, the current time has not yet
+ * reached the highest priority tag and the queue has been updated (either by inserting or
+ * canceling an entry), the thread stops waiting and restarts the process again.
+ */
+void* lf_delayed_grants_thread(void* nothing) {
+  initialize_lf_thread_id();
+
+  // Wait for the first condition signal
+  lf_cond_wait(&updated_delayed_grants);
+
+  while (true) {
+    if (rti_remote->all_federates_exited) {
+      break;
+    }
+    if (pqueue_delayed_grants_size(rti_remote->delayed_grants) != 0) {
+      pqueue_delayed_grant_element_t* next;
+
+      // Do not pop, but rather read
+      next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
+      instant_t next_time = next->base.tag.time;
+      // Wait for expiration, or a signal to stop or terminate.
+      if (lf_clock_cond_timedwait(&updated_delayed_grants, next_time)) {
+        // Time reached to send the grant. Do it for delayed grants with the same tag
+        LF_MUTEX_LOCK(&rti_mutex);
+        next = pqueue_delayed_grants_pop(rti_remote->delayed_grants);
+        federate_info_t* fed = GET_FED_INFO(next->fed_id);
+        if (next->is_provisional) {
+          notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+        } else {
+          notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+        }
+        LF_MUTEX_UNLOCK(&rti_mutex);
+      } else {
+        // Waiting was interrupted, because of an update in the queue, or
+        // because this thread needs to terminate
+        lf_print("RTI: lf_delayed_grants_thread() did not send grant to %d at " PRINTF_TIME ", but rather terminated!",
+                 next->fed_id, next_time - start_time);
+      }
+    }
+  }
+  // The federation is at the shutdown phase. All persistent federates exited.
+  // We can do a sanity check that the delayed_grants queue is empty.
+  // FIXME: If there are still pending grants, what does that mean? Maybe that the
+  //        federation stopped after a request to stop (not a timeout). Therefore, we need
+  //        cleanup, and free the memory...
+  // TODO: do it!
   return NULL;
 }
 
@@ -2180,26 +2347,20 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   fed->has_upstream_transient_federates = false;
   fed->is_transient = true;
   fed->effective_start_tag = NEVER_TAG;
-  fed->pending_grant = NEVER_TAG;
-  fed->pending_provisional_grant = NEVER_TAG;
 }
 
 void reset_transient_federate(federate_info_t* fed) {
-  fed->enclave.next_event = NEVER_TAG;
-  fed->enclave.state = NOT_CONNECTED;
   // Reset of the federate-related attributes
   fed->socket = -1; // No socket.
   fed->clock_synchronization_enabled = true;
+  // FIXME: The following two lines can be improved?
+  pqueue_tag_free(fed->in_transit_message_tags);
   fed->in_transit_message_tags = pqueue_tag_init(10);
   strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
   fed->server_ip_addr.s_addr = 0;
   fed->server_port = -1;
   fed->requested_stop = false;
-  fed->is_transient = true;
-  fed->effective_start_tag = NEVER_TAG;
-  fed->pending_grant = NEVER_TAG;
-  fed->pending_provisional_grant = NEVER_TAG;
-  // FIXME: There is room though to check if the interface has changed??? Do we allow this?
+  invalidate_min_delays_upstream(&(fed->enclave));
 }
 
 int32_t start_rti_server(uint16_t port) {
@@ -2217,11 +2378,15 @@ int32_t start_rti_server(uint16_t port) {
 
 /**
  * Iterate over the federates and sets 'has_upstream_transient_federates'.
- * Once done, check that no transient federate has an upstream transient federate.
+ * Once done, check that no transient federate has an upstream transient federate,
+ * and compute the number of persistent federates that do have upstream transients,
+ * which is the maximun number of delayed grants that can be pending at the same time.
+ * This is useful for initialyzing the queue of delayed grants.
 
- * @return true for success, false for failure.
+ * @return -1, if there is more than one level of transiency, else, the number of
+ *          persistents that have an upstream transient
  */
-static bool set_has_upstream_transient_federates_parameter_and_check() {
+static int set_has_upstream_transient_federates_parameter_and_check() {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
     for (int j = 0; j < fed->enclave.num_upstream; j++) {
@@ -2235,14 +2400,18 @@ static bool set_has_upstream_transient_federates_parameter_and_check() {
 
   // Now check that no transient has an upstream transient
   // FIXME: Do we really need this? Or should it be the job of the validator?
+  int max_number_of_delayed_grants = 0;
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
     if (fed->is_transient && fed->has_upstream_transient_federates) {
-      return false;
+      return -1;
+    }
+    if (!fed->is_transient && fed->has_upstream_transient_federates) {
+      max_number_of_delayed_grants++;
     }
   }
 
-  return true;
+  return max_number_of_delayed_grants;
 }
 
 void wait_for_federates(int socket_descriptor) {
@@ -2250,11 +2419,13 @@ void wait_for_federates(int socket_descriptor) {
   lf_connect_to_persistent_federates(socket_descriptor);
 
   // Set has_upstream_transient_federates parameter in all federates and check
-  // that is no more than one level of transiency
+  // that there is no more than one level of transiency
   if (rti_remote->number_of_transient_federates > 0) {
-    if (!set_has_upstream_transient_federates_parameter_and_check()) {
+    int max_number_of_pending_grants = set_has_upstream_transient_federates_parameter_and_check();
+    if (max_number_of_pending_grants == -1) {
       lf_print_error_and_exit("RTI: Transient federates cannot have transient upstreams!");
     }
+    rti_remote->delayed_grants = pqueue_delayed_grants_init(max_number_of_pending_grants);
   }
 
   // All persistent federates have connected.
@@ -2269,6 +2440,7 @@ void wait_for_federates(int socket_descriptor) {
   // federation, need to respond. Start a separate thread to do that.
   lf_thread_t responder_thread;
   lf_thread_t transient_thread;
+  lf_thread_t delayed_grants_thread;
 
   // If the federation does not include transient federates, then respond to
   // erronous connections. Otherwise, continue to accept transients joining and
@@ -2277,6 +2449,7 @@ void wait_for_federates(int socket_descriptor) {
     lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
   } else if (rti_remote->number_of_transient_federates > 0) {
     lf_thread_create(&transient_thread, lf_connect_to_transient_federates_thread, NULL);
+    lf_thread_create(&delayed_grants_thread, lf_delayed_grants_thread, NULL);
   }
 
   // Wait for persistent federate threads to exit.
@@ -2338,6 +2511,7 @@ void initialize_RTI(rti_remote_t* rti) {
   LF_MUTEX_INIT(&rti_mutex);
   LF_COND_INIT(&received_start_times, &rti_mutex);
   LF_COND_INIT(&sent_start_time, &rti_mutex);
+  LF_COND_INIT(&updated_delayed_grants, &rti_mutex);
 
   initialize_rti_common(&rti_remote->base);
   rti_remote->base.mutex = &rti_mutex;
@@ -2346,6 +2520,7 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->max_start_time = 0LL;
   rti_remote->num_feds_proposed_start = 0;
   rti_remote->all_federates_exited = false;
+  rti_remote->all_persistent_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";
   rti_remote->user_specified_port = 0;
   rti_remote->final_port_TCP = 0;

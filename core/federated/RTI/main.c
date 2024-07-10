@@ -242,7 +242,7 @@ int process_args(int argc, const char* argv[]) {
       }
       i++;
       long num_transient_federates = strtol(argv[i], NULL, 10);
-      if (num_transient_federates == LONG_MAX || num_transient_federates == LONG_MIN) {
+      if (num_transient_federates < 0L || num_transient_federates == LONG_MAX || num_transient_federates == LONG_MIN) {
         lf_print_error("--number_of_transient_federates needs a valid positive or null integer argument.");
         usage(argc, argv);
         return 0;
@@ -301,6 +301,7 @@ int process_args(int argc, const char* argv[]) {
   }
   return 1;
 }
+
 int main(int argc, const char* argv[]) {
   initialize_lf_thread_id();
   initialize_RTI(&rti);
