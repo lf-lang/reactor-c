@@ -289,7 +289,6 @@ int process_args(int argc, const char* argv[]) {
       return 0;
     }
   }
-<<<<<<< HEAD
   if (rti.base.number_of_scheduling_nodes == 0) {
     lf_print_error("--number_of_federates needs a valid positive integer argument.");
     usage(argc, argv);
@@ -300,8 +299,6 @@ int process_args(int argc, const char* argv[]) {
     usage(argc, argv);
     return 0;
   }
-=======
->>>>>>> main
   return 1;
 }
 int main(int argc, const char* argv[]) {
