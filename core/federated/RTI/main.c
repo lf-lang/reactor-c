@@ -289,6 +289,11 @@ int process_args(int argc, const char* argv[]) {
       return 0;
     }
   }
+  if (rti.base.number_of_scheduling_nodes == 0) {
+    lf_print_error("--number_of_federates needs a valid positive integer argument.");
+    usage(argc, argv);
+    return 0;
+  }
   if (rti.number_of_transient_federates >= rti.base.number_of_scheduling_nodes) {
     lf_print_error("--number_of_transient_federates cannot be higher or equal to the number of federates.");
     usage(argc, argv);
@@ -296,6 +301,7 @@ int process_args(int argc, const char* argv[]) {
   }
   return 1;
 }
+
 int main(int argc, const char* argv[]) {
   initialize_lf_thread_id();
   initialize_RTI(&rti);

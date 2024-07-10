@@ -731,6 +731,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t* env, int w
       tracepoint_reaction_deadline_missed(env, reaction, worker_number);
       violation_occurred = true;
       // Invoke the local handler, if there is one.
+      tracepoint_reaction_starts(env, reaction, worker_number);
       reaction_function_t handler = reaction->deadline_violation_handler;
       if (handler != NULL) {
         LF_PRINT_LOG("Worker %d: Deadline violation. Invoking deadline handler.", worker_number);
@@ -741,6 +742,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t* env, int w
         schedule_output_reactions(env, reaction, worker_number);
         // Remove the reaction from the executing queue.
       }
+      tracepoint_reaction_ends(env, reaction, worker_number);
     }
   }
   return violation_occurred;
@@ -1115,6 +1117,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // run on the main thread, rather than creating a new thread.
         // This is important for bare-metal platforms, who can't
         // afford to have the main thread sit idle.
+        env->thread_ids[j] = lf_thread_self();
         continue;
       }
       if (lf_thread_create(&env->thread_ids[j], worker, env) != 0) {

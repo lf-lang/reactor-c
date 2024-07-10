@@ -824,6 +824,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         violation = true;
         // Invoke the local handler, if there is one.
         reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;
+        tracepoint_reaction_starts(env, downstream_to_execute_now, worker);
         if (handler != NULL) {
           // Assume the mutex is still not held.
           (*handler)(downstream_to_execute_now->self);
@@ -832,6 +833,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
           // triggered reactions into the queue or execute them directly if possible.
           schedule_output_reactions(env, downstream_to_execute_now, worker);
         }
+        tracepoint_reaction_ends(env, downstream_to_execute_now, worker);
       }
     }
     if (!violation) {
@@ -1164,6 +1166,7 @@ void termination(void) {
       }
     }
   }
+  lf_tracing_global_shutdown();
   // Skip most cleanup on abnormal termination.
   if (_lf_normal_termination) {
     _lf_free_all_tokens(); // Must be done before freeing reactors.
@@ -1186,8 +1189,6 @@ void termination(void) {
     }
 #endif
     lf_free_all_reactors();
-
-    lf_tracing_global_shutdown();
 
     // Free up memory associated with environment.
     // Do this last so that printed warnings don't access freed memory.
