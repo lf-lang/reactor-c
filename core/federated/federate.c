@@ -2207,7 +2207,6 @@ void lf_latest_tag_confirmed(tag_t tag_to_send) {
   if (lf_tag_compare(_fed.last_sent_LTC, tag_to_send) >= 0) {
     return; // Already sent this or later tag.
   }
-  }
   _lf_get_environments(&env);
   if (!env->need_to_send_LTC) {
     LF_PRINT_LOG("Skip sending Latest Tag Confirmed (LTC) to the RTI because there was no tagged message with the "
