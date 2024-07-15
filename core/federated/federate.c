@@ -300,7 +300,7 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
  * it is called when a PTAG is granted and an upstream transient federate is not
  * connected. It updates the last known status tag of the network input action
  * so that it will not wait for a message or absent message from the upstream federate.
- * 
+ *
  * This function assumes the caller holds the mutex on the top-level environment,
  * and, if the tag actually increases, it broadcasts on `lf_port_status_changed`.
  *
@@ -309,14 +309,14 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
  * @param tag The tag of the PTAG.
  */
 static void update_last_known_status_on_action(environment_t* env, lf_action_base_t* action, tag_t tag) {
-  if (lf_tag_compare(tag, env->current_tag) < 0) tag = env->current_tag;
+  if (lf_tag_compare(tag, env->current_tag) < 0)
+    tag = env->current_tag;
   trigger_t* input_port_trigger = action->trigger;
   if (lf_tag_compare(tag, input_port_trigger->last_known_status_tag) > 0) {
-    LF_PRINT_LOG("Updating the last known status tag of port for upstream absent transient federate from "
-        PRINTF_TAG " to " PRINTF_TAG ".",
-        input_port_trigger->last_known_status_tag.time - lf_time_start(),
-        input_port_trigger->last_known_status_tag.microstep,
-        tag.time - lf_time_start(), tag.microstep);
+    LF_PRINT_LOG("Updating the last known status tag of port for upstream absent transient federate from " PRINTF_TAG
+                 " to " PRINTF_TAG ".",
+                 input_port_trigger->last_known_status_tag.time - lf_time_start(),
+                 input_port_trigger->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
     input_port_trigger->last_known_status_tag = tag;
   }
 }
@@ -1281,7 +1281,7 @@ static void handle_provisional_tag_advance_grant() {
                env->current_tag.time - start_time, env->current_tag.microstep, _fed.last_TAG.time - start_time,
                _fed.last_TAG.microstep);
 
-  for (int i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
+  for (size_t i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
     if (_lf_zero_delay_cycle_upstream_disconnected[i] == true) {
       update_last_known_status_on_action(env, _lf_zero_delay_cycle_action_table[i], PTAG);
     }
@@ -1525,7 +1525,7 @@ static void handle_rti_failed_message(void) { exit(1); }
 
 /**
  * @brief Handle message from the RTI that an upstream federate has connected.
- * 
+ *
  */
 static void handle_upstream_connected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
@@ -1535,7 +1535,7 @@ static void handle_upstream_connected_message(void) {
   uint16_t connected = extract_uint16(buffer);
   lf_print("********* FIXME: Upstream %d connected *********\n", connected);
   // Mark the upstream as connected.
-  for (int i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
+  for (size_t i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
     if (_lf_zero_delay_cycle_upstream_ids[i] == connected) {
       _lf_zero_delay_cycle_upstream_disconnected[i] = false;
     }
@@ -1544,7 +1544,7 @@ static void handle_upstream_connected_message(void) {
 
 /**
  * @brief Handle message from the RTI that an upstream federate has disconnected.
- * 
+ *
  */
 static void handle_upstream_disconnected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
@@ -1554,7 +1554,7 @@ static void handle_upstream_disconnected_message(void) {
   uint16_t disconnected = extract_uint16(buffer);
   lf_print("********* FIXME: Upstream %d disconnected *********\n", disconnected);
   // Mark the upstream as disconnected.
-  for (int i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
+  for (size_t i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
     if (_lf_zero_delay_cycle_upstream_ids[i] == disconnected) {
       _lf_zero_delay_cycle_upstream_disconnected[i] = true;
     }
