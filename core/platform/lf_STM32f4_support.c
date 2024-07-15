@@ -1,7 +1,5 @@
 #if defined(PLATFORM_STM32F4)
-/*************
- I hope this software works LOL
- ***************/
+
 
 #include "lf_STM32f4_support.h"
 #include "platform.h"
@@ -15,14 +13,13 @@
 static volatile bool _lf_sleep_interrupted = false;
 static volatile bool _lf_async_event = false;
 
-#define LF_MAX_SLEEP_NS USEC(UINT32_MAX)
-#define LF_MIN_SLEEP_NS USEC(5)
-
 // nested critical section counter
 static uint32_t _lf_num_nested_crit_sec = 0;
 
 // Timer upper half (for overflow)
 static uint32_t _lf_time_us_high = 0;
+
+#define LF_MIN_SLEEP_NS 10
 
 // Combine 2 32bit works to a 64 bit word (Takes from nrf52 support)
 #define COMBINE_HI_LO(hi, lo) ((((uint64_t)hi) << 32) | ((uint64_t)lo))
@@ -34,8 +31,7 @@ void Error_Handler();
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
 //  | Code for timer functions
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-
-// We use timer 5 for our clock (probably better than fucking with sysTick)
+// We use timer 5 for our clock (probably better than dealing with sysTick)
 void _lf_initialize_clock(void) {
     // Standard initializations from generated code
     HAL_Init();
@@ -63,15 +59,14 @@ void _lf_initialize_clock(void) {
     TIM5->CNT = 0xFFFFFFFE;
 }
 
-/**
- * ISR for handling timer overflow -> We increment the upper timer
- */
+// ISR for handling timer overflow -> We increment the upper timer
 void TIM5_IRQHandler(void) {
     if (TIM5->SR & (1 << 1)) {
         TIM5->SR &= ~(1 << 1);
         _lf_time_us_high += 1;
     }
 }
+
 
 /**
  * Write the time since boot into time variable
@@ -80,7 +75,8 @@ int _lf_clock_now(instant_t *t)
 {
     // Timer is cooked
     if (!t) {
-        return -1;
+        return 1;
+
     }
     // Get the current microseconds from TIM5
     uint32_t _lf_time_us_low = TIM5->CNT;
@@ -101,7 +97,6 @@ int lf_sleep(interval_t sleep_duration) {
 
     _lf_clock_now(&current_time);
     target_time = current_time + sleep_duration;
-
     // HAL_Delay only supports miliseconds. We try to use that for as long as possible
     //      before switching to another meothd for finer tuned delay times
     long delaytime_ms = sleep_duration / 1000000;
@@ -158,8 +153,8 @@ int _lf_interruptable_sleep_until_locked(environment_t *env, instant_t wakeup_ti
     if (!_lf_async_event) {
         return 0;
     } else {
-        LF_PRINT_DEBUG(" *The STM32 rises from sleep* \n");
-        return -1;
+        return 1;
+
     }
 
 }
@@ -182,7 +177,8 @@ int lf_disable_interrupts_nested() {
 
 // enables the IRQ (checks if other programs still want it disabled first)
 int lf_enable_interrupts_nested() {
-    // Somebody fucked up, LOL
+    // Left the critical section more often than it was entered.
+
     if (_lf_num_nested_crit_sec <= 0) {
         return 1;
     }
@@ -202,16 +198,13 @@ int _lf_single_threaded_notify_of_event() {
     return 0;
 }
 
-int test_func(void) {
-    return 5;
-}
-
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-//  | Other functions I found -> taken from the generated main.c
+//  | Other functions -> taken from the generated main.c
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
 void lf_SystemClock_Config(void) {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
 
     /** Configure the main internal regulator output voltage
      */
@@ -249,6 +242,7 @@ void Error_Handler(void) {
     while (1) {
     }
     /* USER CODE END Error_Handler_Debug */
+
 }
 
 #endif
