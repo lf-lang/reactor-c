@@ -51,6 +51,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.h"
 #include <signal.h> // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
 #include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/file.h>
 
 /**
  * The tracing mechanism uses the number of workers variable `_lf_number_of_workers`.
@@ -275,6 +278,49 @@ int process_args(int argc, const char* argv[]) {
   return 1;
 }
 int main(int argc, const char* argv[]) {
+
+  FILE *file;
+  pid_t pid = 0;
+
+  pid = getpid();
+  printf("RTI: Process ID: %d\n", pid);
+
+  file = fopen("/home/yoshinoriterazawa/LF/RTI.txt", "w");
+  if(file == NULL) {
+      perror("RTI: failed opening file");
+      return 1;
+  } else {
+      // ファイルロックを取得
+      int fd = fileno(file);
+      if (flock(fd, LOCK_EX) != 0) {
+          perror("RTI: failed to lock file");
+          fclose(file);
+          return 1;
+      }
+
+      fprintf(file, "process_name:RTI,pid:%d", pid);
+      printf("RTI: write file\n");
+
+      // ファイルを閉じる前にロックを解除
+      if (flock(fd, LOCK_UN) != 0) {
+          perror("RTI: failed to unlock file");
+      }
+
+      if (fclose(file) == 0) {
+          // fcloseが成功した場合
+          // ファイルディスクリプタの有効性を確認
+          if (fcntl(fd, F_GETFD) == -1 && errno == EBADF) {
+              // ファイルディスクリプタが無効の場合、ファイルは正しく閉じられている
+              printf("RTI: File closed successfully.\n");
+          } else {
+              // ファイルディスクリプタが有効な場合、ファイルがまだ開いている
+              printf("RTI: File is still open.\n");
+          }
+      } else {
+          perror("RTI: Error closing file");
+      }
+  }
+  
   initialize_lf_thread_id();
   initialize_RTI(&rti);
 
