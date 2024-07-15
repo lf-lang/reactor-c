@@ -169,6 +169,8 @@ extern interval_t _lf_action_delay_table[];
 extern size_t _lf_action_table_size;
 extern lf_action_base_t* _lf_zero_delay_cycle_action_table[];
 extern size_t _lf_zero_delay_cycle_action_table_size;
+extern uint16_t _lf_zero_delay_cycle_upstream_ids[];
+extern bool _lf_zero_delay_cycle_upstream_disconnected[];
 extern reaction_t* network_input_reactions[];
 extern size_t num_network_input_reactions;
 extern reaction_t* port_absent_reaction[];
@@ -194,7 +196,7 @@ static lf_action_base_t* action_for_port(int port_id) {
 
 /**
  * Update the last known status tag of all network input ports
- * to the value of `tag`, unless that the provided `tag` is less
+ * to the value of `tag`, unless the provided `tag` is less
  * than the last_known_status_tag of the port. This is called when
  * a TAG signal is received from the RTI in centralized coordination.
  * If any update occurs, then this broadcasts on `lf_port_status_changed`.
@@ -260,7 +262,7 @@ static void update_last_known_status_on_input_ports(tag_t tag, environment_t* en
  *
  * @param env The top-level environment, whose mutex is assumed to be held.
  * @param tag The tag on which the latest status of the specified network input port is known.
- * @param portID The port ID.
+ * @param port_id The port ID.
  */
 static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id) {
   if (lf_tag_compare(tag, env->current_tag) < 0)
@@ -294,41 +296,33 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
 }
 
 /**
- * @brief Mark all the input ports connected to the given federate as known to be absent until FOREVER.
+ * Set the status of network port with id portID.
  *
- * This does nothing if the federate is not using decentralized coordination.
- * This function acquires the mutex on the top-level environment.
- * @param fed_id The ID of the federate.
+ * @param env The top-level environment, whose mutex is assumed to be held.
+ * @param action The action associated with the network input port.
+ * @param tag The tag of the PTAG.
  */
-static void mark_inputs_known_absent(int fed_id) {
-#ifdef FEDERATED_DECENTRALIZED
-  // Note that when transient federates are supported, this will need to be updated because the
-  // federate could rejoin.
-  environment_t* env;
-  _lf_get_environments(&env);
-  LF_MUTEX_LOCK(&env->mutex);
-
-  for (size_t i = 0; i < _lf_action_table_size; i++) {
-    lf_action_base_t* action = _lf_action_table[i];
-    if (action->source_id == fed_id) {
-      update_last_known_status_on_input_port(env, FOREVER_TAG, i);
-    }
+static void update_last_known_status_on_action(environment_t* env, lf_action_base_t* action, tag_t tag) {
+  if (lf_tag_compare(tag, env->current_tag) < 0)
+    tag = env->current_tag;
+  trigger_t* input_port_trigger = action->trigger;
+  if (lf_tag_compare(tag, input_port_trigger->last_known_status_tag) > 0) {
+    LF_PRINT_LOG("Updating the last known status tag of port for upstream absent transient federate from " PRINTF_TAG
+                 " to " PRINTF_TAG ".",
+                 input_port_trigger->last_known_status_tag.time - lf_time_start(),
+                 input_port_trigger->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
+    input_port_trigger->last_known_status_tag = tag;
   }
-  LF_MUTEX_UNLOCK(&env->mutex);
-#else
-  // Do nothing, except suppress unused parameter error.
-  (void)fed_id;
-#endif // FEDERATED_DECENTRALIZED
 }
 
 /**
- * Set the status of network port with id portID.
+ * Set the status of network port with id port_id.
  *
- * @param portID The network port ID
+ * @param port_id The network port ID
  * @param status The network port status (port_status_t)
  */
-static void set_network_port_status(int portID, port_status_t status) {
-  lf_action_base_t* network_input_port_action = action_for_port(portID);
+static void set_network_port_status(int port_id, port_status_t status) {
+  lf_action_base_t* network_input_port_action = action_for_port(port_id);
   network_input_port_action->trigger->status = status;
 }
 
@@ -720,7 +714,7 @@ static int handle_port_absent_message(int* socket, int fed_id) {
     tracepoint_federate_from_federate(receive_PORT_ABS, _lf_my_fed_id, fed_id, &intended_tag);
   }
   LF_PRINT_LOG("Handling port absent for tag " PRINTF_TAG " for port %hu of fed %d.",
-               intended_tag.time - lf_time_start(), intended_tag.microstep, port_id, fed_id);
+               intended_tag.time - lf_time_start(), intended_tag.microstep, port_id, _lf_my_fed_id);
 
   // Environment is always the one corresponding to the top-level scheduling enclave.
   environment_t* env;
@@ -991,7 +985,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
  * a notification of this update, which may unblock whichever worker
  * thread is trying to advance time.
  *
- * @note This function is very similar to handle_provisinal_tag_advance_grant() except that
+ * @note This function is very similar to handle_provisional_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to false.
  */
 static void handle_tag_advance_grant(void) {
@@ -1233,7 +1227,8 @@ static void* update_ports_from_staa_offsets(void* args) {
  *
  * @note This function is similar to handle_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to true and also it does not update the
- *  last known tag for input ports.
+ *  last known tag for input ports unless there is an upstream federate that is
+ *  disconnected.
  */
 static void handle_provisional_tag_advance_grant() {
   // Environment is always the one corresponding to the top-level scheduling enclave.
@@ -1269,6 +1264,12 @@ static void handle_provisional_tag_advance_grant() {
   LF_PRINT_LOG("At tag " PRINTF_TAG ", received Provisional Tag Advance Grant (PTAG): " PRINTF_TAG ".",
                env->current_tag.time - start_time, env->current_tag.microstep, _fed.last_TAG.time - start_time,
                _fed.last_TAG.microstep);
+
+  for (int i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
+    if (_lf_zero_delay_cycle_upstream_disconnected[i] == true) {
+      update_last_known_status_on_action(env, _lf_zero_delay_cycle_action_table[i], PTAG);
+    }
+  }
 
   // Even if we don't modify the event queue, we need to broadcast a change
   // because we do not need to continue to wait for a TAG.
@@ -1507,6 +1508,44 @@ static void send_failed_signal() {
 static void handle_rti_failed_message(void) { exit(1); }
 
 /**
+ * @brief Handle message from the RTI that an upstream federate has connected.
+ *
+ */
+static void handle_upstream_connected_message(void) {
+  size_t bytes_to_read = sizeof(uint16_t);
+  unsigned char buffer[bytes_to_read];
+  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+                                 "Failed to read upstream connected message from RTI.");
+  uint16_t connected = extract_uint16(buffer);
+  lf_print("********* FIXME: Upstream %d connected *********\n", connected);
+  // Mark the upstream as connected.
+  for (int i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
+    if (_lf_zero_delay_cycle_upstream_ids[i] == connected) {
+      _lf_zero_delay_cycle_upstream_disconnected[i] = false;
+    }
+  }
+}
+
+/**
+ * @brief Handle message from the RTI that an upstream federate has disconnected.
+ *
+ */
+static void handle_upstream_disconnected_message(void) {
+  size_t bytes_to_read = sizeof(uint16_t);
+  unsigned char buffer[bytes_to_read];
+  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+                                 "Failed to read upstream disconnected message from RTI.");
+  uint16_t disconnected = extract_uint16(buffer);
+  lf_print("********* FIXME: Upstream %d disconnected *********\n", disconnected);
+  // Mark the upstream as disconnected.
+  for (int i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
+    if (_lf_zero_delay_cycle_upstream_ids[i] == disconnected) {
+      _lf_zero_delay_cycle_upstream_disconnected[i] = true;
+    }
+  }
+}
+
+/**
  * Thread that listens for TCP inputs from the RTI.
  * When messages arrive, this calls the appropriate handler.
  * @param args Ignored
@@ -1581,6 +1620,12 @@ static void* listen_to_rti_TCP(void* args) {
       break;
     case MSG_TYPE_FAILED:
       handle_rti_failed_message();
+      break;
+    case MSG_TYPE_UPSTREAM_CONNECTED:
+      handle_upstream_connected_message();
+      break;
+    case MSG_TYPE_UPSTREAM_DISCONNECTED:
+      handle_upstream_disconnected_message();
       break;
     case MSG_TYPE_CLOCK_SYNC_T1:
     case MSG_TYPE_CLOCK_SYNC_T4:
@@ -1941,8 +1986,12 @@ void lf_connect_to_rti(const char* hostname, int port) {
     } else if (response == MSG_TYPE_RESIGN) {
       lf_print_warning("RTI resigned. Will try again");
       continue;
+    } else if (response == MSG_TYPE_UPSTREAM_CONNECTED) {
+      handle_upstream_connected_message();
+    } else if (response == MSG_TYPE_UPSTREAM_DISCONNECTED) {
+      handle_upstream_disconnected_message();
     } else {
-      lf_print_warning("RTI gave unexpect response %u. Will try again", response);
+      lf_print_warning("RTI on port %d gave unexpected response %u. Will try again", uport, response);
       continue;
     }
   }

@@ -618,6 +618,23 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FAILED 25
 
+/////////////////////////////////////////////
+//// Transient federate support
+
+/**
+ * A message the informs a downstream federate that a federate upstream of it
+ * is connected. The next 2 bytes are the federate ID of the upstream federate.
+ */
+#define MSG_TYPE_UPSTREAM_CONNECTED 26
+#define MSG_TYPE_UPSTREAM_CONNECTED_LENGTH (1 + sizeof(uint16_t))
+
+/**
+ * A message the informs a downstream federate that a federate upstream of it
+ * is no longer connected. The next 2 bytes are the federate ID of the upstream federate.
+ */
+#define MSG_TYPE_UPSTREAM_DISCONNECTED 27
+#define MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
+
 /**
  * As an answer to MSG_TYPE_TIMESTAMP, the RTI broadcasts to all persistent
  * federates, or sends to newly joining transient federate, a message of
@@ -625,17 +642,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * together with the effective starting logical tag. The latter is useful for
  * transient federates.
  */
-#define MSG_TYPE_TIMESTAMP_START 50
+#define MSG_TYPE_TIMESTAMP_START 28
 #define MSG_TYPE_TIMESTAMP_START_LENGTH (1 + sizeof(instant_t) + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
- * Byte sent by the RTI ordering the federate to stop. Upon receiving the meaasage,
- * the federate will call lf_stop(), which will make him resign at its current_tag
+ * Byte sent by the RTI ordering the federate to stop. Upon receiving the message,
+ * the federate will call lf_stop(), which will make it resign at its current_tag
  * plus 1 microstep.
- * The next 8 bytes will be the time at which the federates will stop. *
+ * The next 8 bytes will be the time at which the federates will stop.
  * The next 4 bytes will be the microstep at which the federates will stop..
  */
-#define MSG_TYPE_STOP 30
+#define MSG_TYPE_STOP 29
 #define MSG_TYPE_STOP_LENGTH 1
 
 /////////////////////////////////////////////
