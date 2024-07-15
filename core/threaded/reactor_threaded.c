@@ -625,7 +625,6 @@ void _lf_initialize_start_tag(environment_t* env) {
 #endif
   LF_PRINT_LOG("Waiting for start time " PRINTF_TIME ".", start_time);
 
-
   // Call wait_until if federated. This is required because the startup procedure
   // in lf_synchronize_with_other_federates() can decide on a new start_time that is
   // larger than the current physical time.
