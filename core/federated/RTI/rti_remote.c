@@ -289,6 +289,7 @@ static int create_rti_server(uint16_t port, socket_type_t socket_type) {
  *
  * In case there is already a grant for that federate, keep the soonest one.
  * FIXME: Is that correct?
+ * FIXME: Why not just add it to the queue?
  *
  * @param fed The federate.
  * @param tag The tag to grant.
@@ -315,6 +316,7 @@ static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provis
   } else {
     // FIXME: Decide what to do in this case...
     // TODO: do it!
+    // FIXME: Add to the queue?
   }
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -353,12 +355,71 @@ static int get_num_absent_upstream_transients(federate_info_t* fed) {
   int num_absent_upstream_transients = 0;
   for (int j = 0; j < fed->enclave.num_upstream; j++) {
     federate_info_t* upstream = GET_FED_INFO(fed->enclave.upstream[j]);
-    // Do Ignore this enclave if it no longer connected.
+    // Ignore this enclave if it no longer connected.
     if ((upstream->enclave.state == NOT_CONNECTED) && (upstream->is_transient)) {
       num_absent_upstream_transients++;
     }
   }
   return num_absent_upstream_transients;
+}
+
+/**
+ * @brief Send MSG_TYPE_UPSTREAM_CONNECTED to the specified federate.
+ * 
+ * This function assumes that the mutex lock is already held.
+ * @param destination The destination federate.
+ * @param disconnected The connected federate.
+ */
+static void send_upstream_connected_locked(
+    federate_info_t* destination, federate_info_t* connected) {
+  if (!connected->is_transient) {
+    // No need to send connected message for persistent federates.
+    return;
+  }
+  unsigned char buffer[MSG_TYPE_UPSTREAM_CONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_UPSTREAM_CONNECTED;
+  encode_uint16(connected->enclave.id, &buffer[1]);
+  if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_UPSTREAM_CONNECTED_LENGTH, buffer)) {
+    lf_print_warning("RTI: Failed to send upstream connected message to federate %d.",
+        connected->enclave.id);
+  }
+}
+
+/**
+ * @brief Send MSG_TYPE_UPSTREAM_DISCONNECTED to the specified federate.
+ * 
+ * This function assumes that the mutex lock is already held.
+ * @param destination The destination federate.
+ * @param disconnected The disconnected federate.
+ */
+static void send_upstream_disconnected_locked(
+    federate_info_t* destination, federate_info_t* disconnected) {
+  unsigned char buffer[MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_UPSTREAM_DISCONNECTED;
+  encode_uint16(disconnected->enclave.id, &buffer[1]);
+  if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
+    lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.",
+        disconnected->enclave.id);
+  }
+}
+
+/**
+ * @brief Mark a federate as disconnected and inform downstream federates.
+ * @param e The enclave corresponding to the disconnected federate.
+ */
+static void notify_federate_disconnected(scheduling_node_t* e) {
+  e->state = NOT_CONNECTED;
+  // Notify downstream federates. Need to hold the mutex lock to do this.
+  LF_MUTEX_LOCK(&rti_mutex);
+  for (int j = 0; j < e->num_downstream; j++) {
+    federate_info_t* downstream = GET_FED_INFO(e->downstream[j]);
+    // Ignore this enclave if it no longer connected.
+    if (downstream->enclave.state != NOT_CONNECTED) {
+      // Notify the downstream enclave.
+      send_upstream_disconnected_locked(downstream, GET_FED_INFO(e->id));
+    }
+  }
+  LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
 /**
@@ -385,7 +446,7 @@ static void notify_tag_advance_grant_immediate(scheduling_node_t* e, tag_t tag) 
   // to fail. Consider a failure here a soft failure and update the federate's status.
   if (write_to_socket(((federate_info_t*)e)->socket, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
-    e->state = NOT_CONNECTED;
+    notify_federate_disconnected(e);
   } else {
     e->last_granted = tag;
     LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) " PRINTF_TAG ".", e->id, tag.time - start_time,
@@ -447,7 +508,7 @@ static void notify_provisional_tag_advance_grant_immediate(scheduling_node_t* e,
   // to fail. Consider a failure here a soft failure and update the federate's status.
   if (write_to_socket(((federate_info_t*)e)->socket, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
-    e->state = NOT_CONNECTED;
+    notify_federate_disconnected(e);
   } else {
     e->last_provisionally_granted = tag;
     LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) " PRINTF_TAG ".", e->id,
@@ -496,11 +557,12 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   }
 
   // Check if sending the tag advance grant needs to be delayed or not
-  // Delay is needed when a federate has, at least one, absent upstream transient
+  // Delay is needed when a federate has at least one absent upstream transient
   federate_info_t* fed = GET_FED_INFO(e->id);
   if (!fed->has_upstream_transient_federates) {
     notify_provisional_tag_advance_grant_immediate(e, tag);
   } else {
+    // FIXME: Isn't this check redundant?
     if (get_num_absent_upstream_transients(fed) > 0) {
       notify_grant_delayed(fed, tag, true);
     } else {
@@ -1032,7 +1094,10 @@ void handle_address_ad(uint16_t federate_id) {
  * plus an offset. The federate will then receive identical federation_start_time
  * and federate_start_tag.time (the federate_start_tag.microstep will be 0).
  * If, however, the startup phase is passed, the federate will receive different
- * values than sateted above.
+ * values than stated above.
+ * 
+ * This will also notify federates downstream of my_fed that this federate is now
+ * connected.  This is important when there are zero-delay cycles.
  *
  * @param my_fed the federate to send the start time to.
  * @param federation_start_time the federation start_time
@@ -1062,6 +1127,12 @@ void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, ta
   my_fed->enclave.state = GRANTED;
   lf_cond_broadcast(&sent_start_time);
   LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
+  
+  // Notify downstream federates of this now connected transient.
+  for (int i = 0; i < my_fed->enclave.num_upstream; i++) {
+    send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.upstream[i]), my_fed);
+  }
+  
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
@@ -1367,7 +1438,7 @@ static void handle_federate_failed(federate_info_t* my_fed) {
   _lf_federate_reports_error = true;
   lf_print_error("RTI: Federate %d reports an error and has exited.", my_fed->enclave.id);
 
-  my_fed->enclave.state = NOT_CONNECTED;
+  notify_federate_disconnected(&my_fed->enclave);
 
   // Indicate that there will no further events from this federate.
   my_fed->enclave.next_event = FOREVER_TAG;
@@ -1413,7 +1484,7 @@ static void handle_federate_resign(federate_info_t* my_fed) {
 
   lf_print("RTI: Federate %d has resigned.", my_fed->enclave.id);
 
-  my_fed->enclave.state = NOT_CONNECTED;
+  notify_federate_disconnected(&my_fed->enclave);
 
   // Indicate that there will no further events from this federate.
   my_fed->enclave.next_event = FOREVER_TAG;
@@ -1460,7 +1531,7 @@ void* federate_info_thread_TCP(void* fed) {
     if (read_failed) {
       // Socket is closed
       lf_print_error("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
-      my_fed->enclave.state = NOT_CONNECTED;
+      notify_federate_disconnected(&my_fed->enclave);
       my_fed->socket = -1;
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
@@ -2283,6 +2354,7 @@ void* lf_delayed_grants_thread(void* nothing) {
         federate_info_t* fed = GET_FED_INFO(next->fed_id);
         if (next->is_provisional) {
           notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+          // FIXME: Send port absent notification to all federates downstream of absent federates.
         } else {
           notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
         }
