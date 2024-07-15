@@ -92,8 +92,8 @@ int _lf_clock_now(instant_t *t)
 }
 
 /**
- * Make the STM32 go honk shoo mimimi for set nanoseconds
- * I essentially stole this from the lf_nrf52 support
+ * Make the STM32 sleep for set nanoseconds
+ * Based on the lf_nrf52 support implementation
  */
 int lf_sleep(interval_t sleep_duration) {
     instant_t target_time;
@@ -101,6 +101,12 @@ int lf_sleep(interval_t sleep_duration) {
 
     _lf_clock_now(&current_time);
     target_time = current_time + sleep_duration;
+
+    // HAL_Delay only supports miliseconds. We try to use that for as long as possible
+    //      before switching to another meothd for finer tuned delay times
+    long delaytime_ms = sleep_duration / 1000000;
+    HAL_Delay(delaytime_ms);
+
     while (current_time <= target_time)
         _lf_clock_now(&current_time);
 
@@ -108,22 +114,20 @@ int lf_sleep(interval_t sleep_duration) {
 }
 
 /**
- * Make the STM32 go honk shoo honk shoo for set nanoseconds
- * This one uses a do-while loop. :)
- * I essentially stole this from the lf_nrf52 support
+ * Make the STM32 sleep for set nanoseconds
+ * Based on the lf_nrf52 support implementation
  */
 static void lf_busy_wait_until(instant_t wakeup_time) {
-    instant_t now;
-    do {
-        _lf_clock_now(&now);
-    } while (now < wakeup_time);
+    instant_t current_time;
+    _lf_clock_now(&current_time);
+
+    // We repurpose the lf_sleep function here, just to better streamline the code
+    interval_t sleep_duration = wakeup_time - current_time;
+    lf_sleep(sleep_duration);
 }
 
 // I am pretty sure this function doesnt work
-//      Ill try to fix it once i know what the fuck its supposed to do, LOL
-/*  sleep until wakeup time
-    But, wake up if there is an async event
-
+/*  sleep until wakeup time but wake up if there is an async event
 */
 int _lf_interruptable_sleep_until_locked(environment_t *env, instant_t wakeup_time) {
     // Get the current time and sleep time
@@ -134,7 +138,7 @@ int _lf_interruptable_sleep_until_locked(environment_t *env, instant_t wakeup_ti
     // Edge case handling for super small duration
     if (duration <= 0) {
         return 0;
-    } else if (duration < 10) {
+    } else if (duration < LF_MIN_SLEEP_NS) {
         lf_busy_wait_until(wakeup_time);
         return 0;
     }
@@ -145,7 +149,6 @@ int _lf_interruptable_sleep_until_locked(environment_t *env, instant_t wakeup_ti
 
     do {
         _lf_clock_now(&now);
-
         // Exit when the timer is up or there is an exception
     } while (!_lf_async_event && (now < wakeup_time));
 
