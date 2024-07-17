@@ -299,32 +299,30 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
 
   // Load custom serializer if exists
   if (global_serializer == NULL) {
-    PyObject *pName = PyUnicode_DecodeFSDefault("custom_serializer");
-    PyObject *pModule = PyImport_Import(pName);
+    PyObject* pName = PyUnicode_DecodeFSDefault("custom_serializer");
+    PyObject* pModule = PyImport_Import(pName);
     Py_DECREF(pName);
     if (pModule != NULL) {
-        PyObject *SerializerClass = PyObject_GetAttrString(pModule, "Serializer");
-        Py_DECREF(pModule);
-        if (SerializerClass == NULL) {
-            if (PyErr_Occurred()) {
-                PyErr_Print();
-            }
-            lf_print_error_and_exit("Failed to load the class 'Serializer' from the module 'custom_serializer'.");
+      PyObject* SerializerClass = PyObject_GetAttrString(pModule, "Serializer");
+      Py_DECREF(pModule);
+      if (SerializerClass == NULL) {
+        if (PyErr_Occurred()) {
+          PyErr_Print();
         }
-        else{
-            global_serializer = PyObject_CallObject(SerializerClass, NULL);
-            if (global_serializer == NULL) {
-                if (PyErr_Occurred()) {
-                    PyErr_Print();
-                }
-                lf_print_error_and_exit("Failed to load the module 'custom_serializer'.");
-            }
-            lf_print_debug("Loaded custom serializer package 'custom_serializer'.");
+        lf_print_error_and_exit("Failed to load the class 'Serializer' from the module 'custom_serializer'.");
+      } else {
+        global_serializer = PyObject_CallObject(SerializerClass, NULL);
+        if (global_serializer == NULL) {
+          if (PyErr_Occurred()) {
+            PyErr_Print();
+          }
+          lf_print_error_and_exit("Failed to load the module 'custom_serializer'.");
         }
-        Py_DECREF(SerializerClass);
-    }
-    else {
-        lf_print_debug("No custom serializer package 'custom_serializer' found.");
+        lf_print_debug("Loaded custom serializer package 'custom_serializer'.");
+      }
+      Py_DECREF(SerializerClass);
+    } else {
+      lf_print_debug("No custom serializer package 'custom_serializer' found.");
     }
   }
 
