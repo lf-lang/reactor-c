@@ -283,7 +283,7 @@ static int create_rti_server(uint16_t port, socket_type_t socket_type) {
 
 /**
  * @brief Insert the delayed grant into the delayed_grants queue and notify.
- * 
+ *
  * This function assumes the caller holds the rti_mutex.
  * @param fed The federate.
  * @param tag The tag to grant.
@@ -302,7 +302,7 @@ static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provis
     dge->is_provisional = is_provisional;
     pqueue_delayed_grants_insert(rti_remote->delayed_grants, dge);
     LF_PRINT_LOG("RTI: Inserting a delayed grant of " PRINTF_TAG " for federate %d.", dge->base.tag.time - start_time,
-                  dge->base.tag.microstep, dge->fed_id);
+                 dge->base.tag.microstep, dge->fed_id);
     lf_cond_signal(&updated_delayed_grants);
   } else {
     // Note that there should never be more than one pending grant for a federate.
@@ -312,16 +312,14 @@ static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provis
       dge->base.tag = tag;
       dge->is_provisional = is_provisional;
       LF_PRINT_LOG("RTI: Updating a delayed grant of " PRINTF_TAG " for federate %d.", tag.time - start_time,
-                    tag.microstep, dge->fed_id);
+                   tag.microstep, dge->fed_id);
       lf_cond_signal(&updated_delayed_grants);
     } else if (compare == 0) {
       if (dge->is_provisional != is_provisional) {
         // Update the grant to keep the most recent is_provisional status.
         dge->is_provisional = is_provisional;
         LF_PRINT_LOG("RTI: Changing status of a delayed grant of " PRINTF_TAG " for federate %d to provisional: %d.",
-            dge->base.tag.time - start_time,
-            dge->base.tag.microstep, dge->fed_id,
-            is_provisional);
+                     dge->base.tag.time - start_time, dge->base.tag.microstep, dge->fed_id, is_provisional);
       }
     }
   }
@@ -2245,7 +2243,8 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // Wait for the old federate to send MSG_TYPE_RESIGN
         LF_PRINT_LOG("RTI: Waiting for old federate %d to send resign.", fed_id);
         // FIXME: This is a busy wait!  Need instead a lf_cond_wait on a condition variable.
-        while (!hot_swap_old_resigned) {}
+        while (!hot_swap_old_resigned) {
+        }
 
         // The latest LTC is the tag at which the old federate resigned. This is useful
         // for computing the effective_start_time of the new joining federate.
