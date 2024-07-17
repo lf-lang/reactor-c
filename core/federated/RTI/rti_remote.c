@@ -431,6 +431,7 @@ static int get_num_absent_upstream_transients(federate_info_t* fed) {
 /**
  * @brief Send MSG_TYPE_UPSTREAM_CONNECTED to the specified federate.
  *
+ *
  * This function assumes that the mutex lock is already held.
  * @param destination The destination federate.
  * @param disconnected The connected federate.
