@@ -1274,7 +1274,7 @@ static void handle_provisional_tag_advance_grant() {
                _fed.last_TAG.microstep);
 
   for (size_t i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
-    if (_lf_zero_delay_cycle_upstream_disconnected[i] == true) {
+    if (_lf_zero_delay_cycle_upstream_disconnected[i]) {
       update_last_known_status_on_action(env, _lf_zero_delay_cycle_action_table[i], PTAG);
     }
   }
@@ -1525,7 +1525,7 @@ static void handle_upstream_connected_message(void) {
   read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
                                  "Failed to read upstream connected message from RTI.");
   uint16_t connected = extract_uint16(buffer);
-  lf_print("********* FIXME: Upstream %d connected *********\n", connected);
+  LF_PRINT_DEBUG("Received notification that upstream federate %d has connected", connected);
   // Mark the upstream as connected.
   for (size_t i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
     if (_lf_zero_delay_cycle_upstream_ids[i] == connected) {
@@ -1544,7 +1544,7 @@ static void handle_upstream_disconnected_message(void) {
   read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
                                  "Failed to read upstream disconnected message from RTI.");
   uint16_t disconnected = extract_uint16(buffer);
-  lf_print("********* FIXME: Upstream %d disconnected *********\n", disconnected);
+  LF_PRINT_DEBUG("Received notification that upstream federate %d has disconnected", disconnected);
   // Mark the upstream as disconnected.
   for (size_t i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
     if (_lf_zero_delay_cycle_upstream_ids[i] == disconnected) {
@@ -2666,13 +2666,20 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
                                                           _lf_action_delay_table[i])) <= 0)) {
       continue;
     }
+#else
+    // For centralized coordination, if there is an upstream transient federate that is not
+    // connected, then we don't want to block on its action.
+    if (_lf_zero_delay_cycle_upstream_disconnected[i]) {
+      // Mark the action known up to and including the current tag. It is absent.
+      update_last_known_status_on_action(env, input_port_action, env->current_tag);
+    }
 #endif // FEDERATED_DECENTRALIZED
-       // If the current tag is greater than the last known status tag of the input port,
-       // and the input port is not physical, then block on that port by ensuring
-       // the MLAA is no greater than the level of that port.
-       // For centralized coordination, this is applied only to input ports coming from
-       // federates that are in a ZDC.  For decentralized coordination, this is applied
-       // to all input ports.
+    // If the current tag is greater than the last known status tag of the input port,
+    // and the input port is not physical, then block on that port by ensuring
+    // the MLAA is no greater than the level of that port.
+    // For centralized coordination, this is applied only to input ports coming from
+    // federates that are in a ZDC.  For decentralized coordination, this is applied
+    // to all input ports.
     if (lf_tag_compare(env->current_tag, input_port_action->trigger->last_known_status_tag) > 0 &&
         !input_port_action->trigger->is_physical) {
       max_level_allowed_to_advance =
@@ -2697,7 +2704,7 @@ void lf_stop() {
 
     lf_set_stop_tag(&env[i], new_stop_tag);
 
-    lf_print("Setting the stop tag of env %d to " PRINTF_TAG ".", i, env[i].stop_tag.time - start_time,
+    LF_PRINT_LOG("Setting the stop tag of env %d to " PRINTF_TAG ".", i, env[i].stop_tag.time - start_time,
              env[i].stop_tag.microstep);
 
     if (env[i].barrier.requestors)

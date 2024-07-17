@@ -41,13 +41,13 @@ extern instant_t start_time;
 static rti_remote_t* rti_remote;
 
 // Referance to the federate instance to support hot swap
-federate_info_t* hot_swap_federate;
+static federate_info_t* hot_swap_federate;
 
 // Indicates if a hot swap process is in progress
-bool hot_swap_in_progress = false;
+static bool hot_swap_in_progress = false;
 
 // Indicates that the old federate has stopped.
-bool hot_swap_old_resigned = false;
+static bool hot_swap_old_resigned = false;
 
 bool _lf_federate_reports_error = false;
 
@@ -361,24 +361,15 @@ pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_dela
 }
 
 /**
- * @brief Insert the delayed grant into the delayed_grants queue.
+ * @brief Insert the delayed grant into the delayed_grants queue and notify.
  *
- * The insertion will cause the broadcast to cause the delayed_grants_thread to
- * account for the update.
- *
- * In case there is already a grant for that federate, keep the soonest one.
- * FIXME: Is that correct?
- * FIXME: Why not just add it to the queue?
- *
+ * This function assumes the caller holds the rti_mutex.
  * @param fed The federate.
  * @param tag The tag to grant.
  * @param is_provisional State whther the grant is provisional.
  */
 static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provisional) {
-  // Check wether there is already a pending grant,
-  // and check the pending provisional grant as well
-  // Iterate over the
-  LF_MUTEX_LOCK(&rti_mutex);
+  // Check wether there is already a pending grant.
   pqueue_delayed_grant_element_t* dge =
       pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, fed->enclave.id);
   if (dge == NULL) {
@@ -393,22 +384,24 @@ static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provis
                  dge->base.tag.microstep, dge->fed_id);
     lf_cond_signal(&updated_delayed_grants);
   } else {
-    // FIXME: Decide what to do in this case...
-    // TODO: do it!
-    // FIXME: Add to the queue?
+    // Note that there should never be more than one pending grant for a federate.
+    int compare = lf_tag_compare(dge->base.tag, tag);
+    if (compare > 0) {
+      // Update the pre-existing grant.
+      dge->base.tag = tag;
+      dge->is_provisional = is_provisional;
+      LF_PRINT_LOG("RTI: Updating a delayed grant of " PRINTF_TAG " for federate %d.", tag.time - start_time,
+                   tag.microstep, dge->fed_id);
+      lf_cond_signal(&updated_delayed_grants);
+    } else if (compare == 0) {
+      if (dge->is_provisional != is_provisional) {
+        // Update the grant to keep the most recent is_provisional status.
+        dge->is_provisional = is_provisional;
+        LF_PRINT_LOG("RTI: Changing status of a delayed grant of " PRINTF_TAG " for federate %d to provisional: %d.",
+                     dge->base.tag.time - start_time, dge->base.tag.microstep, dge->fed_id, is_provisional);
+      }
+    }
   }
-  LF_MUTEX_UNLOCK(&rti_mutex);
-}
-
-void notify_grant_canceled(federate_info_t* fed) {
-  LF_MUTEX_LOCK(&rti_mutex);
-  pqueue_delayed_grant_element_t* dge =
-      pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, fed->enclave.id);
-  if (dge != NULL) {
-    pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
-    lf_cond_broadcast(&updated_delayed_grants);
-  }
-  LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
 /**
@@ -2487,6 +2480,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
           federate_info_t* fed = GET_FED_INFO(next->fed_id);
           if (next->is_provisional) {
             notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+            // FIXME: Send port absent notification to all federates downstream of absent federates.
           } else {
             notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
           }
