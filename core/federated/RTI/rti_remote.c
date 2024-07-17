@@ -365,13 +365,12 @@ static int get_num_absent_upstream_transients(federate_info_t* fed) {
 
 /**
  * @brief Send MSG_TYPE_UPSTREAM_CONNECTED to the specified federate.
- * 
+ *
  * This function assumes that the mutex lock is already held.
  * @param destination The destination federate.
  * @param disconnected The connected federate.
  */
-static void send_upstream_connected_locked(
-    federate_info_t* destination, federate_info_t* connected) {
+static void send_upstream_connected_locked(federate_info_t* destination, federate_info_t* connected) {
   if (!connected->is_transient) {
     // No need to send connected message for persistent federates.
     return;
@@ -380,26 +379,23 @@ static void send_upstream_connected_locked(
   buffer[0] = MSG_TYPE_UPSTREAM_CONNECTED;
   encode_uint16(connected->enclave.id, &buffer[1]);
   if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_UPSTREAM_CONNECTED_LENGTH, buffer)) {
-    lf_print_warning("RTI: Failed to send upstream connected message to federate %d.",
-        connected->enclave.id);
+    lf_print_warning("RTI: Failed to send upstream connected message to federate %d.", connected->enclave.id);
   }
 }
 
 /**
  * @brief Send MSG_TYPE_UPSTREAM_DISCONNECTED to the specified federate.
- * 
+ *
  * This function assumes that the mutex lock is already held.
  * @param destination The destination federate.
  * @param disconnected The disconnected federate.
  */
-static void send_upstream_disconnected_locked(
-    federate_info_t* destination, federate_info_t* disconnected) {
+static void send_upstream_disconnected_locked(federate_info_t* destination, federate_info_t* disconnected) {
   unsigned char buffer[MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH];
   buffer[0] = MSG_TYPE_UPSTREAM_DISCONNECTED;
   encode_uint16(disconnected->enclave.id, &buffer[1]);
   if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
-    lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.",
-        disconnected->enclave.id);
+    lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.", disconnected->enclave.id);
   }
 }
 
@@ -1095,7 +1091,7 @@ void handle_address_ad(uint16_t federate_id) {
  * and federate_start_tag.time (the federate_start_tag.microstep will be 0).
  * If, however, the startup phase is passed, the federate will receive different
  * values than stated above.
- * 
+ *
  * This will also notify federates downstream of my_fed that this federate is now
  * connected.  This is important when there are zero-delay cycles.
  *
@@ -1127,12 +1123,12 @@ void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, ta
   my_fed->enclave.state = GRANTED;
   lf_cond_broadcast(&sent_start_time);
   LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
-  
+
   // Notify downstream federates of this now connected transient.
   for (int i = 0; i < my_fed->enclave.num_upstream; i++) {
     send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.upstream[i]), my_fed);
   }
-  
+
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
