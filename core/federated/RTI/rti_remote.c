@@ -363,6 +363,7 @@ pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_dela
 /**
  * @brief Insert the delayed grant into the delayed_grants queue and notify.
  *
+ *
  * This function assumes the caller holds the rti_mutex.
  * @param fed The federate.
  * @param tag The tag to grant.
@@ -2394,9 +2395,9 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
 
           // Wait for the old federate to send MSG_TYPE_RESIGN
           LF_PRINT_LOG("RTI: Waiting for old federate %d to send resign.", fed_id);
-          // FIXME: Should this have a timeout?
-          while (!hot_swap_old_resigned)
-            ;
+          // FIXME: This is a busy wait!  Need instead a lf_cond_wait on a condition variable.
+          while (!hot_swap_old_resigned) {
+          }
 
           // The latest LTC is the tag at which the old federate resigned. This is useful
           // for computing the effective_start_time of the new joining federate.

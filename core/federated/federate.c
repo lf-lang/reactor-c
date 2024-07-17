@@ -2705,7 +2705,7 @@ void lf_stop() {
     lf_set_stop_tag(&env[i], new_stop_tag);
 
     LF_PRINT_LOG("Setting the stop tag of env %d to " PRINTF_TAG ".", i, env[i].stop_tag.time - start_time,
-             env[i].stop_tag.microstep);
+                 env[i].stop_tag.microstep);
 
     if (env[i].barrier.requestors)
       _lf_decrement_tag_barrier_locked(&env[i]);
