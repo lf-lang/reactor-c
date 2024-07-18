@@ -2307,17 +2307,19 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
  */
 void* lf_delayed_grants_thread(void* nothing) {
   initialize_lf_thread_id();
-  // Hold the mutex except while waiting.
-  LF_MUTEX_LOCK(&rti_mutex);
+  // Hold the mutex only when accessing rti_remote->delayed_grants pqueue
   while (!rti_remote->all_federates_exited) {
     if (pqueue_delayed_grants_size(rti_remote->delayed_grants) > 0) {
       // Do not pop, but rather peek.
+      LF_MUTEX_LOCK(&rti_mutex);
       pqueue_delayed_grant_element_t* next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
       instant_t next_time = next->base.tag.time;
+      LF_MUTEX_UNLOCK(&rti_mutex);
       // Wait for expiration, or a signal to stop or terminate.
       if (lf_clock_cond_timedwait(&updated_delayed_grants, next_time)) {
         // Time reached to send the grant.
         // However, the grant may have been canceled while we were waiting.
+        LF_MUTEX_LOCK(&rti_mutex);
         pqueue_delayed_grant_element_t* new_next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
         if (next == new_next) {
           pqueue_delayed_grants_pop(rti_remote->delayed_grants);
@@ -2330,6 +2332,7 @@ void* lf_delayed_grants_thread(void* nothing) {
           free(next);
         }
       }
+      LF_MUTEX_UNLOCK(&rti_mutex);
     } else if (pqueue_delayed_grants_size(rti_remote->delayed_grants) == 0) {
       // Wait for something to appear on the queue.
       lf_cond_wait(&updated_delayed_grants);
@@ -2340,7 +2343,6 @@ void* lf_delayed_grants_thread(void* nothing) {
     pqueue_delayed_grant_element_t* next = pqueue_delayed_grants_pop(rti_remote->delayed_grants);
     free(next);
   }
-  LF_MUTEX_UNLOCK(&rti_mutex);
   return NULL;
 }
 
