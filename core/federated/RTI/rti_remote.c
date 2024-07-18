@@ -2459,48 +2459,43 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
    */
   void* lf_delayed_grants_thread(void* nothing) {
     initialize_lf_thread_id();
-
-    // Wait for the first condition signal
-    lf_cond_wait(&updated_delayed_grants);
-
-    while (true) {
-      if (rti_remote->all_federates_exited) {
-        break;
-      }
-      if (pqueue_delayed_grants_size(rti_remote->delayed_grants) != 0) {
-        pqueue_delayed_grant_element_t* next;
-
-        // Do not pop, but rather read
-        next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
+    // Hold the mutex only when accessing rti_remote->delayed_grants pqueue
+    while (!rti_remote->all_federates_exited) {
+      if (pqueue_delayed_grants_size(rti_remote->delayed_grants) > 0) {
+        // Do not pop, but rather peek.
+        LF_MUTEX_LOCK(&rti_mutex);
+        pqueue_delayed_grant_element_t* next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
         instant_t next_time = next->base.tag.time;
+        LF_MUTEX_UNLOCK(&rti_mutex);
         // Wait for expiration, or a signal to stop or terminate.
         if (lf_clock_cond_timedwait(&updated_delayed_grants, next_time)) {
-          // Time reached to send the grant. Do it for delayed grants with the same tag
+          // Time reached to send the grant.
+          // However, the grant may have been canceled while we were waiting.
           LF_MUTEX_LOCK(&rti_mutex);
-          next = pqueue_delayed_grants_pop(rti_remote->delayed_grants);
-          federate_info_t* fed = GET_FED_INFO(next->fed_id);
-          if (next->is_provisional) {
-            notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
-            // FIXME: Send port absent notification to all federates downstream of absent federates.
-          } else {
-            notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+          pqueue_delayed_grant_element_t* new_next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
+          if (next == new_next) {
+            pqueue_delayed_grants_pop(rti_remote->delayed_grants);
+            federate_info_t* fed = GET_FED_INFO(next->fed_id);
+            if (next->is_provisional) {
+              notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+              // FIXME: Send port absent notification to all federates downstream of absent federates.
+            } else {
+              notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+            }
+            free(next);
           }
-          LF_MUTEX_UNLOCK(&rti_mutex);
-        } else {
-          // Waiting was interrupted, because of an update in the queue, or
-          // because this thread needs to terminate
-          lf_print("RTI: lf_delayed_grants_thread() did not send grant to %d at " PRINTF_TIME
-                   ", but rather terminated!",
-                   next->fed_id, next_time - start_time);
         }
+        LF_MUTEX_UNLOCK(&rti_mutex);
+      } else if (pqueue_delayed_grants_size(rti_remote->delayed_grants) == 0) {
+        // Wait for something to appear on the queue.
+        lf_cond_wait(&updated_delayed_grants);
       }
     }
-    // The federation is at the shutdown phase. All persistent federates exited.
-    // We can do a sanity check that the delayed_grants queue is empty.
-    // FIXME: If there are still pending grants, what does that mean? Maybe that the
-    //        federation stopped after a request to stop (not a timeout). Therefore, we need
-    //        cleanup, and free the memory...
-    // TODO: do it!
+    // Free any delayed grants that are still on the queue.
+    while (pqueue_delayed_grants_size(rti_remote->delayed_grants) > 0) {
+      pqueue_delayed_grant_element_t* next = pqueue_delayed_grants_pop(rti_remote->delayed_grants);
+      free(next);
+    }
     return NULL;
   }
 
