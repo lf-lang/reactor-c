@@ -409,11 +409,6 @@ void* lf_connect_to_persistent_transient_federates_thread(int socket_descriptor)
 void* lf_connect_to_transient_federates_thread(void* nothing);
 
 /**
- * Thread that manages the delayed grants using a priprity queue.
- */
-void* lf_delayed_grants_thread(void* nothing);
-
-/**
  * Thread to respond to new connections, which could be federates of other
  * federations who are attempting to join the wrong federation.
  * @param nothing Nothing needed here.

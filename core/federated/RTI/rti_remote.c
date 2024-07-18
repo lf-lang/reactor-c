@@ -74,7 +74,7 @@ extern int lf_critical_section_exit(environment_t* env) { return lf_mutex_unlock
  * @param nbr_delayed_grants The size.
  * @return The dynamically allocated queue or NULL.
  */
-pqueue_delayed_grants_t* pqueue_delayed_grants_init(uint16_t nbr_delayed_grants) {
+static pqueue_delayed_grants_t* pqueue_delayed_grants_init(uint16_t nbr_delayed_grants) {
   return (pqueue_delayed_grants_t*)pqueue_tag_init((size_t)nbr_delayed_grants);
 }
 
@@ -84,7 +84,7 @@ pqueue_delayed_grants_t* pqueue_delayed_grants_init(uint16_t nbr_delayed_grants)
  * @param q The queue.
  * @return The size.
  */
-size_t pqueue_delayed_grants_size(pqueue_delayed_grants_t* q) { return pqueue_tag_size((pqueue_tag_t*)q); }
+static size_t pqueue_delayed_grants_size(pqueue_delayed_grants_t* q) { return pqueue_tag_size((pqueue_tag_t*)q); }
 
 /**
  * @brief Insert an\ delayed grant element into the queue.
@@ -93,7 +93,7 @@ size_t pqueue_delayed_grants_size(pqueue_delayed_grants_t* q) { return pqueue_ta
  * @param e The delayed grant element to insert.
  * @return 0 on success
  */
-int pqueue_delayed_grants_insert(pqueue_delayed_grants_t* q, pqueue_delayed_grant_element_t* d) {
+static int pqueue_delayed_grants_insert(pqueue_delayed_grants_t* q, pqueue_delayed_grant_element_t* d) {
   return pqueue_tag_insert((pqueue_tag_t*)q, (void*)d);
 }
 
@@ -103,7 +103,7 @@ int pqueue_delayed_grants_insert(pqueue_delayed_grants_t* q, pqueue_delayed_gran
  * @param q The queue.
  * @return NULL on error, otherwise the entry
  */
-pqueue_delayed_grant_element_t* pqueue_delayed_grants_pop(pqueue_delayed_grants_t* q) {
+static pqueue_delayed_grant_element_t* pqueue_delayed_grants_pop(pqueue_delayed_grants_t* q) {
   return (pqueue_delayed_grant_element_t*)pqueue_tag_pop((pqueue_tag_t*)q);
 }
 
@@ -113,7 +113,7 @@ pqueue_delayed_grant_element_t* pqueue_delayed_grants_pop(pqueue_delayed_grants_
  * @param q The queue.
  * @return NULL on if the queue is empty, otherwise the delayed grant element.
  */
-pqueue_delayed_grant_element_t* pqueue_delayed_grants_peek(pqueue_delayed_grants_t* q) {
+static pqueue_delayed_grant_element_t* pqueue_delayed_grants_peek(pqueue_delayed_grants_t* q) {
   return (pqueue_delayed_grant_element_t*)pqueue_tag_peek((pqueue_tag_t*)q);
 }
 
@@ -122,7 +122,7 @@ pqueue_delayed_grant_element_t* pqueue_delayed_grants_peek(pqueue_delayed_grants
  *
  * @param q The queue.
  */
-void pqueue_delayed_grants_free(pqueue_delayed_grants_t* q) { pqueue_tag_free((pqueue_tag_t*)q); }
+static void pqueue_delayed_grants_free(pqueue_delayed_grants_t* q) { pqueue_tag_free((pqueue_tag_t*)q); }
 
 /**
  * @brief Remove an item from the delayed grants queue.
@@ -130,7 +130,7 @@ void pqueue_delayed_grants_free(pqueue_delayed_grants_t* q) { pqueue_tag_free((p
  * @param q The queue.
  * @param e The entry to remove.
  */
-void pqueue_delayed_grants_remove(pqueue_delayed_grants_t* q, pqueue_delayed_grant_element_t* e) {
+static void pqueue_delayed_grants_remove(pqueue_delayed_grants_t* q, pqueue_delayed_grant_element_t* e) {
   pqueue_tag_remove((pqueue_tag_t*)q, (void*)e);
 }
 
@@ -151,8 +151,8 @@ pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_with_tag(pqueue_delay
  * @param fed_id The federate id.
  * @return An entry with the specified federate if or NULL if there isn't one.
  */
-
-pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_delayed_grants_t* q, uint16_t fed_id) {
+static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_delayed_grants_t* q,
+                                                                            uint16_t fed_id) {
   pqueue_delayed_grant_element_t* dge;
   pqueue_t* _q = (pqueue_t*)q;
   if (!q || q->size == 1)
