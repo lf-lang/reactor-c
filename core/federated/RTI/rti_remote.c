@@ -56,9 +56,9 @@ bool _lf_federate_reports_error = false;
 #define GET_FED_INFO(_idx) (federate_info_t*)rti_remote->base.scheduling_nodes[_idx]
 
 lf_mutex_t rti_mutex;
-lf_cond_t received_start_times;
-lf_cond_t sent_start_time;
-lf_cond_t updated_delayed_grants;
+static lf_cond_t received_start_times;
+static lf_cond_t sent_start_time;
+static lf_cond_t updated_delayed_grants;
 
 extern int lf_critical_section_enter(environment_t* env) { return lf_mutex_lock(&rti_mutex); }
 
@@ -1245,74 +1245,72 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
 
     LF_MUTEX_LOCK(&rti_mutex);
 
-    // Processing the TIMESTAMP depends on whether it is the startup phase (all
-    // persistent federates joined) or not.
-    if (rti_remote->phase ==
-        startup_phase) { // This is equivalent to: rti_remote->num_feds_proposed_start <
-                         // (rti_remote->number_of_enclaves - rti_remote->number_of_transient_federates)
+    // Processing the TIMESTAMP depends on whether it is the startup phase.
+    if (rti_remote->phase == startup_phase) {
+      // Not all persistent federates have proposed a start time.
       if (timestamp > rti_remote->max_start_time) {
         rti_remote->max_start_time = timestamp;
       }
-      // Check that persistent federates did propose a start_time
+      // Note that if a transient federate's thread gets here during the startup phase,
+      // then it will be assigned the same global tag as its effective start tag and its
+      // timestamp will affect that start tag.
       if (!my_fed->is_transient) {
         rti_remote->num_feds_proposed_start++;
       }
       if (rti_remote->num_feds_proposed_start ==
           (rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates)) {
-        // All federates have proposed a start time.
+        // This federate is the last persistent federate to proposed a start time.
         lf_cond_broadcast(&received_start_times);
         rti_remote->phase = execution_phase;
       } else {
-        // Some federates have not yet proposed a start time.
-        // wait for a notification.
+        // Wait until all persistent federates have proposed a start time.
         while (rti_remote->num_feds_proposed_start <
                (rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates)) {
-          // FIXME: Should have a timeout here?
           lf_cond_wait(&received_start_times);
         }
       }
-
-      LF_MUTEX_UNLOCK(&rti_mutex);
-
-      // Send back to the federate the maximum time plus an offset on a TIMESTAMP
-      // message.
-      // Add an offset to this start time to get everyone starting together.
+      // Add an offset to the maximum tag to get everyone starting together.
       start_time = rti_remote->max_start_time + DELAY_START;
       my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
-      send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
-    } else if (rti_remote->phase == shutdown_phase) {
-      // Do not answer the federate if the federation is in hsutdown phase
-      // Or maybe send and error message?
-      LF_MUTEX_UNLOCK(&rti_mutex);
-      return;
-    } else { // The federation is the execution phase
-             // A transient has joined after the startup phase
-             // At this point, we already hold the mutex
 
-      // This is rather a possible extreme corner case, where a transient sends its timestamp, and only
-      // enters the if section after all persistents have joined.
-      if (timestamp < start_time) {
-        timestamp = start_time;
-      }
+      LF_MUTEX_UNLOCK(&rti_mutex);
+
+      // Notify the federate of its start tag.
+      send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
+    } else if (rti_remote->phase == shutdown_phase || !my_fed->is_transient) {
+      LF_MUTEX_UNLOCK(&rti_mutex);
+
+      // Send reject message if the federation is in shutdown phase or if
+      // it is in the execution phase but the federate is persistent.
+      send_reject(&my_fed->socket, JOINING_TOO_LATE);
+      return;
+    } else {
+      // The federation is transient and we are in the execution phase.
+      // At this point, we already hold the mutex.
 
       //// Algorithm for computing the effective_start_time of a joining transient
       // The effective_start_time will be the max among all the following tags:
       //  1. At tag: (joining time, 0 microstep)
-      //  2. The latest completed logical tag + 1 microstep
-      //  3. The latest granted (P)TAG + 1 microstep, of every downstream federate
-      //  4. The maximun tag of messages from the upstream federates + 1 microstep
+      //  2. (start_time, 1 microstep)
+      //  3. The latest completed logical tag + 1 microstep
+      //  4. The latest granted (P)TAG + 1 microstep, of every downstream federate
+      //  5. The maximun tag of messages from the upstream federates + 1 microstep
 
       // Condition 1.
       my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
 
       // Condition 2.
-      // FIXME: Not sure if this corner case can happen, but better to be on the safe side.
+      if (timestamp < start_time) {
+        my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 1u};
+      }
+
+      // Condition 3.
       if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) >= 0) {
         my_fed->effective_start_tag = my_fed->enclave.completed;
         my_fed->effective_start_tag.microstep++;
       }
 
-      // Condition 3. Iterate over the downstream federates
+      // Condition 4. Iterate over the downstream federates
       for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
         federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.downstream[j]);
 
@@ -1329,16 +1327,18 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         }
       }
 
-      // Condition 4. Iterate over the messages from the upstream federates
+      // Condition 5.
+      // This one is a bit subtle. Any messages from upstream federates that the RTI has
+      // not yet seen will be sent to this joining federate after the effective_start_tag
+      // because the effective_start_tag is sent while still holding the mutex.
+
+      // Iterate over the messages from the upstream federates
       for (int j = 0; j < my_fed->enclave.num_upstream; j++) {
         federate_info_t* upstream = GET_FED_INFO(my_fed->enclave.upstream[j]);
 
-        // Get the max over the TAG of the upstreams
         size_t queue_size = pqueue_tag_size(upstream->in_transit_message_tags);
         if (queue_size != 0) {
-          pqueue_t* pq = (pqueue_t*)(upstream->in_transit_message_tags);
-          pqueue_tag_element_t* message_with_max_tag = (pqueue_tag_element_t*)(pq->d[queue_size]);
-          tag_t max_tag = message_with_max_tag->tag;
+          tag_t max_tag = pqueue_tag_max_tag(upstream->in_transit_message_tags);
 
           if (lf_tag_compare(max_tag, my_fed->effective_start_tag) >= 0) {
             my_fed->effective_start_tag = max_tag;
@@ -1347,8 +1347,8 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         }
       }
 
-      // For every downstream that has a pending grant that is higher then the
-      // effective_start_time of the federate, cancel it
+      // For every downstream that has a pending grant that is higher than the
+      // effective_start_time of the federate, cancel it.
       for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
         federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.downstream[j]);
 
@@ -1358,7 +1358,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         }
 
         // Check the pending grants, if any, and keep it only if it is
-        // sonner than the effective start tag
+        // sooner than the effective start tag.
         pqueue_delayed_grant_element_t* dge =
             pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, downstream->enclave.id);
         if (dge != NULL && lf_tag_compare(dge->base.tag, my_fed->effective_start_tag) > 0) {
@@ -1366,13 +1366,14 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         }
       }
 
-      LF_MUTEX_UNLOCK(&rti_mutex);
-
       // Once the effective start time set, sent it to the joining transient,
       // together with the start time of the federation.
 
-      // Send the start time
+      // Have to send the start tag while still holding the mutex to ensure that no message
+      // from an upstream federate is forwarded before the start tag.
       send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
+
+      LF_MUTEX_UNLOCK(&rti_mutex);
     }
   }
 
@@ -1702,11 +1703,11 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     return NULL;
   }
 
-  void send_reject(int* socket_id, unsigned char error_code) {
+  void send_reject(int* socket_id, rejection_code_t error_code) {
     LF_PRINT_DEBUG("RTI sending MSG_TYPE_REJECT.");
     unsigned char response[2];
     response[0] = MSG_TYPE_REJECT;
-    response[1] = error_code;
+    response[1] = (unsigned char)error_code;
     LF_MUTEX_LOCK(&rti_mutex);
     // NOTE: Ignore errors on this response.
     if (write_to_socket(*socket_id, 2, response)) {
@@ -1718,7 +1719,6 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     *socket_id = -1;
     LF_MUTEX_UNLOCK(&rti_mutex);
   }
-  lf_print("handle_timestamp for transient 1157");
 
   /**
    * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
@@ -2450,6 +2450,54 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     return NULL;
   }
 
+  /**
+   * @brief Thread that manages the delayed grants using a priprity queue.
+   *
+   * This thread is responsible for managing the priority queue of delayed grants to be issued.
+   * It waits until the current time matches the highest priority tag time in the queue.
+   * If reached, it notifies the grant immediately. If, however, the current time has not yet
+   * reached the highest priority tag and the queue has been updated (either by inserting or
+   * canceling an entry), the thread stops waiting and restarts the process again.
+   */
+  static void* lf_delayed_grants_thread(void* nothing) {
+    initialize_lf_thread_id();
+    // Hold the mutex when not waiting.
+    LF_MUTEX_LOCK(&rti_mutex);
+    while (!rti_remote->all_federates_exited) {
+      if (pqueue_delayed_grants_size(rti_remote->delayed_grants) > 0) {
+        // Do not pop, but rather peek.
+        pqueue_delayed_grant_element_t* next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
+        instant_t next_time = next->base.tag.time;
+        // Wait for expiration, or a signal to stop or terminate.
+        int ret = lf_clock_cond_timedwait(&updated_delayed_grants, next_time);
+        if (ret == LF_TIMEOUT) {
+          // Time reached to send the grant.
+          // However, the grant may have been canceled while we were waiting.
+          pqueue_delayed_grant_element_t* new_next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
+          if (next == new_next) {
+            pqueue_delayed_grants_pop(rti_remote->delayed_grants);
+            federate_info_t* fed = GET_FED_INFO(next->fed_id);
+            if (next->is_provisional) {
+              notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+            } else {
+              notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+            }
+            free(next);
+          }
+        } else if (ret != 0) {
+          // An error occurred.
+          lf_print_error_and_exit("lf_delayed_grants_thread: lf_clock_cond_timedwait failed with code %d.", ret);
+        }
+      } else if (pqueue_delayed_grants_size(rti_remote->delayed_grants) == 0) {
+        // Wait for something to appear on the queue.
+        lf_cond_wait(&updated_delayed_grants);
+      }
+    }
+    // Free any delayed grants that are still on the queue.
+    pqueue_delayed_grants_free(rti_remote->delayed_grants);
+    LF_MUTEX_UNLOCK(&rti_mutex);
+    return NULL;
+  }
   /**
    * This thread is responsible for managing the priority queue of delayed grants to be issued.
    * It waits until the current time matches the highest priority tag time in the queue.
