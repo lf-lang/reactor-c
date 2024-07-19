@@ -1073,12 +1073,14 @@ void handle_address_ad(uint16_t federate_id) {
  *
  * This will also notify federates downstream of my_fed that this federate is now
  * connected.  This is important when there are zero-delay cycles.
+ * 
+ * This function assumes the caller holds the mutex.
  *
  * @param my_fed the federate to send the start time to.
  * @param federation_start_time the federation start_time
  * @param federate_start_tag the federate effective start tag
  */
-void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
+static void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
   // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
   // message.
   // In the startup phase, federates will receive identical start_time and
@@ -1095,7 +1097,6 @@ void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, ta
     lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
   }
 
-  LF_MUTEX_LOCK(&rti_mutex);
   // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
   // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
   // the federate to the start time.
@@ -1104,11 +1105,9 @@ void send_start_tag(federate_info_t* my_fed, instant_t federation_start_time, ta
   LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
 
   // Notify downstream federates of this now connected transient.
-  for (int i = 0; i < my_fed->enclave.num_upstream; i++) {
-    send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.upstream[i]), my_fed);
+  for (int i = 0; i < my_fed->enclave.num_downstream; i++) {
+    send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.downstream[i]), my_fed);
   }
-
-  LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
 void handle_timestamp(federate_info_t* my_fed) {
@@ -1154,10 +1153,11 @@ void handle_timestamp(federate_info_t* my_fed) {
     start_time = rti_remote->max_start_time + DELAY_START;
     my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
 
-    LF_MUTEX_UNLOCK(&rti_mutex);
-
     // Notify the federate of its start tag.
+    // This has to be done while still holding the mutex.
     send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
+
+    LF_MUTEX_UNLOCK(&rti_mutex);
   } else if (rti_remote->phase == shutdown_phase || !my_fed->is_transient) {
     LF_MUTEX_UNLOCK(&rti_mutex);
 
