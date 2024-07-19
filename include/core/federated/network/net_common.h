@@ -662,26 +662,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * These codes are sent in a MSG_TYPE_REJECT message.
  * They are limited to one byte (uchar).
  */
-
-/** Federation ID does not match. */
-#define FEDERATION_ID_DOES_NOT_MATCH 1
-
-/** Federate with the specified ID has already joined. */
-#define FEDERATE_ID_IN_USE 2
-
-/** Federate ID out of range. */
-#define FEDERATE_ID_OUT_OF_RANGE 3
-
-/** Incoming message is not expected. */
-#define UNEXPECTED_MESSAGE 4
-
-/** Connected to the wrong server. */
-#define WRONG_SERVER 5
-
-/** HMAC authentication failed. */
-#define HMAC_DOES_NOT_MATCH 6
-
-/** RTI not executed using -a or --auth option. */
-#define RTI_NOT_EXECUTED_WITH_AUTH 7
+typedef enum {
+    FEDERATION_ID_DOES_NOT_MATCH = 1,
+    FEDERATE_ID_IN_USE = 2,
+    FEDERATE_ID_OUT_OF_RANGE = 3,
+    UNEXPECTED_MESSAGE = 4,
+    WRONG_SERVER = 5,
+    HMAC_DOES_NOT_MATCH = 6,
+    RTI_NOT_EXECUTED_WITH_AUTH = 7,
+    JOINING_TOO_LATE = 8
+} rejection_code_t;
 
 #endif /* NET_COMMON_H */

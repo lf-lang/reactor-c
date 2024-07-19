@@ -82,7 +82,11 @@ typedef enum clock_sync_stat { clock_sync_off, clock_sync_init, clock_sync_on } 
 /**
  * The federation life cycle phases.
  */
-typedef enum federation_life_cycle_phase { startup_phase, execution_phase, shutdown_phase } federation_life_cycle_phase;
+typedef enum federation_life_cycle_phase {
+  startup_phase,   // Not all persistent federates have joined.
+  execution_phase, // All persistent federates have joined.
+  shutdown_phase   // Federation is shutting down.
+} federation_life_cycle_phase;
 
 /**
  * @brief The type for an element in a delayed grants priority queue that is sorted by tag.
@@ -390,7 +394,7 @@ void* federate_info_thread_TCP(void* fed);
  * @param socket_id Pointer to the socket ID.
  * @param error_code An error code.
  */
-void send_reject(int* socket_id, unsigned char error_code);
+void send_reject(int* socket_id, rejection_code_t error_code);
 
 /**
  * Wait for one incoming connection request from each (persistent) federate,
