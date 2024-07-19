@@ -1193,11 +1193,13 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
    * This will also notify federates downstream of my_fed that this federate is now
    * connected.  This is important when there are zero-delay cycles.
    *
+   * This function assumes the caller holds the mutex.
+   *
    * @param my_fed the federate to send the start time to.
    * @param federation_start_time the federation start_time
    * @param federate_start_tag the federate effective start tag
    */
-  void send_start_tag(federate_info_t * my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
+  static void send_start_tag(federate_info_t * my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
     // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
     // message.
     // In the startup phase, federates will receive identical start_time and
@@ -1214,7 +1216,6 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
       lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
     }
 
-    LF_MUTEX_LOCK(&rti_mutex);
     // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
     // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
     // the federate to the start time.
