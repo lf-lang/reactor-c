@@ -198,7 +198,7 @@ PyObject* load_serializer(string package_name);
  * @param custom_serializer The custom Serializer class
  * @return Serialized Python bytes object
  */
-PyObject* custom_serialize( PyObject* obj, PyObject* custom_serializer);
+PyObject* custom_serialize(PyObject* obj, PyObject* custom_serializer);
 
 /**
  * Deserialize Python object from a bytes object using external serializer
