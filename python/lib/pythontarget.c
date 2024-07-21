@@ -695,3 +695,63 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
   PyGILState_Release(gstate);
   return Py_None;
 }
+
+/**
+ * Load the Serializer class from package name
+ * @param package_name Name of the python package to load
+ * @return Initialized Serializer class
+ */
+PyObject* load_serializer(string package_name) {
+    // import package_name
+    PyObject* pName = PyUnicode_DecodeFSDefault(package_name);
+    PyObject* pModule = PyImport_Import(pName);
+    Py_DECREF(pName);
+    if (PyErr_Occurred()) PyErr_Print();
+    if (pModule == NULL) lf_print_error_and_exit("Could not load the custom serializer package '%s'.", package_name);
+    // Get the Serializer class
+    PyObject* SerializerClass = PyObject_GetAttrString(pModule, "Serializer");
+    if (PyErr_Occurred()) PyErr_Print();
+    if (SerializerClass == NULL) lf_print_error_and_exit("Could not find class 'Serializer' in module '%s'.", package_name);
+    // Instanciate and initialize Serializer class
+    PyObject* custom_serializer = PyObject_CallObject(SerializerClass, NULL);
+    if (PyErr_Occurred()) PyErr_Print();
+    if (custom_serializer == NULL) lf_print_error_and_exit("Could not instantiate class 'Serializer' in module '%s'.", package_name);
+    lf_print_log("Successfully loaded custom serializer package '%s'.\n", package_name);
+    return custom_serializer;
+}
+
+/**
+ * Serialize Python object to a bytes object using external serializer
+ * @param obj The Python object to serialize
+ * @param custom_serializer The custom Serializer class
+ * @return Serialized Python bytes object
+ */
+PyObject* custom_serialize( PyObject* obj, PyObject* custom_serializer) {
+    if (custom_serializer == NULL) lf_print_error_and_exit("Serializer is null.");
+    PyObject *serializer_serialize = PyObject_GetAttrString(custom_serializer, "serialize");
+    PyObject *args = PyTuple_Pack(1, obj);
+    PyObject *serialized_pyobject = PyObject_CallObject(serializer_serialize, args);
+    Py_XDECREF(serializer_serialize);
+    Py_XDECREF(args);
+    if (PyErr_Occurred()) PyErr_Print();
+    if (serialized_pyobject == NULL) lf_print_error_and_exit("Could not serialize object.");
+    return serialized_pyobject;
+}
+
+/**
+ * Deserialize Python object from a bytes object using external serializer
+ * @param serialized_pyobject The serialized bytes Python object
+ * @param custom_serializer The custom Serializer class
+ * @return Deserialized Python object
+ */
+PyObject* custom_deserialize(PyObject* serialized_pyobject, PyObject* custom_serializer) {
+    if (custom_serializer == NULL) lf_print_error_and_exit("Serializer is null.");
+    PyObject *serializer_deserialize = PyObject_GetAttrString(custom_serializer, "deserialize");
+    PyObject *args = PyTuple_Pack(1, serialized_pyobject);
+    PyObject *deserialized_obj = PyObject_CallObject(serializer_deserialize, args);
+    Py_XDECREF(serializer_deserialize);
+    Py_XDECREF(args);
+    if (PyErr_Occurred()) PyErr_Print();
+    if (deserialized_obj == NULL) lf_print_error_and_exit("Could not deserialize deserialized_obj.");
+    return deserialized_obj;
+}
