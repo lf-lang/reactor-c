@@ -279,6 +279,8 @@ int process_args(int argc, const char* argv[]) {
 }
 int main(int argc, const char* argv[]) {
 
+  /*実行時にPIDを取得するので除外*/
+  /*
   FILE *file;
   pid_t pid = 0;
 
@@ -320,6 +322,7 @@ int main(int argc, const char* argv[]) {
           perror("RTI: Error closing file");
       }
   }
+  */
   
   initialize_lf_thread_id();
   initialize_RTI(&rti);
