@@ -41,15 +41,15 @@ inotify系の関数を用いて、書き込みを監視する。
 
 typedef struct check_point_info {
     bool check_do;         //監視実行中フラグ
-    bool start_cp;
-    bool end_cp;           //プロセスから送信される最後のcheck point番号
-    int timer_count;       //各CPのカウント値（deadline配列より抽出）
+    bool start_cp;         //スレッドから送信される最初のcheck point番号
+    bool end_cp;           //スレッドから送信される最後のcheck point番号
+    int timer_count;       //各CPのカウント値（process_info.deadline配列より抽出）
 } cp_info;
 
 typedef struct process_info {
     pid_t pid;             //Pid
-    int p_state;           //プロセスの状態
-    FILE *fd;              //Pid，プロセス名，CPが書かれるファイルを指すポインタ
+    int p_state;           //プロセスの状態　実行 = 1，停止 = 0
+    FILE *fd;              //Pid，CPが書かれるファイルを指すポインタ
     char file_path[256];   //通信用ファイルの配置場所指定
     char command[256];     //コマンドを格納
     char cp_num[256];      //受信したcheck pointの番号
@@ -58,7 +58,7 @@ typedef struct process_info {
 } process_info;
 
 /*
-２回目以降のCP受信によりタイムカウントをリセットする関数
+受信したCPを基に，カウント値を更新する関数
 */
 void time_count_update(process_info *p_info) {
     int cp_num_value = atoi(p_info -> cp_num);
@@ -72,28 +72,31 @@ void time_count_update(process_info *p_info) {
         p_info->cp_array[cp_num_value]->timer_count = p_info->deadline[cp_num_value];
         p_info->cp_array[cp_num_value]->check_do = true;
         p_info->cp_array[cp_num_value - 1]->check_do = false;
-    }    
+    }
 }
 
 /*
-タイマーイベントによるカウントダウン
+タイマーイベントによるカウントダウン．カウント値0で対応プロセスを強制停止
 */
 void count_down(process_info *p_info) {
    //sudoでkillする．system()を用いる
     for(int i =0; i<RTI_federate_nodes; i++) {
         for(int j = 0; j<max_cp_num; j++) {
-            if(p_info[i].cp_array[j]->check_do == true) {
+            if(p_info[i].cp_array[j]->check_do == true && p_info[i].p_state == 1) {
                 p_info[i].cp_array[j]->timer_count--;
+                //カウント値が0であれば停止
                 if(p_info[i].cp_array[j]->timer_count == 0) {
                     char cmd[50];
                     sprintf(cmd, "sudo kill %d", p_info[i].pid);
-                    printf("will kill PID: %d\n", p_info[i].pid);
-
+                    printf("Monitoring: will kill PID: %d\n", p_info[i].pid);
+                    
                     int result = system(cmd);
                     if(result == -1) {
-                        perror("system kill");
+                        perror("Monitoring:  system kill");
                     } else {
-                        printf("QM: kill success\n");
+                        printf("Monitoring: kill success\n");
+                        //プロセス状態を更新
+                        p_info[i].p_state = 0;
                     }
                 }
             }
@@ -125,7 +128,7 @@ void p_info_write(process_info *p_info) {
         for (int j = 0; j < max_cp_num; ++j) {
             p_info[i].cp_array[j] = (cp_info*)malloc(sizeof(cp_info));
             if (p_info[i].cp_array[j] == NULL) {
-                perror("Failed to allocate memory for cp_info");
+                perror("Monitoring: Failed to allocate memory for cp_info");
             }
             p_info[i].cp_array[j]->check_do = false;
             p_info[i].cp_array[j]->start_cp = false;
@@ -154,19 +157,19 @@ void p_info_write(process_info *p_info) {
     //デッドラインを格納（とりあえずfederateのみ）
     p_info[1].deadline[0] = 1010;
     p_info[1].deadline[1] = 100;
-    p_info[1].deadline[2] = 1010;
+    p_info[1].deadline[2] = 100;
     p_info[1].deadline[4] = 1010;
     p_info[1].deadline[5] = 100;
     p_info[1].deadline[6] = 1010;
 }
 
 /*
-プログラムを実行する
+プログラムを実行する．その際，実行したプログラムのpidを取得
 */
 void executeProgram(process_info *p_info, int wd[], int *inotify_fd) {
     //監視のためにinotifyインスタンスを生成
     if((*inotify_fd = inotify_init()) == -1) {
-        perror("Error inotify_init");
+        perror("Monitoring: Error inotify_init");
         exit(EXIT_FAILURE);
     }
     
@@ -175,55 +178,57 @@ void executeProgram(process_info *p_info, int wd[], int *inotify_fd) {
         int result = system(p_info[i].command);
         if (result == -1) {
             //デバッグ
-            perror("Error executing program");
+            perror("Monitoring: Error executing program");
         } else {
             //デバッグ
-            printf("QM: Command %s executed successfully\n", p_info[i].command);
+            printf("Monitoring: Command %s executed successfully\n", p_info[i].command);
+
+            //プロセスの状態を更新
+            p_info[i].p_state = 1;
             
             //Pid取得
             p_info[i].fd = fopen(p_info[i].file_path, "r+");
             if(p_info[i].fd == NULL) {
-                perror("QM: Faild make file");
+                perror("Monitoring: Faild make file");
             } else {
                 fscanf(p_info[i].fd, "%d", &(p_info[i].pid));
-                printf("QM: scanned pid %d\n", p_info[i].pid);
+                printf("Monitoring: scanned pid %d\n", p_info[i].pid);
                 int fd = fileno(p_info[i].fd);
                 if(ftruncate(fd, 0) != 0) {
-                    perror("Failed to truncate file\n");
+                    perror("Monitoring: Failed to truncate file\n");
                     close(fd);
                 }
             }
             fclose(p_info[i].fd);
-            printf("QM: file closed\n");
+            printf("Monitoring: file closed\n");
             
 
             //通信用ファイルを監視対象に設定
             wd[i] = inotify_add_watch(*inotify_fd, p_info[i].file_path, IN_MODIFY);
             if(wd[i] == -1) {
-                perror("QM: Error inotify_add_watch");
+                perror("Monitoring: Error inotify_add_watch");
                 exit(EXIT_FAILURE);
             } else {
-                printf("QM: 監視対象設定完了\n");
+                printf("Monitoring: 監視対象設定完了\n");
             }
         }
     }
 }
 
 /*
-CPの書き込みを待ち、読み込む関数
+CPの書き込みまたはタイマーイベントの起動を待ち、読み込む関数
 */
 void watch_cp_write(process_info *p_info, int wd[], struct itimerspec timer, int *inotify_fd, int *timer_fd, fd_set *rdfs, int max_fd) {
     char buffer[EVENT_BUF_LEN]; //イベント格納バッファ
-    char line[256];
-    timerfd_settime(*timer_fd, 0, &timer, NULL);
-    //int count = 0;  //デバッグ用
+    char line[256]; //通信用ファイルを1行ずつ読み込むための配列
+    timerfd_settime(*timer_fd, 0, &timer, NULL); // タイマーイベントのセット
     
     while (1) {
         // ファイル変更イベント，タイマーイベントを待つ
         fd_set tmp_fds = *rdfs;
         int ret = select(max_fd, &tmp_fds, NULL, NULL, NULL);
         if (ret == -1) {
-            perror("select");
+            perror("Monitoring: select function failed");
             break;
         }
 
@@ -231,7 +236,7 @@ void watch_cp_write(process_info *p_info, int wd[], struct itimerspec timer, int
             // タイマーイベントの処理
             uint64_t expirations;
             if (read(*timer_fd, &expirations, sizeof(expirations)) == -1) {
-                perror("read");
+                perror("Monitoring: read function failed");
             } else {
                 count_down(p_info);
             }
@@ -241,10 +246,9 @@ void watch_cp_write(process_info *p_info, int wd[], struct itimerspec timer, int
             //変更イベントを読み取る。readを使うことで一度に読み取り
             int length = read(*inotify_fd, buffer, EVENT_BUF_LEN);  //lengthはバイト数が入る。readで一度に読み取り
             if (length < 0) {
-                perror("QM: read event");
+                perror("Monitoring: read event failed");
                 exit(EXIT_FAILURE);
             }
-            //count++;
 
             //読み込んだ変更イベントを1つずつ処理する
             // event_point : 変更内容を順に取得するために使用．event毎の先頭アドレスを指す
@@ -258,12 +262,12 @@ void watch_cp_write(process_info *p_info, int wd[], struct itimerspec timer, int
                         if(event->wd == wd[i]) {
                             p_info[i].fd = fopen(p_info[i].file_path, "r+");
                             if (!p_info[i].fd) {
-                                perror("QM: Error opening file");
+                                perror("Monitoring: Error opening file");
                                 continue;
                             }
 
                             while (flock(fileno(p_info[i].fd), LOCK_EX) == -1) { // 排他ロックを取得
-                                perror("QM: Failed to lock file");
+                                perror("Monitoring: Failed to lock file");
                                 usleep(1000); // 待機してリトライ
                             }
 
@@ -271,19 +275,19 @@ void watch_cp_write(process_info *p_info, int wd[], struct itimerspec timer, int
                             while (fgets(line, sizeof(line), p_info[i].fd) != NULL) {
                                 last_line = 1;
                                 sscanf(line, "cp: %s", p_info[i].cp_num);
-                                printf("QM: CP_num %s\n", p_info[i].cp_num);
+                                printf("Monitoring: CP_num %s\n", p_info[i].cp_num);
 
                                 //CP受信による実行時間監視の開始
                                 time_count_update(&p_info[i]);
                                 //実行デバック
                                 int cp_num_value = atoi(p_info[i].cp_num);
-                                printf("QM: updated count %d\n", p_info[i].cp_array[cp_num_value]->timer_count);
+                                printf("Monitoring: updated count %d\n", p_info[i].cp_array[cp_num_value]->timer_count);
                             }
 
                             if (last_line) {
                                 int fd = fileno(p_info[i].fd);
                                 if (ftruncate(fd, 0) != 0) {
-                                    perror("Failed to truncate file\n");
+                                    perror("Monitoring: Failed to truncate file\n");
                                 }
                                 rewind(p_info[i].fd); // ファイルポインタを先頭に戻す
                             }
@@ -314,7 +318,7 @@ int main() {
     timer.it_interval.tv_nsec = 1000000;
     timer_fd = timerfd_create(CLOCK_REALTIME, 0);
     if (timer_fd == -1) {
-        perror("timerfd_create");
+        perror("Monitoring: timerfd_create");
         return EXIT_FAILURE;
     }
 
@@ -322,7 +326,7 @@ int main() {
     //必要情報を先に記録する
     p_info_write(p_info);
 
-    //RTI, federateの初期起動，コマンドを基に実行
+    //プログラムを実行する．その際，実行したプログラムのpidを取得
     executeProgram(p_info, wd, &inotify_fd);
 
     //最大のファイルディスクリプタを設定
@@ -331,7 +335,7 @@ int main() {
     FD_SET(inotify_fd, &rdfs);
     FD_SET(timer_fd, &rdfs);
 
-    //それぞれのプロセスからの通信を待つ
+    //CPの書き込みまたはタイマーイベントの起動を待ち、読み込む関数
     watch_cp_write(p_info, wd, timer, &inotify_fd, &timer_fd, &rdfs, max_fd);
 
     return 0;
