@@ -140,7 +140,8 @@ static void pqueue_delayed_grants_remove(pqueue_delayed_grants_t* q, pqueue_dela
  * @param fed_id The federate id.
  * @return An entry with the specified federate if or NULL if there isn't one.
  */
-static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_delayed_grants_t* q, uint16_t fed_id) {
+static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_delayed_grants_t* q,
+                                                                            uint16_t fed_id) {
   pqueue_delayed_grant_element_t* dge;
   if (!q || q->size == 1)
     return NULL;
@@ -1073,7 +1074,7 @@ void handle_address_ad(uint16_t federate_id) {
  *
  * This will also notify federates downstream of my_fed that this federate is now
  * connected.  This is important when there are zero-delay cycles.
- * 
+ *
  * This function assumes the caller holds the mutex.
  *
  * @param my_fed the federate to send the start time to.
@@ -1166,13 +1167,13 @@ void handle_timestamp(federate_info_t* my_fed) {
     send_reject(&my_fed->socket, JOINING_TOO_LATE);
     return;
   } else {
-    // The federation is transient and we are in the execution phase.
+    // The federate is transient and we are in the execution phase.
     // At this point, we already hold the mutex.
 
     //// Algorithm for computing the effective_start_time of a joining transient
     // The effective_start_time will be the max among all the following tags:
     //  1. At tag: (joining time, 0 microstep)
-    //  2. (start_time, 1 microstep)
+    //  2. (start_time, 0 microstep)
     //  3. The latest completed logical tag + 1 microstep
     //  4. The latest granted (P)TAG + 1 microstep, of every downstream federate
     //  5. The maximun tag of messages from the upstream federates + 1 microstep
@@ -1182,7 +1183,7 @@ void handle_timestamp(federate_info_t* my_fed) {
 
     // Condition 2.
     if (timestamp < start_time) {
-      my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 1u};
+      my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
     }
 
     // Condition 3.
@@ -2461,6 +2462,11 @@ static int set_has_upstream_transient_federates_parameter_and_check() {
 void wait_for_federates(int socket_descriptor) {
   // Wait for connections from persistent federates and create a thread for each.
   lf_connect_to_persistent_federates(socket_descriptor);
+
+  // Set the start_time in the RTI trace
+  if (rti_remote->base.tracing_enabled) {
+    lf_tracing_set_start_time(start_time);
+  }
 
   // Set has_upstream_transient_federates parameter in all federates and check
   // that there is no more than one level of transiency
