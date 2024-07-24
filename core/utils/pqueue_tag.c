@@ -162,7 +162,7 @@ void pqueue_tag_dump(pqueue_tag_t* q) { pqueue_dump((pqueue_t*)q, pqueue_tag_pri
 
 tag_t pqueue_tag_max_tag(pqueue_tag_t* q) {
   tag_t result = NEVER_TAG;
-  for (int i = 1; i < q->size; i++) {
+  for (size_t i = 1; i < q->size; i++) {
     pqueue_tag_element_t* element = (pqueue_tag_element_t*)(q->d[i]);
     if (lf_tag_compare(element->tag, result) > 0) {
       result = element->tag;
