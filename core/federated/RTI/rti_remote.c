@@ -1231,6 +1231,9 @@ void handle_timestamp(federate_info_t* my_fed) {
 
     // For every downstream that has a pending grant that is higher than the
     // effective_start_time of the federate, cancel it.
+    // FIXME: Should this be higher-than or equal to?
+    // FIXME: Also, won't the grant simply be lost?
+    // If the joining federate doesn't send anything, the downstream federate won't issue another NET.
     for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
       federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.downstream[j]);
 
