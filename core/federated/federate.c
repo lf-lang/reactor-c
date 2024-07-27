@@ -862,6 +862,9 @@ static int perform_hmac_authentication() {
     if (received[0] == MSG_TYPE_FAILED) {
       lf_print_error("RTI has failed.");
       return -1;
+    } else if (received[0] == MSG_TYPE_REJECT && received[1] == RTI_NOT_EXECUTED_WITH_AUTH) {
+      lf_print_error("RTI is not executed with HMAC option.");
+      return -1;
     } else {
       lf_print_error("Received unexpected response %u from the RTI (see net_common.h).", received[0]);
       return -1;
@@ -2611,14 +2614,18 @@ void lf_set_federation_id(const char* fid) { federation_metadata.federation_id =
 void lf_spawn_staa_thread() { lf_thread_create(&_fed.staaSetter, update_ports_from_staa_offsets, NULL); }
 #endif // FEDERATED_DECENTRALIZED
 
-void lf_stall_advance_level_federation(environment_t* env, size_t level) {
-  LF_PRINT_DEBUG("Acquiring the environment mutex.");
-  LF_MUTEX_LOCK(&env->mutex);
-  LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", level, max_level_allowed_to_advance);
+void lf_stall_advance_level_federation_locked(size_t level) {
+  LF_PRINT_DEBUG("Waiting for MLAA %d to exceed level %zu.", max_level_allowed_to_advance, level);
   while (((int)level) >= max_level_allowed_to_advance) {
     lf_cond_wait(&lf_port_status_changed);
   };
-  LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %zu.", max_level_allowed_to_advance, level);
+  LF_PRINT_DEBUG("Exiting wait with MLAA %d and level %zu.", max_level_allowed_to_advance, level);
+}
+
+void lf_stall_advance_level_federation(environment_t* env, size_t level) {
+  LF_PRINT_DEBUG("Acquiring the environment mutex.");
+  LF_MUTEX_LOCK(&env->mutex);
+  lf_stall_advance_level_federation_locked(level);
   LF_MUTEX_UNLOCK(&env->mutex);
 }
 

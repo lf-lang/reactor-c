@@ -22,7 +22,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_macos_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_gcc_clang.c
     )
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "nRF52")
     set(LF_LOW_LEVEL_PLATFORM_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_nrf52_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
@@ -45,7 +45,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
 else()
-    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Linux, MacOS, Nrf52, RP2040, Windows, and Zephyr.")
+    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Linux, MacOS, nRF52, RP2040, Windows, and Zephyr.")
 endif()
 
 list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/lf_platform_util.c)
@@ -59,6 +59,14 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     zephyr_library_named(lf-low-level-platform-impl)
     zephyr_library_sources(${LF_LOW_LEVEL_PLATFORM_FILES})
     zephyr_library_link_libraries(kernel)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+    if (DEFINED NUMBER_OF_WORKERS)
+        if (${NUMBER_OF_WORKERS} GREATER 2)
+            message(FATAL_ERROR "RP2040 can have at most 2 workers (one per core).\
+                Number of requested workers is ${NUMBER_OF_WORKERS}.")
+        endif()
+    endif()
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
     target_link_libraries(lf-low-level-platform-impl PRIVATE fp-sdk)
@@ -101,7 +109,7 @@ target_link_libraries(lf-low-level-platform-impl PRIVATE lf::low-level-platform-
 target_link_libraries(lf-low-level-platform-impl PUBLIC lf-logging-api)
 
 target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
-message(STATUS "Applying preprocessor definitions to platform...")
+message(STATUS "Applying preprocessor definitions to low-level-platform...")
 macro(low_level_platform_define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})

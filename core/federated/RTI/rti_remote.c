@@ -1198,6 +1198,9 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
       // If the connection is a peer-to-peer connection between two
       // federates, reject the connection with the WRONG_SERVER error.
       send_reject(socket_id, WRONG_SERVER);
+    } else if (buffer[0] == MSG_TYPE_FED_NONCE) {
+      send_reject(socket_id, RTI_NOT_EXECUTED_WITH_AUTH);
+      lf_print_error("RTI not executed with HMAC authentication option using -a or --auth.");
     } else {
       send_reject(socket_id, UNEXPECTED_MESSAGE);
     }
@@ -1747,10 +1750,17 @@ void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
     scheduling_node_t* node = scheduling_nodes[i];
-    if (node->upstream != NULL)
+    if (node->upstream != NULL) {
       free(node->upstream);
-    if (node->downstream != NULL)
+      free(node->upstream_delay);
+    }
+    if (node->min_delays != NULL) {
+      free(node->min_delays);
+    }
+    if (node->downstream != NULL) {
       free(node->downstream);
+    }
+    free(node);
   }
   free(scheduling_nodes);
 }

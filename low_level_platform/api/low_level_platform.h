@@ -234,7 +234,7 @@ int lf_cond_signal(lf_cond_t* cond);
 
 /**
  * Wait for condition variable "cond" to be signaled or broadcast.
- * "mutex" is assumed to be locked before.
+ * The cond->mutex is assumed to be locked when this is called.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
