@@ -1352,6 +1352,9 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
 
         // For every downstream that has a pending grant that is higher than the
         // effective_start_time of the federate, cancel it.
+        // FIXME: Should this be higher-than or equal to?
+        // FIXME: Also, won't the grant simply be lost?
+        // If the joining federate doesn't send anything, the downstream federate won't issue another NET.
         for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
           federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.downstream[j]);
 
