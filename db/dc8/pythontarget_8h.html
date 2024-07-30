@@ -148,6 +148,12 @@ Functions</h2></td></tr>
 <tr class="separator:a0f16ef4bd6f5ce18c46b2ada2fd3f86f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4edcc011de4a45d924a03a3125d4cf91" id="r_a4edcc011de4a45d924a03a3125d4cf91"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4edcc011de4a45d924a03a3125d4cf91">get_python_function</a> (<a class="el" href="../../d6/d1d/lf__types_8h.html#a4505c08c065b48840a30eedd9845cce2">string</a> module, <a class="el" href="../../d6/d1d/lf__types_8h.html#a4505c08c065b48840a30eedd9845cce2">string</a> class, int instance_id, <a class="el" href="../../d6/d1d/lf__types_8h.html#a4505c08c065b48840a30eedd9845cce2">string</a> func)</td></tr>
 <tr class="separator:a4edcc011de4a45d924a03a3125d4cf91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac1ca878d52a3d35b91545265b609c00" id="r_aac1ca878d52a3d35b91545265b609c00"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aac1ca878d52a3d35b91545265b609c00">load_serializer</a> (<a class="el" href="../../d6/d1d/lf__types_8h.html#a4505c08c065b48840a30eedd9845cce2">string</a> package_name)</td></tr>
+<tr class="separator:aac1ca878d52a3d35b91545265b609c00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1b50ff09c749298ebc55199e7d820fc" id="r_ad1b50ff09c749298ebc55199e7d820fc"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad1b50ff09c749298ebc55199e7d820fc">custom_serialize</a> (PyObject *obj, PyObject *custom_serializer)</td></tr>
+<tr class="separator:ad1b50ff09c749298ebc55199e7d820fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aadb88a2052337f26c767421a4f4b7c43" id="r_aadb88a2052337f26c767421a4f4b7c43"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aadb88a2052337f26c767421a4f4b7c43">custom_deserialize</a> (PyObject *serialized_pyobject, PyObject *custom_serializer)</td></tr>
+<tr class="separator:aadb88a2052337f26c767421a4f4b7c43"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a543f7a99c5c0d688350df1dd90ea81bd" id="r_a543f7a99c5c0d688350df1dd90ea81bd"><td class="memItemLeft" align="right" valign="top">PyMODINIT_FUNC&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a543f7a99c5c0d688350df1dd90ea81bd">GEN_NAME</a> (PyInit_, MODULE_NAME)(void)</td></tr>
 <tr class="separator:a543f7a99c5c0d688350df1dd90ea81bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -324,6 +330,64 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="aadb88a2052337f26c767421a4f4b7c43" name="aadb88a2052337f26c767421a4f4b7c43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aadb88a2052337f26c767421a4f4b7c43">&#9670;&#160;</a></span>custom_deserialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PyObject * custom_deserialize </td>
+          <td>(</td>
+          <td class="paramtype">PyObject *</td>          <td class="paramname"><span class="paramname"><em>serialized_pyobject</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PyObject *</td>          <td class="paramname"><span class="paramname"><em>custom_serializer</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Deserialize Python object from a bytes object using external serializer </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">serialized_pyobject</td><td>The serialized bytes Python object </td></tr>
+    <tr><td class="paramname">custom_serializer</td><td>The custom Serializer class </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Deserialized Python object </dd></dl>
+
+</div>
+</div>
+<a id="ad1b50ff09c749298ebc55199e7d820fc" name="ad1b50ff09c749298ebc55199e7d820fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1b50ff09c749298ebc55199e7d820fc">&#9670;&#160;</a></span>custom_serialize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PyObject * custom_serialize </td>
+          <td>(</td>
+          <td class="paramtype">PyObject *</td>          <td class="paramname"><span class="paramname"><em>obj</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">PyObject *</td>          <td class="paramname"><span class="paramname"><em>custom_serializer</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Serialize Python object to a bytes object using external serializer </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">obj</td><td>The Python object to serialize </td></tr>
+    <tr><td class="paramname">custom_serializer</td><td>The custom Serializer class </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Serialized Python bytes object </dd></dl>
+
+</div>
+</div>
 <a id="a543f7a99c5c0d688350df1dd90ea81bd" name="a543f7a99c5c0d688350df1dd90ea81bd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a543f7a99c5c0d688350df1dd90ea81bd">&#9670;&#160;</a></span>GEN_NAME()</h2>
 
@@ -403,6 +467,30 @@ Invoke a Python func in class[instance_id] from module. Class instances in gener
 <dl class="section return"><dt>Returns</dt><dd>The function or NULL on error. </dd></dl>
 </li>
 </ul>
+
+</div>
+</div>
+<a id="aac1ca878d52a3d35b91545265b609c00" name="aac1ca878d52a3d35b91545265b609c00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac1ca878d52a3d35b91545265b609c00">&#9670;&#160;</a></span>load_serializer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PyObject * load_serializer </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/d1d/lf__types_8h.html#a4505c08c065b48840a30eedd9845cce2">string</a></td>          <td class="paramname"><span class="paramname"><em>package_name</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Load the Serializer class from package name </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">package_name</td><td>Name of the python package to load </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Initialized Serializer class </dd></dl>
 
 </div>
 </div>

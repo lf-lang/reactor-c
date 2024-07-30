@@ -20,5 +20,7 @@ var searchData=
   ['convert_5flft_5ffile_5fto_5fcsv_17',['convert_lft_file_to_csv',['../d6/d1e/namespacefedsd.html#a9419c369fa9f1377e24ef230e02b266a',1,'fedsd']]],
   ['convert_5fns_5fto_5ftimespec_18',['convert_ns_to_timespec',['../d4/dac/lf__unix__clock__support_8h.html#af509cb4725e09a3e9af8d84bc98e4331',1,'lf_unix_clock_support.h']]],
   ['convert_5ftimespec_5fto_5fns_19',['convert_timespec_to_ns',['../d4/dac/lf__unix__clock__support_8h.html#ab5a60065ba9bd0644386acf7f8c5e1d2',1,'lf_unix_clock_support.h']]],
-  ['create_5fclock_5fsync_5fthread_20',['create_clock_sync_thread',['../d9/dd5/clock-sync_8h.html#ac094b53ced87d3cbd617a66591f4282a',1,'clock-sync.h']]]
+  ['create_5fclock_5fsync_5fthread_20',['create_clock_sync_thread',['../d9/dd5/clock-sync_8h.html#ac094b53ced87d3cbd617a66591f4282a',1,'clock-sync.h']]],
+  ['custom_5fdeserialize_21',['custom_deserialize',['../db/dc8/pythontarget_8h.html#aadb88a2052337f26c767421a4f4b7c43',1,'custom_deserialize(PyObject *serialized_pyobject, PyObject *custom_serializer):&#160;pythontarget.c'],['../db/df4/pythontarget_8c.html#aadb88a2052337f26c767421a4f4b7c43',1,'custom_deserialize(PyObject *serialized_pyobject, PyObject *custom_serializer):&#160;pythontarget.c']]],
+  ['custom_5fserialize_22',['custom_serialize',['../db/dc8/pythontarget_8h.html#ad1b50ff09c749298ebc55199e7d820fc',1,'custom_serialize(PyObject *obj, PyObject *custom_serializer):&#160;pythontarget.c'],['../db/df4/pythontarget_8c.html#ad1b50ff09c749298ebc55199e7d820fc',1,'custom_serialize(PyObject *obj, PyObject *custom_serializer):&#160;pythontarget.c']]]
 ];
