@@ -65,7 +65,7 @@ jobs:
 
   lf-default:
     needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@LTC-optimization-debug-in-ci
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@Macos-debug-in-ci
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
