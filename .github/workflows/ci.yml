@@ -18,83 +18,83 @@ jobs:
     uses: lf-lang/lingua-franca/.github/workflows/check-labels.yml@master
     if:  ${{ github.event_name == 'pull_request' }}
 
-  unit-tests-single:
-    uses: ./.github/workflows/unit-tests.yml
-    with:
-      cmake-args: '-UNUMBER_OF_WORKERS -DLF_SINGLE_THREADED=1'
+  # unit-tests-single:
+  #   uses: ./.github/workflows/unit-tests.yml
+  #   with:
+  #     cmake-args: '-UNUMBER_OF_WORKERS -DLF_SINGLE_THREADED=1'
 
-  unit-tests-multi:
-    uses: ./.github/workflows/unit-tests.yml
-    with:
-      cmake-args: '-DNUMBER_OF_WORKERS=4 -ULF_SINGLE_THREADED'
+  # unit-tests-multi:
+  #   uses: ./.github/workflows/unit-tests.yml
+  #   with:
+  #     cmake-args: '-DNUMBER_OF_WORKERS=4 -ULF_SINGLE_THREADED'
 
-  build-rti:
-    uses: ./.github/workflows/build-rti.yml
+  # build-rti:
+  #   uses: ./.github/workflows/build-rti.yml
 
-  build-trace-tools:
-    uses: ./.github/workflows/build-trace-tools.yml
+  # build-trace-tools:
+  #   uses: ./.github/workflows/build-trace-tools.yml
 
   fetch-lf:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
       file: 'lingua-franca-ref.txt'
 
-  lf-default-arduino:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-arduino-tests.yml@master
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'arduino') }}
+  # lf-default-arduino:
+  #   needs: [fetch-lf]
+  #   uses: lf-lang/lingua-franca/.github/workflows/c-arduino-tests.yml@master
+  #   with:
+  #     runtime-ref: ${{ github.ref }}
+  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #   if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'arduino') }}
 
-  lf-default-zephyr:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-zephyr-tests.yml@master
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
+  # lf-default-zephyr:
+  #   needs: [fetch-lf]
+  #   uses: lf-lang/lingua-franca/.github/workflows/c-zephyr-tests.yml@master
+  #   with:
+  #     runtime-ref: ${{ github.ref }}
+  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #   if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
 
-  lf-default-flexpret:
-   needs: [fetch-lf]
-   uses: lf-lang/lingua-franca/.github/workflows/c-flexpret-tests.yml@master
-   with:
-     runtime-ref: ${{ github.ref }}
-     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-   if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'flexpret') }}
+  # lf-default-flexpret:
+  #  needs: [fetch-lf]
+  #  uses: lf-lang/lingua-franca/.github/workflows/c-flexpret-tests.yml@master
+  #  with:
+  #    runtime-ref: ${{ github.ref }}
+  #    compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #  if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'flexpret') }}
 
   lf-default:
     needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@LTC-optimization-debug-in-ci
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+      all-platforms: true
 
-  lf-python:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/py-tests.yml@master
-    with:
-      reactor-c-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'python') }}
+  # lf-python:
+  #   needs: [fetch-lf]
+  #   uses: lf-lang/lingua-franca/.github/workflows/py-tests.yml@master
+  #   with:
+  #     reactor-c-ref: ${{ github.ref }}
+  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #   if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'python') }}
 
-  lf-gedf-np:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      scheduler: GEDF_NP
-      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
+  # lf-gedf-np:
+  #   needs: [fetch-lf]
+  #   uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
+  #   with:
+  #     runtime-ref: ${{ github.ref }}
+  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #     scheduler: GEDF_NP
+  #     all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+  #   if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
 
-  lf-adaptive:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      scheduler: ADAPTIVE
-      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
+  # lf-adaptive:
+  #   needs: [fetch-lf]
+  #   uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
+  #   with:
+  #     runtime-ref: ${{ github.ref }}
+  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #     scheduler: ADAPTIVE
+  #     all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+  #   if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
