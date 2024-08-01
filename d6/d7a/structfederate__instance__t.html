@@ -233,7 +233,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>A record of the most recently sent LTC (latest tag complete) message. In some situations, federates can send logical_tag_complete for the same tag twice or more in-a-row to the RTI. For example, when _lf_next() returns without advancing tag. To prevent overwhelming the RTI with extra messages, record the last sent logical tag complete message and check against it in <a class="el" href="../../d1/dfa/federate_8h.html#a0666da3ab34995c8050d58a89f41fa87" title="Send a latest tag complete (LTC) signal to the RTI.">lf_latest_tag_complete()</a>.</p>
+<p>A record of the most recently sent LTC (latest tag confirmed) message. In some situations, federates can send logical_tag_complete for the same tag twice or more in-a-row to the RTI. For example, when _lf_next() returns without advancing tag. To prevent overwhelming the RTI with extra messages, record the last sent logical tag complete message and check against it in <a class="el" href="../../d1/dfa/federate_8h.html#a7c93fd97eedb98f863773b15bb4d1be1" title="Send a latest tag confirmed (LTC) signal to the RTI.">lf_latest_tag_confirmed()</a>.</p>
 <dl class="section note"><dt>Note</dt><dd>Here, the underlying assumption is that the TCP stack will deliver the Logical TAG Complete message to the RTI eventually if it is deliverable </dd></dl>
 
 </div>

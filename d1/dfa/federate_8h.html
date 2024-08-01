@@ -169,9 +169,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a5bf0f2e328634d13f36aeb2587bd7947" id="r_a5bf0f2e328634d13f36aeb2587bd7947"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5bf0f2e328634d13f36aeb2587bd7947">lf_handle_p2p_connections_from_federates</a> (void *)</td></tr>
 <tr class="memdesc:a5bf0f2e328634d13f36aeb2587bd7947"><td class="mdescLeft">&#160;</td><td class="mdescRight">Thread to accept connections from other federates.  <br /></td></tr>
 <tr class="separator:a5bf0f2e328634d13f36aeb2587bd7947"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0666da3ab34995c8050d58a89f41fa87" id="r_a0666da3ab34995c8050d58a89f41fa87"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0666da3ab34995c8050d58a89f41fa87">lf_latest_tag_complete</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a>)</td></tr>
-<tr class="memdesc:a0666da3ab34995c8050d58a89f41fa87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a latest tag complete (LTC) signal to the RTI.  <br /></td></tr>
-<tr class="separator:a0666da3ab34995c8050d58a89f41fa87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c93fd97eedb98f863773b15bb4d1be1" id="r_a7c93fd97eedb98f863773b15bb4d1be1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c93fd97eedb98f863773b15bb4d1be1">lf_latest_tag_confirmed</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a>)</td></tr>
+<tr class="memdesc:a7c93fd97eedb98f863773b15bb4d1be1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a latest tag confirmed (LTC) signal to the RTI.  <br /></td></tr>
+<tr class="separator:a7c93fd97eedb98f863773b15bb4d1be1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae612f180643d0436d4496738b957af68" id="r_ae612f180643d0436d4496738b957af68"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#a9acb70e6b48452bd9d146e35bafc535c">parse_rti_code_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae612f180643d0436d4496738b957af68">lf_parse_rti_addr</a> (const char *rti_addr)</td></tr>
 <tr class="memdesc:ae612f180643d0436d4496738b957af68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse the address of the RTI and store them into the global federation_metadata struct.  <br /></td></tr>
 <tr class="separator:ae612f180643d0436d4496738b957af68"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -445,14 +445,14 @@ Anirudh Rengarajsm </dd></dl>
 
 </div>
 </div>
-<a id="a0666da3ab34995c8050d58a89f41fa87" name="a0666da3ab34995c8050d58a89f41fa87"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0666da3ab34995c8050d58a89f41fa87">&#9670;&#160;</a></span>lf_latest_tag_complete()</h2>
+<a id="a7c93fd97eedb98f863773b15bb4d1be1" name="a7c93fd97eedb98f863773b15bb4d1be1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c93fd97eedb98f863773b15bb4d1be1">&#9670;&#160;</a></span>lf_latest_tag_confirmed()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void lf_latest_tag_complete </td>
+          <td class="memname">void lf_latest_tag_confirmed </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -460,7 +460,7 @@ Anirudh Rengarajsm </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Send a latest tag complete (LTC) signal to the RTI. </p>
+<p>Send a latest tag confirmed (LTC) signal to the RTI. </p>
 <p>This avoids the send if an equal or later LTC has previously been sent.</p>
 <p>This function assumes the caller holds the mutex lock on the top-level environment.</p>
 <dl class="params"><dt>Parameters</dt><dd>

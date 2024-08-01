@@ -26,7 +26,7 @@ var net__common_8h =
     [ "MSG_TYPE_FED_IDS", "d9/da6/net__common_8h.html#a8e49ce0b1c3a58c881849ca4d0bae824", null ],
     [ "MSG_TYPE_FED_NONCE", "d9/da6/net__common_8h.html#a191b27bec42ab0370248fbc64cc9b860", null ],
     [ "MSG_TYPE_FED_RESPONSE", "d9/da6/net__common_8h.html#acd7e1e07253e568044a204a1f82d36a1", null ],
-    [ "MSG_TYPE_LATEST_TAG_COMPLETE", "d9/da6/net__common_8h.html#ae17d641bfe8dcd23091a4cfbae028660", null ],
+    [ "MSG_TYPE_LATEST_TAG_CONFIRMED", "d9/da6/net__common_8h.html#ada47c9f6736992a3df380526d87089f9", null ],
     [ "MSG_TYPE_MESSAGE", "d9/da6/net__common_8h.html#ac79b5228f132029285408a30a31a174e", null ],
     [ "MSG_TYPE_NEIGHBOR_STRUCTURE", "d9/da6/net__common_8h.html#a48ec489cb1543b161c262f4bee6c9598", null ],
     [ "MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE", "d9/da6/net__common_8h.html#a77a9c1b741d7ca0f4e8d00a5b74ef91e", null ],

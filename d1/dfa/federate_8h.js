@@ -18,7 +18,7 @@ var federate_8h =
     [ "lf_create_server", "d1/dfa/federate_8h.html#a926a4fb7f9b045acb13fee6c2b7192dd", null ],
     [ "lf_enqueue_port_absent_reactions", "d1/dfa/federate_8h.html#ae427b4c0340dbe19d46c93708fb6151a", null ],
     [ "lf_handle_p2p_connections_from_federates", "d1/dfa/federate_8h.html#a5bf0f2e328634d13f36aeb2587bd7947", null ],
-    [ "lf_latest_tag_complete", "d1/dfa/federate_8h.html#a0666da3ab34995c8050d58a89f41fa87", null ],
+    [ "lf_latest_tag_confirmed", "d1/dfa/federate_8h.html#a7c93fd97eedb98f863773b15bb4d1be1", null ],
     [ "lf_parse_rti_addr", "d1/dfa/federate_8h.html#ae612f180643d0436d4496738b957af68", null ],
     [ "lf_reset_status_fields_on_input_port_triggers", "d1/dfa/federate_8h.html#a3c68a6af36bc24d04d8637c3d4adc1d1", null ],
     [ "lf_send_message", "d1/dfa/federate_8h.html#a2f330bfe2fdb03cbf49596bcc012bc58", null ],

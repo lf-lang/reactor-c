@@ -81,7 +81,7 @@ var searchData=
   ['lf_5fis_5fsame_78',['lf_is_same',['../dd/d70/generics_8h.html#a785378b93bab907d10fee21425a292e5',1,'generics.h']]],
   ['lf_5fis_5fsame_5ftype_79',['lf_is_same_type',['../dd/d70/generics_8h.html#a886f2df25fcc1b16e512d6143e910b6f',1,'generics.h']]],
   ['lf_5fis_5ftag_5fafter_5fstop_5ftag_80',['lf_is_tag_after_stop_tag',['../dd/d37/reactor__common_8c.html#af4bdd144e6cc65dfa3b996d4bd82f83a',1,'lf_is_tag_after_stop_tag(environment_t *env, tag_t tag):&#160;reactor_common.c'],['../dc/d85/reactor_8h.html#af4bdd144e6cc65dfa3b996d4bd82f83a',1,'lf_is_tag_after_stop_tag(environment_t *env, tag_t tag):&#160;reactor_common.c']]],
-  ['lf_5flatest_5ftag_5fcomplete_81',['lf_latest_tag_complete',['../d1/dfa/federate_8h.html#a0666da3ab34995c8050d58a89f41fa87',1,'federate.h']]],
+  ['lf_5flatest_5ftag_5fconfirmed_81',['lf_latest_tag_confirmed',['../d1/dfa/federate_8h.html#a7c93fd97eedb98f863773b15bb4d1be1',1,'federate.h']]],
   ['lf_5fleft_82',['LF_LEFT',['../dc/d68/pqueue__base_8c.html#a8d1b3e7289cde75b3042e855207bbd6e',1,'pqueue_base.c']]],
   ['lf_5flevel_83',['LF_LEVEL',['../d8/d3c/util_8h.html#ad5a08658dc3e13eab4cddafd94734794',1,'util.h']]],
   ['lf_5flinux_5fsupport_2ec_84',['lf_linux_support.c',['../d4/dba/lf__linux__support_8c.html',1,'']]],
