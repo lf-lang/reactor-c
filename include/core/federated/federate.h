@@ -150,12 +150,12 @@ typedef struct federate_instance_t {
   bool received_stop_request_from_rti;
 
   /**
-   * A record of the most recently sent LTC (latest tag complete) message.
+   * A record of the most recently sent LTC (latest tag confirmed) message.
    * In some situations, federates can send logical_tag_complete for
    * the same tag twice or more in-a-row to the RTI. For example, when
    * _lf_next() returns without advancing tag. To prevent overwhelming
    * the RTI with extra messages, record the last sent logical tag
-   * complete message and check against it in lf_latest_tag_complete().
+   * complete message and check against it in lf_latest_tag_confirmed().
    *
    * @note Here, the underlying assumption is that the TCP stack will
    *  deliver the Logical TAG Complete message to the RTI eventually
@@ -291,7 +291,7 @@ void lf_enqueue_port_absent_reactions(environment_t* env);
 void* lf_handle_p2p_connections_from_federates(void*);
 
 /**
- * @brief Send a latest tag complete (LTC) signal to the RTI.
+ * @brief Send a latest tag confirmed (LTC) signal to the RTI.
  *
  * This avoids the send if an equal or later LTC has previously been sent.
  *
@@ -300,7 +300,7 @@ void* lf_handle_p2p_connections_from_federates(void*);
  *
  * @param tag_to_send The tag to send.
  */
-void lf_latest_tag_complete(tag_t);
+void lf_latest_tag_confirmed(tag_t);
 
 /**
  * @brief Parse the address of the RTI and store them into the global federation_metadata struct.
