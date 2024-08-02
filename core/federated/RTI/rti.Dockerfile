@@ -2,14 +2,12 @@ ARG BASEIMAGE=alpine:latest
 FROM ${BASEIMAGE} as builder
 COPY . /lingua-franca
 WORKDIR /lingua-franca/core/federated/RTI
-RUN apk add --no-cache \
-        gcc musl-dev cmake make \
-        libressl-dev
-RUN mkdir -p build
-WORKDIR /lingua-franca/core/federated/RTI/build
-RUN cmake -DAUTH=on ..
-RUN make
-RUN make install
+RUN set -ex && apk add --no-cache gcc musl-dev cmake make && \
+    mkdir container && \
+    cd container && \
+    cmake ../ && \
+    make && \
+    make install
 
 WORKDIR /lingua-franca
 
