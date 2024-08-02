@@ -1,13 +1,5 @@
-# base image from which all other stages derive
-ARG BASEIMAGE=alpine:latest
-
-# derive from the appropriate base image depending on architecture
-FROM --platform=linux/amd64 ${BASEIMAGE} AS base-amd64
-FROM --platform=linux/arm64 ${BASEIMAGE} AS base-arm64
-FROM --platform=linux/arm/v7 ${BASEIMAGE} AS base-arm
-FROM --platform=linux/riscv64 riscv64/${BASEIMAGE} AS base-riscv64
-
-FROM base-${TARGETARCH} as builder
+ARG BASEIMAGE=alpine:latest 
+FROM ${BASEIMAGE} as builder
 COPY . /lingua-franca
 WORKDIR /lingua-franca/core/federated/RTI
 RUN apk add --no-cache \
