@@ -109,6 +109,10 @@ int lf_enable_interrupts_nested() {
   return 0;
 }
 
+int _lf_single_threaded_notify_of_event() {
+  _lf_async_event = true;
+  return 0;
+}
 #endif // LF_SINGLE_THREADED
 
 #endif // PLATFORM_PATMOS

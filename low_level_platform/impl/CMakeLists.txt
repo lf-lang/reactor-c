@@ -50,7 +50,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Patmos")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
 else()
-    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Linux, MacOS, nRF52, RP2040, Windows, and Zephyr.")
+    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Patmos, Linux, MacOS, nRF52, RP2040, Windows, and Zephyr.")
 endif()
 
 list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/lf_platform_util.c)
@@ -99,6 +99,8 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
             )
         endif()
     endif()
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Patmos")
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
 else()
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
 
