@@ -2736,7 +2736,7 @@ instant_t lf_wait_until_time(tag_t tag) {
       tag.time -= 1;
     }
 
-    for (int i = 0; i < _lf_action_table_size; i++) {
+    for (size_t i = 0; i < _lf_action_table_size; i++) {
       tag_t known_to = _lf_action_table[i]->trigger->last_known_status_tag;
       if (lf_tag_compare(known_to, tag) < 0) {
         // There is a network input port for which it is not known whether a message with tag earlier
