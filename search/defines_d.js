@@ -6,12 +6,13 @@ var searchData=
   ['never_5ftag_3',['NEVER_TAG',['../d2/dcd/tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704',1,'tag.h']]],
   ['never_5ftag_5finitializer_4',['NEVER_TAG_INITIALIZER',['../d2/dcd/tag_8h.html#a0d876ab54e766798e559c4f47340b359',1,'tag.h']]],
   ['no_5fcli_5',['NO_CLI',['../d3/d79/lf__arduino__support_8h.html#a67509f32392561ce956fca3e20e11621',1,'NO_CLI:&#160;lf_arduino_support.h'],['../de/d99/lf__flexpret__support_8h.html#a67509f32392561ce956fca3e20e11621',1,'NO_CLI:&#160;lf_flexpret_support.h'],['../d7/dc7/lf__nrf52__support_8h.html#a67509f32392561ce956fca3e20e11621',1,'NO_CLI:&#160;lf_nrf52_support.h'],['../da/d31/lf__rp2040__support_8h.html#a67509f32392561ce956fca3e20e11621',1,'NO_CLI:&#160;lf_rp2040_support.h'],['../d4/d3d/lf__zephyr__support_8h.html#a67509f32392561ce956fca3e20e11621',1,'NO_CLI:&#160;lf_zephyr_support.h']]],
-  ['nonce_5flength_6',['NONCE_LENGTH',['../d9/da6/net__common_8h.html#a6771c37605e49c8faae7898797f254b7',1,'net_common.h']]],
-  ['nsec_7',['NSEC',['../d2/dcd/tag_8h.html#a8c561c4985495c722ac86b55b3d9bbb3',1,'tag.h']]],
-  ['nsecs_8',['NSECS',['../d2/dcd/tag_8h.html#aea80ae7708f69d05cd44126f08a08cf3',1,'tag.h']]],
-  ['num_5fchannels_9',['NUM_CHANNELS',['../d1/dcb/audio__loop_8h.html#ae5597ce31d23d11493e6e674fe257d73',1,'audio_loop.h']]],
-  ['num_5fnotes_10',['NUM_NOTES',['../d1/dcb/audio__loop_8h.html#a5b0b677cb9527865430a9b3d7a71cb03',1,'audio_loop.h']]],
-  ['num_5fsocket_5fretries_11',['NUM_SOCKET_RETRIES',['../dd/d97/net__util_8h.html#a85e29d75153ed9f02bb35f42b6c2669b',1,'net_util.h']]],
-  ['number_5fof_5ffederates_12',['NUMBER_OF_FEDERATES',['../de/df1/util_8c.html#af58c457e08491f7cfd5a0a46940e11ad',1,'util.c']]],
-  ['number_5fof_5fworkers_13',['NUMBER_OF_WORKERS',['../d5/dbc/reactor__threaded_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;reactor_threaded.c'],['../dd/d52/scheduler___g_e_d_f___n_p_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_GEDF_NP.c'],['../da/d2a/scheduler___n_p_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_NP.c'],['../d6/dee/scheduler__instance_8h.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_instance.h'],['../d8/dc4/lf__semaphore_8h.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;lf_semaphore.h']]]
+  ['no_5ftty_6',['NO_TTY',['../da/d45/lf__patmos__support_8h.html#a740378474f42996dc8a9bba18b7258ae',1,'lf_patmos_support.h']]],
+  ['nonce_5flength_7',['NONCE_LENGTH',['../d9/da6/net__common_8h.html#a6771c37605e49c8faae7898797f254b7',1,'net_common.h']]],
+  ['nsec_8',['NSEC',['../d2/dcd/tag_8h.html#a8c561c4985495c722ac86b55b3d9bbb3',1,'tag.h']]],
+  ['nsecs_9',['NSECS',['../d2/dcd/tag_8h.html#aea80ae7708f69d05cd44126f08a08cf3',1,'tag.h']]],
+  ['num_5fchannels_10',['NUM_CHANNELS',['../d1/dcb/audio__loop_8h.html#ae5597ce31d23d11493e6e674fe257d73',1,'audio_loop.h']]],
+  ['num_5fnotes_11',['NUM_NOTES',['../d1/dcb/audio__loop_8h.html#a5b0b677cb9527865430a9b3d7a71cb03',1,'audio_loop.h']]],
+  ['num_5fsocket_5fretries_12',['NUM_SOCKET_RETRIES',['../dd/d97/net__util_8h.html#a85e29d75153ed9f02bb35f42b6c2669b',1,'net_util.h']]],
+  ['number_5fof_5ffederates_13',['NUMBER_OF_FEDERATES',['../de/df1/util_8c.html#af58c457e08491f7cfd5a0a46940e11ad',1,'util.c']]],
+  ['number_5fof_5fworkers_14',['NUMBER_OF_WORKERS',['../d5/dbc/reactor__threaded_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;reactor_threaded.c'],['../dd/d52/scheduler___g_e_d_f___n_p_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_GEDF_NP.c'],['../da/d2a/scheduler___n_p_8c.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_NP.c'],['../d6/dee/scheduler__instance_8h.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;scheduler_instance.h'],['../d8/dc4/lf__semaphore_8h.html#a43fcdba4ed8864d210afd3f031b4e346',1,'NUMBER_OF_WORKERS:&#160;lf_semaphore.h']]]
 ];

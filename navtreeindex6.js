@@ -1,5 +1,12 @@
 var NAVTREEINDEX6 =
 {
+"db/d93/structtrace__t.html#aab68198dcf13161dffb8a39285e693ab":[11,0,54,3],
+"db/d93/structtrace__t.html#ad1afb005351e0f9e3d2311b8f5834a77":[11,0,54,5],
+"db/d93/structtrace__t.html#ae72f1b1928c3c85a72931ecae82a9ebe":[11,0,54,2],
+"db/d93/structtrace__t.html#af9731cfda2463140b7d07ef98274e619":[11,0,54,8],
+"db/dab/structdeque__node__t.html":[11,0,7],
+"db/dab/structdeque__node__t.html#a58cba1a8e684d42188bfd7bc029137d9":[11,0,7,2],
+"db/dab/structdeque__node__t.html#acb76ff2d2cf94776a57a57350554d110":[11,0,7,0],
 "db/dab/structdeque__node__t.html#af0b3f351d6dab10d51b9f79092ee17f6":[11,0,7,1],
 "db/dc1/trace__types_8h.html":[12,0,9,0,0,0],
 "db/dc1/trace__types_8h.html#ab02e9e69539d60297cedb38c2193a453":[12,0,9,0,0,0,0],
@@ -142,7 +149,7 @@ var NAVTREEINDEX6 =
 "db/df7/structtag__t.html":[11,0,49],
 "db/df7/structtag__t.html#a2ecfcdcf77463769a58980f47d0a813c":[11,0,49,0],
 "db/df7/structtag__t.html#ad6fc78329d72e52bc7e449036f64937d":[11,0,49,1],
-"dc/d11/lf__unix__clock__support_8c.html":[12,0,4,1,0,13],
+"dc/d11/lf__unix__clock__support_8c.html":[12,0,4,1,0,14],
 "dc/d2c/environment_8c.html":[12,0,0,5],
 "dc/d2c/environment_8c.html#ab49da5954eb69f3d126162da44c25b36":[12,0,0,5,1],
 "dc/d2c/environment_8c.html#af23dde6465214cc92114e0c49bccdc72":[12,0,0,5,2],
@@ -242,12 +249,5 @@ var NAVTREEINDEX6 =
 "dc/d69/fedsd_8py.html#a9284c32ebefcb7cabecf7f94515b0000":[12,0,10,0,1,0,45],
 "dc/d69/fedsd_8py.html#a9419c369fa9f1377e24ef230e02b266a":[12,0,10,0,1,0,1],
 "dc/d69/fedsd_8py.html#a96d7f67b55e874f673cc3e2def8fd0bd":[12,0,10,0,1,0,27],
-"dc/d69/fedsd_8py.html#aa38cb62ae37af225cd5e31066a5d4633":[12,0,10,0,1,0,50],
-"dc/d69/fedsd_8py.html#ab1dc17a3e7ad23c17fcfe2c136c4574a":[12,0,10,0,1,0,42],
-"dc/d69/fedsd_8py.html#ab371213c8780bc5058f824e060709a25":[12,0,10,0,1,0,14],
-"dc/d69/fedsd_8py.html#ab3b02a4fc3bc67685e7d4998bd7fb975":[12,0,10,0,1,0,0],
-"dc/d69/fedsd_8py.html#ab85055fc4f8733da11c4e3947eef9f93":[12,0,10,0,1,0,18],
-"dc/d69/fedsd_8py.html#aba6ea27bc62857a391bf52910acb28b9":[12,0,10,0,1,0,35],
-"dc/d69/fedsd_8py.html#abb5dd6fec0997a2ee3ea3c10d2698bca":[12,0,10,0,1,0,28],
-"dc/d69/fedsd_8py.html#abba69004e20049f1729bd98f20e0a5c8":[12,0,10,0,1,0,21]
+"dc/d69/fedsd_8py.html#aa38cb62ae37af225cd5e31066a5d4633":[12,0,10,0,1,0,50]
 };

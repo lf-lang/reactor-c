@@ -216,7 +216,7 @@ var NAVTREEINDEX4 =
 "d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9":[11,0,34,2],
 "d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c":[11,0,34,0],
 "d9/dad/structlf__wav__t.html#ade6c01f216604eef5d88c937972ab052":[11,0,34,1],
-"d9/daf/lf__zephyr__clock__counter_8c.html":[12,0,4,1,0,15],
+"d9/daf/lf__zephyr__clock__counter_8c.html":[12,0,4,1,0,16],
 "d9/dc7/trace__util_8h.html":[12,0,10,0,7],
 "d9/dc7/trace__util_8h.html#a139bc891db3edc74b0d9f49d1cec20b9":[12,0,10,0,7,5],
 "d9/dc7/trace__util_8h.html#a14da003f17f3fb32043a735158a234c5":[12,0,10,0,7,3],

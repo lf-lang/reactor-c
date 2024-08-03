@@ -7,6 +7,7 @@ var dir_6a5e724b1e3c478c59db77ed7903a453 =
     [ "lf_linux_support.h", "da/d46/lf__linux__support_8h.html", null ],
     [ "lf_macos_support.h", "d3/dd9/lf__macos__support_8h.html", null ],
     [ "lf_nrf52_support.h", "d7/dc7/lf__nrf52__support_8h.html", "d7/dc7/lf__nrf52__support_8h" ],
+    [ "lf_patmos_support.h", "da/d45/lf__patmos__support_8h.html", "da/d45/lf__patmos__support_8h" ],
     [ "lf_platform_util.h", "d3/d4b/lf__platform__util_8h.html", "d3/d4b/lf__platform__util_8h" ],
     [ "lf_POSIX_threads_support.h", "d6/d57/lf___p_o_s_i_x__threads__support_8h.html", "d6/d57/lf___p_o_s_i_x__threads__support_8h" ],
     [ "lf_rp2040_support.h", "da/d31/lf__rp2040__support_8h.html", "da/d31/lf__rp2040__support_8h" ],

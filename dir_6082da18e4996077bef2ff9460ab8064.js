@@ -10,6 +10,7 @@ var dir_6082da18e4996077bef2ff9460ab8064 =
     [ "lf_macos_support.c", "d8/d5f/lf__macos__support_8c.html", null ],
     [ "lf_nrf52_support.c", "d4/d25/lf__nrf52__support_8c.html", null ],
     [ "lf_os_single_threaded_support.c", "d5/d29/lf__os__single__threaded__support_8c.html", null ],
+    [ "lf_patmos_support.c", "da/db5/lf__patmos__support_8c.html", null ],
     [ "lf_platform_util.c", "d0/d31/lf__platform__util_8c.html", "d0/d31/lf__platform__util_8c" ],
     [ "lf_POSIX_threads_support.c", "d5/df3/lf___p_o_s_i_x__threads__support_8c.html", "d5/df3/lf___p_o_s_i_x__threads__support_8c" ],
     [ "lf_rp2040_support.c", "dd/d37/lf__rp2040__support_8c.html", null ],
