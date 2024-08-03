@@ -20,16 +20,19 @@
 void _lf_next_locked(struct environment_t* env);
 
 /**
- * @brief Indicator that execution of at least one tag has completed.
+ * @brief Indicator that execution of the specified tag has completed.
  */
-static bool _latest_tag_completed = false;
+static tag_t _latest_tag_completed = NEVER_TAG;
 
 bool should_stop_locked(lf_scheduler_t* sched) {
   // If this is not the very first step, check against the stop tag to see whether this is the last step.
-  if (_latest_tag_completed) {
+  // Also, stop only after completing the stop tag.
+  if (lf_tag_compare(_latest_tag_completed, sched->env->current_tag) == 0) {
     // If we are at the stop tag, do not call _lf_next_locked()
     // to prevent advancing the logical time.
     if (lf_tag_compare(sched->env->current_tag, sched->env->stop_tag) >= 0) {
+      LF_PRINT_DEBUG("****************** Stopping execution at tag " PRINTF_TAG,
+          sched->env->current_tag.time - lf_time_start(), sched->env->current_tag.microstep);
       return true;
     }
   }
@@ -50,11 +53,10 @@ bool _lf_sched_advance_tag_locked(lf_scheduler_t* sched) {
     return true;
   }
 
-  _latest_tag_completed = true;
+  _latest_tag_completed = env->current_tag;
 
   // Advance time.
-  // _lf_next_locked() may block waiting for real time to pass or events to appear.
-  // to appear on the event queue. Note that we already
+  // _lf_next_locked() may block waiting for real time to pass or events to appear on the event queue.
   tracepoint_scheduler_advancing_time_starts(env);
   _lf_next_locked(env);
   tracepoint_scheduler_advancing_time_ends(env);
