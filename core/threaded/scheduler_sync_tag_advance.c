@@ -22,7 +22,7 @@ void _lf_next_locked(struct environment_t* env);
 /**
  * @brief Indicator that execution of the specified tag has completed.
  */
-static tag_t _latest_tag_completed = NEVER_TAG;
+static tag_t _latest_tag_completed = NEVER_TAG_INITIALIZER;
 
 bool should_stop_locked(lf_scheduler_t* sched) {
   // If this is not the very first step, check against the stop tag to see whether this is the last step.
