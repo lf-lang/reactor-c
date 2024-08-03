@@ -81,10 +81,9 @@ void _lf_decrement_tag_barrier_locked(environment_t* env);
 int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag);
 void lf_synchronize_with_other_federates(void);
 
-
 /**
  * @brief Wait until physical time matches or exceeds the time of the specified tag.
- * 
+ *
  * If -fast is given, there will be no wait. For federated programs with decentralized coordination,
  * this function will add the STA offset to the wait time unless all network input ports are known
  * up to, but not necessarily including, the specified tag.

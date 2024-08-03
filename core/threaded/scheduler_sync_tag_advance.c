@@ -32,7 +32,7 @@ bool should_stop_locked(lf_scheduler_t* sched) {
     // to prevent advancing the logical time.
     if (lf_tag_compare(sched->env->current_tag, sched->env->stop_tag) >= 0) {
       LF_PRINT_DEBUG("****************** Stopping execution at tag " PRINTF_TAG,
-          sched->env->current_tag.time - lf_time_start(), sched->env->current_tag.microstep);
+                     sched->env->current_tag.time - lf_time_start(), sched->env->current_tag.microstep);
       return true;
     }
   }

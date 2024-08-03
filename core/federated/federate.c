@@ -1077,7 +1077,7 @@ static int id_of_action(lf_action_base_t* input_port_action) {
 
 /**
  * @brief Thread handling setting the known absent status of input ports.
- * 
+ *
  * For the code-generated array of STAA offsets `staa_lst`, which is sorted by STAA offset,
  * wait for physical time to advance to the current time plus the STAA offset,
  * then set the absent status of the input ports associated with the STAA.
@@ -1104,7 +1104,8 @@ static void* update_ports_from_staa_offsets(void* args) {
       // The wait_until function automatically adds the lf_fed_STA_offset to the wait time.
       // Note that the microstep does not matter here.
       tag_t wait_until_tag = {.time = env->current_tag.time + staa_elem->STAA, .microstep = 0};
-      LF_PRINT_DEBUG("**** (update thread) original wait_until time: " PRINTF_TIME, wait_until_tag.time - lf_time_start());
+      LF_PRINT_DEBUG("**** (update thread) original wait_until time: " PRINTF_TIME,
+                     wait_until_tag.time - lf_time_start());
 
       // The wait_until call will release the env->mutex while it is waiting.
       // However, it will not release the env->mutex if the wait time is too small.
@@ -1130,8 +1131,8 @@ static void* update_ports_from_staa_offsets(void* args) {
           tag_t current_tag = lf_tag(env);
           LF_PRINT_DEBUG("**** (update thread) Assuming absent! " PRINTF_TAG, current_tag.time - lf_time_start(),
           current_tag.microstep); LF_PRINT_DEBUG("**** (update thread) Lag is " PRINTF_TIME, current_tag.time -
-          lf_time_physical()); LF_PRINT_DEBUG("**** (update thread) Wait until time is " PRINTF_TIME, wait_until_tag.time -
-          lf_time_start());
+          lf_time_physical()); LF_PRINT_DEBUG("**** (update thread) Wait until time is " PRINTF_TIME,
+          wait_until_tag.time - lf_time_start());
           */
 
           // Mark input ports absent.
@@ -2743,7 +2744,7 @@ instant_t lf_wait_until_time(tag_t tag) {
         // Prevent an overflow and allow the STA offset to be FOREVER.
         if (result < FOREVER - lf_fed_STA_offset) {
           LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".", lf_fed_STA_offset,
-                        result - start_time);
+                         result - start_time);
           result += lf_fed_STA_offset;
         } else {
           LF_PRINT_DEBUG("Setting the wait time to FOREVER.");

@@ -197,12 +197,12 @@ void lf_set_present(lf_port_base_t* port) {
 bool wait_until(tag_t tag, lf_cond_t* condition) {
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized.
   interval_t wait_until_time = lf_wait_until_time(tag);
-#else // not FEDERATED_DECENTRALIZED
+#else  // not FEDERATED_DECENTRALIZED
   interval_t wait_until_time = tag.time;
 #endif // FEDERATED_DECENTRALIZED
   if (!fast) {
     LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME,
-        wait_until_time - start_time);
+                   wait_until_time - start_time);
     // Check whether we actually need to wait, or if we have already passed the timepoint.
     interval_t wait_duration = wait_until_time - lf_time_physical();
     if (wait_duration < MIN_SLEEP_DURATION) {

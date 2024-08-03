@@ -532,12 +532,12 @@ bool lf_update_max_level(tag_t tag, bool is_provisional);
 #ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Return the physical time that we should wait until before advancing to the specified tag.
- * 
+ *
  * This function adds the STA offset (STP_offset parameter) to the time of the specified tag unless
  * the tag is the starting tag (it is always safe to advance to the starting tag). It also avoids
  * adding the STA offset if all network input ports are known at least up to one microstep earlier
  * than the specified tag.
- * 
+ *
  * This function assumes that the caller holds the environment mutex.
  * @param time The specified time.
  */
