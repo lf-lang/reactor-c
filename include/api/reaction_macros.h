@@ -74,7 +74,7 @@
 do { \
     out->value = val; \
     lf_set_present(out); \
-    out->token = val; /* The long-term solution is to generate an event type for each connection buffer of primitive type. */ \
+    out->token = (lf_token_t *)(uintptr_t)val; /* The long-term solution is to generate an event type for each connection buffer of primitive type. */ \
 } while(0)
 #else
 #define lf_set(out, val) \
