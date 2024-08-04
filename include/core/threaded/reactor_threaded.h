@@ -84,15 +84,13 @@ void lf_synchronize_with_other_federates(void);
 /**
  * @brief Wait until physical time matches or exceeds the time of the specified tag.
  *
- * If -fast is given, there will be no wait. For federated programs with decentralized coordination,
- * this function will add the STA offset to the wait time unless all network input ports are known
- * up to, but not necessarily including, the specified tag.
+ * If -fast is given, there will be no wait.
  *
  * If an event is put on the event queue during the wait, then the wait is
  * interrupted and this function returns false. It also returns false if the
  * timeout time is reached before the wait has completed. Note this this could
- * return true even if the a new event was placed on the queue if that event
- * time matches or exceeds the specified time.
+ * return true even if the a new event was placed on the queue. This will occur
+ * if that event time matches or exceeds the specified time.
  *
  * The mutex lock associated with the condition argument is assumed to be held by
  * the calling thread. This mutex is released while waiting. If the wait time is
@@ -100,7 +98,7 @@ void lf_synchronize_with_other_federates(void);
  * immediately returns true and the mutex is not released.
  *
  * @param env Environment within which we are executing.
- * @param tag The tag with the time to wait until physical time matches it.
+ * @param wait_until_time The time to wait until physical time matches it.
  * @param condition A condition variable that can interrupt the wait. The mutex
  * associated with this condition variable will be released during the wait.
  *
@@ -109,7 +107,7 @@ void lf_synchronize_with_other_federates(void);
  *  the stop time, if one was specified. Return true if the full wait time
  *  was reached.
  */
-bool wait_until(tag_t tag, lf_cond_t* condition);
+bool wait_until(instant_t wait_until_time, lf_cond_t* condition);
 
 tag_t get_next_event_tag(environment_t* env);
 tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply);

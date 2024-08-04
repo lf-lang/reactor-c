@@ -194,14 +194,9 @@ void lf_set_present(lf_port_base_t* port) {
   }
 }
 
-bool wait_until(tag_t tag, lf_cond_t* condition) {
-#ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized.
-  interval_t wait_until_time = lf_wait_until_time(tag);
-#else  // not FEDERATED_DECENTRALIZED
-  interval_t wait_until_time = tag.time;
-#endif // FEDERATED_DECENTRALIZED
+bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
   if (!fast) {
-    LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME,
+    LF_PRINT_DEBUG("-------- Waiting until physical time " PRINTF_TIME,
                    wait_until_time - start_time);
     // Check whether we actually need to wait, or if we have already passed the timepoint.
     interval_t wait_duration = wait_until_time - lf_time_physical();
@@ -387,8 +382,18 @@ void _lf_next_locked(environment_t* env) {
   // Wait for physical time to advance to the next event time (or stop time).
   // This can be interrupted if a physical action triggers (e.g., a message
   // arrives from an upstream federate or a local physical action triggers).
-  LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (next_tag.time - start_time));
-  while (!wait_until(next_tag, &env->event_q_changed)) {
+  while (true) {
+#ifdef FEDERATED_DECENTRALIZED
+    // Apply the STA, if needed.
+    interval_t wait_until_time = lf_wait_until_time(next_tag);
+#else  // not FEDERATED_DECENTRALIZED
+    interval_t wait_until_time = next_tag.time;
+#endif // FEDERATED_DECENTRALIZED
+    LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (wait_until_time - start_time));
+    if (wait_until(wait_until_time, &env->event_q_changed)) {
+      // Waited the full time.
+      break;
+    }
     LF_PRINT_DEBUG("_lf_next_locked(): Wait until time interrupted.");
     // Sleep was interrupted.  Check for a new next_event.
     // The interruption could also have been due to a call to lf_request_stop().
@@ -570,8 +575,7 @@ void _lf_initialize_start_tag(environment_t* env) {
   }
 
   // The start time will likely have changed. Adjust the current tag and stop tag.
-  tag_t start_tag = (tag_t){.time = start_time, .microstep = 0u};
-  env->current_tag = start_tag;
+  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
   if (duration >= 0LL) {
     // A duration has been specified. Recalculate the stop time.
     env->stop_tag = ((tag_t){.time = start_time + duration, .microstep = 0});
@@ -591,24 +595,16 @@ void _lf_initialize_start_tag(environment_t* env) {
 #endif
   LF_PRINT_LOG("Waiting for start time " PRINTF_TIME ".", start_time);
 
-  // Call wait_until if federated. This is required because the startup procedure
+  // Wait until the start time. This is required for federates because the startup procedure
   // in lf_synchronize_with_other_federates() can decide on a new start_time that is
   // larger than the current physical time.
-  // Therefore, if --fast was not specified, wait until physical time matches
-  // or exceeds the start time. Microstep is ignored.
   // This wait_until() is deliberately called after most precursor operations
   // for tag (0,0) are performed (e.g., injecting startup reactions, etc.).
   // This has two benefits: First, the startup overheads will reduce
   // the required waiting time. Second, this call releases the mutex lock and allows
   // other threads (specifically, federate threads that handle incoming p2p messages
-  // from other federates) to hold the lock and possibly raise a tag barrier. This is
-  // especially useful if an STA is set properly because the federate will get
-  // a chance to process incoming messages while utilizing the STA.
-
-  // Here we wait until the start time and also release the environment mutex.
-  // this means that the other worker threads will be allowed to start. We need
-  // this to avoid potential deadlock in federated startup.
-  while (!wait_until(start_tag, &env->event_q_changed)) {
+  // from other federates) to hold the lock and possibly raise a tag barrier.
+  while (!wait_until(start_time, &env->event_q_changed)) {
   };
   LF_PRINT_DEBUG("Done waiting for start time + STA offset " PRINTF_TIME ".", start_time + lf_fed_STA_offset);
   LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be close to the STA offset.",

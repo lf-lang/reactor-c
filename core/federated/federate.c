@@ -1046,7 +1046,7 @@ static void handle_tag_advance_grant(void) {
 
 #ifdef FEDERATED_DECENTRALIZED
 /**
- * @brief Return whether there exists an input port whose status is unknown.
+ * @brief Return true if there is an input port among those with a given STAA whose status is unknown.
  *
  * @param staa_elem A record of all input port actions.
  */
@@ -1076,6 +1076,22 @@ static int id_of_action(lf_action_base_t* input_port_action) {
 #endif
 
 /**
+ * @brief Return true if all network input ports are known up to the specified tag.
+ * @param tag The tag.
+ */
+static bool inputs_known_to(tag_t tag) {
+  for (size_t i = 0; i < _lf_action_table_size; i++) {
+    tag_t known_to = _lf_action_table[i]->trigger->last_known_status_tag;
+    if (lf_tag_compare(known_to, tag) < 0) {
+      // There is a network input port for which it is not known whether a message with tag earlier
+      // than or equal to the specified tag may later arrive.
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * @brief Thread handling setting the known absent status of input ports.
  *
  * For the code-generated array of STAA offsets `staa_lst`, which is sorted by STAA offset,
@@ -1101,11 +1117,11 @@ static void* update_ports_from_staa_offsets(void* args) {
       staa_t* staa_elem = staa_lst[i];
       // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
       // The list is sorted in increasing order of adjusted STAA offsets.
-      // The wait_until function automatically adds the lf_fed_STA_offset to the wait time.
-      // Note that the microstep does not matter here.
-      tag_t wait_until_tag = {.time = env->current_tag.time + staa_elem->STAA, .microstep = 0};
-      LF_PRINT_DEBUG("**** (update thread) original wait_until time: " PRINTF_TIME,
-                     wait_until_tag.time - lf_time_start());
+      // We need to add the lf_fed_STA_offset to the wait time and guard against overflow.
+      interval_t wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
+      instant_t wait_until_time = lf_time_add(env->current_tag.time, wait_time);
+      LF_PRINT_DEBUG("**** (update thread) wait_until_time: " PRINTF_TIME,
+                     wait_until_time - lf_time_start());
 
       // The wait_until call will release the env->mutex while it is waiting.
       // However, it will not release the env->mutex if the wait time is too small.
@@ -1117,13 +1133,14 @@ static void* update_ports_from_staa_offsets(void* args) {
       // block progress of any execution that is actually processing events.
       // It only slightly delays the decision that an event is absent, and only
       // if the STAA and STA are extremely small.
-      if (lf_fed_STA_offset + staa_elem->STAA < 5 * MIN_SLEEP_DURATION) {
-        wait_until_tag.time += 5 * MIN_SLEEP_DURATION;
+      if (wait_time < 5 * MIN_SLEEP_DURATION) {
+        wait_until_time += 5 * MIN_SLEEP_DURATION;
       }
       while (a_port_is_unknown(staa_elem)) {
-        LF_PRINT_DEBUG("**** (update thread) waiting until: " PRINTF_TIME, wait_until_tag.time - lf_time_start());
-        if (wait_until(wait_until_tag, &lf_port_status_changed)) {
+        LF_PRINT_DEBUG("**** (update thread) waiting until: " PRINTF_TIME, wait_until_time - lf_time_start());
+        if (wait_until(wait_until_time, &lf_port_status_changed)) {
           // Specified timeout time was reached.
+          // If the current tag has changed, start over.
           if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
             break;
           }
@@ -1132,7 +1149,7 @@ static void* update_ports_from_staa_offsets(void* args) {
           LF_PRINT_DEBUG("**** (update thread) Assuming absent! " PRINTF_TAG, current_tag.time - lf_time_start(),
           current_tag.microstep); LF_PRINT_DEBUG("**** (update thread) Lag is " PRINTF_TIME, current_tag.time -
           lf_time_physical()); LF_PRINT_DEBUG("**** (update thread) Wait until time is " PRINTF_TIME,
-          wait_until_tag.time - lf_time_start());
+          wait_until_time - lf_time_start());
           */
 
           // Mark input ports absent.
@@ -1167,15 +1184,15 @@ static void* update_ports_from_staa_offsets(void* args) {
       // Some ports may have been reset to uknown during that wait, in which case,
       // it would be huge mistake to enter the wait for a new tag below because the
       // program will freeze.  First, check whether any ports are unknown:
-      bool port_unkonwn = false;
+      bool port_unknown = false;
       for (size_t i = 0; i < staa_lst_size; ++i) {
         staa_t* staa_elem = staa_lst[i];
         if (a_port_is_unknown(staa_elem)) {
-          port_unkonwn = true;
+          port_unknown = true;
           break;
         }
       }
-      if (!port_unkonwn) {
+      if (!port_unknown) {
         // If this occurs, then there is a race condition that can lead to deadlocks.
         lf_print_error_and_exit("**** (update thread) Inconsistency: All ports are known, but MLAA is blocking.");
       }
@@ -1183,6 +1200,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       // Since max_level_allowed_to_advance will block advancement of time, we cannot follow
       // through to the next step without deadlocking.  Wait some time, then continue.
       // The wait is necessary to prevent a busy wait.
+      // FIXME: This seems wrong because the mutex is held while sleeping!
       lf_sleep(2 * MIN_SLEEP_DURATION);
       continue;
     }
@@ -2736,22 +2754,8 @@ instant_t lf_wait_until_time(tag_t tag) {
       tag.time -= 1;
     }
 
-    for (size_t i = 0; i < _lf_action_table_size; i++) {
-      tag_t known_to = _lf_action_table[i]->trigger->last_known_status_tag;
-      if (lf_tag_compare(known_to, tag) < 0) {
-        // There is a network input port for which it is not known whether a message with tag earlier
-        // than the specified tag may later arrive.  Add the STA offset.
-        // Prevent an overflow and allow the STA offset to be FOREVER.
-        if (result < FOREVER - lf_fed_STA_offset) {
-          LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".", lf_fed_STA_offset,
-                         result - start_time);
-          result += lf_fed_STA_offset;
-        } else {
-          LF_PRINT_DEBUG("Setting the wait time to FOREVER.");
-          result = FOREVER;
-        }
-        break; // No need to check the rest.
-      }
+    if (!inputs_known_to(tag)) {
+      result = lf_time_add(result, lf_fed_STA_offset);
     }
   }
   return result;
