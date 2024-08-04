@@ -1075,6 +1075,7 @@ static int id_of_action(lf_action_base_t* input_port_action) {
 
 #endif
 
+#ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Return true if all network input ports are known up to the specified tag.
  * @param tag The tag.
@@ -1090,6 +1091,7 @@ static bool inputs_known_to(tag_t tag) {
   }
   return true;
 }
+#endif // FEDERATED_DECENTRALIZED
 
 /**
  * @brief Thread handling setting the known absent status of input ports.
