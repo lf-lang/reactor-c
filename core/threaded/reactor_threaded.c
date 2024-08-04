@@ -196,8 +196,7 @@ void lf_set_present(lf_port_base_t* port) {
 
 bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
   if (!fast) {
-    LF_PRINT_DEBUG("-------- Waiting until physical time " PRINTF_TIME,
-                   wait_until_time - start_time);
+    LF_PRINT_DEBUG("-------- Waiting until physical time " PRINTF_TIME, wait_until_time - start_time);
     // Check whether we actually need to wait, or if we have already passed the timepoint.
     interval_t wait_duration = wait_until_time - lf_time_physical();
     if (wait_duration < MIN_SLEEP_DURATION) {

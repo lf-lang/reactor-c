@@ -1120,8 +1120,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       // We need to add the lf_fed_STA_offset to the wait time and guard against overflow.
       interval_t wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
       instant_t wait_until_time = lf_time_add(env->current_tag.time, wait_time);
-      LF_PRINT_DEBUG("**** (update thread) wait_until_time: " PRINTF_TIME,
-                     wait_until_time - lf_time_start());
+      LF_PRINT_DEBUG("**** (update thread) wait_until_time: " PRINTF_TIME, wait_until_time - lf_time_start());
 
       // The wait_until call will release the env->mutex while it is waiting.
       // However, it will not release the env->mutex if the wait time is too small.
