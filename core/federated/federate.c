@@ -1126,8 +1126,9 @@ static void* update_ports_from_staa_offsets(void* args) {
       // The wait_until call will release the env->mutex while it is waiting.
       // However, it will not release the env->mutex if the wait time is too small.
       // At the cost of a small additional delay in deciding a port is absent,
-      // we require a minimum wait time here.  Otherwise, if both the STAA and STA are
-      // zero, this thread will fail to ever release the environment mutex.
+      // we require a minimum wait time here.  Note that zero-valued STAAs are not
+      // included, but STA might be zero and the STAA might be very small.
+      // In this case, this thread will fail to ever release the environment mutex.
       // This causes chaos.  The MIN_SLEEP_DURATION is the smallest amount of time
       // that wait_until will actually wait. Note that this strategy does not
       // block progress of any execution that is actually processing events.
@@ -1199,9 +1200,12 @@ static void* update_ports_from_staa_offsets(void* args) {
 
       // Since max_level_allowed_to_advance will block advancement of time, we cannot follow
       // through to the next step without deadlocking.  Wait some time, then continue.
-      // The wait is necessary to prevent a busy wait.
-      // FIXME: This seems wrong because the mutex is held while sleeping!
-      lf_sleep(2 * MIN_SLEEP_DURATION);
+      // The wait is necessary to prevent a busy wait, which will only occur if port
+      // status are always known inside the while loop
+      // Be sure to use wait_until() instead of sleep() because sleep() will not release the mutex.
+      instant_t wait_until_time = lf_time_add(env->current_tag.time, 2 * MIN_SLEEP_DURATION);
+      wait_until(wait_until_time, &lf_port_status_changed);
+
       continue;
     }
 
