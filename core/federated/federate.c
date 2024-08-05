@@ -1126,8 +1126,8 @@ static void* update_ports_from_staa_offsets(void* args) {
       // The wait_until call will release the env->mutex while it is waiting.
       // However, it will not release the env->mutex if the wait time is too small.
       // At the cost of a small additional delay in deciding a port is absent,
-      // we require a minimum wait time here.  Note that zero-valued STAAs are not
-      // included, but STA might be zero and the STAA might be very small.
+      // we require a minimum wait time here.  Note that zero-valued STAAs are
+      // included, and STA might be zero or very small.
       // In this case, this thread will fail to ever release the environment mutex.
       // This causes chaos.  The MIN_SLEEP_DURATION is the smallest amount of time
       // that wait_until will actually wait. Note that this strategy does not
