@@ -51,7 +51,6 @@ extern bool _lf_termination_executed;
 // Global variables references in federate.h
 lf_mutex_t lf_outbound_socket_mutex;
 lf_cond_t lf_port_status_changed;
-lf_cond_t lf_current_tag_changed;
 
 /**
  * The max level allowed to advance (MLAA) is a variable that tracks how far in the reaction

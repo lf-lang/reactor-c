@@ -215,11 +215,6 @@ extern lf_mutex_t lf_outbound_socket_mutex;
  */
 extern lf_cond_t lf_port_status_changed;
 
-/**
- * Condition variable for blocking on tag advance in
- */
-extern lf_cond_t lf_current_tag_changed;
-
 //////////////////////////////////////////////////////////////////////////////////
 // Public functions (in alphabetical order)
 

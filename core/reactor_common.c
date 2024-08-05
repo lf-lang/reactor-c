@@ -217,8 +217,6 @@ void _lf_start_time_step(environment_t* env) {
     // Reset absent fields on network ports because
     // their status is unknown
     lf_reset_status_fields_on_input_port_triggers();
-    // Signal the helper thread to reset its progress since the logical time has changed.
-    lf_cond_signal(&lf_current_tag_changed);
   }
 #endif // FEDERATED
 }
