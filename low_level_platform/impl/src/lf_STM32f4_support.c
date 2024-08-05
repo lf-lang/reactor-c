@@ -119,46 +119,44 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
 
 // I am pretty sure this function doesnt work
 //      Ill try to fix it once i know what the fuck its supposed to do, LOL
+/*  sleep until wakeup time
+    But, wake up if there is an async event
+
+*/
 int _lf_interruptable_sleep_until_locked(environment_t *env, instant_t wakeup_time) {
-    // // Get the current time and sleep time
-    // instant_t now;
-    // _lf_clock_now(&now);
-    // interval_t duration = wakeup_time - now;
-
-    // // Edge case handling for super small duration
-    // if (duration <= 0) {
-    //     return 0;
-    // } else if (duration < 10) {
-    //     lf_busy_wait_until(wakeup_time);
-    //     return 0;
-    // }
-
-    // // Enable interrupts and prepare to wait
-    // _lf_async_event = false;
-    // instant_t curr;
-    // lf_enable_interrupts_nested();
-
-    // do {
-    //     _lf_clock_now(&curr);
-
-    //     // Exit wither when the timer is up or there is an exception
-    // } while (!_lf_async_event && (now < wakeup_time));
-
-    // // Disable interrupts again on exit
-    // lf_disable_interrupts_nested();
-
-    // if (!_lf_async_event) {
-    // return 0;
-    // } else {
-    //     LF_PRINT_DEBUG(" *The STM32 rises from sleep* \n");
-    //     return -1;
-    // }
-
+    // Get the current time and sleep time
     instant_t now;
+    _lf_clock_now(&now);
+    interval_t duration = wakeup_time - now;
+
+    // Edge case handling for super small duration
+    if (duration <= 0) {
+        return 0;
+    } else if (duration < 10) {
+        lf_busy_wait_until(wakeup_time);
+        return 0;
+    }
+
+    // Enable interrupts and prepare to wait
+    _lf_async_event = false;
+    lf_enable_interrupts_nested();
+
     do {
         _lf_clock_now(&now);
-    } while (now < wakeup_time);
-    return 0;
+
+        // Exit when the timer is up or there is an exception
+    } while (!_lf_async_event && (now < wakeup_time));
+
+    // Disable interrupts again on exit
+    lf_disable_interrupts_nested();
+
+    if (!_lf_async_event) {
+        return 0;
+    } else {
+        LF_PRINT_DEBUG(" *The STM32 rises from sleep* \n");
+        return -1;
+    }
+
 }
 
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
