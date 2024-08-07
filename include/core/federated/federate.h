@@ -530,4 +530,22 @@ void lf_synchronize_with_other_federates();
  */
 bool lf_update_max_level(tag_t tag, bool is_provisional);
 
+/**
+ * @brief Return the directory containing the executables of the individual
+ * federates.
+ *
+ * This function is useful for testing purposes only.
+ * Note that it assumes that all federates are running on the same machine.
+ * In order for a program to use this function, it needs to include "federate.h" in the preamble.
+ */
+char* lf_get_federates_bin_directory();
+
+/**
+ * @brief Returns the federation id.
+ *
+ * This function is useful for testing purposes only.
+ * In order for a program to use this function, it needs to include "federate.h" in the preamble.
+ */
+const char* lf_get_federation_id();
+
 #endif // FEDERATE_H
