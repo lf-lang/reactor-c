@@ -117,7 +117,10 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
  * @brief Initialize the federation-specific parts of the environment struct.
  */
 static void environment_init_federated(environment_t* env, int num_is_present_fields) {
-#ifdef FEDERATED_DECENTRALIZED
+#if defined(FEDERATED_CENTRALIZED)
+  env->need_to_send_LTC = false;
+  (void)num_is_present_fields;
+#elif defined(FEDERATED_DECENTRALIZED)
   if (num_is_present_fields > 0) {
     env->_lf_intended_tag_fields = (tag_t**)calloc(num_is_present_fields, sizeof(tag_t*));
     LF_ASSERT_NON_NULL(env->_lf_intended_tag_fields);

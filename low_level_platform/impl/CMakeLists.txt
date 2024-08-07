@@ -44,8 +44,13 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_flexpret_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Patmos")
+    set(LF_LOW_LEVEL_PLATFORM_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_patmos_support.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
+    )
 else()
-    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Linux, MacOS, nRF52, RP2040, Windows, and Zephyr.")
+    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Patmos, Linux, MacOS, nRF52, RP2040, Windows, and Zephyr.")
 endif()
 
 list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/lf_platform_util.c)
@@ -56,6 +61,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     else()
         message(STATUS "Building Zephyr library with Kernel clock ")
     endif()
+
     zephyr_library_named(lf-low-level-platform-impl)
     zephyr_library_sources(${LF_LOW_LEVEL_PLATFORM_FILES})
     zephyr_library_link_libraries(kernel)
@@ -93,8 +99,11 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
             )
         endif()
     endif()
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Patmos")
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
 else()
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+
     # Link the platform to a threading library
     if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
         find_package(Threads REQUIRED)
@@ -116,6 +125,7 @@ macro(low_level_platform_define X)
         target_compile_definitions(lf-low-level-platform-impl PUBLIC ${X}=${${X}})
     endif(DEFINED ${X})
 endmacro()
+
 low_level_platform_define(LF_SINGLE_THREADED)
 low_level_platform_define(LOG_LEVEL)
 low_level_platform_define(MODAL_REACTORS)
