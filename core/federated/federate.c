@@ -2716,14 +2716,7 @@ void lf_stop() {
 }
 
 char* lf_get_federates_bin_directory() {
-  bool bin_directory_defined = false;
-#ifdef LF_FEDERATES_BIN_DIRECTORY
-  bin_directory_defined = true;
-#endif
-  if (bin_directory_defined) {
-    return LF_FEDERATES_BIN_DIRECTORY;
-  }
-  return NULL;
+  return LF_SOURCE_GEN_DIRECTORY LF_FILE_SEPARATOR ".." LF_FILE_SEPARATOR ".." LF_FILE_SEPARATOR "bin";
 }
 
 const char* lf_get_federation_id() { return federation_metadata.federation_id; }

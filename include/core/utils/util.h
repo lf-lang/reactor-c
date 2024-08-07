@@ -204,11 +204,4 @@ void lf_vprint_error_and_exit(const char* format, va_list args) ATTRIBUTE_FORMAT
  */
 void lf_stop();
 
-/**
- * @brief Returns the federation id.
- *
- * This function is useful for creating federates on runtime.
- */
-char* lf_get_federation_id();
-
 #endif /* UTIL_H */
