@@ -215,11 +215,6 @@ extern lf_mutex_t lf_outbound_socket_mutex;
  */
 extern lf_cond_t lf_port_status_changed;
 
-/**
- * Condition variable for blocking on tag advance in
- */
-extern lf_cond_t lf_current_tag_changed;
-
 //////////////////////////////////////////////////////////////////////////////////
 // Public functions (in alphabetical order)
 
@@ -528,5 +523,20 @@ void lf_synchronize_with_other_federates();
  * @return True if the MLAA changed.
  */
 bool lf_update_max_level(tag_t tag, bool is_provisional);
+
+#ifdef FEDERATED_DECENTRALIZED
+/**
+ * @brief Return the physical time that we should wait until before advancing to the specified tag.
+ *
+ * This function adds the STA offset (STP_offset parameter) to the time of the specified tag unless
+ * the tag is the starting tag (it is always safe to advance to the starting tag). It also avoids
+ * adding the STA offset if all network input ports are known at least up to one microstep earlier
+ * than the specified tag.
+ *
+ * This function assumes that the caller holds the environment mutex.
+ * @param time The specified time.
+ */
+instant_t lf_wait_until_time(tag_t tag);
+#endif // FEDERATED_DECENTRALIZED
 
 #endif // FEDERATE_H
