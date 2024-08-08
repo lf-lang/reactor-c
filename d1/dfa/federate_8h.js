@@ -32,7 +32,6 @@ var federate_8h =
     [ "lf_stall_advance_level_federation_locked", "d1/dfa/federate_8h.html#ab0f2188d27dfffa9fbbd417bed9305ea", null ],
     [ "lf_synchronize_with_other_federates", "d1/dfa/federate_8h.html#a965db733286db780c46aef446cd5b040", null ],
     [ "lf_update_max_level", "d1/dfa/federate_8h.html#a84e5177d12e705274be1e6652b5d7c01", null ],
-    [ "lf_current_tag_changed", "d1/dfa/federate_8h.html#af2238ef7b7c658f898395231949c114c", null ],
     [ "lf_outbound_socket_mutex", "d1/dfa/federate_8h.html#a1881fdaaffead81a8d2993121d9cd78f", null ],
     [ "lf_port_status_changed", "d1/dfa/federate_8h.html#a4ea10c9ed824595585d91f37dbfd4364", null ]
 ];

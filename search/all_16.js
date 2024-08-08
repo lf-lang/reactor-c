@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['wait_5funtil_0',['wait_until',['../d5/dbc/reactor__threaded_8c.html#a7438abf968aad289c2862dc615459398',1,'wait_until(instant_t logical_time, lf_cond_t *condition):&#160;reactor_threaded.c'],['../d4/dd2/reactor__threaded_8h.html#aae38fdb4e79b2dc10d5f5c3131a423ae',1,'wait_until(instant_t logical_time_ns, lf_cond_t *condition):&#160;reactor_threaded.c']]],
+  ['wait_5funtil_0',['wait_until',['../d5/dbc/reactor__threaded_8c.html#a70c4ab92f00f9bcc31e4d696db1c0526',1,'wait_until(instant_t wait_until_time, lf_cond_t *condition):&#160;reactor_threaded.c'],['../d4/dd2/reactor__threaded_8h.html#a70c4ab92f00f9bcc31e4d696db1c0526',1,'wait_until(instant_t wait_until_time, lf_cond_t *condition):&#160;reactor_threaded.c']]],
   ['watchdog_2ec_1',['watchdog.c',['../d6/d88/watchdog_8c.html',1,'']]],
   ['watchdog_2eh_2',['watchdog.h',['../d9/da3/watchdog_8h.html',1,'']]],
   ['watchdog_5ffunction_3',['watchdog_function',['../d3/dc4/structwatchdog__t.html#a1f8645aac940f26a359516be2339ac7d',1,'watchdog_t']]],

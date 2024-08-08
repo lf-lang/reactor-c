@@ -1,6 +1,5 @@
 var NAVTREEINDEX5 =
 {
-"d9/dd5/clock-sync_8h.html#a742c3183fb89d811377514d09e526b8f":[12,0,1,1,0,1,7],
 "d9/dd5/clock-sync_8h.html#a7e49fed082ec884e26d761e1c4f0d428":[12,0,1,1,0,1,9],
 "d9/dd5/clock-sync_8h.html#a7ed4e5f2a4216fdf6d76eafcab5b49b7":[12,0,1,1,0,1,6],
 "d9/dd5/clock-sync_8h.html#a834b31e00e677a23b6a86119b7a2fe59":[12,0,1,1,0,1,19],
@@ -249,5 +248,6 @@ var NAVTREEINDEX5 =
 "db/d93/structtrace__t.html#a2ad765032dc6d7b9720f0856638377f1":[11,0,54,0],
 "db/d93/structtrace__t.html#a3db03886576cda7f921deb2ad4d5f334":[11,0,54,7],
 "db/d93/structtrace__t.html#a426ed536efec1716ea83318cb98fde9d":[11,0,54,6],
-"db/d93/structtrace__t.html#a664588114539c0e557206f521028db9f":[11,0,54,1]
+"db/d93/structtrace__t.html#a664588114539c0e557206f521028db9f":[11,0,54,1],
+"db/d93/structtrace__t.html#aab68198dcf13161dffb8a39285e693ab":[11,0,54,3]
 };

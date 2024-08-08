@@ -9,5 +9,5 @@ var reactor__threaded_8h =
     [ "lf_enqueue_port_absent_reactions", "d4/dd2/reactor__threaded_8h.html#ae427b4c0340dbe19d46c93708fb6151a", null ],
     [ "lf_synchronize_with_other_federates", "d4/dd2/reactor__threaded_8h.html#a36681c905141edace5d23ff8d5c8f205", null ],
     [ "send_next_event_tag", "d4/dd2/reactor__threaded_8h.html#a6f9a4a14de3aa9e560935a57093eb122", null ],
-    [ "wait_until", "d4/dd2/reactor__threaded_8h.html#aae38fdb4e79b2dc10d5f5c3131a423ae", null ]
+    [ "wait_until", "d4/dd2/reactor__threaded_8h.html#a70c4ab92f00f9bcc31e4d696db1c0526", null ]
 ];
