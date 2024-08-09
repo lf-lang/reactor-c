@@ -163,7 +163,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * each federate has a valid event at the start tag (start time, 0) and it will
  * inform the RTI of this event.
  * Subsequently, at the conclusion of each tag, each federate will send a
- * `MSG_TYPE_LATEST_TAG_COMPLETE` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
+ * `MSG_TYPE_LATEST_TAG_CONFIRMED` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
  * the comment for each message for further explanation). Each federate would
  * have to wait for a `MSG_TYPE_TAG_ADVANCE_GRANT` or a
  * `MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT` before it can advance to a
@@ -434,12 +434,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT 8
 
 /**
- * Byte identifying a latest tag complete (LTC) message sent by a federate
+ * Byte identifying a latest tag confirmed (LTC) message sent by a federate
  * to the RTI.
  * The next eight bytes will be the timestep of the completed tag.
  * The next four bytes will be the microsteps of the completed tag.
  */
-#define MSG_TYPE_LATEST_TAG_COMPLETE 9
+#define MSG_TYPE_LATEST_TAG_CONFIRMED 9
 
 /////////// Messages used in lf_request_stop() ///////////////
 //// Overview of the algorithm:
@@ -706,5 +706,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** HMAC authentication failed. */
 #define HMAC_DOES_NOT_MATCH 6
+
+/** RTI not executed using -a or --auth option. */
+#define RTI_NOT_EXECUTED_WITH_AUTH 7
 
 #endif /* NET_COMMON_H */

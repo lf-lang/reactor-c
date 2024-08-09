@@ -210,11 +210,13 @@ void _lf_start_time_step(environment_t* env) {
     }
 #endif // FEDERATED_DECENTRALIZED
 
+#ifdef FEDERATED_CENTRALIZED
+    env->need_to_send_LTC = false;
+#endif // FEDERATED_CENTRALIZED
+
     // Reset absent fields on network ports because
     // their status is unknown
     lf_reset_status_fields_on_input_port_triggers();
-    // Signal the helper thread to reset its progress since the logical time has changed.
-    lf_cond_signal(&lf_current_tag_changed);
   }
 #endif // FEDERATED
 }
@@ -1166,6 +1168,7 @@ void termination(void) {
       }
     }
   }
+  lf_tracing_global_shutdown();
   // Skip most cleanup on abnormal termination.
   if (_lf_normal_termination) {
     _lf_free_all_tokens(); // Must be done before freeing reactors.
@@ -1188,8 +1191,6 @@ void termination(void) {
     }
 #endif
     lf_free_all_reactors();
-
-    lf_tracing_global_shutdown();
 
     // Free up memory associated with environment.
     // Do this last so that printed warnings don't access freed memory.

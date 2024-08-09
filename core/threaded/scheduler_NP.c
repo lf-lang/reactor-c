@@ -159,7 +159,7 @@ static void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
  * Advance tag if there are no reactions in the array of reaction vectors. If
  * there are such reactions, distribute them to worker threads.
  *
- * This function assumes the caller does not hold the 'mutex' lock.
+ * This function assumes the caller does not hold the mutex lock.
  */
 static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
   // Reset the index
