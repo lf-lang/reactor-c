@@ -298,7 +298,7 @@ typedef struct {
   trigger_t* trigger; // THIS HAS TO MATCH lf_action_internal_t
   self_base_t* parent;
   bool has_value;
-  int source_id;  // Used only for federated network input actions.
+  int source_id; // Used only for federated network input actions.
 } lf_action_base_t;
 
 /**
