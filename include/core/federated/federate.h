@@ -169,6 +169,16 @@ typedef struct federate_instance_t {
   tag_t last_sent_NET;
 
   /**
+   * A record of the most recently skipped NET (next event tag) message.
+   */
+  tag_t last_skipped_NET;
+
+  /**
+   *
+   */
+  tag_t last_DNET;
+
+  /**
    * For use in federates with centralized coordination, the minimum
    * time delay between a physical action within this federate and an
    * output from this federate.  This is NEVER if there is causal
