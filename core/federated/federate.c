@@ -313,6 +313,9 @@ static void mark_inputs_known_absent(int fed_id) {
     }
   }
   LF_MUTEX_UNLOCK(&env->mutex);
+#else
+  // Do nothing, except suppress unused parameter error.
+  (void)fed_id;
 #endif // FEDERATED_DECENTRALIZED
 }
 
