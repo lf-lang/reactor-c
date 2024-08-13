@@ -298,13 +298,15 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     notify_advance_grant_if_safe(downstream);
   }
 
-  // Send DNET to the node e's upstream federates if needed
-  for (int i = 0; i < e->num_all_upstreams; i++) {
-    int target_upstream_id = e->all_upstreams[i];
-    if (target_upstream_id == e->id) {
-      continue;
+  if (rti_common->dnet_enabled) {
+    // Send DNET to the node e's upstream federates if needed
+    for (int i = 0; i < e->num_all_upstreams; i++) {
+      int target_upstream_id = e->all_upstreams[i];
+      if (target_upstream_id == e->id) {
+        continue;
+      }
+      downstream_next_event_tag_if_needed(rti_common->scheduling_nodes[target_upstream_id], e->id);
     }
-    send_downstream_next_event_tag_if_needed(rti_common->scheduling_nodes[target_upstream_id], e->id);
   }
 }
 
@@ -488,8 +490,8 @@ tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay) {
   return result;
 }
 
-// It should be static because it's used only in this file. Remove from the header file.
-void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id) {
+// FIXME: It should be static because it's used only in this file. Remove from the header file.
+void downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id) {
   if (is_in_zero_delay_cycle(node)) {
     return;
   }
@@ -529,7 +531,7 @@ void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t 
   }
 
   if (lf_tag_compare(node->last_DNET, DNET) != 0 && lf_tag_compare(node->next_event, DNET) <= 0) {
-    send_downstream_next_event_tag(node, DNET);
+    notify_downstream_next_event_tag(node, DNET);
   }
 }
 

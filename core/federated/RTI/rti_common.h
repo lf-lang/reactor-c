@@ -95,6 +95,9 @@ typedef struct rti_common_t {
   // Boolean indicating that tracing is enabled.
   bool tracing_enabled;
 
+  // Boolean indicating that DNET is enabled.
+  bool dnet_enabled;
+
   // The RTI mutex for making thread-safe access to the shared state.
   lf_mutex_t* mutex;
 } rti_common_t;
@@ -291,17 +294,16 @@ void update_all_downstreams(scheduling_node_t* node);
 tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay);
 
 /**
- * FIXME: Add this function to rti_local either.
  * @param e The target node.
  * @param tag The downstream next event tag for e.
  */
-void send_downstream_next_event_tag(scheduling_node_t* e, tag_t tag);
+void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag);
 
 /**
  * @param node
  * @param new_NET
  */
-void send_downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id);
+void downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id);
 
 /**
  * For the given scheduling node (enclave or federate), invalidate the `min_delays`,

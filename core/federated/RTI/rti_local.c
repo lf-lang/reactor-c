@@ -191,6 +191,10 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   LF_PRINT_LOG("RTI: enclave %u callback with PTAG " PRINTF_TAG " ", e->id, tag.time - lf_time_start(), tag.microstep);
 }
 
+void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
+  // Nothing to do here.
+}
+
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   // Nothing to do here.
 }

@@ -272,7 +272,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   }
 }
 
-void send_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
+void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
   if (e->state == NOT_CONNECTED) {
     return;
   }
@@ -1765,6 +1765,7 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->clock_sync_exchanges_per_interval = 10;
   rti_remote->authentication_enabled = false;
   rti_remote->base.tracing_enabled = false;
+  rti_remote->base.dnet_enabled = false;
   rti_remote->stop_in_progress = false;
 }
 
