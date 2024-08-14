@@ -490,7 +490,6 @@ tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay) {
   return result;
 }
 
-// FIXME: It should be static because it's used only in this file. Remove from the header file.
 void downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id) {
   if (is_in_zero_delay_cycle(node)) {
     return;
@@ -526,7 +525,8 @@ void downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_N
     }
   }
   if (DNET.time < start_time) {
-    // DNET is NEVER.
+    // DNET with the time smaller than the start time acts as the same as DNET of the NEVER tag.
+    // Thus, set DNET as NEVER_TAG to prevent sending unnecessary DNETs.
     DNET = NEVER_TAG;
   }
 

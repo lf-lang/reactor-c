@@ -286,7 +286,8 @@ void update_min_delays_upstream(scheduling_node_t* node);
 void update_all_downstreams(scheduling_node_t* node);
 
 /**
- * Subtract the tag a from the tag b.
+ * Find the tag g that is the latest tag that satisfies lf_tag_add(g, minimum_delay) < received_tag.
+ * This function behaves like the tag subtraction, received_tag - minimum_delay.
  * minimum_delay cannot be NEVER.
  * @param received_tag
  * @param minimum_delay
@@ -300,8 +301,10 @@ tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay);
 void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag);
 
 /**
- * @param node
- * @param new_NET
+ * @param node The target node that may receive a new DNET.
+ * @param new_NET_source_federate_id The ID of the federate that sends a new NET. If this federate's new NET does not
+ * change the DNET value, we can exit this function immediately. If it does, we have to look up the target federate's
+ * downstream federates to compute the exact new DNET value.
  */
 void downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id);
 

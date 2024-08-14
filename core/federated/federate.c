@@ -1468,7 +1468,6 @@ static void handle_stop_request_message() {
 
 /**
  * Handle a downstream next event tag (DNET) message from the RTI.
- * FIXME: Use this tag to eliminate unncessary LTC or NET messages.
  */
 static void handle_downstream_next_event_tag() {
   size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
@@ -2412,7 +2411,9 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
         send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
         _fed.last_sent_NET = tag;
         _fed.last_skipped_NET = NEVER_TAG;
-        LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
+        LF_PRINT_LOG("Sent the last skipped next event tag (NET) " PRINTF_TAG
+                     " to RTI based on the last DNET " PRINTF_TAG ".",
+                     _fed.last_DNET - start_time, _fed.last_DNET.microstep, tag.time - start_time, tag.microstep);
       }
       return _fed.last_TAG;
     }
@@ -2442,7 +2443,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
         LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
       } else {
         _fed.last_skipped_NET = tag;
-        LF_PRINT_LOG("Skip next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
+        LF_PRINT_LOG("Skip sending next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
       }
 
       if (!wait_for_reply) {

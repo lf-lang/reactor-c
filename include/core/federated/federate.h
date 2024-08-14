@@ -164,17 +164,17 @@ typedef struct federate_instance_t {
   tag_t last_sent_LTC;
 
   /**
-   * A record of the most recently sent NET (next event tag) message.
+   * A record of the most recently sent NET (next event tag) signal.
    */
   tag_t last_sent_NET;
 
   /**
-   * A record of the most recently skipped NET (next event tag) message.
+   * A record of the most recently skipped NET (next event tag) signal.
    */
   tag_t last_skipped_NET;
 
   /**
-   *
+   * A record of the most recent DNET (downstream next event tag) signal.
    */
   tag_t last_DNET;
 
