@@ -2406,6 +2406,14 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
     if (lf_tag_compare(_fed.last_TAG, tag) >= 0) {
       LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received.",
                      _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
+
+      // In case a downstream federate needs the NET of this tag, send NET.
+      if (lf_tag_compare(_fed.last_DNET, tag) < 0 && lf_tag_compare(_fed.last_DNET, _fed.last_sent_NET) >= 0) {
+        send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
+        _fed.last_sent_NET = tag;
+        _fed.last_skipped_NET = NEVER_TAG;
+        LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
+      }
       return _fed.last_TAG;
     }
 
