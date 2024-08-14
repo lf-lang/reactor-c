@@ -150,7 +150,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, operand_t
 void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, bool debug, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
     char* op_str = "ADVI";
-    LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
+    LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s (reactor %p) %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.reg, *(op2.reg), op3.imm);
 #if TRACE_ALL_INSTRUCTIONS
     int pc_orig = (int) *pc;
     tracepoint_static_scheduler_ADVI_starts(scheduler->env->trace, worker_number, pc_orig);
@@ -374,7 +374,7 @@ void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     // destination register is not the zero register, store pc+1 in it.
     reg_t *destReg = op1.reg;
     if (destReg != &zero) *destReg = *pc + 1;
-    *pc = op2.imm;
+    *pc = op2.imm + op3.imm; // New pc = label + offset
 #if TRACE_ALL_INSTRUCTIONS
     tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, pc_orig);
 #endif
