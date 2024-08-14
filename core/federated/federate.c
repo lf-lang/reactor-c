@@ -2721,4 +2721,29 @@ char* lf_get_federates_bin_directory() {
 
 const char* lf_get_federation_id() { return federation_metadata.federation_id; }
 
-#endif
+#ifdef FEDERATED_DECENTRALIZED
+instant_t lf_wait_until_time(tag_t tag) {
+  instant_t result = tag.time; // Default.
+
+  // Do not add the STA if the tag is the starting tag.
+  if (tag.time != start_time || tag.microstep != 0u) {
+
+    // Apply the STA to the logical time, but only if at least one network input port is not known up to this tag.
+    // Subtract one microstep because it is sufficient to commit to a tag if the input ports are known
+    // up to one microstep earlier.
+    if (tag.microstep > 0) {
+      tag.microstep--;
+    } else {
+      tag.microstep = UINT_MAX;
+      tag.time -= 1;
+    }
+
+    if (!inputs_known_to(tag)) {
+      result = lf_time_add(result, lf_fed_STA_offset);
+    }
+  }
+  return result;
+}
+#endif // FEDERATED_DECENTRALIZED
+
+#endif // FEDERATED
