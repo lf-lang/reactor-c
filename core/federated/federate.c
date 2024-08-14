@@ -2891,43 +2891,6 @@ char* lf_get_federates_bin_directory() {
 
 const char* lf_get_federation_id() { return federation_metadata.federation_id; }
 
-void lf_stop() {
-  environment_t* env;
-  int num_env = _lf_get_environments(&env);
-
-  for (int i = 0; i < num_env; i++) {
-    LF_MUTEX_LOCK(&env[i].mutex);
-
-    tag_t new_stop_tag;
-    new_stop_tag.time = env[i].current_tag.time;
-    new_stop_tag.microstep = env[i].current_tag.microstep + 1;
-
-    lf_set_stop_tag(&env[i], new_stop_tag);
-
-    lf_print("Setting the stop tag of env %d to " PRINTF_TAG ".", i, env[i].stop_tag.time - start_time,
-             env[i].stop_tag.microstep);
-
-    if (env[i].barrier.requestors)
-      _lf_decrement_tag_barrier_locked(&env[i]);
-    lf_cond_broadcast(&env[i].event_q_changed);
-    LF_MUTEX_UNLOCK(&env[i].mutex);
-  }
-  LF_PRINT_LOG("Federate is stopping.");
-}
-
-char* lf_get_federates_bin_directory() {
-  bool bin_directory_defined = false;
-#ifdef LF_FEDERATES_BIN_DIRECTORY
-  bin_directory_defined = true;
-#endif
-  if (bin_directory_defined) {
-    return (LF_FEDERATES_BIN_DIRECTORY);
-  }
-  return NULL;
-}
-
-const char* lf_get_federation_id() { return federation_metadata.federation_id; }
-
 #ifdef FEDERATED_DECENTRALIZED
 instant_t lf_wait_until_time(tag_t tag) {
   instant_t result = tag.time; // Default.
