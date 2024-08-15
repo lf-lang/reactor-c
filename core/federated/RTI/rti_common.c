@@ -462,7 +462,7 @@ void update_all_downstreams(scheduling_node_t* node) {
   }
 }
 
-tag_t get_dnet_candidate(tag_t received_tag, tag_t minimum_delay) {
+tag_t get_dnet_candidate(tag_t next_event_tag, tag_t minimum_delay) {
   // (A.t, A.m) - (B.t - B.m)
   // B cannot be NEVER_TAG as (0, 0) denotes no delay.
   // Also, we assume B is not FOREVER_TAG because FOREVER_TAG delay means that there is no connection.
@@ -475,13 +475,13 @@ tag_t get_dnet_candidate(tag_t received_tag, tag_t minimum_delay) {
   //     ii)  If A.t >= B.t > 0 and A.m >= B.m return (A.t - B.t, UINT_MAX)
   //     iii) If A.t >= B.t > 0 and A.m < B.m return (A.t - B.t - 1, UINT_MAX)
 
-  if (received_tag.time == NEVER || lf_tag_compare(received_tag, minimum_delay) < 0)
+  if (next_event_tag.time == NEVER || lf_tag_compare(next_event_tag, minimum_delay) < 0)
     return NEVER_TAG;
-  if (received_tag.time == FOREVER)
+  if (next_event_tag.time == FOREVER)
     return FOREVER_TAG;
-  tag_t result = {.time = received_tag.time - minimum_delay.time,
-                  .microstep = received_tag.microstep - minimum_delay.microstep};
-  if (received_tag.microstep < minimum_delay.microstep) {
+  tag_t result = {.time = next_event_tag.time - minimum_delay.time,
+                  .microstep = next_event_tag.microstep - minimum_delay.microstep};
+  if (next_event_tag.microstep < minimum_delay.microstep) {
     result.time -= 1;
     result.microstep = UINT_MAX;
   } else {

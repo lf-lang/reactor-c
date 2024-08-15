@@ -675,9 +675,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * from the RTI in centralized coordination.
  * The next eight bytes will be the timestamp.
  * The next four bytes will be the microstep.
- * This message from the RTI tells the federate the tag of the earliest event on the
- * downstream federate's event queue. In other words, this federate doesn't have to send
- * LTC and NET messages earlier than this tag.
+ * This signal from the RTI tells the destination federate the latest tag that
+ * the federate can safely skip sending a next event tag (NET) signal.
+ * In other words, the federate doesn't have to send NET signals with tags
+ * earlier than or equal to this tag unless it cannot advance to its next event tag.
  */
 #define MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG 26
 

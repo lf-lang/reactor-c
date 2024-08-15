@@ -257,18 +257,6 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
 tag_t eimt_strict(scheduling_node_t* e);
 
 /**
- * Return true if the node is in a zero-delay cycle.
- * @param node The node.
- */
-bool is_in_zero_delay_cycle(scheduling_node_t* node);
-
-/**
- * Return true if the node is in a cycle (possibly a zero-delay cycle).
- * @param node The node.
- */
-bool is_in_cycle(scheduling_node_t* node);
-
-/**
  * For the given scheduling node (enclave or federate), if necessary, update the `min_delays`,
  * `all_upstremas`, `num_all_upstreams`, and the fields that indicate cycles.  These fields will be
  * updated only if they have not been previously updated or if invalidate_min_delays_upstream
@@ -286,27 +274,52 @@ void update_min_delays_upstream(scheduling_node_t* node);
 void update_all_downstreams(scheduling_node_t* node);
 
 /**
- * Find the tag g that is the latest tag that satisfies lf_tag_add(g, minimum_delay) < received_tag.
- * This function behaves like the tag subtraction, received_tag - minimum_delay.
+ * Find the tag g that is the latest tag that satisfies lf_tag_add(g, minimum_delay) < next_event_tag.
+ * This function behaves like the tag subtraction, next_event_tag - minimum_delay.
  * minimum_delay cannot be NEVER.
- * @param received_tag
- * @param minimum_delay
+ *
+ * This function is called in function downstream_next_event_tag.
+ * @param next_event_tag The next event tag of a downstream node.
+ * @param minimum_delay The minimum delay between the target upstream node and the downstream node.
  */
-tag_t get_dnet_candidate(tag_t received_tag, tag_t minimum_delay);
+tag_t get_dnet_candidate(tag_t next_event_tag, tag_t minimum_delay);
 
 /**
+ * @brief Determine whether the specified scheduling node is needed to receive a downstream next event tag (DNET),
+ * and, if so, return the details.
+ *
+ * This function is called upon receiving a NET from one of the specified node's downstream nodes.
+ *
+ * This function calculates the minimum tag M over
+ * all downstream scheduling nodes of the most recent NET from that node minus the "after delay" (see function
+ * get_dnet_candidate). If M is earlier than the startup tag, then set the result as the NEVER_TAG.
+ *
+ * @param node The target node that may receive a new DNET.
+ * @param node_sending_new_net_id The ID of the node that sends a new NET. If this node's new NET does not
+ * change the DNET value, we can exit this function immediately. If it does, we have to look up the target node's
+ * downstream federates to compute the exact new DNET value.
+ * @return If needed, return the tag value. Otherwise, return the NEVER_TAG.
+ */
+tag_t downstream_next_event_tag(scheduling_node_t* node, uint16_t node_sending_new_net_id);
+
+/**
+ * Notify a downstream next event tag (DNET) signal to the specified scheduling node.
  * @param e The target node.
  * @param tag The downstream next event tag for e.
  */
 void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag);
 
 /**
- * @param node The target node that may receive a new DNET.
- * @param node_sending_new_net_id The ID of the node that sends a new NET. If this node's new NET does not
- * change the DNET value, we can exit this function immediately. If it does, we have to look up the target node's
- * downstream federates to compute the exact new DNET value.
+ * Return true if the node is in a zero-delay cycle.
+ * @param node The node.
  */
-tag_t downstream_next_event_tag(scheduling_node_t* node, uint16_t node_sending_new_net_id);
+bool is_in_zero_delay_cycle(scheduling_node_t* node);
+
+/**
+ * Return true if the node is in a cycle (possibly a zero-delay cycle).
+ * @param node The node.
+ */
+bool is_in_cycle(scheduling_node_t* node);
 
 /**
  * For the given scheduling node (enclave or federate), invalidate the `min_delays`,
