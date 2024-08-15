@@ -305,7 +305,11 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
       if (target_upstream_id == e->id) {
         continue;
       }
-      downstream_next_event_tag_if_needed(rti_common->scheduling_nodes[target_upstream_id], e->id);
+      scheduling_node_t* node = rti_common->scheduling_nodes[target_upstream_id];
+      tag_t dnet = downstream_next_event_tag(node, e->id);
+      if (lf_tag_compare(node->last_DNET, dnet) != 0 && lf_tag_compare(node->next_event, dnet) <= 0) {
+        notify_downstream_next_event_tag(node, dnet);
+      }
     }
   }
 }
@@ -458,7 +462,7 @@ void update_all_downstreams(scheduling_node_t* node) {
   }
 }
 
-tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay) {
+tag_t get_dnet_candidate(tag_t received_tag, tag_t minimum_delay) {
   // (A.t, A.m) - (B.t - B.m)
   // B cannot be NEVER_TAG as (0, 0) denotes no delay.
   // Also, we assume B is not FOREVER_TAG because FOREVER_TAG delay means that there is no connection.
@@ -490,22 +494,22 @@ tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay) {
   return result;
 }
 
-void downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id) {
+tag_t downstream_next_event_tag(scheduling_node_t* node, uint16_t node_sending_new_net_id) {
   if (is_in_zero_delay_cycle(node)) {
-    return;
+    return NEVER_TAG;
   }
 
-  tag_t DNET = FOREVER_TAG;
-  scheduling_node_t* new_NET_source_federate = rti_common->scheduling_nodes[new_NET_source_federate_id];
-  if (is_in_zero_delay_cycle(new_NET_source_federate)) {
-    return;
+  tag_t result = FOREVER_TAG;
+  scheduling_node_t* node_sending_new_net = rti_common->scheduling_nodes[node_sending_new_net_id];
+  if (is_in_zero_delay_cycle(node_sending_new_net)) {
+    return NEVER_TAG;
   }
 
-  int index = node->id * rti_common->number_of_scheduling_nodes + new_NET_source_federate_id;
-  tag_t DNET_candidate = get_DNET_candidate(new_NET_source_federate->next_event, rti_common->min_delays[index]);
+  int index = node->id * rti_common->number_of_scheduling_nodes + node_sending_new_net_id;
+  tag_t candidate = get_dnet_candidate(node_sending_new_net->next_event, rti_common->min_delays[index]);
 
-  if (lf_tag_compare(node->last_DNET, DNET_candidate) >= 0) {
-    DNET = DNET_candidate;
+  if (lf_tag_compare(node->last_DNET, candidate) >= 0) {
+    result = candidate;
   } else {
     for (int i = 0; i < node->num_all_downstreams; i++) {
       uint16_t target_downstream_id = node->all_downstreams[i];
@@ -513,26 +517,24 @@ void downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_N
 
       if (is_in_zero_delay_cycle(target_dowstream)) {
         // This node is an upstream of ZDC. Do not send DNET to this node.
-        return;
+        return NEVER_TAG;
       }
 
       index = node->id * rti_common->number_of_scheduling_nodes + target_downstream_id;
-      DNET_candidate = get_DNET_candidate(target_dowstream->next_event, rti_common->min_delays[index]);
+      candidate = get_dnet_candidate(target_dowstream->next_event, rti_common->min_delays[index]);
 
-      if (lf_tag_compare(DNET, DNET_candidate) > 0) {
-        DNET = DNET_candidate;
+      if (lf_tag_compare(result, candidate) > 0) {
+        result = candidate;
       }
     }
   }
-  if (DNET.time < start_time) {
+  if (result.time < start_time) {
     // DNET with the time smaller than the start time acts as the same as DNET of the NEVER tag.
-    // Thus, set DNET as NEVER_TAG to prevent sending unnecessary DNETs.
-    DNET = NEVER_TAG;
+    // Thus, set the result as NEVER_TAG to prevent sending unnecessary DNETs.
+    result = NEVER_TAG;
   }
 
-  if (lf_tag_compare(node->last_DNET, DNET) != 0 && lf_tag_compare(node->next_event, DNET) <= 0) {
-    notify_downstream_next_event_tag(node, DNET);
-  }
+  return result;
 }
 
 bool is_in_zero_delay_cycle(scheduling_node_t* node) {

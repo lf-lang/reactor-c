@@ -2413,7 +2413,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
         _fed.last_skipped_NET = NEVER_TAG;
         LF_PRINT_LOG("Sent the last skipped next event tag (NET) " PRINTF_TAG
                      " to RTI based on the last DNET " PRINTF_TAG ".",
-                     _fed.last_DNET - start_time, _fed.last_DNET.microstep, tag.time - start_time, tag.microstep);
+                     _fed.last_DNET.time - start_time, _fed.last_DNET.microstep, tag.time - start_time, tag.microstep);
       }
       return _fed.last_TAG;
     }

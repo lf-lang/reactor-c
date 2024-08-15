@@ -292,7 +292,7 @@ void update_all_downstreams(scheduling_node_t* node);
  * @param received_tag
  * @param minimum_delay
  */
-tag_t get_DNET_candidate(tag_t received_tag, tag_t minimum_delay);
+tag_t get_dnet_candidate(tag_t received_tag, tag_t minimum_delay);
 
 /**
  * @param e The target node.
@@ -302,11 +302,11 @@ void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag);
 
 /**
  * @param node The target node that may receive a new DNET.
- * @param new_NET_source_federate_id The ID of the federate that sends a new NET. If this federate's new NET does not
- * change the DNET value, we can exit this function immediately. If it does, we have to look up the target federate's
+ * @param node_sending_new_net_id The ID of the node that sends a new NET. If this node's new NET does not
+ * change the DNET value, we can exit this function immediately. If it does, we have to look up the target node's
  * downstream federates to compute the exact new DNET value.
  */
-void downstream_next_event_tag_if_needed(scheduling_node_t* node, uint16_t new_NET_source_federate_id);
+tag_t downstream_next_event_tag(scheduling_node_t* node, uint16_t node_sending_new_net_id);
 
 /**
  * For the given scheduling node (enclave or federate), invalidate the `min_delays`,
