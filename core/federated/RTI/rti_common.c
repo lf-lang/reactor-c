@@ -305,9 +305,10 @@ static void _update_min_delays_upstream(scheduling_node_t* end, scheduling_node_
     // Not the first call, so intermediate is upstream of end.
     delay_from_intermediate_so_far = path_delays[intermediate->id];
   }
-  if (intermediate->state == NOT_CONNECTED) {
+  if (intermediate->state == NOT_CONNECTED && end->id != intermediate->id) {
     // Enclave or federate is not connected.
     // No point in checking upstream scheduling_nodes.
+    // Skip the first call
     return;
   }
   // Check nodes upstream of intermediate (or end on first call).
