@@ -2398,6 +2398,11 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 }
 
 void reset_transient_federate(federate_info_t* fed) {
+  // Reset all the timing information from the previous run
+  fed->enclave.completed = NEVER_TAG;
+  fed->enclave.last_granted = NEVER_TAG;
+  fed->enclave.last_provisionally_granted = NEVER_TAG;
+  fed->enclave.next_event = NEVER_TAG;
   // Reset of the federate-related attributes
   fed->socket = -1; // No socket.
   fed->clock_synchronization_enabled = true;
