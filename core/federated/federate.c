@@ -958,17 +958,34 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   size_t buffer_length = MSG_TYPE_TIMESTAMP_START_LENGTH;
   unsigned char buffer[buffer_length];
 
-  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, buffer_length, buffer, NULL,
-                                 "Failed to read MSG_TYPE_TIMESTAMP_START message from RTI.");
-  LF_PRINT_DEBUG("Read 21 bytes.");
-
-  // First byte received is the message ID.
-  if (buffer[0] != MSG_TYPE_TIMESTAMP_START) {
-    if (buffer[0] == MSG_TYPE_FAILED) {
-      lf_print_error_and_exit("RTI has failed.");
+  while (true) {
+    read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, 1, buffer, NULL,
+                                   "Failed to read MSG_TYPE_TIMESTAMP_START message from RTI.");
+    // First byte received is the message ID.
+    if (buffer[0] != MSG_TYPE_TIMESTAMP_START) {
+      if (buffer[0] == MSG_TYPE_FAILED) {
+        lf_print_error_and_exit("RTI has failed.");
+      } else if (buffer[0] == MSG_TYPE_UPSTREAM_CONNECTED) {
+        // We need to swallow this message so that we continue waiting for MSG_TYPE_TIMESTAMP_START to arrive
+        // FIXME: Shouldn't we keep the ids, so that these messages are handled right after the startime is set?
+        read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, MSG_TYPE_UPSTREAM_CONNECTED_LENGTH - 1, buffer + 1, NULL,
+                                       "Failed to complete reading MSG_TYPE_UPSTREAM_CONNECTED.");
+        continue;
+      } else if (buffer[0] == MSG_TYPE_UPSTREAM_DISCONNECTED) {
+        // We need to swallow this message so that we continue waiting for MSG_TYPE_TIMESTAMP_START to arrive
+        // FIXME: Shouldn't we keep the ids, so that these messages are handled right after the startime is set?
+        read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH - 1, buffer + 1,
+                                       NULL, "Failed to complete reading MSG_TYPE_UPSTREAM_DISCONNECTED.");
+        continue;
+      } else {
+        lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP_START message from the RTI. Got %u (see net_common.h).",
+                                buffer[0]);
+      }
+    } else {
+      read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, buffer_length - 1, buffer + 1, NULL,
+                                     "Failed to read MSG_TYPE_TIMESTAMP_START message from RTI.");
+      break;
     }
-    lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP_START message from the RTI. Got %u (see net_common.h).",
-                            buffer[0]);
   }
 
   instant_t timestamp = extract_int64(&(buffer[1]));
