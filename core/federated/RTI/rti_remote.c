@@ -2597,18 +2597,22 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
     }
 
     void reset_transient_federate(federate_info_t * fed) {
+      // Reset all the timing information from the previous run
+      fed->enclave.completed = NEVER_TAG;
+      fed->enclave.last_granted = NEVER_TAG;
+      fed->enclave.last_provisionally_granted = NEVER_TAG;
       fed->enclave.next_event = NEVER_TAG;
-      fed->enclave.state = NOT_CONNECTED;
       // Reset of the federate-related attributes
       fed->socket = -1; // No socket.
       fed->clock_synchronization_enabled = true;
+      // FIXME: The following two lines can be improved?
+      pqueue_tag_free(fed->in_transit_message_tags);
       fed->in_transit_message_tags = pqueue_tag_init(10);
       strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
       fed->server_ip_addr.s_addr = 0;
       fed->server_port = -1;
       fed->requested_stop = false;
-      fed->is_transient = true;
-      fed->effective_start_tag = NEVER_TAG;
+      invalidate_min_delays_upstream(&(fed->enclave));
     }
 
     int32_t start_rti_server(uint16_t port) {
