@@ -18,26 +18,6 @@ static rti_common_t* rti_common = NULL;
 // Global variables defined in tag.c:
 extern instant_t start_time;
 
-/**
- * @brief Return the greatest tag earlier than the given tag.
- *
- * If the given tag is `FOREVER_TAG` or `NEVER_TAG`, however, just return the given tag.
- * @param tag The tag.
- */
-static tag_t latest_earlier_tag(tag_t tag) {
-  if (tag.time == NEVER || tag.time == FOREVER) {
-    return tag;
-  } else if (tag.time == 0 && tag.microstep == 0) {
-    return NEVER_TAG;
-  } else if (tag.microstep == 0) {
-    tag.time -= 1;
-    tag.microstep = UINT_MAX;
-  } else {
-    tag.microstep -= 1;
-  }
-  return tag;
-}
-
 void initialize_rti_common(rti_common_t* _rti_common) {
   rti_common = _rti_common;
   rti_common->max_stop_tag = NEVER_TAG;
@@ -251,7 +231,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                  e->id, t_d.time - lf_time_start(), t_d.microstep, e->next_event.time - lf_time_start(),
                  e->next_event.microstep);
     // result.tag = e->next_event;
-    result.tag = latest_earlier_tag(t_d);
+    result.tag = lf_tag_latest_earlier(t_d);
   } else if (                                                   // Scenario (2) above
       lf_tag_compare(t_d, e->next_event) == 0                   // EIMT equal to NET
       && is_in_zero_delay_cycle(e)                              // The node is part of a ZDC

@@ -163,6 +163,14 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval);
 tag_t lf_delay_strict(tag_t tag, interval_t interval);
 
 /**
+ * @brief Return the greatest tag earlier than the given tag.
+ *
+ * If the given tag is `FOREVER_TAG` or `NEVER_TAG`, however, just return the given tag.
+ * @param tag The tag.
+ */
+tag_t lf_tag_latest_earlier(tag_t tag);
+
+/**
  * Return the current logical time in nanoseconds.
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
