@@ -66,7 +66,7 @@ typedef struct scheduling_node_t {
   uint16_t num_all_upstreams;            // Size of the array of all upstream scheduling nodes and delays.
   uint16_t* all_downstreams;             // Array of all downstream scheduling node ids.
   uint16_t num_all_downstreams;          // Size of the array of all downstream scheduling nodes.
-  int flags;                             // Or of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
+  int flags;                             // One of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
 } scheduling_node_t;
 
 /**
@@ -81,9 +81,10 @@ typedef struct rti_common_t {
   // Number of scheduling nodes
   uint16_t number_of_scheduling_nodes;
 
-  // Matrix of minimum delays between each nodes
-  // Rows represent upstreams and Columns represent downstreams.
-  // FOREVER_TAG means there is no path, ZERO_TAG means there is no delay.
+  // Matrix of minimum delays between pairs of nodes.
+  // Rows represent upstream nodes and Columns represent downstream nodes.
+  // FOREVER_TAG means there is no path, and ZERO_TAG means there is no delay.
+  // This could be NULL if the matrix is not being used, so accesses should test for NULL first.
   tag_t* min_delays;
 
   // RTI's decided stop tag for the scheduling nodes
@@ -258,7 +259,7 @@ tag_t eimt_strict(scheduling_node_t* e);
 
 /**
  * For the given scheduling node (enclave or federate), if necessary, update the `min_delays`,
- * `all_upstremas`, `num_all_upstreams`, and the fields that indicate cycles.  These fields will be
+ * `all_upstreams`, `num_all_upstreams`, and the fields that indicate cycles.  These fields will be
  * updated only if they have not been previously updated or if invalidate_min_delays_upstream
  * has been called since they were last updated.
  * @param node The node.
@@ -266,8 +267,8 @@ tag_t eimt_strict(scheduling_node_t* e);
 void update_min_delays_upstream(scheduling_node_t* node);
 
 /**
- * For the given scheduling node (enclave or federate), if necessary, update the `all_downstreams`,
- * `num_all_downstreams`.  These fields will be updated only if they have not been previously updated
+ * For the given scheduling node (enclave or federate), if necessary, update the `all_downstreams` and
+ * `num_all_downstreams` fields.  These fields will be updated only if they have not been previously updated
  * or if invalidate_min_delays_upstream has been called since they were last updated.
  * @param node The node.
  */

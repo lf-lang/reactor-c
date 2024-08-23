@@ -18,6 +18,12 @@ static rti_common_t* rti_common = NULL;
 // Global variables defined in tag.c:
 extern instant_t start_time;
 
+/**
+ * @brief Return the greatest tag earlier than the given tag.
+ *
+ * If the given tag is `FOREVER_TAG` or `NEVER_TAG`, however, just return the given tag.
+ * @param tag The tag.
+ */
 static tag_t latest_earlier_tag(tag_t tag) {
   if (tag.time == NEVER || tag.time == FOREVER) {
     return tag;
