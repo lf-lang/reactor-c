@@ -260,7 +260,7 @@ tag_t eimt_strict(scheduling_node_t* e);
 /**
  * For the given scheduling node (enclave or federate), if necessary, update the `min_delays`,
  * `all_upstreams`, `num_all_upstreams`, and the fields that indicate cycles.  These fields will be
- * updated only if they have not been previously updated or if invalidate_min_delays_upstream
+ * updated only if they have not been previously updated or if invalidate_min_delays
  * has been called since they were last updated.
  * @param node The node.
  */
@@ -269,7 +269,7 @@ void update_min_delays_upstream(scheduling_node_t* node);
 /**
  * For the given scheduling node (enclave or federate), if necessary, update the `all_downstreams` and
  * `num_all_downstreams` fields.  These fields will be updated only if they have not been previously updated
- * or if invalidate_min_delays_upstream has been called since they were last updated.
+ * or if invalidate_min_delays has been called since they were last updated.
  * @param node The node.
  */
 void update_all_downstreams(scheduling_node_t* node);
@@ -323,13 +323,10 @@ bool is_in_zero_delay_cycle(scheduling_node_t* node);
 bool is_in_cycle(scheduling_node_t* node);
 
 /**
- * For the given scheduling node (enclave or federate), invalidate the `min_delays`,
- * `num_min_delays`, and the fields that indicate cycles.
- * This should be called whenever the structure of the connections upstream of the
- * given node have changed.
- * @param node The node.
+ * Invalidate the `min_delays`, `num_min_delays`, and the fields that indicate cycles
+ * of all nodes. This should be called whenever the structure of the connections have changed.
  */
-void invalidate_min_delays_upstream(scheduling_node_t* node);
+void invalidate_min_delays();
 
 /**
  * Free dynamically allocated memory on the scheduling nodes and the scheduling node array itself.

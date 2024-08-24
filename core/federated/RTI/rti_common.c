@@ -33,20 +33,28 @@ void initialize_rti_common(rti_common_t* _rti_common) {
 #define IS_IN_ZERO_DELAY_CYCLE 1
 #define IS_IN_CYCLE 2
 
-void invalidate_min_delays_upstream(scheduling_node_t* node) {
-  if (node->all_upstreams != NULL) {
-    free(node->all_upstreams);
-    for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-      rti_common->min_delays[i * rti_common->number_of_scheduling_nodes + node->id] = FOREVER_TAG;
+void invalidate_min_delays() {
+  if (rti_common->min_delays != NULL) {
+    uint16_t n = rti_common->number_of_scheduling_nodes;
+    for (uint16_t i = 0; i < n; i++) {
+      for (uint16_t j = 0; j < n; j++) {
+        rti_common->min_delays[i + j * n] = FOREVER_TAG;
+      }
+      scheduling_node_t* node = rti_common->scheduling_nodes[i];
+      if (node->all_upstreams != NULL)
+        free(node->all_upstreams);
+
+      if (node->all_downstreams != NULL)
+        free(node->all_downstreams);
+
+      node->all_upstreams = NULL;
+      node->num_all_upstreams = 0;
+      node->all_downstreams = NULL;
+      node->num_all_downstreams = 0;
+      node->flags = 0; // All flags cleared because they get set lazily.
     }
+    free(rti_common->min_delays);
   }
-  if (node->all_downstreams != NULL)
-    free(node->all_downstreams);
-  node->all_upstreams = NULL;
-  node->num_all_upstreams = 0;
-  node->all_downstreams = NULL;
-  node->num_all_downstreams = 0;
-  node->flags = 0; // All flags cleared because they get set lazily.
 }
 
 void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
@@ -63,7 +71,11 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
   e->immediate_downstreams = NULL;
   e->num_immediate_downstreams = 0;
   e->mode = REALTIME;
-  invalidate_min_delays_upstream(e);
+  e->all_upstreams = NULL;
+  e->num_all_upstreams = 0;
+  e->all_downstreams = NULL;
+  e->num_all_upstreams = 0;
+  e->flags = 0;
 }
 
 void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {

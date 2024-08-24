@@ -1776,21 +1776,19 @@ void clock_sync_add_offset(instant_t* t) { (void)t; }
 void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
+  invalidate_min_delays();
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
     scheduling_node_t* node = scheduling_nodes[i];
     if (node->immediate_upstreams != NULL) {
       free(node->immediate_upstreams);
       free(node->immediate_upstream_delays);
-      free(node->all_upstreams);
+      // free(node->all_upstreams);
     }
     if (node->immediate_downstreams != NULL) {
       free(node->immediate_downstreams);
-      free(node->all_downstreams);
+      // free(node->all_downstreams);
     }
     free(node);
-  }
-  if (rti_remote->base.min_delays != NULL) {
-    free(rti_remote->base.min_delays);
   }
   free(scheduling_nodes);
 }

@@ -26,7 +26,6 @@ void delete_scheduling_node(scheduling_node_t* node) {
   if (node->immediate_downstreams != NULL) {
     free(node->immediate_downstreams);
   }
-  invalidate_min_delays_upstream(node);
 }
 
 /**
@@ -72,6 +71,7 @@ void set_scheduling_node(int id, int num_immediate_upstreams, int num_immediate_
  * This includes freeing every scheduling node and the array of nodes.
  */
 void reset_common_RTI() {
+  invalidate_min_delays();
   // For every scheduling nodes, delete them and free themselves, too.
   for (uint16_t i = 0; i < test_rti.number_of_scheduling_nodes; i++) {
     delete_scheduling_node(test_rti.scheduling_nodes[i]);
