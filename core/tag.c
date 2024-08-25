@@ -124,17 +124,9 @@ tag_t lf_delay_strict(tag_t tag, interval_t interval) {
   return result;
 }
 
-/**
- * @brief Return the greatest tag earlier than the given tag.
- *
- * If the given tag is `FOREVER_TAG` or `NEVER_TAG`, however, just return the given tag.
- * @param tag The tag.
- */
 tag_t lf_tag_latest_earlier(tag_t tag) {
-  if (lf_tag_compare(tag, NEVER_TAG) || lf_tag_compare(tag, FOREVER_TAG)) {
+  if (lf_tag_compare(tag, NEVER_TAG) == 0 || lf_tag_compare(tag, FOREVER_TAG) == 0) {
     return tag;
-  } else if (tag.time == 0 && tag.microstep == 0) {
-    return NEVER_TAG;
   } else if (tag.microstep == 0) {
     tag.time -= 1;
     tag.microstep = UINT_MAX;
