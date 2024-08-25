@@ -675,8 +675,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * from the RTI in centralized coordination.
  * The next eight bytes will be the timestamp.
  * The next four bytes will be the microstep.
- * This signal from the RTI tells the destination federate that downstream 
- * federates do not need for it to send any next event tag (NET) signal 
+ * This signal from the RTI tells the destination federate that downstream
+ * federates do not need for it to send any next event tag (NET) signal
  * with a tag _g_ less than the specified tag. Thus, it should only send
  * those signals if needs permission from the RTI to advance to _g_.
  */
