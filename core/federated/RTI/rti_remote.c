@@ -1379,6 +1379,14 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
         // from an upstream federate is forwarded before the start tag.
         send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
 
+        // Whenver a transient joins, invalidate all federates, so that all min_delays_upstream
+        // get re-computed.
+        // FIXME: Needs to be optimized to only invalidate those affected by the transient
+        for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+          federate_info_t* fed = GET_FED_INFO(i);
+          invalidate_min_delays_upstream(&(fed->enclave));
+        }
+
         LF_MUTEX_UNLOCK(&rti_mutex);
       }
     }
@@ -2612,7 +2620,7 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
       fed->server_ip_addr.s_addr = 0;
       fed->server_port = -1;
       fed->requested_stop = false;
-      invalidate_min_delays_upstream(&(fed->enclave));
+      // invalidate_all_min_delays();
     }
 
     int32_t start_rti_server(uint16_t port) {
