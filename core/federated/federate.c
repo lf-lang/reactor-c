@@ -292,7 +292,7 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
 }
 
 /**
- * @brief Mark all the input ports from this federate as known to be absent until FOREVER.
+ * @brief Mark all the input ports connected to the given federate as known to be absent until FOREVER.
  *
  * This does nothing if the federate is not using decentralized coordination.
  * This function acquires the mutex on the top-level environment.
