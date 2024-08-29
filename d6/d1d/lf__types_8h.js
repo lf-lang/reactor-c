@@ -14,7 +14,6 @@ var lf__types_8h =
     [ "SCHED_NP", "d6/d1d/lf__types_8h.html#acc410134875d15b02634fb0aa8163a00", null ],
     [ "_lf_tag_advancement_barrier", "d6/d1d/lf__types_8h.html#ac95b60ce7811b9e1e1b7984bc9f6aeb3", null ],
     [ "allocation_record_t", "d6/d1d/lf__types_8h.html#a416845ec4469b3186de047c32402f5e8", null ],
-    [ "environment_t", "d6/d1d/lf__types_8h.html#aa47b54e9e041dfe1b75fffceb1051466", null ],
     [ "event_t", "d6/d1d/lf__types_8h.html#a59f5f6b9c6023baebf9c49c328b639a1", null ],
     [ "index_t", "d6/d1d/lf__types_8h.html#a4448d06be794d3f5412d0edb412dc00e", null ],
     [ "reaction_function_t", "d6/d1d/lf__types_8h.html#a149e5fee1c1841bcc96c72f200601d90", null ],
