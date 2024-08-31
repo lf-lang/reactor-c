@@ -159,6 +159,15 @@ void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_
     reg_t *base = op2.reg;
     reactor->tag.time = *base + op3.imm;
     reactor->tag.microstep = 0;
+
+    // Reset all "is_present" fields of the output ports of the reactor
+    // Doing this here has the major implication that ADVI has to execute AFTER 
+    // all downstream reactions have finished, since it is modifying state that is
+    // visible to those reactions.
+    for (int i = 0; i < reactor->num_output_ports; i++) {
+        reactor->output_ports[i]->is_present = false;
+    }
+
     *pc += 1; // Increment pc.
 #if TRACE_ALL_INSTRUCTIONS
     tracepoint_static_scheduler_ADVI_ends(scheduler->env->trace, worker_number, pc_orig);
