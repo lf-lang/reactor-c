@@ -39,6 +39,11 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_rp2040_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Stm32")
+    set(LF_LOW_LEVEL_PLATFORM_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_STM32f4_support.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
+    )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
     set(LF_LOW_LEVEL_PLATFORM_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_flexpret_support.c

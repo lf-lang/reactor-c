@@ -1,9 +1,8 @@
 #if defined(PLATFORM_STM32F4)
 
 
-#include "lf_STM32f4_support.h"
-#include "platform.h"
-#include "utils/util.h"
+#include "platform/lf_STM32f4_support.h"
+#include "low_level_platform.h"
 #include "tag.h"
 
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
