@@ -70,7 +70,7 @@ void TIM5_IRQHandler(void) {
 /**
  * Write the time since boot into time variable
  */
-int _lf_clock_now(instant_t *t)
+int _lf_clock_gettime(instant_t *t)
 {
     // Timer is cooked
     if (!t) {
@@ -94,7 +94,7 @@ int lf_sleep(interval_t sleep_duration) {
     instant_t target_time;
     instant_t current_time;
 
-    _lf_clock_now(&current_time);
+    _lf_clock_gettime(&current_time);
     target_time = current_time + sleep_duration;
     // HAL_Delay only supports miliseconds. We try to use that for as long as possible
     //      before switching to another meothd for finer tuned delay times
@@ -102,7 +102,7 @@ int lf_sleep(interval_t sleep_duration) {
     HAL_Delay(delaytime_ms);
 
     while (current_time <= target_time)
-        _lf_clock_now(&current_time);
+        _lf_clock_gettime(&current_time);
 
     return 0;
 }
@@ -113,7 +113,7 @@ int lf_sleep(interval_t sleep_duration) {
  */
 static void lf_busy_wait_until(instant_t wakeup_time) {
     instant_t current_time;
-    _lf_clock_now(&current_time);
+    _lf_clock_gettime(&current_time);
 
     // We repurpose the lf_sleep function here, just to better streamline the code
     interval_t sleep_duration = wakeup_time - current_time;
@@ -126,7 +126,7 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
 int _lf_interruptable_sleep_until_locked(environment_t *env, instant_t wakeup_time) {
     // Get the current time and sleep time
     instant_t now;
-    _lf_clock_now(&now);
+    _lf_clock_gettime(&now);
     interval_t duration = wakeup_time - now;
 
     // Edge case handling for super small duration
@@ -142,7 +142,7 @@ int _lf_interruptable_sleep_until_locked(environment_t *env, instant_t wakeup_ti
     lf_enable_interrupts_nested();
 
     do {
-        _lf_clock_now(&now);
+        _lf_clock_gettime(&now);
         // Exit when the timer is up or there is an exception
     } while (!_lf_async_event && (now < wakeup_time));
 

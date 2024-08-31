@@ -1,5 +1,5 @@
 #if defined(PLATFORM_ARDUINO) || defined(PLATFORM_NRF52) || defined(PLATFORM_ZEPHYR) || defined(PLATFORM_RP2040) ||    \
-    defined(PLATFORM_FLEXPRET) || defined(PLATFORM_PATMOS)
+    defined(PLATFORM_FLEXPRET) || defined(PLATFORM_PATMOS) || defined(PLATFORM_STM32F4)
 /**
  * @author Erling Rennemo Jellum
  * @copyright (c) 2023
