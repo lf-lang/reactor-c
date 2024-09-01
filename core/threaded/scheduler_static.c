@@ -51,7 +51,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 #define TRACE_ALL_INSTRUCTIONS false
-#define SPIN_WAIT_THRESHOLD MSEC(100)
+#define SPIN_WAIT_THRESHOLD SEC(1)
 
 /////////////////// External Variables /////////////////////////
 // Global variable defined in tag.c:
@@ -280,18 +280,21 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
     reg_t *src = op1.reg;
     instant_t current_time = lf_time_physical();
     instant_t wakeup_time = *src + op2.imm;
+    LF_PRINT_DEBUG("DU wakeup time: %lld, base: %lld, offset: %lld", wakeup_time, *src, op2.imm);
     instant_t wait_interval = wakeup_time - current_time;
     // LF_PRINT_DEBUG("*** start_time: %lld, wakeup_time: %lld, op1: %lld, op2: %lld, current_physical_time: %lld\n", start_time, wakeup_time, *src, op2.imm, lf_time_physical());
     LF_PRINT_DEBUG("*** [Line %zu] Worker %zu delaying, current_physical_time: %lld, wakeup_time: %lld, wait_interval: %lld", *pc, worker_number, current_time, wakeup_time, wait_interval);
     if (wait_interval > 0) {
-        // if (wait_interval < SPIN_WAIT_THRESHOLD) {
-        //     // Spin wait if the wait interval is less than 1 ms.
-        //     while (lf_time_physical() < wakeup_time);
-        // } else {
-        //     // Otherwise sleep.
-        //     _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
-        // }
-        while (lf_time_physical() < wakeup_time);
+        // Approach 1: Only spin when the wait interval is less than SPIN_WAIT_THRESHOLD.
+        if (wait_interval < SPIN_WAIT_THRESHOLD) {
+            // Spin wait if the wait interval is less than 1 ms.
+            while (lf_time_physical() < wakeup_time);
+        } else {
+            // Otherwise sleep.
+            _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
+        }
+        // Approach 2: Spin wait.
+        // while (lf_time_physical() < wakeup_time);
     }
     LF_PRINT_DEBUG("*** [Line %zu] Worker %zu done delaying", *pc, worker_number);
     *pc += 1; // Increment pc.
