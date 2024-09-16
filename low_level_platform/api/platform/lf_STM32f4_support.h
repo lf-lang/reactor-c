@@ -16,7 +16,7 @@
 #define _LF_TIMEOUT 1
 
 #ifdef LF_THREADED
-#error "I have no idea how to support threading"
+#error "Threaded runtime not supported on STM32"
 #endif // LF_THREADED
 
 #endif
