@@ -8,7 +8,6 @@
 
 #include <stm32f4xx_hal.h>
 
-// Defines for formatting time in printf for pico
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
 #define PRINTF_TIME "%lld"
 #define PRINTF_MICROSTEP "%d"
