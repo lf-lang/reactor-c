@@ -155,7 +155,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
 //  | Code for enabling and disabling Interrupts
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
 
-// disables the IRQ (checks if its already disabled)
+// disables the IRQ with support for nested disabling
 int lf_disable_interrupts_nested() {
   // Disable interrupts if they are currently enabled
   if (_lf_num_nested_crit_sec == 0) {
