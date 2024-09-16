@@ -75,7 +75,7 @@ int _lf_clock_gettime(instant_t* t) {
   // Get the current microseconds from TIM5
   uint32_t _lf_time_us_low = TIM5->CNT;
 
-  // Combine upper and lower timers (Yoinked from lf_nrf52 support)
+  // Combine upper and lower timers
   uint64_t now_us = COMBINE_HI_LO((_lf_time_us_high - 1), _lf_time_us_low);
   *t = ((instant_t)now_us) * 1000;
   return 0;
