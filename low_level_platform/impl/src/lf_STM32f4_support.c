@@ -102,20 +102,6 @@ int lf_sleep(interval_t sleep_duration) {
   return 0;
 }
 
-/**
- * Make the STM32 sleep for set nanoseconds
- * Based on the lf_nrf52 support implementation
- */
-static void lf_busy_wait_until(instant_t wakeup_time) {
-  instant_t current_time;
-  _lf_clock_gettime(&current_time);
-
-  // We repurpose the lf_sleep function here, just to better streamline the code
-  interval_t sleep_duration = wakeup_time - current_time;
-  lf_sleep(sleep_duration);
-}
-
-// I am pretty sure this function doesnt work
 /*  sleep until wakeup time but wake up if there is an async event
  */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
@@ -128,7 +114,12 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
   if (duration <= 0) {
     return 0;
   } else if (duration < LF_MIN_SLEEP_NS) {
-    lf_busy_wait_until(wakeup_time);
+    instant_t current_time;
+    _lf_clock_gettime(&current_time);
+
+    // We repurpose the lf_sleep function here, just to better streamline the code
+    interval_t sleep_duration = wakeup_time - current_time;
+    lf_sleep(sleep_duration);
     return 0;
   }
 
@@ -167,7 +158,7 @@ int lf_disable_interrupts_nested() {
   return 0;
 }
 
-// enables the IRQ (checks if other programs still want it disabled first)
+// enables the IRQ (checks if other processes still want it disabled first)
 int lf_enable_interrupts_nested() {
   // Left the critical section more often than it was entered.
 
@@ -178,7 +169,7 @@ int lf_enable_interrupts_nested() {
   // update the depth of disabling interrupts
   _lf_num_nested_crit_sec--;
 
-  // If we have exited all important programs, we can enable them again
+  // We enable interrupts again
   if (_lf_num_nested_crit_sec == 0) {
     __enable_irq();
   }
