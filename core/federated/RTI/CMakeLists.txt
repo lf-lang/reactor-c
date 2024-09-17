@@ -43,7 +43,7 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 target_compile_definitions(${RTI_LIB} PUBLIC LOG_LEVEL=${LOG_LEVEL})
 
-include(${LF_ROOT}/version/api/CMakeLists.txt)
+include(${LF_ROOT}/variant/api/CMakeLists.txt)
 target_link_libraries(${RTI_LIB} PUBLIC lf::version-api)
 
 include(${LF_ROOT}/logging/api/CMakeLists.txt)
