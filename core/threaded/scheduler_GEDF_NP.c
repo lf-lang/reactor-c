@@ -228,14 +228,14 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
 
 void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
   (void)worker_number; // Suppress unused parameter warning.
-  if (!lf_atomic_bool_compare_and_swap32((int32_t*)&done_reaction->status, queued, inactive)) {
+  if (!lf_atomic_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
     lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.", done_reaction->status, queued);
   }
 }
 
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
   (void)worker_number; // Suppress unused parameter warning.
-  if (reaction == NULL || !lf_atomic_bool_compare_and_swap32((int32_t*)&reaction->status, inactive, queued)) {
+  if (reaction == NULL || !lf_atomic_bool_compare_and_swap(&reaction->status, inactive, queued)) {
     return;
   }
   LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.", reaction->name, LF_LEVEL(reaction->index));

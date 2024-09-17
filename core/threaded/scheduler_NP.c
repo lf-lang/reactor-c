@@ -77,7 +77,7 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t* scheduler, reaction
     scheduler->indexes[reaction_level] = 0;
   }
 #endif
-  int reaction_q_level_index = lf_atomic_fetch_add32((int32_t*)&scheduler->indexes[reaction_level], 1);
+  int reaction_q_level_index = lf_atomic_fetch_add((int*)&scheduler->indexes[reaction_level], 1);
   assert(reaction_q_level_index >= 0);
   LF_PRINT_DEBUG("Scheduler: Accessing triggered reactions at the level %zu with index %d.", reaction_level,
                  reaction_q_level_index);
@@ -203,7 +203,7 @@ static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* schedul
 static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
   // Increment the number of idle workers by 1 and check if this is the last
   // worker thread to become idle.
-  if (lf_atomic_add_fetch32((int32_t*)&scheduler->number_of_idle_workers, 1) == (int)scheduler->number_of_workers) {
+  if (lf_atomic_add_fetch((int*)&scheduler->number_of_idle_workers, 1) == (int)scheduler->number_of_workers) {
     // Last thread to go idle
     LF_PRINT_DEBUG("Scheduler: Worker %zu is the last idle thread.", worker_number);
     // Call on the scheduler to distribute work or advance tag.
@@ -322,7 +322,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
     // the current level (if there is a causality loop)
     LF_MUTEX_LOCK(&scheduler->custom_data->array_of_mutexes[current_level]);
 #endif
-    int current_level_q_index = lf_atomic_add_fetch32((int32_t*)&scheduler->indexes[current_level], -1);
+    int current_level_q_index = lf_atomic_add_fetch((int*)&scheduler->indexes[current_level], -1);
     if (current_level_q_index >= 0) {
       LF_PRINT_DEBUG("Scheduler: Worker %d popping reaction with level %zu, index "
                      "for level: %d.",
@@ -361,7 +361,7 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
  */
 void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
   (void)worker_number;
-  if (!lf_atomic_bool_compare_and_swap32((int32_t*)&done_reaction->status, queued, inactive)) {
+  if (!lf_atomic_bool_compare_and_swap((int*)&done_reaction->status, queued, inactive)) {
     lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.", done_reaction->status, queued);
   }
 }
@@ -388,7 +388,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
   (void)worker_number;
 
-  if (reaction == NULL || !lf_atomic_bool_compare_and_swap32((int32_t*)&reaction->status, inactive, queued)) {
+  if (reaction == NULL || !lf_atomic_bool_compare_and_swap((int*)&reaction->status, inactive, queued)) {
     return;
   }
   LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.", reaction->name, LF_LEVEL(reaction->index));
