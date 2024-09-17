@@ -235,7 +235,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
   (void)worker_number; // Suppress unused parameter warning.
-  if (reaction == NULL || !lf_atomic_bool_compare_and_swap(&reaction->status, inactive, queued)) {
+  if (reaction == NULL || !lf_atomic_bool_compare_and_swap((int*)&reaction->status, inactive, queued)) {
     return;
   }
   LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.", reaction->name, LF_LEVEL(reaction->index));
