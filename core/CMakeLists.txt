@@ -77,7 +77,7 @@ else()
     target_link_libraries(reactor-c PUBLIC lf::trace-api-types)
 endif()
 
-include(${LF_ROOT}/version/api/CMakeLists.txt)
+include(${LF_ROOT}/variant/api/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::version-api)
 
 include(${LF_ROOT}/logging/api/CMakeLists.txt)
