@@ -726,7 +726,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
   LF_ASSERT(worker_number >= -1, "Sched: Invalid worker number");
-  if (!lf_atomic_bool_compare_and_swap(&reaction->status, inactive, queued))
+  if (!lf_atomic_bool_compare_and_swap((int*)&reaction->status, inactive, queued))
     return;
   worker_assignments_put(scheduler, reaction);
 }
