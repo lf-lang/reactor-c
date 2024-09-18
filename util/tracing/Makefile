@@ -12,7 +12,7 @@ CFLAGS=	-I$(REACTOR_C)/include/core/ \
 		-I$(REACTOR_C)/tag/api \
 		-I$(REACTOR_C)/trace/api \
 		-I$(REACTOR_C)/trace/api/types \
-		-I$(REACTOR_C)/variant/api \
+		-I$(REACTOR_C)/core/version/api \
 		-I$(REACTOR_C)/logging/api \
 		-I$(REACTOR_C)/trace/impl/include \
 		-DLF_SINGLE_THREADED=1 \
