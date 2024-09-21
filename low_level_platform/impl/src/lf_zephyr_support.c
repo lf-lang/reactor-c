@@ -51,12 +51,6 @@ void k_sys_fatal_error_handler(unsigned int reason, const struct arch_esf* esf) 
   lf_print_error_and_exit("Zephyr kernel panic reason=%d", reason);
 }
 
-void _lf_initialize_clock_zephyr_common() {
-  // Use the Zephyr implementation of printf. This avoids some wierd memory
-  // issues that intermittently arise when calling vfprintf.
-  lf_register_print_function(vfprintfcb, LOG_LEVEL_ERROR);
-}
-
 int lf_sleep(interval_t sleep_duration) {
   k_sleep(K_NSEC(sleep_duration));
   return 0;
@@ -94,7 +88,11 @@ int lf_enable_interrupts_nested() {
 // If NUMBER_OF_WORKERS is not specified, or set to 0, then we default to 1.
 #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS == 0
 #undef NUMBER_OF_WORKERS
+#if defined(LF_REACTION_GRAPH_BREADTH)
+#define NUMBER_OF_WORKERS LF_REACTION_GRAPH_BREADTH
+#else
 #define NUMBER_OF_WORKERS 1
+#endif
 #endif
 
 // If USER_THREADS is not specified, then default to 0.

@@ -67,7 +67,6 @@ static volatile bool async_event = false;
 K_SEM_DEFINE(sleeping_sem, 0, 1)
 
 void _lf_initialize_clock() {
-  _lf_initialize_clock_zephyr_common();
   timer_freq = CONFIG_SYS_CLOCK_TICKS_PER_SEC;
   lf_print("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz", timer_freq);
 }
