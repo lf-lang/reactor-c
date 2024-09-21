@@ -36,13 +36,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/lf_platform_util.h"
 #include "low_level_platform.h"
 #include "tag.h"
+#include "logging.h"
 
 #include <zephyr/kernel.h>
+#include <zephyr/sys/cbprintf.h>
 
 // Keep track of nested critical sections
 static uint32_t num_nested_critical_sections = 0;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned irq_mask = 0;
+
+// Catch kernel panics from Zephyr
+void k_sys_fatal_error_handler(unsigned int reason, const struct arch_esf* esf) {
+  lf_print_error_and_exit("Zephyr kernel panic reason=%d", reason);
+}
+
+void _lf_initialize_clock_zephyr_common() {
+  // Use the Zephyr implementation of printf. This avoids some wierd memory
+  // issues that intermittently arise when calling vfprintf.
+  lf_register_print_function(vfprintfcb, LOG_LEVEL_ERROR);
+}
 
 int lf_sleep(interval_t sleep_duration) {
   k_sleep(K_NSEC(sleep_duration));

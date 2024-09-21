@@ -76,6 +76,8 @@ void _lf_initialize_clock() {
   uint32_t counter_max_ticks = 0;
   int res;
 
+  _lf_initialize_clock_zephyr_common();
+
   // Verify that we have the device
   if (!device_is_ready(counter_dev)) {
     lf_print_error_and_exit("ERROR: counter device not ready.\n");
