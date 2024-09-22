@@ -50,6 +50,8 @@ typedef struct {
 } lf_cond_t;
 typedef struct k_thread* lf_thread_t;
 
+void _lf_initialize_clock_zephyr_common();
+
 #endif // !LF_SINGLE_THREADED
 
 #endif // LF_ZEPHYR_SUPPORT_H
