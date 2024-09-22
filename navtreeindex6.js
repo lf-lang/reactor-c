@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"db/d93/structtrace__t.html#ae72f1b1928c3c85a72931ecae82a9ebe":[11,0,54,2],
 "db/d93/structtrace__t.html#af9731cfda2463140b7d07ef98274e619":[11,0,54,8],
 "db/dab/structdeque__node__t.html":[11,0,7],
 "db/dab/structdeque__node__t.html#a58cba1a8e684d42188bfd7bc029137d9":[11,0,7,2],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "dc/d69/fedsd_8py.html#a96d7f67b55e874f673cc3e2def8fd0bd":[12,0,10,0,1,0,27],
 "dc/d69/fedsd_8py.html#aa38cb62ae37af225cd5e31066a5d4633":[12,0,10,0,1,0,50],
 "dc/d69/fedsd_8py.html#ab1dc17a3e7ad23c17fcfe2c136c4574a":[12,0,10,0,1,0,42],
-"dc/d69/fedsd_8py.html#ab371213c8780bc5058f824e060709a25":[12,0,10,0,1,0,14],
-"dc/d69/fedsd_8py.html#ab3b02a4fc3bc67685e7d4998bd7fb975":[12,0,10,0,1,0,0]
+"dc/d69/fedsd_8py.html#ab371213c8780bc5058f824e060709a25":[12,0,10,0,1,0,14]
 };

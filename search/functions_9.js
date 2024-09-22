@@ -1,13 +1,13 @@
 var searchData=
 [
   ['lf_5fallocate_0',['lf_allocate',['../dd/d37/reactor__common_8c.html#a1a5fdb69bc112879d4014bb0790e843c',1,'lf_allocate(size_t count, size_t size, struct allocation_record_t **head):&#160;reactor_common.c'],['../dc/d85/reactor_8h.html#a1a5fdb69bc112879d4014bb0790e843c',1,'lf_allocate(size_t count, size_t size, struct allocation_record_t **head):&#160;reactor_common.c']]],
-  ['lf_5fatomic_5fadd_5ffetch32_1',['lf_atomic_add_fetch32',['../da/d29/lf__atomic_8h.html#adc5497cc09204402094dad75d9e964e5',1,'lf_atomic.h']]],
+  ['lf_5fatomic_5fadd_5ffetch_1',['lf_atomic_add_fetch',['../da/d29/lf__atomic_8h.html#a9d0a96595a49012a368782d276187ebb',1,'lf_atomic.h']]],
   ['lf_5fatomic_5fadd_5ffetch64_2',['lf_atomic_add_fetch64',['../da/d29/lf__atomic_8h.html#a9d61cf71ce6276a66452f32c191267ae',1,'lf_atomic.h']]],
-  ['lf_5fatomic_5fbool_5fcompare_5fand_5fswap32_3',['lf_atomic_bool_compare_and_swap32',['../da/d29/lf__atomic_8h.html#a400f0c8ba00fe36b0dd6790723ac466c',1,'lf_atomic.h']]],
+  ['lf_5fatomic_5fbool_5fcompare_5fand_5fswap_3',['lf_atomic_bool_compare_and_swap',['../da/d29/lf__atomic_8h.html#a74fcf0021c3d717eeddcbf23b6949547',1,'lf_atomic.h']]],
   ['lf_5fatomic_5fbool_5fcompare_5fand_5fswap64_4',['lf_atomic_bool_compare_and_swap64',['../da/d29/lf__atomic_8h.html#a2e07e9f21ca49ef29b767452e951679c',1,'lf_atomic.h']]],
-  ['lf_5fatomic_5ffetch_5fadd32_5',['lf_atomic_fetch_add32',['../da/d29/lf__atomic_8h.html#ad28eb2d6da9247fc019df53e2059158c',1,'lf_atomic.h']]],
+  ['lf_5fatomic_5ffetch_5fadd_5',['lf_atomic_fetch_add',['../da/d29/lf__atomic_8h.html#a2a2aadf0cc7f085dba30251732f57ba3',1,'lf_atomic.h']]],
   ['lf_5fatomic_5ffetch_5fadd64_6',['lf_atomic_fetch_add64',['../da/d29/lf__atomic_8h.html#aa2e11f505dbf3491195e00ce41a4277f',1,'lf_atomic.h']]],
-  ['lf_5fatomic_5fval_5fcompare_5fand_5fswap32_7',['lf_atomic_val_compare_and_swap32',['../da/d29/lf__atomic_8h.html#a536690e83310ed79508e8b5577a6979d',1,'lf_atomic.h']]],
+  ['lf_5fatomic_5fval_5fcompare_5fand_5fswap_7',['lf_atomic_val_compare_and_swap',['../da/d29/lf__atomic_8h.html#af69e3925b46083250ec7666fd122b04a',1,'lf_atomic.h']]],
   ['lf_5fatomic_5fval_5fcompare_5fand_5fswap64_8',['lf_atomic_val_compare_and_swap64',['../da/d29/lf__atomic_8h.html#a17a3686efcb738fd77337a194d5a32ff',1,'lf_atomic.h']]],
   ['lf_5favailable_5fcores_9',['lf_available_cores',['../da/dfb/low__level__platform_8h.html#abe5a04985bd63ade71fc058f189d2545',1,'lf_available_cores():&#160;lf_POSIX_threads_support.c'],['../d5/df3/lf___p_o_s_i_x__threads__support_8c.html#abe5a04985bd63ade71fc058f189d2545',1,'lf_available_cores():&#160;lf_POSIX_threads_support.c']]],
   ['lf_5fcheck_5fdeadline_10',['lf_check_deadline',['../de/d6b/schedule_8h.html#ab3a04dd0a1581844829b28686b6b3c53',1,'lf_check_deadline(void *self, bool invoke_deadline_handler):&#160;schedule.c'],['../dd/deb/schedule_8c.html#ab3a04dd0a1581844829b28686b6b3c53',1,'lf_check_deadline(void *self, bool invoke_deadline_handler):&#160;schedule.c']]],
