@@ -36,13 +36,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/lf_platform_util.h"
 #include "low_level_platform.h"
 #include "tag.h"
+#include "logging.h"
 
 #include <zephyr/kernel.h>
+#include <zephyr/sys/cbprintf.h>
 
 // Keep track of nested critical sections
 static uint32_t num_nested_critical_sections = 0;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned irq_mask = 0;
+
+// Catch kernel panics from Zephyr
+void k_sys_fatal_error_handler(unsigned int reason, const struct arch_esf* esf) {
+  lf_print_error_and_exit("Zephyr kernel panic reason=%d", reason);
+}
 
 int lf_sleep(interval_t sleep_duration) {
   k_sleep(K_NSEC(sleep_duration));
@@ -81,7 +88,11 @@ int lf_enable_interrupts_nested() {
 // If NUMBER_OF_WORKERS is not specified, or set to 0, then we default to 1.
 #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS == 0
 #undef NUMBER_OF_WORKERS
+#if defined(LF_REACTION_GRAPH_BREADTH)
+#define NUMBER_OF_WORKERS LF_REACTION_GRAPH_BREADTH
+#else
 #define NUMBER_OF_WORKERS 1
+#endif
 #endif
 
 // If USER_THREADS is not specified, then default to 0.
@@ -149,9 +160,9 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
 int lf_thread_join(lf_thread_t thread, void** thread_return) { return k_thread_join(thread, K_FOREVER); }
 
 void initialize_lf_thread_id() {
-  static int _lf_worker_thread_count = 0;
+  static int32_t _lf_worker_thread_count = 0;
   int* thread_id = (int*)malloc(sizeof(int));
-  *thread_id = lf_atomic_fetch_add32(&_lf_worker_thread_count, 1);
+  *thread_id = lf_atomic_fetch_add(&_lf_worker_thread_count, 1);
   k_thread_custom_data_set(thread_id);
 }
 
