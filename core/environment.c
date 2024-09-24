@@ -284,3 +284,9 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
   env->initialized = true;
   return 0;
 }
+
+void environment_verify(environment_t* env) {
+  for (int i = 0; i < env->is_present_fields_size; i++) {
+    LF_ASSERT_NON_NULL(env->is_present_fields[i]);
+  }
+}

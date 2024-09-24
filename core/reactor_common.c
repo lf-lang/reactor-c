@@ -1103,6 +1103,13 @@ void initialize_global(void) {
   // Call the code-generated function to initialize all actions, timers, and ports
   // This is done for all environments/enclaves at the same time.
   _lf_initialize_trigger_objects();
+
+#if !defined(NDBEUG)
+  // If we are testing, verify that environment with pointers is correctly set up.
+  for (int i = 0; i < num_envs; i++) {
+    environment_verify(&envs[i]);
+  }
+#endif
 }
 
 /**
