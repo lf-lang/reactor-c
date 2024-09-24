@@ -25,6 +25,8 @@ static uint32_t _lf_time_us_high = 0;
 void lf_SystemClock_Config();
 void Error_Handler();
 
+TIM_HandleTypeDef htim5;
+
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
 //  | Code for timer functions
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
@@ -58,8 +60,8 @@ void _lf_initialize_clock(void) {
 
 // ISR for handling timer overflow -> We increment the upper timer
 void TIM5_IRQHandler(void) {
-  if (TIM5->SR & (1 << 1)) {
-    TIM5->SR &= ~(1 << 1);
+  if (TIM5->SR & TIM_FLAG_CC1) {
+    TIM5->SR &= ~TIM_FLAG_CC1;
     _lf_time_us_high += 1;
   }
 }
@@ -72,11 +74,20 @@ int _lf_clock_gettime(instant_t* t) {
   if (!t) {
     return 1;
   }
+
   // Get the current microseconds from TIM5
-  uint32_t _lf_time_us_low = TIM5->CNT;
+  uint32_t now_us_hi_pre = _lf_time_us_high;
+  uint32_t now_us_low = TIM5->CNT;
+  uint32_t now_us_hi_post = _lf_time_us_high;
+
+  // Check if we read the time during a wrap
+  if (now_us_hi_pre != now_us_hi_post) {
+    // There was a wrap. read again and return
+    now_us_low = TIM5->CNT;
+  }
 
   // Combine upper and lower timers
-  uint64_t now_us = COMBINE_HI_LO((_lf_time_us_high - 1), _lf_time_us_low);
+  uint64_t now_us = COMBINE_HI_LO((now_us_hi_post - 1), now_us_low);
   *t = ((instant_t)now_us) * 1000;
   return 0;
 }
