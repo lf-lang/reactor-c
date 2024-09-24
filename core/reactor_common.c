@@ -303,17 +303,19 @@ void _lf_pop_events(environment_t* env) {
       }
     }
 
-    // Mark the trigger present and store a pointer to it for marking it as absent later.
+    // Mark the trigger present
     event->trigger->status = present;
-    int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
-    if (ipfas < env->is_present_fields_size) {
-      env->is_present_fields_abbreviated[ipfas] = (bool*)&event->trigger->status;
-    }
 
     // If the trigger is a periodic timer, create a new event for its next execution.
     if (event->trigger->is_timer && event->trigger->period > 0LL) {
       // Reschedule the trigger.
       lf_schedule_trigger(env, event->trigger, event->trigger->period, NULL);
+    } else {
+      // For actions, store a pointer to status field so it is reset later.
+      int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+      if (ipfas < env->is_present_fields_size) {
+        env->is_present_fields_abbreviated[ipfas] = (bool*)&event->trigger->status;
+      }
     }
 
     // Copy the token pointer into the trigger struct so that the
