@@ -5,10 +5,19 @@ on:
     branches:
       - main
   pull_request:
-  # Also allow running this workflow manually from the Actions tab.
+    types: [synchronize, opened, reopened, ready_for_review, converted_to_draft]
   workflow_dispatch:
+  merge_group:
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_path }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  check-labels:
+    uses: lf-lang/lingua-franca/.github/workflows/check-labels.yml@master
+    if:  ${{ github.event_name == 'pull_request' }}
+
   unit-tests-single:
     uses: ./.github/workflows/unit-tests.yml
     with:
@@ -25,60 +34,67 @@ jobs:
   build-trace-tools:
     uses: ./.github/workflows/build-trace-tools.yml
 
-  check-diff:
-    uses: ./.github/workflows/check-diff.yml
-
   fetch-lf:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
       file: 'lingua-franca-ref.txt'
 
   lf-default-arduino:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-arduino-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ needs.check-diff.outputs.run_arduino == 'true' }}
+    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'arduino') }}
 
   lf-default-zephyr:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-zephyr-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ needs.check-diff.outputs.run_zephyr == 'true' }}
+    if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
+
+  lf-default-flexpret:
+   needs: [fetch-lf]
+   uses: lf-lang/lingua-franca/.github/workflows/c-flexpret-tests.yml@master
+   with:
+     runtime-ref: ${{ github.ref }}
+     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+   if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'flexpret') }}
 
   lf-default:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
+      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
 
   lf-python:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/py-tests.yml@master
     with:
       reactor-c-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ needs.check-diff.outputs.run_python == 'true' }}
+    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'python') }}
 
   lf-gedf-np:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: GEDF_NP
-      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
+      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
 
   lf-adaptive:
-    needs: [fetch-lf, check-diff]
+    needs: [fetch-lf]
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: ADAPTIVE
-      all-platforms: ${{ needs.check-diff.outputs.run_macos == 'true' || needs.check-diff.outputs.run_windows == 'true' }}
+      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}

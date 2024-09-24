@@ -31,7 +31,7 @@ struct hashset_itr_st {
   int index;
 };
 
-typedef struct hashset_itr_st *hashset_itr_t;
+typedef struct hashset_itr_st* hashset_itr_t;
 
 /**
  * @brief Create a hashset iterator.
@@ -44,7 +44,7 @@ typedef struct hashset_itr_st *hashset_itr_t;
  *   }
  *   free(iterator);
  * ```
- * The caller must call free() on this iterator after using it. 
+ * The caller must call free() on this iterator after using it.
  */
 hashset_itr_t hashset_iterator(hashset_t set);
 

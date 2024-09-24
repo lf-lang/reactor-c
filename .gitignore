@@ -2,7 +2,7 @@
 /docs/_build
 /docs/api
 **/.vscode/
-/build/
+**/build/
 **/.DS_Store
 /core/federated/RTI/build/
 /cmake-build-debug/
@@ -16,3 +16,6 @@ util/tracing/trace_to_csv.o
 util/tracing/trace_to_influxdb
 util/tracing/trace_to_influxdb.o
 util/tracing/trace_util.o
+
+# Generated trace lib
+trace/**/*.a

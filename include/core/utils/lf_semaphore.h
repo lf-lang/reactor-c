@@ -37,13 +37,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "platform.h"
+#include "low_level_platform.h"
 #include <stdlib.h>
 
 typedef struct {
-    int count;
-    lf_mutex_t mutex;
-    lf_cond_t cond;
+  int count;
+  lf_mutex_t mutex;
+  lf_cond_t cond;
 } lf_semaphore_t;
 
 /**
