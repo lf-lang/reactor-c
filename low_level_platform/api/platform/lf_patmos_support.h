@@ -1,5 +1,8 @@
+
+/* Patmos API support for the C target of Lingua Franca. */
+
 /*************
-Copyright (c) 2023, Norwegian University of Science and Technology.
+Copyright (c) 2024, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -23,35 +26,27 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * @brief Zephyr support for reactor-c
+ * Patmos API support for the C target of Lingua Franca.
  *
- * @author{Erling Jellum <erling.r.jellum@ntnu.no>}
+ * This is based on lf_nrf_support.h in icyphy/lf-buckler.
+ *
+ * @author{Ehsan Khodadad <ehkh@dtu.dk>}
+ * @author{Luca Pezzarossa <lpez@dtu.dk>}
+ * @author{Martin Schoeberl <masca@dtu.dk>}
  */
 
-#ifndef LF_ZEPHYR_SUPPORT_H
-#define LF_ZEPHYR_SUPPORT_H
+#ifndef LF_PATMOS_SUPPORT_H
+#define LF_PATMOS_SUPPORT_H
 
-#include "lf_tag_64_32.h"
+// This embedded platform has no TTY suport
+#define NO_TTY
 
 #include <stdint.h> // For fixed-width integral types
 #include <stdbool.h>
-#include <stdlib.h> //malloc, calloc, free, realloc
 
-#include <zephyr/kernel.h>
+#include <inttypes.h> // Needed to define PRId64 and PRIu32
+#define PRINTF_TIME "%" PRId64
+#define PRINTF_MICROSTEP "%" PRIu32
+#define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
 
-#define NO_CLI
-#define MINIMAL_STDLIB
-#if !defined(LF_SINGLE_THREADED)
-
-typedef struct k_mutex lf_mutex_t;
-typedef struct {
-  lf_mutex_t* mutex;
-  struct k_condvar condition;
-} lf_cond_t;
-typedef struct k_thread* lf_thread_t;
-
-void _lf_initialize_clock_zephyr_common();
-
-#endif // !LF_SINGLE_THREADED
-
-#endif // LF_ZEPHYR_SUPPORT_H
+#endif // LF_PATMOS_SUPPORT_H
