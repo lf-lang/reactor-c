@@ -69,7 +69,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-  if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'patmos') }}
+    if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'patmos') }}
 
   lf-default:
     needs: [fetch-lf]
