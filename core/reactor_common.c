@@ -1104,7 +1104,7 @@ void initialize_global(void) {
   // This is done for all environments/enclaves at the same time.
   _lf_initialize_trigger_objects();
 
-#if !defined(LF_SINGLE_THREADED) && !defined(NDBEUG)
+#if !defined(LF_SINGLE_THREADED) && !defined(NDEBUG)
   // If we are testing, verify that environment with pointers is correctly set up.
   for (int i = 0; i < num_envs; i++) {
     environment_verify(&envs[i]);
