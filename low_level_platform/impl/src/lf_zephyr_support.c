@@ -190,6 +190,9 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
   return 0;
 }
 
+// FIXME: Implement this.
+int lf_thread_get_priority(lf_thread_t thread) { return -1; }
+
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
   // Update the policy
   switch (policy->policy) {

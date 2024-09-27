@@ -111,6 +111,14 @@ static int advance_tag(lf_scheduler_t* scheduler) {
   // Set a flag in the scheduler that the lock is held by the sole executing thread.
   // This prevents acquiring the mutex in lf_scheduler_trigger_reaction.
   scheduler->custom_data->solo_holds_mutex = true;
+
+  // setting the priority to the maximum to be sure to be
+  // woken up as soon as the sleep time terminates (because there
+  // might be other worker threads from different enclaves having
+  // higher priority than what the current thread has)
+  // FIXME: Verify that there is no race wrt setting priority to MAX
+  lf_thread_set_priority(lf_thread_self(), LF_SCHED_MAX_PRIORITY - 1);
+
   if (_lf_sched_advance_tag_locked(scheduler)) {
     LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
     scheduler->should_stop = true;

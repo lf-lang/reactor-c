@@ -54,6 +54,8 @@ int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
   return pthread_setaffinity_np(thread, sizeof(cpu_set), &cpu_set);
 }
 
+// FIXME: This does not do any translation between LF_SCHED priority range and
+// the Linux sched priority range.
 int lf_thread_get_priority(lf_thread_t thread) {
   struct sched_param schedparam;
   int policy;
