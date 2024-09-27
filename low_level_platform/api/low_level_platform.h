@@ -121,15 +121,12 @@ int lf_available_cores();
 lf_thread_t lf_thread_self();
 
 /**
- * Create a new thread, starting with execution of lf_thread
- * getting passed arguments. The new handle is stored in thread_id.
+ * @brief Create a new thread and start execution of the function lf_thread
+ * with the specified arguments.
+ *
+ * The new handle is stored in thread_id.
  *
  * @return 0 on success, platform-specific error number otherwise.
- */
-int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments);
-
-/**
- * @brief Helper function for creating a thread.
  */
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments);
 
@@ -174,23 +171,33 @@ int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number);
  * number indicates higher priority. Setting the priority of a thread only
  * makes sense if the thread is scheduled with LF_SCHED_TIMESLICE or LF_THREAD_PRIORITY
  *
- * @param thread The thread.
+ * @param thread The thread ID.
  * @param priority The priority.
  * @return int 0 on success, platform-specific error otherwise
  */
 int lf_thread_set_priority(lf_thread_t thread, int priority);
 
 /**
- * @brief Set the scheduling policy of a thread. This is based on the scheduling
+ * DEBUGGING
+ */
+int lf_thread_get_priority(lf_thread_t thread);
+
+/**
+ * @brief Set the scheduling policy of a thread.
+ *
+ * This is based on the scheduling
  * concept from Linux explained here: https://man7.org/linux/man-pages/man7/sched.7.html
  * A scheduling policy is specific to a thread/worker. We have three policies
  * LF_SCHED_PRIORITY which corresponds to SCHED_FIFO on Linux.
  * LF_SCHED_TIMESLICE which corresponds to SCHED_RR on Linux.
  * LF_SCHED_FAIR which corresponds to SCHED_OTHER on Linux.
  *
+ * @param thread The thread ID.
+ * @param policy A pointer to the policy (this will not be used after returning, so it can be on the stack).
  * @return int 0 on success, platform-specific error number otherwise.
  */
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy);
+// FIXME: The policy pointer argument is worrisome. Can it really be on the stack?
 
 /**
  * Initialize a mutex.

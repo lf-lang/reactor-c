@@ -300,17 +300,9 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
-/**
- * @brief Ask the scheduler for one more reaction.
- *
- * This function blocks until it can return a ready reaction for worker thread
- * 'worker_number' or it is time for the worker thread to stop and exit (where a
- * NULL value would be returned).
- *
- * @param worker_number
- * @return reaction_t* A reaction for the worker to execute. NULL if the calling
- * worker thread should exit.
- */
+
+void lf_sched_configure_worker() {}
+
 reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number) {
   // Iterate until the stop tag is reached or reaction vectors are empty
   while (!scheduler->should_stop) {

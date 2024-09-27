@@ -226,6 +226,17 @@ void initialize_lf_thread_id() {
   // Nothing needed here; thread ID's are already available in harware registers
   // which can be fetched with `read_hartid`.
 }
+
+/**
+ * Real-time scheduling API not implemented for FlexPRET.
+ */
+int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) { return -1; }
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) { return -1; }
+
+int lf_thread_get_priority(lf_thread_t thread) { return -1; }
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) { return -1; }
 #endif
 
 #endif // PLATFORM_FLEXPRET

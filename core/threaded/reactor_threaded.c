@@ -823,7 +823,7 @@ void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_
  * @param env Environment within which we are executing.
  * @param worker_number The number assigned to this worker thread
  */
-void _lf_worker_do_work(environment_t* env, int worker_number) {
+static void _lf_worker_do_work(environment_t* env, int worker_number) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   // Keep track of whether we have decremented the idle thread count.
@@ -874,6 +874,8 @@ void _lf_worker_do_work(environment_t* env, int worker_number) {
  */
 void* worker(void* arg) {
   initialize_lf_thread_id();
+  lf_sched_configure_worker();
+
   environment_t* env = (environment_t*)arg;
   LF_MUTEX_LOCK(&env->mutex);
 
@@ -984,7 +986,6 @@ void determine_number_of_workers(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
-  initialize_lf_thread_id();
   // Invoke the function that optionally provides default command-line options.
   lf_set_default_command_line_options();
 
@@ -1075,7 +1076,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     lf_print("Environment %u: ---- Intializing start tag", env->id);
     _lf_initialize_start_tag(env);
 
-    lf_print("Environment %u: ---- Spawning %d workers.", env->id, env->num_workers);
+    lf_print("Environment %u: ---- Spawning %d workers on %d cores.", env->id, env->num_workers, LF_NUMBER_OF_CORES);
 
     for (int j = 0; j < env->num_workers; j++) {
       if (i == 0 && j == 0) {
