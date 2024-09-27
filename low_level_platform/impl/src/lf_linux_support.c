@@ -60,7 +60,7 @@ int lf_thread_get_priority(lf_thread_t thread) {
 
   // Get the current scheduling policy
   pthread_getschedparam(thread, &policy, &schedparam);
-  
+
   return schedparam.sched_priority;
 }
 
