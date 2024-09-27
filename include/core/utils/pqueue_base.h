@@ -123,14 +123,6 @@ size_t pqueue_size(pqueue_t* q);
 int pqueue_insert(pqueue_t* q, void* d);
 
 /**
- * Move an existing entry to a different priority.
- * @param q the queue
- * @param new_pri the new priority
- * @param d the entry
- */
-void pqueue_change_priority(pqueue_t* q, pqueue_pri_t new_pri, void* d);
-
-/**
  * Pop the highest-ranking item from the queue.
  * @param q the queue
  * @return NULL on error, otherwise the entry

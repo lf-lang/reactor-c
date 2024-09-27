@@ -9,6 +9,7 @@
  */
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "pqueue_tag.h"
 #include "util.h"               // For lf_print
@@ -23,7 +24,10 @@
  * element is also the priority. This function is of type pqueue_get_pri_f.
  * @param element A pointer to a pqueue_tag_element_t, cast to void*.
  */
-static pqueue_pri_t pqueue_tag_get_priority(void* element) { return (pqueue_pri_t)element; }
+static pqueue_pri_t pqueue_tag_get_priority(void* element) {
+  // Suppress "error: cast from pointer to integer of different size" by casting to uintptr_t first.
+  return (pqueue_pri_t)(uintptr_t)element;
+}
 
 /**
  * @brief Callback function to determine whether two elements are equivalent.
@@ -65,7 +69,9 @@ static void pqueue_tag_print_element(void* element) {
 // Functions defined in pqueue_tag.h.
 
 int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2) {
-  return (lf_tag_compare(((pqueue_tag_element_t*)priority1)->tag, ((pqueue_tag_element_t*)priority2)->tag));
+  // Suppress "error: cast from pointer to integer of different size" by casting to uintptr_t first.
+  return (lf_tag_compare(((pqueue_tag_element_t*)(uintptr_t)priority1)->tag,
+                         ((pqueue_tag_element_t*)(uintptr_t)priority2)->tag));
 }
 
 pqueue_tag_t* pqueue_tag_init(size_t initial_size) {
@@ -147,7 +153,7 @@ void pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) { pqueue_remove
 void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t) {
   tag_t head = pqueue_tag_peek_tag(q);
   while (lf_tag_compare(head, FOREVER_TAG) < 0 && lf_tag_compare(head, t) <= 0) {
-    pqueue_tag_pop(q);
+    pqueue_tag_pop_tag(q);
     head = pqueue_tag_peek_tag(q);
   }
 }
