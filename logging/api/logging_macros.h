@@ -36,7 +36,7 @@ static bool _lf_log_level_is_debug = LOG_LEVEL >= LOG_LEVEL_DEBUG;
  */
 #define LF_PRINT_LOG(format, ...)                                                                                      \
   do {                                                                                                                 \
-    if (_lf_log_level_is_log) {                                                                                  \
+    if (_lf_log_level_is_log) {                                                                                        \
       lf_print_log(format, ##__VA_ARGS__);                                                                             \
     }                                                                                                                  \
   } while (0)
@@ -59,7 +59,7 @@ static bool _lf_log_level_is_debug = LOG_LEVEL >= LOG_LEVEL_DEBUG;
  */
 #define LF_PRINT_DEBUG(format, ...)                                                                                    \
   do {                                                                                                                 \
-    if (_lf_log_level_is_debug) {                                                                                \
+    if (_lf_log_level_is_debug) {                                                                                      \
       lf_print_debug(format, ##__VA_ARGS__);                                                                           \
     }                                                                                                                  \
   } while (0)

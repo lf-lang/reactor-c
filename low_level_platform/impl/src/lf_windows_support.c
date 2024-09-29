@@ -170,9 +170,8 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
   // _beginthreadex requires a function that returns unsigned rather than void*.
   // So the following double cast suppresses the warning:
   // '_beginthreadex_proc_type' differs in levels of indirection from 'void *(__cdecl *)(void *)'
-  uintptr_t handle = _beginthreadex(NULL, 0,
-      (unsigned (__stdcall *)( void * ))(uintptr_t (__stdcall *)( void * )) lf_thread,
-      arguments, 0, NULL);
+  uintptr_t handle =
+      _beginthreadex(NULL, 0, (unsigned(__stdcall*)(void*))(uintptr_t(__stdcall*)(void*))lf_thread, arguments, 0, NULL);
   *thread = (HANDLE)handle;
   if (handle == 0) {
     return errno;
@@ -203,13 +202,13 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
  * Real-time scheduling API not implemented for Windows.
  */
 int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
-  (void)thread; // Suppress unused variable warning.
+  (void)thread;     // Suppress unused variable warning.
   (void)cpu_number; // Suppress unused variable warning.
   return -1;
 }
 
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
-  (void)thread; // Suppress unused variable warning.
+  (void)thread;   // Suppress unused variable warning.
   (void)priority; // Suppress unused variable warning.
   return -1;
 }
@@ -313,8 +312,7 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
   }
 
   int return_value = (int)SleepConditionVariableCS((PCONDITION_VARIABLE)&cond->condition,
-                                                   (PCRITICAL_SECTION)cond->critical_section,
-                                                   wait_duration_saturated);
+                                                   (PCRITICAL_SECTION)cond->critical_section, wait_duration_saturated);
   if (return_value == 0) {
     // Error
     if (GetLastError() == ERROR_TIMEOUT) {

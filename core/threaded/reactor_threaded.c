@@ -1033,9 +1033,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   // Use strftime rather than ctime because as of C23, ctime is deprecated.
   strftime(buffer, sizeof(buffer), "%a %b %d %H:%M:%S %Y", time_info);
 
-  lf_print("---- Start execution on %s ---- plus %ld nanoseconds",
-           buffer,
-           physical_time_timespec.tv_nsec);
+  lf_print("---- Start execution on %s ---- plus %ld nanoseconds", buffer, physical_time_timespec.tv_nsec);
 #endif // MINIMAL_STDLIB
 
   // Create and initialize the environments for each enclave
