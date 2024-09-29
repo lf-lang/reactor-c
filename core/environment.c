@@ -211,12 +211,15 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
   (void)trace_file_name; // Will be used with future enclave support.
 
   // Space for the name string with the null terminator.
-  size_t name_size = strlen(name) + 1;
-  env->name = malloc(name_size); // +1 for the null terminator
-  LF_ASSERT_NON_NULL(env->name);
-  // Use strncpy rather than strcpy to avoid compiler warnings.
-  strncpy(env->name, name, name_size + 1); // +1 ensures the null terminator is copied.
-
+  if (name != NULL) {
+    size_t name_size = strlen(name) + 1; // +1 for the null terminator
+    env->name = (char*)malloc(name_size);
+    LF_ASSERT_NON_NULL(env->name);
+    // Use strncpy rather than strcpy to avoid compiler warnings.
+    strncpy(env->name, name, name_size);
+  } else {
+    env->name = NULL;
+  }
   env->id = id;
   env->stop_tag = FOREVER_TAG;
 
