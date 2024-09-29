@@ -1028,7 +1028,13 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   lf_print("---- Start execution ----");
 #else
   struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
-  lf_print("---- Start execution at time %s---- plus %ld nanoseconds", ctime(&physical_time_timespec.tv_sec),
+  struct tm* time_info = localtime(&physical_time_timespec.tv_sec);
+  char buffer[80]; // Long enough to hold the formatted time string.
+  // Use strftime rather than ctime because as of C23, ctime is deprecated.
+  strftime(buffer, sizeof(buffer), "%a %b %d %H:%M:%S %Y", time_info);
+
+  lf_print("---- Start execution on %s ---- plus %ld nanoseconds",
+           buffer,
            physical_time_timespec.tv_nsec);
 #endif // MINIMAL_STDLIB
 
@@ -1114,7 +1120,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
       } else {
         int failure = lf_thread_join(env->thread_ids[j], &worker_thread_exit_status);
         if (failure) {
-          lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
+          // On Windows (or C23), strerror is deprecated. Use strerror_r instead.
+          char buffer[80]; // Truncate error message at 80 chars.
+          strerror_r(failure, buffer, sizeof(buffer));
+          lf_print_error("Failed to join thread listening for incoming messages: %s", buffer);
         }
       }
       if (worker_thread_exit_status != NULL) {

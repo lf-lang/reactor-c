@@ -12,6 +12,11 @@
 #define LOG_LEVEL LOG_LEVEL_INFO
 #endif
 
+// To prevent warnings "conditional expression is constant", we define static booleans
+// here instead of directly testing LOG_LEVEL in the if statements in the macros below.
+static bool _lf_log_level_is_log = LOG_LEVEL >= LOG_LEVEL_LOG;
+static bool _lf_log_level_is_debug = LOG_LEVEL >= LOG_LEVEL_DEBUG;
+
 /**
  * A macro used to print useful logging information. It can be enabled
  * by setting the target property 'logging' to 'LOG' or
@@ -31,7 +36,7 @@
  */
 #define LF_PRINT_LOG(format, ...)                                                                                      \
   do {                                                                                                                 \
-    if (LOG_LEVEL >= LOG_LEVEL_LOG) {                                                                                  \
+    if (_lf_log_level_is_log) {                                                                                  \
       lf_print_log(format, ##__VA_ARGS__);                                                                             \
     }                                                                                                                  \
   } while (0)
@@ -54,7 +59,7 @@
  */
 #define LF_PRINT_DEBUG(format, ...)                                                                                    \
   do {                                                                                                                 \
-    if (LOG_LEVEL >= LOG_LEVEL_DEBUG) {                                                                                \
+    if (_lf_log_level_is_debug) {                                                                                \
       lf_print_debug(format, ##__VA_ARGS__);                                                                           \
     }                                                                                                                  \
   } while (0)

@@ -110,7 +110,7 @@ typedef struct lf_token_t {
 typedef struct lf_sparse_io_record_t {
   int size;                  // -1 if overflowed. 0 if empty.
   size_t capacity;           // Max number of writes to be considered sparse.
-  size_t present_channels[]; // Array of channel indices that are present.
+  size_t* present_channels;  // Array of channel indices that are present.
 } lf_sparse_io_record_t;
 
 /**
