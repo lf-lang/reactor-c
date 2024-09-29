@@ -206,10 +206,9 @@ void lf_print_error_system_failure(const char* format, ...) {
   va_start(args, format);
   lf_vprint_error(format, args);
   va_end(args);
-  // On Windows (or C23), strerror is deprecated. Use strerror_r instead.
-  char buffer[80]; // Truncate error message at 80 chars.
-  strerror_r(errno, buffer, sizeof(buffer));
-  lf_print_error_and_exit("Error %d: %s", errno, buffer);
+  // Windows warns that strerror is deprecated but doesn't define strerror_r.
+  // There seems to be no portable replacement.
+  lf_print_error_and_exit("Error %d: %s", errno, strerror(errno));
   exit(EXIT_FAILURE);
 }
 

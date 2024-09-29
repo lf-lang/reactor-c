@@ -1118,10 +1118,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
       } else {
         int failure = lf_thread_join(env->thread_ids[j], &worker_thread_exit_status);
         if (failure) {
-          // On Windows (or C23), strerror is deprecated. Use strerror_r instead.
-          char buffer[80]; // Truncate error message at 80 chars.
-          strerror_r(failure, buffer, sizeof(buffer));
-          lf_print_error("Failed to join thread listening for incoming messages: %s", buffer);
+          // Windows warns that strerror is deprecated but doesn't define strerror_r.
+          // There seems to be no portable replacement.
+          lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
         }
       }
       if (worker_thread_exit_status != NULL) {
