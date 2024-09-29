@@ -43,7 +43,7 @@ static version_t version = {.build_config =
  * See trace.h.
  * @return The number of items written to the object table or -1 for failure.
  */
-static size_t write_trace_header(trace_t* t) {
+static int write_trace_header(trace_t* t) {
   if (t->_lf_trace_file != NULL) {
     size_t items_written = fwrite(&start_time, sizeof(int64_t), 1, t->_lf_trace_file);
     if (items_written != 1)
@@ -82,7 +82,7 @@ static size_t write_trace_header(trace_t* t) {
         _LF_TRACE_FAILURE(t);
     }
   }
-  return t->_lf_trace_object_descriptions_size;
+  return (int)t->_lf_trace_object_descriptions_size;
 }
 
 /**
