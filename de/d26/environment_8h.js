@@ -10,5 +10,6 @@ var environment_8h =
     [ "_lf_get_environments", "de/d26/environment_8h.html#ac109cd752121228507a95495a1eb6d8f", null ],
     [ "environment_free", "de/d26/environment_8h.html#af73b90f735c070d534171f3e92730ac8", null ],
     [ "environment_init", "de/d26/environment_8h.html#ab49da5954eb69f3d126162da44c25b36", null ],
-    [ "environment_init_tags", "de/d26/environment_8h.html#af23dde6465214cc92114e0c49bccdc72", null ]
+    [ "environment_init_tags", "de/d26/environment_8h.html#af23dde6465214cc92114e0c49bccdc72", null ],
+    [ "environment_verify", "de/d26/environment_8h.html#aeb51302599cae953b2b8942088879e2f", null ]
 ];

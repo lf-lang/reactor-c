@@ -120,6 +120,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ab49da5954eb69f3d126162da44c25b36" id="r_ab49da5954eb69f3d126162da44c25b36"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab49da5954eb69f3d126162da44c25b36">environment_init</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, const char *name, int id, int num_workers, int num_timers, int num_startup_reactions, int num_shutdown_reactions, int num_reset_reactions, int num_is_present_fields, int num_modes, int num_state_resets, int num_watchdogs, const char *trace_file_name)</td></tr>
 <tr class="memdesc:ab49da5954eb69f3d126162da44c25b36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize an environment struct with parameters given in the arguments.  <br /></td></tr>
 <tr class="separator:ab49da5954eb69f3d126162da44c25b36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb51302599cae953b2b8942088879e2f" id="r_aeb51302599cae953b2b8942088879e2f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeb51302599cae953b2b8942088879e2f">environment_verify</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:aeb51302599cae953b2b8942088879e2f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify that the environment is correctly set up.  <br /></td></tr>
+<tr class="separator:aeb51302599cae953b2b8942088879e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Erling R. Jellum </dd></dl>
@@ -254,6 +257,31 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Initialize the start and stop tags on the environment struct. </p>
+
+</div>
+</div>
+<a id="aeb51302599cae953b2b8942088879e2f" name="aeb51302599cae953b2b8942088879e2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb51302599cae953b2b8942088879e2f">&#9670;&#160;</a></span>environment_verify()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void environment_verify </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Verify that the environment is correctly set up. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
