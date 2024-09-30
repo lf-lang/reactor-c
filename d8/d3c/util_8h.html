@@ -237,7 +237,7 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="../../dc/d7c/logging__macros_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(<a class="code hl_function" href="../../da/dfb/low__level__platform_8h.html#a9ed434626733537f71c9b85e981109c7">lf_cond_broadcast</a>(cond), <span class="stringliteral">&quot;Condition variable broadcast failed.&quot;</span>)</div>
-<div class="ttc" id="alogging__macros_8h_html_a1c464cee8cabb65eebf454fc016d47b1"><div class="ttname"><a href="../../dc/d7c/logging__macros_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a></div><div class="ttdeci">#define LF_ASSERTN(condition, format,...)</div><div class="ttdef"><b>Definition</b> logging_macros.h:88</div></div>
+<div class="ttc" id="alogging__macros_8h_html_a1c464cee8cabb65eebf454fc016d47b1"><div class="ttname"><a href="../../dc/d7c/logging__macros_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a></div><div class="ttdeci">#define LF_ASSERTN(condition, format,...)</div><div class="ttdef"><b>Definition</b> logging_macros.h:95</div></div>
 <div class="ttc" id="alow__level__platform_8h_html_a9ed434626733537f71c9b85e981109c7"><div class="ttname"><a href="../../da/dfb/low__level__platform_8h.html#a9ed434626733537f71c9b85e981109c7">lf_cond_broadcast</a></div><div class="ttdeci">int lf_cond_broadcast(lf_cond_t *cond)</div><div class="ttdef"><b>Definition</b> lf_POSIX_threads_support.c:53</div></div>
 </div><!-- fragment --><p>Broadcast a condition variable with error checking. This is optimized away if the NDEBUG flag is defined. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -343,8 +343,8 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="../../dc/d7c/logging__macros_8h.html#a26ab6a0fd21cdcff11a5557406536bf1">LF_ASSERT</a>(!<a class="code hl_function" href="../../d5/dbc/reactor__threaded_8c.html#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a>(env), <span class="stringliteral">&quot;Could not enter critical section&quot;</span>)</div>
-<div class="ttc" id="alogging__macros_8h_html_a26ab6a0fd21cdcff11a5557406536bf1"><div class="ttname"><a href="../../dc/d7c/logging__macros_8h.html#a26ab6a0fd21cdcff11a5557406536bf1">LF_ASSERT</a></div><div class="ttdeci">#define LF_ASSERT(condition, format,...)</div><div class="ttdef"><b>Definition</b> logging_macros.h:81</div></div>
-<div class="ttc" id="areactor__threaded_8c_html_ae0fda178667bc6cd94890a13316c285c"><div class="ttname"><a href="../../d5/dbc/reactor__threaded_8c.html#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a></div><div class="ttdeci">int lf_critical_section_enter(environment_t *env)</div><div class="ttdoc">Enter critical section by locking the global mutex.</div><div class="ttdef"><b>Definition</b> reactor_threaded.c:1147</div></div>
+<div class="ttc" id="alogging__macros_8h_html_a26ab6a0fd21cdcff11a5557406536bf1"><div class="ttname"><a href="../../dc/d7c/logging__macros_8h.html#a26ab6a0fd21cdcff11a5557406536bf1">LF_ASSERT</a></div><div class="ttdeci">#define LF_ASSERT(condition, format,...)</div><div class="ttdef"><b>Definition</b> logging_macros.h:88</div></div>
+<div class="ttc" id="areactor__threaded_8c_html_ae0fda178667bc6cd94890a13316c285c"><div class="ttname"><a href="../../d5/dbc/reactor__threaded_8c.html#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a></div><div class="ttdeci">int lf_critical_section_enter(environment_t *env)</div><div class="ttdoc">Enter critical section by locking the global mutex.</div><div class="ttdef"><b>Definition</b> reactor_threaded.c:1153</div></div>
 </div><!-- fragment --><p>Enter critical section with error checking. This is optimized away if the NDEBUG flag is defined. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Pointer to the environment. </td></tr>
@@ -369,7 +369,7 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="../../dc/d7c/logging__macros_8h.html#a26ab6a0fd21cdcff11a5557406536bf1">LF_ASSERT</a>(!<a class="code hl_function" href="../../d5/dbc/reactor__threaded_8c.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a>(env), <span class="stringliteral">&quot;Could not exit critical section&quot;</span>)</div>
-<div class="ttc" id="areactor__threaded_8c_html_aed2c25495b50b46780c6288e4370541e"><div class="ttname"><a href="../../d5/dbc/reactor__threaded_8c.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a></div><div class="ttdeci">int lf_critical_section_exit(environment_t *env)</div><div class="ttdoc">Leave a critical section by unlocking the global mutex.</div><div class="ttdef"><b>Definition</b> reactor_threaded.c:1159</div></div>
+<div class="ttc" id="areactor__threaded_8c_html_aed2c25495b50b46780c6288e4370541e"><div class="ttname"><a href="../../d5/dbc/reactor__threaded_8c.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a></div><div class="ttdeci">int lf_critical_section_exit(environment_t *env)</div><div class="ttdoc">Leave a critical section by unlocking the global mutex.</div><div class="ttdef"><b>Definition</b> reactor_threaded.c:1165</div></div>
 </div><!-- fragment --><p>Exit critical section with error checking. This is optimized away if the NDEBUG flag is defined. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Pointer to the environment. </td></tr>

@@ -51,7 +51,7 @@ var searchData=
   ['convert_5ftimespec_5fto_5fns_48',['convert_timespec_to_ns',['../d4/dac/lf__unix__clock__support_8h.html#ab5a60065ba9bd0644386acf7f8c5e1d2',1,'lf_unix_clock_support.h']]],
   ['copy_5fconstructor_49',['copy_constructor',['../db/d12/structtoken__type__t.html#a4e5da2b59631b75ace560f9812a11824',1,'token_type_t::copy_constructor'],['../da/dc0/structgeneric__port__instance__struct.html#a91dc1a062dbad3a91c4b692c28308360',1,'generic_port_instance_struct::copy_constructor']]],
   ['core_5fversion_5fname_50',['core_version_name',['../da/d9c/structversion__t.html#a1467912f280c86639da40fa0ce448147',1,'version_t']]],
-  ['count_51',['count',['../de/dc8/structlf__semaphore__t.html#ac4c25407ad41a8e3e11c270637ef045c',1,'lf_semaphore_t']]],
+  ['count_51',['count',['../de/dc8/structlf__semaphore__t.html#aefda92a42c49b9003089fb3d17bf62b3',1,'lf_semaphore_t']]],
   ['cpt_52',['cpt',['../d6/d1e/namespacefedsd.html#af90671403aae1fbc8f6dedd5caef43e5',1,'fedsd']]],
   ['create_5fclock_5fsync_5fthread_53',['create_clock_sync_thread',['../d9/dd5/clock-sync_8h.html#ac094b53ced87d3cbd617a66591f4282a',1,'clock-sync.h']]],
   ['critical_5fsection_54',['critical_section',['../dd/d67/structlf__cond__t.html#a82734d8a77e41947d56fa8ebf9366d65',1,'lf_cond_t']]],

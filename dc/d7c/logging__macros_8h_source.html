@@ -100,64 +100,75 @@ $(function(){initNavTree('dc/d7c/logging__macros_8h_source.html','../../'); init
   <div class="headertitle"><div class="title">logging_macros.h</div></div>
 </div><!--header-->
 <div class="contents">
-<a href="../../dc/d7c/logging__macros_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#include &quot;<a class="code" href="../../d5/d77/logging_8h.html">logging.h</a>&quot;</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#ifndef LOG_LEVEL</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">   12</a></span><span class="preprocessor">#define LOG_LEVEL LOG_LEVEL_INFO</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
-<div class="foldopen" id="foldopen00032" data-start="" data-end="">
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a2a7110df48e8f74b05fd4a8f7581b1da">   32</a></span><span class="preprocessor">#define LF_PRINT_LOG(format, ...)                                                                                      \</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">    if (LOG_LEVEL &gt;= LOG_LEVEL_LOG) {                                                                                  \</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">      lf_print_log(format, ##__VA_ARGS__);                                                                             \</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">    }                                                                                                                  \</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">  } while (0)</span></div>
+<a href="../../dc/d7c/logging__macros_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef LOGGING_MACROS_H</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define LOGGING_MACROS_H</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &quot;<a class="code" href="../../d5/d77/logging_8h.html">logging.h</a>&quot;</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#ifndef LOG_LEVEL</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">   14</a></span><span class="preprocessor">#define LOG_LEVEL LOG_LEVEL_INFO</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment">// To prevent warnings &quot;conditional expression is constant&quot;, we define static booleans</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment">// here instead of directly testing LOG_LEVEL in the if statements in the macros below.</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">bool</span> _lf_log_level_is_log = <a class="code hl_define" href="../../dc/d7c/logging__macros_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="../../d5/d77/logging_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a>;</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">bool</span> _lf_log_level_is_debug = <a class="code hl_define" href="../../dc/d7c/logging__macros_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="../../d5/d77/logging_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a>;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="foldopen" id="foldopen00039" data-start="" data-end="">
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a2a7110df48e8f74b05fd4a8f7581b1da">   39</a></span><span class="preprocessor">#define LF_PRINT_LOG(format, ...)                                                                                      \</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">    if (_lf_log_level_is_log) {                                                                                        \</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">      lf_print_log(format, ##__VA_ARGS__);                                                                             \</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">    }                                                                                                                  \</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">  } while (0)</span></div>
 </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="foldopen" id="foldopen00055" data-start="" data-end="">
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#ab5a65df50027549a8245f6b3eaff97e4">   55</a></span><span class="preprocessor">#define LF_PRINT_DEBUG(format, ...)                                                                                    \</span></div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="preprocessor">    if (LOG_LEVEL &gt;= LOG_LEVEL_DEBUG) {                                                                                \</span></div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">      lf_print_debug(format, ##__VA_ARGS__);                                                                           \</span></div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="preprocessor">    }                                                                                                                  \</span></div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="preprocessor">  } while (0)</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="foldopen" id="foldopen00062" data-start="" data-end="">
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#ab5a65df50027549a8245f6b3eaff97e4">   62</a></span><span class="preprocessor">#define LF_PRINT_DEBUG(format, ...)                                                                                    \</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">    if (_lf_log_level_is_debug) {                                                                                      \</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">      lf_print_debug(format, ##__VA_ARGS__);                                                                           \</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">    }                                                                                                                  \</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">  } while (0)</span></div>
 </div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="preprocessor">#if defined(NDEBUG)</span></div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">#define LF_ASSERT(condition, format, ...) (void)(condition)</span></div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">#define LF_ASSERTN(condition, format, ...) (void)(condition)</span></div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="preprocessor">#define LF_ASSERT_NON_NULL(pointer) (void)(pointer)</span></div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span><span class="preprocessor">#else</span></div>
-<div class="foldopen" id="foldopen00081" data-start="" data-end="">
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a26ab6a0fd21cdcff11a5557406536bf1">   81</a></span><span class="preprocessor">#define LF_ASSERT(condition, format, ...)                                                                              \</span></div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="preprocessor">    if (!(condition)) {                                                                                                \</span></div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">      lf_print_error_and_exit(&quot;`&quot; format &quot;`. Failed assertion in %s:%d(%s):(&quot; #condition &quot;) != true`&quot;, ##__VA_ARGS__,  \</span></div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="preprocessor">                              __FILE__, __LINE__, __func__);                                                           \</span></div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="preprocessor">    }                                                                                                                  \</span></div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="preprocessor">  } while (0)</span></div>
-</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="preprocessor">#if defined(NDEBUG)</span></div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">#define LF_ASSERT(condition, format, ...) (void)(condition)</span></div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="preprocessor">#define LF_ASSERTN(condition, format, ...) (void)(condition)</span></div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="preprocessor">#define LF_ASSERT_NON_NULL(pointer) (void)(pointer)</span></div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="preprocessor">#else</span></div>
 <div class="foldopen" id="foldopen00088" data-start="" data-end="">
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a1c464cee8cabb65eebf454fc016d47b1">   88</a></span><span class="preprocessor">#define LF_ASSERTN(condition, format, ...)                                                                             \</span></div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a26ab6a0fd21cdcff11a5557406536bf1">   88</a></span><span class="preprocessor">#define LF_ASSERT(condition, format, ...)                                                                              \</span></div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="preprocessor">    if (condition) {                                                                                                   \</span></div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="preprocessor">      lf_print_error_and_exit(&quot;`&quot; format &quot;`. Failed assertion in %s:%d(%s):(&quot; #condition &quot;) != false`&quot;, ##__VA_ARGS__, \</span></div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="preprocessor">    if (!(condition)) {                                                                                                \</span></div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="preprocessor">      lf_print_error_and_exit(&quot;`&quot; format &quot;`. Failed assertion in %s:%d(%s):(&quot; #condition &quot;) != true`&quot;, ##__VA_ARGS__,  \</span></div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="preprocessor">                              __FILE__, __LINE__, __func__);                                                           \</span></div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span><span class="preprocessor">    }                                                                                                                  \</span></div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="preprocessor">  } while (0)</span></div>
 </div>
 <div class="foldopen" id="foldopen00095" data-start="" data-end="">
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a832d0deaa853b7777e1f54283e7bcc20">   95</a></span><span class="preprocessor">#define LF_ASSERT_NON_NULL(pointer)                                                                                    \</span></div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a1c464cee8cabb65eebf454fc016d47b1">   95</a></span><span class="preprocessor">#define LF_ASSERTN(condition, format, ...)                                                                             \</span></div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="preprocessor">    if (!(pointer)) {                                                                                                  \</span></div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">      lf_print_error_and_exit(&quot;`Out of memory?` Assertion failed in %s:%d(%s):`&quot; #pointer &quot; == NULL`&quot;, __FILE__,       \</span></div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">                              __LINE__, __func__);                                                                     \</span></div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="preprocessor">    if (condition) {                                                                                                   \</span></div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">      lf_print_error_and_exit(&quot;`&quot; format &quot;`. Failed assertion in %s:%d(%s):(&quot; #condition &quot;) != false`&quot;, ##__VA_ARGS__, \</span></div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">                              __FILE__, __LINE__, __func__);                                                           \</span></div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="preprocessor">    }                                                                                                                  \</span></div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span><span class="preprocessor">  } while (0)</span></div>
 </div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="preprocessor">#endif </span><span class="comment">// NDEBUG</span></div>
+<div class="foldopen" id="foldopen00102" data-start="" data-end="">
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno"><a class="line" href="../../dc/d7c/logging__macros_8h.html#a832d0deaa853b7777e1f54283e7bcc20">  102</a></span><span class="preprocessor">#define LF_ASSERT_NON_NULL(pointer)                                                                                    \</span></div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">    if (!(pointer)) {                                                                                                  \</span></div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><span class="preprocessor">      lf_print_error_and_exit(&quot;`Out of memory?` Assertion failed in %s:%d(%s):`&quot; #pointer &quot; == NULL`&quot;, __FILE__,       \</span></div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="preprocessor">                              __LINE__, __func__);                                                                     \</span></div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span><span class="preprocessor">    }                                                                                                                  \</span></div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span><span class="preprocessor">  } while (0)</span></div>
+</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="preprocessor">#endif </span><span class="comment">// NDEBUG</span></div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span><span class="preprocessor">#endif </span><span class="comment">// LOGGING_MACROS_H</span></div>
 <div class="ttc" id="alogging_8h_html"><div class="ttname"><a href="../../d5/d77/logging_8h.html">logging.h</a></div></div>
+<div class="ttc" id="alogging_8h_html_a130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="../../d5/d77/logging_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition</b> logging.h:28</div></div>
+<div class="ttc" id="alogging_8h_html_a8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="../../d5/d77/logging_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdef"><b>Definition</b> logging.h:27</div></div>
+<div class="ttc" id="alogging__macros_8h_html_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="../../dc/d7c/logging__macros_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdef"><b>Definition</b> logging_macros.h:14</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

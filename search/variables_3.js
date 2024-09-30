@@ -11,7 +11,7 @@ var searchData=
   ['condition_8',['condition',['../dd/d67/structlf__cond__t.html#a58ff28bfeabf02915ba23f2ad351b7d6',1,'lf_cond_t::condition'],['../dd/d67/structlf__cond__t.html#ab914e73ca3659803b5df2e408301bfb9',1,'lf_cond_t::condition'],['../dd/d67/structlf__cond__t.html#a0d4efe8c6390e564b57b4a58927ec93f',1,'lf_cond_t::condition']]],
   ['copy_5fconstructor_9',['copy_constructor',['../db/d12/structtoken__type__t.html#a4e5da2b59631b75ace560f9812a11824',1,'token_type_t::copy_constructor'],['../da/dc0/structgeneric__port__instance__struct.html#a91dc1a062dbad3a91c4b692c28308360',1,'generic_port_instance_struct::copy_constructor']]],
   ['core_5fversion_5fname_10',['core_version_name',['../da/d9c/structversion__t.html#a1467912f280c86639da40fa0ce448147',1,'version_t']]],
-  ['count_11',['count',['../de/dc8/structlf__semaphore__t.html#ac4c25407ad41a8e3e11c270637ef045c',1,'lf_semaphore_t']]],
+  ['count_11',['count',['../de/dc8/structlf__semaphore__t.html#aefda92a42c49b9003089fb3d17bf62b3',1,'lf_semaphore_t']]],
   ['cpt_12',['cpt',['../d6/d1e/namespacefedsd.html#af90671403aae1fbc8f6dedd5caef43e5',1,'fedsd']]],
   ['critical_5fsection_13',['critical_section',['../dd/d67/structlf__cond__t.html#a82734d8a77e41947d56fa8ebf9366d65',1,'lf_cond_t']]],
   ['css_5fstyle_14',['css_style',['../d6/d1e/namespacefedsd.html#a112610c17b25854fbe0f162fc4e08292',1,'fedsd']]],
