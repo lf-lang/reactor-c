@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <process.h>
 #include <sysinfoapi.h>
 #include <time.h>
+#include <stdio.h> // For fprintf()
 
 #include "platform/lf_windows_support.h"
 #include "low_level_platform.h"
@@ -64,7 +65,7 @@ void _lf_initialize_clock() {
   if (_lf_use_performance_counter) {
     _lf_frequency_to_ns = (double)performance_frequency.QuadPart / BILLION;
   } else {
-    lf_print_error("High resolution performance counter is not supported on this machine.");
+    fprintf(stderr, "ERROR: High resolution performance counter is not supported on this machine.\n");
     _lf_frequency_to_ns = 0.01;
   }
 }
@@ -89,9 +90,9 @@ int _lf_clock_gettime(instant_t* t) {
   }
   LARGE_INTEGER windows_time;
   if (_lf_use_performance_counter) {
-    int result = QueryPerformanceCounter(&windows_time);
+    result = QueryPerformanceCounter(&windows_time);
     if (result == 0) {
-      lf_print_error("_lf_clock_gettime(): Failed to read the value of the physical clock.");
+      fprintf(stderr, "ERROR: _lf_clock_gettime(): Failed to read the value of the physical clock.\n");
       return result;
     }
   } else {
@@ -140,6 +141,7 @@ int lf_sleep(interval_t sleep_duration) {
 }
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
+  (void)env; // Suppress unused variable warning.
   interval_t sleep_duration = wakeup_time - lf_time_physical();
 
   if (sleep_duration <= 0) {
@@ -165,7 +167,11 @@ int lf_available_cores() {
 lf_thread_t lf_thread_self() { return GetCurrentThread(); }
 
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
-  uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
+  // _beginthreadex requires a function that returns unsigned rather than void*.
+  // So the following double cast suppresses the warning:
+  // '_beginthreadex_proc_type' differs in levels of indirection from 'void *(__cdecl *)(void *)'
+  uintptr_t handle =
+      _beginthreadex(NULL, 0, (unsigned(__stdcall*)(void*))(uintptr_t(__stdcall*)(void*))lf_thread, arguments, 0, NULL);
   *thread = (HANDLE)handle;
   if (handle == 0) {
     return errno;
@@ -183,6 +189,9 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
   DWORD retvalue = WaitForSingleObject(thread, INFINITE);
+  if (thread_return != NULL) {
+    *thread_return = (void*)retvalue;
+  }
   if (retvalue == WAIT_FAILED) {
     return EINVAL;
   }
@@ -192,11 +201,23 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
 /**
  * Real-time scheduling API not implemented for Windows.
  */
-int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) { return -1; }
+int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
+  (void)thread;     // Suppress unused variable warning.
+  (void)cpu_number; // Suppress unused variable warning.
+  return -1;
+}
 
-int lf_thread_set_priority(lf_thread_t thread, int priority) { return -1; }
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
+  (void)thread;   // Suppress unused variable warning.
+  (void)priority; // Suppress unused variable warning.
+  return -1;
+}
 
-int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) { return -1; }
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
+  (void)thread; // Suppress unused variable warning.
+  (void)policy; // Suppress unused variable warning.
+  return -1;
+}
 
 int lf_mutex_init(_lf_critical_section_t* critical_section) {
   // Set up a recursive mutex
@@ -278,10 +299,20 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
   }
 
   // convert ns to ms and round up to closest full integer
-  DWORD wait_duration_ms = (wait_duration + 999999LL) / 1000000LL;
+  interval_t wait_duration_ms = (wait_duration + 999999LL) / 1000000LL;
+  DWORD wait_duration_saturated;
+  if (wait_duration_ms > 0xFFFFFFFFLL) {
+    // Saturate at 0xFFFFFFFFLL
+    wait_duration_saturated = (DWORD)0xFFFFFFFFLL;
+  } else if (wait_duration_ms <= 0) {
+    // No need to wait. Return indicating that the wait is complete.
+    return LF_TIMEOUT;
+  } else {
+    wait_duration_saturated = (DWORD)wait_duration_ms;
+  }
 
   int return_value = (int)SleepConditionVariableCS((PCONDITION_VARIABLE)&cond->condition,
-                                                   (PCRITICAL_SECTION)cond->critical_section, wait_duration_ms);
+                                                   (PCRITICAL_SECTION)cond->critical_section, wait_duration_saturated);
   if (return_value == 0) {
     // Error
     if (GetLastError() == ERROR_TIMEOUT) {

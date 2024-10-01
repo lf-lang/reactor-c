@@ -61,6 +61,7 @@ typedef struct {
   lf_action_internal_t _base;
   self_base_t* parent;
   bool has_value;
+  int source_id;
   PyObject* value;
   FEDERATED_GENERIC_EXTENSION
 } generic_action_instance_struct;

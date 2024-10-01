@@ -70,6 +70,26 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
   }
 }
 
+int lf_sleep(interval_t sleep_duration) {
+  instant_t now;
+  _lf_clock_gettime(&now);
+  instant_t wakeup = now + sleep_duration;
+
+  // Do busy sleep
+  do {
+    _lf_clock_gettime(&now);
+  } while ((now < wakeup));
+  return 0;
+}
+
+/**
+ * Pause execution for a number of nanoseconds.
+ *
+ * @return 0 for success, or -1 for failure. In case of failure, errno will be
+ *  set appropriately (see `man 2 clock_nanosleep`).
+ */
+int lf_nanosleep(interval_t requested_time) { return lf_sleep(requested_time); }
+
 /**
  * Patmos clock does not need initialization.
  */
