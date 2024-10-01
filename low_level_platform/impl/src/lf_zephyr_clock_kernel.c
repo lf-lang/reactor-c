@@ -113,6 +113,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     return 0;
   } else {
     lf_print_error_and_exit("k_sem_take returned %d", res);
+    return -1;
   }
 }
 

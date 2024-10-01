@@ -41,7 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 
 typedef struct {
-  int count;
+  size_t count;
   lf_mutex_t mutex;
   lf_cond_t cond;
 } lf_semaphore_t;
@@ -52,7 +52,7 @@ typedef struct {
  * @param count The count to start with.
  * @return lf_semaphore_t* Can be NULL on error.
  */
-lf_semaphore_t* lf_semaphore_new(int count);
+lf_semaphore_t* lf_semaphore_new(size_t count);
 
 /**
  * @brief Release the 'semaphore' and add 'i' to its count.
@@ -60,7 +60,7 @@ lf_semaphore_t* lf_semaphore_new(int count);
  * @param semaphore Instance of a semaphore
  * @param i The count to add.
  */
-void lf_semaphore_release(lf_semaphore_t* semaphore, int i);
+void lf_semaphore_release(lf_semaphore_t* semaphore, size_t i);
 
 /**
  * @brief Acquire the 'semaphore'. Will block if count is 0.

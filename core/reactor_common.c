@@ -303,13 +303,19 @@ void _lf_pop_events(environment_t* env) {
       }
     }
 
-    // Mark the trigger present.
+    // Mark the trigger present
     event->trigger->status = present;
 
     // If the trigger is a periodic timer, create a new event for its next execution.
     if (event->trigger->is_timer && event->trigger->period > 0LL) {
       // Reschedule the trigger.
       lf_schedule_trigger(env, event->trigger, event->trigger->period, NULL);
+    } else {
+      // For actions, store a pointer to status field so it is reset later.
+      int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+      if (ipfas < env->is_present_fields_size) {
+        env->is_present_fields_abbreviated[ipfas] = (bool*)&event->trigger->status;
+      }
     }
 
     // Copy the token pointer into the trigger struct so that the
@@ -322,9 +328,6 @@ void _lf_pop_events(environment_t* env) {
     // that call will increment the reference count and we need to not let the token be
     // freed prematurely.
     _lf_done_using(token);
-
-    // Mark the trigger present.
-    event->trigger->status = present;
 
     lf_recycle_event(env, event);
 
@@ -603,8 +606,12 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // for which we decrement the reference count.
   _lf_replace_template_token((token_template_t*)trigger, token);
 
-  // Mark the trigger present.
+  // Mark the trigger present and store a pointer to it for marking it as absent later.
   trigger->status = present;
+  int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+  if (ipfas < env->is_present_fields_size) {
+    env->is_present_fields_abbreviated[ipfas] = (bool*)&trigger->status;
+  }
 
   // Push the corresponding reactions for this trigger
   // onto the reaction queue.
@@ -1096,6 +1103,13 @@ void initialize_global(void) {
   // Call the code-generated function to initialize all actions, timers, and ports
   // This is done for all environments/enclaves at the same time.
   _lf_initialize_trigger_objects();
+
+#if !defined(LF_SINGLE_THREADED) && !defined(NDEBUG)
+  // If we are testing, verify that environment with pointers is correctly set up.
+  for (int i = 0; i < num_envs; i++) {
+    environment_verify(&envs[i]);
+  }
+#endif
 }
 
 /**

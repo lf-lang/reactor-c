@@ -41,7 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param count The count to start with.
  * @return lf_semaphore_t* Can be NULL on error.
  */
-lf_semaphore_t* lf_semaphore_new(int count) {
+lf_semaphore_t* lf_semaphore_new(size_t count) {
   lf_semaphore_t* semaphore = (lf_semaphore_t*)malloc(sizeof(lf_semaphore_t));
   LF_MUTEX_INIT(&semaphore->mutex);
   LF_COND_INIT(&semaphore->cond, &semaphore->mutex);
@@ -55,7 +55,7 @@ lf_semaphore_t* lf_semaphore_new(int count) {
  * @param semaphore Instance of a semaphore
  * @param i The count to add.
  */
-void lf_semaphore_release(lf_semaphore_t* semaphore, int i) {
+void lf_semaphore_release(lf_semaphore_t* semaphore, size_t i) {
   assert(semaphore != NULL);
   LF_MUTEX_LOCK(&semaphore->mutex);
   semaphore->count += i;
