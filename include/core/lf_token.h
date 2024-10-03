@@ -152,20 +152,6 @@ typedef struct lf_port_base_t {
 //// Global variables
 
 /**
- * @brief List of tokens created within reactions that must be freed.
- * Tokens created by lf_writable_copy, which is automatically invoked
- * when an input is mutable, must have their reference count decremented
- * at the end of a tag (or the beginning of the next tag).
- * Otherwise, their memory could leak. If they are passed on to
- * an output or to a call to lf_schedule during the reaction, then
- * those will also result in incremented reference counts, enabling
- * the token to live on until used. For example, a new token created
- * by lf_writable_copy could become the new template token for an output
- * via a call to lf_set.
- */
-extern lf_token_t* _lf_tokens_allocated_in_reactions;
-
-/**
  * Counter used to issue a warning if memory is
  * allocated for tokens and never freed. Note that
  * every trigger will have one token allocated for
