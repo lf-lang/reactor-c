@@ -28,7 +28,7 @@ int _lf_count_token_allocations;
 
 /**
  * @brief List of tokens created within reactions that must be freed.
- * 
+ *
  * Tokens created by lf_writable_copy, which is automatically invoked
  * when an input is mutable, must have their reference count decremented
  * at the end of a tag (or the beginning of the next tag).
