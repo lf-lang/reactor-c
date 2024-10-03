@@ -386,12 +386,16 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
 
   // Get an event_t struct to put on the event queue.
   // Recycle event_t structs, if possible.
-  event_t* e = lf_get_new_event(env);
-  e->trigger = timer;
-  e->base.tag = (tag_t){.time = lf_time_logical(env) + delay, .microstep = 0};
-  // NOTE: No lock is being held. Assuming this only happens at startup.
-  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
-  tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
+  tag_t next_tag = (tag_t){.time = lf_time_logical(env) + delay, .microstep = 0};
+  // Do not schedule the next event if it is after the timeout.
+  if (!lf_is_tag_after_stop_tag(env, next_tag)) {
+    event_t* e = lf_get_new_event(env);
+    e->trigger = timer;
+    e->base.tag = next_tag;
+    // NOTE: No lock is being held. Assuming this only happens at startup.
+    pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
+    tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
+  }
 }
 
 void _lf_initialize_timers(environment_t* env) {
