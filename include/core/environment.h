@@ -121,6 +121,13 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
                      const char* trace_file_name);
 
 /**
+ * @brief Verify that the environment is correctly set up.
+ *
+ * @param env
+ */
+void environment_verify(environment_t* env);
+
+/**
  * @brief Free the dynamically allocated memory on the environment struct.
  * @param env The environment in which we are executing.
  */
