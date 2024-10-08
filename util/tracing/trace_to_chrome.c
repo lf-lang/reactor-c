@@ -53,6 +53,7 @@ FILE* trace_file = NULL;
 FILE* output_file = NULL;
 
 /** 
+ * SPECIFIC TO QUASI-STATIC SCHEDULING:
  * By default, the Chrome tracing displays events in us granularity. So
  * timestamps by default are divided by scaling=1000 to show correct units in
  * the GUI. However, for sub-us events, it is preferable to set scaling=1 so
@@ -78,7 +79,10 @@ int max_reaction_number = 0;
 /** Indicator to plot vs. physical time only. */
 bool physical_time_only = false;
 
-/** A helper function for retriving virtual instruction name from event type */
+/** 
+ * SPECIFIC TO QUASI-STATIC SCHEDULING:
+ * A helper function for retriving virtual instruction name from event type
+ */
 char* get_instruction_name(trace_event_t event_type) {
     switch(event_type) {
         case static_scheduler_ADD_starts:
@@ -164,310 +168,9 @@ size_t read_and_write_trace() {
     if (trace[i].event_type > federated)
       continue;
 
-        if (trace[i].dst_id >= 0) {
-            reaction_name = (char*)malloc(4);
-            snprintf(reaction_name, 4, "%d", trace[i].dst_id);
-        }
-        // printf("DEBUG: Reactor's self struct pointer: %p\n", trace[i].pointer);
-        int reactor_index;
-        char* reactor_name = get_object_description(trace[i].pointer, &reactor_index);
-        if (reactor_name == NULL) {
-            if (trace[i].event_type == worker_wait_starts || trace[i].event_type == worker_wait_ends) {
-                reactor_name = "WAIT";
-            } else if (trace[i].event_type == scheduler_advancing_time_starts
-                    || trace[i].event_type == scheduler_advancing_time_starts) {
-                reactor_name = "ADVANCE TIME";
-            } else if (trace[i].event_type >= static_scheduler_ADD_starts
-                    && trace[i].event_type <= static_scheduler_WU_ends) {
-                int pc = trace[i].dst_id;
-                char *inst_name = get_instruction_name(trace[i].event_type);
-                char str[20];
-                sprintf(str, "%d: %s", pc, inst_name);
-                reactor_name = str;
-            } else {
-                reactor_name = "NO REACTOR";
-            }
-        }
-        // Default name is the reactor name.
-        char* name = reactor_name;
-
-        int trigger_index;
-        char* trigger_name = get_trigger_name(trace[i].trigger, &trigger_index);
-        if (trigger_name == NULL) {
-            trigger_name = "NONE";
-        }
-        // By default, the timestamp used in the trace is the elapsed
-        // physical time in microseconds.  But for schedule_called events,
-        // it will instead be the logical time at which the action or timer
-        // is to be scheduled.
-        interval_t elapsed_physical_time = (trace[i].physical_time - start_time)/scaling_factor;
-        interval_t timestamp = elapsed_physical_time;
-        interval_t elapsed_logical_time = (trace[i].logical_time - start_time)/scaling_factor;
-
-        if (elapsed_physical_time < 0) {
-            fprintf(stderr, "WARNING: Negative elapsed physical time %lld. Skipping trace entry.\n", elapsed_physical_time);
-            continue;
-        }
-        if (elapsed_logical_time < 0) {
-            fprintf(stderr, "WARNING: Negative elapsed logical time %lld. Skipping trace entry.\n", elapsed_logical_time);
-            continue;
-        }
-
-        // Default thread id is the worker number.
-        int thread_id = trace[i].src_id;
-
-        char* args;
-        asprintf(&args, "{"
-                        "\"reaction\": %s,"          // reaction number.
-                        "\"logical time\": %lld,"    // logical time.
-                        "\"physical time\": %lld,"   // physical time.
-                        "\"microstep\": %d"          // microstep.
-                    "}",
-                reaction_name,
-                elapsed_logical_time,
-                elapsed_physical_time,
-                trace[i].microstep
-        );
-        char* phase;
-        int pid;
-        switch(trace[i].event_type) {
-            case reaction_starts:
-                phase = "B";
-                pid = 0; // Process 0 will be named "Execution"
-                break;
-            case reaction_ends:
-                phase = "E";
-                pid = 0; // Process 0 will be named "Execution"
-                break;
-            case schedule_called:
-                phase = "i";
-                pid = reactor_index + 1; // One pid per reactor.
-                if (!physical_time_only) {
-                    timestamp = elapsed_logical_time + trace[i].extra_delay/scaling_factor;
-                }
-                thread_id = trigger_index;
-                name = trigger_name;
-                break;
-            case user_event:
-                pid = PID_FOR_USER_EVENT;
-                phase= "i";
-                if (!physical_time_only) {
-                    timestamp = elapsed_logical_time;
-                }
-                thread_id = reactor_index;
-                break;
-            case user_value:
-                pid = PID_FOR_USER_EVENT;
-                phase= "C";
-                if (!physical_time_only) {
-                    timestamp = elapsed_logical_time;
-                }
-                thread_id = reactor_index;
-                free(args);
-                asprintf(&args, "{\"value\": %lld}", trace[i].extra_delay);
-                break;
-            case worker_wait_starts:
-                pid = PID_FOR_WORKER_WAIT;
-                phase = "B";
-                break;
-            case worker_wait_ends:
-                pid = PID_FOR_WORKER_WAIT;
-                phase = "E";
-                break;
-            case scheduler_advancing_time_starts:
-                pid = PID_FOR_WORKER_ADVANCING_TIME;
-                phase = "B";
-                break;
-            case scheduler_advancing_time_ends:
-                pid = PID_FOR_WORKER_ADVANCING_TIME;
-                phase = "E";
-                break;
-            case static_scheduler_ADD_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_ADDI_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_ADV_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_ADVI_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_BEQ_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_BGE_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_BLT_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_BNE_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_DU_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_EXE_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_JAL_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_JALR_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_STP_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_WLT_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_WU_starts:
-                pid = 0;
-                phase = "B";
-                break;
-            case static_scheduler_ADD_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_ADDI_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_ADV_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_ADVI_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_BEQ_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_BGE_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_BLT_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_BNE_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_DU_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_EXE_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_JAL_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_JALR_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_STP_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_WLT_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            case static_scheduler_WU_ends:
-                pid = 0;
-                phase = "E";
-                break;
-            default:
-                fprintf(stderr, "WARNING: Unrecognized event type %d: %s\n",
-                        trace[i].event_type, trace_event_names[trace[i].event_type]);
-                pid = PID_FOR_UNKNOWN_EVENT;
-                phase = "i";
-        }
-        fprintf(output_file, "{"
-                    "\"name\": \"%s\", "   // name is the reactor or trigger name.
-                    "\"cat\": \"%s\", "    // category is the type of event.
-                    "\"ph\": \"%s\", "     // phase is "B" (begin), "E" (end), or "X" (complete).
-                    "\"tid\": %d, "        // thread ID.
-                    "\"pid\": %d, "        // process ID is required.
-                    "\"ts\": %lld, "       // timestamp in microseconds
-                    "\"args\": %s"         // additional arguments from above.
-                    "},\n",
-                name,
-                trace_event_names[trace[i].event_type],
-                phase,
-                thread_id,
-                pid,
-                timestamp,
-                args
-        );
-        free(args);
-
-        if (trace[i].src_id > max_thread_id) {
-            max_thread_id = trace[i].src_id;
-        }
-        // If the event is reaction_starts and physical_time_only is not set,
-        // then also generate an instantaneous
-        // event to be shown in the reactor's section, along with timers and actions.
-        if (trace[i].event_type == reaction_starts && !physical_time_only) {
-            phase = "i";
-            pid = reactor_index + 1;
-            reaction_name = (char*)malloc(4);
-            char name[13];
-            snprintf(name, 13, "reaction %d", trace[i].dst_id);
-
-            // NOTE: If the reactor has more than 1024 timers and actions, then
-            // there will be a collision of thread IDs here.
-            thread_id = 1024 + trace[i].dst_id;
-            if (trace[i].dst_id > max_reaction_number) {
-                max_reaction_number = trace[i].dst_id;
-            }
-
-            fprintf(output_file, "{"
-                    "\"name\": \"%s\", "   // name is the reactor or trigger name.
-                    "\"cat\": \"%s\", "    // category is the type of event.
-                    "\"ph\": \"%s\", "     // phase is "B" (begin), "E" (end), or "X" (complete).
-                    "\"tid\": %d, "        // thread ID.
-                    "\"pid\": %d, "        // process ID is required.
-                    "\"ts\": %lld, "       // timestamp in microseconds
-                    "\"args\": {"
-                        "\"microstep\": %d, "       // microstep.
-                        "\"physical time\": %lld"   // physical time.
-                    "}},\n",
-                name,
-                "Reaction",
-                phase,
-                thread_id,
-                pid,
-                elapsed_logical_time,
-                trace[i].microstep,
-                elapsed_physical_time
-            );
-        }
+    if (trace[i].dst_id >= 0) {
+      reaction_name = (char*)malloc(4);
+      snprintf(reaction_name, 4, "%d", trace[i].dst_id);
     }
     // printf("DEBUG: Reactor's self struct pointer: %p\n", trace[i].pointer);
     int reactor_index;
@@ -573,6 +276,126 @@ size_t read_and_write_trace() {
       break;
     case scheduler_advancing_time_ends:
       pid = PID_FOR_WORKER_ADVANCING_TIME;
+      phase = "E";
+      break;
+    case static_scheduler_ADD_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_ADDI_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_ADV_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_ADVI_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_BEQ_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_BGE_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_BLT_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_BNE_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_DU_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_EXE_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_JAL_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_JALR_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_STP_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_WLT_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_WU_starts:
+      pid = 0;
+      phase = "B";
+      break;
+    case static_scheduler_ADD_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_ADDI_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_ADV_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_ADVI_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_BEQ_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_BGE_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_BLT_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_BNE_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_DU_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_EXE_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_JAL_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_JALR_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_STP_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_WLT_ends:
+      pid = 0;
+      phase = "E";
+      break;
+    case static_scheduler_WU_ends:
+      pid = 0;
       phase = "E";
       break;
     default:

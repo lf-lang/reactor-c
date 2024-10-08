@@ -85,7 +85,7 @@ void cb_dump_events(circular_buffer *cb)
     void *p = cb->tail;
     while (p != cb->head) {
         event_t* e = (event_t*)p;
-        lf_print("Event @ %lld w/ token %p", e->time, e->token);
+        lf_print("Event @ %lld w/ token %p", e->base.tag.time, e->token);
         p += cb->sz;
         if (p == cb->buffer_end) p = cb->buffer;
     }
