@@ -50,7 +50,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tracepoint.h"
 #include "util.h"
 
+#ifndef TRACE_ALL_INSTRUCTIONS
 #define TRACE_ALL_INSTRUCTIONS false
+#endif
 #define SPIN_WAIT_THRESHOLD SEC(1)
 
 /////////////////// External Variables /////////////////////////
@@ -310,10 +312,12 @@ void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     reaction_t** returned_reaction, bool* exit_loop) {
     char* op_str = "EXE";
     LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, op1.imm, op2.imm, op3.imm);
-    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_starts((self_base_t *) op2.reg, worker_number, (int) op3.imm);}
 #if TRACE_ALL_INSTRUCTIONS
     int pc_orig = (int) *pc;
-    else {tracepoint_static_scheduler_EXE_starts((self_base_t *) op2.reg, worker_number, pc_orig);}
+    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_starts((void*)op2.reg, worker_number, op3.imm);}
+    else {tracepoint_static_scheduler_EXE_starts(worker_number, pc_orig);}
+#else
+    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_starts((void*)op2.reg, worker_number, op3.imm);}
 #endif
     function_generic_t function = (function_generic_t)(uintptr_t)op1.reg;
     void *args = (void*)op2.reg;
@@ -322,9 +326,11 @@ void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     function(args);
     LF_PRINT_DEBUG("*** [Line %zu] Worker %zu done executing reaction", *pc, worker_number);
     *pc += 1; // Increment pc.
-    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_ends((self_base_t *) op2.reg, worker_number, (int) op3.imm);}
 #if TRACE_ALL_INSTRUCTIONS
-    else {tracepoint_static_scheduler_EXE_ends((self_base_t *) op2.reg, worker_number, pc_orig);}
+    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_ends((void*)op2.reg, worker_number, op3.imm);}
+    else {tracepoint_static_scheduler_EXE_ends(worker_number, pc_orig);}
+#else 
+    if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_ends((void*)op2.reg, worker_number, op3.imm);}
 #endif
 }
 

@@ -203,108 +203,108 @@ void lf_tracing_check_version();
 
 #if SCHEDULER == SCHED_STATIC
 
+#define NULL_TAG ((tag_t){.time=LLONG_MAX, .microstep=0})
+
 #define tracepoint_static_scheduler_ADD_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_ADD_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_ADD_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_ADD_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_ADD_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_ADD_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_ADDI_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_ADDI_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_ADDI_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_ADDI_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_ADDI_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_ADDI_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_ADV_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_ADV_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_ADV_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_ADV_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_ADV_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_ADV_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_ADVI_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_ADVI_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_ADVI_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_ADVI_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_ADVI_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_ADVI_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_BEQ_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_BEQ_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_BEQ_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_BEQ_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_BEQ_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_BEQ_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_BGE_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_BGE_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_BGE_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_BGE_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_BGE_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_BGE_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_BLT_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_BLT_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_BLT_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_BLT_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_BLT_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_BLT_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_BNE_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_BNE_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_BNE_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_BNE_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_BNE_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_BNE_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_DU_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_DU_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_DU_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_DU_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_DU_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_DU_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_EXE_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_EXE_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_EXE_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_EXE_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_EXE_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_EXE_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_JAL_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_JAL_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_JAL_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_JAL_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_JAL_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_JAL_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_JALR_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_JALR_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_JALR_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_JALR_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_JALR_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_JALR_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_STP_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_STP_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_STP_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_STP_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_STP_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_STP_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_WLT_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_WLT_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_WLT_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_WLT_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_WLT_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_WLT_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_WU_starts(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_WU_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_WU_starts, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_WU_ends(worker, pc)                                                                  \
-  call_tracepoint(static_scheduler_WU_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0)
+  call_tracepoint(static_scheduler_WU_ends, NULL, NULL_TAG, worker, worker, pc, NULL, NULL, 0)
 
 /**
  * A special case when EXE is called on a reaction. In this case,
  * "reaction_starts" is used similar to tracepoint_reaction_starts().
  */
 #define tracepoint_static_scheduler_EXE_reaction_starts(reactor, worker, reaction_number)                                \
-  tag_t *tag = NULL; \
-  if (reactor) tag = &reactor->tag; \
+  tag_t tag = ((self_base_t *)reactor)->tag; \
   call_tracepoint(reaction_starts, reactor, tag, worker, worker, reaction_number, NULL, NULL, 0)
 
 #define tracepoint_static_scheduler_EXE_reaction_ends(reactor, worker, reaction_number)                                  \
-  tag_t *tag = NULL;  \
-  if (reactor) tag = &reactor->tag; \
+  tag_t tag = ((self_base_t *)reactor)->tag; \
   call_tracepoint(reaction_ends, reactor, tag, worker, worker, reaction_number, NULL, NULL, 0)
 
 #endif // SCHED_STATIC

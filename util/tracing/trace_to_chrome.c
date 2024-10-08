@@ -60,7 +60,7 @@ FILE* output_file = NULL;
  * that the execution time of events are not abstracted to 0.
  */
 int scaling_factor = 1000;
-// double scaling_factor = 1; // For seeing sub-us events.
+// int scaling_factor = 1; // For seeing sub-us events.
 
 /**
  * Print a usage message.
@@ -179,8 +179,11 @@ size_t read_and_write_trace() {
       if (trace[i].event_type == worker_wait_starts || trace[i].event_type == worker_wait_ends) {
         reactor_name = "WAIT";
       } else if (trace[i].event_type == scheduler_advancing_time_starts ||
-                 trace[i].event_type == scheduler_advancing_time_starts) {
+                 trace[i].event_type == scheduler_advancing_time_ends) {
         reactor_name = "ADVANCE TIME";
+      } else if (strcmp(get_instruction_name(trace[i].event_type), "UNKNOWN") != 0) {
+        // Check if the event is related to PretVM.
+        reactor_name = get_instruction_name(trace[i].event_type);
       } else {
         reactor_name = "NO REACTOR";
       }
