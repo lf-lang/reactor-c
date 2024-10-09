@@ -45,7 +45,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_static_functions.h"
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
-#include "semaphore.h"
 #include "tag.h"
 #include "tracepoint.h"
 #include "util.h"
