@@ -176,7 +176,7 @@ void lf_set_present(lf_port_base_t* port) {
     return;
   environment_t* env = port->source_reactor->environment;
   bool* is_present_field = &port->is_present;
-  int ipfas = lf_atomic_fetch_add32(&env->is_present_fields_abbreviated_size, 1);
+  int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
   if (ipfas < env->is_present_fields_size) {
     env->is_present_fields_abbreviated[ipfas] = is_present_field;
   }
@@ -184,7 +184,7 @@ void lf_set_present(lf_port_base_t* port) {
 
   // Support for sparse destination multiports.
   if (port->sparse_record && port->destination_channel >= 0 && port->sparse_record->size >= 0) {
-    size_t next = (size_t)lf_atomic_fetch_add32(&port->sparse_record->size, 1);
+    size_t next = (size_t)lf_atomic_fetch_add(&port->sparse_record->size, 1);
     if (next >= port->sparse_record->capacity) {
       // Buffer is full. Have to revert to the classic iteration.
       port->sparse_record->size = -1;
@@ -1023,13 +1023,17 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 #endif
 
   LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
-  struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
 
 #ifdef MINIMAL_STDLIB
   lf_print("---- Start execution ----");
 #else
-  lf_print("---- Start execution at time %s---- plus %ld nanoseconds", ctime(&physical_time_timespec.tv_sec),
-           physical_time_timespec.tv_nsec);
+  struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
+  struct tm* time_info = localtime(&physical_time_timespec.tv_sec);
+  char buffer[80]; // Long enough to hold the formatted time string.
+  // Use strftime rather than ctime because as of C23, ctime is deprecated.
+  strftime(buffer, sizeof(buffer), "%a %b %d %H:%M:%S %Y", time_info);
+
+  lf_print("---- Start execution on %s ---- plus %ld nanoseconds", buffer, physical_time_timespec.tv_nsec);
 #endif // MINIMAL_STDLIB
 
   // Create and initialize the environments for each enclave
@@ -1114,6 +1118,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
       } else {
         int failure = lf_thread_join(env->thread_ids[j], &worker_thread_exit_status);
         if (failure) {
+          // Windows warns that strerror is deprecated but doesn't define strerror_r.
+          // There seems to be no portable replacement.
           lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
         }
       }
