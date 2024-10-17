@@ -69,16 +69,25 @@
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
  */
-#define lf_set(out, val)                                                                                               \
-  do {                                                                                                                 \
-    out->value = val;                                                                                                  \
-    lf_set_present(out);                                                                                               \
-    if (((token_template_t*)out)->token != NULL) {                                                                     \
-      /* The cast "*((void**) &out->value)" is a hack to make the code */                                              \
-      /* compile with non-token types where value is not a pointer. */                                                 \
-      lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**)&out->value), 1);          \
-    }                                                                                                                  \
-  } while (0)
+#if SCHEDULER == SCHED_STATIC
+#define lf_set(out, val) \
+do { \
+    out->value = val; \
+    lf_set_present(out); \
+    out->token = (lf_token_t *)(uintptr_t)val; /* The long-term solution is to generate an event type for each connection buffer of primitive type. */ \
+} while(0)
+#else
+#define lf_set(out, val) \
+do { \
+    out->value = val; \
+    lf_set_present(out); \
+    if (((token_template_t*)out)->token != NULL) { \
+        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
+        /* compile with non-token types where value is not a pointer. */ \
+        lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
+    } \
+} while(0)
+#endif
 
 /**
  * @brief Set the specified output (or input of a contained reactor)
@@ -180,6 +189,29 @@
 // As long as this is done from the context of a reaction, `self` is in scope and is a pointer to the self-struct
 // of the current reactor.
 
+// The fully static (SCHED_STATIC) runtime, uses time local to each reactor. If this is the case
+// then we defined these macros to access that timestamp rather than using the standard API
+// FIXME (erj): I am not really stoked about this added complexity
+#if defined REACTOR_LOCAL_TIME
+
+/**
+ * Return the current tag of the environment invoking this reaction.
+ */
+#define lf_tag() self->base.tag
+
+/**
+ * Return the current logical time in nanoseconds of the environment invoking this reaction.
+ */
+#define lf_time_logical() self->base.tag.time
+
+/**
+ * Return the current logical time of the environment invoking this reaction relative to the
+ * start time in nanoseconds.
+ */
+#define lf_time_logical_elapsed() (self->base.tag.time - lf_time_start())
+
+#else 
+
 /**
  * Return the current tag of the environment invoking this reaction.
  */
@@ -196,4 +228,5 @@
  */
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 
+#endif // REACTOR_LOCAL_TIME
 #endif // REACTION_MACROS_H
