@@ -236,25 +236,6 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
   return result;
 }
 
-lf_token_t* _lf_get_token(token_template_t* tmplt) {
-  if (tmplt->token != NULL) {
-    if (tmplt->token->ref_count == 1) {
-      LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu", (void*)tmplt->token,
-                     tmplt->token->ref_count);
-      // Free any previous value in the token.
-      _lf_free_token_value(tmplt->token);
-      return tmplt->token;
-    } else {
-      // Liberate the token.
-      _lf_done_using(tmplt->token);
-    }
-  }
-  // If we get here, we need a new token.
-  tmplt->token = _lf_new_token((token_type_t*)tmplt, NULL, 0);
-  tmplt->token->ref_count = 1;
-  return tmplt->token;
-}
-
 void _lf_initialize_template(token_template_t* tmplt, size_t element_size) {
   assert(tmplt != NULL);
   LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
@@ -285,8 +266,8 @@ lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value
   assert(tmplt != NULL);
   LF_PRINT_DEBUG("_lf_initialize_token_with_value: template %p, value %p", (void*)tmplt, value);
 
-  lf_token_t* result = _lf_get_token(tmplt);
-  result->value = value;
+  lf_token_t* result = _lf_new_token((token_type_t*)tmplt, value, 0);
+  result->ref_count = 1;
 // Count allocations to issue a warning if this is never freed.
 #if !defined NDEBUG
   LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
