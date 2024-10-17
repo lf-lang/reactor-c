@@ -542,8 +542,7 @@ PyObject* convert_C_action_to_py(void* action) {
   }
 
   // Actions in Python always use token type
-  if (((generic_action_instance_struct*)action)->token != NULL)
-    ((generic_action_capsule_struct*)cap)->value = ((generic_action_instance_struct*)action)->token->value;
+  ((generic_action_capsule_struct*)cap)->value = trigger->tmplt.token->value;
 
   return cap;
 }
