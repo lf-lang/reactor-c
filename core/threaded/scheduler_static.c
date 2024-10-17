@@ -186,17 +186,17 @@ void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     int pc_orig = (int) *pc;
     tracepoint_static_scheduler_BEQ_starts(worker_number, pc_orig);
 #endif
-    reg_t *_rs1 = op1.reg;
-    reg_t *_rs2 = op2.reg;
-    // These NULL checks allow _rs1 and _rs2 to be uninitialized in the static
+    reg_t *_op1 = op1.reg;
+    reg_t *_op2 = op2.reg;
+    // These NULL checks allow _op1 and _op2 to be uninitialized in the static
     // schedule, which can save a few lines in the schedule. But it is debatable
     // whether this is good practice.
     if (debug) {
-        lf_print("DEBUG: _rs1 = %p, _rs2 = %p", _rs1, _rs2);
-        if (_rs1 != NULL) lf_print("DEBUG: *_rs1 = %lld", *_rs1);
-        if (_rs2 != NULL) lf_print("DEBUG: *_rs2 = %lld", *_rs2);
+        lf_print("DEBUG: _op1 = %p, _op2 = %p", _op1, _op2);
+        if (_op1 != NULL) lf_print("DEBUG: *_op1 = %lld", *_op1);
+        if (_op2 != NULL) lf_print("DEBUG: *_op2 = %lld", *_op2);
     }
-    if (_rs1 != NULL && _rs2 != NULL && *_rs1 == *_rs2) *pc = op3.imm;
+    if (_op1 != NULL && _op2 != NULL && *_op1 == *_op2) *pc = op3.imm;
     else *pc += 1;
 #if TRACE_ALL_INSTRUCTIONS
     tracepoint_static_scheduler_BEQ_ends(worker_number, pc_orig);
@@ -214,10 +214,10 @@ void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     int pc_orig = (int) *pc;
     tracepoint_static_scheduler_BGE_starts(worker_number, pc_orig);
 #endif
-    reg_t *_rs1 = op1.reg;
-    reg_t *_rs2 = op2.reg;
-    LF_PRINT_DEBUG("Worker %zu: BGE : operand 1 = %lld, operand 2 = %lld", worker_number, *_rs1, *_rs2);
-    if (_rs1 != NULL && _rs2 != NULL && *_rs1 >= *_rs2) *pc = op3.imm;
+    reg_t *_op1 = op1.reg;
+    reg_t *_op2 = op2.reg;
+    LF_PRINT_DEBUG("Worker %zu: BGE : operand 1 = %lld, operand 2 = %lld", worker_number, *_op1, *_op2);
+    if (_op1 != NULL && _op2 != NULL && *_op1 >= *_op2) *pc = op3.imm;
     else *pc += 1;
 #if TRACE_ALL_INSTRUCTIONS
     tracepoint_static_scheduler_BGE_ends(worker_number, pc_orig);
@@ -235,10 +235,11 @@ void execute_inst_BLT(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     int pc_orig = (int) *pc;
     tracepoint_static_scheduler_BLT_starts(worker_number, pc_orig);
 #endif
-    reg_t *_rs1 = op1.reg;
-    reg_t *_rs2 = op2.reg;
-    if (_rs1 != NULL && _rs2 != NULL && *_rs1 < *_rs2) *pc = op3.imm;
+    reg_t *_op1 = op1.reg;
+    reg_t *_op2 = op2.reg;
+    if (_op1 != NULL && _op2 != NULL && *_op1 < *_op2) *pc = op3.imm;
     else *pc += 1;
+    if (debug) lf_print("op1: %lld, op2: %lld, op1 < op2: %d", *_op1, *_op2, *_op1 < *_op2);
 #if TRACE_ALL_INSTRUCTIONS
     tracepoint_static_scheduler_BLT_ends(worker_number, pc_orig);
 #endif
@@ -255,9 +256,9 @@ void execute_inst_BNE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     int pc_orig = (int) *pc;
     tracepoint_static_scheduler_BNE_starts(worker_number, pc_orig);
 #endif
-    reg_t *_rs1 = op1.reg;
-    reg_t *_rs2 = op2.reg;
-    if (_rs1 != NULL && _rs2 != NULL && *_rs1 != *_rs2) *pc = op3.imm;
+    reg_t *_op1 = op1.reg;
+    reg_t *_op2 = op2.reg;
+    if (_op1 != NULL && _op2 != NULL && *_op1 != *_op2) *pc = op3.imm;
     else *pc += 1;
 #if TRACE_ALL_INSTRUCTIONS
     tracepoint_static_scheduler_BNE_ends(worker_number, pc_orig);
