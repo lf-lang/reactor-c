@@ -243,6 +243,7 @@ lf_token_t* _lf_get_token(token_template_t* tmplt) {
                    tmplt->token->ref_count);
     // Free any previous value in the token.
     _lf_free_token_value(tmplt->token);
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
     return tmplt->token;
   }
   LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
