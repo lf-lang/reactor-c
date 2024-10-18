@@ -234,6 +234,17 @@ token_freed _lf_free_token(lf_token_t* token);
 lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length);
 
 /**
+ * Get a token for the specified template.
+ * If the template already has a token and the reference count is 1,
+ * then return that token. Otherwise, create a new token,
+ * make it the new template, and dissociate or free the
+ * previous template token.
+ * @param tmplt The template. // template is a C++ keyword.
+ * @return A new or recycled lf_token_t struct.
+ */
+lf_token_t* _lf_get_token(token_template_t* tmplt);
+
+/**
  * Initialize the specified template to contain a token that is an
  * array with the specified element size. If the template already has
  * a token with a reference count greater than 1 or a non-matching type,
