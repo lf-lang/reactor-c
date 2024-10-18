@@ -98,6 +98,7 @@
   do {                                                                                                                 \
     lf_set_present(out);                                                                                               \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len);                             \
+    out->token = token;                                                                                                \
     out->value = token->value;                                                                                         \
     out->length = len;                                                                                                 \
   } while (0)
@@ -106,6 +107,7 @@
   do {                                                                                                                 \
     lf_set_present(out);                                                                                               \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len);                             \
+    out->token = token;                                                                                                \
     out->value = static_cast<decltype(out->value)>(token->value);                                                      \
     out->length = len;                                                                                                 \
   } while (0)
