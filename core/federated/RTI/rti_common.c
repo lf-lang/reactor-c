@@ -20,6 +20,7 @@ extern instant_t start_time;
 
 void initialize_rti_common(rti_common_t* _rti_common) {
   rti_common = _rti_common;
+  rti_common->min_delays = NULL;
   rti_common->max_stop_tag = NEVER_TAG;
   rti_common->number_of_scheduling_nodes = 0;
   rti_common->num_scheduling_nodes_handling_stop = 0;
@@ -37,20 +38,7 @@ void invalidate_min_delays() {
   if (rti_common->min_delays != NULL) {
     uint16_t n = rti_common->number_of_scheduling_nodes;
     for (uint16_t i = 0; i < n; i++) {
-      for (uint16_t j = 0; j < n; j++) {
-        rti_common->min_delays[i + j * n] = FOREVER_TAG;
-      }
       scheduling_node_t* node = rti_common->scheduling_nodes[i];
-      if (node->all_upstreams != NULL)
-        free(node->all_upstreams);
-
-      if (node->all_downstreams != NULL)
-        free(node->all_downstreams);
-
-      node->all_upstreams = NULL;
-      node->num_all_upstreams = 0;
-      node->all_downstreams = NULL;
-      node->num_all_downstreams = 0;
       node->flags = 0; // All flags cleared because they get set lazily.
     }
     free(rti_common->min_delays);
@@ -71,10 +59,6 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
   e->immediate_downstreams = NULL;
   e->num_immediate_downstreams = 0;
   e->mode = REALTIME;
-  e->all_upstreams = NULL;
-  e->num_all_upstreams = 0;
-  e->all_downstreams = NULL;
-  e->num_all_upstreams = 0;
   e->flags = 0;
 }
 
@@ -106,39 +90,39 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
   // First, we need to find the shortest path (minimum delay) path to each upstream node
   // and then find the minimum of the node's recorded NET plus the minimum path delay.
   // Update the shortest paths, if necessary.
-  update_min_delays_upstream(e);
-  update_all_downstreams(e);
+  update_min_delays();
 
   // Next, find the tag of the earliest possible incoming message from upstream enclaves or
   // federates, which will be the smallest upstream NET plus the least delay.
   // This could be NEVER_TAG if the RTI has not seen a NET from some upstream node.
   tag_t t_d = FOREVER_TAG;
   int n = rti_common->number_of_scheduling_nodes;
-  for (int i = 0; i < e->num_all_upstreams; i++) {
-    // Node e->all_upstreams[i] is upstream of e with
-    // min delay rti_common->min_delays[e->all_upstreams[i]*n + e->id]
-    scheduling_node_t* upstream = rti_common->scheduling_nodes[e->all_upstreams[i]];
-    // If we haven't heard from the upstream node, then assume it can send an event at the start time.
-    if (lf_tag_compare(upstream->next_event, NEVER_TAG) == 0) {
-      tag_t start_tag = {.time = start_time, .microstep = 0};
-      upstream->next_event = start_tag;
-    }
-    // The min_delay here is a tag_t, not an interval_t because it may account for more than
-    // one connection. No delay at all is represented by (0,0). A delay of 0 is represented
-    // by (0,1). If the time part of the delay is greater than 0, then we want to ignore
-    // the microstep in upstream->next_event because that microstep will have been lost.
-    // Otherwise, we want preserve it and add to it. This is handled by lf_tag_add().
-    tag_t earliest_tag_from_upstream =
-        lf_tag_add(upstream->next_event, rti_common->min_delays[e->all_upstreams[i] * n + e->id]);
+  for (int i = 0; i < n; i++) {
+    if (lf_tag_compare(rti_common->min_delays[i * n + e->id], FOREVER_TAG) != 0) {
+      // Node i is upstream of e with min delay rti_common->min_delays[i * n + e->id]
+      scheduling_node_t* upstream = rti_common->scheduling_nodes[i];
+      // If we haven't heard from the upstream node, then assume it can send an event at the start time.
+      if (lf_tag_compare(upstream->next_event, NEVER_TAG) == 0) {
+        tag_t start_tag = {.time = start_time, .microstep = 0};
+        upstream->next_event = start_tag;
+      }
+      // The min_delay here is a tag_t, not an interval_t because it may account for more than
+      // one connection. No delay at all is represented by (0,0). A delay of 0 is represented
+      // by (0,1). If the time part of the delay is greater than 0, then we want to ignore
+      // the microstep in upstream->next_event because that microstep will have been lost.
+      // Otherwise, we want preserve it and add to it. This is handled by lf_tag_add().
+      tag_t earliest_tag_from_upstream =
+          lf_tag_add(upstream->next_event, rti_common->min_delays[i * n + e->id]);
 
-    /* Following debug message is too verbose for normal use:
-    LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
-            e->id,
-            upstream->id,
-            earliest_tag_from_upstream.time - start_time, earliest_tag_from_upstream.microstep);
-    */
-    if (lf_tag_compare(earliest_tag_from_upstream, t_d) < 0) {
-      t_d = earliest_tag_from_upstream;
+      /* Following debug message is too verbose for normal use:
+      LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
+              e->id,
+              upstream->id,
+              earliest_tag_from_upstream.time - start_time, earliest_tag_from_upstream.microstep);
+      */
+      if (lf_tag_compare(earliest_tag_from_upstream, t_d) < 0) {
+        t_d = earliest_tag_from_upstream;
+      }
     }
   }
   return t_d;
@@ -289,24 +273,28 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     // Even though there was no grant, mark the tag as if there was.
     e->last_granted = next_event_tag;
   }
+
+  update_min_delays();
   // Check downstream scheduling_nodes to see whether they should now be granted a TAG.
-  update_all_downstreams(e);
-  for (int i = 0; i < e->num_all_downstreams; i++) {
-    scheduling_node_t* downstream = rti_common->scheduling_nodes[e->all_downstreams[i]];
-    notify_advance_grant_if_safe(downstream);
+  int n = rti_common->number_of_scheduling_nodes;
+  for (int j = 0; j < n; j++) {
+    if (lf_tag_compare(rti_common->min_delays[e->id * n + j], FOREVER_TAG) != 0) {
+      // The node j is a downstream node of e.
+      scheduling_node_t* downstream = rti_common->scheduling_nodes[j];
+      notify_advance_grant_if_safe(downstream);
+    }
   }
 
   if (rti_common->dnet_enabled) {
     // Send DNET to the node e's upstream federates if needed
-    for (int i = 0; i < e->num_all_upstreams; i++) {
-      int target_upstream_id = e->all_upstreams[i];
-      if (target_upstream_id == e->id) {
-        continue;
-      }
-      scheduling_node_t* node = rti_common->scheduling_nodes[target_upstream_id];
-      tag_t dnet = downstream_next_event_tag(node, e->id);
-      if (lf_tag_compare(node->last_DNET, dnet) != 0 && lf_tag_compare(node->next_event, dnet) <= 0) {
-        notify_downstream_next_event_tag(node, dnet);
+    for (int i = 0; i < n; i++) {
+      if (lf_tag_compare(rti_common->min_delays[i * n + e->id], FOREVER_TAG) != 0 && i != e->id) {
+        // The node i is an upstream node of e.
+        scheduling_node_t* upstream = rti_common->scheduling_nodes[i];
+        tag_t dnet = downstream_next_event_tag(upstream, e->id);
+        if (lf_tag_compare(upstream->last_DNET, dnet) != 0 && lf_tag_compare(upstream->next_event, dnet) <= 0) {
+          notify_downstream_next_event_tag(upstream, dnet);
+        }
       }
     }
   }
@@ -381,80 +369,42 @@ static void _update_min_delays_upstream(scheduling_node_t* end, scheduling_node_
   }
 }
 
-void update_min_delays_upstream(scheduling_node_t* node) {
+void update_min_delays() {
+  int n = rti_common->number_of_scheduling_nodes;
   // Check whether cached result is valid.
-  if (node->all_upstreams == NULL) {
+  if (rti_common->min_delays == NULL) {
+    // Allocate memory for the array of min_delays.
+    rti_common->min_delays = (tag_t*)calloc((n * n), sizeof(tag_t));
 
-    // This is not Dijkstra's algorithm, but rather one optimized for sparse upstream nodes.
-    // There must be a name for this algorithm.
+    for (int j = 0; j < n; j++) {
+      // This is not Dijkstra's algorithm, but rather one optimized for sparse upstream nodes.
+      // There must be a name for this algorithm.
 
-    // Array of results on the stack:
-    tag_t path_delays[rti_common->number_of_scheduling_nodes];
-    // This will be the number of non-FOREVER entries put into path_delays.
-    size_t count = 0;
+      scheduling_node_t* node = rti_common->scheduling_nodes[j];
+      // Array of results on the stack:
+      tag_t path_delays[n];
+      // This will be the number of non-FOREVER entries put into path_delays.
+      size_t count = 0;
 
-    for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-      path_delays[i] = FOREVER_TAG;
-    }
-    _update_min_delays_upstream(node, NULL, path_delays, &count);
-
-    // Put the results onto the matrix.
-    node->num_all_upstreams = count;
-    node->all_upstreams = (uint16_t*)calloc(count, sizeof(uint16_t));
-    LF_PRINT_DEBUG("++++ Node %hu is in ZDC: %d", node->id, is_in_zero_delay_cycle(node));
-    int k = 0;
-    for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-      if (lf_tag_compare(path_delays[i], FOREVER_TAG) < 0) {
-        // Node i is upstream.
-        if (k >= count) {
-          lf_print_error_and_exit("Internal error! Count of upstream nodes %zu for node %d is wrong!", count, i);
-        }
-        rti_common->min_delays[node->id + i * rti_common->number_of_scheduling_nodes] = path_delays[i];
-        node->all_upstreams[k++] = i;
-        // N^2 debug statement could be a problem with large benchmarks.
-        // LF_PRINT_DEBUG("++++    Node %hu is upstream with delay" PRINTF_TAG "\n", i, path_delays[i].time,
-        // path_delays[i].microstep);
+      for (int i = 0; i < n; i++) {
+        path_delays[i] = FOREVER_TAG;
       }
-    }
-  }
-}
+      _update_min_delays_upstream(node, NULL, path_delays, &count);
 
-void update_all_downstreams(scheduling_node_t* node) {
-  if (node->all_downstreams == NULL) {
-    bool visited[rti_common->number_of_scheduling_nodes];
-    for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-      visited[i] = false;
-    }
-
-    uint16_t queue[rti_common->number_of_scheduling_nodes];
-    int front = 0, rear = 0;
-
-    visited[node->id] = true;
-    queue[rear++] = node->id;
-
-    size_t count = 0;
-    while (front != rear) {
-      int current_id = queue[front++];
-      scheduling_node_t* current_node = rti_common->scheduling_nodes[current_id];
-      for (uint16_t i = 0; i < current_node->num_immediate_downstreams; i++) {
-        uint16_t downstream_id = current_node->immediate_downstreams[i];
-        if (visited[downstream_id] == false) {
-          visited[downstream_id] = true;
-          queue[rear++] = downstream_id;
-          count++;
+      // Put the results onto the matrix.
+      LF_PRINT_DEBUG("++++ Node %hu is in ZDC: %d", node->id, is_in_zero_delay_cycle(node));
+      int k = 0;
+      for (int i = 0; i < n; i++) {
+        rti_common->min_delays[i * n + j] = path_delays[i];
+        if (lf_tag_compare(path_delays[i], FOREVER_TAG) < 0) {
+          // Node i is upstream.
+          if (k >= count) {
+            lf_print_error_and_exit("Internal error! Count of upstream nodes %zu for node %d is wrong!", count, i);
+          }
+          // N^2 debug statement could be a problem with large benchmarks.
+          LF_PRINT_DEBUG("++++    Node %hu is upstream with delay" PRINTF_TAG "\n", i, path_delays[i].time,
+          path_delays[i].microstep);
         }
-      }
-    }
-
-    int k = 0;
-    node->all_downstreams = (uint16_t*)calloc(count, sizeof(uint16_t));
-    node->num_all_downstreams = count;
-    for (uint16_t i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-      if (visited[i] == true && i != node->id) {
-        if (k >= count) {
-          lf_print_error_and_exit("Internal error! Count of downstream nodes %zu for node %d is wrong!", count, i);
-        }
-        node->all_downstreams[k++] = i;
       }
     }
   }
@@ -492,37 +442,45 @@ tag_t get_dnet_candidate(tag_t next_event_tag, tag_t minimum_delay) {
   return result;
 }
 
-tag_t downstream_next_event_tag(scheduling_node_t* node, uint16_t node_sending_new_net_id) {
-  if (is_in_zero_delay_cycle(node)) {
+tag_t downstream_next_event_tag(scheduling_node_t* target_node, uint16_t node_sending_new_NET_id) {
+  if (is_in_zero_delay_cycle(target_node)) {
     return NEVER_TAG;
   }
 
   tag_t result = FOREVER_TAG;
-  scheduling_node_t* node_sending_new_net = rti_common->scheduling_nodes[node_sending_new_net_id];
-  if (is_in_zero_delay_cycle(node_sending_new_net)) {
+  scheduling_node_t* node_sending_new_NET = rti_common->scheduling_nodes[node_sending_new_NET_id];
+  if (is_in_zero_delay_cycle(node_sending_new_NET)) {
     return NEVER_TAG;
   }
 
-  int index = node->id * rti_common->number_of_scheduling_nodes + node_sending_new_net_id;
-  tag_t candidate = get_dnet_candidate(node_sending_new_net->next_event, rti_common->min_delays[index]);
+  int n = rti_common->number_of_scheduling_nodes;
+  int index = target_node->id * n + node_sending_new_NET_id;
+  tag_t candidate = get_dnet_candidate(node_sending_new_NET->next_event, rti_common->min_delays[index]);
 
-  if (lf_tag_compare(node->last_DNET, candidate) >= 0) {
+  if (lf_tag_compare(target_node->last_DNET, candidate) >= 0) {
+    // This function is called because a downstream node of target_node sent a new NET.
+    // If the candidate computed by that downstream node is earlier than or equal to the last DNET,
+    // this candidate must be the minimum among every candidate.
+    // Else if this candidate is later than the last DNET, we need to loop up every downstream node
+    // to compute the DNET value.
     result = candidate;
   } else {
-    for (int i = 0; i < node->num_all_downstreams; i++) {
-      uint16_t target_downstream_id = node->all_downstreams[i];
-      scheduling_node_t* target_dowstream = rti_common->scheduling_nodes[target_downstream_id];
+    for (int j = 0; j < n; j++) {
+      if (lf_tag_compare(rti_common->min_delays[target_node->id * n + j], FOREVER_TAG) != 0) {
+        // The node j is a downstream node.
+        scheduling_node_t* target_dowstream = rti_common->scheduling_nodes[j];
+        // if (is_in_zero_delay_cycle(target_dowstream)) {
+        //   // The target node is an upstream of ZDC. Do not send DNET to this node.
+        //   return NEVER_TAG;
+        // }
 
-      if (is_in_zero_delay_cycle(target_dowstream)) {
-        // This node is an upstream of ZDC. Do not send DNET to this node.
-        return NEVER_TAG;
-      }
+        // Minimum tag increment between the node and its downstream node.
+        tag_t delay = rti_common->min_delays[target_node->id * n + j];
+        candidate = get_dnet_candidate(target_dowstream->next_event, delay);
 
-      index = node->id * rti_common->number_of_scheduling_nodes + target_downstream_id;
-      candidate = get_dnet_candidate(target_dowstream->next_event, rti_common->min_delays[index]);
-
-      if (lf_tag_compare(result, candidate) > 0) {
-        result = candidate;
+        if (lf_tag_compare(result, candidate) > 0) {
+          result = candidate;
+        }
       }
     }
   }
@@ -536,12 +494,12 @@ tag_t downstream_next_event_tag(scheduling_node_t* node, uint16_t node_sending_n
 }
 
 bool is_in_zero_delay_cycle(scheduling_node_t* node) {
-  update_min_delays_upstream(node);
+  update_min_delays();
   return node->flags & IS_IN_ZERO_DELAY_CYCLE;
 }
 
 bool is_in_cycle(scheduling_node_t* node) {
-  update_min_delays_upstream(node);
+  update_min_delays();
   return node->flags & IS_IN_CYCLE;
 }
 

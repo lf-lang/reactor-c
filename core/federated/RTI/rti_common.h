@@ -62,10 +62,6 @@ typedef struct scheduling_node_t {
   uint16_t* immediate_downstreams;       // Array of immediate downstream scheduling node ids.
   uint16_t num_immediate_downstreams;    // Size of the array of immediate downstream scheduling nodes.
   execution_mode_t mode;                 // FAST or REALTIME.
-  uint16_t* all_upstreams;               // Array of all upstream scheduling node ids.
-  uint16_t num_all_upstreams;            // Size of the array of all upstream scheduling nodes and delays.
-  uint16_t* all_downstreams;             // Array of all downstream scheduling node ids.
-  uint16_t num_all_downstreams;          // Size of the array of all downstream scheduling nodes.
   int flags;                             // One of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
 } scheduling_node_t;
 
@@ -258,13 +254,12 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
 tag_t eimt_strict(scheduling_node_t* e);
 
 /**
- * For the given scheduling node (enclave or federate), if necessary, update the `min_delays`,
- * `all_upstreams`, `num_all_upstreams`, and the fields that indicate cycles.  These fields will be
- * updated only if they have not been previously updated or if invalidate_min_delays
+ * If necessary, update the `min_delays` and the fields that indicate cycles. 
+ * These fields will be updated only if they have not been previously updated or if invalidate_min_delays
  * has been called since they were last updated.
  * @param node The node.
  */
-void update_min_delays_upstream(scheduling_node_t* node);
+void update_min_delays();
 
 /**
  * For the given scheduling node (enclave or federate), if necessary, update the `all_downstreams` and
