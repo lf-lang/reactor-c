@@ -95,7 +95,7 @@ void set_common_RTI(uint16_t num_nodes) {
   // Allocate memory for the scheduling nodes
   test_RTI.scheduling_nodes =
       (scheduling_node_t**)calloc(test_RTI.number_of_scheduling_nodes, sizeof(scheduling_node_t*));
-      
+
   test_RTI.min_delays = NULL;
 
   for (uint16_t i = 0; i < test_RTI.number_of_scheduling_nodes; i++) {

@@ -111,8 +111,7 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
       // by (0,1). If the time part of the delay is greater than 0, then we want to ignore
       // the microstep in upstream->next_event because that microstep will have been lost.
       // Otherwise, we want preserve it and add to it. This is handled by lf_tag_add().
-      tag_t earliest_tag_from_upstream =
-          lf_tag_add(upstream->next_event, rti_common->min_delays[i * n + e->id]);
+      tag_t earliest_tag_from_upstream = lf_tag_add(upstream->next_event, rti_common->min_delays[i * n + e->id]);
 
       /* Following debug message is too verbose for normal use:
       LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
@@ -403,7 +402,7 @@ void update_min_delays() {
           }
           // N^2 debug statement could be a problem with large benchmarks.
           LF_PRINT_DEBUG("++++    Node %hu is upstream with delay" PRINTF_TAG "\n", i, path_delays[i].time,
-          path_delays[i].microstep);
+                         path_delays[i].microstep);
         }
       }
     }

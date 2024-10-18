@@ -254,20 +254,12 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
 tag_t eimt_strict(scheduling_node_t* e);
 
 /**
- * If necessary, update the `min_delays` and the fields that indicate cycles. 
+ * If necessary, update the `min_delays` and the fields that indicate cycles.
  * These fields will be updated only if they have not been previously updated or if invalidate_min_delays
  * has been called since they were last updated.
  * @param node The node.
  */
 void update_min_delays();
-
-/**
- * For the given scheduling node (enclave or federate), if necessary, update the `all_downstreams` and
- * `num_all_downstreams` fields.  These fields will be updated only if they have not been previously updated
- * or if invalidate_min_delays has been called since they were last updated.
- * @param node The node.
- */
-void update_all_downstreams(scheduling_node_t* node);
 
 /**
  * Find the tag g that is the latest tag that satisfies lf_tag_add(g, minimum_delay) < next_event_tag.
