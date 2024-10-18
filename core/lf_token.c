@@ -238,14 +238,12 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
 
 lf_token_t* _lf_get_token(token_template_t* tmplt) {
   LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
-  if (tmplt->token != NULL) {
-    if (tmplt->token->ref_count == 1) {
-      LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu", (void*)tmplt->token,
-                     tmplt->token->ref_count);
-      // Free any previous value in the token.
-      _lf_free_token_value(tmplt->token);
-      return tmplt->token;
-    }
+  if (tmplt->token != NULL && tmplt->token->ref_count == 1) {
+    LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu", (void*)tmplt->token,
+                   tmplt->token->ref_count);
+    // Free any previous value in the token.
+    _lf_free_token_value(tmplt->token);
+    return tmplt->token;
   }
   LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
   // If we get here, we need a new token.
