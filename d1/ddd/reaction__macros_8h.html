@@ -169,11 +169,13 @@ Macros</h2></td></tr>
 <div class="line">      <span class="comment">/* The cast &quot;*((void**) &amp;out-&gt;value)&quot; is a hack to make the code */</span>                                              \</div>
 <div class="line">      <span class="comment">/* compile with non-token types where value is not a pointer. */</span>                                                 \</div>
 <div class="line">      <a class="code hl_struct" href="../../d6/d80/structlf__token__t.html">lf_token_t</a>* token = <a class="code hl_function" href="../../d4/d37/lf__token_8c.html#ac171b72d59f37653f012d30cad72a2d2">_lf_initialize_token_with_value</a>((<a class="code hl_struct" href="../../de/d6b/structtoken__template__t.html">token_template_t</a>*)out, *((<span class="keywordtype">void</span>**)&amp;out-&gt;value), 1);          \</div>
+<div class="line">      out-&gt;<a class="code hl_variable" href="../../de/d6b/structtoken__template__t.html#a076f845b64482f5cf083da333bfc60de">token</a> = token;                                                                                              \</div>
 <div class="line">    }                                                                                                                  \</div>
 <div class="line">  } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="alf__token_8c_html_ac171b72d59f37653f012d30cad72a2d2"><div class="ttname"><a href="../../d4/d37/lf__token_8c.html#ac171b72d59f37653f012d30cad72a2d2">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(token_template_t *tmplt, void *value, size_t length)</div><div class="ttdef"><b>Definition</b> lf_token.c:284</div></div>
+<div class="ttc" id="alf__token_8c_html_ac171b72d59f37653f012d30cad72a2d2"><div class="ttname"><a href="../../d4/d37/lf__token_8c.html#ac171b72d59f37653f012d30cad72a2d2">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(token_template_t *tmplt, void *value, size_t length)</div><div class="ttdef"><b>Definition</b> lf_token.c:282</div></div>
 <div class="ttc" id="astructlf__token__t_html"><div class="ttname"><a href="../../d6/d80/structlf__token__t.html">lf_token_t</a></div><div class="ttdef"><b>Definition</b> lf_token.h:94</div></div>
 <div class="ttc" id="astructtoken__template__t_html"><div class="ttname"><a href="../../de/d6b/structtoken__template__t.html">token_template_t</a></div><div class="ttdoc">Base type for ports (lf_port_base_t) and actions (trigger_t), which can carry tokens....</div><div class="ttdef"><b>Definition</b> lf_token.h:121</div></div>
+<div class="ttc" id="astructtoken__template__t_html_a076f845b64482f5cf083da333bfc60de"><div class="ttname"><a href="../../de/d6b/structtoken__template__t.html#a076f845b64482f5cf083da333bfc60de">token_template_t::token</a></div><div class="ttdeci">lf_token_t * token</div><div class="ttdef"><b>Definition</b> lf_token.h:124</div></div>
 </div><!-- fragment -->
 <p>Set the specified output (or input of a contained reactor) to the specified value. </p>
 <p>If the value argument is a primitive type such as int, double, etc. as well as the built-in types bool and string, the value is copied and therefore the variable carrying the value can be subsequently modified without changing the output. This also applies to structs with a type defined by a typedef so that the type designating string does not end in '*'.</p>
@@ -214,7 +216,8 @@ Macros</h2></td></tr>
 <b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">do</span> {                                                                                                                 \</div>
 <div class="line">    lf_set_present(out);                                                                                               \</div>
 <div class="line">    <a class="code hl_struct" href="../../d6/d80/structlf__token__t.html">lf_token_t</a>* token = <a class="code hl_function" href="../../d4/d37/lf__token_8c.html#ac171b72d59f37653f012d30cad72a2d2">_lf_initialize_token_with_value</a>((<a class="code hl_struct" href="../../de/d6b/structtoken__template__t.html">token_template_t</a>*)out, val, len);                             \</div>
-<div class="line">    out-&gt;value = token-&gt;<a class="code hl_variable" href="../../d6/d80/structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">value</a>;                                                                                         \</div>
+<div class="line">    out-&gt;token = token;                                                                                                \</div>
+<div class="line">    out-&gt;<a class="code hl_variable" href="../../d6/d80/structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">value</a> = token-&gt;<a class="code hl_variable" href="../../d6/d80/structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">value</a>;                                                                                         \</div>
 <div class="line">    out-&gt;length = len;                                                                                                 \</div>
 <div class="line">  } <span class="keywordflow">while</span> (0)</div>
 <div class="ttc" id="astructlf__token__t_html_a96f790f8f8dcc01474dbc255e05ceaa8"><div class="ttname"><a href="../../d6/d80/structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">lf_token_t::value</a></div><div class="ttdeci">void * value</div><div class="ttdef"><b>Definition</b> lf_token.h:96</div></div>
@@ -379,7 +382,7 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="#a2d81456725407157f9dc521a5e14a679">lf_tag</a>(self-&gt;base.environment)</div>
-<div class="ttc" id="areaction__macros_8h_html_a2d81456725407157f9dc521a5e14a679"><div class="ttname"><a href="#a2d81456725407157f9dc521a5e14a679">lf_tag</a></div><div class="ttdeci">#define lf_tag()</div><div class="ttdef"><b>Definition</b> reaction_macros.h:186</div></div>
+<div class="ttc" id="areaction__macros_8h_html_a2d81456725407157f9dc521a5e14a679"><div class="ttname"><a href="#a2d81456725407157f9dc521a5e14a679">lf_tag</a></div><div class="ttdeci">#define lf_tag()</div><div class="ttdef"><b>Definition</b> reaction_macros.h:189</div></div>
 </div><!-- fragment --><p>Return the current tag of the environment invoking this reaction. </p>
 
 </div>
@@ -399,7 +402,7 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="#a4fe4453dda4223671dc90fa1ecbcac85">lf_time_logical</a>(self-&gt;base.environment)</div>
-<div class="ttc" id="areaction__macros_8h_html_a4fe4453dda4223671dc90fa1ecbcac85"><div class="ttname"><a href="#a4fe4453dda4223671dc90fa1ecbcac85">lf_time_logical</a></div><div class="ttdeci">#define lf_time_logical()</div><div class="ttdef"><b>Definition</b> reaction_macros.h:191</div></div>
+<div class="ttc" id="areaction__macros_8h_html_a4fe4453dda4223671dc90fa1ecbcac85"><div class="ttname"><a href="#a4fe4453dda4223671dc90fa1ecbcac85">lf_time_logical</a></div><div class="ttdeci">#define lf_time_logical()</div><div class="ttdef"><b>Definition</b> reaction_macros.h:194</div></div>
 </div><!-- fragment --><p>Return the current logical time in nanoseconds of the environment invoking this reaction. </p>
 
 </div>
@@ -419,7 +422,7 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="#a7aaaed76bc1ae823bb13d6603807f874">lf_time_logical_elapsed</a>(self-&gt;base.environment)</div>
-<div class="ttc" id="areaction__macros_8h_html_a7aaaed76bc1ae823bb13d6603807f874"><div class="ttname"><a href="#a7aaaed76bc1ae823bb13d6603807f874">lf_time_logical_elapsed</a></div><div class="ttdeci">#define lf_time_logical_elapsed()</div><div class="ttdef"><b>Definition</b> reaction_macros.h:197</div></div>
+<div class="ttc" id="areaction__macros_8h_html_a7aaaed76bc1ae823bb13d6603807f874"><div class="ttname"><a href="#a7aaaed76bc1ae823bb13d6603807f874">lf_time_logical_elapsed</a></div><div class="ttdeci">#define lf_time_logical_elapsed()</div><div class="ttdef"><b>Definition</b> reaction_macros.h:200</div></div>
 </div><!-- fragment --><p>Return the current logical time of the environment invoking this reaction relative to the start time in nanoseconds. </p>
 
 </div>
