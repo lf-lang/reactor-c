@@ -1765,7 +1765,7 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->clock_sync_exchanges_per_interval = 10;
   rti_remote->authentication_enabled = false;
   rti_remote->base.tracing_enabled = false;
-  rti_remote->base.dnet_enabled = false;
+  rti_remote->base.dnet_disabled = false;
   rti_remote->stop_in_progress = false;
 }
 

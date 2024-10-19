@@ -93,7 +93,7 @@ typedef struct rti_common_t {
   bool tracing_enabled;
 
   // Boolean indicating that DNET is enabled.
-  bool dnet_enabled;
+  bool dnet_disabled;
 
   // The RTI mutex for making thread-safe access to the shared state.
   lf_mutex_t* mutex;

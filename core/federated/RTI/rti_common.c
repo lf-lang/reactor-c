@@ -284,7 +284,7 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     }
   }
 
-  if (rti_common->dnet_enabled) {
+  if (!rti_common->dnet_disabled) {
     // Send DNET to the node e's upstream federates if needed
     for (int i = 0; i < n; i++) {
       if (lf_tag_compare(rti_common->min_delays[i * n + e->id], FOREVER_TAG) != 0 && i != e->id) {

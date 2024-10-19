@@ -136,7 +136,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
-  lf_print("  -d, --dnet Turn on DNET signals for reducing network messages.\n");
+  lf_print("  -d, --dnet_disabled Turn off DNET signals.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
@@ -264,8 +264,8 @@ int process_args(int argc, const char* argv[]) {
       rti.authentication_enabled = true;
     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
       rti.base.tracing_enabled = true;
-    } else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dnet") == 0) {
-      rti.base.dnet_enabled = true;
+    } else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dnet_disabled") == 0) {
+      rti.base.dnet_disabled = true;
     } else if (strcmp(argv[i], " ") == 0) {
       // Tolerate spaces
       continue;
