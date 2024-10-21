@@ -71,22 +71,23 @@
  */
 #if SCHEDULER == SCHED_STATIC
 #define lf_set(out, val) \
-do { \
-    out->value = val; \
-    lf_set_present(out); \
-    out->token = (lf_token_t *)(uintptr_t)val; /* The long-term solution is to generate an event type for each connection buffer of primitive type. */ \
-} while(0)
+  do { \
+      out->value = val; \
+      lf_set_present(out); \
+      out->token = (lf_token_t *)(uintptr_t)val; /* The long-term solution is to generate an event type for each connection buffer of primitive type. */ \
+  } while(0)
 #else
-#define lf_set(out, val) \
-do { \
-    out->value = val; \
-    lf_set_present(out); \
-    if (((token_template_t*)out)->token != NULL) { \
-        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
-        /* compile with non-token types where value is not a pointer. */ \
-        lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
-    } \
-} while(0)
+#define lf_set(out, val)                                                                                               \
+  do {                                                                                                                 \
+    out->value = val;                                                                                                  \
+    lf_set_present(out);                                                                                               \
+    if (((token_template_t*)out)->token != NULL) {                                                                     \
+      /* The cast "*((void**) &out->value)" is a hack to make the code */                                              \
+      /* compile with non-token types where value is not a pointer. */                                                 \
+      lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**)&out->value), 1);          \
+      out->token = token;                                                                                              \
+    }                                                                                                                  \
+  } while (0)
 #endif
 
 /**
@@ -106,6 +107,7 @@ do { \
   do {                                                                                                                 \
     lf_set_present(out);                                                                                               \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len);                             \
+    out->token = token;                                                                                                \
     out->value = token->value;                                                                                         \
     out->length = len;                                                                                                 \
   } while (0)
@@ -114,6 +116,7 @@ do { \
   do {                                                                                                                 \
     lf_set_present(out);                                                                                               \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len);                             \
+    out->token = token;                                                                                                \
     out->value = static_cast<decltype(out->value)>(token->value);                                                      \
     out->length = len;                                                                                                 \
   } while (0)
