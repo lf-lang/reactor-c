@@ -86,12 +86,12 @@ typedef struct lf_stat_ll {
  * _lf_initialize_trigger_objects() is called.
  * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend.
  */
-extern int _lf_my_fed_id;
+extern uint16_t _lf_my_fed_id;
 
 /**
  * Return the federate ID or -1 if this program is not part of a federation.
  */
-int lf_fed_id(void);
+uint16_t lf_fed_id(void);
 
 /**
  * varargs alternative of "lf_print"
