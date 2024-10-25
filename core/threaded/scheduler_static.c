@@ -124,10 +124,9 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     int pc_orig = (int) *pc;
     tracepoint_static_scheduler_ADV_starts(worker_number, pc_orig);
 #endif
+    self_base_t *reactor = (self_base_t*) op1.reg;
     reg_t *base = op2.reg;
     reg_t *inc  = op3.reg;
-    self_base_t* reactor =
-        scheduler->reactor_self_instances[op1.imm];
     reactor->tag.time = *base + *inc;
     reactor->tag.microstep = 0;
 
