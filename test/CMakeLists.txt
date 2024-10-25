@@ -1,0 +1,1 @@
+add_library(test-lib SCHED_STATIC src_gen_stub.c rand_utils.c)
