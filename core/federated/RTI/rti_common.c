@@ -465,8 +465,8 @@ tag_t downstream_next_event_tag(scheduling_node_t* target_node, uint16_t node_se
     result = candidate;
   } else {
     for (int j = 0; j < n; j++) {
-      if (lf_tag_compare(rti_common->min_delays[target_node->id * n + j], FOREVER_TAG) != 0) {
-        // The node j is a downstream node.
+      if (target_node->id != j && (lf_tag_compare(rti_common->min_delays[target_node->id * n + j], FOREVER_TAG) != 0)) {
+        // The node j is a downstream node and not the target node itself.
         scheduling_node_t* target_dowstream = rti_common->scheduling_nodes[j];
         // if (is_in_zero_delay_cycle(target_dowstream)) {
         //   // The target node is an upstream of ZDC. Do not send DNET to this node.
