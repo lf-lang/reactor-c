@@ -1173,6 +1173,7 @@ int lf_critical_section_exit(environment_t* env) {
   if (env == GLOBAL_ENVIRONMENT) {
     int ret_code = lf_mutex_unlock(&global_mutex);
     if (ret_code != 0) {
+      lf_enable_interrupts_nested();
       return ret_code;
     }
     return lf_enable_interrupts_nested();
