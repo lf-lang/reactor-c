@@ -4,10 +4,6 @@
 #include "low_level_platform.h"
 #include "tag.h"
 
-//  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-//  | Important defines and global variables
-//  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-
 static volatile bool _lf_sleep_interrupted = false;
 static volatile bool _lf_async_event = false;
 
@@ -27,10 +23,6 @@ void Error_Handler();
 
 TIM_HandleTypeDef htim5;
 
-//  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-//  | Code for timer functions
-//  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-// We use timer 5 for our clock (probably better than dealing with sysTick)
 void _lf_initialize_clock(void) {
   // Standard initializations from generated code
   HAL_Init();
@@ -153,10 +145,6 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
   }
 }
 
-//  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-//  | Code for enabling and disabling Interrupts
-//  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-
 // disables the IRQ with support for nested disabling
 int lf_disable_interrupts_nested() {
   // Disable interrupts if they are currently enabled
@@ -192,9 +180,7 @@ int _lf_single_threaded_notify_of_event() {
   return 0;
 }
 
-//  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-//  | Other functions -> taken from the generated main.c
-//  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
+// The following functions are copied from the STM32F4 HAL library
 void lf_SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -228,13 +214,11 @@ void lf_SystemClock_Config(void) {
   }
 }
 
+// Called upon error like a hardfault.
 void Error_Handler(void) {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
   while (1) {
   }
-  /* USER CODE END Error_Handler_Debug */
 }
 
 #endif
