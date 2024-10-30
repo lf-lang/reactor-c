@@ -58,6 +58,25 @@ instant_t lf_time_add(instant_t a, interval_t b) {
   return res;
 }
 
+instant_t lf_time_subtract(instant_t a, interval_t b) {
+  if (a == NEVER || b == FOREVER) {
+    return NEVER;
+  }
+  if (a == FOREVER || b == NEVER) {
+    return FOREVER;
+  }
+  instant_t res = a - b;
+  // Check for overflow
+  if (res < a && b < 0) {
+    return FOREVER;
+  }
+  // Check for underflow
+  if (res > a && b > 0) {
+    return NEVER;
+  }
+  return res;
+}
+
 tag_t lf_tag_add(tag_t a, tag_t b) {
   instant_t res = lf_time_add(a.time, b.time);
   if (res == FOREVER) {
