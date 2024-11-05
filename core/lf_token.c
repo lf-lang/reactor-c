@@ -246,7 +246,12 @@ lf_token_t* _lf_get_token(token_template_t* tmplt) {
     LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
     return tmplt->token;
   }
+  if (tmplt->token != NULL) {
+    // decrement token reference count
+    _lf_done_using (tmplt->token);
+  }
   LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
+
   // If we get here, we need a new token.
   lf_token_t* result = _lf_new_token((token_type_t*)tmplt, NULL, 0);
   result->ref_count = 1;
