@@ -39,7 +39,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_rp2040_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Stm32")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "STM32F4")
     set(LF_LOW_LEVEL_PLATFORM_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_STM32f4_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
@@ -55,7 +55,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Patmos")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
 else()
-    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Patmos, Linux, MacOS, nRF52, RP2040, Windows, and Zephyr.")
+    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Patmos, Linux, MacOS, nRF52, RP2040, STM32F4, Windows, and Zephyr.")
 endif()
 
 list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/lf_platform_util.c)

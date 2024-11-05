@@ -11,7 +11,6 @@
 #define PRINTF_TIME "%lld"
 #define PRINTF_MICROSTEP "%d"
 
-#define LF_TIME_BUFFER_LENGTH 80
 #define _LF_TIMEOUT 1
 
 #ifdef LF_THREADED
