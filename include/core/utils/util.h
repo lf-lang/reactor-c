@@ -80,6 +80,9 @@ typedef struct lf_stat_ll {
 #define LF_MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #endif
 
+#define LF_STRINGIFY(x) _LF_STRINGIFY(x)
+#define _LF_STRINGIFY(x) #x
+
 /**
  * The ID of this federate. For a non-federated execution, this will
  * be -1.  For a federated execution, it will be assigned when the generated function
