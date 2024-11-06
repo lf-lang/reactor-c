@@ -168,7 +168,7 @@ PyObject* py_source_directory(PyObject* self, PyObject* args) {
   PyErr_SetString(PyExc_RuntimeError, "LF_SOURCE_DIRECTORY constant is not defined.");
   return NULL;
 #else
-  return PyUnicode_DecodeFSDefault(LF_STRINGIFY(LF_SOURCE_DIRECTORY));
+  return PyUnicode_DecodeFSDefault(LF_SOURCE_DIRECTORY);
 #endif
 }
 
@@ -178,7 +178,7 @@ PyObject* py_package_directory(PyObject* self, PyObject* args) {
   PyErr_SetString(PyExc_RuntimeError, "LF_PACKAGE_DIRECTORY constant is not defined.");
   return NULL;
 #else
-  return PyUnicode_DecodeFSDefault(LF_STRINGIFY(LF_PACKAGE_DIRECTORY));
+  return PyUnicode_DecodeFSDefault(LF_PACKAGE_DIRECTORY);
 #endif
 }
 
