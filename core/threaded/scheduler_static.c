@@ -275,11 +275,7 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
     int pc_orig = (int) *pc;
     tracepoint_static_scheduler_DU_starts(worker_number, pc_orig);
 #endif
-    // FIXME: There seems to be an overflow problem.
-    // When wakeup_time overflows but lf_time_physical() doesn't,
-    // _lf_interruptable_sleep_until_locked() terminates immediately.
     reg_t *src = op1.reg;
-    instant_t current_time = lf_time_physical();
     instant_t wakeup_time = *src + op2.imm;
     LF_PRINT_DEBUG("DU wakeup time: %lld, base: %lld, offset: %lld", wakeup_time, *src, op2.imm);
     // Check if we need to sleep.
