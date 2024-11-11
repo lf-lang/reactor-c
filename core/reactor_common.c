@@ -42,6 +42,9 @@
 // Global variable defined in tag.c:
 extern instant_t start_time;
 
+// Whether the start time of the program is decided by the user via a command line argument.
+bool start_time_specified = false;
+
 #if !defined NDEBUG
 // Global variable defined in lf_token.c:
 extern int _lf_count_payload_allocations;
@@ -882,6 +885,8 @@ void usage(int argc, const char* argv[]) {
   printf("   Executed in <n> threads if possible (optional feature).\n\n");
   printf("  -i, --id <n>\n");
   printf("   The ID of the federation that this reactor will join.\n\n");
+  printf("  -s, --start-time <duration> <units> \n");
+  printf("   The ID of the federation that this reactor will join.\n\n");
 #ifdef FEDERATED
   printf("  -r, --rti <n>\n");
   printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
@@ -900,6 +905,43 @@ void usage(int argc, const char* argv[]) {
 // default command-line options.
 int default_argc = 0;
 const char** default_argv = NULL;
+
+interval_t duration_string_to_interval(const char* time_spec, const char* units) {
+  interval_t duration = 0LL;
+
+#if defined(PLATFORM_ARDUINO)
+  duration = atol(time_spec);
+#else
+  duration = atoll(time_spec);
+#endif
+
+  // A parse error returns 0LL, so check to see whether that is what is meant.
+  if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
+    // Parse error.
+    return -1;
+  }
+  if (strncmp(units, "sec", 3) == 0) {
+    duration = SEC(duration);
+  } else if (strncmp(units, "msec", 4) == 0) {
+    duration = MSEC(duration);
+  } else if (strncmp(units, "usec", 4) == 0) {
+    duration = USEC(duration);
+  } else if (strncmp(units, "nsec", 4) == 0) {
+    duration = NSEC(duration);
+  } else if (strncmp(units, "min", 3) == 0) {
+    duration = MINUTE(duration);
+  } else if (strncmp(units, "hour", 4) == 0) {
+    duration = HOUR(duration);
+  } else if (strncmp(units, "day", 3) == 0) {
+    duration = DAY(duration);
+  } else if (strncmp(units, "week", 4) == 0) {
+    duration = WEEK(duration);
+  } else {
+    // Invalid units.
+    return -1;
+  }
+  return duration;
+}
 
 /**
  * Process the command-line arguments. If the command line arguments are not
@@ -934,42 +976,30 @@ int process_args(int argc, const char* argv[]) {
       }
       const char* time_spec = argv[i++];
       const char* units = argv[i++];
-
-#if defined(PLATFORM_ARDUINO)
-      duration = atol(time_spec);
-#else
-      duration = atoll(time_spec);
-#endif
-
-      // A parse error returns 0LL, so check to see whether that is what is meant.
-      if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
-        // Parse error.
-        lf_print_error("Invalid time value: %s", time_spec);
+      duration = duration_string_to_interval(time_spec, units);
+      if (duration < 0) {
+        lf_print_error("Invalid time units for --timeout.");
         usage(argc, argv);
         return 0;
       }
-      if (strncmp(units, "sec", 3) == 0) {
-        duration = SEC(duration);
-      } else if (strncmp(units, "msec", 4) == 0) {
-        duration = MSEC(duration);
-      } else if (strncmp(units, "usec", 4) == 0) {
-        duration = USEC(duration);
-      } else if (strncmp(units, "nsec", 4) == 0) {
-        duration = NSEC(duration);
-      } else if (strncmp(units, "min", 3) == 0) {
-        duration = MINUTE(duration);
-      } else if (strncmp(units, "hour", 4) == 0) {
-        duration = HOUR(duration);
-      } else if (strncmp(units, "day", 3) == 0) {
-        duration = DAY(duration);
-      } else if (strncmp(units, "week", 4) == 0) {
-        duration = WEEK(duration);
+    } else if (strcmp(arg, "-s") == 0 || strcmp(arg, "--start-time") == 0) {
+      if (argc < i + 2) {
+        lf_print_error("--start-time needs time and units.");
+        usage(argc, argv);
+        return 0;
+      }
+
+      const char* time_spec = argv[i++];
+      const char* units = argv[i++];
+      start_time = duration_string_to_interval(time_spec, units);
+      if (start_time < 0) {
+        lf_print_error("Invalid time units for --start-time.");
+        usage(argc, argv);
+        return 0;
       } else {
-        // Invalid units.
-        lf_print_error("Invalid time units: %s", units);
-        usage(argc, argv);
-        return 0;
+        start_time_specified = true;
       }
+
     } else if (strcmp(arg, "-k") == 0 || strcmp(arg, "--keepalive") == 0) {
       if (argc < i + 1) {
         lf_print_error("--keepalive needs a boolean.");
