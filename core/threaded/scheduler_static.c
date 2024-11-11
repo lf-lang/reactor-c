@@ -324,6 +324,13 @@ void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t
 #else 
     if (op3.imm != ULLONG_MAX) {tracepoint_static_scheduler_EXE_reaction_ends((void*)op2.reg, worker_number, op3.imm);}
 #endif
+    // This full memory barrier is required to ensure that the worker
+    // counter after this EXE instruction only gets incremented when the
+    // reaction body or auxiliary function runs to completion, i.e., it
+    // prevents the compiler or the CPU hardware from making bad
+    // out-of-order execution decisions.
+    // See RaceCondition.lf for more details.
+    __sync_synchronize();
 }
 
 
