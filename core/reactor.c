@@ -333,7 +333,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
       start_time = lf_time_physical();
     } else {
       instant_t now = lf_time_physical();
-      if(now < star_time) {
+      if (now < star_time) {
         LF_PRINT_LOG("Sleeping " PRINTF_TIME " ns until start time", start_time - now);
         lf_sleep(start_time - now);
       }

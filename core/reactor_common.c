@@ -974,8 +974,8 @@ int process_args(int argc, const char* argv[]) {
         usage(argc, argv);
         return 0;
       }
-      const char * time_spec = argv[i++];
-      const char * units = argv[i++];
+      const char* time_spec = argv[i++];
+      const char* units = argv[i++];
       duration = duration_string_to_interval(time_spec, units);
       if (duration < 0) {
         lf_print_error("Invalid time units for --timeout.");
@@ -989,8 +989,8 @@ int process_args(int argc, const char* argv[]) {
         return 0;
       }
 
-      const char * time_spec = argv[i++];
-      const char * units = argv[i++];
+      const char* time_spec = argv[i++];
+      const char* units = argv[i++];
       start_time = duration_string_to_interval(time_spec, units);
       if (start_time < 0) {
         lf_print_error("Invalid time units for --start-time.");
@@ -999,7 +999,6 @@ int process_args(int argc, const char* argv[]) {
       } else {
         start_time_specified = true;
       }
-
 
     } else if (strcmp(arg, "-k") == 0 || strcmp(arg, "--keepalive") == 0) {
       if (argc < i + 1) {
