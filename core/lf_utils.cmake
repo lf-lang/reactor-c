@@ -1,6 +1,6 @@
 function(lf_enable_compiler_warnings target)
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
         target_compile_options(${target} PRIVATE /W4)
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")

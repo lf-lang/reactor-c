@@ -18,6 +18,7 @@
 #ifndef REACTOR_H
 #define REACTOR_H
 
+#include <string.h>    // memcpy
 #include "lf_types.h"
 #include "modes.h" // Modal model support
 #include "port.h"
@@ -25,6 +26,7 @@
 #include "clock.h" // Time-related functions.
 #include "tracepoint.h"
 #include "util.h"
+#include "circular_buffer.h" // HACK: So that circular buffer is visible in all user-facing reactor header files.
 
 /**
  * @brief Macro to suppress warnings about unused variables.
