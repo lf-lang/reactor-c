@@ -1,5 +1,4 @@
 /**
- * @author Shaokai Lin <shaokai@berkeley.edu>
  * @brief Format of the instruction set
  */
 #ifndef SCHEDULER_INSTRUCTIONS_H
