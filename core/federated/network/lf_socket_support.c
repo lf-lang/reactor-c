@@ -346,7 +346,7 @@ static void handle_header_read(unsigned char* buffer, size_t* bytes_to_read, int
     *bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
     *state = FINISH_READ;
     break;
-  case MSG_TYPE_LATEST_TAG_COMPLETE:
+  case MSG_TYPE_LATEST_TAG_CONFIRMED:
     *bytes_to_read = sizeof(int64_t) + sizeof(uint32_t);
     *state = FINISH_READ;
     break;

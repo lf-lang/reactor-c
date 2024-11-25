@@ -216,11 +216,13 @@ void _lf_start_time_step(environment_t* env) {
     }
 #endif // FEDERATED_DECENTRALIZED
 
+#ifdef FEDERATED_CENTRALIZED
+    env->need_to_send_LTC = false;
+#endif // FEDERATED_CENTRALIZED
+
     // Reset absent fields on network ports because
     // their status is unknown
     lf_reset_status_fields_on_input_port_triggers();
-    // Signal the helper thread to reset its progress since the logical time has changed.
-    lf_cond_signal(&lf_current_tag_changed);
   }
 #endif // FEDERATED
 }
@@ -307,13 +309,19 @@ void _lf_pop_events(environment_t* env) {
       }
     }
 
-    // Mark the trigger present.
+    // Mark the trigger present
     event->trigger->status = present;
 
     // If the trigger is a periodic timer, create a new event for its next execution.
     if (event->trigger->is_timer && event->trigger->period > 0LL) {
       // Reschedule the trigger.
       lf_schedule_trigger(env, event->trigger, event->trigger->period, NULL);
+    } else {
+      // For actions, store a pointer to status field so it is reset later.
+      int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+      if (ipfas < env->is_present_fields_size) {
+        env->is_present_fields_abbreviated[ipfas] = (bool*)&event->trigger->status;
+      }
     }
 
     // Copy the token pointer into the trigger struct so that the
@@ -326,9 +334,6 @@ void _lf_pop_events(environment_t* env) {
     // that call will increment the reference count and we need to not let the token be
     // freed prematurely.
     _lf_done_using(token);
-
-    // Mark the trigger present.
-    event->trigger->status = present;
 
     lf_recycle_event(env, event);
 
@@ -387,12 +392,16 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
 
   // Get an event_t struct to put on the event queue.
   // Recycle event_t structs, if possible.
-  event_t* e = lf_get_new_event(env);
-  e->trigger = timer;
-  e->base.tag = (tag_t){.time = lf_time_logical(env) + delay, .microstep = 0};
-  // NOTE: No lock is being held. Assuming this only happens at startup.
-  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
-  tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
+  tag_t next_tag = (tag_t){.time = lf_time_logical(env) + delay, .microstep = 0};
+  // Do not schedule the next event if it is after the timeout.
+  if (!lf_is_tag_after_stop_tag(env, next_tag)) {
+    event_t* e = lf_get_new_event(env);
+    e->trigger = timer;
+    e->base.tag = next_tag;
+    // NOTE: No lock is being held. Assuming this only happens at startup.
+    pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
+    tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
+  }
 }
 
 void _lf_initialize_timers(environment_t* env) {
@@ -607,8 +616,12 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // for which we decrement the reference count.
   _lf_replace_template_token((token_template_t*)trigger, token);
 
-  // Mark the trigger present.
+  // Mark the trigger present and store a pointer to it for marking it as absent later.
   trigger->status = present;
+  int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+  if (ipfas < env->is_present_fields_size) {
+    env->is_present_fields_abbreviated[ipfas] = (bool*)&trigger->status;
+  }
 
   // Push the corresponding reactions for this trigger
   // onto the reaction queue.
@@ -830,6 +843,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         violation = true;
         // Invoke the local handler, if there is one.
         reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;
+        tracepoint_reaction_starts(env, downstream_to_execute_now, worker);
         if (handler != NULL) {
           // Assume the mutex is still not held.
           (*handler)(downstream_to_execute_now->self);
@@ -838,6 +852,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
           // triggered reactions into the queue or execute them directly if possible.
           schedule_output_reactions(env, downstream_to_execute_now, worker);
         }
+        tracepoint_reaction_ends(env, downstream_to_execute_now, worker);
       }
     }
     if (!violation) {
@@ -1112,6 +1127,13 @@ void initialize_global(void) {
   // Call the code-generated function to initialize all actions, timers, and ports
   // This is done for all environments/enclaves at the same time.
   _lf_initialize_trigger_objects();
+
+#if !defined(LF_SINGLE_THREADED) && !defined(NDEBUG)
+  // If we are testing, verify that environment with pointers is correctly set up.
+  for (int i = 0; i < num_envs; i++) {
+    environment_verify(&envs[i]);
+  }
+#endif
 }
 
 /**
@@ -1185,6 +1207,7 @@ void termination(void) {
       }
     }
   }
+  lf_tracing_global_shutdown();
   // Skip most cleanup on abnormal termination.
   if (_lf_normal_termination) {
     _lf_free_all_tokens(); // Must be done before freeing reactors.
@@ -1207,8 +1230,6 @@ void termination(void) {
     }
 #endif
     lf_free_all_reactors();
-
-    lf_tracing_global_shutdown();
 
     // Free up memory associated with environment.
     // Do this last so that printed warnings don't access freed memory.

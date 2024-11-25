@@ -102,6 +102,22 @@ PyObject* py_schedule_copy(PyObject* self, PyObject* args);
  */
 PyObject* py_request_stop(PyObject* self, PyObject* args);
 
+/**
+ * @brief Return the source directory path (where the main .lf file is) as a string.
+ * @param self The lf object.
+ * @param args Empty.
+ * @return PyObject* A Python string.
+ */
+PyObject* py_source_directory(PyObject* self, PyObject* args);
+
+/**
+ * @brief Return the root project directory path as a string.
+ * @param self The lf object.
+ * @param args Empty.
+ * @return PyObject* A Python string.
+ */
+PyObject* py_package_directory(PyObject* self, PyObject* args);
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 PyObject* py_main(PyObject* self, PyObject* args);
@@ -168,6 +184,29 @@ PyObject* convert_C_action_to_py(void* action);
  * @param pArgs the PyList of arguments to be sent to function func()
  */
 PyObject* get_python_function(string module, string class, int instance_id, string func);
+
+/**
+ * Load the Serializer class from package name
+ * @param package_name Name of the python package to load
+ * @return Initialized Serializer class
+ */
+PyObject* load_serializer(string package_name);
+
+/**
+ * Serialize Python object to a bytes object using external serializer
+ * @param obj The Python object to serialize
+ * @param custom_serializer The custom Serializer class
+ * @return Serialized Python bytes object
+ */
+PyObject* custom_serialize(PyObject* obj, PyObject* custom_serializer);
+
+/**
+ * Deserialize Python object from a bytes object using external serializer
+ * @param serialized_pyobject The serialized bytes Python object
+ * @param custom_serializer The custom Serializer class
+ * @return Deserialized Python object
+ */
+PyObject* custom_deserialize(PyObject* serialized_pyobject, PyObject* custom_serializer);
 
 /*
  * The Python runtime will call this function to initialize the module.

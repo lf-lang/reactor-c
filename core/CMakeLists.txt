@@ -7,7 +7,7 @@ include(${LF_ROOT}/core/lf_utils.cmake)
 list(APPEND GENERAL_SOURCES tag.c clock.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
 
 # Add tracing support if requested
-if (DEFINED LF_TRACE)
+if(DEFINED LF_TRACE)
     message(STATUS "Including sources specific to tracing.")
     list(APPEND GENERAL_SOURCES tracepoint.c)
 endif()
@@ -16,7 +16,7 @@ endif()
 list(APPEND REACTORC_SOURCES ${GENERAL_SOURCES})
 
 # Add sources for either threaded or single-threaded runtime
-if (DEFINED FEDERATED)
+if(DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
 endif()
 
@@ -34,14 +34,14 @@ endif()
 
 # Add sources for the local RTI if we are using scheduling enclaves
 if(DEFINED LF_ENCLAVES)
-include(federated/RTI/local_rti.cmake)
+    include(federated/RTI/local_rti.cmake)
 endif()
 
 # Include sources from subdirectories
 include(utils/CMakeLists.txt)
 
-if (DEFINED MODAL_REACTORS)
-include(modal_models/CMakeLists.txt)
+if(DEFINED MODAL_REACTORS)
+    include(modal_models/CMakeLists.txt)
 endif()
 
 # Print sources used for compilation
@@ -52,7 +52,7 @@ add_library(reactor-c)
 target_sources(reactor-c PRIVATE ${REACTORC_SOURCES})
 lf_enable_compiler_warnings(reactor-c)
 
-if (DEFINED LF_TRACE)
+if(DEFINED LF_TRACE)
     include(${LF_ROOT}/trace/api/CMakeLists.txt)
     target_link_libraries(reactor-c PUBLIC lf::trace-api)
     # If the user specified an external trace plugin. Find it and link with it
@@ -121,18 +121,19 @@ target_include_directories(reactor-c PUBLIC ../include/core/utils)
 target_include_directories(reactor-c PUBLIC federated/RTI/)
 target_include_directories(reactor-c PUBLIC /usr/local/include)
 
-if (APPLE)
-    SET(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+if(APPLE)
+    SET(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
     SET(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    SET(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+    SET(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
     SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
 endif()
 
 # Link with OpenSSL library
 if(DEFINED FEDERATED_AUTHENTICATED)
-    if (APPLE)
+    if(APPLE)
         set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
     endif()
+
     find_package(OpenSSL REQUIRED)
     target_link_libraries(reactor-c PUBLIC OpenSSL::SSL)
 endif()
@@ -151,10 +152,11 @@ if(DEFINED FEDERATED)
 endif()
 
 # Unless specified otherwise initial event queue and reaction queue to size 10
-if (NOT DEFINED INITIAL_EVENT_QUEUE_SIZE)
+if(NOT DEFINED INITIAL_EVENT_QUEUE_SIZE)
     set(INITIAL_EVENT_QUEUE_SIZE 10)
 endif()
-if (NOT DEFINED INITIAL_REACT_QUEUE_SIZE)
+
+if(NOT DEFINED INITIAL_REACT_QUEUE_SIZE)
     set(INITIAL_REACT_QUEUE_SIZE 10)
 endif()
 

@@ -11,7 +11,7 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}-${{ github.event_path }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   check-labels:

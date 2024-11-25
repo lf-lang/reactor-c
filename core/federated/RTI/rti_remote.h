@@ -206,14 +206,14 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
 void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer, ssize_t bytes_read);
 
 /**
- * Handle a latest tag complete (LTC) message. @see
- * MSG_TYPE_LATEST_TAG_COMPLETE in rti.h.
+ * Handle a latest tag confirmed (LTC) message. @see
+ * MSG_TYPE_LATEST_TAG_CONFIRMED in rti.h.
  *
  * This function assumes the caller does not hold the mutex.
  *
  * @param fed The federate that has completed a logical tag.
  */
-void handle_latest_tag_complete(federate_info_t* fed, unsigned char* buffer);
+void handle_latest_tag_confirmed(federate_info_t* fed, unsigned char* buffer);
 
 /**
  * Handle a next event tag (NET) message. @see MSG_TYPE_NEXT_EVENT_TAG in rti.h.

@@ -178,6 +178,8 @@ int lf_available_cores() {
   return FP_THREADS - 1; // Return the number of Flexpret HW threads
 }
 
+lf_thread_t lf_thread_self() { return read_hartid(); }
+
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
   /**
    * Need to select between HRTT or SRTT; see

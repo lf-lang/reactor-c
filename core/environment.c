@@ -117,7 +117,10 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
  * @brief Initialize the federation-specific parts of the environment struct.
  */
 static void environment_init_federated(environment_t* env, int num_is_present_fields) {
-#ifdef FEDERATED_DECENTRALIZED
+#if defined(FEDERATED_CENTRALIZED)
+  env->need_to_send_LTC = false;
+  (void)num_is_present_fields;
+#elif defined(FEDERATED_DECENTRALIZED)
   if (num_is_present_fields > 0) {
     env->_lf_intended_tag_fields = (tag_t**)calloc(num_is_present_fields, sizeof(tag_t*));
     LF_ASSERT_NON_NULL(env->_lf_intended_tag_fields);
@@ -207,10 +210,16 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
                      const char* trace_file_name) {
   (void)trace_file_name; // Will be used with future enclave support.
 
-  env->name = malloc(strlen(name) + 1); // +1 for the null terminator
-  LF_ASSERT_NON_NULL(env->name);
-  strcpy(env->name, name);
-
+  // Space for the name string with the null terminator.
+  if (name != NULL) {
+    size_t name_size = strlen(name) + 1; // +1 for the null terminator
+    env->name = (char*)malloc(name_size);
+    LF_ASSERT_NON_NULL(env->name);
+    // Use strncpy rather than strcpy to avoid compiler warnings.
+    strncpy(env->name, name, name_size);
+  } else {
+    env->name = NULL;
+  }
   env->id = id;
   env->stop_tag = FOREVER_TAG;
 
@@ -280,4 +289,10 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
 
   env->initialized = true;
   return 0;
+}
+
+void environment_verify(environment_t* env) {
+  for (int i = 0; i < env->is_present_fields_size; i++) {
+    LF_ASSERT_NON_NULL(env->is_present_fields[i]);
+  }
 }

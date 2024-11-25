@@ -203,6 +203,8 @@ void lf_print_error_system_failure(const char* format, ...) {
   va_start(args, format);
   lf_vprint_error(format, args);
   va_end(args);
+  // Windows warns that strerror is deprecated but doesn't define strerror_r.
+  // There seems to be no portable replacement.
   lf_print_error_and_exit("Error %d: %s", errno, strerror(errno));
   exit(EXIT_FAILURE);
 }

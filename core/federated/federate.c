@@ -51,7 +51,6 @@ extern bool _lf_termination_executed;
 // Global variables references in federate.h
 lf_mutex_t lf_outbound_netdrv_mutex;
 lf_cond_t lf_port_status_changed;
-lf_cond_t lf_current_tag_changed;
 
 /**
  * The max level allowed to advance (MLAA) is a variable that tracks how far in the reaction
@@ -123,7 +122,7 @@ static void send_time(unsigned char type, instant_t time) {
 /**
  * Send a tag to the RTI.
  * This function acquires the lf_outbound_netdrv_mutex.
- * @param type The message type (MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LATEST_TAG_COMPLETE).
+ * @param type The message type (MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LATEST_TAG_CONFIRMED).
  * @param tag The tag.
  */
 static void send_tag(unsigned char type, tag_t tag) {
@@ -203,7 +202,7 @@ static lf_action_base_t* action_for_port(int port_id) {
  * @param tag The tag on which the latest status of all network input
  *  ports is known.
  */
-static void update_last_known_status_on_input_ports(tag_t tag) {
+static void update_last_known_status_on_input_ports(tag_t tag, environment_t* env) {
   LF_PRINT_DEBUG("In update_last_known_status_on_input ports.");
   bool notify = false;
   for (size_t i = 0; i < _lf_action_table_size; i++) {
@@ -229,6 +228,8 @@ static void update_last_known_status_on_input_ports(tag_t tag) {
   if (notify && lf_update_max_level(tag, false)) {
     // Notify network input reactions
     lf_cond_broadcast(&lf_port_status_changed);
+    // Could be blocked waiting for physical time to advance to the STA, so unblock that too.
+    lf_cond_broadcast(&env->event_q_changed);
   }
 }
 
@@ -281,12 +282,41 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     // federate that is far ahead of other upstream federates in logical time.
     lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
     lf_cond_broadcast(&lf_port_status_changed);
+    lf_cond_broadcast(&env->event_q_changed);
   } else {
     // Message arrivals should be monotonic, so this should not occur.
     lf_print_warning("Attempt to update the last known status tag "
                      "of network input port %d to an earlier tag was ignored.",
                      port_id);
   }
+}
+
+/**
+ * @brief Mark all the input ports connected to the given federate as known to be absent until FOREVER.
+ *
+ * This does nothing if the federate is not using decentralized coordination.
+ * This function acquires the mutex on the top-level environment.
+ * @param fed_id The ID of the federate.
+ */
+static void mark_inputs_known_absent(int fed_id) {
+#ifdef FEDERATED_DECENTRALIZED
+  // Note that when transient federates are supported, this will need to be updated because the
+  // federate could rejoin.
+  environment_t* env;
+  _lf_get_environments(&env);
+  LF_MUTEX_LOCK(&env->mutex);
+
+  for (size_t i = 0; i < _lf_action_table_size; i++) {
+    lf_action_base_t* action = _lf_action_table[i];
+    if (action->source_id == fed_id) {
+      update_last_known_status_on_input_port(env, FOREVER_TAG, i);
+    }
+  }
+  LF_MUTEX_UNLOCK(&env->mutex);
+#else
+  // Do nothing, except suppress unused parameter error.
+  (void)fed_id;
+#endif // FEDERATED_DECENTRALIZED
 }
 
 /**
@@ -628,7 +658,7 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id, unsigned char* bu
     }
 #endif // FEDERATED_DECENTRALIZED
        // The following will update the input_port_action->last_known_status_tag.
-       // For decentralized coordination, this is needed for the thread implementing STAA.
+       // For decentralized coordination, this is needed to unblock the STAA.
     update_last_known_status_on_input_port(env, actual_tag, port_id);
 
     // If the current time >= stop time, discard the message.
@@ -731,6 +761,7 @@ static void* listen_to_federates(void* _args) {
     bool netdrv_closed = false;
     // Read one byte to get the message type.
     LF_PRINT_DEBUG("Waiting for a P2P message on netdrv");
+    bool bad_message = false;
     ssize_t bytes_read = read_from_netdrv_close_on_error(netdrv, buffer, FED_COM_BUFFER_SIZE);
     if (bytes_read <= 0) {
       // netdrv has been closed.
@@ -738,40 +769,40 @@ static void* listen_to_federates(void* _args) {
       // Stop listening to this federate.
       netdrv_closed = true;
       break;
-    }
-    LF_PRINT_DEBUG("Received a P2P message on netdrv of type %d.", buffer[0]);
-    bool bad_message = false;
-    switch (buffer[0]) {
-    case MSG_TYPE_P2P_MESSAGE:
-      LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
-      if (handle_message(netdrv, fed_id, buffer + 1, bytes_read - 1)) {
-        // Failed to complete the reading of a message on a physical connection.
-        lf_print_warning("Failed to complete reading of message on physical connection.");
-        netdrv_closed = true;
+    } else {
+      LF_PRINT_DEBUG("Received a P2P message on netdrv of type %d.", buffer[0]);
+      switch (buffer[0]) {
+      case MSG_TYPE_P2P_MESSAGE:
+        LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
+        if (handle_message(netdrv, fed_id, buffer + 1, bytes_read - 1)) {
+          // Failed to complete the reading of a message on a physical connection.
+          lf_print_warning("Failed to complete reading of message on physical connection.");
+          netdrv_closed = true;
+        }
+        break;
+      case MSG_TYPE_P2P_TAGGED_MESSAGE:
+        LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
+        if (handle_tagged_message(netdrv, fed_id, buffer + 1, bytes_read - 1)) {
+          // P2P tagged messages are only used in decentralized coordination, and
+          // it is not a fatal error if the netdriver is closed before the whole message is read.
+          // But this thread should exit.
+          lf_print_warning("Failed to complete reading of tagged message.");
+          netdrv_closed = true;
+        }
+        break;
+      case MSG_TYPE_PORT_ABSENT:
+        LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
+        if (handle_port_absent_message(buffer + 1, fed_id)) {
+          // P2P tagged messages are only used in decentralized coordination, and
+          // it is not a fatal error if the netdriver is closed before the whole message is read.
+          // But this thread should exit.
+          lf_print_warning("Failed to complete reading of tagged message.");
+          netdrv_closed = true;
+        }
+        break;
+      default:
+        bad_message = true;
       }
-      break;
-    case MSG_TYPE_P2P_TAGGED_MESSAGE:
-      LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
-      if (handle_tagged_message(netdrv, fed_id, buffer + 1, bytes_read - 1)) {
-        // P2P tagged messages are only used in decentralized coordination, and
-        // it is not a fatal error if the netdriver is closed before the whole message is read.
-        // But this thread should exit.
-        lf_print_warning("Failed to complete reading of tagged message.");
-        netdrv_closed = true;
-      }
-      break;
-    case MSG_TYPE_PORT_ABSENT:
-      LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
-      if (handle_port_absent_message(buffer + 1, fed_id)) {
-        // P2P tagged messages are only used in decentralized coordination, and
-        // it is not a fatal error if the netdriver is closed before the whole message is read.
-        // But this thread should exit.
-        lf_print_warning("Failed to complete reading of tagged message.");
-        netdrv_closed = true;
-      }
-      break;
-    default:
-      bad_message = true;
     }
     if (bad_message) {
       lf_print_error("Received erroneous message type: %d. Closing the socket.", buffer[0]);
@@ -780,12 +811,10 @@ static void* listen_to_federates(void* _args) {
       break; // while loop
     }
     if (netdrv_closed) {
-      // NOTE: For decentralized execution, once this netdriver is closed, we could
+      // NOTE: For decentralized execution, once this netdriver is closed, we
       // update last known tags of all ports connected to the specified federate to FOREVER_TAG,
       // which would eliminate the need to wait for STAA to assume an input is absent.
-      // However, at this time, we don't know which ports correspond to which upstream federates.
-      // The code generator would have to encode this information. Once that is done,
-      // we could call update_last_known_status_on_input_port with FOREVER_TAG.
+      mark_inputs_known_absent(fed_id);
 
       break; // while loop
     }
@@ -864,6 +893,9 @@ static int perform_hmac_authentication() {
   if (received[0] != MSG_TYPE_RTI_RESPONSE) {
     if (received[0] == MSG_TYPE_FAILED) {
       lf_print_error("RTI has failed.");
+      return -1;
+    } else if (received[0] == MSG_TYPE_REJECT && received[1] == RTI_NOT_EXECUTED_WITH_AUTH) {
+      lf_print_error("RTI is not executed with HMAC option.");
       return -1;
     } else {
       lf_print_error("Received unexpected response %u from the RTI (see net_common.h).", received[0]);
@@ -980,7 +1012,7 @@ static void handle_tag_advance_grant(unsigned char* buffer) {
   // knows the status of network ports up to and including the granted tag,
   // so by extension, we assume that the federate can safely rely
   // on the RTI to handle port statuses up until the granted tag.
-  update_last_known_status_on_input_ports(TAG);
+  update_last_known_status_on_input_ports(TAG, env);
 
   // It is possible for this federate to have received a PTAG
   // earlier with the same tag as this TAG.
@@ -1004,7 +1036,7 @@ static void handle_tag_advance_grant(unsigned char* buffer) {
 
 #ifdef FEDERATED_DECENTRALIZED
 /**
- * @brief Return whether there exists an input port whose status is unknown.
+ * @brief Return true if there is an input port among those with a given STAA whose status is unknown.
  *
  * @param staa_elem A record of all input port actions.
  */
@@ -1033,9 +1065,28 @@ static int id_of_action(lf_action_base_t* input_port_action) {
 
 #endif
 
+#ifdef FEDERATED_DECENTRALIZED
+/**
+ * @brief Return true if all network input ports are known up to the specified tag.
+ * @param tag The tag.
+ */
+static bool inputs_known_to(tag_t tag) {
+  for (size_t i = 0; i < _lf_action_table_size; i++) {
+    tag_t known_to = _lf_action_table[i]->trigger->last_known_status_tag;
+    if (lf_tag_compare(known_to, tag) < 0) {
+      // There is a network input port for which it is not known whether a message with tag earlier
+      // than or equal to the specified tag may later arrive.
+      return false;
+    }
+  }
+  return true;
+}
+#endif // FEDERATED_DECENTRALIZED
+
 /**
  * @brief Thread handling setting the known absent status of input ports.
- * For the code-generated array of staa offsets `staa_lst`, which is sorted by STAA offset,
+ *
+ * For the code-generated array of STAA offsets `staa_lst`, which is sorted by STAA offset,
  * wait for physical time to advance to the current time plus the STAA offset,
  * then set the absent status of the input ports associated with the STAA.
  * Then wait for current time to advance and start over.
@@ -1058,26 +1109,30 @@ static void* update_ports_from_staa_offsets(void* args) {
       staa_t* staa_elem = staa_lst[i];
       // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
       // The list is sorted in increasing order of adjusted STAA offsets.
-      // The wait_until function automatically adds the lf_fed_STA_offset to the wait time.
-      interval_t wait_until_time = env->current_tag.time + staa_elem->STAA;
-      LF_PRINT_DEBUG("**** (update thread) original wait_until_time: " PRINTF_TIME, wait_until_time - lf_time_start());
+      // We need to add the lf_fed_STA_offset to the wait time and guard against overflow.
+      interval_t wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
+      instant_t wait_until_time = lf_time_add(env->current_tag.time, wait_time);
+      LF_PRINT_DEBUG("**** (update thread) wait_until_time: " PRINTF_TIME, wait_until_time - lf_time_start());
 
       // The wait_until call will release the env->mutex while it is waiting.
       // However, it will not release the env->mutex if the wait time is too small.
       // At the cost of a small additional delay in deciding a port is absent,
-      // we require a minimum wait time here.  Otherwise, if both the STAA and STA are
-      // zero, this thread will fail to ever release the environment mutex.
+      // we require a minimum wait time here.  Note that zero-valued STAAs are
+      // included, and STA might be zero or very small.
+      // In this case, this thread will fail to ever release the environment mutex.
       // This causes chaos.  The MIN_SLEEP_DURATION is the smallest amount of time
       // that wait_until will actually wait. Note that this strategy does not
       // block progress of any execution that is actually processing events.
       // It only slightly delays the decision that an event is absent, and only
       // if the STAA and STA are extremely small.
-      if (lf_fed_STA_offset + staa_elem->STAA < 5 * MIN_SLEEP_DURATION) {
+      if (wait_time < 5 * MIN_SLEEP_DURATION) {
         wait_until_time += 5 * MIN_SLEEP_DURATION;
       }
       while (a_port_is_unknown(staa_elem)) {
         LF_PRINT_DEBUG("**** (update thread) waiting until: " PRINTF_TIME, wait_until_time - lf_time_start());
         if (wait_until(wait_until_time, &lf_port_status_changed)) {
+          // Specified timeout time was reached.
+          // If the current tag has changed, start over.
           if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
             break;
           }
@@ -1085,16 +1140,17 @@ static void* update_ports_from_staa_offsets(void* args) {
           tag_t current_tag = lf_tag(env);
           LF_PRINT_DEBUG("**** (update thread) Assuming absent! " PRINTF_TAG, current_tag.time - lf_time_start(),
           current_tag.microstep); LF_PRINT_DEBUG("**** (update thread) Lag is " PRINTF_TIME, current_tag.time -
-          lf_time_physical()); LF_PRINT_DEBUG("**** (update thread) Wait until time is " PRINTF_TIME, wait_until_time -
-          lf_time_start());
+          lf_time_physical()); LF_PRINT_DEBUG("**** (update thread) Wait until time is " PRINTF_TIME,
+          wait_until_time - lf_time_start());
           */
 
+          // Mark input ports absent.
           for (size_t j = 0; j < staa_elem->num_actions; ++j) {
             lf_action_base_t* input_port_action = staa_elem->actions[j];
             if (input_port_action->trigger->status == unknown) {
               input_port_action->trigger->status = absent;
-              LF_PRINT_DEBUG("**** (update thread) Assuming port absent at time " PRINTF_TIME,
-                             lf_tag(env).time - start_time);
+              LF_PRINT_DEBUG("**** (update thread) Assuming port absent at tag " PRINTF_TAG,
+                             lf_tag(env).time - start_time, lf_tag(env).microstep);
               update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
               lf_cond_broadcast(&lf_port_status_changed);
             }
@@ -1120,23 +1176,27 @@ static void* update_ports_from_staa_offsets(void* args) {
       // Some ports may have been reset to uknown during that wait, in which case,
       // it would be huge mistake to enter the wait for a new tag below because the
       // program will freeze.  First, check whether any ports are unknown:
-      bool port_unkonwn = false;
+      bool port_unknown = false;
       for (size_t i = 0; i < staa_lst_size; ++i) {
         staa_t* staa_elem = staa_lst[i];
         if (a_port_is_unknown(staa_elem)) {
-          port_unkonwn = true;
+          port_unknown = true;
           break;
         }
       }
-      if (!port_unkonwn) {
+      if (!port_unknown) {
         // If this occurs, then there is a race condition that can lead to deadlocks.
         lf_print_error_and_exit("**** (update thread) Inconsistency: All ports are known, but MLAA is blocking.");
       }
 
       // Since max_level_allowed_to_advance will block advancement of time, we cannot follow
       // through to the next step without deadlocking.  Wait some time, then continue.
-      // The wait is necessary to prevent a busy wait.
-      lf_sleep(2 * MIN_SLEEP_DURATION);
+      // The wait is necessary to prevent a busy wait, which will only occur if port
+      // status are always known inside the while loop
+      // Be sure to use wait_until() instead of sleep() because sleep() will not release the mutex.
+      instant_t wait_until_time = lf_time_add(env->current_tag.time, 2 * MIN_SLEEP_DURATION);
+      wait_until(wait_until_time, &lf_port_status_changed);
+
       continue;
     }
 
@@ -1149,7 +1209,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       // Ports are reset to unknown at the start of new tag, so that will wake this up.
       lf_cond_wait(&lf_port_status_changed);
     }
-    LF_PRINT_DEBUG("**** (update thread) Tags after wait: " PRINTF_TAG ", " PRINTF_TAG,
+    LF_PRINT_DEBUG("**** (update thread) Tags after wait: " PRINTF_TAG ", and before: " PRINTF_TAG,
                    lf_tag(env).time - lf_time_start(), lf_tag(env).microstep,
                    tag_when_started_waiting.time - lf_time_start(), tag_when_started_waiting.microstep);
   }
@@ -1232,7 +1292,7 @@ static void handle_provisional_tag_advance_grant(unsigned char* buffer) {
     // TAG. In either case, we know that at the PTAG tag, all outputs
     // have either been sent or are absent, so we can send an LTC.
     // Send an LTC to indicate absent outputs.
-    lf_latest_tag_complete(PTAG);
+    lf_latest_tag_confirmed(PTAG);
     // Nothing more to do.
     LF_MUTEX_UNLOCK(&env->mutex);
     return;
@@ -2068,14 +2128,21 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   return NULL;
 }
 
-void lf_latest_tag_complete(tag_t tag_to_send) {
-  int compare_with_last_tag = lf_tag_compare(_fed.last_sent_LTC, tag_to_send);
-  if (compare_with_last_tag >= 0) {
+void lf_latest_tag_confirmed(tag_t tag_to_send) {
+  environment_t* env;
+  if (lf_tag_compare(_fed.last_sent_LTC, tag_to_send) >= 0) {
+    return; // Already sent this or later tag.
+  }
+  _lf_get_environments(&env);
+  if (!env->need_to_send_LTC) {
+    LF_PRINT_LOG("Skip sending Latest Tag Confirmed (LTC) to the RTI because there was no tagged message with the "
+                 "tag " PRINTF_TAG " that this federate has received.",
+                 tag_to_send.time - start_time, tag_to_send.microstep);
     return;
   }
-  LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.", tag_to_send.time - start_time,
+  LF_PRINT_LOG("Sending Latest Tag Confirmed (LTC) " PRINTF_TAG " to the RTI.", tag_to_send.time - start_time,
                tag_to_send.microstep);
-  send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, tag_to_send);
+  send_tag(MSG_TYPE_LATEST_TAG_CONFIRMED, tag_to_send);
   _fed.last_sent_LTC = tag_to_send;
 }
 
@@ -2580,4 +2647,29 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
   return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
 }
 
-#endif
+#ifdef FEDERATED_DECENTRALIZED
+instant_t lf_wait_until_time(tag_t tag) {
+  instant_t result = tag.time; // Default.
+
+  // Do not add the STA if the tag is the starting tag.
+  if (tag.time != start_time || tag.microstep != 0u) {
+
+    // Apply the STA to the logical time, but only if at least one network input port is not known up to this tag.
+    // Subtract one microstep because it is sufficient to commit to a tag if the input ports are known
+    // up to one microstep earlier.
+    if (tag.microstep > 0) {
+      tag.microstep--;
+    } else {
+      tag.microstep = UINT_MAX;
+      tag.time -= 1;
+    }
+
+    if (!inputs_known_to(tag)) {
+      result = lf_time_add(result, lf_fed_STA_offset);
+    }
+  }
+  return result;
+}
+#endif // FEDERATED_DECENTRALIZED
+
+#endif // FEDERATED

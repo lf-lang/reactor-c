@@ -87,6 +87,7 @@ typedef struct environment_t {
 #if defined(FEDERATED)
   tag_t** _lf_intended_tag_fields;
   int _lf_intended_tag_fields_size;
+  bool need_to_send_LTC;
 #endif             // FEDERATED
 #ifdef LF_ENCLAVES // TODO: Consider dropping #ifdef
   enclave_info_t* enclave_info;
@@ -110,6 +111,13 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
                      int num_startup_reactions, int num_shutdown_reactions, int num_reset_reactions,
                      int num_is_present_fields, int num_modes, int num_state_resets, int num_watchdogs,
                      const char* trace_file_name);
+
+/**
+ * @brief Verify that the environment is correctly set up.
+ *
+ * @param env
+ */
+void environment_verify(environment_t* env);
 
 /**
  * @brief Free the dynamically allocated memory on the environment struct.
