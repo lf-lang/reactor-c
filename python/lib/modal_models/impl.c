@@ -46,12 +46,14 @@ static PyObject* py_mode_set(PyObject* mode_capsule, PyObject* args) {
     lf_print_error("Null pointer received.");
     exit(1);
   }
+  Py_INCREF(m->mode);
 
   self_base_t* self = PyCapsule_GetPointer(m->lf_self, "lf_self");
   if (self == NULL) {
     lf_print_error("Null pointer received.");
     exit(1);
   }
+  Py_INCREF(m->lf_self);
 
   _LF_SET_MODE_WITH_TYPE(mode, m->change_type);
 
@@ -61,12 +63,61 @@ static PyObject* py_mode_set(PyObject* mode_capsule, PyObject* args) {
 
 //////////// Python Struct /////////////
 
+/**
+ * Called when an mode in Python is to be created. Note that this is not normally
+ * used because modes are not created in Python.
+ *
+ * To initialize the mode_capsule, this function first calls the tp_alloc
+ * method of type mode_capsule_struct_t and then assign default values of NULL, NULL, 0
+ * to the members of the generic_mode_capsule_struct.
+ */
+PyObject* py_mode_capsule_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
+  mode_capsule_struct_t* self = (mode_capsule_struct_t*)type->tp_alloc(type, 0);
+  if (self != NULL) {
+    self->mode = NULL;
+    self->lf_self = NULL;
+    self->change_type = 0;
+  }
+  return (PyObject*)self;
+}
+
 /*
  * The function members of mode_capsule.
  * The set function is used to set a new mode.
  */
 static PyMethodDef mode_capsule_methods[] = {
     {"set", (PyCFunction)py_mode_set, METH_NOARGS, "Set a new mode."}, {NULL} /* Sentinel */
+};
+
+/**
+ * Initialize the mode capsule "self" with NULL pointers and default change_type.
+ */
+static int py_mode_capsule_init(mode_capsule_struct_t* self, PyObject* args, PyObject* kwds) {
+  self->mode = NULL;
+  self->lf_self = NULL;
+  self->change_type = 0;
+  return 0;
+}
+
+/**
+ * Called when an mode capsule in Python is deallocated (generally
+ * called by the Python grabage collector).
+ * @param self
+ */
+void py_mode_capsule_dealloc(mode_capsule_struct_t* self) {
+  Py_XDECREF(self->mode);
+  Py_XDECREF(self->lf_self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+/*
+ * The members of a mode_capsule that are accessible from a Python program, used to define
+ * a native Python type.
+ */
+PyMemberDef py_mode_capsule_members[] = {
+    {"mode", T_OBJECT, offsetof(mode_capsule_struct_t, mode), 0, "The pointer to the C mode struct"},
+    {"lf_self", T_OBJECT, offsetof(mode_capsule_struct_t, lf_self), 0, "Pointer to LF self"},
+    {NULL} /* Sentinel */
 };
 
 /*
@@ -79,7 +130,10 @@ static PyTypeObject mode_capsule_t = {
     .tp_basicsize = sizeof(mode_capsule_struct_t),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_new = PyType_GenericNew,
+    .tp_new = py_mode_capsule_new,
+    .tp_init = (initproc)py_mode_capsule_init,
+    .tp_dealloc = (destructor)py_mode_capsule_dealloc,
+    .tp_members = py_mode_capsule_members,
     .tp_methods = mode_capsule_methods,
 };
 
