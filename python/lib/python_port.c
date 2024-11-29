@@ -47,7 +47,7 @@ PyTypeObject py_port_capsule_t;
  * Python can free its memory.
  * @param py_object A PyObject with count 1 or greater.
  */
-void python_count_decrement(void* py_object) { Py_XDECREF((PyObject*)py_object); }
+static void python_count_decrement(void* py_object) { Py_XDECREF((PyObject*)py_object); }
 
 //////////// set Function(s) /////////////
 /**
@@ -94,14 +94,13 @@ PyObject* py_port_set(PyObject* self, PyObject* args) {
   }
 
   if (val) {
-    LF_PRINT_DEBUG("Setting value %p with reference count %d.", val, (int)Py_REFCNT(val));
-    // Py_INCREF(val);
     // python_count_decrement(port->value);
 
     lf_token_t* token = lf_new_token((void*)port, val, 1);
     lf_set_destructor(port, python_count_decrement);
     lf_set_token(port, token);
     Py_INCREF(val);
+    LF_PRINT_DEBUG("Setting value %p with reference count %d.", val, (int)Py_REFCNT(val));
 
     // Also set the values for the port capsule.
     p->value = val;
@@ -117,9 +116,9 @@ PyObject* py_port_set(PyObject* self, PyObject* args) {
  * garbage collector).
  * @param self An instance of generic_port_instance_struct*
  */
-void py_port_capsule_dealloc(generic_port_capsule_struct* self) {
-  Py_XDECREF(self->port);
-  Py_XDECREF(self->value);
+static void py_port_capsule_dealloc(generic_port_capsule_struct* self) {
+  Py_CLEAR(self->port);
+  Py_CLEAR(self->value);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -147,7 +146,8 @@ PyObject* py_port_capsule_new(PyTypeObject* type, PyObject* args, PyObject* kwds
   generic_port_capsule_struct* self;
   self = (generic_port_capsule_struct*)type->tp_alloc(type, 0);
   if (self != NULL) {
-    self->port = NULL;
+    Py_INCREF(Py_None);
+    self->port = Py_None;
     Py_INCREF(Py_None);
     self->value = Py_None;
     self->is_present = false;
@@ -325,7 +325,7 @@ PyMappingMethods py_port_as_mapping = {(lenfunc)py_port_length, (binaryfunc)py_p
  */
 int py_port_capsule_init(generic_port_capsule_struct* self, PyObject* args, PyObject* kwds) {
   static char* kwlist[] = {"port", "value", "is_present", "width", "current_index", NULL};
-  PyObject *value = NULL, *tmp, *port = NULL;
+  PyObject *value = NULL, *port = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOp", kwlist, &port, &value, &self->is_present, &self->width,
                                    &self->current_index)) {
@@ -333,14 +333,14 @@ int py_port_capsule_init(generic_port_capsule_struct* self, PyObject* args, PyOb
   }
 
   if (value) {
-    tmp = self->value;
+    PyObject *tmp = self->value;
     Py_INCREF(value);
     self->value = value;
     Py_XDECREF(tmp);
   }
 
   if (port) {
-    tmp = self->port;
+    PyObject *tmp = self->port;
     Py_INCREF(port);
     self->port = port;
     Py_XDECREF(tmp);
