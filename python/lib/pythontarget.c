@@ -603,7 +603,14 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
 
     mbstowcs(wcwd, cwd, PATH_MAX);
 
-    Py_SetPath(wcwd);
+    // Deprecated: Py_SetPath(wcwd);
+    // Replace with the following more verbose version:
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+    // Add paths to the configuration
+    PyWideStringList_Append(&config.module_search_paths, wcwd);
+    // Initialize Python with the custom configuration
+    Py_InitializeFromConfig(&config);
 
     LF_PRINT_DEBUG("Loading module %s in %s.", module, cwd);
 
