@@ -296,6 +296,34 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
 }
 
 /**
+ * @brief Mark all the input ports connected to the given federate as known to be absent until FOREVER.
+ *
+ * This does nothing if the federate is not using decentralized coordination.
+ * This function acquires the mutex on the top-level environment.
+ * @param fed_id The ID of the federate.
+ */
+static void mark_inputs_known_absent(int fed_id) {
+#ifdef FEDERATED_DECENTRALIZED
+  // Note that when transient federates are supported, this will need to be updated because the
+  // federate could rejoin.
+  environment_t* env;
+  _lf_get_environments(&env);
+  LF_MUTEX_LOCK(&env->mutex);
+
+  for (size_t i = 0; i < _lf_action_table_size; i++) {
+    lf_action_base_t* action = _lf_action_table[i];
+    if (action->source_id == fed_id) {
+      update_last_known_status_on_input_port(env, FOREVER_TAG, i);
+    }
+  }
+  LF_MUTEX_UNLOCK(&env->mutex);
+#else
+  // Do nothing, except suppress unused parameter error.
+  (void)fed_id;
+#endif // FEDERATED_DECENTRALIZED
+}
+
+/**
  * @brief Update the last known status tag of a network input action.
  *
  * This function is similar to update_last_known_status_on_input_port, but
