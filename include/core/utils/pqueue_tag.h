@@ -218,7 +218,7 @@ void pqueue_tag_dump(pqueue_tag_t* q);
 
 /**
  * @brief Return the maximum tag in the queue or NEVER_TAG if the queue is empty.
- * 
+ *
  * @param q The queue.
  */
 tag_t pqueue_tag_max_tag(pqueue_tag_t* q);
