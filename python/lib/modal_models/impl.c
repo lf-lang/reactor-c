@@ -154,6 +154,7 @@ void initialize_mode_capsule_t(PyObject* current_module) {
   if (PyModule_AddObject(current_module, "mode_capsule", (PyObject*)&mode_capsule_t) < 0) {
     Py_DECREF(&mode_capsule_t);
     Py_DECREF(current_module);
+    lf_print_error_and_exit("Failed to initialize mode_capsule.");
     return;
   }
 }
