@@ -2760,10 +2760,6 @@ void lf_stop() {
   LF_PRINT_LOG("Federate is stopping.");
 }
 
-char* lf_get_federates_bin_directory() {
-  return LF_SOURCE_GEN_DIRECTORY LF_FILE_SEPARATOR ".." LF_FILE_SEPARATOR ".." LF_FILE_SEPARATOR "bin";
-}
-
 const char* lf_get_federation_id() { return federation_metadata.federation_id; }
 
 #ifdef FEDERATED_DECENTRALIZED
