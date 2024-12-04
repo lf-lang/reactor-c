@@ -94,6 +94,8 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
   for (int i = 0; i < e->num_min_delays; i++) {
     // Node e->min_delays[i].id is upstream of e with min delay e->min_delays[i].min_delay.
     scheduling_node_t* upstream = rti_common->scheduling_nodes[e->min_delays[i].id];
+    if (upstream->state == NOT_CONNECTED)
+      continue;
     // If we haven't heard from the upstream node, then assume it can send an event at the start time.
     if (lf_tag_compare(upstream->next_event, NEVER_TAG) == 0) {
       tag_t start_tag = {.time = start_time, .microstep = 0};
