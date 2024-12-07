@@ -164,16 +164,19 @@ void initialize_mode_capsule_t(PyObject* current_module) {
  */
 PyObject* convert_C_mode_to_py(reactor_mode_t* mode, self_base_t* lf_self, lf_mode_change_type_t change_type) {
   // Create the mode struct in Python
-  mode_capsule_struct_t* cap = (mode_capsule_struct_t*)PyObject_GC_New(mode_capsule_struct_t, &mode_capsule_t);
+  mode_capsule_struct_t* cap = (mode_capsule_struct_t*)PyObject_New(mode_capsule_struct_t, &mode_capsule_t);
+
   if (cap == NULL) {
     lf_print_error_and_exit("Failed to convert mode.");
   }
+  Py_INCREF(cap);
 
   // Create the capsule to hold the reactor_mode_t* mode
   PyObject* capsule = PyCapsule_New(mode, "mode", NULL);
   if (capsule == NULL) {
     lf_print_error_and_exit("Failed to convert mode.");
   }
+  Py_INCREF(capsule);
   // Fill in the Python mode struct.
   cap->mode = capsule;
 
@@ -182,6 +185,7 @@ PyObject* convert_C_mode_to_py(reactor_mode_t* mode, self_base_t* lf_self, lf_mo
   if (self_capsule == NULL) {
     lf_print_error_and_exit("Failed to convert self.");
   }
+  Py_INCREF(self_capsule);
   cap->lf_self = self_capsule;
 
   cap->change_type = change_type;
