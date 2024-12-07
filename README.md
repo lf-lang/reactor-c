@@ -4,9 +4,11 @@
 # Reactor-C: A reactor runtime implementation in C
 
 ## Documentation
+
 To generate and view documentation, see [docs/README.md](docs/README.md).
 
 ## Code-formatting
+
 We use clang-format to format our codebase. To run the formatter on all source and header files in reactor-c:
 ```
 make format
@@ -20,6 +22,7 @@ VSCode can be configured to run clang-format on files as they are saved. To achi
 
 
 ## Testing
+
 The Github Actions tests for this repo will automatically run all the C Lingua Franca tests with each of the available schedulers. The version of the lingua-franca repo that is used to do this is specified by the lingua-franca-ref.txt file in this directory.
 
 To create a new unit test, write a C program with a file name ending in "test.c"
