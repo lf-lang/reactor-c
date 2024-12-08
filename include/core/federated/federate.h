@@ -477,6 +477,11 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
  */
 void lf_set_federation_id(const char* fid);
 
+/**
+ * @brief Return the federation id.
+ */
+const char* lf_get_federation_id();
+
 #ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Spawn a thread to iterate through STAA structs.
@@ -529,14 +534,6 @@ void lf_synchronize_with_other_federates();
  * @return True if the MLAA changed.
  */
 bool lf_update_max_level(tag_t tag, bool is_provisional);
-
-// /**
-//  * @brief Returns the federation id.
-//  *
-//  * This function is useful for testing purposes only.
-//  * In order for a program to use this function, it needs to include "federate.h" in the preamble.
-//  */
-// const char* lf_get_federation_id();
 
 #ifdef FEDERATED_DECENTRALIZED
 /**
