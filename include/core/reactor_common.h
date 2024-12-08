@@ -53,6 +53,7 @@ extern unsigned int _lf_number_of_workers;
 extern int default_argc;
 extern const char** default_argv;
 extern instant_t duration;
+extern bool start_time_specified;
 extern bool fast;
 extern bool keepalive_specified;
 
