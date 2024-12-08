@@ -477,6 +477,11 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
  */
 void lf_set_federation_id(const char* fid);
 
+/**
+ * @brief Return the federation id.
+ */
+const char* lf_get_federation_id();
+
 #ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Spawn a thread to iterate through STAA structs.
@@ -530,12 +535,19 @@ void lf_synchronize_with_other_federates();
  */
 bool lf_update_max_level(tag_t tag, bool is_provisional);
 
-// /**
-//  * @brief Returns the federation id.
-//  *
-//  * This function is useful for testing purposes only.
-//  * In order for a program to use this function, it needs to include "federate.h" in the preamble.
-//  */
-// const char* lf_get_federation_id();
+#ifdef FEDERATED_DECENTRALIZED
+/**
+ * @brief Return the physical time that we should wait until before advancing to the specified tag.
+ *
+ * This function adds the STA offset (STP_offset parameter) to the time of the specified tag unless
+ * the tag is the starting tag (it is always safe to advance to the starting tag). It also avoids
+ * adding the STA offset if all network input ports are known at least up to one microstep earlier
+ * than the specified tag.
+ *
+ * This function assumes that the caller holds the environment mutex.
+ * @param time The specified time.
+ */
+instant_t lf_wait_until_time(tag_t tag);
+#endif // FEDERATED_DECENTRALIZED
 
 #endif // FEDERATE_H
