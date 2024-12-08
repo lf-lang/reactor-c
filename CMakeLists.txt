@@ -36,6 +36,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include/core/platform)
 include_directories(${CMAKE_SOURCE_DIR}/include/core/threaded)
 include_directories(${CMAKE_SOURCE_DIR}/include/core/utils)
 include_directories(${CMAKE_SOURCE_DIR}/include/api)
+include_directories(/usr/local/include)
 
 enable_testing()
 add_subdirectory(${Lib})

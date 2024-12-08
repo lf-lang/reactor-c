@@ -35,6 +35,12 @@
 #include "environment.h"
 #include "reactor_common.h"
 
+#include "netdriver.h"
+// #ifdef OPENSSL_REQUIRED
+//   #include <openssl/crypto.h>
+// #endif
+
+
 #if !defined(LF_SINGLE_THREADED)
 #include "watchdog.h"
 #endif
@@ -888,6 +894,9 @@ void usage(int argc, const char* argv[]) {
   printf("  -l\n");
   printf("   Send stdout to individual log files for each federate.\n\n");
 #endif
+#ifdef COMM_TYPE_SST
+  printf("  -sst, --sst <n>\n");
+#endif
 
   printf("Command given:\n");
   for (int i = 0; i < argc; i++) {
@@ -1037,6 +1046,17 @@ int process_args(int argc, const char* argv[]) {
       }
     }
 #endif
+#ifdef COMM_TYPE_SST
+    else if (strcmp(arg, "-sst") == 0 || strcmp(arg, "--sst") == 0) {
+      if (argc < i + 1) {
+        lf_print_error("--sst needs a string argument.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* fid = argv[i++];
+      lf_set_sst_config_path(fid);
+    }
+#endif
     else if (strcmp(arg, "--ros-args") == 0) {
       // FIXME: Ignore ROS arguments for now
     } else {
@@ -1120,7 +1140,8 @@ void initialize_global(void) {
  * Flag to prevent termination function from executing twice and to signal to background
  * threads to terminate.
  */
-bool _lf_termination_executed = false;
+// bool _lf_termination_executed = false;
+extern bool _lf_termination_executed;
 
 /** Flag used to disable cleanup operations on abnormal termination. */
 bool _lf_normal_termination = false;

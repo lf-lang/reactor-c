@@ -18,7 +18,6 @@ list(APPEND REACTORC_SOURCES ${GENERAL_SOURCES})
 # Add sources for either threaded or single-threaded runtime
 if(DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
-    include(federated/network/CMakeLists.txt)
 endif()
 
 # Add sources for either threaded or single-threaded runtime
@@ -96,6 +95,21 @@ include(${LF_ROOT}/platform/impl/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::platform-api)
 target_link_libraries(reactor-c PRIVATE lf::platform-impl)
 
+# message("reactor-c/core/CMakeLists.txt First")
+option(COMM_TYPE "Communication type between RTI and federate(s)." ON)
+IF(COMM_TYPE MATCHES ON)
+   set(COMM_TYPE TCP)
+ENDIF()
+
+include(${LF_ROOT}/include/core/federated/network/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::network-api)
+
+include(${LF_ROOT}/core/federated/network/CMakeLists.txt)
+target_link_libraries(reactor-c PRIVATE lf::network-impl)
+
+# Apply compile definitions to the reactor-c library.
+target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})
+
 target_include_directories(reactor-c PUBLIC ../include)
 target_include_directories(reactor-c PUBLIC ../include/core)
 target_include_directories(reactor-c PUBLIC ../include/core/federated)
@@ -105,6 +119,7 @@ target_include_directories(reactor-c PUBLIC ../include/core/modal_models)
 target_include_directories(reactor-c PUBLIC ../include/core/threaded)
 target_include_directories(reactor-c PUBLIC ../include/core/utils)
 target_include_directories(reactor-c PUBLIC federated/RTI/)
+target_include_directories(reactor-c PUBLIC /usr/local/include)
 
 if(APPLE)
     SET(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
@@ -122,6 +137,12 @@ if(DEFINED FEDERATED_AUTHENTICATED)
     find_package(OpenSSL REQUIRED)
     target_link_libraries(reactor-c PUBLIC OpenSSL::SSL)
 endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(OPENSSL_ROOT_DIR "/usr/local/lib64")
+endif()
+
+set(OPENSSL_ROOT_DIR "/usr/local/lib64")
 
 if(DEFINED FEDERATED)
   find_library(MATH_LIBRARY m)
