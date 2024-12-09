@@ -1109,6 +1109,15 @@ static void send_start_tag(federate_info_t* my_fed, instant_t federation_start_t
   for (int i = 0; i < my_fed->enclave.num_downstream; i++) {
     send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.downstream[i]), my_fed);
   }
+
+  // A corner case was identified where a transient joins at tag (0, 0) and one of its persistent downstreams misses the
+  // notification. The following is an attempt to make sure it is notified.
+  for (int i = 0; i < my_fed->enclave.num_upstream; i++) {
+    federate_info_t* fed = GET_FED_INFO(my_fed->enclave.upstream[i]);
+    if (fed->is_transient && fed->enclave.state == GRANTED) {
+      send_upstream_connected_locked(my_fed, fed);
+    }
+  }
 }
 
 void handle_timestamp(federate_info_t* my_fed) {
