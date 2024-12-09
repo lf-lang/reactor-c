@@ -48,7 +48,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "rti_remote.h"
-#include "net_util.h"
 #include <signal.h> // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
 #include <string.h>
 
@@ -80,11 +79,11 @@ static void send_failed_signal(federate_info_t* fed) {
   if (rti.base.tracing_enabled) {
     tracepoint_rti_to_federate(send_FAILED, fed->enclave.id, NULL);
   }
-  int failed = write_to_socket(fed->socket, bytes_to_write, &(buffer[0]));
-  if (failed == 0) {
+  int bytes_written = write_to_netdrv(fed->fed_netdrv, bytes_to_write, &(buffer[0]));
+  if (bytes_written > 0) {
     LF_PRINT_LOG("RTI has sent failed signal to federate %d due to abnormal termination.", fed->enclave.id);
   } else {
-    lf_print_error("RTI failed to send failed signal to federate %d on socket ID %d.", fed->enclave.id, fed->socket);
+    // lf_print_error("RTI failed to send failed signal to federate %d on socket ID %d.", fed->enclave.id, fed->socket);
   }
 }
 
@@ -123,7 +122,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("   The number of federates in the federation that this RTI will control.\n");
   lf_print("  -p, --port <n>");
   lf_print("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n",
-           UINT16_MAX, DEFAULT_PORT);
+           UINT16_MAX, RTI_DEFAULT_PORT);
   lf_print("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]");
   lf_print("   The status of clock synchronization for this federate.");
   lf_print("       - off: Clock synchronization is off.");
@@ -136,6 +135,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
+  lf_print("  -sst, --sst SST config path for RTI.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
@@ -261,6 +261,15 @@ int process_args(int argc, const char* argv[]) {
       return 0;
 #endif
       rti.authentication_enabled = true;
+    } else if (strcmp(argv[i], "-sst") == 0 || strcmp(argv[i], "--sst") == 0) {
+#ifndef COMM_TYPE_SST
+      lf_print_error("--sst requires the RTI to be built with the --DCOMM_TYPE=SST option.");
+      usage(argc, argv);
+      return 0;
+#else
+      i++;
+      lf_set_rti_sst_config_path(argv[i]);
+#endif
     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
       rti.base.tracing_enabled = true;
     } else if (strcmp(argv[i], " ") == 0) {
@@ -324,9 +333,8 @@ int main(int argc, const char* argv[]) {
     rti.base.scheduling_nodes[i] = (scheduling_node_t*)fed_info;
   }
 
-  int socket_descriptor = start_rti_server(rti.user_specified_port);
-  if (socket_descriptor >= 0) {
-    wait_for_federates(socket_descriptor);
+  if (start_rti_server(rti.user_specified_port)) {
+    wait_for_federates(rti.rti_netdrv);
     normal_termination = true;
     if (rti.base.tracing_enabled) {
       // No need for a mutex lock because all threads have exited.
