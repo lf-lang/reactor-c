@@ -504,6 +504,7 @@ static int handle_message(netdrv_t* netdrv, int fed_id, unsigned char* buffer, s
   // Read the payload.
   // Allocate memory for the message contents.
   unsigned char* message_contents = (unsigned char*)malloc(length);
+  //TODO: memcpy should be done in while.
   memcpy(message_contents, buffer + header_length, bytes_read);
   int buf_count = bytes_read;
   while (netdrv->read_remaining_bytes > 0) {

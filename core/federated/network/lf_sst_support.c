@@ -122,43 +122,50 @@ ssize_t read_from_netdrv(netdrv_t* drv, unsigned char* buffer, size_t buffer_len
     lf_print_warning("Netdriver is closed, returning -1.");
     return -1;
   }
-  if (buffer_length == 0) {
-  } // JUST TO PASS COMPILER.
   sst_priv_t* sst_priv = (sst_priv_t*)drv->priv;
-  unsigned char sst_buffer[1024];
-  ssize_t bytes_read = 0;
-  unsigned int temp_length = 10;
-
   if (sst_priv->session_ctx->sock < 0) {
     return -1;
   }
+  // TODO: Check here.
+  //  if (drv->read_remaining_bytes > 0) {
+  //    unsigned int bytes_to_read =
+  //        (drv->read_remaining_bytes > buffer_length) ? buffer_length : drv->read_remaining_bytes;
+  //    read(sst_priv->session_ctx->sock, );
+  //    state = KEEP_READING;
+  //  }
+  //  if (buffer_length == 0) {
+  //  } // JUST TO PASS COMPILER.
+  //  unsigned int sst_buffer_length = 5 + (((buffer_length / 16) + 1) * 16) + 32;
+  //  unsigned char sst_buffer[sst_buffer_length];
 
-  // Read 10 bytes first.
-  bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, temp_length);
-  if (bytes_read == 0) {
-    // Connection closed.
-    return 0;
-  } else if (bytes_read < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
-    // Add retry.
-  }
-  unsigned int payload_length; // Length of the payload of SST.
-  unsigned int var_length_buf_size;
-  // This fills payload_length and var_length_buf_size.
-  var_length_int_to_num(sst_buffer + sizeof(unsigned char), bytes_read, &payload_length, &var_length_buf_size);
-  unsigned int bytes_to_read = payload_length - (temp_length - (sizeof(unsigned char) + var_length_buf_size));
+  // ssize_t bytes_read = read_secure_message(sst_priv->session_ctx->sock, sst_buffer, sst_buffer_length);
 
-  unsigned int second_read = 0;
-  ssize_t more = 0;
-  while (second_read != bytes_to_read) {
-    more = read(sst_priv->session_ctx->sock, sst_buffer + temp_length, bytes_to_read);
-    second_read += more;
-    if (more == 0) {
-      return 0;
-    } else if (more < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
-      continue;
-    }
-    bytes_read += second_read;
-  }
+  // // Read 10 bytes first.
+  // bytes_read = read(sst_priv->session_ctx->sock, sst_buffer, temp_length);
+  // if (bytes_read == 0) {
+  //   // Connection closed.
+  //   return 0;
+  // } else if (bytes_read < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+  //   // Add retry.
+  // }
+  // unsigned int payload_length; // Length of the payload of SST.
+  // unsigned int var_length_buf_size;
+  // // This fills payload_length and var_length_buf_size.
+  // var_length_int_to_num(sst_buffer + sizeof(unsigned char), bytes_read, &payload_length, &var_length_buf_size);
+  // unsigned int bytes_to_read = payload_length - (temp_length - (sizeof(unsigned char) + var_length_buf_size));
+
+  // unsigned int second_read = 0;
+  // ssize_t more = 0;
+  // while (second_read != bytes_to_read) {
+  //   more = read(sst_priv->session_ctx->sock, sst_buffer + temp_length, bytes_to_read);
+  //   second_read += more;
+  //   if (more == 0) {
+  //     return 0;
+  //   } else if (more < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+  //     continue;
+  //   }
+  //   bytes_read += second_read;
+  // }
 
   unsigned int decrypted_buffer_length;
   unsigned char* decrypted_buffer =
