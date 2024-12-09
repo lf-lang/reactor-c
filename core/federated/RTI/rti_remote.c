@@ -1226,11 +1226,18 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
       LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
 
       // Notify downstream federates of this now connected transient.
-      for (int i = 0; i < my_fed->enclave.num_upstream; i++) {
-        send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.upstream[i]), my_fed);
+      for (int i = 0; i < my_fed->enclave.num_downstream; i++) {
+        send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.downstream[i]), my_fed);
       }
 
-      LF_MUTEX_UNLOCK(&rti_mutex);
+      // A corner case was identified where a transient joins at tag (0, 0) and one of its persistent downstreams misses
+      // the notification. The following is an attempt to make sure it is notified.
+      for (int i = 0; i < my_fed->enclave.num_upstream; i++) {
+        federate_info_t* fed = GET_FED_INFO(my_fed->enclave.upstream[i]);
+        if (fed->is_transient && fed->enclave.state == GRANTED) {
+          send_upstream_connected_locked(my_fed, fed);
+        }
+      }
     }
 
     void handle_timestamp(federate_info_t * my_fed) {
