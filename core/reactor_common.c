@@ -885,11 +885,11 @@ void usage(int argc, const char* argv[]) {
   printf("   Executed in <n> threads if possible (optional feature).\n\n");
   printf("  -i, --id <n>\n");
   printf("   The ID of the federation that this reactor will join.\n\n");
-  printf("  -s, --start-time <duration> <units> \n");
-  printf("   The logical start time of the program, expressed as a duration since the epoch of the underlying system "
-         "clock.\n");
+  printf("  -s, --start-time <time-point> <units> \n");
+  printf("   The logical start time of the program, expressed as an absolute time point\n");
+  printf("   which is the duration since the epoch of the underlying system clock.\n");
   printf("   The units are nsec, usec, msec, sec, minute, hour, day, week or the plurals of those.\n");
-  printf("   On linux, to compute a start time in 2 minutes you can do:.\n");
+  printf("   On linux, to compute a start time of 2 minutes into the future, expressed in seconds, do:\n");
   printf("     `date -d \"2 minutes\" +%%s`.\n\n");
 #ifdef FEDERATED
   printf("  -r, --rti <n>\n");
@@ -1260,4 +1260,16 @@ index_t lf_combine_deadline_and_level(interval_t deadline, int level) {
     return ((ULLONG_MAX >> 16) << 16) | level;
   else
     return (deadline << 16) | level;
+}
+
+void _lf_set_and_wait_for_start_time() {
+  if (!start_time_specified) {
+    start_time = lf_time_physical();
+  } else {
+    instant_t now = lf_time_physical();
+    if (!fast && now < start_time) {
+      lf_print("Sleeping " PRINTF_TIME " ns until specified start time", start_time - now);
+      lf_sleep(start_time - now);
+    }
+  }
 }
