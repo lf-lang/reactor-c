@@ -69,7 +69,7 @@ typedef struct federate_instance_t {
    * An array that holds the netdriver descriptors for inbound
    * connections from each federate. The index will be the federate
    * ID of the remote sending federate. This is initialized at startup
-   * to -1 and is set to a socket ID by lf_handle_p2p_connections_from_federates() // TODO: check.
+   * to -1 and is set to a socket ID by lf_handle_p2p_connections_from_federates() // TODO: check here.
    * when the netdriver is opened.
    *
    * @note There will not be an inbound netdriver unless a physical connection
@@ -109,7 +109,7 @@ typedef struct federate_instance_t {
    * opened netdriver will be stored in
    * federate_netdrv_for_inbound_p2p_connections.
    */
-  netdrv_t* my_netdrv; 
+  netdrv_t* my_netdrv;
 
   /**
    * Most recent tag advance grant (TAG) received from the RTI, or NEVER if none
