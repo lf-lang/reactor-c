@@ -886,7 +886,11 @@ void usage(int argc, const char* argv[]) {
   printf("  -i, --id <n>\n");
   printf("   The ID of the federation that this reactor will join.\n\n");
   printf("  -s, --start-time <duration> <units> \n");
-  printf("   The ID of the federation that this reactor will join.\n\n");
+  printf("   The logical start time of the program, expressed as a duration since the epoch of the underlying system "
+         "clock.\n");
+  printf("   The units are nsec, usec, msec, sec, minute, hour, day, week or the plurals of those.\n");
+  printf("   On linux, to compute a start time in 2 minutes you can do:.\n");
+  printf("     `date -d \"2 minutes\" +%%s`.\n\n");
 #ifdef FEDERATED
   printf("  -r, --rti <n>\n");
   printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
