@@ -333,14 +333,14 @@ int py_port_capsule_init(generic_port_capsule_struct* self, PyObject* args, PyOb
   }
 
   if (value) {
-    PyObject *tmp = self->value;
+    PyObject* tmp = self->value;
     Py_INCREF(value);
     self->value = value;
     Py_XDECREF(tmp);
   }
 
   if (port) {
-    PyObject *tmp = self->port;
+    PyObject* tmp = self->port;
     Py_INCREF(port);
     self->port = port;
     Py_XDECREF(tmp);
