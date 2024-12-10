@@ -425,23 +425,23 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
   }
 
   /**
-   * @brief Send MSG_TYPE_UPSTREAM_CONNECTED to the specified federate.
-   *
+   * @brief Send MSG_TYPE_UPSTREAM_CONNECTED to the specified federate, only if it is connected.
    *
    * This function assumes that the mutex lock is already held.
    * @param destination The destination federate.
    * @param disconnected The connected federate.
    */
   static void send_upstream_connected_locked(federate_info_t * destination, federate_info_t * connected) {
-    if (!connected->is_transient) {
-      // No need to send connected message for persistent federates.
+    if (destination->enclave.state == NOT_CONNECTED) {
+      LF_PRINT_LOG("RTI did not send upstream connected message to federate %d, because it is not connected.",
+                   destination->enclave.id);
       return;
     }
     unsigned char buffer[MSG_TYPE_UPSTREAM_CONNECTED_LENGTH];
     buffer[0] = MSG_TYPE_UPSTREAM_CONNECTED;
     encode_uint16(connected->enclave.id, &buffer[1]);
     if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_UPSTREAM_CONNECTED_LENGTH, buffer)) {
-      lf_print_warning("RTI: Failed to send upstream connected message to federate %d.", connected->enclave.id);
+      lf_print_warning("RTI: Failed to send upstream connected message to federate %d.", destination->enclave.id);
     }
   }
 
@@ -1183,32 +1183,53 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
     }
 
     /**
-     * Send to the start time to the federate my_fed.
-     * This function assumes the caller does not hold the mutex.
+     * Send the start time and tag to the federate my_fed.
      *
-     * If it is the startup phase, the start_time will be the maximum received timestamps
-     * plus an offset. The federate will then receive identical federation_start_time
-     * and federate_start_tag.time (the federate_start_tag.microstep will be 0).
-     * If, however, the startup phase is passed, the federate will receive different
-     * values than stated above.
+     * During the startup phase, the start_time is calculated as the maximum received timestamp, plus an offset.
+     * The federate will then receive identical values for federation_start_time` and `federate_start_tag.time` (with
+     * `federate_start_tag.microstep` set to 0). After the startup phase, the federate will receive different values for
+     * these parameters.
      *
-     * This will also notify federates downstream of my_fed that this federate is now
-     * connected.  This is important when there are zero-delay cycles.
+     * Before sending the start time and tag, this function performs the following actions:
+     *  - If my_fed is transient, notify federates downstream of its connection, ensuring proper handling of zero-delay
+     *    cycles.
+     *  - Notify my_fed of all upstream transient federates that are connected.
      *
-     * This function assumes the caller holds the mutex.
+     * This function assumes that the mutex lock is already held.
      *
      * @param my_fed the federate to send the start time to.
      * @param federation_start_time the federation start_time
      * @param federate_start_tag the federate effective start tag
      */
-    static void send_start_tag(federate_info_t * my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
+    static void send_start_tag_locked(federate_info_t * my_fed, instant_t federation_start_time,
+                                      tag_t federate_start_tag) {
+      // If this is a transient federate, notify its downstream federates that it is now connected.
+      if (my_fed->is_transient) {
+        for (int i = 0; i < my_fed->enclave.num_downstream; i++) {
+          send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.downstream[i]), my_fed);
+        }
+      }
+      // A corner case occurs when an upstream transient joins at tag (0, 0), but `my_fed`
+      // either misses the notification or receives it late. The following ensures that
+      // `my_fed` is informed of all currently connected upstream transients.
+      // This also prevents `my_fed` from receiving the start time and starting execution
+      // before the upstream connection message is received.
+      // This also deals with an even less likely corner case where two transients are joining simultaneously and one is
+      // upstream of the other.
+      for (int i = 0; i < my_fed->enclave.num_upstream; i++) {
+        federate_info_t* fed = GET_FED_INFO(my_fed->enclave.upstream[i]);
+        if (fed->is_transient && fed->enclave.state == GRANTED) {
+          send_upstream_connected_locked(my_fed, fed);
+        }
+      }
+
       // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
       // message.
       // In the startup phase, federates will receive identical start_time and
       // effective_start_tag
       unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_START_LENGTH];
       start_time_buffer[0] = MSG_TYPE_TIMESTAMP_START;
-      encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+      encode_int64(swap_bytes_if_big_endian_int64(federation_start_time), &start_time_buffer[1]);
       encode_tag(&(start_time_buffer[1 + sizeof(instant_t)]), federate_start_tag);
 
       if (rti_remote->base.tracing_enabled) {
@@ -1218,26 +1239,12 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
         lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
       }
 
-      // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
-      // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
-      // the federate to the start time.
+      // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP_START
+      // message has been sent. That MSG_TYPE_TIMESTAMP_START message grants time advance to
+      // the federate to the federate_start_tag.time.
       my_fed->enclave.state = GRANTED;
       lf_cond_broadcast(&sent_start_time);
       LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
-
-      // Notify downstream federates of this now connected transient.
-      for (int i = 0; i < my_fed->enclave.num_downstream; i++) {
-        send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.downstream[i]), my_fed);
-      }
-
-      // A corner case was identified where a transient joins at tag (0, 0) and one of its persistent downstreams misses
-      // the notification. The following is an attempt to make sure it is notified.
-      for (int i = 0; i < my_fed->enclave.num_upstream; i++) {
-        federate_info_t* fed = GET_FED_INFO(my_fed->enclave.upstream[i]);
-        if (fed->is_transient && fed->enclave.state == GRANTED) {
-          send_upstream_connected_locked(my_fed, fed);
-        }
-      }
     }
 
     void handle_timestamp(federate_info_t * my_fed) {
@@ -1286,7 +1293,10 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
         LF_MUTEX_UNLOCK(&rti_mutex);
 
         // Notify the federate of its start tag.
+        // This has to be done while still holding the mutex.
         send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
+
+        LF_MUTEX_UNLOCK(&rti_mutex);
       } else if (rti_remote->phase == shutdown_phase || !my_fed->is_transient) {
         LF_MUTEX_UNLOCK(&rti_mutex);
 
@@ -1384,7 +1394,7 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
 
         // Have to send the start tag while still holding the mutex to ensure that no message
         // from an upstream federate is forwarded before the start tag.
-        send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
+        send_start_tag_locked(my_fed, start_time, my_fed->effective_start_tag);
 
         // Whenver a transient joins, invalidate all federates, so that all min_delays_upstream
         // get re-computed.
