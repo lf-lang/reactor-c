@@ -111,6 +111,15 @@ tag_t lf_tag_add(tag_t a, tag_t b);
 instant_t lf_time_add(instant_t a, interval_t b);
 
 /**
+ * @brief Return an instant minus an interval, saturating on overflow and underflow.
+ *
+ * @param a
+ * @param b
+ * @return instant_t
+ */
+instant_t lf_time_subtract(instant_t a, interval_t b);
+
+/**
  * Compare two tags. Return -1 if the first is less than
  * the second, 0 if they are equal, and +1 if the first is
  * greater than the second. A tag is greater than another if
