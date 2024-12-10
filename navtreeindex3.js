@@ -1,5 +1,7 @@
 var NAVTREEINDEX3 =
 {
+"d6/d51/pqueue__base_8h.html#a66bce8cd2c2afa804405005798498823":[12,0,1,1,3,4,18],
+"d6/d51/pqueue__base_8h.html#a884902da135214a6167f1536ad4ed4bc":[12,0,1,1,3,4,6],
 "d6/d51/pqueue__base_8h.html#a921be3b49e4021888c595188438fdf7a":[12,0,1,1,3,4,20],
 "d6/d51/pqueue__base_8h.html#a9bb9cb0e5f41746db17b7581f5fe0559":[12,0,1,1,3,4,11],
 "d6/d51/pqueue__base_8h.html#a9ec5c03203b587dbb92f8d2a977aa7e4":[12,0,1,1,3,4,17],
@@ -247,7 +249,5 @@ var NAVTREEINDEX3 =
 "d7/de8/hashmap__test_8c.html#a9cbf8a60e28ad1f04512b85eacc0d961":[12,0,8,0,0,0,5],
 "d7/de8/hashmap__test_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4":[12,0,8,0,0,0,3],
 "d7/dff/scheduler__sync__tag__advance_8h.html":[12,0,1,1,2,3],
-"d7/dff/scheduler__sync__tag__advance_8h.html#a5ee7c21a8b90bb09784f221c1de4d9c9":[12,0,1,1,2,3,2],
-"d7/dff/scheduler__sync__tag__advance_8h.html#ad96dd94446ff66184dcf0f8f65cdb4f0":[12,0,1,1,2,3,1],
-"d7/dff/scheduler__sync__tag__advance_8h.html#af2c6b4fac0a87c3cc914c713714e1fca":[12,0,1,1,2,3,0]
+"d7/dff/scheduler__sync__tag__advance_8h.html#a5ee7c21a8b90bb09784f221c1de4d9c9":[12,0,1,1,2,3,2]
 };

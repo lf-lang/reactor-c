@@ -145,6 +145,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a1789de56286aa33c086b194b544c2d91" id="r_a1789de56286aa33c086b194b544c2d91"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1789de56286aa33c086b194b544c2d91">lf_time_add</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> a, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> b)</td></tr>
 <tr class="memdesc:a1789de56286aa33c086b194b544c2d91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sum of an interval and an instant, saturating on overflow and underflow.  <br /></td></tr>
 <tr class="separator:a1789de56286aa33c086b194b544c2d91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9107f7f62874fa972f7a31f9c277b8fc" id="r_a9107f7f62874fa972f7a31f9c277b8fc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9107f7f62874fa972f7a31f9c277b8fc">lf_time_subtract</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> a, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> b)</td></tr>
+<tr class="memdesc:a9107f7f62874fa972f7a31f9c277b8fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an instant minus an interval, saturating on overflow and underflow.  <br /></td></tr>
+<tr class="separator:a9107f7f62874fa972f7a31f9c277b8fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1186f7e330ecbfd20a4dd90b97439e6" id="r_aa1186f7e330ecbfd20a4dd90b97439e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa1186f7e330ecbfd20a4dd90b97439e6">lf_tag_add</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> a, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> b)</td></tr>
 <tr class="separator:aa1186f7e330ecbfd20a4dd90b97439e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a596d8734432616c9c7847283fde63cfa" id="r_a596d8734432616c9c7847283fde63cfa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a596d8734432616c9c7847283fde63cfa">lf_tag_compare</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag1, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag2)</td></tr>
@@ -559,6 +562,37 @@ Hou Seng (Steven) Wong </dd></dl>
       </table>
 </div><div class="memdoc">
 <p>Return the physical and logical time of the start of execution in nanoseconds. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. </p><dl class="section return"><dt>Returns</dt><dd>A time instant. </dd></dl>
+
+</div>
+</div>
+<a id="a9107f7f62874fa972f7a31f9c277b8fc" name="a9107f7f62874fa972f7a31f9c277b8fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9107f7f62874fa972f7a31f9c277b8fc">&#9670;&#160;</a></span>lf_time_subtract()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> lf_time_subtract </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></td>          <td class="paramname"><span class="paramname"><em>a</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>b</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return an instant minus an interval, saturating on overflow and underflow. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">a</td><td></td></tr>
+    <tr><td class="paramname">b</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>instant_t </dd></dl>
 
 </div>
 </div>

@@ -46,5 +46,6 @@ var tag_8h =
     [ "lf_time_logical_elapsed", "d2/dcd/tag_8h.html#a6faad0d905f7135352f511bc235425e1", null ],
     [ "lf_time_physical", "d2/dcd/tag_8h.html#a7538766a655ba2e60ddde55f2e020e58", null ],
     [ "lf_time_physical_elapsed", "d2/dcd/tag_8h.html#a98468f1c5132e3aa18d77f85d65bb6ec", null ],
-    [ "lf_time_start", "d2/dcd/tag_8h.html#a8da2172c41ab13ff4748994a62ae34b5", null ]
+    [ "lf_time_start", "d2/dcd/tag_8h.html#a8da2172c41ab13ff4748994a62ae34b5", null ],
+    [ "lf_time_subtract", "d2/dcd/tag_8h.html#a9107f7f62874fa972f7a31f9c277b8fc", null ]
 ];
