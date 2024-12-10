@@ -1,7 +1,6 @@
 var python__port_8c =
 [
     [ "py_port_capsule_assign_get_item", "d7/d20/python__port_8c.html#a04a6750dc5e898b0c351ec629653252d", null ],
-    [ "py_port_capsule_dealloc", "d7/d20/python__port_8c.html#ac5bef98b1bc935e23c1e34626e9a97e5", null ],
     [ "py_port_capsule_get_item", "d7/d20/python__port_8c.html#af8feaddbacc92cf4def1ee1c986b2a7f", null ],
     [ "py_port_capsule_init", "d7/d20/python__port_8c.html#a3f39164e03f96c48470e0b355b313a28", null ],
     [ "py_port_capsule_new", "d7/d20/python__port_8c.html#a9091de8ac46f8fc859a727d4dbd0b7a5", null ],
