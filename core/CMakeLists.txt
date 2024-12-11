@@ -96,6 +96,20 @@ include(${LF_ROOT}/platform/impl/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::platform-api)
 target_link_libraries(reactor-c PRIVATE lf::platform-impl)
 
+option(COMM_TYPE "Communication type between RTI and federate(s)." ON)
+IF(COMM_TYPE MATCHES ON)
+   set(COMM_TYPE TCP)
+ENDIF()
+
+# TODO: Change path.
+include(${LF_ROOT}/include/core/federated/network/CMakeLists.txt)
+include(${LF_ROOT}/core/federated/network/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::network-api)
+target_link_libraries(reactor-c PRIVATE lf::network-impl)
+
+# Apply compile definitions to the reactor-c library.
+# target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})
+
 target_include_directories(reactor-c PUBLIC ../include)
 target_include_directories(reactor-c PUBLIC ../include/core)
 target_include_directories(reactor-c PUBLIC ../include/core/federated)

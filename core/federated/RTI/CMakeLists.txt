@@ -32,6 +32,11 @@ target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/federated/network)
 target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/modal_models)
 target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/utils)
 
+# option(COMM_TYPE "Communication type between RTI and federate(s)." ON)
+# IF(COMM_TYPE MATCHES ON)
+set(COMM_TYPE TCP)
+# ENDIF()
+
 if (NOT DEFINED LOG_LEVEL)
     set(LOG_LEVEL 0)
 ENDIF(NOT DEFINED LOG_LEVEL)
@@ -70,12 +75,27 @@ target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-impl)
 include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
 target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-api)
 
+# include(${IncludeDir}/federated/network/CMakeLists.txt)
+# target_link_libraries(${RTI_LIB} PUBLIC  lf::network-api)
+
+# include(${CoreLib}/federated/network/CMakeLists.txt)
+# target_link_libraries(${RTI_LIB} PUBLIC  lf::network-impl)
+
+include(${LF_ROOT}/network/impl/CMakeLists.txt)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::network-impl)
+
+include(${LF_ROOT}/network/api/CMakeLists.txt)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::network-api)
+
 # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
 target_compile_definitions(${RTI_LIB} PUBLIC STANDALONE_RTI=1)
 
 # Set FEDERATED to get federated compilation support
 target_compile_definitions(${RTI_LIB} PUBLIC FEDERATED=1)
 target_compile_definitions(${RTI_LIB} PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
+
+# Set communication type.
+target_compile_definitions(${RTI_LIB} PUBLIC COMM_TYPE_${COMM_TYPE})
 
 # Set RTI Tracing
 target_compile_definitions(${RTI_LIB} PUBLIC RTI_TRACE)
