@@ -19,7 +19,7 @@
 #define V void*
 #endif
 #ifndef HASH_OF
-#define HASH_OF(key) (size_t)key
+#define HASH_OF(key) (size_t) key
 #endif
 #ifndef HASHMAP
 #define HASHMAP(token) hashmap##_##token
