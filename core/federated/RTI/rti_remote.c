@@ -691,10 +691,26 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     LF_MUTEX_UNLOCK(&rti_mutex);
     return;
   } else {
+    // Do not forward the message if the federate is connected, but its
+    // start_time is not reached yet
     if (lf_tag_compare(intended_tag, fed->effective_start_tag) < 0) {
-      // Do not forward the message if the federate is connected, but its
-      // start_time is not reached yet
-      lf_mutex_unlock(&rti_mutex);
+      LF_PRINT_LOG("RTI: Effective start tag of the destination federate %d (" PRINTF_TAG "), "
+                   "is not reached yet, while the received message tag is ()" PRINTF_TAG "). "
+                   "Dropping message.",
+                   federate_id, fed->effective_start_tag.time - start_time, fed->effective_start_tag.microstep,
+                   intended_tag.time - start_time, intended_tag.microstep);
+      // Similarly, if the message was larger than the buffer, we must empty out the remainder also.
+      size_t total_bytes_read = bytes_read;
+      while (total_bytes_read < total_bytes_to_read) {
+        bytes_to_read = total_bytes_to_read - total_bytes_read;
+        if (bytes_to_read > FED_COM_BUFFER_SIZE) {
+          bytes_to_read = FED_COM_BUFFER_SIZE;
+        }
+        read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, buffer, NULL,
+                                       "RTI failed to clear message chunks.");
+        total_bytes_read += bytes_to_read;
+      }
+      LF_MUTEX_UNLOCK(&rti_mutex);
       return;
     }
   }
@@ -2435,6 +2451,7 @@ void reset_transient_federate(federate_info_t* fed) {
   fed->server_ip_addr.s_addr = 0;
   fed->server_port = -1;
   fed->requested_stop = false;
+  fed->effective_start_tag = NEVER_TAG;
   // invalidate_all_min_delays();
 }
 
