@@ -671,6 +671,23 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FAILED 25
 
+/////////////////////////////////////////////
+//// Transient federate support
+
+/**
+ * A message the informs a downstream federate that a federate upstream of it
+ * is connected. The next 2 bytes are the federate ID of the upstream federate.
+ */
+#define MSG_TYPE_UPSTREAM_CONNECTED 26
+#define MSG_TYPE_UPSTREAM_CONNECTED_LENGTH (1 + sizeof(uint16_t))
+
+/**
+ * A message the informs a downstream federate that a federate upstream of it
+ * is no longer connected. The next 2 bytes are the federate ID of the upstream federate.
+ */
+#define MSG_TYPE_UPSTREAM_DISCONNECTED 27
+#define MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
+
 /**
  * As an answer to MSG_TYPE_TIMESTAMP, the RTI broadcasts to all persistent
  * federates, or sends to newly joining transient federate, a message of
@@ -678,17 +695,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * together with the effective starting logical tag. The latter is useful for
  * transient federates.
  */
-#define MSG_TYPE_TIMESTAMP_START 50
+#define MSG_TYPE_TIMESTAMP_START 28
 #define MSG_TYPE_TIMESTAMP_START_LENGTH (1 + sizeof(instant_t) + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
- * Byte sent by the RTI ordering the federate to stop. Upon receiving the meaasage,
- * the federate will call lf_stop(), which will make him resign at its current_tag
+ * Byte sent by the RTI ordering the federate to stop. Upon receiving the message,
+ * the federate will call lf_stop(), which will make it resign at its current_tag
  * plus 1 microstep.
- * The next 8 bytes will be the time at which the federates will stop. *
+ * The next 8 bytes will be the time at which the federates will stop.
  * The next 4 bytes will be the microstep at which the federates will stop..
  */
-#define MSG_TYPE_STOP 30
+#define MSG_TYPE_STOP 29
 #define MSG_TYPE_STOP_LENGTH 1
 
 /////////////////////////////////////////////
@@ -698,26 +715,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * These codes are sent in a MSG_TYPE_REJECT message.
  * They are limited to one byte (uchar).
  */
-
-/** Federation ID does not match. */
-#define FEDERATION_ID_DOES_NOT_MATCH 1
-
-/** Federate with the specified ID has already joined. */
-#define FEDERATE_ID_IN_USE 2
-
-/** Federate ID out of range. */
-#define FEDERATE_ID_OUT_OF_RANGE 3
-
-/** Incoming message is not expected. */
-#define UNEXPECTED_MESSAGE 4
-
-/** Connected to the wrong server. */
-#define WRONG_SERVER 5
-
-/** HMAC authentication failed. */
-#define HMAC_DOES_NOT_MATCH 6
-
-/** RTI not executed using -a or --auth option. */
-#define RTI_NOT_EXECUTED_WITH_AUTH 7
+typedef enum {
+  FEDERATION_ID_DOES_NOT_MATCH = 1,
+  FEDERATE_ID_IN_USE = 2,
+  FEDERATE_ID_OUT_OF_RANGE = 3,
+  UNEXPECTED_MESSAGE = 4,
+  WRONG_SERVER = 5,
+  HMAC_DOES_NOT_MATCH = 6,
+  RTI_NOT_EXECUTED_WITH_AUTH = 7,
+  JOINING_TOO_LATE = 8
+} rejection_code_t;
 
 #endif /* NET_COMMON_H */
