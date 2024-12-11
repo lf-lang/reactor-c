@@ -34,6 +34,7 @@
 
 // Global variables defined in tag.c and shared across environments:
 extern instant_t start_time;
+extern tag_t effective_start_tag;
 
 /**
  * The maximum amount of time a worker thread should stall
@@ -569,18 +570,19 @@ void _lf_initialize_start_tag(environment_t* env) {
     // statuses to unknown
     lf_reset_status_fields_on_input_port_triggers();
 
-    // Get a start_time from the RTI
+    // Get a start_time and effective_start_tag from the RTI
     lf_synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
   }
 
   // The start time will likely have changed. Adjust the current tag and stop tag.
-  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+  env->current_tag = effective_start_tag;
   if (duration >= 0LL) {
     // A duration has been specified. Recalculate the stop time.
     env->stop_tag = ((tag_t){.time = start_time + duration, .microstep = 0});
   }
 
   _lf_initialize_timers(env);
+  env->current_tag = effective_start_tag;
 
 #if defined FEDERATED_DECENTRALIZED
   // If we have a non-zero STA offset, then we need to allow messages to arrive
@@ -603,14 +605,15 @@ void _lf_initialize_start_tag(environment_t* env) {
   // the required waiting time. Second, this call releases the mutex lock and allows
   // other threads (specifically, federate threads that handle incoming p2p messages
   // from other federates) to hold the lock and possibly raise a tag barrier.
-  while (!wait_until(start_time, &env->event_q_changed)) {
+  while (!wait_until(effective_start_tag.time, &env->event_q_changed)) {
   };
-  LF_PRINT_DEBUG("Done waiting for start time + STA offset " PRINTF_TIME ".", start_time + lf_fed_STA_offset);
+  LF_PRINT_DEBUG("Done waiting for effective start time + STA offset " PRINTF_TIME ".",
+                 effective_start_tag.time + lf_fed_STA_offset);
   LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be close to the STA offset.",
-                 lf_time_physical() - start_time);
+                 lf_time_physical() - effective_start_tag.time);
 
-  // Restore the current tag to match the start time.
-  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+  // Restore the current tag to match the effective start time.
+  env->current_tag = (tag_t){.time = effective_start_tag.time, .microstep = effective_start_tag.microstep};
 
   // If the stop_tag is (0,0), also insert the shutdown
   // reactions. This can only happen if the timeout time
@@ -627,7 +630,7 @@ void _lf_initialize_start_tag(environment_t* env) {
   // from exceeding the timestamp of the message. It will remove that barrier
   // once the complete message has been read. Here, we wait for that barrier
   // to be removed, if appropriate before proceeding to executing tag (0,0).
-  _lf_wait_on_tag_barrier(env, (tag_t){.time = start_time, .microstep = 0});
+  _lf_wait_on_tag_barrier(env, effective_start_tag);
   lf_spawn_staa_thread();
 
 #else  // NOT FEDERATED_DECENTRALIZED
@@ -1018,6 +1021,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   // Initialize the clock through the platform API. No reading of physical time before this.
   _lf_initialize_clock();
   start_time = lf_time_physical();
+  effective_start_tag = (tag_t){.time = start_time, .microstep = 0};
 #ifndef FEDERATED
   lf_tracing_set_start_time(start_time);
 #endif
