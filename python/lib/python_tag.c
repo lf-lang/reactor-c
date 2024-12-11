@@ -191,10 +191,11 @@ PyTypeObject PyTagType = {
  * @return PyObject* The tag in Python.
  */
 py_tag_t* convert_C_tag_to_py(tag_t c_tag) {
-  py_tag_t* py_tag = PyObject_GC_New(py_tag_t, &PyTagType);
+  py_tag_t* py_tag = PyObject_New(py_tag_t, &PyTagType);
   if (py_tag == NULL) {
     lf_print_error_and_exit("Failed to convert tag from C to Python.");
   }
+  Py_INCREF(py_tag);
   py_tag->tag = c_tag;
   return py_tag;
 }

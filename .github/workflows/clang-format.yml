@@ -5,12 +5,15 @@ on: [pull_request]
 
 jobs:
   clang-format:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
-      - name: Install clang-tidy
+      - name: Install clang-tidy and clang-format
         run: |
           sudo apt-get update
           sudo apt-get install -y clang-tidy
+          sudo apt-get install -y pipx
+          pipx install clang-format
+          clang-format --version
       - name: Analyze
         run: make format-check

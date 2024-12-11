@@ -30,7 +30,7 @@
 #define HASHMAP(token) hashmap_object2int##_##token
 #define K void*
 #define V int
-#define HASH_OF(key) (size_t) key
+#define HASH_OF(key) (size_t)key
 #include "hashmap.h"
 #undef HASHMAP
 #undef K
