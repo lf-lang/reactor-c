@@ -1959,9 +1959,9 @@ void lf_connect_to_rti(const char* hostname, int port) {
   instant_t start_connect = lf_time_physical();
   while (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT) && !_lf_termination_executed) {
 
-      // Have connected to an RTI, but not sure it's the right RTI.
-      // Send a MSG_TYPE_FED_IDS message and wait for a reply.
-      // Notify the RTI of the ID of this federate and its federation.
+    // Have connected to an RTI, but not sure it's the right RTI.
+    // Send a MSG_TYPE_FED_IDS message and wait for a reply.
+    // Notify the RTI of the ID of this federate and its federation.
 
 #ifdef FEDERATED_AUTHENTICATED
     LF_PRINT_LOG("Connected to an RTI. Performing HMAC-based authentication using federation ID.");
