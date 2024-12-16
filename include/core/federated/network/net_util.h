@@ -60,11 +60,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 int host_is_big_endian(void);
 
-#ifdef FEDERATED
-#include "socket_common.h"
-
-#endif // FEDERATED
-
 /**
  * Write the specified data as a sequence of bytes starting
  * at the specified address. This encodes the data in little-endian
@@ -160,6 +155,8 @@ int64_t extract_int64(unsigned char* bytes);
 uint16_t extract_uint16(unsigned char* bytes);
 
 #ifdef FEDERATED
+
+#include "socket_common.h"
 
 /**
  * Extract the core header information that all messages between

@@ -16,13 +16,15 @@
 // #include "net_util.h"
 // #include "socket_common.h"
 
-
-#include <unistd.h> // Defines read(), write(), and close()
+#include <unistd.h>      // Defines read(), write(), and close()
 #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
 #include <netinet/tcp.h> // TCP_NODELAY
 #include <errno.h>
 #include <sys/time.h>
 #include <stdarg.h> //va_list
+#include <string.h> // strerror
+
+#include "util.h"
 #include "socket_common.h"
 
 #ifndef NUMBER_OF_FEDERATES
@@ -64,64 +66,18 @@ int create_real_time_tcp_socket_errexit() {
   return sock;
 }
 
-/**
- * Create a server and enable listening for socket connections.
- * If the specified port if it is non-zero, it will attempt to acquire that port.
- * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
- * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
- * zero, then it will attempt to acquire DEFAULT_PORT first. If this fails, then it
- * will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times, incrementing the port
- * number between attempts, with no delay between attempts.  Once it has incremented
- * the port number MAX_NUM_PORT_ADDRESSES times, it will cycle around and begin again
- * with DEFAULT_PORT.
- *
- * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
- * @param socket_type The type of the socket for the server (TCP or UDP).
- * @return The socket descriptor on which to accept connections.
- */
-int create_rti_server(uint16_t port, socket_type_t socket_type) {
-
-  // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-  int socket_descriptor = -1;
-  if (socket_type == TCP) {
-    socket_descriptor = create_real_time_tcp_socket_errexit();
-  } else if (socket_type == UDP) {
-    socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-  }
-  if (socket_descriptor < 0) {
-    lf_print_error_system_failure("Failed to create RTI socket.");
-  }
-  set_socket_timeout_option(socket_descriptor, socket_type);
-  int final_port = set_socket_bind_option(socket_descriptor, port);
-
-  
-  char* type = (socket_type == TCP) ? "TCP" : "UDP";
-  lf_print("RTI using %s port %d for federation %s.", type, port, rti_remote->federation_id);
-
-  if (socket_type == TCP) {
-    rti_remote->final_port_TCP = port;
-    // Enable listening for socket connections.
-    // The second argument is the maximum number of queued socket requests,
-    // which according to the Mac man page is limited to 128.
-    listen(socket_descriptor, 128);
-  } else if (socket_type == UDP) {
-    rti_remote->final_port_UDP = port;
-    // No need to listen on the UDP socket
-  }
-
-  return socket_descriptor;
-}
-
 static void set_socket_timeout_option(int socket_descriptor, socket_type_t socket_type) {
   // Timeout time for the communications of the server
+  struct timeval timeout_time;
   if (socket_type == TCP) {
-    struct timeval timeout_time = {.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
+    timeout_time =
+        (struct timeval){.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
   } else if (socket_type == UDP) {
     // Set the appropriate timeout time
     timeout_time =
         (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
   }
-    // Set the option for this socket to reuse the same address
+  // Set the option for this socket to reuse the same address
   int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
   if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
     lf_print_error("RTI failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
@@ -135,14 +91,14 @@ static void set_socket_timeout_option(int socket_descriptor, socket_type_t socke
   }
 }
 
-static int set_socket_bind_option(int socket_descriptor, int port, socket_type_t socket_type) {
+static int set_socket_bind_option(int socket_descriptor, int port) {
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.
   bzero((char*)&server_fd, sizeof(server_fd));
 
   uint16_t specified_port = port;
-  if (specified_port == 0){
+  if (specified_port == 0) {
     port = DEFAULT_PORT;
   }
   server_fd.sin_family = AF_INET;         // IPv4
@@ -173,6 +129,37 @@ static int set_socket_bind_option(int socket_descriptor, int port, socket_type_t
   }
   if (result != 0) {
     lf_print_error_and_exit("Failed to bind the RTI socket. Port %d is not available. ", port);
+  }
+}
+
+int create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socket, uint16_t* final_port) {
+
+  // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
+  int socket_descriptor = -1;
+  if (socket_type == TCP) {
+    socket_descriptor = create_real_time_tcp_socket_errexit();
+  } else if (socket_type == UDP) {
+    socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  }
+  if (socket_descriptor < 0) {
+    lf_print_error_system_failure("Failed to create RTI socket.");
+  }
+  set_socket_timeout_option(socket_descriptor, socket_type);
+  int out_port = set_socket_bind_option(socket_descriptor, port);
+
+  char* type = (socket_type == TCP) ? "TCP" : "UDP";
+  lf_print("RTI using %s port %d.", type, port);
+
+  *final_socket = socket_descriptor;
+  *final_port = out_port;
+
+  if (socket_type == TCP) {
+    // Enable listening for socket connections.
+    // The second argument is the maximum number of queued socket requests,
+    // which according to the Mac man page is limited to 128.
+    listen(socket_descriptor, 128);
+  } else if (socket_type == UDP) {
+    // No need to listen on the UDP socket
   }
 }
 

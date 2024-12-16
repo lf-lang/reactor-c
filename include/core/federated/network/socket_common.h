@@ -175,7 +175,6 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
 
-
 /**
  * Create a server and enable listening for socket connections.
  * If the specified port if it is non-zero, it will attempt to acquire that port.
@@ -189,8 +188,9 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
  *
  * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
  * @param socket_type The type of the socket for the server (TCP or UDP).
- * @return The socket descriptor on which to accept connections.
+ * @param final_socket The socket descriptor on which to accept connections.
+ * @param final_port The final port of the TCP or UDP socket.
  */
-int create_rti_server(uint16_t port, socket_type_t socket_type);
+int create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socket, uint16_t* final_port);
 
 #endif /* SOCKET_COMMON_H */
