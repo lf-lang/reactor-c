@@ -180,35 +180,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NET_COMMON_H
 
 /**
- * The timeout time in ns for TCP operations.
- * Default value is 10 secs.
- */
-#define TCP_TIMEOUT_TIME SEC(10)
-
-/**
- * The timeout time in ns for UDP operations.
- * Default value is 1 sec.
- */
-#define UDP_TIMEOUT_TIME SEC(1)
-
-/**
  * Size of the buffer used for messages sent between federates.
  * This is used by both the federates and the rti, so message lengths
  * should generally match.
  */
 #define FED_COM_BUFFER_SIZE 256u
-
-/**
- * Time between a federate's attempts to connect to the RTI.
- */
-#define CONNECT_RETRY_INTERVAL MSEC(500)
-
-/**
- * Bound on the number of retries to connect to the RTI.
- * A federate will retry every CONNECT_RETRY_INTERVAL seconds until
- * CONNECTION_TIMEOUT expires.
- */
-#define CONNECT_TIMEOUT MINUTES(1)
 
 /**
  * Maximum number of port addresses that a federate will try to connect to the RTI on.
@@ -224,20 +200,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * does not know.  This allows time for federates to start separately.
  */
 #define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)
-
-/**
- * Time to wait before re-attempting to bind to a port.
- * When a process closes, the network stack typically waits between 30 and 120
- * seconds before releasing the port.  This is to allow for delayed packets so
- * that a new process does not receive packets from a previous process.
- * Here, we limit the retries to 60 seconds.
- */
-#define PORT_BIND_RETRY_INTERVAL SEC(1)
-
-/**
- * Number of attempts to bind to a port before giving up.
- */
-#define PORT_BIND_RETRY_LIMIT 60
 
 /**
  * Default port number for the RTI.
