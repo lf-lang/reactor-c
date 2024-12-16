@@ -91,7 +91,7 @@ static void set_socket_timeout_option(int socket_descriptor, socket_type_t socke
   }
 }
 
-static int set_socket_bind_option(int socket_descriptor, int port) {
+static int set_socket_bind_option(int socket_descriptor, uint16_t port) {
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.
@@ -130,9 +130,10 @@ static int set_socket_bind_option(int socket_descriptor, int port) {
   if (result != 0) {
     lf_print_error_and_exit("Failed to bind the RTI socket. Port %d is not available. ", port);
   }
+  return port;
 }
 
-int create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socket, uint16_t* final_port) {
+void create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socket, uint16_t* final_port) {
 
   // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
   int socket_descriptor = -1;
@@ -181,6 +182,7 @@ int accept_socket(int socket, struct sockaddr* client_fd) {
       continue;
     }
   }
+  return socket_id;
 }
 
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
