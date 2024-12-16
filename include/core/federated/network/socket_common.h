@@ -75,6 +75,25 @@ extern lf_mutex_t socket_mutex;
 int create_real_time_tcp_socket_errexit();
 
 /**
+ * Create a server and enable listening for socket connections.
+ * If the specified port if it is non-zero, it will attempt to acquire that port.
+ * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
+ * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
+ * zero, then it will attempt to acquire DEFAULT_PORT first. If this fails, then it
+ * will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times, incrementing the port
+ * number between attempts, with no delay between attempts.  Once it has incremented
+ * the port number MAX_NUM_PORT_ADDRESSES times, it will cycle around and begin again
+ * with DEFAULT_PORT.
+ *
+ * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
+ * @param socket_type The type of the socket for the server (TCP or UDP).
+ * @param final_socket The socket descriptor on which to accept connections.
+ * @param final_port The final port of the TCP or UDP socket.
+ */
+int create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socket, uint16_t* final_port);
+
+int accept_socket(int socket, struct sockaddr* client_fd);
+/**
  * Read the specified number of bytes from the specified socket into the specified buffer.
  * If an error occurs during this reading, return -1 and set errno to indicate
  * the cause of the error. If the read succeeds in reading the specified number of bytes,
@@ -174,23 +193,5 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
  */
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
-
-/**
- * Create a server and enable listening for socket connections.
- * If the specified port if it is non-zero, it will attempt to acquire that port.
- * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
- * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
- * zero, then it will attempt to acquire DEFAULT_PORT first. If this fails, then it
- * will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times, incrementing the port
- * number between attempts, with no delay between attempts.  Once it has incremented
- * the port number MAX_NUM_PORT_ADDRESSES times, it will cycle around and begin again
- * with DEFAULT_PORT.
- *
- * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
- * @param socket_type The type of the socket for the server (TCP or UDP).
- * @param final_socket The socket descriptor on which to accept connections.
- * @param final_port The final port of the TCP or UDP socket.
- */
-int create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socket, uint16_t* final_port);
 
 #endif /* SOCKET_COMMON_H */

@@ -1412,25 +1412,8 @@ static bool authenticate_federate(int* socket) {
 
 void lf_connect_to_federates(int socket_descriptor) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-    // Wait for an incoming connection request.
-    struct sockaddr client_fd;
-    uint32_t client_length = sizeof(client_fd);
-    // The following blocks until a federate connects.
-    int socket_id = -1;
-    while (1) {
-      socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
-      if (socket_id >= 0) {
-        // Got a socket
-        break;
-      } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-        lf_print_error_system_failure("RTI failed to accept the socket.");
-      } else {
-        // Try again
-        lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
-        continue;
-      }
-    }
-
+    struct sockaddr* client_fd;
+    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, client_fd);
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
     if (rti_remote->authentication_enabled) {

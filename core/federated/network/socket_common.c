@@ -163,6 +163,26 @@ int create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socke
   }
 }
 
+int accept_socket(int socket, struct sockaddr* client_fd) {
+  // Wait for an incoming connection request.
+  uint32_t client_length = sizeof(*client_fd);
+  // The following blocks until a federate connects.
+  int socket_id = -1;
+  while (1) {
+    socket_id = accept(socket, client_fd, &client_length);
+    if (socket_id >= 0) {
+      // Got a socket
+      break;
+    } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+      lf_print_error_system_failure("RTI failed to accept the socket.");
+    } else {
+      // Try again
+      lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+      continue;
+    }
+  }
+}
+
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
   if (socket < 0) {
     // Socket is not open.
