@@ -22,6 +22,7 @@
 #include <unistd.h>     // Defines read(), write(), and close()
 #include <strings.h>    // Defines bzero().
 
+#include "net_util.h"
 #include "rti_common.h"
 
 #ifdef __RTI_AUTH__
@@ -38,7 +39,7 @@
 /////////////////////////////////////////////
 //// Data structures
 
-typedef enum socket_type_t { TCP, UDP } socket_type_t;
+
 
 /**
  * Information about a federate known to the RTI, including its runtime state,
