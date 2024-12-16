@@ -187,27 +187,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FED_COM_BUFFER_SIZE 256u
 
 /**
- * Maximum number of port addresses that a federate will try to connect to the RTI on.
- * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
- * on the number of RTIs that can be running on the same host.
- */
-#define MAX_NUM_PORT_ADDRESSES 16
-
-/**
  * Time that a federate waits before asking
  * the RTI again for the port and IP address of a federate
  * (an MSG_TYPE_ADDRESS_QUERY message) after the RTI responds that it
  * does not know.  This allows time for federates to start separately.
  */
 #define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)
-
-/**
- * Default port number for the RTI.
- * Unless a specific port has been specified by the LF program in the "at"
- * for the RTI or on the command line, when the RTI starts up, it will attempt
- * to open a socket server on this port.
- */
-#define DEFAULT_PORT 15045u
 
 /**
  * Delay the start of all federates by this amount.

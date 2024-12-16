@@ -1412,8 +1412,8 @@ static bool authenticate_federate(int* socket) {
 
 void lf_connect_to_federates(int socket_descriptor) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-    struct sockaddr* client_fd;
-    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, client_fd);
+    struct sockaddr client_fd;
+    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, &client_fd);
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
     if (rti_remote->authentication_enabled) {

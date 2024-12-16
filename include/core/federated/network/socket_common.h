@@ -34,7 +34,7 @@
  * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
  * on the number of RTIs that can be running on the same host.
  */
-#define MAX_NUM_PORT_ADDRESSES 16
+#define MAX_NUM_PORT_ADDRESSES 16u
 
 /**
  * Time to wait before re-attempting to bind to a port.
@@ -90,7 +90,7 @@ int create_real_time_tcp_socket_errexit();
  * @param final_socket The socket descriptor on which to accept connections.
  * @param final_port The final port of the TCP or UDP socket.
  */
-int create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socket, uint16_t* final_port);
+void create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socket, uint16_t* final_port);
 
 int accept_socket(int socket, struct sockaddr* client_fd);
 /**
