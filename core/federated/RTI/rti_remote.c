@@ -780,10 +780,18 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
       LF_MUTEX_LOCK(&rti_mutex);
 
       // If the destination federate is no longer connected, or it is a transient that has not started executing yet
-      // (the intended tag is less than the effective start tag of the destination), issue a warning, remove the message
-      // from the socket, and return.
+      // (the delayed intended tag is less than the effective start tag of the destination), issue a warning, remove the
+      // message from the socket, and return.
       federate_info_t* fed = GET_FED_INFO(federate_id);
-      if (fed->enclave.state == NOT_CONNECTED || lf_tag_compare(intended_tag, fed->effective_start_tag) < 0) {
+      interval_t delay = NEVER;
+      for (int i = 0; i < fed->enclave.num_upstream; i++) {
+        if (fed->enclave.upstream[i] == sending_federate->enclave.id) {
+          delay = fed->enclave.upstream_delay[i];
+          break;
+        }
+      }
+      if (fed->enclave.state == NOT_CONNECTED ||
+          lf_tag_compare(lf_delay_tag(intended_tag, delay), fed->effective_start_tag) < 0) {
         lf_print_warning("RTI: Destination federate %d is not connected at logical time (" PRINTF_TAG
                          "). Dropping message.",
                          federate_id, intended_tag.time - start_time, intended_tag.microstep);
