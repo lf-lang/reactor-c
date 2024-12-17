@@ -1994,21 +1994,10 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   _fed.inbound_socket_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
     // Wait for an incoming connection request.
-    struct sockaddr client_fd;
-    uint32_t client_length = sizeof(client_fd);
-    int socket_id = accept(_fed.server_socket, &client_fd, &client_length);
-
+    int socket_id = accept_socket(_fed.server_socket, _fed.socket_TCP_RTI);
     if (socket_id < 0) {
-      if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
-        if (rti_failed())
-          break;
-        else
-          continue; // Try again.
-      } else if (errno == EPERM) {
-        lf_print_error_system_failure("Firewall permissions prohibit connection.");
-      } else {
-        lf_print_error_system_failure("A fatal error occurred while accepting a new socket.");
-      }
+      lf_print_warning("Federate failed to accept the socket.");
+      return NULL;
     }
     LF_PRINT_LOG("Accepted new connection from remote federate.");
 

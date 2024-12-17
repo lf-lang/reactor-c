@@ -58,6 +58,11 @@
  */
 #define DEFAULT_PORT 15045u
 
+/**
+ * Byte identifying that the federate or the RTI has failed.
+ */
+#define MSG_TYPE_FAILED 25
+
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
 /**
@@ -100,11 +105,11 @@ void create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port);
  * errors cause the function to retry accepting the connection.
  *
  * @param socket The server socket file descriptor that is listening for incoming connections.
- * @param client_fd A pointer to a `struct sockaddr` that will hold the client's address information.
+ * @param rti_socket The rti socket for the federate to check if it is still open.
  * @return int The file descriptor for the newly accepted socket on success, or -1 on failure
  *             (with an appropriate error message printed).
  */
-int accept_socket(int socket, struct sockaddr* client_fd);
+int accept_socket(int socket, int rti_socket);
 
 /**
  *

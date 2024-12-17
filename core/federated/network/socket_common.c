@@ -170,22 +170,46 @@ void create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
   *final_port = used_port;
 }
 
-int accept_socket(int socket) {
+/**
+ * Return true if either the socket to the RTI is broken or the socket is
+ * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
+ */
+bool check_socket_closed(int socket) {
+  unsigned char first_byte;
+  ssize_t bytes = peek_from_socket(socket, &first_byte);
+  if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+int accept_socket(int socket, int rti_socket) {
   struct sockaddr client_fd;
   // Wait for an incoming connection request.
   uint32_t client_length = sizeof(client_fd);
   // The following blocks until a federate connects.
   int socket_id = -1;
-  while (1) {
+  while (true) {
+    // When close(socket) is called, the accept() will return -1.
     socket_id = accept(socket, &client_fd, &client_length);
     if (socket_id >= 0) {
       // Got a socket
       break;
-    } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-      lf_print_error_system_failure("RTI failed to accept the socket.");
+    } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
+      lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
+      break;
+    } else if (errno == EPERM) {
+      lf_print_error_system_failure("Firewall permissions prohibit connection.");
     } else {
+      // For the federates, it should check if the rti_socket is still open, before retrying accept().
+      if (rti_socket == -1) {
+        if (check_socket_closed(rti_socket)) {
+          break;
+        }
+      }
       // Try again
-      lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+      lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
       continue;
     }
   }
