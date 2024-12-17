@@ -93,7 +93,34 @@ int create_real_time_tcp_socket_errexit();
 void create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port);
 void create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port);
 
+/**
+ * This function waits for an incoming connection request on the specified server socket.
+ * It blocks until a connection is successfully accepted. If an error occurs that is not
+ * temporary (e.g., `EAGAIN` or `EWOULDBLOCK`), it reports the error and exits. Temporary
+ * errors cause the function to retry accepting the connection.
+ *
+ * @param socket The server socket file descriptor that is listening for incoming connections.
+ * @param client_fd A pointer to a `struct sockaddr` that will hold the client's address information.
+ * @return int The file descriptor for the newly accepted socket on success, or -1 on failure
+ *             (with an appropriate error message printed).
+ */
 int accept_socket(int socket, struct sockaddr* client_fd);
+
+/**
+ *
+ * This function attempts to establish a TCP connection to the specified hostname
+ * and port. It uses `getaddrinfo` to resolve the hostname and retries the connection
+ * periodically if it fails. If the specified port is 0, it iterates through a range
+ * of default ports starting from `DEFAULT_PORT`. The function will stop retrying
+ * if the `CONNECT_TIMEOUT` is reached.
+ *
+ * @param sock The socket file descriptor that has already been created (using `socket()`).
+ * @param hostname The hostname or IP address of the server to connect to.
+ * @param port The port number to connect to. If 0 is specified, a default port range will be used.
+ * @return 0 on success, -1 on failure, and `errno` is set to indicate the specific error.
+ */
+int connect_to_socket(int sock, const char* hostname, int port);
+
 /**
  * Read the specified number of bytes from the specified socket into the specified buffer.
  * If an error occurs during this reading, return -1 and set errno to indicate
@@ -194,7 +221,5 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
  */
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
-
-int connect_to_socket(int sock, const char* hostname, int port);
 
 #endif /* SOCKET_COMMON_H */

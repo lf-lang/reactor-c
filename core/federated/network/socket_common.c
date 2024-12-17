@@ -1,21 +1,3 @@
-// #include <arpa/inet.h> /* htons */
-// #include <errno.h>
-// #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
-// #include <netinet/tcp.h> // TCP_NODELAY
-// #include <netdb.h>
-// #include <stdbool.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <sys/socket.h>
-// #include <sys/types.h>
-// #include <unistd.h>
-
-// #include "util.h"
-// #include "net_common.h"
-// #include "net_util.h"
-// #include "socket_common.h"
-
 #include <unistd.h>      // Defines read(), write(), and close()
 #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
 #include <netinet/tcp.h> // TCP_NODELAY
@@ -72,8 +54,9 @@ int create_real_time_tcp_socket_errexit() {
 
 /**
  * Set the socket timeout options.
- * @param socket_descriptor
- * @param timeout_time
+ * @param socket_descriptor The file descriptor of the socket on which to set options.
+ * @param timeout_time A pointer to a `struct timeval` that specifies the timeout duration
+ *                     for socket operations (receive and send).
  */
 static void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
   // Set the option for this socket to reuse the same address
@@ -95,8 +78,10 @@ static void set_socket_timeout_option(int socket_descriptor, struct timeval* tim
  * port is 1, it is creating a RTI server. RTI servers use the port increment when the default port is not available.
  * Returns the actually used port.
  *
- * @param socket_descriptor
- * @param specified_port
+ * @param socket_descriptor The file descriptor of the socket to be bound to an address and port.
+ * @param specified_port The port number to bind the socket to. If set to 0, the OS assigns a port.
+ *                       If set to 1, the function starts binding at the `DEFAULT_PORT` and increments
+ *                       until an available port is found.
  * @return The final port number used.
  */
 static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
@@ -204,6 +189,60 @@ int accept_socket(int socket, struct sockaddr* client_fd) {
     }
   }
   return socket_id;
+}
+
+int connect_to_socket(int sock, const char* hostname, int port) {
+  struct addrinfo hints;
+  struct addrinfo* result;
+  int ret = -1;
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;       /* Allow IPv4 */
+  hints.ai_socktype = SOCK_STREAM; /* Stream socket */
+  hints.ai_protocol = IPPROTO_TCP; /* TCP protocol */
+  hints.ai_addr = NULL;
+  hints.ai_next = NULL;
+  hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
+
+  uint16_t used_port = (port == 0) ? DEFAULT_PORT : (uint16_t)port;
+
+  instant_t start_connect = lf_time_physical();
+  // while (!_lf_termination_executed) { // Not working...
+  while (1) {
+    if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
+      lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
+      break;
+    }
+    // Convert port number to string.
+    char str[6];
+    sprintf(str, "%u", used_port);
+
+    // Get address structure matching hostname and hints criteria, and
+    // set port to the port number provided in str. There should only
+    // ever be one matching address structure, and we connect to that.
+    if (getaddrinfo(hostname, (const char*)&str, &hints, &result)) {
+      lf_print_error("No host matching given hostname: %s", hostname);
+      break;
+    }
+    ret = connect(sock, result->ai_addr, result->ai_addrlen);
+    if (ret < 0) {
+      lf_sleep(CONNECT_RETRY_INTERVAL);
+      if (port == 0) {
+        used_port++;
+        if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) {
+          used_port = DEFAULT_PORT;
+        }
+      }
+      lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds.\n",
+                       CONNECT_RETRY_INTERVAL);
+      continue;
+    } else {
+      break;
+    }
+    freeaddrinfo(result);
+  }
+  lf_print("Connected to %s:%d.", hostname, used_port);
+  return ret;
 }
 
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
@@ -337,58 +376,4 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
       lf_print_error("Failed to write to socket. Closing it.");
     }
   }
-}
-
-int connect_to_socket(int sock, const char* hostname, int port) {
-  struct addrinfo hints;
-  struct addrinfo* result;
-  int ret = -1;
-
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;       /* Allow IPv4 */
-  hints.ai_socktype = SOCK_STREAM; /* Stream socket */
-  hints.ai_protocol = IPPROTO_TCP; /* TCP protocol */
-  hints.ai_addr = NULL;
-  hints.ai_next = NULL;
-  hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
-
-  uint16_t used_port = (port == 0) ? DEFAULT_PORT : (uint16_t)port;
-
-  instant_t start_connect = lf_time_physical();
-  // while (!_lf_termination_executed) { // Not working...
-  while (1) {
-    if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-      lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
-      break;
-    }
-    // Convert port number to string.
-    char str[6];
-    sprintf(str, "%u", used_port);
-
-    // Get address structure matching hostname and hints criteria, and
-    // set port to the port number provided in str. There should only
-    // ever be one matching address structure, and we connect to that.
-    if (getaddrinfo(hostname, (const char*)&str, &hints, &result)) {
-      lf_print_error("No host matching given hostname: %s", hostname);
-      break;
-    }
-    ret = connect(sock, result->ai_addr, result->ai_addrlen);
-    if (ret < 0) {
-      lf_sleep(CONNECT_RETRY_INTERVAL);
-      if (port == 0) {
-        used_port++;
-        if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) {
-          used_port = DEFAULT_PORT;
-        }
-      }
-      lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds.\n",
-                       CONNECT_RETRY_INTERVAL);
-      continue;
-    } else {
-      break;
-    }
-    freeaddrinfo(result);
-  }
-  lf_print("Connected to %s:%d.", hostname, used_port);
-  return ret;
 }
