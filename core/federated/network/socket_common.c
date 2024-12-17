@@ -58,7 +58,7 @@ int create_real_time_tcp_socket_errexit() {
  * @param timeout_time A pointer to a `struct timeval` that specifies the timeout duration
  *                     for socket operations (receive and send).
  */
-static void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
+void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
   // Set the option for this socket to reuse the same address
   int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
   if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
@@ -84,7 +84,7 @@ static void set_socket_timeout_option(int socket_descriptor, struct timeval* tim
  *                       until an available port is found.
  * @return The final port number used.
  */
-static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
+int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.
@@ -215,6 +215,9 @@ int accept_socket(int socket, int rti_socket) {
   }
   return socket_id;
 }
+
+int accept_rti_socket(int socket) { return accept_socket(socket, -1); }
+int accept_federate_socket(int socket, int rti_socket) { return accept_socket(socket, rti_socket); }
 
 int connect_to_socket(int sock, const char* hostname, int port) {
   struct addrinfo hints;

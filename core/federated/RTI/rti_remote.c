@@ -1418,7 +1418,7 @@ static bool authenticate_federate(int* socket) {
 
 void lf_connect_to_federates(int socket_descriptor) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
+    int socket_id = accept_rti_socket(rti_remote->socket_descriptor_TCP);
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
     if (rti_remote->authentication_enabled) {
@@ -1478,7 +1478,7 @@ void* respond_to_erroneous_connections(void* nothing) {
     // Wait for an incoming connection request.
     // The following will block until either a federate attempts to connect
     // or close(rti->socket_descriptor_TCP) is called.
-    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
+    int socket_id = accept_rti_socket(rti_remote->socket_descriptor_TCP);
     if (socket_id < 0) {
       return NULL;
     }
