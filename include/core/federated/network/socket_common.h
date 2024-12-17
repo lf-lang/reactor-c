@@ -75,7 +75,7 @@ extern lf_mutex_t socket_mutex;
 int create_real_time_tcp_socket_errexit();
 
 /**
- * Create a server and enable listening for socket connections.
+ * Create a TCP or UDP server and enable listening for socket connections.
  * If the specified port if it is non-zero, it will attempt to acquire that port.
  * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
  * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
@@ -90,7 +90,8 @@ int create_real_time_tcp_socket_errexit();
  * @param final_socket The socket descriptor on which to accept connections.
  * @param final_port The final port of the TCP or UDP socket.
  */
-void create_rti_server(uint16_t port, socket_type_t socket_type, int* final_socket, uint16_t* final_port);
+void create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port);
+void create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port);
 
 int accept_socket(int socket, struct sockaddr* client_fd);
 /**

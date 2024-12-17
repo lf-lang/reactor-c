@@ -1965,7 +1965,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
     }
   }
 
-
   // Call a generated (external) function that sends information
   // about connections between this federate and other federates
   // where messages are routed through the RTI.
@@ -1984,48 +1983,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
-  uint16_t port = (uint16_t)specified_port;
-  LF_PRINT_LOG("Creating a socket server on port %d.", port);
-  // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-  int socket_descriptor = create_real_time_tcp_socket_errexit();
-
-  // Server file descriptor.
-  struct sockaddr_in server_fd;
-  // Zero out the server address structure.
-  bzero((char*)&server_fd, sizeof(server_fd));
-
-  server_fd.sin_family = AF_INET;         // IPv4
-  server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
-  // Convert the port number from host byte order to network byte order.
-  server_fd.sin_port = htons(port);
-
-  int result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  int count = 0;
-  while (result < 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-    lf_sleep(PORT_BIND_RETRY_INTERVAL);
-    result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  }
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to bind socket on port %d.", port);
-  }
-
-  // Set the global server port.
-  if (specified_port == 0) {
-    // Need to retrieve the port number assigned by the OS.
-    struct sockaddr_in assigned;
-    socklen_t addr_len = sizeof(assigned);
-    if (getsockname(socket_descriptor, (struct sockaddr*)&assigned, &addr_len) < 0) {
-      lf_print_error_and_exit("Failed to retrieve assigned port number.");
-    }
-    _fed.server_port = ntohs(assigned.sin_port);
-  } else {
-    _fed.server_port = port;
-  }
-
-  // Enable listening for socket connections.
-  // The second argument is the maximum number of queued socket requests,
-  // which according to the Mac man page is limited to 128.
-  listen(socket_descriptor, 128);
+  create_TCP_server(specified_port, &_fed.server_socket, (uint16_t*)&_fed.server_port);
 
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
 
@@ -2043,9 +2001,6 @@ void lf_create_server(int specified_port) {
                                 "Failed to send address advertisement.");
 
   LF_PRINT_DEBUG("Sent port %d to the RTI.", _fed.server_port);
-
-  // Set the global server socket
-  _fed.server_socket = socket_descriptor;
 }
 
 void lf_enqueue_port_absent_reactions(environment_t* env) {
