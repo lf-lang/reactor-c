@@ -1148,7 +1148,7 @@ static int32_t receive_and_check_fed_id_message(int* socket_id) {
     lf_print_error("RTI failed to get peer address.");
   }
   fed->server_ip_addr = peer_addr.sin_addr;
-  
+
 #if LOG_LEVEL >= LOG_LEVEL_DEBUG
   // Create the human readable format and copy that into
   // the .server_hostname field of the federate.
@@ -1479,9 +1479,9 @@ void* respond_to_erroneous_connections(void* nothing) {
     // The following will block until either a federate attempts to connect
     // or close(rti->socket_descriptor_TCP) is called.
     int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
-    if (socket_id < 0)
+    if (socket_id < 0) {
       return NULL;
-
+    }
     if (rti_remote->all_federates_exited) {
       return NULL;
     }
