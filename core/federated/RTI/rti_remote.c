@@ -1517,8 +1517,7 @@ int32_t start_rti_server(uint16_t port) {
   // Create the UDP socket server
   // Try to get the rti_remote->final_port_TCP + 1 port
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-    create_UDP_server(rti_remote->final_port_TCP + 1, &rti_remote->socket_descriptor_UDP,
-                      &rti_remote->final_port_UDP);
+    create_UDP_server(rti_remote->final_port_TCP + 1, &rti_remote->socket_descriptor_UDP, &rti_remote->final_port_UDP);
   }
   return rti_remote->socket_descriptor_TCP;
 }

@@ -39,8 +39,6 @@
 /////////////////////////////////////////////
 //// Data structures
 
-
-
 /**
  * Information about a federate known to the RTI, including its runtime state,
  * mode of execution, and connectivity with other federates.

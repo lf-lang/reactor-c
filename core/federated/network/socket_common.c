@@ -352,7 +352,7 @@ int connect_to_socket(int sock, const char* hostname, int port) {
   hints.ai_next = NULL;
   hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
 
-  uint16_t used_port = (port == 0) ? DEFAULT_PORT : (uint16_t) port;
+  uint16_t used_port = (port == 0) ? DEFAULT_PORT : (uint16_t)port;
 
   instant_t start_connect = lf_time_physical();
   // while (!_lf_termination_executed) { // Not working...
