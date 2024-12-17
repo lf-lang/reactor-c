@@ -72,8 +72,8 @@ int create_real_time_tcp_socket_errexit() {
 
 /**
  * Set the socket timeout options.
- * @param socket_descriptor 
- * @param timeout_time 
+ * @param socket_descriptor
+ * @param timeout_time
  */
 static void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
   // Set the option for this socket to reuse the same address
@@ -339,7 +339,7 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
   }
 }
 
-int connect_to_socket(int sock, const char* hostname, int port, uint16_t user_specified_port) {
+int connect_to_socket(int sock, const char* hostname, int port) {
   struct addrinfo hints;
   struct addrinfo* result;
   int ret = -1;
@@ -352,7 +352,7 @@ int connect_to_socket(int sock, const char* hostname, int port, uint16_t user_sp
   hints.ai_next = NULL;
   hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
 
-  int used_port = (user_specified_port == 0) ? port : user_specified_port;
+  uint16_t used_port = (port == 0) ? DEFAULT_PORT : (uint16_t) port;
 
   instant_t start_connect = lf_time_physical();
   // while (!_lf_termination_executed) { // Not working...
@@ -375,8 +375,11 @@ int connect_to_socket(int sock, const char* hostname, int port, uint16_t user_sp
     ret = connect(sock, result->ai_addr, result->ai_addrlen);
     if (ret < 0) {
       lf_sleep(CONNECT_RETRY_INTERVAL);
-      if (user_specified_port == 0) {
+      if (port == 0) {
         used_port++;
+        if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) {
+          used_port = DEFAULT_PORT;
+        }
       }
       lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds.\n",
                        CONNECT_RETRY_INTERVAL);
@@ -386,6 +389,6 @@ int connect_to_socket(int sock, const char* hostname, int port, uint16_t user_sp
     }
     freeaddrinfo(result);
   }
-  lf_print("Connected to RTI at %s:%d.", hostname, used_port);
+  lf_print("Connected to %s:%d.", hostname, used_port);
   return ret;
 }
