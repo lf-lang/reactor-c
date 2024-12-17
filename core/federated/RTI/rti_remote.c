@@ -1045,7 +1045,7 @@ void send_reject(int* socket_id, unsigned char error_code) {
  * @param client_fd The socket address.
  * @return The federate ID for success or -1 for failure.
  */
-static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_in* client_fd) {
+static int32_t receive_and_check_fed_id_message(int* socket_id) {
   // Buffer for message ID, federate ID, and federation ID length.
   size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
   unsigned char buffer[length];
@@ -1139,10 +1139,16 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
   // The IP address is stored here as an in_addr struct (in .server_ip_addr) that can be useful
   // to create sockets and can be efficiently sent over the network.
   // First, convert the sockaddr structure into a sockaddr_in that contains an internet address.
-  struct sockaddr_in* pV4_addr = client_fd;
+  // struct sockaddr_in* pV4_addr = client_fd;
   // Then extract the internet address (which is in IPv4 format) and assign it as the federate's socket server
-  fed->server_ip_addr = pV4_addr->sin_addr;
-
+  // fed->server_ip_addr = pV4_addr->sin_addr;
+  struct sockaddr_in peer_addr;
+  socklen_t addr_len = sizeof(peer_addr);
+  if (getpeername(*socket_id, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
+    lf_print_error("RTI failed to get peer address.");
+  }
+  fed->server_ip_addr = peer_addr.sin_addr;
+  
 #if LOG_LEVEL >= LOG_LEVEL_DEBUG
   // Create the human readable format and copy that into
   // the .server_hostname field of the federate.
@@ -1412,8 +1418,7 @@ static bool authenticate_federate(int* socket) {
 
 void lf_connect_to_federates(int socket_descriptor) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-    struct sockaddr client_fd;
-    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, &client_fd);
+    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP);
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
     if (rti_remote->authentication_enabled) {
@@ -1431,7 +1436,7 @@ void lf_connect_to_federates(int socket_descriptor) {
 #endif
 
     // The first message from the federate should contain its ID and the federation ID.
-    int32_t fed_id = receive_and_check_fed_id_message(&socket_id, (struct sockaddr_in*)&client_fd);
+    int32_t fed_id = receive_and_check_fed_id_message(&socket_id);
     if (fed_id >= 0 && socket_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
         receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
 
