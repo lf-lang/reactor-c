@@ -194,4 +194,6 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
 
+int connect_to_socket(int sock, const char* hostname, int port, uint16_t user_specified_port);
+
 #endif /* SOCKET_COMMON_H */

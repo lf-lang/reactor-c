@@ -936,42 +936,6 @@ static int perform_hmac_authentication() {
 }
 #endif
 
-static void close_rti_socket() {
-  shutdown(_fed.socket_TCP_RTI, SHUT_RDWR);
-  close(_fed.socket_TCP_RTI);
-  _fed.socket_TCP_RTI = -1;
-}
-
-/**
- * Return in the result a struct with the address info for the specified hostname and port.
- * The memory for the result is dynamically allocated and must be freed using freeaddrinfo.
- * @param hostname The host name.
- * @param port The port number.
- * @param result The struct into which to write.
- */
-static void rti_address(const char* hostname, uint16_t port, struct addrinfo** result) {
-  struct addrinfo hints;
-
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;       /* Allow IPv4 */
-  hints.ai_socktype = SOCK_STREAM; /* Stream socket */
-  hints.ai_protocol = IPPROTO_TCP; /* TCP protocol */
-  hints.ai_addr = NULL;
-  hints.ai_next = NULL;
-  hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
-
-  // Convert port number to string.
-  char str[6];
-  sprintf(str, "%u", port);
-
-  // Get address structure matching hostname and hints criteria, and
-  // set port to the port number provided in str. There should only
-  // ever be one matching address structure, and we connect to that.
-  if (getaddrinfo(hostname, (const char*)&str, &hints, result)) {
-    lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
-  }
-}
-
 /**
  * Send the specified timestamp to the RTI and wait for a response.
  * The specified timestamp should be current physical time of the
@@ -1914,42 +1878,12 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
   // Create a socket
   _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
-
-  int result = -1;
-  struct addrinfo* res = NULL;
+  if (connect_to_socket(_fed.socket_TCP_RTI, hostname, uport, port) < 0) {
+    lf_print_error_and_exit("Failed to connect() to RTI.");
+  }
 
   instant_t start_connect = lf_time_physical();
   while (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT) && !_lf_termination_executed) {
-    if (res != NULL) {
-      // This is a repeated attempt.
-      if (_fed.socket_TCP_RTI >= 0)
-        close_rti_socket();
-
-      lf_sleep(CONNECT_RETRY_INTERVAL);
-
-      // Create a new socket.
-      _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
-
-      if (port == 0) {
-        // Free previously allocated address info.
-        freeaddrinfo(res);
-        // Increment the port number.
-        uport++;
-        if (uport >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
-          uport = DEFAULT_PORT;
-
-        // Reconstruct the address info.
-        rti_address(hostname, uport, &res);
-      }
-      lf_print("Trying RTI again on port %d.", uport);
-    } else {
-      // This is the first attempt.
-      rti_address(hostname, uport, &res);
-    }
-
-    result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
-    if (result < 0)
-      continue; // Connect failed.
 
     // Have connected to an RTI, but not sure it's the right RTI.
     // Send a MSG_TYPE_FED_IDS message and wait for a reply.
@@ -1962,7 +1896,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
         continue; // Try again with a new port.
       } else {
         // No point in trying again because it will be the same port.
-        close_rti_socket();
         lf_print_error_and_exit("Authentication failed.");
       }
     }
@@ -2031,11 +1964,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
       continue;
     }
   }
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to connect to RTI with timeout: " PRINTF_TIME, CONNECT_TIMEOUT);
-  }
 
-  freeaddrinfo(res); /* No longer needed */
 
   // Call a generated (external) function that sends information
   // about connections between this federate and other federates
@@ -2051,8 +1980,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
   encode_uint16(udp_port, &(UDP_port_number[1]));
   write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, 1 + sizeof(uint16_t), UDP_port_number, NULL,
                                 "Failed to send the UDP port number to the RTI.");
-
-  lf_print("Connected to RTI at %s:%d.", hostname, uport);
 }
 
 void lf_create_server(int specified_port) {
