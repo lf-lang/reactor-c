@@ -170,13 +170,14 @@ void create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
   *final_port = used_port;
 }
 
-int accept_socket(int socket, struct sockaddr* client_fd) {
+int accept_socket(int socket) {
+  struct sockaddr client_fd;
   // Wait for an incoming connection request.
-  uint32_t client_length = sizeof(*client_fd);
+  uint32_t client_length = sizeof(client_fd);
   // The following blocks until a federate connects.
   int socket_id = -1;
   while (1) {
-    socket_id = accept(socket, client_fd, &client_length);
+    socket_id = accept(socket, &client_fd, &client_length);
     if (socket_id >= 0) {
       // Got a socket
       break;
