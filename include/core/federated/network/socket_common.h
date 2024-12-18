@@ -63,8 +63,6 @@
  */
 #define MSG_TYPE_FAILED 25
 
-typedef enum socket_type_t { TCP, UDP } socket_type_t;
-
 /**
  * Mutex protecting socket close operations.
  */

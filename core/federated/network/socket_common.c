@@ -135,10 +135,10 @@ int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
   return used_port;
 }
 
-void create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type) {
+void create_server(uint16_t port, int* final_socket, uint16_t* final_port, int sock_type) {
   int socket_descriptor;
   struct timeval timeout_time;
-  if (sock_type == TCP) {
+  if (sock_type == 0) {
     // Create an IPv4 socket for TCP.
     socket_descriptor = create_real_time_tcp_socket_errexit();
     // Set the timeout time for the communications of the server
@@ -150,13 +150,13 @@ void create_server(uint16_t port, int* final_socket, uint16_t* final_port, socke
     timeout_time =
         (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
   }
-  char* type = (sock_type == TCP) ? "TCP" : "UDP";
+  char* type = (sock_type == 0) ? "TCP" : "UDP";
   if (socket_descriptor < 0) {
     lf_print_error_system_failure("Failed to create %s socket.", type);
   }
   set_socket_timeout_option(socket_descriptor, &timeout_time);
   int used_port = set_socket_bind_option(socket_descriptor, port);
-  if (sock_type == TCP) {
+  if (sock_type == 0) {
     // Enable listening for socket connections.
     // The second argument is the maximum number of queued socket requests,
     // which according to the Mac man page is limited to 128.
@@ -167,10 +167,10 @@ void create_server(uint16_t port, int* final_socket, uint16_t* final_port, socke
 }
 
 void create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
-  create_server(port, final_socket, final_port, TCP);
+  create_server(port, final_socket, final_port, 0);
 }
 void create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
-  create_server(port, final_socket, final_port, UDP);
+  create_server(port, final_socket, final_port, 1);
 }
 
 /**
