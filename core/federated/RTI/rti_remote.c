@@ -1135,13 +1135,8 @@ static int32_t receive_and_check_fed_id_message(int* socket_id) {
   }
   federate_info_t* fed = GET_FED_INFO(fed_id);
   // The MSG_TYPE_FED_IDS message has the right federation ID.
-  // Assign the address information for federate.
-  // The IP address is stored here as an in_addr struct (in .server_ip_addr) that can be useful
-  // to create sockets and can be efficiently sent over the network.
-  // First, convert the sockaddr structure into a sockaddr_in that contains an internet address.
-  // struct sockaddr_in* pV4_addr = client_fd;
-  // Then extract the internet address (which is in IPv4 format) and assign it as the federate's socket server
-  // fed->server_ip_addr = pV4_addr->sin_addr;
+
+  // Get the peer address from the connected socket_id. Then assign it as the federate's socket server.
   struct sockaddr_in peer_addr;
   socklen_t addr_len = sizeof(peer_addr);
   if (getpeername(*socket_id, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
