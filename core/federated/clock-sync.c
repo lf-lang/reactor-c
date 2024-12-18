@@ -42,6 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "clock-sync.h"
 #include "net_common.h"
 #include "net_util.h"
+#include "socket_common.h"
 #include "util.h"
 
 /** Offset calculated by the clock synchronization algorithm. */
