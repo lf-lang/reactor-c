@@ -78,7 +78,7 @@ extern lf_mutex_t socket_mutex;
 int create_real_time_tcp_socket_errexit();
 
 /**
- * @brief Create a TCP or UDP server that listens for socket connections.
+ * @brief Create a TCP server that listens for socket connections.
  *
  * If the specified port number is greater than one, this function will attempt to acquire that port.
  * If the port number is zero, it delegates to the operating system to provide an available port number.
@@ -91,12 +91,21 @@ int create_real_time_tcp_socket_errexit();
  * with DEFAULT_PORT.
  *
  * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
- * @param socket_type The type of the socket for the server (TCP or UDP).
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
  * @return 0 for success, -1 for failure.
  */
 int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port);
+/**
+ * @brief Create a UDP server that listens for socket connections.
+ *
+ * This function is just like create_TCP_server(), except that it creates a UDP server.
+ *
+ * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
+ * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
+ * @param final_port Pointer to the final port the server will use.
+ * @return 0 for success, -1 for failure.
+ */
 int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port);
 
 /**
