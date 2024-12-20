@@ -51,6 +51,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "low_level_platform.h"
 #include "tag.h"
 
+#ifdef FEDERATED
+#include "socket_common.h"
+#endif
+
 #define HOST_LITTLE_ENDIAN 1
 #define HOST_BIG_ENDIAN 2
 
@@ -155,8 +159,6 @@ int64_t extract_int64(unsigned char* bytes);
 uint16_t extract_uint16(unsigned char* bytes);
 
 #ifdef FEDERATED
-
-#include "socket_common.h"
 
 /**
  * Extract the core header information that all messages between
