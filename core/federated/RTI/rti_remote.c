@@ -1510,7 +1510,7 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 int32_t start_rti_server(uint16_t port) {
   _lf_initialize_clock();
   // Create the TCP socket server
-  if (create_TCP_server(port, &rti_remote->socket_descriptor_TCP, &rti_remote->final_port_TCP)) {
+  if (create_TCP_server(port, &rti_remote->socket_descriptor_TCP, &rti_remote->final_port_TCP, true)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
   lf_print("RTI: Listening for federates.");
@@ -1518,7 +1518,7 @@ int32_t start_rti_server(uint16_t port) {
   // Try to get the rti_remote->final_port_TCP + 1 port
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
     if (create_UDP_server(rti_remote->final_port_TCP + 1, &rti_remote->socket_descriptor_UDP,
-                          &rti_remote->final_port_UDP)) {
+                          &rti_remote->final_port_UDP, true)) {
       lf_print_error_system_failure("RTI failed to create UDP server: %s.", strerror(errno));
     }
   }
@@ -1588,12 +1588,7 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->num_feds_proposed_start = 0;
   rti_remote->all_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";
-  // Default values for user_specified_port are 0 for a federate and 1 for the RTI. Neither of these are valid port
-  // numbers, but rather specify that an available port needs to be found. With value 0, the operating system will
-  // provide an available port number. With value 1, the function will first try DEFAULT_PORT, which is 15045, and,
-  // if this fails, wait for time given by PORT_BIND_RETRY_INTERVAL and try again. It fails if this process fails after
-  // MAX_NUM_PORT_ADDRESSES tries. For more details, check this PR. https://github.com/lf-lang/reactor-c/pull/505.
-  rti_remote->user_specified_port = 1;
+  rti_remote->user_specified_port = 0;
   rti_remote->final_port_TCP = 0;
   rti_remote->socket_descriptor_TCP = -1;
   rti_remote->final_port_UDP = UINT16_MAX;

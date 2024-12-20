@@ -84,13 +84,13 @@ static void set_socket_timeout_option(int socket_descriptor, struct timeval* tim
  *                       until an available port is found.
  * @return The final port number used.
  */
-static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
+static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool increment_port_on_retry) {
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.
   bzero((char*)&server_fd, sizeof(server_fd));
   uint16_t used_port = specified_port;
-  if (specified_port == 1) { // RTI is set to 1 if no specified port.
+  if (specified_port == 0 && increment_port_on_retry == true) { // RTI is set to 1 if no specified port.
     used_port = DEFAULT_PORT;
   }
   server_fd.sin_family = AF_INET;         // IPv4
@@ -104,7 +104,7 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
 
   int count = 1;
   while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-    if (specified_port == 1) { // RTI is set to 1 if no specified port.
+    if (specified_port == 0 && increment_port_on_retry == true) { // RTI is set to 1 if no specified port.
       lf_print_warning("RTI failed to get port %d.", used_port);
       used_port++;
       if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
@@ -135,7 +135,8 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   return used_port;
 }
 
-static int create_server(uint16_t port, int* final_socket, uint16_t* final_port, int sock_type) {
+static int create_server(uint16_t port, int* final_socket, uint16_t* final_port, int sock_type,
+                         bool increment_port_on_retry) {
   int socket_descriptor;
   struct timeval timeout_time;
   if (sock_type == 0) {
@@ -156,7 +157,7 @@ static int create_server(uint16_t port, int* final_socket, uint16_t* final_port,
     return -1;
   }
   set_socket_timeout_option(socket_descriptor, &timeout_time);
-  int used_port = set_socket_bind_option(socket_descriptor, port);
+  int used_port = set_socket_bind_option(socket_descriptor, port, increment_port_on_retry);
   if (sock_type == 0) {
     // Enable listening for socket connections.
     // The second argument is the maximum number of queued socket requests,
@@ -171,11 +172,11 @@ static int create_server(uint16_t port, int* final_socket, uint16_t* final_port,
   return 0;
 }
 
-int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
-  return create_server(port, final_socket, final_port, 0);
+int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry) {
+  return create_server(port, final_socket, final_port, 0, increment_port_on_retry);
 }
-int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
-  return create_server(port, final_socket, final_port, 1);
+int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry) {
+  return create_server(port, final_socket, final_port, 1, increment_port_on_retry);
 }
 
 /**
