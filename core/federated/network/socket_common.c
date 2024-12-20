@@ -121,13 +121,14 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
     struct sockaddr_in assigned;
     socklen_t addr_len = sizeof(assigned);
     if (getsockname(socket_descriptor, (struct sockaddr*)&assigned, &addr_len) < 0) {
-      lf_print_error_and_exit("Federate fdailed to retrieve assigned port number.");
+      lf_print_error_and_exit("Federate failed to retrieve assigned port number.");
     }
     used_port = ntohs(assigned.sin_port);
   }
   if (result != 0) {
     lf_print_error_and_exit("Failed to bind the socket. Port %d is not available. ", used_port);
   }
+  lf_print_debug("Socket is binded to port %d.", used_port);
   return used_port;
 }
 
