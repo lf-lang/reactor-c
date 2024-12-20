@@ -100,7 +100,8 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   int count = 1;
   while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
     if (specified_port == 0 && increment_port_on_retry == true) {
-      //  If the specified port number is zero, and the increment_port_on_retry is true, increment the port number each time.
+      //  If the specified port number is zero, and the increment_port_on_retry is true, increment the port number each
+      //  time.
       lf_print_warning("RTI failed to get port %d.", used_port);
       used_port++;
       if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
