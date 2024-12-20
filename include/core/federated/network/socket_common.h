@@ -240,4 +240,13 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
 
+/**
+ * @brief Gracefully shuts down and closes a socket, optionally reading until EOF.
+ * 
+ * @param socket Pointer to the socket descriptor to shutdown and close.
+ * @param read_before_closing If true, read until EOF before closing the socket.
+ * @return int Returns 0 on success, -1 on failure (errno will indicate the error).
+ */
+int shutdown_socket(int* socket, bool read_before_closing);
+
 #endif /* SOCKET_COMMON_H */

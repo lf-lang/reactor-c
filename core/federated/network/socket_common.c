@@ -410,3 +410,34 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
     }
   }
 }
+
+int shutdown_socket(int* socket, bool read_before_closing) {
+  if (!read_before_closing) {
+    if (shutdown(*socket, SHUT_RDWR)) {
+      lf_print_log("On shut down TCP socket, received reply: %s", strerror(errno));
+      return -1;
+    }
+  } else {
+    // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
+    // the close should happen when receiving a 0 length message from the other end.
+    // Here, we just signal the other side that no further writes to the socket are
+    // forthcoming, which should result in the other end getting a zero-length reception.
+    if (shutdown(*socket, SHUT_WR)) {
+      lf_print_log("On shut down TCP socket, received reply: %s", strerror(errno));
+      return -1;
+    }
+
+    // Wait for the other end to send an EOF or a socket error to occur.
+    // Discard any incoming bytes. Normally, this read should return 0 because
+    // the federate is resigning and should itself invoke shutdown.
+    unsigned char buffer[10];
+    while (read(*socket, buffer, 10) > 0)
+      ;
+  }
+  if (close(*socket)) {
+    lf_print_log("Error while closing socket: %s\n", strerror(errno));
+    return -1;
+  }
+  *socket = -1;
+  return 0;
+}
