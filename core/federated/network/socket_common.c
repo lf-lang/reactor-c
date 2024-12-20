@@ -90,7 +90,7 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   // Zero out the server address structure.
   bzero((char*)&server_fd, sizeof(server_fd));
   uint16_t used_port = specified_port;
-  if (specified_port == 0 && increment_port_on_retry == true) { // RTI is set to 1 if no specified port.
+  if (specified_port == 0 && increment_port_on_retry == true) {
     used_port = DEFAULT_PORT;
   }
   server_fd.sin_family = AF_INET;         // IPv4
@@ -104,7 +104,7 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
 
   int count = 1;
   while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-    if (specified_port == 0 && increment_port_on_retry == true) { // RTI is set to 1 if no specified port.
+    if (specified_port == 0 && increment_port_on_retry == true) {
       lf_print_warning("RTI failed to get port %d.", used_port);
       used_port++;
       if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
@@ -120,17 +120,17 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   }
 
   // Set the global server port.
-  if (specified_port == 0) { // Federates are set to 0 if no specified port.
+  if (specified_port == 0 && increment_port_on_retry == false) {
     // Need to retrieve the port number assigned by the OS.
     struct sockaddr_in assigned;
     socklen_t addr_len = sizeof(assigned);
     if (getsockname(socket_descriptor, (struct sockaddr*)&assigned, &addr_len) < 0) {
-      lf_print_error_and_exit("Failed to retrieve assigned port number.");
+      lf_print_error_and_exit("Federate fdailed to retrieve assigned port number.");
     }
     used_port = ntohs(assigned.sin_port);
   }
   if (result != 0) {
-    lf_print_error_and_exit("Failed to bind the RTI socket. Port %d is not available. ", used_port);
+    lf_print_error_and_exit("Failed to bind the socket. Port %d is not available. ", used_port);
   }
   return used_port;
 }
