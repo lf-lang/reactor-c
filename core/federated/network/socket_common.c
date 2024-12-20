@@ -173,6 +173,7 @@ static int create_server(uint16_t port, int* final_socket, uint16_t* final_port,
 int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry) {
   return create_server(port, final_socket, final_port, 0, increment_port_on_retry);
 }
+
 int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry) {
   return create_server(port, final_socket, final_port, 1, increment_port_on_retry);
 }
@@ -191,7 +192,7 @@ static bool check_socket_closed(int socket) {
   }
 }
 
-static int accept_socket(int socket, int rti_socket) {
+int accept_socket(int socket, int rti_socket) {
   struct sockaddr client_fd;
   // Wait for an incoming connection request.
   uint32_t client_length = sizeof(client_fd);
@@ -222,9 +223,6 @@ static int accept_socket(int socket, int rti_socket) {
   }
   return socket_id;
 }
-
-int accept_rti_socket(int socket) { return accept_socket(socket, -1); }
-int accept_federate_socket(int socket, int rti_socket) { return accept_socket(socket, rti_socket); }
 
 int connect_to_socket(int sock, const char* hostname, int port) {
   struct addrinfo hints;
