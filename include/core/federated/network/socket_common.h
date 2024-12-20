@@ -24,7 +24,7 @@
 
 /**
  * Bound on the number of retries to connect to the RTI.
- * A federate will retry every CONNECT_RETRY_INTERVAL seconds until
+ * A federate will retry every CONNECT_RETRY_INTERVAL nanoseconds until
  * CONNECTION_TIMEOUT expires.
  */
 #define CONNECT_TIMEOUT MINUTES(1)

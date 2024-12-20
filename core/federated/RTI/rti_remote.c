@@ -1583,23 +1583,11 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->num_feds_proposed_start = 0;
   rti_remote->all_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";
-  // The federate and RTI both initialize the user_specified_port as 0. For the RTI, when the user_specified_port is 0,
-  // it recognizes that there was no user input to assign a port and assigns the port to the DEFAULT_PORT, which is
-  // 15045.
-
-  // For the federate, when the user_specified_port is 0, it also recognizes that there was no user input and makes the
-  // OS assign the port.
-
-  // The create_TCP_server gets this input argument port, which is actually the user_specified_port for both RTI and
-  // federate. To distinguish whether the RTI or federate is calling this function, I changed the initial value of the
-  // RTI's port as 1.
-
-  // We need to distinguish whether the RTI or federate called the create_TCP_server function for two reasons.
-
-  // First, we should set the default port, which RTI and federate differ.
-  // Next, RTI increments the port number starting from 15045, when the port binding fails. However, the federate does
-  // not increment the port number and try binding.
-  // For more info, check this pr. https://github.com/lf-lang/reactor-c/pull/505
+  // Default values for user_specified_port are 0 for a federate and 1 for the RTI. Neither of these are valid port
+  // numbers, but rather specify that an available port needs to be found. With value 0, the operating system will
+  // provide an available port number. With value 1, the function will first try DEFAULT_PORT, which is 15045, and,
+  // if this fails, wait for time given by PORT_BIND_RETRY_INTERVAL and try again. It fails if this process fails after
+  // MAX_NUM_PORT_ADDRESSES tries. For more details, check this PR. https://github.com/lf-lang/reactor-c/pull/505.
   rti_remote->user_specified_port = 1;
   rti_remote->final_port_TCP = 0;
   rti_remote->socket_descriptor_TCP = -1;
