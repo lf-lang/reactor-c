@@ -93,8 +93,8 @@ int create_real_time_tcp_socket_errexit();
  * @param final_socket The socket descriptor on which to accept connections.
  * @param final_port The final port of the TCP or UDP socket.
  */
-void create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port);
-void create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port);
+int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port);
+int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port);
 
 /**
  * These two functions waits for an incoming connection request on the specified server socket.

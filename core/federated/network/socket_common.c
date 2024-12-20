@@ -62,14 +62,14 @@ void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_ti
   // Set the option for this socket to reuse the same address
   int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
   if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
-    lf_print_error("RTI failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
+    lf_print_error("Failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
   }
   // Set the timeout on the socket so that read and write operations don't block for too long
   if (setsockopt(socket_descriptor, SOL_SOCKET, SO_RCVTIMEO, (const char*)timeout_time, sizeof(*timeout_time)) < 0) {
-    lf_print_error("RTI failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
+    lf_print_error("Failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
   }
   if (setsockopt(socket_descriptor, SOL_SOCKET, SO_SNDTIMEO, (const char*)timeout_time, sizeof(*timeout_time)) < 0) {
-    lf_print_error("RTI failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
+    lf_print_error("Failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
   }
 }
 
@@ -135,7 +135,7 @@ int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
   return used_port;
 }
 
-void create_server(uint16_t port, int* final_socket, uint16_t* final_port, int sock_type) {
+static int create_server(uint16_t port, int* final_socket, uint16_t* final_port, int sock_type) {
   int socket_descriptor;
   struct timeval timeout_time;
   if (sock_type == 0) {
@@ -152,7 +152,8 @@ void create_server(uint16_t port, int* final_socket, uint16_t* final_port, int s
   }
   char* type = (sock_type == 0) ? "TCP" : "UDP";
   if (socket_descriptor < 0) {
-    lf_print_error_system_failure("Failed to create %s socket.", type);
+    lf_print_error("Failed to create %s socket.", type);
+    return -1;
   }
   set_socket_timeout_option(socket_descriptor, &timeout_time);
   int used_port = set_socket_bind_option(socket_descriptor, port);
@@ -160,17 +161,21 @@ void create_server(uint16_t port, int* final_socket, uint16_t* final_port, int s
     // Enable listening for socket connections.
     // The second argument is the maximum number of queued socket requests,
     // which according to the Mac man page is limited to 128.
-    listen(socket_descriptor, 128);
+    if (listen(socket_descriptor, 128)) {
+      lf_print_error("Failed to listen on %d socket: %s.", socket_descriptor, strerror(errno));
+      return -1;
+    }
   }
   *final_socket = socket_descriptor;
   *final_port = used_port;
+  return 0;
 }
 
-void create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
-  create_server(port, final_socket, final_port, 0);
+int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
+  return create_server(port, final_socket, final_port, 0);
 }
-void create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
-  create_server(port, final_socket, final_port, 1);
+int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
+  return create_server(port, final_socket, final_port, 1);
 }
 
 /**
