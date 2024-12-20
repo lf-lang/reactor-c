@@ -445,16 +445,18 @@ void destroy_action_capsule(PyObject* capsule) { free(PyCapsule_GetPointer(capsu
  */
 PyObject* convert_C_port_to_py(void* port, int width) {
   // Create the port struct in Python
-  PyObject* cap = (PyObject*)PyObject_GC_New(generic_port_capsule_struct, &py_port_capsule_t);
+  PyObject* cap = (PyObject*)PyObject_New(generic_port_capsule_struct, &py_port_capsule_t);
   if (cap == NULL) {
     lf_print_error_and_exit("Failed to convert port.");
   }
+  Py_INCREF(cap);
 
   // Create the capsule to hold the void* port
   PyObject* capsule = PyCapsule_New(port, "port", NULL);
   if (capsule == NULL) {
     lf_print_error_and_exit("Failed to convert port.");
   }
+  Py_INCREF(capsule);
 
   // Fill in the Python port struct
   ((generic_port_capsule_struct*)cap)->port = capsule;
@@ -512,16 +514,18 @@ PyObject* convert_C_action_to_py(void* action) {
   trigger_t* trigger = ((lf_action_base_t*)action)->trigger;
 
   // Create the action struct in Python
-  PyObject* cap = (PyObject*)PyObject_GC_New(generic_action_capsule_struct, &py_action_capsule_t);
+  PyObject* cap = (PyObject*)PyObject_New(generic_action_capsule_struct, &py_action_capsule_t);
   if (cap == NULL) {
     lf_print_error_and_exit("Failed to convert action.");
   }
+  Py_INCREF(cap);
 
   // Create the capsule to hold the void* action
   PyObject* capsule = PyCapsule_New(action, "action", NULL);
   if (capsule == NULL) {
     lf_print_error_and_exit("Failed to convert action.");
   }
+  Py_INCREF(capsule);
 
   // Fill in the Python action struct
   ((generic_action_capsule_struct*)cap)->action = capsule;
@@ -542,7 +546,8 @@ PyObject* convert_C_action_to_py(void* action) {
   }
 
   // Actions in Python always use token type
-  ((generic_action_capsule_struct*)cap)->value = trigger->tmplt.token->value;
+  if (((generic_action_instance_struct*)action)->token != NULL)
+    ((generic_action_capsule_struct*)cap)->value = ((generic_action_instance_struct*)action)->token->value;
 
   return cap;
 }
@@ -602,7 +607,14 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
 
     mbstowcs(wcwd, cwd, PATH_MAX);
 
-    Py_SetPath(wcwd);
+    // Deprecated: Py_SetPath(wcwd);
+    // Replace with the following more verbose version:
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+    // Add paths to the configuration
+    PyWideStringList_Append(&config.module_search_paths, wcwd);
+    // Initialize Python with the custom configuration
+    Py_InitializeFromConfig(&config);
 
     LF_PRINT_DEBUG("Loading module %s in %s.", module, cwd);
 

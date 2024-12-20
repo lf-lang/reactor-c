@@ -26,7 +26,20 @@ int _lf_count_token_allocations;
 #include "platform.h" // Enter/exit critical sections
 #include "port.h"     // Defines lf_port_base_t.
 
-lf_token_t* _lf_tokens_allocated_in_reactions = NULL;
+/**
+ * @brief List of tokens created within reactions that must be freed.
+ *
+ * Tokens created by lf_writable_copy, which is automatically invoked
+ * when an input is mutable, must have their reference count decremented
+ * at the end of a tag (or the beginning of the next tag).
+ * Otherwise, their memory could leak. If they are passed on to
+ * an output or to a call to lf_schedule during the reaction, then
+ * those will also result in incremented reference counts, enabling
+ * the token to live on until used. For example, a new token created
+ * by lf_writable_copy could become the new template token for an output
+ * via a call to lf_set.
+ */
+static lf_token_t* _lf_tokens_allocated_in_reactions = NULL;
 
 ////////////////////////////////////////////////////////////////////
 //// Global variables not visible outside this file.
@@ -197,6 +210,8 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
     if (hashset_iterator_next(iterator) >= 0) {
       result = hashset_iterator_value(iterator);
       hashset_remove(_lf_token_recycling_bin, result);
+      // Make sure there isn't a previous value.
+      result->value = NULL;
       LF_PRINT_DEBUG("_lf_new_token: Retrieved token from the recycling bin: %p", (void*)result);
     }
     free(iterator);
@@ -222,22 +237,20 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
 }
 
 lf_token_t* _lf_get_token(token_template_t* tmplt) {
-  if (tmplt->token != NULL) {
-    if (tmplt->token->ref_count == 1) {
-      LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu", (void*)tmplt->token,
-                     tmplt->token->ref_count);
-      // Free any previous value in the token.
-      _lf_free_token_value(tmplt->token);
-      return tmplt->token;
-    } else {
-      // Liberate the token.
-      _lf_done_using(tmplt->token);
-    }
+  LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
+  if (tmplt->token != NULL && tmplt->token->ref_count == 1) {
+    LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu", (void*)tmplt->token,
+                   tmplt->token->ref_count);
+    // Free any previous value in the token.
+    _lf_free_token_value(tmplt->token);
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
+    return tmplt->token;
   }
+  LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
   // If we get here, we need a new token.
-  tmplt->token = _lf_new_token((token_type_t*)tmplt, NULL, 0);
-  tmplt->token->ref_count = 1;
-  return tmplt->token;
+  lf_token_t* result = _lf_new_token((token_type_t*)tmplt, NULL, 0);
+  result->ref_count = 1;
+  return result;
 }
 
 void _lf_initialize_template(token_template_t* tmplt, size_t element_size) {
@@ -352,8 +365,7 @@ token_freed _lf_done_using(lf_token_t* token) {
 
 void _lf_free_token_copies() {
   while (_lf_tokens_allocated_in_reactions != NULL) {
-    lf_token_t* next = _lf_tokens_allocated_in_reactions->next;
     _lf_done_using(_lf_tokens_allocated_in_reactions);
-    _lf_tokens_allocated_in_reactions = next;
+    _lf_tokens_allocated_in_reactions = _lf_tokens_allocated_in_reactions->next;
   }
 }
