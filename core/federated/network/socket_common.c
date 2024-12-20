@@ -313,10 +313,7 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
     // Read failed.
     // Socket has probably been closed from the other side.
     // Shut down and close the socket from this side.
-    shutdown(*socket, SHUT_RDWR);
-    close(*socket);
-    // Mark the socket closed.
-    *socket = -1;
+    shutdown_socket(socket, false);
     return -1;
   }
   return 0;
@@ -383,10 +380,7 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
     // Write failed.
     // Socket has probably been closed from the other side.
     // Shut down and close the socket from this side.
-    shutdown(*socket, SHUT_RDWR);
-    close(*socket);
-    // Mark the socket closed.
-    *socket = -1;
+    shutdown_socket(socket, false);
   }
   return result;
 }
@@ -414,7 +408,7 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
 int shutdown_socket(int* socket, bool read_before_closing) {
   if (!read_before_closing) {
     if (shutdown(*socket, SHUT_RDWR)) {
-      lf_print_log("On shut down TCP socket, received reply: %s", strerror(errno));
+      lf_print_warning("On shut down TCP socket, received reply: %s", strerror(errno));
       return -1;
     }
   } else {
@@ -422,20 +416,32 @@ int shutdown_socket(int* socket, bool read_before_closing) {
     // the close should happen when receiving a 0 length message from the other end.
     // Here, we just signal the other side that no further writes to the socket are
     // forthcoming, which should result in the other end getting a zero-length reception.
+
+        // Close the socket by sending a FIN packet indicating that no further writes
+    // are expected.  Then read until we get an EOF indication.
     if (shutdown(*socket, SHUT_WR)) {
-      lf_print_log("On shut down TCP socket, received reply: %s", strerror(errno));
+      lf_print_warning("On shut down socket, received reply: %s", strerror(errno));
       return -1;
     }
 
     // Wait for the other end to send an EOF or a socket error to occur.
     // Discard any incoming bytes. Normally, this read should return 0 because
     // the federate is resigning and should itself invoke shutdown.
+
+            // Have not received EOF yet. read until we get an EOF or error indication.
+        // This compensates for delayed ACKs and disabling of Nagles algorithm
+        // by delaying exiting until the shutdown is complete.
     unsigned char buffer[10];
     while (read(*socket, buffer, 10) > 0)
       ;
   }
+  // NOTE: In all common TCP/IP stacks, there is a time period,
+  // typically between 30 and 120 seconds, called the TIME_WAIT period,
+  // before the port is released after this close. This is because
+  // the OS is preventing another program from accidentally receiving
+  // duplicated packets intended for this program.
   if (close(*socket)) {
-    lf_print_log("Error while closing socket: %s\n", strerror(errno));
+    lf_print_warning("Error while closing socket: %s\n", strerror(errno));
     return -1;
   }
   *socket = -1;

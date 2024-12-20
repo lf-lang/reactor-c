@@ -417,14 +417,12 @@ static void close_inbound_socket(int fed_id, int flag) {
   if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
     if (flag >= 0) {
       if (flag > 0) {
-        shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
+        shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], false);
       } else {
         // Have received EOF from the other end. Send EOF to the other end.
-        shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_WR);
+        shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], true);
       }
     }
-    close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
-    _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
   }
   LF_MUTEX_UNLOCK(&socket_mutex);
 }
@@ -837,20 +835,9 @@ static void close_outbound_socket(int fed_id, int flag) {
   if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
     // Close the socket by sending a FIN packet indicating that no further writes
     // are expected.  Then read until we get an EOF indication.
-    if (flag >= 0) {
-      // SHUT_WR indicates no further outgoing messages.
-      shutdown(_fed.sockets_for_outbound_p2p_connections[fed_id], SHUT_WR);
-      if (flag > 0) {
-        // Have not received EOF yet. read until we get an EOF or error indication.
-        // This compensates for delayed ACKs and disabling of Nagles algorithm
-        // by delaying exiting until the shutdown is complete.
-        unsigned char message[32];
-        while (read(_fed.sockets_for_outbound_p2p_connections[fed_id], &message, 32) > 0)
-          ;
-      }
+    if (flag > 0) {
+      shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[fed_id], true);
     }
-    close(_fed.sockets_for_outbound_p2p_connections[fed_id]);
-    _fed.sockets_for_outbound_p2p_connections[fed_id] = -1;
   }
   if (_lf_normal_termination) {
     LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
