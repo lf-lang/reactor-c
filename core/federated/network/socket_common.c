@@ -58,7 +58,7 @@ int create_real_time_tcp_socket_errexit() {
  * @param timeout_time A pointer to a `struct timeval` that specifies the timeout duration
  *                     for socket operations (receive and send).
  */
-void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
+static void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
   // Set the option for this socket to reuse the same address
   int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
   if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
@@ -84,7 +84,7 @@ void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_ti
  *                       until an available port is found.
  * @return The final port number used.
  */
-int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
+static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.
@@ -182,7 +182,7 @@ int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port) {
  * Return true if either the socket to the RTI is broken or the socket is
  * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
  */
-bool check_socket_closed(int socket) {
+static bool check_socket_closed(int socket) {
   unsigned char first_byte;
   ssize_t bytes = peek_from_socket(socket, &first_byte);
   if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {
@@ -192,7 +192,7 @@ bool check_socket_closed(int socket) {
   }
 }
 
-int accept_socket(int socket, int rti_socket) {
+static int accept_socket(int socket, int rti_socket) {
   struct sockaddr client_fd;
   // Wait for an incoming connection request.
   uint32_t client_length = sizeof(client_fd);
