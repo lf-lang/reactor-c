@@ -74,14 +74,11 @@ static void set_socket_timeout_option(int socket_descriptor, struct timeval* tim
 }
 
 /**
- * Set the socket bind options. If the specified port is 0, it means this is a federate socket server. If the specified
- * port is 1, it is creating a RTI server. RTI servers use the port increment when the default port is not available.
- * Returns the actually used port.
+ * Assign a port to the socket, and bind the socket.
  *
  * @param socket_descriptor The file descriptor of the socket to be bound to an address and port.
- * @param specified_port The port number to bind the socket to. If set to 0, the OS assigns a port.
- *                       If set to 1, the function starts binding at the `DEFAULT_PORT` and increments
- *                       until an available port is found.
+ * @param specified_port The port number to bind the socket to.
+ * @param increment_port_on_retry Boolean to retry port increment.
  * @return The final port number used.
  */
 static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool increment_port_on_retry) {
@@ -99,12 +96,11 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
 
   int result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
 
-  // Try repeatedly to bind to a port. If no specific port is specified, then
-  // increment the port number each time.
-
+  // Try repeatedly to bind to a port.
   int count = 1;
   while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
     if (specified_port == 0 && increment_port_on_retry == true) {
+      //  If the specified port number is zero, and the increment_port_on_retry is true, increment the port number each time.
       lf_print_warning("RTI failed to get port %d.", used_port);
       used_port++;
       if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
