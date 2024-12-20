@@ -412,25 +412,19 @@ int shutdown_socket(int* socket, bool read_before_closing) {
       return -1;
     }
   } else {
-    // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-    // the close should happen when receiving a 0 length message from the other end.
-    // Here, we just signal the other side that no further writes to the socket are
-    // forthcoming, which should result in the other end getting a zero-length reception.
-
-        // Close the socket by sending a FIN packet indicating that no further writes
-    // are expected.  Then read until we get an EOF indication.
+    // Signal the other side that no further writes are expected by sending a FIN packet.
+    // This indicates the write direction is closed. For more details, refer to:
+    // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
     if (shutdown(*socket, SHUT_WR)) {
-      lf_print_warning("On shut down socket, received reply: %s", strerror(errno));
+      lf_print_warning("Failed to shut down socket: %s", strerror(errno));
       return -1;
     }
 
-    // Wait for the other end to send an EOF or a socket error to occur.
-    // Discard any incoming bytes. Normally, this read should return 0 because
-    // the federate is resigning and should itself invoke shutdown.
-
-            // Have not received EOF yet. read until we get an EOF or error indication.
-        // This compensates for delayed ACKs and disabling of Nagles algorithm
-        // by delaying exiting until the shutdown is complete.
+    // Wait for the other side to send an EOF or encounter a socket error.
+    // Discard any incoming bytes. Normally, this read should return 0, indicating the peer has also closed the
+    // connection.
+    // This compensates for delayed ACKs and scenarios where Nagle's algorithm is disabled, ensuring the shutdown
+    // completes gracefully.
     unsigned char buffer[10];
     while (read(*socket, buffer, 10) > 0)
       ;
