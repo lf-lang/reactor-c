@@ -78,20 +78,23 @@ extern lf_mutex_t socket_mutex;
 int create_real_time_tcp_socket_errexit();
 
 /**
- * Create a TCP or UDP server and enable listening for socket connections.
- * If the specified port if it is non-zero, it will attempt to acquire that port.
- * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
- * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
- * zero, then it will attempt to acquire DEFAULT_PORT first. If this fails, then it
- * will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times, incrementing the port
- * number between attempts, with no delay between attempts.  Once it has incremented
- * the port number MAX_NUM_PORT_ADDRESSES times, it will cycle around and begin again
+ * @brief Create a TCP or UDP server that listens for socket connections.
+ *
+ * If the specified port number is greater than one, this function will attempt to acquire that port.
+ * If the port number is zero, it delegates to the operating system to provide an available port number.
+ * If the port number is one, it will attempt to acquire DEFAULT_PORT.
+ *
+ * If acquiring the port fails, then this function will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times
+ * with a delay of PORT_BIND_RETRY_INTERVAL in between each try.
+ * If the specified port number is one, then it will increment the port number from DEFAULT_PORT on each attempt
+ * until it has incremented MAX_NUM_PORT_ADDRESSES times, at which point it will cycle around and begin again
  * with DEFAULT_PORT.
  *
- * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
+ * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
  * @param socket_type The type of the socket for the server (TCP or UDP).
- * @param final_socket The socket descriptor on which to accept connections.
- * @param final_port The final port of the TCP or UDP socket.
+ * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
+ * @param final_port Pointer to the final port the server will use.
+ * @return 0 for success, -1 for failure.
  */
 int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port);
 int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port);
