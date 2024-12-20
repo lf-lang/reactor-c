@@ -1818,7 +1818,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                        remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
       continue;
     } else {
-      lf_print("Connected to federate %d, port %d.", remote_federate_id, port);
+      lf_print("Connected to federate %d, port %hu.", remote_federate_id, uport);
       // Trace the event when tracing is enabled
       tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
       break;

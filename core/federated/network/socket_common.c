@@ -266,8 +266,8 @@ int connect_to_socket(int sock, const char* hostname, int port) {
           used_port = DEFAULT_PORT;
         }
       }
-      lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds.\n",
-                       CONNECT_RETRY_INTERVAL);
+      lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds. Connecting to port %d.\n",
+                       CONNECT_RETRY_INTERVAL, used_port);
       continue;
     } else {
       break;
