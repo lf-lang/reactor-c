@@ -155,7 +155,7 @@ static int create_server(uint16_t port, int* final_socket, uint16_t* final_port,
     return -1;
   }
   set_socket_timeout_option(socket_descriptor, &timeout_time);
-  int used_port = set_socket_bind_option(socket_descriptor, port, increment_port_on_retry);
+  uint16_t used_port = set_socket_bind_option(socket_descriptor, port, increment_port_on_retry);
   if (sock_type == 0) {
     // Enable listening for socket connections.
     // The second argument is the maximum number of queued socket requests,
@@ -408,7 +408,7 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
 int shutdown_socket(int* socket, bool read_before_closing) {
   if (!read_before_closing) {
     if (shutdown(*socket, SHUT_RDWR)) {
-      lf_print_warning("On shut down TCP socket, received reply: %s", strerror(errno));
+      lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
       return -1;
     }
   } else {
@@ -416,7 +416,7 @@ int shutdown_socket(int* socket, bool read_before_closing) {
     // This indicates the write direction is closed. For more details, refer to:
     // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
     if (shutdown(*socket, SHUT_WR)) {
-      lf_print_warning("Failed to shut down socket: %s", strerror(errno));
+      lf_print_log("Failed to shutdown socket: %s", strerror(errno));
       return -1;
     }
 
@@ -435,7 +435,7 @@ int shutdown_socket(int* socket, bool read_before_closing) {
   // the OS is preventing another program from accidentally receiving
   // duplicated packets intended for this program.
   if (close(*socket)) {
-    lf_print_warning("Error while closing socket: %s\n", strerror(errno));
+    lf_print_log("Error while closing socket: %s\n", strerror(errno));
     return -1;
   }
   *socket = -1;

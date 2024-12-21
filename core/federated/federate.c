@@ -403,26 +403,15 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 
 /**
  * Close the socket that receives incoming messages from the
- * specified federate ID. This function should be called when a read
- * of incoming socket fails or when an EOF is received.
- * It can also be called when the receiving end wants to stop communication,
- * in which case, flag should be 1.
+ * specified federate ID.
  *
  * @param fed_id The ID of the peer federate sending messages to this
  *  federate.
- * @param flag 0 if an EOF was received, -1 if a socket error occurred, 1 otherwise.
  */
-static void close_inbound_socket(int fed_id, int flag) {
+static void close_inbound_socket(int fed_id) {
   LF_MUTEX_LOCK(&socket_mutex);
   if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-    if (flag >= 0) {
-      if (flag > 0) {
-        shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], false);
-      } else {
-        // Have received EOF from the other end. Send EOF to the other end.
-        shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], true);
-      }
-    }
+    shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], false);
   }
   LF_MUTEX_UNLOCK(&socket_mutex);
 }
@@ -663,7 +652,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
       // Close socket, reading any incoming data and discarding it.
-      close_inbound_socket(fed_id, 1);
+      close_inbound_socket(fed_id);
     } else {
       // Need to use intended_tag here, not actual_tag, so that STP violations are detected.
       // It will become actual_tag (that is when the reactions will be invoked).
@@ -1640,7 +1629,7 @@ void lf_terminate_execution(environment_t* env) {
   LF_PRINT_DEBUG("Closing incoming P2P sockets.");
   // Close any incoming P2P sockets that are still open.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
-    close_inbound_socket(i, 1);
+    close_inbound_socket(i);
     // Ignore errors. Mark the socket closed.
     _fed.sockets_for_inbound_p2p_connections[i] = -1;
   }
@@ -1930,9 +1919,11 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
-  if (create_TCP_server(specified_port, &_fed.server_socket, (uint16_t*)&_fed.server_port, false)) {
+  uint16_t port;
+  if (create_TCP_server(specified_port, &_fed.server_socket, &port, false)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
+  _fed.server_port = (int)port;
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
 
   // Send the server port number to the RTI
