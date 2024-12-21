@@ -1007,7 +1007,7 @@ void send_reject(int* socket_id, unsigned char error_code) {
     lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
   }
   // Close the socket without reading until EOF.
-  shutdown_socket(&socket_id, false);
+  shutdown_socket(socket_id, false);
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
