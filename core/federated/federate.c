@@ -1493,7 +1493,7 @@ static void* listen_to_rti_TCP(void* args) {
         lf_print_error("Socket connection to the RTI was closed by the RTI without"
                        " properly sending an EOF first. Considering this a soft error.");
         // FIXME: If this happens, possibly a new RTI must be elected.
-        shutdown_socket(_fed.socket_TCP_RTI, false);
+        shutdown_socket(&_fed.socket_TCP_RTI, false);
         return NULL;
       } else {
         lf_print_error("Socket connection to the RTI has been broken with error %d: %s."
@@ -1501,13 +1501,13 @@ static void* listen_to_rti_TCP(void* args) {
                        " Considering this a soft error.",
                        errno, strerror(errno));
         // FIXME: If this happens, possibly a new RTI must be elected.
-        shutdown_socket(_fed.socket_TCP_RTI, false);
+        shutdown_socket(&_fed.socket_TCP_RTI, false);
         return NULL;
       }
     } else if (read_failed > 0) {
       // EOF received.
       lf_print("Connection to the RTI closed with an EOF.");
-      shutdown_socket(_fed.socket_TCP_RTI, false);
+      shutdown_socket(&_fed.socket_TCP_RTI, false);
       return NULL;
     }
     switch (buffer[0]) {
