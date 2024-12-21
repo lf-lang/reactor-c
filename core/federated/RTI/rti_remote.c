@@ -939,7 +939,11 @@ void* federate_info_thread_TCP(void* fed) {
       // Socket is closed
       lf_print_error("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
-      my_fed->socket = -1;
+      // Nothing more to do. Close the socket and exit.
+      // Prevent multiple threads from closing the same socket at the same time.
+      LF_MUTEX_LOCK(&rti_mutex);
+      shutdown_socket(my_fed->socket, false); //  from unistd.h
+      LF_MUTEX_UNLOCK(&rti_mutex);
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
     }
@@ -989,12 +993,6 @@ void* federate_info_thread_TCP(void* fed) {
       }
     }
   }
-
-  // Nothing more to do. Close the socket and exit.
-  // Prevent multiple threads from closing the same socket at the same time.
-  LF_MUTEX_LOCK(&rti_mutex);
-  close(my_fed->socket); //  from unistd.h
-  LF_MUTEX_UNLOCK(&rti_mutex);
   return NULL;
 }
 
@@ -1445,7 +1443,7 @@ void* respond_to_erroneous_connections(void* nothing) {
   while (true) {
     // Wait for an incoming connection request.
     // The following will block until either a federate attempts to connect
-    // or close(rti->socket_descriptor_TCP) is called.
+    // or shutdown_socket(rti->socket_descriptor_TCP) is called.
     int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
     if (socket_id < 0) {
       return NULL;

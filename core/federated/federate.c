@@ -1993,7 +1993,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Ignore errors on this response.
         write_to_socket(socket_id, 2, response);
       }
-      close(socket_id);
+      shutdown_socket(socket_id, false);
       continue;
     }
 
@@ -2013,7 +2013,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Ignore errors on this response.
         write_to_socket(socket_id, 2, response);
       }
-      close(socket_id);
+      shutdown_socket(socket_id, false);
       continue;
     }
 
@@ -2051,7 +2051,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       // Failed to create a listening thread.
       LF_MUTEX_LOCK(&socket_mutex);
       if (_fed.sockets_for_inbound_p2p_connections[remote_fed_id] != -1) {
-        close(socket_id);
+        shutdown_socket(socket_id, false);
         _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = -1;
       }
       LF_MUTEX_UNLOCK(&socket_mutex);
