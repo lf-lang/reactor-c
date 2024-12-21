@@ -942,7 +942,7 @@ void* federate_info_thread_TCP(void* fed) {
       // Nothing more to do. Close the socket and exit.
       // Prevent multiple threads from closing the same socket at the same time.
       LF_MUTEX_LOCK(&rti_mutex);
-      shutdown_socket(my_fed->socket, false); //  from unistd.h
+      shutdown_socket(&my_fed->socket, false); //  from unistd.h
       LF_MUTEX_UNLOCK(&rti_mutex);
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
@@ -1007,7 +1007,7 @@ void send_reject(int* socket_id, unsigned char error_code) {
     lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
   }
   // Close the socket without reading until EOF.
-  shutdown_socket(socket_id, false);
+  shutdown_socket(&socket_id, false);
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
