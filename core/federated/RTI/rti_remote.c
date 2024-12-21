@@ -1008,7 +1008,7 @@ void send_reject(int* socket_id, unsigned char error_code) {
   if (write_to_socket(*socket_id, 2, response)) {
     lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
   }
-  // Close the socket.
+  // Close the socket without reading until EOF.
   shutdown_socket(socket_id, false);
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -1394,7 +1394,7 @@ void lf_connect_to_federates(int socket_descriptor) {
     if (rti_remote->authentication_enabled) {
       if (!authenticate_federate(&socket_id)) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
-        // Close the socket.
+        // Close the socket without reading until EOF.
         shutdown_socket(&socket_id, false);
         // Ignore the federate that failed authentication.
         i--;
@@ -1462,7 +1462,7 @@ void* respond_to_erroneous_connections(void* nothing) {
     if (write_to_socket(socket_id, 2, response)) {
       lf_print_warning("RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
     }
-    // Close the socket.
+    // Close the socket without reading until EOF.
     shutdown_socket(&socket_id, false);
   }
   return NULL;
