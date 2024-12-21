@@ -797,7 +797,7 @@ void* clock_synchronization_thread(void* noargs) {
       send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, UDP);
 
       // Listen for reply message, which should be T3.
-      size_t message_size = 1 + sizeof(int32_t);
+      size_t message_size = 1 + sizeof(uint16_t);
       unsigned char buffer[message_size];
       // Maximum number of messages that we discard before giving up on this cycle.
       // If the T3 message from this federate does not arrive and we keep receiving
@@ -809,7 +809,7 @@ void* clock_synchronization_thread(void* noargs) {
         // If any errors occur, either discard the message or the clock sync round.
         if (!read_failed) {
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
-            int32_t fed_id_2 = extract_int32(&(buffer[1]));
+            uint16_t fed_id_2 = extract_uint16(&(buffer[1]));
             // Check that this message came from the correct federate.
             if (fed_id_2 != fed->enclave.id) {
               // Message is from the wrong federate. Discard the message.
@@ -1298,14 +1298,12 @@ static int receive_udp_message_and_set_up_clock_sync(int* socket_id, uint16_t fe
           send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
 
           // Listen for reply message, which should be T3.
-          size_t message_size = 1 + sizeof(int32_t);
+          size_t message_size = 1 + sizeof(uint16_t);
           unsigned char buffer[message_size];
           read_from_socket_fail_on_error(socket_id, message_size, buffer, NULL,
                                          "Socket to federate %d unexpectedly closed.", fed_id);
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
-            int32_t fed_id = extract_int32(&(buffer[1]));
-            assert(fed_id > -1);
-            assert(fed_id < 65536);
+            uint16_t fed_id = extract_uint16(&(buffer[1]));
             LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
             handle_physical_clock_sync_message(fed, TCP);
           } else {
