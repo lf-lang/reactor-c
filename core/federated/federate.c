@@ -814,22 +814,22 @@ static void* listen_to_federates(void* _args) {
  * if _lf_normal_termination is true and otherwise proceeds without the lock.
  * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
- * @param flag 0 if the socket has received EOF, 1 if not, -1 if abnormal termination.
  */
-static void close_outbound_socket(int fed_id, int flag) {
+static void close_outbound_socket(int fed_id) {
   assert(fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
+  // Close outbound connections, in case they have not closed themselves.
+  // This will result in EOF being sent to the remote federate, except for
+  // abnormal termination, in which case it will just close the socket.
   if (_lf_normal_termination) {
     LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
-  }
-  if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
-    // Close the socket by sending a FIN packet indicating that no further writes
-    // are expected.  Then read until we get an EOF indication.
-    if (flag > 0) {
+    if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
+      // Close the socket by sending a FIN packet indicating that no further writes
+      // are expected.  Then read until we get an EOF indication.
       shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[fed_id], true);
     }
-  }
-  if (_lf_normal_termination) {
     LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  } else {
+    shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[fed_id], false);
   }
 }
 
@@ -1643,8 +1643,7 @@ void lf_terminate_execution(environment_t* env) {
     // Close outbound connections, in case they have not closed themselves.
     // This will result in EOF being sent to the remote federate, except for
     // abnormal termination, in which case it will just close the socket.
-    int flag = _lf_normal_termination ? 1 : -1;
-    close_outbound_socket(i, flag);
+    close_outbound_socket(i);
   }
 
   LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
