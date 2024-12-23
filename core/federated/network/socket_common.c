@@ -155,7 +155,7 @@ static int create_server(uint16_t port, int* final_socket, uint16_t* final_port,
     return -1;
   }
   set_socket_timeout_option(socket_descriptor, &timeout_time);
-  int used_port = set_socket_bind_option(socket_descriptor, port, increment_port_on_retry);
+  uint16_t used_port = set_socket_bind_option(socket_descriptor, port, increment_port_on_retry);
   if (sock_type == 0) {
     // Enable listening for socket connections.
     // The second argument is the maximum number of queued socket requests,
@@ -313,10 +313,7 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
     // Read failed.
     // Socket has probably been closed from the other side.
     // Shut down and close the socket from this side.
-    shutdown(*socket, SHUT_RDWR);
-    close(*socket);
-    // Mark the socket closed.
-    *socket = -1;
+    shutdown_socket(socket, false);
     return -1;
   }
   return 0;
@@ -383,10 +380,7 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
     // Write failed.
     // Socket has probably been closed from the other side.
     // Shut down and close the socket from this side.
-    shutdown(*socket, SHUT_RDWR);
-    close(*socket);
-    // Mark the socket closed.
-    *socket = -1;
+    shutdown_socket(socket, false);
   }
   return result;
 }
@@ -409,4 +403,41 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
       lf_print_error("Failed to write to socket. Closing it.");
     }
   }
+}
+
+int shutdown_socket(int* socket, bool read_before_closing) {
+  if (!read_before_closing) {
+    if (shutdown(*socket, SHUT_RDWR)) {
+      lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
+      return -1;
+    }
+  } else {
+    // Signal the other side that no further writes are expected by sending a FIN packet.
+    // This indicates the write direction is closed. For more details, refer to:
+    // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
+    if (shutdown(*socket, SHUT_WR)) {
+      lf_print_log("Failed to shutdown socket: %s", strerror(errno));
+      return -1;
+    }
+
+    // Wait for the other side to send an EOF or encounter a socket error.
+    // Discard any incoming bytes. Normally, this read should return 0, indicating the peer has also closed the
+    // connection.
+    // This compensates for delayed ACKs and scenarios where Nagle's algorithm is disabled, ensuring the shutdown
+    // completes gracefully.
+    unsigned char buffer[10];
+    while (read(*socket, buffer, 10) > 0)
+      ;
+  }
+  // NOTE: In all common TCP/IP stacks, there is a time period,
+  // typically between 30 and 120 seconds, called the TIME_WAIT period,
+  // before the port is released after this close. This is because
+  // the OS is preventing another program from accidentally receiving
+  // duplicated packets intended for this program.
+  if (close(*socket)) {
+    lf_print_log("Error while closing socket: %s\n", strerror(errno));
+    return -1;
+  }
+  *socket = -1;
+  return 0;
 }
