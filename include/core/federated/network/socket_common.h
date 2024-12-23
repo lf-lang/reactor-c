@@ -2,7 +2,10 @@
 #define SOCKET_COMMON_H
 
 #include "low_level_platform.h"
-#define NUM_SOCKET_RETRIES 10
+
+/**
+ * The amount of time to wait after a failed socket read or write before trying again. This defaults to 100 ms.
+ */
 #define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
 
 /**
@@ -97,6 +100,7 @@ int create_real_time_tcp_socket_errexit();
  * @return 0 for success, -1 for failure.
  */
 int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry);
+
 /**
  * @brief Create a UDP server that listens for socket connections.
  *
@@ -105,16 +109,21 @@ int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port, bo
  * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
+ * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
 int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry);
 
 /**
- * These two functions waits for an incoming connection request on the specified server socket.
- * It blocks until a connection is successfully accepted. If an error occurs that is not
+ * Wait for an incoming connection request on the specified server socket.
+ * This blocks until a connection is successfully accepted. If an error occurs that is not
  * temporary (e.g., `EAGAIN` or `EWOULDBLOCK`), it reports the error and exits. Temporary
  * errors cause the function to retry accepting the connection.
- * If the rti_socket is not -1, it checks if the RTI's server socket is still open.
+ *
+ * If the `rti_socket` is not -1, this function checks whether the specified socket is still open.
+ * If it is not open, then this function returns -1.
+ * This is useful for federates to determine whether they are still connected to the federation
+ * and to stop waiting when they are not.
  *
  * @param socket The server socket file descriptor that is listening for incoming connections.
  * @param rti_socket The rti socket for the federate to check if it is still open.
@@ -126,8 +135,8 @@ int accept_socket(int socket, int rti_socket);
 
 /**
  *
- * This function attempts to establish a TCP connection to the specified hostname
- * and port. It uses `getaddrinfo` to resolve the hostname and retries the connection
+ * Attempt to establish a TCP connection to the specified hostname
+ * and port. This function uses `getaddrinfo` to resolve the hostname and retries the connection
  * periodically if it fails. If the specified port is 0, it iterates through a range
  * of default ports starting from `DEFAULT_PORT`. The function will stop retrying
  * if the `CONNECT_TIMEOUT` is reached.
