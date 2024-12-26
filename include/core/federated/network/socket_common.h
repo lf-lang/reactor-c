@@ -63,6 +63,8 @@
  */
 #define MSG_TYPE_FAILED 25
 
+typedef enum socket_type_t { TCP, UDP } socket_type_t;
+
 /**
  * Mutex protecting socket close operations.
  */
@@ -93,21 +95,11 @@ int create_real_time_tcp_socket_errexit();
  * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
+ * @param sock_type Type of the socket wheter TCP or UDP.
  * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
-int create_TCP_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry);
-/**
- * @brief Create a UDP server that listens for socket connections.
- *
- * This function is just like create_TCP_server(), except that it creates a UDP server.
- *
- * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
- * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
- * @param final_port Pointer to the final port the server will use.
- * @return 0 for success, -1 for failure.
- */
-int create_UDP_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry);
+int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type, bool increment_port_on_retry);
 
 /**
  * These two functions waits for an incoming connection request on the specified server socket.

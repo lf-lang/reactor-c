@@ -1942,7 +1942,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
-  if (create_TCP_server(specified_port, &_fed.server_socket, (uint16_t*)&_fed.server_port, false)) {
+  if (create_server(specified_port, &_fed.server_socket, (uint16_t*)&_fed.server_port, TCP, false)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
