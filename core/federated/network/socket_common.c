@@ -133,7 +133,8 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   return used_port;
 }
 
-int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type, bool increment_port_on_retry) {
+int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
+                  bool increment_port_on_retry) {
   int socket_descriptor;
   struct timeval timeout_time;
   if (sock_type == TCP) {

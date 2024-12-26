@@ -102,7 +102,8 @@ int create_real_time_tcp_socket_errexit();
  * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
-int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type, bool increment_port_on_retry);
+int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
+                  bool increment_port_on_retry);
 
 /**
  * Wait for an incoming connection request on the specified server socket.
