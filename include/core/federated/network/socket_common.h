@@ -98,7 +98,7 @@ int create_real_time_tcp_socket_errexit();
  * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
- * @param sock_type Type of the socket wheter TCP or UDP.
+ * @param sock_type Type of the socket, TCP or UDP.
  * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
