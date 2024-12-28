@@ -167,7 +167,7 @@ const char* lf_reactor_full_name(self_base_t* self) {
   size_t location = len - strlen(self->name);
   strncpy(&self->full_name[location], self->name, strlen(self->name) + 1);
   parent = self->parent;
-  while(parent != NULL) {
+  while (parent != NULL) {
     location--;
     self->full_name[location] = '.';
     location -= strlen(parent->name);
