@@ -936,42 +936,6 @@ static int perform_hmac_authentication() {
 }
 #endif
 
-static void close_rti_socket() {
-  shutdown(_fed.socket_TCP_RTI, SHUT_RDWR);
-  close(_fed.socket_TCP_RTI);
-  _fed.socket_TCP_RTI = -1;
-}
-
-/**
- * Return in the result a struct with the address info for the specified hostname and port.
- * The memory for the result is dynamically allocated and must be freed using freeaddrinfo.
- * @param hostname The host name.
- * @param port The port number.
- * @param result The struct into which to write.
- */
-static void rti_address(const char* hostname, uint16_t port, struct addrinfo** result) {
-  struct addrinfo hints;
-
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;       /* Allow IPv4 */
-  hints.ai_socktype = SOCK_STREAM; /* Stream socket */
-  hints.ai_protocol = IPPROTO_TCP; /* TCP protocol */
-  hints.ai_addr = NULL;
-  hints.ai_next = NULL;
-  hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
-
-  // Convert port number to string.
-  char str[6];
-  sprintf(str, "%u", port);
-
-  // Get address structure matching hostname and hints criteria, and
-  // set port to the port number provided in str. There should only
-  // ever be one matching address structure, and we connect to that.
-  if (getaddrinfo(hostname, (const char*)&str, &hints, result)) {
-    lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
-  }
-}
-
 /**
  * Send the specified timestamp to the RTI and wait for a response.
  * The specified timestamp should be current physical time of the
@@ -1793,95 +1757,70 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   assert(port > 0);
   uint16_t uport = (uint16_t)port;
 
-#if LOG_LEVEL > 3
-  // Print the received IP address in a human readable format
-  // Create the human readable format of the received address.
-  // This is avoided unless LOG_LEVEL is high enough to
-  // subdue the overhead caused by inet_ntop().
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
-  LF_PRINT_LOG("Received address %s port %d for federate %d from RTI.", hostname, uport, remote_federate_id);
-#endif
-
+  int socket_id = create_real_time_tcp_socket_errexit();
+  if (connect_to_socket(socket_id, (const char*)hostname, uport) < 0) {
+    lf_print_error_and_exit("Failed to connect() to RTI.");
+  }
   // Iterate until we either successfully connect or we exceed the CONNECT_TIMEOUT
   start_connect = lf_time_physical();
-  int socket_id = -1;
   while (result < 0 && !_lf_termination_executed) {
-    // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-    socket_id = create_real_time_tcp_socket_errexit();
+    // Try again after some time if the connection failed.
+    // Note that this should not really happen since the remote federate should be
+    // accepting socket connections. But possibly it will be busy (in process of accepting
+    // another socket connection?). Hence, we retry.
+    if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
+      // If the remote federate is not accepting the connection after CONNECT_TIMEOUT
+      // treat it as a soft error condition and return.
+      lf_print_error("Failed to connect to federate %d with timeout: " PRINTF_TIME ". Giving up.", remote_federate_id,
+                     CONNECT_TIMEOUT);
+      return;
+    }
 
-    // Server file descriptor.
-    struct sockaddr_in server_fd;
-    // Zero out the server_fd struct.
-    bzero((char*)&server_fd, sizeof(server_fd));
+    // Check whether the RTI is still there.
+    if (rti_failed()) {
+      break;
+    }
+    // Connect was successful.
+    size_t buffer_length = 1 + sizeof(uint16_t) + 1;
+    unsigned char buffer[buffer_length];
+    buffer[0] = MSG_TYPE_P2P_SENDING_FED_ID;
+    if (_lf_my_fed_id == UINT16_MAX) {
+      lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX - 1);
+    }
+    encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(buffer[1]));
+    unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
+    buffer[sizeof(uint16_t) + 1] = federation_id_length;
+    // Trace the event when tracing is enabled
+    tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
 
-    // Set up the server_fd fields.
-    server_fd.sin_family = AF_INET;    // IPv4
-    server_fd.sin_addr = host_ip_addr; // Received from the RTI
+    // No need for a mutex because we have the only handle on the socket.
+    write_to_socket_fail_on_error(&socket_id, buffer_length, buffer, NULL, "Failed to send fed_id to federate %d.",
+                                  remote_federate_id);
+    write_to_socket_fail_on_error(&socket_id, federation_id_length, (unsigned char*)federation_metadata.federation_id,
+                                  NULL, "Failed to send federation id to federate %d.", remote_federate_id);
 
-    // Convert the port number from host byte order to network byte order.
-    server_fd.sin_port = htons(uport);
-    result = connect(socket_id, (struct sockaddr*)&server_fd, sizeof(server_fd));
-
-    if (result != 0) {
-      lf_print_error("Failed to connect to federate %d on port %d.", remote_federate_id, uport);
-
-      // Try again after some time if the connection failed.
-      // Note that this should not really happen since the remote federate should be
-      // accepting socket connections. But possibly it will be busy (in process of accepting
-      // another socket connection?). Hence, we retry.
-      if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-        // If the remote federate is not accepting the connection after CONNECT_TIMEOUT
-        // treat it as a soft error condition and return.
-        lf_print_error("Failed to connect to federate %d with timeout: " PRINTF_TIME ". Giving up.", remote_federate_id,
-                       CONNECT_TIMEOUT);
-        return;
-      }
-      lf_print_warning("Could not connect to federate %d. Will try again every" PRINTF_TIME "nanoseconds.\n",
-                       remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
-
-      // Check whether the RTI is still there.
-      if (rti_failed())
-        break;
-
+    read_from_socket_fail_on_error(&socket_id, 1, (unsigned char*)buffer, NULL,
+                                   "Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.",
+                                   remote_federate_id);
+    if (buffer[0] != MSG_TYPE_ACK) {
+      // Get the error code.
+      read_from_socket_fail_on_error(&socket_id, 1, (unsigned char*)buffer, NULL,
+                                     "Failed to read error code from federate %d in response to sending fed_id.",
+                                     remote_federate_id);
+      lf_print_error("Received MSG_TYPE_REJECT message from remote federate (%d).", buffer[0]);
+      result = -1;
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
       lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
+      lf_print_warning("Could not connect to federate %d. Will try again every" PRINTF_TIME "nanoseconds.\n",
+                       remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
+      continue;
     } else {
-      // Connect was successful.
-      size_t buffer_length = 1 + sizeof(uint16_t) + 1;
-      unsigned char buffer[buffer_length];
-      buffer[0] = MSG_TYPE_P2P_SENDING_FED_ID;
-      if (_lf_my_fed_id == UINT16_MAX) {
-        lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX - 1);
-      }
-      encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(buffer[1]));
-      unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
-      buffer[sizeof(uint16_t) + 1] = federation_id_length;
+      lf_print("Connected to federate %d, port %hu.", remote_federate_id, uport);
       // Trace the event when tracing is enabled
-      tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
-
-      // No need for a mutex because we have the only handle on the socket.
-      write_to_socket_fail_on_error(&socket_id, buffer_length, buffer, NULL, "Failed to send fed_id to federate %d.",
-                                    remote_federate_id);
-      write_to_socket_fail_on_error(&socket_id, federation_id_length, (unsigned char*)federation_metadata.federation_id,
-                                    NULL, "Failed to send federation id to federate %d.", remote_federate_id);
-
-      read_from_socket_fail_on_error(&socket_id, 1, (unsigned char*)buffer, NULL,
-                                     "Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.",
-                                     remote_federate_id);
-      if (buffer[0] != MSG_TYPE_ACK) {
-        // Get the error code.
-        read_from_socket_fail_on_error(&socket_id, 1, (unsigned char*)buffer, NULL,
-                                       "Failed to read error code from federate %d in response to sending fed_id.",
-                                       remote_federate_id);
-        lf_print_error("Received MSG_TYPE_REJECT message from remote federate (%d).", buffer[0]);
-        result = -1;
-        continue;
-      } else {
-        lf_print("Connected to federate %d, port %d.", remote_federate_id, port);
-        // Trace the event when tracing is enabled
-        tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
-      }
+      tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
+      break;
     }
   }
   // Once we set this variable, then all future calls to close() on this
@@ -1896,59 +1835,14 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
-  // Adjust the port.
-  uint16_t uport = 0;
-  if (port < 0 || port > INT16_MAX) {
-    lf_print_error("lf_connect_to_rti(): Specified port (%d) is out of range,"
-                   " using the default port %d instead.",
-                   port, DEFAULT_PORT);
-    uport = DEFAULT_PORT;
-    port = 0; // Mark so that increments occur between tries.
-  } else {
-    uport = (uint16_t)port;
-  }
-  if (uport == 0) {
-    uport = DEFAULT_PORT;
-  }
-
   // Create a socket
   _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
-
-  int result = -1;
-  struct addrinfo* res = NULL;
+  if (connect_to_socket(_fed.socket_TCP_RTI, hostname, port) < 0) {
+    lf_print_error_and_exit("Failed to connect() to RTI.");
+  }
 
   instant_t start_connect = lf_time_physical();
   while (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT) && !_lf_termination_executed) {
-    if (res != NULL) {
-      // This is a repeated attempt.
-      if (_fed.socket_TCP_RTI >= 0)
-        close_rti_socket();
-
-      lf_sleep(CONNECT_RETRY_INTERVAL);
-
-      // Create a new socket.
-      _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
-
-      if (port == 0) {
-        // Free previously allocated address info.
-        freeaddrinfo(res);
-        // Increment the port number.
-        uport++;
-        if (uport >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
-          uport = DEFAULT_PORT;
-
-        // Reconstruct the address info.
-        rti_address(hostname, uport, &res);
-      }
-      lf_print("Trying RTI again on port %d.", uport);
-    } else {
-      // This is the first attempt.
-      rti_address(hostname, uport, &res);
-    }
-
-    result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
-    if (result < 0)
-      continue; // Connect failed.
 
     // Have connected to an RTI, but not sure it's the right RTI.
     // Send a MSG_TYPE_FED_IDS message and wait for a reply.
@@ -1961,7 +1855,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
         continue; // Try again with a new port.
       } else {
         // No point in trying again because it will be the same port.
-        close_rti_socket();
         lf_print_error_and_exit("Authentication failed.");
       }
     }
@@ -2014,7 +1907,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
       read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, 1, &cause, NULL,
                                      "Failed to read the cause of rejection by the RTI.");
       if (cause == FEDERATION_ID_DOES_NOT_MATCH || cause == WRONG_SERVER) {
-        lf_print_warning("Connected to the wrong RTI on port %d. Will try again", uport);
+        lf_print_warning("Connected to the wrong RTI. Will try again");
         continue;
       }
     } else if (response == MSG_TYPE_ACK) {
@@ -2023,18 +1916,13 @@ void lf_connect_to_rti(const char* hostname, int port) {
       LF_PRINT_LOG("Received acknowledgment from the RTI.");
       break;
     } else if (response == MSG_TYPE_RESIGN) {
-      lf_print_warning("RTI on port %d resigned. Will try again", uport);
+      lf_print_warning("RTI resigned. Will try again");
       continue;
     } else {
-      lf_print_warning("RTI on port %d gave unexpect response %u. Will try again", uport, response);
+      lf_print_warning("RTI gave unexpect response %u. Will try again", response);
       continue;
     }
   }
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to connect to RTI with timeout: " PRINTF_TIME, CONNECT_TIMEOUT);
-  }
-
-  freeaddrinfo(res); /* No longer needed */
 
   // Call a generated (external) function that sends information
   // about connections between this federate and other federates
@@ -2050,55 +1938,13 @@ void lf_connect_to_rti(const char* hostname, int port) {
   encode_uint16(udp_port, &(UDP_port_number[1]));
   write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, 1 + sizeof(uint16_t), UDP_port_number, NULL,
                                 "Failed to send the UDP port number to the RTI.");
-
-  lf_print("Connected to RTI at %s:%d.", hostname, uport);
 }
 
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
-  uint16_t port = (uint16_t)specified_port;
-  LF_PRINT_LOG("Creating a socket server on port %d.", port);
-  // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-  int socket_descriptor = create_real_time_tcp_socket_errexit();
-
-  // Server file descriptor.
-  struct sockaddr_in server_fd;
-  // Zero out the server address structure.
-  bzero((char*)&server_fd, sizeof(server_fd));
-
-  server_fd.sin_family = AF_INET;         // IPv4
-  server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
-  // Convert the port number from host byte order to network byte order.
-  server_fd.sin_port = htons(port);
-
-  int result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  int count = 0;
-  while (result < 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-    lf_sleep(PORT_BIND_RETRY_INTERVAL);
-    result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  }
-  if (result < 0) {
-    lf_print_error_and_exit("Failed to bind socket on port %d.", port);
-  }
-
-  // Set the global server port.
-  if (specified_port == 0) {
-    // Need to retrieve the port number assigned by the OS.
-    struct sockaddr_in assigned;
-    socklen_t addr_len = sizeof(assigned);
-    if (getsockname(socket_descriptor, (struct sockaddr*)&assigned, &addr_len) < 0) {
-      lf_print_error_and_exit("Failed to retrieve assigned port number.");
-    }
-    _fed.server_port = ntohs(assigned.sin_port);
-  } else {
-    _fed.server_port = port;
-  }
-
-  // Enable listening for socket connections.
-  // The second argument is the maximum number of queued socket requests,
-  // which according to the Mac man page is limited to 128.
-  listen(socket_descriptor, 128);
-
+  if (create_server(specified_port, &_fed.server_socket, (uint16_t*)&_fed.server_port, TCP, false)) {
+    lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
+  };
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
 
   // Send the server port number to the RTI
@@ -2115,9 +1961,6 @@ void lf_create_server(int specified_port) {
                                 "Failed to send address advertisement.");
 
   LF_PRINT_DEBUG("Sent port %d to the RTI.", _fed.server_port);
-
-  // Set the global server socket
-  _fed.server_socket = socket_descriptor;
 }
 
 void lf_enqueue_port_absent_reactions(environment_t* env) {
@@ -2151,21 +1994,10 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   _fed.inbound_socket_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
     // Wait for an incoming connection request.
-    struct sockaddr client_fd;
-    uint32_t client_length = sizeof(client_fd);
-    int socket_id = accept(_fed.server_socket, &client_fd, &client_length);
-
+    int socket_id = accept_socket(_fed.server_socket, _fed.socket_TCP_RTI);
     if (socket_id < 0) {
-      if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
-        if (rti_failed())
-          break;
-        else
-          continue; // Try again.
-      } else if (errno == EPERM) {
-        lf_print_error_system_failure("Firewall permissions prohibit connection.");
-      } else {
-        lf_print_error_system_failure("A fatal error occurred while accepting a new socket.");
-      }
+      lf_print_warning("Federate failed to accept the socket.");
+      return NULL;
     }
     LF_PRINT_LOG("Accepted new connection from remote federate.");
 
