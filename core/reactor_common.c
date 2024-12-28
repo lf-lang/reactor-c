@@ -149,6 +149,34 @@ void lf_set_stop_tag(environment_t* env, tag_t tag) {
   }
 }
 
+const char* lf_reactor_full_name(self_base_t* self) {
+  if (self->full_name != NULL) {
+    return self->full_name;
+  }
+  // First find the length of the name.
+  size_t len = 0;
+  len += strlen(self->name);
+  self_base_t* parent = self->parent;
+  while (parent != NULL) {
+    len++;
+    len += strlen(parent->name);
+    parent = parent->parent;
+  }
+  self->full_name = (char*)lf_allocate(len + 1, sizeof(char), &self->allocations);
+
+  size_t location = len - strlen(self->name);
+  strncpy(&self->full_name[location], self->name, strlen(self->name) + 1);
+  parent = self->parent;
+  while(parent != NULL) {
+    location--;
+    self->full_name[location] = '.';
+    location -= strlen(parent->name);
+    strncpy(&self->full_name[location], parent->name, strlen(parent->name));
+    parent = parent->parent;
+  }
+  return self->full_name;
+}
+
 #ifdef FEDERATED_DECENTRALIZED
 
 interval_t lf_get_stp_offset() { return lf_fed_STA_offset; }

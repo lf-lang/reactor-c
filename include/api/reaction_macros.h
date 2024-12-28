@@ -199,4 +199,10 @@
  */
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 
+/**
+ * @brief Return the fully qualified name of the reactor.
+ * @param reactor The reactor to get the name of.
+ */
+#define lf_reactor_full_name(reactor) lf_reactor_full_name(&reactor->base)
+
 #endif // REACTION_MACROS_H

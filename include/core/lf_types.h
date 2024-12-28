@@ -277,6 +277,9 @@ typedef struct self_base_t {
   struct allocation_record_t* allocations;
   struct reaction_t* executing_reaction; // The currently executing reaction of the reactor.
   environment_t* environment;
+  char* name; // The name of the reactor. If a bank, appended with [index].  
+  char* full_name; // The full name of the reactor or NULL if lf_reactor_full_name() is not called. 
+  self_base_t* parent; // The parent of this reactor.
 #if !defined(LF_SINGLE_THREADED)
   void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
                        // It is not declared as such to avoid a dependence on platform.h.

@@ -26,4 +26,6 @@
 #undef lf_time_logical
 #undef lf_time_logical_elapsed
 
+#undef lf_reactor_full_name
+
 #endif // REACTION_MACROS_H

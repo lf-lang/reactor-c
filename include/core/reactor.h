@@ -128,5 +128,15 @@ void lf_free_all_reactors(void);
  */
 void lf_free_reactor(self_base_t* self);
 
+/**
+ * @brief Return the full name of the reactor.
+ * 
+ * The full name includes the names of all the parent reactors, separated by dots.
+ * If any reactor is a bank, the name will have a  suffix of the form `[bank_index]`.
+ * 
+ * @param self The self struct of the reactor.
+ */
+const char* lf_reactor_full_name(self_base_t* self);
+
 #endif /* REACTOR_H */
 /** @} */
