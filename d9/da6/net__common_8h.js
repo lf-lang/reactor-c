@@ -1,9 +1,6 @@
 var net__common_8h =
 [
     [ "ADDRESS_QUERY_RETRY_INTERVAL", "d9/da6/net__common_8h.html#a8ce563da4edbe9c4f7c1ccf35ad8694f", null ],
-    [ "CONNECT_RETRY_INTERVAL", "d9/da6/net__common_8h.html#ab2106828de539188aed925f592751c12", null ],
-    [ "CONNECT_TIMEOUT", "d9/da6/net__common_8h.html#a252b2cb72531cb00ecd4d4db37a5a473", null ],
-    [ "DEFAULT_PORT", "d9/da6/net__common_8h.html#a16b710f592bf8f7900666392adc444dc", null ],
     [ "DELAY_START", "d9/da6/net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed", null ],
     [ "ENCODE_STOP_GRANTED", "d9/da6/net__common_8h.html#a8086398bfefdc0104767df037e59daa5", null ],
     [ "ENCODE_STOP_REQUEST", "d9/da6/net__common_8h.html#a3268a658c2cb5126be5284a86ad9bd62", null ],
@@ -13,7 +10,6 @@ var net__common_8h =
     [ "FEDERATE_ID_OUT_OF_RANGE", "d9/da6/net__common_8h.html#a5846fdcf4c92041f543b73e29e78aa21", null ],
     [ "FEDERATION_ID_DOES_NOT_MATCH", "d9/da6/net__common_8h.html#a653676d1f302fe08249af3dee78fa294", null ],
     [ "HMAC_DOES_NOT_MATCH", "d9/da6/net__common_8h.html#a51d08a784b4ee6463688a971d99d2944", null ],
-    [ "MAX_NUM_PORT_ADDRESSES", "d9/da6/net__common_8h.html#a5dbc42b5857eb262a06aa04399475d16", null ],
     [ "MSG_TYPE_ACK", "d9/da6/net__common_8h.html#ad94567b2d2e277ddc1be0da9a92b09e7", null ],
     [ "MSG_TYPE_ADDRESS_ADVERTISEMENT", "d9/da6/net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35", null ],
     [ "MSG_TYPE_ADDRESS_QUERY", "d9/da6/net__common_8h.html#a5ac191bca25da16eca3e4f02d21172ef", null ],
@@ -51,12 +47,8 @@ var net__common_8h =
     [ "MSG_TYPE_TIMESTAMP_LENGTH", "d9/da6/net__common_8h.html#a3450aedd1ca1c368ed28ed2e859588ef", null ],
     [ "MSG_TYPE_UDP_PORT", "d9/da6/net__common_8h.html#ae2c2fdb5fbcc47750409348d37b0cd78", null ],
     [ "NONCE_LENGTH", "d9/da6/net__common_8h.html#a6771c37605e49c8faae7898797f254b7", null ],
-    [ "PORT_BIND_RETRY_INTERVAL", "d9/da6/net__common_8h.html#af11c9d6cd02e9e78e38a848cf75205cb", null ],
-    [ "PORT_BIND_RETRY_LIMIT", "d9/da6/net__common_8h.html#a04c08dc0b0733010f3190bf6df123433", null ],
     [ "RTI_NOT_EXECUTED_WITH_AUTH", "d9/da6/net__common_8h.html#ae546b6c6176fe607616181e144364f2b", null ],
     [ "SHA256_HMAC_LENGTH", "d9/da6/net__common_8h.html#abd435507a255ff2571133013bdf93bd2", null ],
-    [ "TCP_TIMEOUT_TIME", "d9/da6/net__common_8h.html#ab1edbb864391382835b9ad71408c5c53", null ],
-    [ "UDP_TIMEOUT_TIME", "d9/da6/net__common_8h.html#aac9f4a449d302b4f39e69a14b3a4c8d5", null ],
     [ "UNEXPECTED_MESSAGE", "d9/da6/net__common_8h.html#ae2e1a44a10d4219f4645a4e99fee009c", null ],
     [ "WRONG_SERVER", "d9/da6/net__common_8h.html#a5a6c87886a0136b58ae5bb1d627c7ae3", null ]
 ];

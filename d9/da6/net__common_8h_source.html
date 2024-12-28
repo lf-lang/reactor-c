@@ -104,162 +104,146 @@ $(function(){initNavTree('d9/da6/net__common_8h_source.html','../../'); initResi
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span><span class="preprocessor">#ifndef NET_COMMON_H</span></div>
 <div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span><span class="preprocessor">#define NET_COMMON_H</span></div>
 <div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span> </div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ab1edbb864391382835b9ad71408c5c53">  186</a></span><span class="preprocessor">#define TCP_TIMEOUT_TIME SEC(10)</span></div>
-<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span> </div>
-<div class="line"><a id="l00192" name="l00192"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aac9f4a449d302b4f39e69a14b3a4c8d5">  192</a></span><span class="preprocessor">#define UDP_TIMEOUT_TIME SEC(1)</span></div>
-<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span> </div>
-<div class="line"><a id="l00199" name="l00199"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#acc95612e1d2dbbdf34afe76d50e75223">  199</a></span><span class="preprocessor">#define FED_COM_BUFFER_SIZE 256u</span></div>
-<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span> </div>
-<div class="line"><a id="l00204" name="l00204"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ab2106828de539188aed925f592751c12">  204</a></span><span class="preprocessor">#define CONNECT_RETRY_INTERVAL MSEC(500)</span></div>
-<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span> </div>
-<div class="line"><a id="l00211" name="l00211"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a252b2cb72531cb00ecd4d4db37a5a473">  211</a></span><span class="preprocessor">#define CONNECT_TIMEOUT MINUTES(1)</span></div>
-<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span> </div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a5dbc42b5857eb262a06aa04399475d16">  218</a></span><span class="preprocessor">#define MAX_NUM_PORT_ADDRESSES 16</span></div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span> </div>
-<div class="line"><a id="l00226" name="l00226"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a8ce563da4edbe9c4f7c1ccf35ad8694f">  226</a></span><span class="preprocessor">#define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)</span></div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span> </div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#af11c9d6cd02e9e78e38a848cf75205cb">  235</a></span><span class="preprocessor">#define PORT_BIND_RETRY_INTERVAL SEC(1)</span></div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span> </div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a04c08dc0b0733010f3190bf6df123433">  240</a></span><span class="preprocessor">#define PORT_BIND_RETRY_LIMIT 60</span></div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span> </div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a16b710f592bf8f7900666392adc444dc">  248</a></span><span class="preprocessor">#define DEFAULT_PORT 15045u</span></div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span> </div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed">  259</a></span><span class="preprocessor">#define DELAY_START SEC(1)</span></div>
-<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span> </div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span> </div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span><span class="comment">// These message types will be encoded in an unsigned char,</span></div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span><span class="comment">// so the magnitude must not exceed 255. Note that these are</span></div>
-<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span><span class="comment">// listed in increasing numerical order starting from 0 interleaved</span></div>
-<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span><span class="comment">// with decreasing numerical order starting from 255 (so that they</span></div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span><span class="comment">// can be listed in a logical order here even as the design evolves).</span></div>
-<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span> </div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a59a69d0685fdc2a216718f1efa083c4c">  275</a></span><span class="preprocessor">#define MSG_TYPE_REJECT 0</span></div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span> </div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ad94567b2d2e277ddc1be0da9a92b09e7">  281</a></span><span class="preprocessor">#define MSG_TYPE_ACK 255</span></div>
-<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span> </div>
-<div class="line"><a id="l00291" name="l00291"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae2c2fdb5fbcc47750409348d37b0cd78">  291</a></span><span class="preprocessor">#define MSG_TYPE_UDP_PORT 254</span></div>
-<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span> </div>
-<div class="line"><a id="l00309" name="l00309"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a8e49ce0b1c3a58c881849ca4d0bae824">  309</a></span><span class="preprocessor">#define MSG_TYPE_FED_IDS 1</span></div>
-<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span> </div>
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span> </div>
-<div class="line"><a id="l00322" name="l00322"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a191b27bec42ab0370248fbc64cc9b860">  322</a></span><span class="preprocessor">#define MSG_TYPE_FED_NONCE 100</span></div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span> </div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a20f24b4b20547d44523120689afd9b98">  336</a></span><span class="preprocessor">#define MSG_TYPE_RTI_RESPONSE 101</span></div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span> </div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#acd7e1e07253e568044a204a1f82d36a1">  348</a></span><span class="preprocessor">#define MSG_TYPE_FED_RESPONSE 102</span></div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span> </div>
-<div class="line"><a id="l00353" name="l00353"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a6771c37605e49c8faae7898797f254b7">  353</a></span><span class="preprocessor">#define NONCE_LENGTH 8</span></div>
-<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span> </div>
-<div class="line"><a id="l00358" name="l00358"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#abd435507a255ff2571133013bdf93bd2">  358</a></span><span class="preprocessor">#define SHA256_HMAC_LENGTH 32</span></div>
-<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span> </div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a27db349e7460afc1758bf2eec95d7005">  366</a></span><span class="preprocessor">#define MSG_TYPE_TIMESTAMP 2</span></div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a3450aedd1ca1c368ed28ed2e859588ef">  367</a></span><span class="preprocessor">#define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(int64_t))</span></div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span> </div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ac79b5228f132029285408a30a31a174e">  378</a></span><span class="preprocessor">#define MSG_TYPE_MESSAGE 3</span></div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span> </div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a9e19e307a4c3a9dbccea4f2539cd67dd">  383</a></span><span class="preprocessor">#define MSG_TYPE_RESIGN 4</span></div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span> </div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a2922af172f2e95bc73bd0675a4107b3b">  398</a></span><span class="preprocessor">#define MSG_TYPE_TAGGED_MESSAGE 5</span></div>
-<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span> </div>
-<div class="line"><a id="l00414" name="l00414"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#af662a6a84cd64cddad92e20e26af877e">  414</a></span><span class="preprocessor">#define MSG_TYPE_NEXT_EVENT_TAG 6</span></div>
-<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span> </div>
-<div class="line"><a id="l00424" name="l00424"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a94fe2c510160682b2c0ffc00b35e0ad5">  424</a></span><span class="preprocessor">#define MSG_TYPE_TAG_ADVANCE_GRANT 7</span></div>
-<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span> </div>
-<div class="line"><a id="l00434" name="l00434"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a9a9bb60d4df1ba581a29319850097cc2">  434</a></span><span class="preprocessor">#define MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT 8</span></div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#acc95612e1d2dbbdf34afe76d50e75223">  187</a></span><span class="preprocessor">#define FED_COM_BUFFER_SIZE 256u</span></div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span> </div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a8ce563da4edbe9c4f7c1ccf35ad8694f">  195</a></span><span class="preprocessor">#define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)</span></div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span> </div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed">  206</a></span><span class="preprocessor">#define DELAY_START SEC(1)</span></div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span> </div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span> </div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span><span class="comment">// These message types will be encoded in an unsigned char,</span></div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span><span class="comment">// so the magnitude must not exceed 255. Note that these are</span></div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span><span class="comment">// listed in increasing numerical order starting from 0 interleaved</span></div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span><span class="comment">// with decreasing numerical order starting from 255 (so that they</span></div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span><span class="comment">// can be listed in a logical order here even as the design evolves).</span></div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span> </div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a59a69d0685fdc2a216718f1efa083c4c">  222</a></span><span class="preprocessor">#define MSG_TYPE_REJECT 0</span></div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span> </div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ad94567b2d2e277ddc1be0da9a92b09e7">  228</a></span><span class="preprocessor">#define MSG_TYPE_ACK 255</span></div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span> </div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae2c2fdb5fbcc47750409348d37b0cd78">  238</a></span><span class="preprocessor">#define MSG_TYPE_UDP_PORT 254</span></div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span> </div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a8e49ce0b1c3a58c881849ca4d0bae824">  256</a></span><span class="preprocessor">#define MSG_TYPE_FED_IDS 1</span></div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span> </div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span> </div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a191b27bec42ab0370248fbc64cc9b860">  269</a></span><span class="preprocessor">#define MSG_TYPE_FED_NONCE 100</span></div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a20f24b4b20547d44523120689afd9b98">  283</a></span><span class="preprocessor">#define MSG_TYPE_RTI_RESPONSE 101</span></div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span> </div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#acd7e1e07253e568044a204a1f82d36a1">  295</a></span><span class="preprocessor">#define MSG_TYPE_FED_RESPONSE 102</span></div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span> </div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a6771c37605e49c8faae7898797f254b7">  300</a></span><span class="preprocessor">#define NONCE_LENGTH 8</span></div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span> </div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#abd435507a255ff2571133013bdf93bd2">  305</a></span><span class="preprocessor">#define SHA256_HMAC_LENGTH 32</span></div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span> </div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a27db349e7460afc1758bf2eec95d7005">  313</a></span><span class="preprocessor">#define MSG_TYPE_TIMESTAMP 2</span></div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a3450aedd1ca1c368ed28ed2e859588ef">  314</a></span><span class="preprocessor">#define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(int64_t))</span></div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span> </div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ac79b5228f132029285408a30a31a174e">  325</a></span><span class="preprocessor">#define MSG_TYPE_MESSAGE 3</span></div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span> </div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a9e19e307a4c3a9dbccea4f2539cd67dd">  330</a></span><span class="preprocessor">#define MSG_TYPE_RESIGN 4</span></div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span> </div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a2922af172f2e95bc73bd0675a4107b3b">  345</a></span><span class="preprocessor">#define MSG_TYPE_TAGGED_MESSAGE 5</span></div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span> </div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#af662a6a84cd64cddad92e20e26af877e">  361</a></span><span class="preprocessor">#define MSG_TYPE_NEXT_EVENT_TAG 6</span></div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span> </div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a94fe2c510160682b2c0ffc00b35e0ad5">  371</a></span><span class="preprocessor">#define MSG_TYPE_TAG_ADVANCE_GRANT 7</span></div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span> </div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a9a9bb60d4df1ba581a29319850097cc2">  381</a></span><span class="preprocessor">#define MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT 8</span></div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span> </div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ada47c9f6736992a3df380526d87089f9">  389</a></span><span class="preprocessor">#define MSG_TYPE_LATEST_TAG_CONFIRMED 9</span></div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span> </div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span> </div>
+<div class="line"><a id="l00427" name="l00427"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a8588a57a3ae81bf33c740dfc57103a23">  427</a></span><span class="preprocessor">#define MSG_TYPE_STOP_REQUEST 10</span></div>
+<div class="line"><a id="l00428" name="l00428"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aa3ed75054ae1aaa64dafa6399f7a23cb">  428</a></span><span class="preprocessor">#define MSG_TYPE_STOP_REQUEST_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))</span></div>
+<div class="foldopen" id="foldopen00429" data-start="" data-end="">
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a3268a658c2cb5126be5284a86ad9bd62">  429</a></span><span class="preprocessor">#define ENCODE_STOP_REQUEST(buffer, time, microstep)                                                                   \</span></div>
+<div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
+<div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span><span class="preprocessor">    buffer[0] = MSG_TYPE_STOP_REQUEST;                                                                                 \</span></div>
+<div class="line"><a id="l00432" name="l00432"></a><span class="lineno">  432</span><span class="preprocessor">    encode_int64(time, &amp;(buffer[1]));                                                                                  \</span></div>
+<div class="line"><a id="l00433" name="l00433"></a><span class="lineno">  433</span><span class="preprocessor">    encode_int32((int32_t)microstep, &amp;(buffer[1 + sizeof(instant_t)]));                                                \</span></div>
+<div class="line"><a id="l00434" name="l00434"></a><span class="lineno">  434</span><span class="preprocessor">  } while (0)</span></div>
+</div>
 <div class="line"><a id="l00435" name="l00435"></a><span class="lineno">  435</span> </div>
-<div class="line"><a id="l00442" name="l00442"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ada47c9f6736992a3df380526d87089f9">  442</a></span><span class="preprocessor">#define MSG_TYPE_LATEST_TAG_CONFIRMED 9</span></div>
-<div class="line"><a id="l00443" name="l00443"></a><span class="lineno">  443</span> </div>
-<div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span> </div>
-<div class="line"><a id="l00480" name="l00480"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a8588a57a3ae81bf33c740dfc57103a23">  480</a></span><span class="preprocessor">#define MSG_TYPE_STOP_REQUEST 10</span></div>
-<div class="line"><a id="l00481" name="l00481"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aa3ed75054ae1aaa64dafa6399f7a23cb">  481</a></span><span class="preprocessor">#define MSG_TYPE_STOP_REQUEST_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))</span></div>
-<div class="foldopen" id="foldopen00482" data-start="" data-end="">
-<div class="line"><a id="l00482" name="l00482"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a3268a658c2cb5126be5284a86ad9bd62">  482</a></span><span class="preprocessor">#define ENCODE_STOP_REQUEST(buffer, time, microstep)                                                                   \</span></div>
-<div class="line"><a id="l00483" name="l00483"></a><span class="lineno">  483</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
-<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span><span class="preprocessor">    buffer[0] = MSG_TYPE_STOP_REQUEST;                                                                                 \</span></div>
-<div class="line"><a id="l00485" name="l00485"></a><span class="lineno">  485</span><span class="preprocessor">    encode_int64(time, &amp;(buffer[1]));                                                                                  \</span></div>
-<div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span><span class="preprocessor">    encode_int32((int32_t)microstep, &amp;(buffer[1 + sizeof(instant_t)]));                                                \</span></div>
-<div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span><span class="preprocessor">  } while (0)</span></div>
+<div class="line"><a id="l00444" name="l00444"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#adbe10e103635ee7ec4bca3226ccebc56">  444</a></span><span class="preprocessor">#define MSG_TYPE_STOP_REQUEST_REPLY 11</span></div>
+<div class="line"><a id="l00445" name="l00445"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aa62d9986e928cb5e872caa6a509cae6c">  445</a></span><span class="preprocessor">#define MSG_TYPE_STOP_REQUEST_REPLY_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))</span></div>
+<div class="foldopen" id="foldopen00446" data-start="" data-end="">
+<div class="line"><a id="l00446" name="l00446"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae06b33f7fcdc71f52eb0fcf81e07e4d6">  446</a></span><span class="preprocessor">#define ENCODE_STOP_REQUEST_REPLY(buffer, time, microstep)                                                             \</span></div>
+<div class="line"><a id="l00447" name="l00447"></a><span class="lineno">  447</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
+<div class="line"><a id="l00448" name="l00448"></a><span class="lineno">  448</span><span class="preprocessor">    buffer[0] = MSG_TYPE_STOP_REQUEST_REPLY;                                                                           \</span></div>
+<div class="line"><a id="l00449" name="l00449"></a><span class="lineno">  449</span><span class="preprocessor">    encode_int64(time, &amp;(buffer[1]));                                                                                  \</span></div>
+<div class="line"><a id="l00450" name="l00450"></a><span class="lineno">  450</span><span class="preprocessor">    encode_int32((int32_t)microstep, &amp;(buffer[1 + sizeof(instant_t)]));                                                \</span></div>
+<div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span><span class="preprocessor">  } while (0)</span></div>
 </div>
-<div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span> </div>
-<div class="line"><a id="l00497" name="l00497"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#adbe10e103635ee7ec4bca3226ccebc56">  497</a></span><span class="preprocessor">#define MSG_TYPE_STOP_REQUEST_REPLY 11</span></div>
-<div class="line"><a id="l00498" name="l00498"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aa62d9986e928cb5e872caa6a509cae6c">  498</a></span><span class="preprocessor">#define MSG_TYPE_STOP_REQUEST_REPLY_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))</span></div>
-<div class="foldopen" id="foldopen00499" data-start="" data-end="">
-<div class="line"><a id="l00499" name="l00499"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae06b33f7fcdc71f52eb0fcf81e07e4d6">  499</a></span><span class="preprocessor">#define ENCODE_STOP_REQUEST_REPLY(buffer, time, microstep)                                                             \</span></div>
-<div class="line"><a id="l00500" name="l00500"></a><span class="lineno">  500</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
-<div class="line"><a id="l00501" name="l00501"></a><span class="lineno">  501</span><span class="preprocessor">    buffer[0] = MSG_TYPE_STOP_REQUEST_REPLY;                                                                           \</span></div>
-<div class="line"><a id="l00502" name="l00502"></a><span class="lineno">  502</span><span class="preprocessor">    encode_int64(time, &amp;(buffer[1]));                                                                                  \</span></div>
-<div class="line"><a id="l00503" name="l00503"></a><span class="lineno">  503</span><span class="preprocessor">    encode_int32((int32_t)microstep, &amp;(buffer[1 + sizeof(instant_t)]));                                                \</span></div>
-<div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span><span class="preprocessor">  } while (0)</span></div>
+<div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span> </div>
+<div class="line"><a id="l00460" name="l00460"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aad37dd00423e88f213ca7d7d238bce2e">  460</a></span><span class="preprocessor">#define MSG_TYPE_STOP_GRANTED 12</span></div>
+<div class="line"><a id="l00461" name="l00461"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a76275384e9865f1f1ed32408c03d876a">  461</a></span><span class="preprocessor">#define MSG_TYPE_STOP_GRANTED_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))</span></div>
+<div class="foldopen" id="foldopen00462" data-start="" data-end="">
+<div class="line"><a id="l00462" name="l00462"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a8086398bfefdc0104767df037e59daa5">  462</a></span><span class="preprocessor">#define ENCODE_STOP_GRANTED(buffer, time, microstep)                                                                   \</span></div>
+<div class="line"><a id="l00463" name="l00463"></a><span class="lineno">  463</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
+<div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span><span class="preprocessor">    buffer[0] = MSG_TYPE_STOP_GRANTED;                                                                                 \</span></div>
+<div class="line"><a id="l00465" name="l00465"></a><span class="lineno">  465</span><span class="preprocessor">    encode_int64(time, &amp;(buffer[1]));                                                                                  \</span></div>
+<div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span><span class="preprocessor">    encode_int32((int32_t)microstep, &amp;(buffer[1 + sizeof(instant_t)]));                                                \</span></div>
+<div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span><span class="preprocessor">  } while (0)</span></div>
 </div>
-<div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span> </div>
-<div class="line"><a id="l00513" name="l00513"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aad37dd00423e88f213ca7d7d238bce2e">  513</a></span><span class="preprocessor">#define MSG_TYPE_STOP_GRANTED 12</span></div>
-<div class="line"><a id="l00514" name="l00514"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a76275384e9865f1f1ed32408c03d876a">  514</a></span><span class="preprocessor">#define MSG_TYPE_STOP_GRANTED_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))</span></div>
-<div class="foldopen" id="foldopen00515" data-start="" data-end="">
-<div class="line"><a id="l00515" name="l00515"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a8086398bfefdc0104767df037e59daa5">  515</a></span><span class="preprocessor">#define ENCODE_STOP_GRANTED(buffer, time, microstep)                                                                   \</span></div>
-<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
-<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span><span class="preprocessor">    buffer[0] = MSG_TYPE_STOP_GRANTED;                                                                                 \</span></div>
-<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span><span class="preprocessor">    encode_int64(time, &amp;(buffer[1]));                                                                                  \</span></div>
-<div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span><span class="preprocessor">    encode_int32((int32_t)microstep, &amp;(buffer[1 + sizeof(instant_t)]));                                                \</span></div>
-<div class="line"><a id="l00520" name="l00520"></a><span class="lineno">  520</span><span class="preprocessor">  } while (0)</span></div>
-</div>
+<div class="line"><a id="l00468" name="l00468"></a><span class="lineno">  468</span> </div>
+<div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span> </div>
+<div class="line"><a id="l00476" name="l00476"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a5ac191bca25da16eca3e4f02d21172ef">  476</a></span><span class="preprocessor">#define MSG_TYPE_ADDRESS_QUERY 13</span></div>
+<div class="line"><a id="l00477" name="l00477"></a><span class="lineno">  477</span> </div>
+<div class="line"><a id="l00488" name="l00488"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aabe4cac3ef1d0834a99fa2532dfaa6ba">  488</a></span><span class="preprocessor">#define MSG_TYPE_ADDRESS_QUERY_REPLY 14</span></div>
+<div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span> </div>
+<div class="line"><a id="l00498" name="l00498"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35">  498</a></span><span class="preprocessor">#define MSG_TYPE_ADDRESS_ADVERTISEMENT 15</span></div>
+<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span> </div>
+<div class="line"><a id="l00509" name="l00509"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#acd33bbab7bf74e5ac8bad3bd27145f8b">  509</a></span><span class="preprocessor">#define MSG_TYPE_P2P_SENDING_FED_ID 16</span></div>
+<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span> </div>
+<div class="line"><a id="l00520" name="l00520"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a2b9f13f8df66448bf81ac5fe0774c124">  520</a></span><span class="preprocessor">#define MSG_TYPE_P2P_MESSAGE 17</span></div>
 <div class="line"><a id="l00521" name="l00521"></a><span class="lineno">  521</span> </div>
-<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span> </div>
-<div class="line"><a id="l00529" name="l00529"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a5ac191bca25da16eca3e4f02d21172ef">  529</a></span><span class="preprocessor">#define MSG_TYPE_ADDRESS_QUERY 13</span></div>
-<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span> </div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aabe4cac3ef1d0834a99fa2532dfaa6ba">  541</a></span><span class="preprocessor">#define MSG_TYPE_ADDRESS_QUERY_REPLY 14</span></div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span> </div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35">  551</a></span><span class="preprocessor">#define MSG_TYPE_ADDRESS_ADVERTISEMENT 15</span></div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span> </div>
-<div class="line"><a id="l00562" name="l00562"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#acd33bbab7bf74e5ac8bad3bd27145f8b">  562</a></span><span class="preprocessor">#define MSG_TYPE_P2P_SENDING_FED_ID 16</span></div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span> </div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a2b9f13f8df66448bf81ac5fe0774c124">  573</a></span><span class="preprocessor">#define MSG_TYPE_P2P_MESSAGE 17</span></div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span> </div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a5c1256c8c62fbbcb1b16ea67d8f529fb">  590</a></span><span class="preprocessor">#define MSG_TYPE_P2P_TAGGED_MESSAGE 18</span></div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span> </div>
-<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span> </div>
-<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span><span class="comment">/*</span></div>
-<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span><span class="comment"> * The next 8 bytes will be a timestamp sent according to</span></div>
-<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span><span class="comment"> * PTP.</span></div>
-<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span><span class="comment"> */</span></div>
-<div class="line"><a id="l00601" name="l00601"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aea37eff76ade1b2781a7e6298afb3a04">  601</a></span><span class="preprocessor">#define MSG_TYPE_CLOCK_SYNC_T1 19</span></div>
-<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span> </div>
-<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span><span class="comment">/*</span></div>
-<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span><span class="comment"> * Prompts the master to send a T4.</span></div>
-<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span><span class="comment"> * The next four bytes will be the sendin federate&#39;s id</span></div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span><span class="comment"> */</span></div>
-<div class="line"><a id="l00607" name="l00607"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a52a76e4cc36217a169f32d5adde590cc">  607</a></span><span class="preprocessor">#define MSG_TYPE_CLOCK_SYNC_T3 20</span></div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span> </div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span><span class="comment">/*</span></div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span><span class="comment"> * The next 8 bytes will be a timestamp sent according to</span></div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span><span class="comment"> * PTP.</span></div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span><span class="comment"> */</span></div>
-<div class="line"><a id="l00613" name="l00613"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae128056ab2af39988103856ee815d930">  613</a></span><span class="preprocessor">#define MSG_TYPE_CLOCK_SYNC_T4 21</span></div>
+<div class="line"><a id="l00537" name="l00537"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a5c1256c8c62fbbcb1b16ea67d8f529fb">  537</a></span><span class="preprocessor">#define MSG_TYPE_P2P_TAGGED_MESSAGE 18</span></div>
+<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span> </div>
+<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span> </div>
+<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span><span class="comment">/*</span></div>
+<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span><span class="comment"> * The next 8 bytes will be a timestamp sent according to</span></div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span><span class="comment"> * PTP.</span></div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span><span class="comment"> */</span></div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aea37eff76ade1b2781a7e6298afb3a04">  548</a></span><span class="preprocessor">#define MSG_TYPE_CLOCK_SYNC_T1 19</span></div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span> </div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span><span class="comment">/*</span></div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span><span class="comment"> * Prompts the master to send a T4.</span></div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span><span class="comment"> * The next four bytes will be the sendin federate&#39;s id</span></div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span><span class="comment"> */</span></div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a52a76e4cc36217a169f32d5adde590cc">  554</a></span><span class="preprocessor">#define MSG_TYPE_CLOCK_SYNC_T3 20</span></div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span> </div>
+<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span><span class="comment">/*</span></div>
+<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span><span class="comment"> * The next 8 bytes will be a timestamp sent according to</span></div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span><span class="comment"> * PTP.</span></div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span><span class="comment"> */</span></div>
+<div class="line"><a id="l00560" name="l00560"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae128056ab2af39988103856ee815d930">  560</a></span><span class="preprocessor">#define MSG_TYPE_CLOCK_SYNC_T4 21</span></div>
+<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span> </div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aa13eface5080ad75bbd53abe919c80b6">  572</a></span><span class="preprocessor">#define MSG_TYPE_CLOCK_SYNC_CODED_PROBE 22</span></div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span> </div>
+<div class="line"><a id="l00585" name="l00585"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#adb9610b1edbee4c85e194e391a6eeb74">  585</a></span><span class="preprocessor">#define MSG_TYPE_PORT_ABSENT 23</span></div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span> </div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a48ec489cb1543b161c262f4bee6c9598">  612</a></span><span class="preprocessor">#define MSG_TYPE_NEIGHBOR_STRUCTURE 24</span></div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a77a9c1b741d7ca0f4e8d00a5b74ef91e">  613</a></span><span class="preprocessor">#define MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE 9</span></div>
 <div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span> </div>
-<div class="line"><a id="l00625" name="l00625"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#aa13eface5080ad75bbd53abe919c80b6">  625</a></span><span class="preprocessor">#define MSG_TYPE_CLOCK_SYNC_CODED_PROBE 22</span></div>
-<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span> </div>
-<div class="line"><a id="l00638" name="l00638"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#adb9610b1edbee4c85e194e391a6eeb74">  638</a></span><span class="preprocessor">#define MSG_TYPE_PORT_ABSENT 23</span></div>
+<div class="line"><a id="l00618" name="l00618"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#af27674f627be1c469a529a995da5c074">  618</a></span><span class="preprocessor">#define MSG_TYPE_FAILED 25</span></div>
+<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span> </div>
+<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span> </div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a653676d1f302fe08249af3dee78fa294">  629</a></span><span class="preprocessor">#define FEDERATION_ID_DOES_NOT_MATCH 1</span></div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span> </div>
+<div class="line"><a id="l00632" name="l00632"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae3bd830cd17cf0914b61d0516360abc1">  632</a></span><span class="preprocessor">#define FEDERATE_ID_IN_USE 2</span></div>
+<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span> </div>
+<div class="line"><a id="l00635" name="l00635"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a5846fdcf4c92041f543b73e29e78aa21">  635</a></span><span class="preprocessor">#define FEDERATE_ID_OUT_OF_RANGE 3</span></div>
+<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span> </div>
+<div class="line"><a id="l00638" name="l00638"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae2e1a44a10d4219f4645a4e99fee009c">  638</a></span><span class="preprocessor">#define UNEXPECTED_MESSAGE 4</span></div>
 <div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span> </div>
-<div class="line"><a id="l00665" name="l00665"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a48ec489cb1543b161c262f4bee6c9598">  665</a></span><span class="preprocessor">#define MSG_TYPE_NEIGHBOR_STRUCTURE 24</span></div>
-<div class="line"><a id="l00666" name="l00666"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a77a9c1b741d7ca0f4e8d00a5b74ef91e">  666</a></span><span class="preprocessor">#define MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE 9</span></div>
-<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span> </div>
-<div class="line"><a id="l00671" name="l00671"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#af27674f627be1c469a529a995da5c074">  671</a></span><span class="preprocessor">#define MSG_TYPE_FAILED 25</span></div>
-<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span> </div>
-<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span> </div>
-<div class="line"><a id="l00682" name="l00682"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a653676d1f302fe08249af3dee78fa294">  682</a></span><span class="preprocessor">#define FEDERATION_ID_DOES_NOT_MATCH 1</span></div>
-<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span> </div>
-<div class="line"><a id="l00685" name="l00685"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae3bd830cd17cf0914b61d0516360abc1">  685</a></span><span class="preprocessor">#define FEDERATE_ID_IN_USE 2</span></div>
-<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span> </div>
-<div class="line"><a id="l00688" name="l00688"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a5846fdcf4c92041f543b73e29e78aa21">  688</a></span><span class="preprocessor">#define FEDERATE_ID_OUT_OF_RANGE 3</span></div>
-<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span> </div>
-<div class="line"><a id="l00691" name="l00691"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae2e1a44a10d4219f4645a4e99fee009c">  691</a></span><span class="preprocessor">#define UNEXPECTED_MESSAGE 4</span></div>
-<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span> </div>
-<div class="line"><a id="l00694" name="l00694"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a5a6c87886a0136b58ae5bb1d627c7ae3">  694</a></span><span class="preprocessor">#define WRONG_SERVER 5</span></div>
-<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span> </div>
-<div class="line"><a id="l00697" name="l00697"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a51d08a784b4ee6463688a971d99d2944">  697</a></span><span class="preprocessor">#define HMAC_DOES_NOT_MATCH 6</span></div>
-<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span> </div>
-<div class="line"><a id="l00700" name="l00700"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae546b6c6176fe607616181e144364f2b">  700</a></span><span class="preprocessor">#define RTI_NOT_EXECUTED_WITH_AUTH 7</span></div>
-<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span> </div>
-<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span><span class="preprocessor">#endif </span><span class="comment">/* NET_COMMON_H */</span><span class="preprocessor"></span></div>
+<div class="line"><a id="l00641" name="l00641"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a5a6c87886a0136b58ae5bb1d627c7ae3">  641</a></span><span class="preprocessor">#define WRONG_SERVER 5</span></div>
+<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span> </div>
+<div class="line"><a id="l00644" name="l00644"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#a51d08a784b4ee6463688a971d99d2944">  644</a></span><span class="preprocessor">#define HMAC_DOES_NOT_MATCH 6</span></div>
+<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span> </div>
+<div class="line"><a id="l00647" name="l00647"></a><span class="lineno"><a class="line" href="../../d9/da6/net__common_8h.html#ae546b6c6176fe607616181e144364f2b">  647</a></span><span class="preprocessor">#define RTI_NOT_EXECUTED_WITH_AUTH 7</span></div>
+<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span> </div>
+<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span><span class="preprocessor">#endif </span><span class="comment">/* NET_COMMON_H */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

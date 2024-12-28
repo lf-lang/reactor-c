@@ -12,7 +12,7 @@ var searchData=
   ['seconds_9',['SECONDS',['../d2/dcd/tag_8h.html#a2874e6caf9a4e0452441e9edeca046dc',1,'tag.h']]],
   ['secs_10',['SECS',['../d2/dcd/tag_8h.html#a8d1ccba996ebc6fc86c6c3c52051329d',1,'tag.h']]],
   ['sha256_5fhmac_5flength_11',['SHA256_HMAC_LENGTH',['../d9/da6/net__common_8h.html#abd435507a255ff2571133013bdf93bd2',1,'net_common.h']]],
-  ['socket_5fread_5fretry_5finterval_12',['SOCKET_READ_RETRY_INTERVAL',['../de/df1/util_8c.html#a065f1f00e4a82d34116e1cd8734fabde',1,'util.c']]],
+  ['socket_5fread_5fretry_5finterval_12',['SOCKET_READ_RETRY_INTERVAL',['../d6/d63/socket__common_8c.html#a065f1f00e4a82d34116e1cd8734fabde',1,'SOCKET_READ_RETRY_INTERVAL:&#160;socket_common.c'],['../de/df1/util_8c.html#a065f1f00e4a82d34116e1cd8734fabde',1,'SOCKET_READ_RETRY_INTERVAL:&#160;util.c']]],
   ['stringify_13',['STRINGIFY',['../db/dc8/pythontarget_8h.html#a43e1cad902b6477bec893cb6430bd6c8',1,'pythontarget.h']]],
   ['suppress_5funused_5fwarning_14',['SUPPRESS_UNUSED_WARNING',['../dc/d85/reactor_8h.html#a4625be3023ef492f25fd5193ef754774',1,'reactor.h']]]
 ];
