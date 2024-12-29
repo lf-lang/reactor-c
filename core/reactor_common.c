@@ -149,6 +149,8 @@ void lf_set_stop_tag(environment_t* env, tag_t tag) {
   }
 }
 
+const char* lf_reactor_name(self_base_t* self) { return self->name; }
+
 const char* lf_reactor_full_name(self_base_t* self) {
   if (self->full_name != NULL) {
     return self->full_name;

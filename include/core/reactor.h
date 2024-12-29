@@ -129,10 +129,21 @@ void lf_free_all_reactors(void);
 void lf_free_reactor(self_base_t* self);
 
 /**
+ * @brief Return the instance name of the reactor.
+ *
+ * The instance name is the name of given to the instance created by the `new` operator in LF.
+ * If the instance is in a bank, then the name will have a suffix of the form `[bank_index]`.
+ *
+ * @param self The self struct of the reactor.
+ */
+const char* lf_reactor_name(self_base_t* self);
+
+/**
  * @brief Return the full name of the reactor.
  *
- * The full name includes the names of all the parent reactors, separated by dots.
- * If any reactor is a bank, the name will have a  suffix of the form `[bank_index]`.
+ * The fully qualified name of a reactor is the instance name of the reactor concatenated with the names of all
+ * of its parents, separated by dots. If the reactor or any of its parents is a bank, then the name
+ * will have a suffix of the form `[bank_index]`.
  *
  * @param self The self struct of the reactor.
  */

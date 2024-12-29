@@ -200,7 +200,22 @@
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 
 /**
+ * @brief Return the instance name of the reactor.
+ *
+ * The instance name is the name of given to the instance created by the `new` operator in LF.
+ * If the instance is in a bank, then the name will have a suffix of the form `[bank_index]`.
+ *
+ * @param reactor The reactor to get the name of.
+ */
+#define lf_reactor_name(reactor) lf_reactor_name(&reactor->base)
+
+/**
  * @brief Return the fully qualified name of the reactor.
+ *
+ * The fully qualified name of a reactor is the instance name of the reactor concatenated with the names of all
+ * of its parents, separated by dots. If the reactor or any of its parents is a bank, then the name
+ * will have a suffix of the form `[bank_index]`.
+ *
  * @param reactor The reactor to get the name of.
  */
 #define lf_reactor_full_name(reactor) lf_reactor_full_name(&reactor->base)

@@ -251,8 +251,8 @@ struct trigger_t {
  * An allocation record that is used by a destructor for a reactor
  * to free memory that has been dynamically allocated for the particular
  * instance of the reactor.  This will be an element of linked list.
- * If the indirect field is true, then the allocated pointer points to
- * pointer to allocated memory, rather than directly to the allocated memory.
+ * The `allocated` pointer points to the allocated memory, and the `next`
+ * pointer points to the next allocation record (or NULL if there are no more).
  */
 typedef struct allocation_record_t {
   void* allocated;
