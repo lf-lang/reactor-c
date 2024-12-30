@@ -153,7 +153,7 @@ static void start_trace(trace_t* t, int max_num_local_threads) {
     t->_lf_trace_buffer[i] = (trace_record_nodeps_t*)malloc(sizeof(trace_record_nodeps_t) * TRACE_BUFFER_CAPACITY);
   }
   // Array of counters that track the size of each trace record (per thread).
-  t->_lf_trace_buffer_size = (size_t*)calloc(sizeof(size_t), t->_lf_number_of_trace_buffers + 1);
+  t->_lf_trace_buffer_size = (size_t*)calloc(t->_lf_number_of_trace_buffers + 1, sizeof(size_t));
   t->_lf_trace_buffer_size++;
 
   t->_lf_trace_stop = 0;
