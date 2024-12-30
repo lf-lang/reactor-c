@@ -151,6 +151,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a2f0b7c8d624c2da93012538bd93568ad" id="r_a2f0b7c8d624c2da93012538bd93568ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2f0b7c8d624c2da93012538bd93568ad">lf_free_reactor</a> (<a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *self)</td></tr>
 <tr class="memdesc:a2f0b7c8d624c2da93012538bd93568ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the specified reactor.  <br /></td></tr>
 <tr class="separator:a2f0b7c8d624c2da93012538bd93568ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae76171d83c29dadd3adb3f9294a92138" id="r_ae76171d83c29dadd3adb3f9294a92138"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae76171d83c29dadd3adb3f9294a92138">lf_reactor_name</a> (<a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *self)</td></tr>
+<tr class="memdesc:ae76171d83c29dadd3adb3f9294a92138"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the instance name of the reactor.  <br /></td></tr>
+<tr class="separator:ae76171d83c29dadd3adb3f9294a92138"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5bf112c4237da16d08736ff3e3e36b8" id="r_ab5bf112c4237da16d08736ff3e3e36b8"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab5bf112c4237da16d08736ff3e3e36b8">lf_reactor_full_name</a> (<a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *self)</td></tr>
+<tr class="memdesc:ab5bf112c4237da16d08736ff3e3e36b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the full name of the reactor.  <br /></td></tr>
+<tr class="separator:ab5bf112c4237da16d08736ff3e3e36b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions. </p>
@@ -343,6 +349,58 @@ Mehrdad Niknami </dd></dl>
 <p>This function implementation will be empty if the NDEBUG macro is defined; that macro is normally defined for release builds. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>The environment in which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab5bf112c4237da16d08736ff3e3e36b8" name="ab5bf112c4237da16d08736ff3e3e36b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5bf112c4237da16d08736ff3e3e36b8">&#9670;&#160;</a></span>lf_reactor_full_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char * lf_reactor_full_name </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *</td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the full name of the reactor. </p>
+<p>The fully qualified name of a reactor is the instance name of the reactor concatenated with the names of all of its parents, separated by dots. If the reactor or any of its parents is a bank, then the name will have a suffix of the form <code>[bank_index]</code>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The self struct of the reactor. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae76171d83c29dadd3adb3f9294a92138" name="ae76171d83c29dadd3adb3f9294a92138"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae76171d83c29dadd3adb3f9294a92138">&#9670;&#160;</a></span>lf_reactor_name()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char * lf_reactor_name </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *</td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the instance name of the reactor. </p>
+<p>The instance name is the name of given to the instance created by the <code>new</code> operator in LF. If the instance is in a bank, then the name will have a suffix of the form <code>[bank_index]</code>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The self struct of the reactor. </td></tr>
   </table>
   </dd>
 </dl>

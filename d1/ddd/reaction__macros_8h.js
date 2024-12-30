@@ -1,5 +1,7 @@
 var reaction__macros_8h =
 [
+    [ "lf_reactor_full_name", "d1/ddd/reaction__macros_8h.html#a78918b87982fba15b59f35a8f926b021", null ],
+    [ "lf_reactor_name", "d1/ddd/reaction__macros_8h.html#a42c6f935901d6fc56d6e82be619a8bd3", null ],
     [ "lf_set", "d1/ddd/reaction__macros_8h.html#aef602f51d34bbd214643161e425d909d", null ],
     [ "lf_set_array", "d1/ddd/reaction__macros_8h.html#a8a3a63e70ec63e35d46573293ecec905", null ],
     [ "lf_set_copy_constructor", "d1/ddd/reaction__macros_8h.html#aa515ab9df816c6ac8a450def4dc02f40", null ],

@@ -1,7 +1,7 @@
 var searchData=
 [
   ['n_5fdeleted_5fitems_0',['n_deleted_items',['../dd/dab/structhashset__st.html#a507237ecc37b9c45f79df318534f1109',1,'hashset_st']]],
-  ['name_1',['name',['../d2/d01/structenvironment__t.html#a58106ba029a6892ca82028c163cf2e96',1,'environment_t::name'],['../d2/d35/structreaction__t.html#a5af95a97a0b83dbf7954236378f1bfa2',1,'reaction_t::name']]],
+  ['name_1',['name',['../d2/d01/structenvironment__t.html#a58106ba029a6892ca82028c163cf2e96',1,'environment_t::name'],['../d2/d35/structreaction__t.html#a5af95a97a0b83dbf7954236378f1bfa2',1,'reaction_t::name'],['../d6/d8b/structself__base__t.html#a2e2f5caeb7ed80f890ab6defba500dff',1,'self_base_t::name']]],
   ['nargs_2',['nargs',['../d6/d1e/namespacefedsd.html#a47cb8bc3d6aef79b31b1ccbfbe8ddd79',1,'fedsd']]],
   ['nbits_3',['nbits',['../dd/dab/structhashset__st.html#afaeab28ca2127ce6b5c2e454b3e7b9fd',1,'hashset_st']]],
   ['network_5fstat_5fround_5ftrip_5fdelay_5fmax_4',['network_stat_round_trip_delay_max',['../d9/d67/structsocket__stat__t.html#a2d53d66644d18d6e948aafd2913b638d',1,'socket_stat_t']]],

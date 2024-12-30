@@ -1,5 +1,7 @@
 var NAVTREEINDEX3 =
 {
+"d6/d51/pqueue__base_8h.html#a5a4c8b51b16189ab4a687f562733b1a5":[12,0,1,1,3,4,14],
+"d6/d51/pqueue__base_8h.html#a664f0abcd86c8089468869aa3dc6e535":[12,0,1,1,3,4,2],
 "d6/d51/pqueue__base_8h.html#a66bce8cd2c2afa804405005798498823":[12,0,1,1,3,4,18],
 "d6/d51/pqueue__base_8h.html#a884902da135214a6167f1536ad4ed4bc":[12,0,1,1,3,4,6],
 "d6/d51/pqueue__base_8h.html#a921be3b49e4021888c595188438fdf7a":[12,0,1,1,3,4,20],
@@ -81,9 +83,12 @@ var NAVTREEINDEX3 =
 "d6/d89/lf__atomic__irq_8c.html":[12,0,4,1,0,3],
 "d6/d8b/structself__base__t.html":[11,0,46],
 "d6/d8b/structself__base__t.html#a2282568a7a814225eec8a2148e087f09":[11,0,46,2],
+"d6/d8b/structself__base__t.html#a2e2f5caeb7ed80f890ab6defba500dff":[11,0,46,4],
 "d6/d8b/structself__base__t.html#a382226593b7045aeb0a30ce90122f64e":[11,0,46,1],
 "d6/d8b/structself__base__t.html#a851c71d2d9ce4ca9c1811283bcf5f2f9":[11,0,46,0],
-"d6/d8b/structself__base__t.html#ad19c2e3ac3920c1244d81076ecbad2c9":[11,0,46,3],
+"d6/d8b/structself__base__t.html#aa37770fb258cdb7d8406d8416bade873":[11,0,46,3],
+"d6/d8b/structself__base__t.html#aa450d272dcc263b883d8727d20f3c1dc":[11,0,46,5],
+"d6/d8b/structself__base__t.html#ad19c2e3ac3920c1244d81076ecbad2c9":[11,0,46,6],
 "d6/da6/structmixed__radix__int__t.html":[11,0,36],
 "d6/da6/structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d":[11,0,36,0],
 "d6/da6/structmixed__radix__int__t.html#a746c75cd4e29669f4e349dda3f30d1bd":[11,0,36,3],
@@ -244,10 +249,5 @@ var NAVTREEINDEX3 =
 "d7/dc7/lf__nrf52__support_8h_source.html":[12,0,4,0,0,6],
 "d7/dc7/struct__lf__tag__advancement__barrier.html":[11,0,3],
 "d7/dc7/struct__lf__tag__advancement__barrier.html#a49b697f9e16f30a2112910efd1ee6da6":[11,0,3,1],
-"d7/dc7/struct__lf__tag__advancement__barrier.html#ad60842fa9c91497e893075d9b42913ba":[11,0,3,0],
-"d7/dc9/structlf__waveform__t.html":[11,0,35],
-"d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd":[11,0,35,0],
-"d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018":[11,0,35,1],
-"d7/dc9/structlf__waveform__t.html#add06d5d0fc6b2337a8aa902736c28558":[11,0,35,2],
-"d7/dd0/struct__lf__sensor__message__t.html":[11,0,2]
+"d7/dc7/struct__lf__tag__advancement__barrier.html#ad60842fa9c91497e893075d9b42913ba":[11,0,3,0]
 };

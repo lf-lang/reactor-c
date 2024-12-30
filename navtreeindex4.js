@@ -1,5 +1,10 @@
 var NAVTREEINDEX4 =
 {
+"d7/dc9/structlf__waveform__t.html":[11,0,35],
+"d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd":[11,0,35,0],
+"d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018":[11,0,35,1],
+"d7/dc9/structlf__waveform__t.html#add06d5d0fc6b2337a8aa902736c28558":[11,0,35,2],
+"d7/dd0/struct__lf__sensor__message__t.html":[11,0,2],
 "d7/dd0/struct__lf__sensor__message__t.html#a3a9fd3aca3ae40d8a10665c4cc89cd68":[11,0,2,0],
 "d7/dd0/struct__lf__sensor__message__t.html#a96731ca0567d1b00ef6f677a35a95228":[11,0,2,1],
 "d7/dd0/struct__lf__sensor__message__t.html#a985768458c6b00559db82b549f2870a4":[11,0,2,2],
@@ -244,10 +249,5 @@ var NAVTREEINDEX4 =
 "d9/dc7/trace__util_8h.html#ab1c55a27299014bb233dac20381bd7d4":[12,0,10,0,7,16],
 "d9/dc7/trace__util_8h.html#ab8e2538ed85d0094a64f532aa261c407":[12,0,10,0,7,17],
 "d9/dc7/trace__util_8h.html#ac84b6d7af9cb309303d5658997f0d7a2":[12,0,10,0,7,15],
-"d9/dc7/trace__util_8h.html#ac8588a40ed5942245242363f13a698f5":[12,0,10,0,7,6],
-"d9/dc7/trace__util_8h.html#ad8876683159ec2203bd41295d8af3017":[12,0,10,0,7,18],
-"d9/dc7/trace__util_8h_source.html":[12,0,10,0,7],
-"d9/dd5/clock-sync_8h.html":[12,0,1,1,0,1],
-"d9/dd5/clock-sync_8h.html#a0810a64801750ce9b148848c228c86e9":[12,0,1,1,0,1,4],
-"d9/dd5/clock-sync_8h.html#a180ccd8664a48b7a50f316ebece4e181":[12,0,1,1,0,1,10]
+"d9/dc7/trace__util_8h.html#ac8588a40ed5942245242363f13a698f5":[12,0,10,0,7,6]
 };

@@ -2,7 +2,7 @@ var searchData=
 [
   ['n_0',['N',['../d7/de8/hashmap__test_8c.html#a0240ac851181b84ac374872dc5434ee4',1,'N:&#160;hashmap_test.c'],['../d1/d88/vector__test_8c.html#a0240ac851181b84ac374872dc5434ee4',1,'N:&#160;vector_test.c']]],
   ['n_5fdeleted_5fitems_1',['n_deleted_items',['../dd/dab/structhashset__st.html#a507237ecc37b9c45f79df318534f1109',1,'hashset_st']]],
-  ['name_2',['name',['../d2/d01/structenvironment__t.html#a58106ba029a6892ca82028c163cf2e96',1,'environment_t::name'],['../d2/d35/structreaction__t.html#a5af95a97a0b83dbf7954236378f1bfa2',1,'reaction_t::name']]],
+  ['name_2',['name',['../d2/d01/structenvironment__t.html#a58106ba029a6892ca82028c163cf2e96',1,'environment_t::name'],['../d2/d35/structreaction__t.html#a5af95a97a0b83dbf7954236378f1bfa2',1,'reaction_t::name'],['../d6/d8b/structself__base__t.html#a2e2f5caeb7ed80f890ab6defba500dff',1,'self_base_t::name']]],
   ['nargs_3',['nargs',['../d6/d1e/namespacefedsd.html#a47cb8bc3d6aef79b31b1ccbfbe8ddd79',1,'fedsd']]],
   ['nbits_4',['nbits',['../dd/dab/structhashset__st.html#afaeab28ca2127ce6b5c2e454b3e7b9fd',1,'hashset_st']]],
   ['net_5fcommon_2eh_5',['net_common.h',['../d9/da6/net__common_8h.html',1,'']]],
