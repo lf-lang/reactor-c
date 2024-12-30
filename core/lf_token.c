@@ -235,7 +235,7 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
   result->ref_count = 0;
   return result;
 }
-
+ 
 lf_token_t* _lf_get_token(token_template_t* tmplt) {
   LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
   if (tmplt->token != NULL && tmplt->token->ref_count == 1) {
