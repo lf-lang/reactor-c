@@ -72,6 +72,8 @@ typedef enum {
   receive_ADR_AD,
   receive_ADR_QR,
   receive_UNIDENTIFIED,
+  send_STOP,
+  receive_STOP,
   NUM_EVENT_TYPES
 } trace_event_t;
 
@@ -135,6 +137,8 @@ static const char* trace_event_names[] = {
     "Receiving ADR_AD",
     "Receiving ADR_QR",
     "Receiving UNIDENTIFIED",
+    "Sending STOP",
+    "Receiving STOP",
 };
 
 static inline void _suppress_unused_variable_warning_for_static_variable() { (void)trace_event_names; }
