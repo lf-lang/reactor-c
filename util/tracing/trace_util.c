@@ -61,6 +61,7 @@ typedef struct open_file_t {
   open_file_t* next;
 } open_file_t;
 open_file_t* _open_files = NULL;
+
 /**
  * Function to be invoked upon exiting.
  */

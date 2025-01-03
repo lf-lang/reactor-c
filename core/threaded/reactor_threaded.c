@@ -606,7 +606,7 @@ void _lf_initialize_start_tag(environment_t* env) {
   // the required waiting time. Second, this call releases the mutex lock and allows
   // other threads (specifically, federate threads that handle incoming p2p messages
   // from other federates) to hold the lock and possibly raise a tag barrier.
-  while (!wait_until(effective_start_tag.time + _lf_fed_STA_offset, &env->event_q_changed)) {
+  while (!wait_until(effective_start_tag.time + lf_fed_STA_offset, &env->event_q_changed)) {
   };
   LF_PRINT_DEBUG("Done waiting for effective start time + STA offset " PRINTF_TIME ".",
                  effective_start_tag.time + lf_fed_STA_offset);
