@@ -158,8 +158,10 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
     return NULL;
   for (int i = 1; i <= q->size; i++) {
     dge = (pqueue_delayed_grant_element_t*)q->d[i];
-    if (dge->fed_id == fed_id) {
-      return dge;
+    if (dge) {
+      if (dge->fed_id == fed_id) {
+        return dge;
+      }
     }
   }
   return NULL;
@@ -167,7 +169,6 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
 
 /**
  * @brief Insert the delayed grant into the delayed_grants queue and notify.
- *
  *
  * This function assumes the caller holds the rti_mutex.
  * @param fed The federate.
@@ -2078,35 +2079,11 @@ void send_stop(federate_info_t* fed) {
 }
 
 void* lf_connect_to_transient_federates_thread(void* nothing) {
-  // This loop will continue to accept connections of transient federates, as
-  // soon as there is room, or enable hot swap
+  // This loop will continue to accept connections of transient federates, as soon as there is room, or enable hot swap
   while (!rti_remote->all_persistent_federates_exited) {
-    // Continue waiting for an incoming connection requests from transients
-    // to join, or for hot swap.
+    // Continue waiting for an incoming connection requests from transients to join, or for hot swap.
     // Wait for an incoming connection request.
-    // struct sockaddr client_fd;
-    // uint32_t client_length = sizeof(client_fd);
-    // // // The following blocks until a federate connects.
-    // int socket_id = -1;
-    // while (1) {
-    //   if (!rti_remote->all_persistent_federates_exited) {
-    //     return NULL;
-    //   }
-    //   socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
-    //   if (socket_id >= 0) {
-    //     // Got a socket
-    //     break;
-    //   } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-    //     lf_print_error_system_failure("RTI failed to accept the socket.");
-    //   } else {
-    //     // Try again
-    //     lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
-    //     continue;
-    //   }
-    // }
-
-    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, 1);
-    // lf_print(">>>>>>>>>>>>>>>>>>>>>>>>>> socket_id %d in 2105 \n", socket_id);
+    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
 
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
@@ -2125,8 +2102,6 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
     // The first message from the federate should contain its ID and the federation ID.
     // The function also detects if a hot swap request is initiated.
     int32_t fed_id = receive_and_check_fed_id_message(&socket_id);
-
-    // lf_print(">>>>>>>>>>>>>>>>>>>>>>>>>> socket_id %d in 2125 \n", socket_id);
 
     if (fed_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
         receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {

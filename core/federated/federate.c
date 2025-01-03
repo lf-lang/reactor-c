@@ -2164,7 +2164,11 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Extract the ID of the sending federate.
     uint16_t remote_fed_id = extract_uint16((unsigned char*)&(buffer[1]));
     bool remote_fed_is_transient = buffer[1 + sizeof(uint16_t)];
-    LF_PRINT_DEBUG("Received sending federate ID %d.", remote_fed_id);
+    if (remote_fed_is_transient) {
+      LF_PRINT_DEBUG("Received sending federate ID %d, which is transient.", remote_fed_id);
+    } else {
+      LF_PRINT_DEBUG("Received sending federate ID %d, which is persistent.", remote_fed_id);
+    }
 
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
