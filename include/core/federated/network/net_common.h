@@ -237,24 +237,38 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_UDP_PORT 254
 
-/** Byte identifying a message from a federate to an RTI containing
- *  the federation ID and the federate ID. The message contains, in
- *  this order:
+/** Byte identifying a message from a (persistent) federate to an RTI containing
+ *  the federate ID and the federation ID. The message contains, in this order:
  *  * One byte equal to MSG_TYPE_FED_IDS.
  *  * Two bytes (ushort) giving the federate ID.
- *  * One byte giving the type of the federate (1 if transient, 0 if persistent)
  *  * One byte (uchar) giving the length N of the federation ID.
  *  * N bytes containing the federation ID.
- *  Each federate needs to have a unique ID between 0 and
- *  NUMBER_OF_FEDERATES-1.
- *  Each federate, when starting up, should send this message
- *  to the RTI. This is its first message to the RTI.
+ *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
+ *  Each federate, when starting up, should send either this message, or MSG_TYPE_TRANSIENT_FED_IDS
+ *  to the RTI, as its first message to the RTI.
  *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
  *  If the federate is a C target LF program, the generated federate
  *  code does this by calling lf_synchronize_with_other_federates(),
  *  passing to it its federate ID.
  */
 #define MSG_TYPE_FED_IDS 1
+
+/** Byte identifying a message from a transient federate to an RTI containing
+ *  the federate ID and the federation ID. The message contains, in this order:
+ *  * One byte equal to MSG_TYPE_TRANSIENT_FED_IDS.
+ *  * Two bytes (ushort) giving the federate ID.
+ *  * One byte (uchar) giving the length N of the federation ID.
+ *  * One byte giving the type of the federate (1 if transient, 0 if persistent)
+ *  * N bytes containing the federation ID.
+ *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
+ *  Each federate, when starting up, should send either this message, or MSG_TYPE_FED_IDS
+ *  to the RTI, as its first message to the RTI.
+ *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
+ *  If the federate is a C target LF program, the generated federate
+ *  code does this by calling lf_synchronize_with_other_federates(),
+ *  passing to it its federate ID.
+ */
+#define MSG_TYPE_TRANSIENT_FED_IDS 103
 
 /////////// Messages used for authenticated federation. ///////////////
 /**

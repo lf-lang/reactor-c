@@ -1517,7 +1517,7 @@ void send_reject(int* socket_id, rejection_code_t error_code) {
  */
 static int32_t receive_and_check_fed_id_message(int* socket_id) {
   // Buffer for message ID, federate ID, type (persistent or transient), and federation ID length.
-  size_t length = 1 + sizeof(uint16_t) + 1 + 1; // Message ID, federate ID, length of fedration ID, type.
+  size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID and length of fedration ID.
   unsigned char buffer[length];
 
   // Read bytes from the socket. We need 4 bytes.
@@ -1530,7 +1530,7 @@ static int32_t receive_and_check_fed_id_message(int* socket_id) {
   bool is_transient = false;
 
   // First byte received is the message type.
-  if (buffer[0] != MSG_TYPE_FED_IDS) {
+  if (buffer[0] != MSG_TYPE_FED_IDS && buffer[0] != MSG_TYPE_TRANSIENT_FED_IDS) {
     if (rti_remote->base.tracing_enabled) {
       tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
     }
@@ -1554,15 +1554,21 @@ static int32_t receive_and_check_fed_id_message(int* socket_id) {
   } else {
     // Received federate ID.
     fed_id = extract_uint16(buffer + 1);
-    is_transient = (buffer[sizeof(uint16_t) + 1] == 1) ? true : false;
+    // Read the federation ID length, which is one byte.
+    size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
+    if (buffer[0] == MSG_TYPE_TRANSIENT_FED_IDS) {
+      char buf;
+      read_from_socket_close_on_error(socket_id, 1, &buf);
+      is_transient = (buf == 1) ? true : false;
+    }
+
     if (is_transient) {
       LF_PRINT_LOG("RTI received federate ID: %d, which is transient.", fed_id);
     } else {
       LF_PRINT_LOG("RTI received federate ID: %d, which is persistent.", fed_id);
     }
 
-    // Read the federation ID.  First read the length, which is one byte.
-    size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 2];
+    // Read the federation ID.
     char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
     // Next read the actual federation ID.
     if (read_from_socket_close_on_error(socket_id, federation_id_length, (unsigned char*)federation_id_received)) {
