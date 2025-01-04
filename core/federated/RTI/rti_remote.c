@@ -1557,7 +1557,7 @@ static int32_t receive_and_check_fed_id_message(int* socket_id) {
     // Read the federation ID length, which is one byte.
     size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
     if (buffer[0] == MSG_TYPE_TRANSIENT_FED_IDS) {
-      char buf;
+      unsigned char buf;
       read_from_socket_close_on_error(socket_id, 1, &buf);
       is_transient = (buf == 1) ? true : false;
     }

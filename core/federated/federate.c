@@ -1019,9 +1019,9 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // Send the timestamp marker first.
   send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
 
-  // Read bytes from the socket. We need 21 (1 + 8 + 8 + 4) bytes.
+  // Read bytes from the socket. We need first 9 (1 + 8) bytes.
   // Buffer for message ID plus timestamp.
-  size_t buffer_length = MSG_TYPE_TIMESTAMP_START_LENGTH;
+  size_t buffer_length = MSG_TYPE_TIMESTAMP_LENGTH;
   unsigned char buffer[buffer_length];
 
   while (true) {
@@ -1998,7 +1998,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_FED_ID, _lf_my_fed_id, NULL);
 
-    unsigned char size = 1 + sizeof(uint16_t) + 1;
+    size_t size = 1 + sizeof(uint16_t) + 1;
     if (_fed.is_transient) {
       // Next send the federate type (persistent or transient)
       buffer[2 + sizeof(uint16_t)] = _fed.is_transient ? 1 : 0;
