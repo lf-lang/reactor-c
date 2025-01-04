@@ -42,6 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "clock-sync.h"
 #include "net_common.h"
 #include "net_util.h"
+#include "socket_common.h"
 #include "util.h"
 
 /** Offset calculated by the clock synchronization algorithm. */
@@ -275,13 +276,13 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
   // T3-T2 between receiving the T1 message and replying.
 
   // Reply will have the federate ID as a payload.
-  unsigned char reply_buffer[1 + sizeof(int)];
+  unsigned char reply_buffer[1 + sizeof(uint16_t)];
   reply_buffer[0] = MSG_TYPE_CLOCK_SYNC_T3;
-  encode_int32(_lf_my_fed_id, &(reply_buffer[1]));
+  encode_uint16(_lf_my_fed_id, &(reply_buffer[1]));
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
-  if (write_to_socket(socket, 1 + sizeof(int), reply_buffer)) {
+  if (write_to_socket(socket, 1 + sizeof(uint16_t), reply_buffer)) {
     lf_print_error("Clock sync: Failed to send T3 message to RTI.");
     return -1;
   }
