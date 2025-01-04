@@ -156,7 +156,7 @@ static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pque
   pqueue_t* _q = (pqueue_t*)q;
   if (!q || q->size == 1)
     return NULL;
-  for (int i = 1; i <= q->size; i++) {
+  for (int i = 1; i < q->size; i++) {
     dge = (pqueue_delayed_grant_element_t*)q->d[i];
     if (dge) {
       if (dge->fed_id == fed_id) {
