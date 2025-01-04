@@ -397,14 +397,6 @@ void* federate_info_thread_TCP(void* fed);
 void send_reject(int* socket_id, rejection_code_t error_code);
 
 /**
- * Wait for one incoming connection request from each (persistent) federate,
- * and upon receiving it, create a thread to communicate with that federate.
- * Return when all persistent federates have connected.
- * @param socket_descriptor The socket on which to accept connections.
- */
-void* lf_connect_to_persistent_transient_federates_thread(int socket_descriptor);
-
-/**
  * Thread to wait for incoming connection request from transient federates.
  * Upon receiving the connection request, check if a hot swap should start or
  * simply create a thread to communicate with that federate.
