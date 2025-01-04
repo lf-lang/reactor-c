@@ -582,31 +582,28 @@ void _lf_initialize_start_tag(environment_t* env) {
   }
 
   _lf_initialize_timers(env);
-  env->current_tag = effective_start_tag;
 
 #if defined FEDERATED_DECENTRALIZED
   // If we have a non-zero STA offset, then we need to allow messages to arrive
   // at the start time.  To avoid spurious STP violations, we temporarily
   // set the current time back by the STA offset.
-  env->current_tag.time -= lf_fed_STA_offset;
-  LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".", start_time, lf_fed_STA_offset);
+  env->current_tag.time = lf_time_subtract(env->current_tag.time, lf_fed_STA_offset);
 #else
   // For other than federated decentralized execution, there is no lf_fed_STA_offset variable defined.
   // To use uniform code below, we define it here as a local variable.
   instant_t lf_fed_STA_offset = 0;
 #endif
-  LF_PRINT_LOG("Waiting for start time " PRINTF_TIME ".", start_time);
+  LF_PRINT_LOG("Waiting for start time " PRINTF_TIME ".", effective_start_tag.time);
 
-  // Wait until the start time. This is required for federates because the startup procedure
-  // in lf_synchronize_with_other_federates() can decide on a new start_time that is
-  // larger than the current physical time.
-  // This wait_until() is deliberately called after most precursor operations
-  // for tag (0,0) are performed (e.g., injecting startup reactions, etc.).
-  // This has two benefits: First, the startup overheads will reduce
-  // the required waiting time. Second, this call releases the mutex lock and allows
-  // other threads (specifically, federate threads that handle incoming p2p messages
-  // from other federates) to hold the lock and possibly raise a tag barrier.
-  while (!wait_until(effective_start_tag.time + lf_fed_STA_offset, &env->event_q_changed)) {
+  // Wait until the effective start time. This is required for federates because the startup procedure
+  // in lf_synchronize_with_other_federates() can decide on a new start_time, or the effective start time if it is a
+  // transient federate, that is larger than the current physical time.
+  // This wait_until() is deliberately called after most precursor operations for tag (0,0), or effective_start_tag,q
+  // are performed (e.g., injecting startup reactions, etc.). This has two benefits: First, the startup overheads will
+  // reduce the required waiting time. Second, this call releases the mutex lock and allows other threads (specifically,
+  // federate threads that handle incoming p2p messages from other federates) to hold the lock and possibly raise a tag
+  // barrier.
+  while (!wait_until(effective_start_tag.time, &env->event_q_changed)) {
   };
   LF_PRINT_DEBUG("Done waiting for effective start time + STA offset " PRINTF_TIME ".",
                  effective_start_tag.time + lf_fed_STA_offset);
