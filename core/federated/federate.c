@@ -1019,16 +1019,16 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // Send the timestamp marker first.
   send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
 
-  // Read bytes from the socket. We need first 9 (1 + 8) bytes.
+  // Read bytes from the socket. We need either 9 butes or 21, depending on the federate type
   // Buffer for message ID plus timestamp.
-  size_t buffer_length = MSG_TYPE_TIMESTAMP_LENGTH;
+  size_t buffer_length = (_fed.is_transient) ? MSG_TYPE_TIMESTAMP_TAG_LENGTH : MSG_TYPE_TIMESTAMP_LENGTH;
   unsigned char buffer[buffer_length];
 
   while (true) {
     read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, 1, buffer, NULL,
                                    "Failed to read MSG_TYPE_TIMESTAMP_START message from RTI.");
     // First byte received is the message ID.
-    if (buffer[0] != MSG_TYPE_TIMESTAMP_START) {
+    if (buffer[0] != MSG_TYPE_TIMESTAMP) {
       if (buffer[0] == MSG_TYPE_FAILED) {
         lf_print_error_and_exit("RTI has failed.");
       } else if (buffer[0] == MSG_TYPE_UPSTREAM_CONNECTED) {
@@ -1051,7 +1051,11 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   }
 
   instant_t timestamp = extract_int64(&(buffer[1]));
-  effective_start_tag = extract_tag(&(buffer[9]));
+  if (_fed.is_transient) {
+    effective_start_tag = extract_tag(&(buffer[9]));
+  } else {
+    effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
+  }
 
   // Trace the event when tracing is enabled.
   // Note that we report in the trace the effective_start_tag.

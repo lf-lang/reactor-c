@@ -322,11 +322,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Byte identifying a timestamp message, which is 64 bits long.
  * Each federate sends its starting physical time as a message of this
- * type, and the RTI broadcasts to all the federates the starting logical
+ * type, and the RTI broadcasts to all persistent federates the starting
  * time as a message of this type.
- s*/
+ * In case of a joining federate, the RTI will also send the effective start tag.
+ */
 #define MSG_TYPE_TIMESTAMP 2
-#define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(int64_t))
+#define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(instant_t))
+#define MSG_TYPE_TIMESTAMP_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(tag_t))
 
 /** Byte identifying a message to forward to another federate.
  *  The next two bytes will be the ID of the destination port.
@@ -648,16 +650,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_UPSTREAM_DISCONNECTED 27
 #define MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
-
-/**
- * As an answer to MSG_TYPE_TIMESTAMP, the RTI broadcasts to all persistent
- * federates, or sends to newly joining transient federate, a message of
- * MSG_TYPE_STIMESTAMP_START. It includes the starting time of the federation,
- * together with the effective starting logical tag. The latter is useful for
- * transient federates.
- */
-#define MSG_TYPE_TIMESTAMP_START 28
-#define MSG_TYPE_TIMESTAMP_START_LENGTH (1 + sizeof(instant_t) + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
  * Byte sent by the RTI ordering the federate to stop. Upon receiving the message,
