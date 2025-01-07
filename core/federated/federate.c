@@ -2272,9 +2272,14 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
         send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
         _fed.last_sent_NET = tag;
         _fed.last_skipped_NET = NEVER_TAG;
-        LF_PRINT_LOG("Sent the last skipped next event tag (NET) " PRINTF_TAG
-                     " to RTI based on the last DNET " PRINTF_TAG ".",
-                     _fed.last_DNET.time - start_time, _fed.last_DNET.microstep, tag.time - start_time, tag.microstep);
+        LF_PRINT_LOG("Sent a next event tag (NET) " PRINTF_TAG " to RTI based on the last DNET " PRINTF_TAG ".",
+                     tag.time - start_time, tag.microstep, _fed.last_DNET.time - start_time, _fed.last_DNET.microstep);
+      } else {
+        _fed.last_skipped_NET = tag;
+        LF_PRINT_LOG("Skip sending a next event tag (NET) " PRINTF_TAG " to RTI based on the last DNET " PRINTF_TAG
+                     " and the last sent NET" PRINTF_TAG ".",
+                     tag.time - start_time, tag.microstep, _fed.last_DNET.time - start_time, _fed.last_DNET.microstep,
+                     _fed.last_sent_NET.time - start_time, _fed.last_sent_NET.microstep);
       }
       return _fed.last_TAG;
     }
