@@ -86,6 +86,7 @@ federate_instance_t _fed = {.socket_TCP_RTI = -1,
                             .is_last_TAG_provisional = false,
                             .has_upstream = false,
                             .has_downstream = false,
+                            .received_any_DNET = false,
                             .last_DNET = {.time = NEVER, .microstep = 0u},
                             .received_stop_request_from_rti = false,
                             .last_sent_LTC = {.time = NEVER, .microstep = 0u},
@@ -1471,6 +1472,7 @@ static void handle_downstream_next_event_tag() {
   tracepoint_federate_from_rti(receive_DNET, _lf_my_fed_id, &DNET);
 
   LF_PRINT_LOG("Received Downstream Next Event Tag (DNET): " PRINTF_TAG ".", DNET.time - start_time, DNET.microstep);
+  _fed.received_any_DNET = true;
 
   environment_t* env;
   _lf_get_environments(&env);
@@ -2264,8 +2266,9 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received.",
                      _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
 
-      // In case a downstream federate needs the NET of this tag, send NET.
-      if (lf_tag_compare(_fed.last_DNET, tag) < 0 && lf_tag_compare(_fed.last_DNET, _fed.last_sent_NET) >= 0) {
+      // In case a downstream federate needs the NET of this tag or has not received any DNET, send NET.
+      if (!_fed.received_any_DNET ||
+          (lf_tag_compare(_fed.last_DNET, tag) < 0 && lf_tag_compare(_fed.last_DNET, _fed.last_sent_NET) >= 0)) {
         send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
         _fed.last_sent_NET = tag;
         _fed.last_skipped_NET = NEVER_TAG;

@@ -174,6 +174,11 @@ typedef struct federate_instance_t {
   tag_t last_skipped_NET;
 
   /**
+   * Indicator of whether this federate has received any DNET (downstream next event tag) signal.
+   */
+  bool received_any_DNET;
+
+  /**
    * A record of the most recent DNET (downstream next event tag) signal.
    */
   tag_t last_DNET;
