@@ -1480,15 +1480,15 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 int32_t start_rti_server(uint16_t port) {
   _lf_initialize_clock();
   // Create the TCP socket server
-  if (create_TCP_server(port, &rti_remote->socket_descriptor_TCP, &rti_remote->final_port_TCP, true)) {
+  if (create_server(port, &rti_remote->socket_descriptor_TCP, &rti_remote->final_port_TCP, TCP, true)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
   lf_print("RTI: Listening for federates.");
   // Create the UDP socket server
   // Try to get the rti_remote->final_port_TCP + 1 port
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-    if (create_UDP_server(rti_remote->final_port_TCP + 1, &rti_remote->socket_descriptor_UDP,
-                          &rti_remote->final_port_UDP, true)) {
+    if (create_server(rti_remote->final_port_TCP + 1, &rti_remote->socket_descriptor_UDP, &rti_remote->final_port_UDP,
+                      UDP, true)) {
       lf_print_error_system_failure("RTI failed to create UDP server: %s.", strerror(errno));
     }
   }
