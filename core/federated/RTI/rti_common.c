@@ -225,8 +225,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                  "(adjusted by after delay). Granting tag advance (TAG) for " PRINTF_TAG,
                  e->id, t_d.time - lf_time_start(), t_d.microstep, e->next_event.time - lf_time_start(),
                  e->next_event.microstep);
-    result.tag = e->next_event;
-    // result.tag = lf_tag_latest_earlier(t_d);
+    result.tag = lf_tag_latest_earlier(t_d);
   } else if (                                                   // Scenario (2) above
       lf_tag_compare(t_d, e->next_event) == 0                   // EIMT equal to NET
       && is_in_zero_delay_cycle(e)                              // The node is part of a ZDC
