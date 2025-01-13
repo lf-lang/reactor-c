@@ -1920,7 +1920,6 @@ void lf_create_server(int specified_port) {
   if (create_server(specified_port, &_fed.server_socket, (uint16_t*)&_fed.server_port, TCP, false)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
-  _fed.server_port = (int)port;
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
 
   // Send the server port number to the RTI
