@@ -1048,6 +1048,10 @@ void handle_timestamp(federate_info_t* my_fed) {
     }
     // Add an offset to the maximum tag to get everyone starting together.
     start_time = rti_remote->max_start_time + DELAY_START;
+    // Set the start_time in the RTI trace
+    if (rti_remote->base.tracing_enabled) {
+      lf_tracing_set_start_time(start_time);
+    }
     my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
 
     // Notify the federate of its start tag.
@@ -2352,11 +2356,6 @@ static int set_has_upstream_transient_federates_parameter_and_check() {
 void wait_for_federates(int socket_descriptor) {
   // Wait for connections from persistent federates and create a thread for each.
   lf_connect_to_persistent_federates(socket_descriptor);
-
-  // Set the start_time in the RTI trace
-  if (rti_remote->base.tracing_enabled) {
-    lf_tracing_set_start_time(start_time);
-  }
 
   // Set has_upstream_transient_federates parameter in all federates and check
   // that there is no more than one level of transiency
