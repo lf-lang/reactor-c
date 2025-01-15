@@ -375,17 +375,16 @@ void* respond_to_erroneous_connections(void* nothing);
 void initialize_federate(federate_info_t* fed, uint16_t id);
 
 /**
- * Start the socket server for the runtime infrastructure (RTI) and
- * return the socket descriptor.
+ * Start the socket server for the runtime infrastructure (RTI).
+ * @return 0 for success, -1 for failure.
  */
-int32_t start_rti_server();
+int start_rti_server();
 
 /**
  * Start the runtime infrastructure (RTI) interaction with the federates
  * and wait for the federates to exit.
- * @param socket_descriptor The socket descriptor returned by start_rti_server().
  */
-void wait_for_federates(int socket_descriptor);
+void wait_for_federates();
 
 /**
  * Print a usage message.

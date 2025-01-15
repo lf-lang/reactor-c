@@ -328,9 +328,8 @@ int main(int argc, const char* argv[]) {
     rti.base.scheduling_nodes[i] = (scheduling_node_t*)fed_info;
   }
 
-  int socket_descriptor = start_rti_server();
-  if (socket_descriptor >= 0) {
-    wait_for_federates(socket_descriptor);
+  if (!start_rti_server()) {
+    wait_for_federates();
     normal_termination = true;
     if (rti.base.tracing_enabled) {
       // No need for a mutex lock because all threads have exited.
