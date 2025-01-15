@@ -113,7 +113,9 @@ typedef struct rti_remote_t {
   const char* federation_id;
 
   /************* TCP server information *************/
-  /** The desired port specified by the user on the command line. */
+  /** The desired port specified by the user on the command line.
+   * This should be not moved to the net_driver, because the user can configure this as -p or --port.
+   */
   uint16_t user_specified_port;
 
   /** The final port number that the TCP socket server ends up using. */
@@ -130,7 +132,7 @@ typedef struct rti_remote_t {
   int socket_descriptor_UDP;
 
   /**
-   * The rti's netdriver.
+   * The rti's network driver.
    */
   netdrv_t* rti_netdrv;
 
@@ -375,11 +377,8 @@ void initialize_federate(federate_info_t* fed, uint16_t id);
 /**
  * Start the socket server for the runtime infrastructure (RTI) and
  * return the socket descriptor.
- * @param num_feds Number of federates.
- * @param port The port on which to listen for socket connections, or
- *  0 to use the default port range.
  */
-int32_t start_rti_server(uint16_t port);
+int32_t start_rti_server();
 
 /**
  * Start the runtime infrastructure (RTI) interaction with the federates

@@ -3,6 +3,7 @@
 
 #include "low_level_platform.h"
 #include <sys/types.h>
+#include <netinet/in.h>
 
 /**
  * The amount of time to wait after a failed socket read or write before trying again. This defaults to 100 ms.
@@ -74,6 +75,23 @@ typedef enum socket_type_t { TCP, UDP } socket_type_t;
  */
 extern lf_mutex_t socket_mutex;
 
+typedef struct socket_priv_t {
+  int socket_descriptor;
+  uint16_t port; // my port number // TODO: Only used in federate.c to send federate's port.
+  uint16_t user_specified_port;
+
+  // The connected other side's info.
+  char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
+  int32_t server_port;                   // port number of the socket server of the federate
+                                         // if it has any incoming direct connections from other federates.
+                                         // The port number will be -1 if there is no server or if the
+                                         // RTI has not been informed of the port number.
+  struct in_addr server_ip_addr;         // Information about the IP address of the socket
+                                         // server of the federate.
+
+  struct sockaddr_in UDP_addr; // The UDP address for the federate.
+} socket_priv_t;
+
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
  * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
@@ -105,6 +123,10 @@ int create_real_time_tcp_socket_errexit();
  */
 int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
                   bool increment_port_on_retry);
+
+
+
+int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port);
 
 /**
  * Wait for an incoming connection request on the specified server socket.

@@ -11,7 +11,7 @@
 #include <string.h> // strerror
 
 #include "util.h"
-#include "socket_common.h"
+#include "net_driver.h"
 
 #ifndef NUMBER_OF_FEDERATES
 #define NUMBER_OF_FEDERATES 1
@@ -133,6 +133,7 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   return used_port;
 }
 
+//TODO: Fix on federate.
 int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
                   bool increment_port_on_retry) {
   int socket_descriptor;
@@ -165,6 +166,52 @@ int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket
       return -1;
     }
   }
+  *final_socket = socket_descriptor;
+  *final_port = used_port;
+  return 0;
+}
+
+int create_server_(netdrv_t* drv, server_type_t serv_type) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  int socket_descriptor;
+  struct timeval timeout_time;
+  // Create an IPv4 socket for TCP.
+  socket_descriptor = create_real_time_tcp_socket_errexit();
+  // Set the timeout time for the communications of the server
+  timeout_time = (struct timeval){.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
+  if (socket_descriptor < 0) {
+    lf_print_error("Failed to create TCP socket.");
+    return -1;
+  }
+  set_socket_timeout_option(socket_descriptor, &timeout_time);
+  bool increment_port_on_retry = (serv_type == RTI) ? true : false;
+
+  int used_port = set_socket_bind_option(socket_descriptor, priv->user_specified_port, increment_port_on_retry);
+  // Enable listening for socket connections.
+  // The second argument is the maximum number of queued socket requests,
+  // which according to the Mac man page is limited to 128.
+  if (listen(socket_descriptor, 128)) {
+    lf_print_error("Failed to listen on %d socket: %s.", socket_descriptor, strerror(errno));
+    return -1;
+  }
+  priv->socket_descriptor = socket_descriptor;
+  priv->port = used_port;
+  return 0;
+}
+
+int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port) {
+  int socket_descriptor;
+  struct timeval timeout_time;
+  // Create a UDP socket.
+  socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  timeout_time = (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
+
+  if (socket_descriptor < 0) {
+    lf_print_error("Failed to create UDP socket.");
+    return -1;
+  }
+  set_socket_timeout_option(socket_descriptor, &timeout_time);
+  int used_port = set_socket_bind_option(socket_descriptor, port, true);
   *final_socket = socket_descriptor;
   *final_port = used_port;
   return 0;
