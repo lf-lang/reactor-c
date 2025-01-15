@@ -18,7 +18,6 @@ list(APPEND REACTORC_SOURCES ${GENERAL_SOURCES})
 # Add sources for either threaded or single-threaded runtime
 if(DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
-    include(federated/network/CMakeLists.txt)
 endif()
 
 # Add sources for either threaded or single-threaded runtime
@@ -95,6 +94,16 @@ include(${LF_ROOT}/platform/api/CMakeLists.txt)
 include(${LF_ROOT}/platform/impl/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::platform-api)
 target_link_libraries(reactor-c PRIVATE lf::platform-impl)
+
+option(COMM_TYPE "Communication type between RTI and federate(s)." ON)
+IF(COMM_TYPE MATCHES ON)
+   set(COMM_TYPE TCP)
+ENDIF()
+
+include(${LF_ROOT}/network/api/CMakeLists.txt)
+include(${LF_ROOT}/network/impl/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC lf::network-api)
+target_link_libraries(reactor-c PRIVATE lf::network-impl)
 
 target_include_directories(reactor-c PUBLIC ../include)
 target_include_directories(reactor-c PUBLIC ../include/core)
