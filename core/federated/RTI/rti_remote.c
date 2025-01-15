@@ -1477,10 +1477,10 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   fed->server_port = -1;
 }
 
-int32_t start_rti_server(uint16_t port) {
+int32_t start_rti_server() {
   _lf_initialize_clock();
   // Create the TCP socket server
-  if (create_server(port, &rti_remote->socket_descriptor_TCP, &rti_remote->final_port_TCP, TCP, true)) {
+  if (create_server(rti_remote->user_specified_port, &rti_remote->socket_descriptor_TCP, &rti_remote->final_port_TCP, TCP, true)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
   lf_print("RTI: Listening for federates.");
@@ -1548,8 +1548,10 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->all_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";
   rti_remote->user_specified_port = 0;
+  // TODO: Erase
   rti_remote->final_port_TCP = 0;
   rti_remote->socket_descriptor_TCP = -1;
+
   rti_remote->final_port_UDP = UINT16_MAX;
   rti_remote->socket_descriptor_UDP = -1;
   rti_remote->clock_sync_global_status = clock_sync_init;

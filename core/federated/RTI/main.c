@@ -233,6 +233,7 @@ int process_args(int argc, const char* argv[]) {
       rti.base.number_of_scheduling_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
       lf_print("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
     } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
+#ifdef COMM_TYPE_TCP
       if (argc < i + 2) {
         lf_print_error("--port needs a short unsigned integer argument ( > 0 and < %d).", UINT16_MAX);
         usage(argc, argv);
@@ -246,6 +247,9 @@ int process_args(int argc, const char* argv[]) {
         return 0;
       }
       rti.user_specified_port = (uint16_t)RTI_port;
+#else
+      lf_print_error("--port is only available for TCP.");
+#endif
     } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--clock_sync") == 0) {
       if (argc < i + 2) {
         lf_print_error("--clock-sync needs off|init|on.");
@@ -324,7 +328,7 @@ int main(int argc, const char* argv[]) {
     rti.base.scheduling_nodes[i] = (scheduling_node_t*)fed_info;
   }
 
-  int socket_descriptor = start_rti_server(rti.user_specified_port);
+  int socket_descriptor = start_rti_server();
   if (socket_descriptor >= 0) {
     wait_for_federates(socket_descriptor);
     normal_termination = true;
