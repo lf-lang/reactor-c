@@ -1479,7 +1479,9 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 
 int32_t start_rti_server() {
   _lf_initialize_clock();
-  // Create the TCP socket server
+  // Initialize RTI's network driver.
+  rti_remote->rti_netdrv = initialize_netdrv();
+  // Create the server
   if (create_server_(rti_remote->rti_netdrv, RTI)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
