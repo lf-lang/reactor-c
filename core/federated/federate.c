@@ -30,6 +30,7 @@
 #include "federate.h"
 #include "net_common.h"
 #include "net_util.h"
+#include "net_driver.h"
 #include "reactor.h"
 #include "reactor_common.h"
 #include "reactor_threaded.h"

@@ -2,6 +2,7 @@
 #define SOCKET_COMMON_H
 
 #include "low_level_platform.h"
+#include <sys/types.h>
 
 /**
  * The amount of time to wait after a failed socket read or write before trying again. This defaults to 100 ms.

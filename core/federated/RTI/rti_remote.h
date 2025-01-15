@@ -31,7 +31,7 @@
 
 #include "lf_types.h"
 #include "pqueue_tag.h"
-#include "socket_common.h"
+#include "net_driver.h"
 
 /** Time allowed for federates to reply to stop request. */
 #define MAX_TIME_FOR_REPLY_TO_STOP_REQUEST SEC(30)
@@ -128,6 +128,11 @@ typedef struct rti_remote_t {
 
   /** The UDP socket descriptor for the socket server. */
   int socket_descriptor_UDP;
+
+  /**
+   * The rti's netdriver.
+   */
+  netdrv_t* rti_netdrv;
 
   /************* Clock synchronization information *************/
   /* Thread performing PTP clock sync sessions periodically. */
