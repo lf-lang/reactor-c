@@ -171,33 +171,6 @@ int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket
   return 0;
 }
 
-int create_server_(netdrv_t* drv, server_type_t serv_type) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  int socket_descriptor;
-  struct timeval timeout_time;
-  // Create an IPv4 socket for TCP.
-  socket_descriptor = create_real_time_tcp_socket_errexit();
-  // Set the timeout time for the communications of the server
-  timeout_time = (struct timeval){.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
-  if (socket_descriptor < 0) {
-    lf_print_error("Failed to create TCP socket.");
-    return -1;
-  }
-  set_socket_timeout_option(socket_descriptor, &timeout_time);
-  bool increment_port_on_retry = (serv_type == RTI) ? true : false;
-
-  int used_port = set_socket_bind_option(socket_descriptor, priv->user_specified_port, increment_port_on_retry);
-  // Enable listening for socket connections.
-  // The second argument is the maximum number of queued socket requests,
-  // which according to the Mac man page is limited to 128.
-  if (listen(socket_descriptor, 128)) {
-    lf_print_error("Failed to listen on %d socket: %s.", socket_descriptor, strerror(errno));
-    return -1;
-  }
-  priv->socket_descriptor = socket_descriptor;
-  priv->port = used_port;
-  return 0;
-}
 
 int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port) {
   int socket_descriptor;
@@ -232,6 +205,38 @@ static bool check_socket_closed(int socket) {
 }
 
 int accept_socket(int socket, int rti_socket) {
+  struct sockaddr client_fd;
+  // Wait for an incoming connection request.
+  uint32_t client_length = sizeof(client_fd);
+  // The following blocks until a federate connects.
+  int socket_id = -1;
+  while (true) {
+    // When close(socket) is called, the accept() will return -1.
+    socket_id = accept(socket, &client_fd, &client_length);
+    if (socket_id >= 0) {
+      // Got a socket
+      break;
+    } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
+      lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
+      break;
+    } else if (errno == EPERM) {
+      lf_print_error_system_failure("Firewall permissions prohibit connection.");
+    } else {
+      // For the federates, it should check if the rti_socket is still open, before retrying accept().
+      if (rti_socket == -1) {
+        if (check_socket_closed(rti_socket)) {
+          break;
+        }
+      }
+      // Try again
+      lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
+      continue;
+    }
+  }
+  return socket_id;
+}
+
+int accept_netdrv(netdrv_t server_drv, int rti_socket) {
   struct sockaddr client_fd;
   // Wait for an incoming connection request.
   uint32_t client_length = sizeof(client_fd);
