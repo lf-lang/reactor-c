@@ -1282,11 +1282,11 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* fed_netdrv, uint1
           // Initialize the UDP_addr field of the federate struct
           fed->UDP_addr.sin_family = AF_INET;
           fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
-          #ifdef COMM_TYPE_TCP
+#ifdef COMM_TYPE_TCP
           fed->UDP_addr.sin_addr = ((socket_priv_t*)fed_netdrv->priv)->server_ip_addr;
-          // fed->UDP_addr.sin_addr = fed->server_ip_addr;
-          #elif
-          #endif
+// fed->UDP_addr.sin_addr = fed->server_ip_addr;
+#elif
+#endif
         }
       } else {
         // Disable clock sync after initial round.
