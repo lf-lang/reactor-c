@@ -592,7 +592,7 @@ void handle_address_query(uint16_t fed_id) {
   federate_info_t* fed = GET_FED_INFO(fed_id);
   // Use buffer both for reading and constructing the reply.
   // The length is what is needed for the reply.
-  unsigned char buffer[1 + sizeof(int32_t) + sizeof(uint32_t)];
+  unsigned char buffer[1 + sizeof(int32_t)];
   read_from_netdrv_fail_on_error(fed->fed_netdrv, sizeof(uint16_t), (unsigned char*)buffer, NULL,
                                  "Failed to read address query.");
   uint16_t remote_fed_id = extract_uint16(buffer);
@@ -613,21 +613,21 @@ void handle_address_query(uint16_t fed_id) {
   // Encode the port number.
   federate_info_t* remote_fed = GET_FED_INFO(remote_fed_id);
 
+  // The fed_netdrv is NULL yet, which means, the RTI does not know the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message from this federate. In that case, it will respond by sending -1.
+  if (remote_fed->fed_netdrv == NULL) {
+  }
   // Send the port number (which could be -1).
   LF_MUTEX_LOCK(&rti_mutex);
   int32_t server_port = get_server_port(remote_fed->fed_netdrv);
 
   encode_int32(server_port, (unsigned char*)&buffer[1]);
-  encode_uint32(get_server_ip_addr(remote_fed->fed_netdrv), buffer + 1 + sizeof(int32_t));
 
   // Send the port number (which could be -1) and the server IP address to federate.
-  write_to_netdrv_fail_on_error(fed->fed_netdrv, 1 + sizeof(int32_t) + sizeof(uint32_t), (unsigned char*)buffer,
-                                &rti_mutex, "Failed to write port number and ip address to socket of federate %d.",
-                                fed_id);
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, 1 + sizeof(int32_t), (unsigned char*)buffer, &rti_mutex,
+                                "Failed to write port number to socket of federate %d.", fed_id);
 
-  // write_to_netdrv_fail_on_error(fed->fed_netdrv, sizeof(remote_fed->server_ip_addr),
-  //                               (unsigned char*)&remote_fed->server_ip_addr, &rti_mutex,
-  //                               "Failed to write ip address to socket of federate %d.", fed_id);
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, sizeof(uint32_t), (unsigned char*)get_ip_addr(remote_fed->fed_netdrv),
+                                &rti_mutex, "Failed to write ip address to socket of federate %d.", fed_id);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id,
@@ -1289,8 +1289,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* fed_netdrv, uint1
           fed->UDP_addr.sin_family = AF_INET;
           fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
 #ifdef COMM_TYPE_TCP
-          fed->UDP_addr.sin_addr = ((socket_priv_t*)fed_netdrv->priv)->server_ip_addr;
-// fed->UDP_addr.sin_addr = fed->server_ip_addr;
+          fed->UDP_addr.sin_addr = *get_ip_addr(fed_netdrv);
 #elif
 #endif
         }

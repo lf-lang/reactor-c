@@ -249,13 +249,16 @@ int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
 }
 
 int32_t get_server_port(netdrv_t* drv) {
+  // if (drv == NULL) {
+  //   lf_print_warning("Netdriver is closed, returning -1.");
+  // }
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   return priv->server_port;
 }
 
-uint32_t get_server_ip_addr(netdrv_t* drv) {
+struct in_addr* get_ip_addr(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  return priv->server_ip_addr.s_addr;
+  return &priv->server_ip_addr;
 }
 
 char* get_server_hostname(netdrv_t* drv) {

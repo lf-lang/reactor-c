@@ -135,7 +135,7 @@ int shutdown_netdrv(netdrv_t* drv, bool read_before_closing);
 
 int32_t get_server_port(netdrv_t* drv);
 
-uint32_t get_server_ip_addr(netdrv_t* drv);
+struct in_addr* get_ip_addr(netdrv_t* drv);
 
 char* get_server_hostname(netdrv_t* drv);
 
