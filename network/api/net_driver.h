@@ -29,6 +29,8 @@ int create_server_(netdrv_t* drv, server_type_t serv_type);
 
 netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv);
 
+int get_peer_address(netdrv_t* drv);
+
 /**
  * Read the specified number of bytes from the specified socket into the specified buffer.
  * If an error occurs during this reading, return -1 and set errno to indicate

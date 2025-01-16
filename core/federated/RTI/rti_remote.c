@@ -1146,7 +1146,6 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* fed_netdrv) {
  * out the relevant information in the federate's struct.
  * @return 1 on success and 0 on failure.
  */
-// TODO: Check.
 static int receive_connection_information(netdrv_t* fed_netdrv, uint16_t fed_id) {
   LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
   unsigned char connection_info_header[MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE];
@@ -1283,7 +1282,11 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* fed_netdrv, uint1
           // Initialize the UDP_addr field of the federate struct
           fed->UDP_addr.sin_family = AF_INET;
           fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
-          fed->UDP_addr.sin_addr = fed->server_ip_addr;
+          #ifdef COMM_TYPE_TCP
+          fed->UDP_addr.sin_addr = ((socket_priv_t*)fed_netdrv->priv)->server_ip_addr;
+          // fed->UDP_addr.sin_addr = fed->server_ip_addr;
+          #elif
+          #endif
         }
       } else {
         // Disable clock sync after initial round.
@@ -1309,7 +1312,6 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* fed_netdrv, uint1
  * @param fed_netdrv Network driver for the incoming federate tryting to authenticate.
  * @return True if authentication is successful and false otherwise.
  */
-// TODO: Fix.
 static bool authenticate_federate(netdrv_t* fed_netdrv) {
   // Wait for MSG_TYPE_FED_NONCE from federate.
   size_t fed_id_length = sizeof(uint16_t);
@@ -1455,12 +1457,8 @@ void* respond_to_erroneous_connections(void* nothing) {
 void initialize_federate(federate_info_t* fed, uint16_t id) {
   initialize_scheduling_node(&(fed->enclave), id);
   fed->requested_stop = false;
-  fed->socket = -1; // No socket.
   fed->clock_synchronization_enabled = true;
   fed->in_transit_message_tags = pqueue_tag_init(10);
-  strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
-  fed->server_ip_addr.s_addr = 0;
-  fed->server_port = -1;
 }
 
 int start_rti_server() {

@@ -27,6 +27,7 @@ netdrv_t* initialize_netdrv() {
 
   // Federate initialization
   strncpy(priv->server_hostname, "localhost", INET_ADDRSTRLEN);
+  priv->server_ip_addr.s_addr = 0;
   priv->server_port = -1;
 
   // Set drv->priv pointer to point the malloc'd priv.
