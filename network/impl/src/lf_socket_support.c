@@ -100,6 +100,26 @@ netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
   return fed_netdrv;
 }
 
+int get_peer_address(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  struct sockaddr_in peer_addr;
+  socklen_t addr_len = sizeof(peer_addr);
+  if (getpeername(priv->socket_descriptor, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
+    lf_print_error("RTI failed to get peer address.");
+  }
+  priv->server_ip_addr = peer_addr.sin_addr;
+
+#if LOG_LEVEL >= LOG_LEVEL_DEBUG
+  // Create the human readable format and copy that into
+  // the .server_hostname field of the federate.
+  char str[INET_ADDRSTRLEN + 1];
+  inet_ntop(AF_INET, priv->server_ip_addr, str, INET_ADDRSTRLEN);
+  strncpy(priv->server_hostname, str, INET_ADDRSTRLEN);
+
+  LF_PRINT_DEBUG("RTI got address %s", priv->server_hostname);
+#endif
+}
+
 int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   int socket = priv->socket_descriptor;

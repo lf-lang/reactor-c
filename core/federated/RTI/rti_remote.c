@@ -1112,7 +1112,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* fed_netdrv) {
   // The MSG_TYPE_FED_IDS message has the right federation ID.
 
   // Get the peer address from the connected socket_id. Then assign it as the federate's socket server.
-  if(get_peer_address(fed_netdrv) != 0) {
+  if (get_peer_address(fed_netdrv) != 0) {
     lf_print_error("RTI failed to get peer address.");
   };
   fed->fed_netdrv = fed_netdrv;
@@ -1146,7 +1146,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* fed_netdrv) {
  * out the relevant information in the federate's struct.
  * @return 1 on success and 0 on failure.
  */
-//TODO: Check.
+// TODO: Check.
 static int receive_connection_information(netdrv_t* fed_netdrv, uint16_t fed_id) {
   LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
   unsigned char connection_info_header[MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE];
@@ -1309,7 +1309,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t* fed_netdrv, uint1
  * @param fed_netdrv Network driver for the incoming federate tryting to authenticate.
  * @return True if authentication is successful and false otherwise.
  */
-//TODO: Fix.
+// TODO: Fix.
 static bool authenticate_federate(netdrv_t* fed_netdrv) {
   // Wait for MSG_TYPE_FED_NONCE from federate.
   size_t fed_id_length = sizeof(uint16_t);
