@@ -1384,9 +1384,9 @@ static bool authenticate_federate(int* socket) {
 }
 #endif
 
-void lf_connect_to_federates(int socket_descriptor) {
+void lf_connect_to_federates(netdrv_t* rti_netdrv) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
+    int socket_id = accept_netdrv(rti_remote->socket_descriptor_TCP, -1);
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
     if (rti_remote->authentication_enabled) {
@@ -1444,7 +1444,7 @@ void* respond_to_erroneous_connections(void* nothing) {
     // Wait for an incoming connection request.
     // The following will block until either a federate attempts to connect
     // or shutdown_socket(rti->socket_descriptor_TCP) is called.
-    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
+    int socket_id = accept_netdrv(rti_remote->socket_descriptor_TCP, -1);
     if (socket_id < 0) {
       return NULL;
     }
@@ -1501,7 +1501,7 @@ int start_rti_server() {
 
 void wait_for_federates() {
   // Wait for connections from federates and create a thread for each.
-  lf_connect_to_federates(socket_descriptor);
+  lf_connect_to_federates(rti_remote->rti_netdrv);
 
   // All federates have connected.
   lf_print("RTI: All expected federates have connected. Starting execution.");

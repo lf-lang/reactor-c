@@ -52,13 +52,7 @@ int create_real_time_tcp_socket_errexit() {
   return sock;
 }
 
-/**
- * Set the socket timeout options.
- * @param socket_descriptor The file descriptor of the socket on which to set options.
- * @param timeout_time A pointer to a `struct timeval` that specifies the timeout duration
- *                     for socket operations (receive and send).
- */
-static void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
+void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
   // Set the option for this socket to reuse the same address
   int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
   if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
@@ -73,15 +67,7 @@ static void set_socket_timeout_option(int socket_descriptor, struct timeval* tim
   }
 }
 
-/**
- * Assign a port to the socket, and bind the socket.
- *
- * @param socket_descriptor The file descriptor of the socket to be bound to an address and port.
- * @param specified_port The port number to bind the socket to.
- * @param increment_port_on_retry Boolean to retry port increment.
- * @return The final port number used.
- */
-static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool increment_port_on_retry) {
+int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool increment_port_on_retry) {
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.
@@ -190,11 +176,7 @@ int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port) 
   return 0;
 }
 
-/**
- * Return true if either the socket to the RTI is broken or the socket is
- * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
- */
-static bool check_socket_closed(int socket) {
+bool check_socket_closed(int socket) {
   unsigned char first_byte;
   ssize_t bytes = peek_from_socket(socket, &first_byte);
   if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {
@@ -205,38 +187,6 @@ static bool check_socket_closed(int socket) {
 }
 
 int accept_socket(int socket, int rti_socket) {
-  struct sockaddr client_fd;
-  // Wait for an incoming connection request.
-  uint32_t client_length = sizeof(client_fd);
-  // The following blocks until a federate connects.
-  int socket_id = -1;
-  while (true) {
-    // When close(socket) is called, the accept() will return -1.
-    socket_id = accept(socket, &client_fd, &client_length);
-    if (socket_id >= 0) {
-      // Got a socket
-      break;
-    } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
-      lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
-      break;
-    } else if (errno == EPERM) {
-      lf_print_error_system_failure("Firewall permissions prohibit connection.");
-    } else {
-      // For the federates, it should check if the rti_socket is still open, before retrying accept().
-      if (rti_socket == -1) {
-        if (check_socket_closed(rti_socket)) {
-          break;
-        }
-      }
-      // Try again
-      lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
-      continue;
-    }
-  }
-  return socket_id;
-}
-
-int accept_netdrv(netdrv_t server_drv, int rti_socket) {
   struct sockaddr client_fd;
   // Wait for an incoming connection request.
   uint32_t client_length = sizeof(client_fd);

@@ -357,9 +357,9 @@ void send_reject(int* socket_id, unsigned char error_code);
  * Wait for one incoming connection request from each federate,
  * and upon receiving it, create a thread to communicate with
  * that federate. Return when all federates have connected.
- * @param socket_descriptor The socket on which to accept connections.
+ * @param rti_netdrv The rti's network driver on which to accept connections.
  */
-void lf_connect_to_federates(int socket_descriptor);
+void lf_connect_to_federates(netdrv_t* rti_netdrv);
 
 /**
  * Thread to respond to new connections, which could be federates of other

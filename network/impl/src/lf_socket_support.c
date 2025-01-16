@@ -1,5 +1,6 @@
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h> // malloc
+#include <string.h> // strerror
+#include <errno.h>  // errno
 
 #include "net_driver.h"
 #include "socket_common.h"
@@ -58,4 +59,42 @@ int create_server_(netdrv_t* drv, server_type_t serv_type) {
   priv->socket_descriptor = socket_descriptor;
   priv->port = used_port;
   return 0;
+}
+
+netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
+  socket_priv_t* serv_priv = (socket_priv_t*)server_drv->priv;
+  netdrv_t* fed_netdrv = initialize_netdrv();
+  socket_priv_t* fed_priv = (socket_priv_t*)fed_netdrv->priv;
+
+  struct sockaddr client_fd;
+  // Wait for an incoming connection request.
+  uint32_t client_length = sizeof(client_fd);
+  // The following blocks until a federate connects.
+  int socket_id = -1;
+  while (true) {
+    // When close(socket) is called, the accept() will return -1.
+    socket_id = accept(serv_priv->socket_descriptor, &client_fd, &client_length);
+    if (socket_id >= 0) {
+      // Got a socket
+      break;
+    } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
+      lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
+      break;
+    } else if (errno == EPERM) {
+      lf_print_error_system_failure("Firewall permissions prohibit connection.");
+    } else {
+      // For the federates, it should check if the rti_socket is still open, before retrying accept().
+      socket_priv_t* rti_priv = (socket_priv_t*)rti_drv->priv;
+      if (rti_priv->socket_descriptor != -1) {
+        if (check_socket_closed(rti_priv->socket_descriptor)) {
+          break;
+        }
+      }
+      // Try again
+      lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
+      continue;
+    }
+  }
+  fed_priv->socket_descriptor = socket_id;
+  return fed_netdrv;
 }

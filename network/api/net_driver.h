@@ -12,8 +12,8 @@ typedef struct netdrv_t {
 } netdrv_t;
 
 /**
- * Allocate memory for the netdriver.
- * @return netdrv_t*
+ * Allocate memory for the network driver.
+ * @return netdrv_t* Initialized network driver.
  */
 netdrv_t* initialize_netdrv();
 
@@ -25,5 +25,7 @@ netdrv_t* initialize_netdrv();
  * @return int 0 for success, -1 for failure.
  */
 int create_server_(netdrv_t* drv, server_type_t serv_type);
+
+netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv);
 
 #endif /* NET_DRIVER_H */
