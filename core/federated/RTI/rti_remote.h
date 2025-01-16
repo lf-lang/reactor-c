@@ -49,10 +49,13 @@
  */
 typedef struct federate_info_t {
   scheduling_node_t enclave;
-  bool requested_stop;                   // Indicates that the federate has requested stop or has replied
-                                         // to a request for stop from the RTI. Used to prevent double-counting
-                                         // a federate when handling lf_request_stop().
-  lf_thread_t thread_id;                 // The ID of the thread handling communication with this federate.
+  bool requested_stop;   // Indicates that the federate has requested stop or has replied
+                         // to a request for stop from the RTI. Used to prevent double-counting
+                         // a federate when handling lf_request_stop().
+  lf_thread_t thread_id; // The ID of the thread handling communication with this federate.
+
+  netdrv_t* fed_netdrv; // The netdriver that the RTI handling each federate.
+
   int socket;                            // The TCP socket descriptor for communicating with this federate.
   struct sockaddr_in UDP_addr;           // The UDP address for the federate.
   bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
@@ -60,13 +63,6 @@ typedef struct federate_info_t {
   pqueue_tag_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
                                          // yet processed. This record is ordered based on the time
                                          // value of each message for a more efficient access.
-  char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
-  int32_t server_port;                   // port number of the socket server of the federate
-                                         // if it has any incoming direct connections from other federates.
-                                         // The port number will be -1 if there is no server or if the
-                                         // RTI has not been informed of the port number.
-  struct in_addr server_ip_addr;         // Information about the IP address of the socket
-                                         // server of the federate.
 } federate_info_t;
 
 /**
@@ -348,10 +344,10 @@ void* federate_info_thread_TCP(void* fed);
 
 /**
  * Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
- * @param socket_id Pointer to the socket ID.
+ * @param drv Pointer to the network driver.
  * @param error_code An error code.
  */
-void send_reject(int* socket_id, unsigned char error_code);
+void send_reject(netdrv_t* drv, unsigned char error_code);
 
 /**
  * Wait for one incoming connection request from each federate,
