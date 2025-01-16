@@ -1016,11 +1016,12 @@ void send_reject(int* socket_id, unsigned char error_code) {
  * a federate ID and a federation ID. If the federation ID
  * matches this federation, send an MSG_TYPE_ACK and otherwise send
  * a MSG_TYPE_REJECT message.
- * @param socket_id Pointer to the socket on which to listen.
+ * @param fed_netdrv Pointer to the network driver on which to listen.
  * @param client_fd The socket address.
  * @return The federate ID for success or -1 for failure.
  */
-static int32_t receive_and_check_fed_id_message(int* socket_id) {
+// TODO: Check.
+static int32_t receive_and_check_fed_id_message(netdrv_t* fed_netdrv) {
   // Buffer for message ID, federate ID, and federation ID length.
   size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
   unsigned char buffer[length];
@@ -1159,7 +1160,8 @@ static int32_t receive_and_check_fed_id_message(int* socket_id) {
  * out the relevant information in the federate's struct.
  * @return 1 on success and 0 on failure.
  */
-static int receive_connection_information(int* socket_id, uint16_t fed_id) {
+//TODO: Check.
+static int receive_connection_information(netdrv_t* fed_netdrv, uint16_t fed_id) {
   LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
   unsigned char connection_info_header[MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE];
   read_from_socket_fail_on_error(socket_id, MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE, connection_info_header, NULL,
@@ -1238,11 +1240,11 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
  * up to perform runtime clock synchronization using the UDP port number
  * specified in the payload to communicate with the federate's clock
  * synchronization logic.
- * @param socket_id The socket on which to listen.
+ * @param fed_netdrv The network driver on which to listen.
  * @param fed_id The federate ID.
  * @return 1 for success, 0 for failure.
  */
-static int receive_udp_message_and_set_up_clock_sync(int* socket_id, uint16_t fed_id) {
+static int receive_udp_message_and_set_up_clock_sync(netdrv_t* fed_netdrv, uint16_t fed_id) {
   // Read the MSG_TYPE_UDP_PORT message from the federate regardless of the status of
   // clock synchronization. This message will tell the RTI whether the federate
   // is doing clock synchronization, and if it is, what port to use for UDP.
@@ -1318,10 +1320,11 @@ static int receive_udp_message_and_set_up_clock_sync(int* socket_id, uint16_t fe
 /**
  * Authenticate incoming federate by performing HMAC-based authentication.
  *
- * @param socket Socket for the incoming federate tryting to authenticate.
+ * @param fed_netdrv Network driver for the incoming federate tryting to authenticate.
  * @return True if authentication is successful and false otherwise.
  */
-static bool authenticate_federate(int* socket) {
+//TODO: Fix.
+static bool authenticate_federate(netdrv_t* fed_netdrv) {
   // Wait for MSG_TYPE_FED_NONCE from federate.
   size_t fed_id_length = sizeof(uint16_t);
   unsigned char buffer[1 + fed_id_length + NONCE_LENGTH];
@@ -1386,13 +1389,14 @@ static bool authenticate_federate(int* socket) {
 
 void lf_connect_to_federates(netdrv_t* rti_netdrv) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-    int socket_id = accept_netdrv(rti_remote->socket_descriptor_TCP, -1);
+    netdrv_t* fed_netdrv = accept_netdrv(rti_netdrv, NULL);
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
     if (rti_remote->authentication_enabled) {
-      if (!authenticate_federate(&socket_id)) {
+      if (!authenticate_federate(fed_netdrv)) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
         // Close the socket without reading until EOF.
+        //TODO: Check.
         shutdown_socket(&socket_id, false);
         // Ignore the federate that failed authentication.
         i--;
@@ -1402,9 +1406,9 @@ void lf_connect_to_federates(netdrv_t* rti_netdrv) {
 #endif
 
     // The first message from the federate should contain its ID and the federation ID.
-    int32_t fed_id = receive_and_check_fed_id_message(&socket_id);
-    if (fed_id >= 0 && socket_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
-        receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
+    int32_t fed_id = receive_and_check_fed_id_message(fed_netdrv);
+    if (fed_id >= 0 && receive_connection_information(fed_netdrv, (uint16_t)fed_id) &&
+        receive_udp_message_and_set_up_clock_sync(fed_netdrv, (uint16_t)fed_id)) {
 
       // Create a thread to communicate with the federate.
       // This has to be done after clock synchronization is finished
@@ -1444,10 +1448,7 @@ void* respond_to_erroneous_connections(void* nothing) {
     // Wait for an incoming connection request.
     // The following will block until either a federate attempts to connect
     // or shutdown_socket(rti->socket_descriptor_TCP) is called.
-    int socket_id = accept_netdrv(rti_remote->socket_descriptor_TCP, -1);
-    if (socket_id < 0) {
-      return NULL;
-    }
+    netdrv_t* fed_netdrv = accept_netdrv(rti_remote->rti_netdrv, NULL);
     if (rti_remote->all_federates_exited) {
       return NULL;
     }
