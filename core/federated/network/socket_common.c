@@ -203,7 +203,7 @@ int accept_socket(int socket, int rti_socket) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
     } else {
       // For the federates, it should check if the rti_socket is still open, before retrying accept().
-      if (rti_socket == -1) {
+      if (rti_socket != -1) {
         if (check_socket_closed(rti_socket)) {
           break;
         }
