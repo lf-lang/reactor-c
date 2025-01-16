@@ -73,9 +73,10 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     tracepoint_rti_to_federate(send_TAG, e->id, &tag);
   }
   // This function is called in notify_advance_grant_if_safe(), which is a long
-  // function. During this call, the socket might close, causing the following write_to_socket
+  // function. During this call, the socket might close, causing the following write_to_netdrv
   // to fail. Consider a failure here a soft failure and update the federate's status.
-  if (write_to_socket(((federate_info_t*)e)->socket, message_length, buffer)) {
+  // TODO: Check if works well.
+  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
     e->state = NOT_CONNECTED;
   } else {
@@ -106,9 +107,9 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     tracepoint_rti_to_federate(send_PTAG, e->id, &tag);
   }
   // This function is called in notify_advance_grant_if_safe(), which is a long
-  // function. During this call, the socket might close, causing the following write_to_socket
+  // function. During this call, the socket might close, causing the following write_to_netdrv
   // to fail. Consider a failure here a soft failure and update the federate's status.
-  if (write_to_socket(((federate_info_t*)e)->socket, message_length, buffer)) {
+  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
     e->state = NOT_CONNECTED;
   } else {
@@ -158,7 +159,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 void handle_port_absent_message(federate_info_t* sending_federate, unsigned char* buffer) {
   size_t message_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
 
-  read_from_socket_fail_on_error(&sending_federate->socket, message_size, &(buffer[1]), NULL,
+  read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, message_size, &(buffer[1]), NULL,
                                  " RTI failed to read port absent message from federate %u.",
                                  sending_federate->enclave.id);
 
@@ -207,7 +208,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
   }
 
   // Forward the message.
-  write_to_socket_fail_on_error(&fed->socket, message_size + 1, buffer, &rti_mutex,
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, message_size + 1, buffer, &rti_mutex,
                                 "RTI failed to forward message to federate %d.", federate_id);
 
   LF_MUTEX_UNLOCK(&rti_mutex);
@@ -216,7 +217,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
 void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer) {
   size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(int64_t) + sizeof(uint32_t);
   // Read the header, minus the first byte which has already been read.
-  read_from_socket_fail_on_error(&sending_federate->socket, header_size - 1, &(buffer[1]), NULL,
+  read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, header_size - 1, &(buffer[1]), NULL,
                                  "RTI failed to read the timed message header from remote federate.");
   // Extract the header information. of the sender
   uint16_t reactor_port_id;
@@ -245,7 +246,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                sending_federate->enclave.id, federate_id, reactor_port_id, intended_tag.time - lf_time_start(),
                intended_tag.microstep);
 
-  read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, &(buffer[header_size]), NULL,
+  read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, bytes_to_read, &(buffer[header_size]), NULL,
                                  "RTI failed to read timed message from federate %d.", federate_id);
   size_t bytes_read = bytes_to_read + header_size;
   // Following only works for string messages.
@@ -281,7 +282,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
       if (bytes_to_read > FED_COM_BUFFER_SIZE) {
         bytes_to_read = FED_COM_BUFFER_SIZE;
       }
-      read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, buffer, NULL,
+      read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, bytes_to_read, buffer, NULL,
                                      "RTI failed to clear message chunks.");
       total_bytes_read += bytes_to_read;
     }
@@ -303,7 +304,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     tracepoint_rti_to_federate(send_TAGGED_MSG, federate_id, &intended_tag);
   }
 
-  write_to_socket_fail_on_error(&fed->socket, bytes_read, buffer, &rti_mutex,
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, bytes_read, buffer, &rti_mutex,
                                 "RTI failed to forward message to federate %d.", federate_id);
 
   // The message length may be longer than the buffer,
@@ -315,7 +316,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     if (bytes_to_read > FED_COM_BUFFER_SIZE) {
       bytes_to_read = FED_COM_BUFFER_SIZE;
     }
-    read_from_socket_fail_on_error(&sending_federate->socket, bytes_to_read, buffer, NULL,
+    read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, bytes_to_read, buffer, NULL,
                                    "RTI failed to read message chunks.");
     total_bytes_read += bytes_to_read;
 
@@ -323,7 +324,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     // do not write to destination_socket and cause interleaving. However,
     // holding the rti_mutex might be very expensive. Instead, each outgoing
     // socket should probably have its own mutex.
-    write_to_socket_fail_on_error(&fed->socket, bytes_to_read, buffer, &rti_mutex,
+    write_to_netdrv_fail_on_error(fed->fed_netdrv, bytes_to_read, buffer, &rti_mutex,
                                   "RTI failed to send message chunks.");
   }
 
@@ -353,7 +354,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
 
 void handle_latest_tag_confirmed(federate_info_t* fed) {
   unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
-  read_from_socket_fail_on_error(&fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
+  read_from_netdrv_fail_on_error(fed->fed_netdrv, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
                                  "RTI failed to read the content of the logical tag complete from federate %d.",
                                  fed->enclave.id);
   tag_t completed = extract_tag(buffer);
@@ -371,7 +372,7 @@ void handle_latest_tag_confirmed(federate_info_t* fed) {
 
 void handle_next_event_tag(federate_info_t* fed) {
   unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
-  read_from_socket_fail_on_error(&fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
+  read_from_netdrv_fail_on_error(fed->fed_netdrv, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
                                  "RTI failed to read the content of the next event tag from federate %d.",
                                  fed->enclave.id);
 
@@ -429,7 +430,7 @@ static void broadcast_stop_time_to_federates_locked() {
     if (rti_remote->base.tracing_enabled) {
       tracepoint_rti_to_federate(send_STOP_GRN, fed->enclave.id, &rti_remote->base.max_stop_tag);
     }
-    write_to_socket_fail_on_error(&fed->socket, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer, &rti_mutex,
+    write_to_netdrv_fail_on_error(fed->fed_netdrv, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer, &rti_mutex,
                                   "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", fed->enclave.id);
   }
 
@@ -482,7 +483,7 @@ void handle_stop_request_message(federate_info_t* fed) {
 
   size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
   unsigned char buffer[bytes_to_read];
-  read_from_socket_fail_on_error(&fed->socket, bytes_to_read, buffer, NULL,
+  read_from_netdrv_fail_on_error(fed->fed_netdrv, bytes_to_read, buffer, NULL,
                                  "RTI failed to read the MSG_TYPE_STOP_REQUEST payload from federate %d.",
                                  fed->enclave.id);
 
@@ -549,7 +550,7 @@ void handle_stop_request_message(federate_info_t* fed) {
       if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_to_federate(send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
       }
-      write_to_socket_fail_on_error(&f->socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
+      write_to_netdrv_fail_on_error(f->fed_netdrv, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
                                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.",
                                     f->enclave.id);
     }
@@ -562,7 +563,7 @@ void handle_stop_request_message(federate_info_t* fed) {
 void handle_stop_request_reply(federate_info_t* fed) {
   size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
   unsigned char buffer_stop_time[bytes_to_read];
-  read_from_socket_fail_on_error(&fed->socket, bytes_to_read, buffer_stop_time, NULL,
+  read_from_netdrv_fail_on_error(fed->fed_netdrv, bytes_to_read, buffer_stop_time, NULL,
                                  "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message from federate %d.",
                                  fed->enclave.id);
 
@@ -591,8 +592,8 @@ void handle_address_query(uint16_t fed_id) {
   federate_info_t* fed = GET_FED_INFO(fed_id);
   // Use buffer both for reading and constructing the reply.
   // The length is what is needed for the reply.
-  unsigned char buffer[1 + sizeof(int32_t)];
-  read_from_socket_fail_on_error(&fed->socket, sizeof(uint16_t), (unsigned char*)buffer, NULL,
+  unsigned char buffer[1 + sizeof(int32_t) + sizeof(uint32_t)];
+  read_from_netdrv_fail_on_error(fed->fed_netdrv, sizeof(uint16_t), (unsigned char*)buffer, NULL,
                                  "Failed to read address query.");
   uint16_t remote_fed_id = extract_uint16(buffer);
 
@@ -614,18 +615,23 @@ void handle_address_query(uint16_t fed_id) {
 
   // Send the port number (which could be -1).
   LF_MUTEX_LOCK(&rti_mutex);
-  encode_int32(remote_fed->server_port, (unsigned char*)&buffer[1]);
-  write_to_socket_fail_on_error(&fed->socket, sizeof(int32_t) + 1, (unsigned char*)buffer, &rti_mutex,
-                                "Failed to write port number to socket of federate %d.", fed_id);
+  int32_t server_port = get_server_port(remote_fed->fed_netdrv);
 
-  // Send the server IP address to federate.
-  write_to_socket_fail_on_error(&fed->socket, sizeof(remote_fed->server_ip_addr),
-                                (unsigned char*)&remote_fed->server_ip_addr, &rti_mutex,
-                                "Failed to write ip address to socket of federate %d.", fed_id);
+  encode_int32(server_port, (unsigned char*)&buffer[1]);
+  encode_uint32(get_server_ip_addr(remote_fed->fed_netdrv), buffer + 1 + sizeof(int32_t));
+
+  // Send the port number (which could be -1) and the server IP address to federate.
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, 1 + sizeof(int32_t) + sizeof(uint32_t), (unsigned char*)buffer,
+                                &rti_mutex, "Failed to write port number and ip address to socket of federate %d.",
+                                fed_id);
+
+  // write_to_netdrv_fail_on_error(fed->fed_netdrv, sizeof(remote_fed->server_ip_addr),
+  //                               (unsigned char*)&remote_fed->server_ip_addr, &rti_mutex,
+  //                               "Failed to write ip address to socket of federate %d.", fed_id);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
-  LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id, remote_fed->server_hostname,
-                 remote_fed->server_port);
+  LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id,
+                 get_server_hostname(remote_fed->fed_netdrv), server_port);
 }
 
 void handle_address_ad(uint16_t federate_id) {
@@ -634,7 +640,7 @@ void handle_address_ad(uint16_t federate_id) {
   // connections to other federates
   int32_t server_port = -1;
   unsigned char buffer[sizeof(int32_t)];
-  read_from_socket_fail_on_error(&fed->socket, sizeof(int32_t), (unsigned char*)buffer, NULL,
+  read_from_netdrv_fail_on_error(fed->fed_netdrv, sizeof(int32_t), (unsigned char*)buffer, NULL,
                                  "Error reading port data from federate %d.", federate_id);
 
   server_port = extract_int32(buffer);
@@ -642,7 +648,7 @@ void handle_address_ad(uint16_t federate_id) {
   assert(server_port < 65536);
 
   LF_MUTEX_LOCK(&rti_mutex);
-  fed->server_port = server_port;
+  set_port(fed->fed_netdrv, server_port);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);
@@ -654,7 +660,7 @@ void handle_address_ad(uint16_t federate_id) {
 void handle_timestamp(federate_info_t* my_fed) {
   unsigned char buffer[sizeof(int64_t)];
   // Read bytes from the socket. We need 8 bytes.
-  read_from_socket_fail_on_error(&my_fed->socket, sizeof(int64_t), (unsigned char*)&buffer, NULL,
+  read_from_netdrv_fail_on_error(my_fed->fed_netdrv, sizeof(int64_t), (unsigned char*)&buffer, NULL,
                                  "ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
 
   int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t*)(&buffer)));
@@ -696,7 +702,7 @@ void handle_timestamp(federate_info_t* my_fed) {
     tag_t tag = {.time = start_time, .microstep = 0};
     tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &tag);
   }
-  if (write_to_socket(my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
+  if (write_to_netdrv(my_fed->fed_netdrv, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
     lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
   }
 
@@ -735,7 +741,7 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, socke
   } else if (socket_type == TCP) {
     LF_PRINT_DEBUG("Clock sync:  RTI sending TCP message type %u.", buffer[0]);
     LF_MUTEX_LOCK(&rti_mutex);
-    write_to_socket_fail_on_error(&fed->socket, 1 + sizeof(int64_t), buffer, &rti_mutex,
+    write_to_netdrv_fail_on_error(fed->fed_netdrv, 1 + sizeof(int64_t), buffer, &rti_mutex,
                                   "Clock sync: RTI failed to send physical time to federate %d.", fed->enclave.id);
     LF_MUTEX_UNLOCK(&rti_mutex);
   }
@@ -871,7 +877,7 @@ static void handle_federate_failed(federate_info_t* my_fed) {
   // Indicate that there will no further events from this federate.
   my_fed->enclave.next_event = FOREVER_TAG;
 
-  shutdown_socket(&my_fed->socket, false);
+  shutdown_netdrv(my_fed->fed_netdrv, false);
 
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
@@ -910,7 +916,7 @@ static void handle_federate_resign(federate_info_t* my_fed) {
   // Indicate that there will no further events from this federate.
   my_fed->enclave.next_event = FOREVER_TAG;
 
-  shutdown_socket(&my_fed->socket, true);
+  shutdown_netdrv(my_fed->fed_netdrv, true);
 
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
@@ -934,7 +940,7 @@ void* federate_info_thread_TCP(void* fed) {
   // Listen for messages from the federate.
   while (my_fed->enclave.state != NOT_CONNECTED) {
     // Read no more than one byte to get the message type.
-    int read_failed = read_from_socket(my_fed->socket, 1, buffer);
+    int read_failed = read_from_netdrv(my_fed->fed_netdrv, 1, buffer);
     if (read_failed) {
       // Socket is closed
       lf_print_error("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
@@ -942,7 +948,7 @@ void* federate_info_thread_TCP(void* fed) {
       // Nothing more to do. Close the socket and exit.
       // Prevent multiple threads from closing the same socket at the same time.
       LF_MUTEX_LOCK(&rti_mutex);
-      shutdown_socket(&my_fed->socket, false); //  from unistd.h
+      shutdown_netdrv(my_fed->fed_netdrv, false); //  from unistd.h
       LF_MUTEX_UNLOCK(&rti_mutex);
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
@@ -1129,7 +1135,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* fed_netdrv) {
     tracepoint_rti_to_federate(send_ACK, fed_id, NULL);
   }
   LF_MUTEX_LOCK(&rti_mutex);
-  if (write_to_socket_close_on_error(&fed->socket, 1, &ack_message)) {
+  if (write_to_netdrv_close_on_error(fed->fed_netdrv, 1, &ack_message)) {
     LF_MUTEX_UNLOCK(&rti_mutex);
     lf_print_error("RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
     return -1;
@@ -1515,6 +1521,7 @@ void wait_for_federates() {
   shutdown_netdrv(rti_remote->rti_netdrv, false);
 
   if (rti_remote->socket_descriptor_UDP > 0) {
+    // UDP only uses sockets.
     shutdown_socket(&rti_remote->socket_descriptor_UDP, false);
   }
 }
