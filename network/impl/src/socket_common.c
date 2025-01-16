@@ -119,7 +119,7 @@ int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool 
   return used_port;
 }
 
-//TODO: Fix on federate.
+// TODO: Fix on federate.
 int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
                   bool increment_port_on_retry) {
   int socket_descriptor;
@@ -156,7 +156,6 @@ int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket
   *final_port = used_port;
   return 0;
 }
-
 
 int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port) {
   int socket_descriptor;
