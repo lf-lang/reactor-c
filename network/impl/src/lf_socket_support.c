@@ -1,7 +1,8 @@
-#include <stdlib.h> // malloc()
-#include <string.h> // strerror()
-#include <errno.h>  // errno
-#include <unistd.h> // read() write()
+#include <stdlib.h>    // malloc()
+#include <string.h>    // strerror()
+#include <errno.h>     // errno
+#include <unistd.h>    // read() write()
+#include <arpa/inet.h> // inet_ntop
 
 #include "net_driver.h"
 #include "socket_common.h"
@@ -107,6 +108,7 @@ int get_peer_address(netdrv_t* drv) {
   socklen_t addr_len = sizeof(peer_addr);
   if (getpeername(priv->socket_descriptor, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
     lf_print_error("RTI failed to get peer address.");
+    return -1;
   }
   priv->server_ip_addr = peer_addr.sin_addr;
 
@@ -114,11 +116,12 @@ int get_peer_address(netdrv_t* drv) {
   // Create the human readable format and copy that into
   // the .server_hostname field of the federate.
   char str[INET_ADDRSTRLEN + 1];
-  inet_ntop(AF_INET, priv->server_ip_addr, str, INET_ADDRSTRLEN);
+  inet_ntop(AF_INET, &priv->server_ip_addr, str, INET_ADDRSTRLEN);
   strncpy(priv->server_hostname, str, INET_ADDRSTRLEN);
 
   LF_PRINT_DEBUG("RTI got address %s", priv->server_hostname);
 #endif
+  return 0;
 }
 
 int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
@@ -242,38 +245,25 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
 
 int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  if (!read_before_closing) {
-    if (shutdown(priv->socket_descriptor, SHUT_RDWR)) {
-      lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
-      return -1;
-    }
-  } else {
-    // Signal the other side that no further writes are expected by sending a FIN packet.
-    // This indicates the write direction is closed. For more details, refer to:
-    // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
-    if (shutdown(priv->socket_descriptor, SHUT_WR)) {
-      lf_print_log("Failed to shutdown socket: %s", strerror(errno));
-      return -1;
-    }
+  return shutdown_socket(&priv->socket_descriptor, read_before_closing);
+}
 
-    // Wait for the other side to send an EOF or encounter a socket error.
-    // Discard any incoming bytes. Normally, this read should return 0, indicating the peer has also closed the
-    // connection.
-    // This compensates for delayed ACKs and scenarios where Nagle's algorithm is disabled, ensuring the shutdown
-    // completes gracefully.
-    unsigned char buffer[10];
-    while (read(priv->socket_descriptor, buffer, 10) > 0)
-      ;
-  }
-  // NOTE: In all common TCP/IP stacks, there is a time period,
-  // typically between 30 and 120 seconds, called the TIME_WAIT period,
-  // before the port is released after this close. This is because
-  // the OS is preventing another program from accidentally receiving
-  // duplicated packets intended for this program.
-  if (close(priv->socket_descriptor)) {
-    lf_print_log("Error while closing socket: %s\n", strerror(errno));
-    return -1;
-  }
-  priv->socket_descriptor = -1;
-  return 0;
+int32_t get_server_port(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return priv->server_port;
+}
+
+uint32_t get_server_ip_addr(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return priv->server_ip_addr.s_addr;
+}
+
+char* get_server_hostname(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return priv->server_hostname;
+}
+
+void set_port(netdrv_t* drv, int32_t port) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  priv->server_port = port;
 }

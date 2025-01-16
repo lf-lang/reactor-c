@@ -133,4 +133,12 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
  */
 int shutdown_netdrv(netdrv_t* drv, bool read_before_closing);
 
+int32_t get_server_port(netdrv_t* drv);
+
+uint32_t get_server_ip_addr(netdrv_t* drv);
+
+char* get_server_hostname(netdrv_t* drv);
+
+void set_port(netdrv_t* drv, int32_t port);
+
 #endif /* NET_DRIVER_H */
