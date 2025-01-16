@@ -613,12 +613,26 @@ void handle_address_query(uint16_t fed_id) {
   // Encode the port number.
   federate_info_t* remote_fed = GET_FED_INFO(remote_fed_id);
 
-  // The fed_netdrv is NULL yet, which means, the RTI does not know the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message from this federate. In that case, it will respond by sending -1.
-  if (remote_fed->fed_netdrv == NULL) {
-  }
-  // Send the port number (which could be -1).
+  int32_t server_port;
+  uint32_t* ip_address;
+  char* server_host_name;
+
   LF_MUTEX_LOCK(&rti_mutex);
-  int32_t server_port = get_server_port(remote_fed->fed_netdrv);
+  // Check if the RTI has initialized the remote federate's network driver.
+  if (remote_fed->fed_netdrv == NULL) {
+    // RTI has not set up the remote federate. Respond with -1 to indicate an unknown port number.
+    server_port = -1;
+    uint32_t temp = 0;
+    ip_address = &temp;
+    server_host_name = "localhost";
+  } else {
+    // The network driver is initialized, but the RTI might still not know the port number. This can happen if the RTI
+    // has not yet received a MSG_TYPE_ADDRESS_ADVERTISEMENT message from the remote federate. In such cases, the
+    // returned port number might still be -1.
+    server_port = get_server_port(remote_fed->fed_netdrv);
+    ip_address = (uint32_t*)get_ip_addr(remote_fed->fed_netdrv);
+    server_host_name = get_server_hostname(remote_fed->fed_netdrv);
+  }
 
   encode_int32(server_port, (unsigned char*)&buffer[1]);
 
@@ -626,12 +640,12 @@ void handle_address_query(uint16_t fed_id) {
   write_to_netdrv_fail_on_error(fed->fed_netdrv, 1 + sizeof(int32_t), (unsigned char*)buffer, &rti_mutex,
                                 "Failed to write port number to socket of federate %d.", fed_id);
 
-  write_to_netdrv_fail_on_error(fed->fed_netdrv, sizeof(uint32_t), (unsigned char*)get_ip_addr(remote_fed->fed_netdrv),
-                                &rti_mutex, "Failed to write ip address to socket of federate %d.", fed_id);
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, sizeof(uint32_t), (unsigned char*)ip_address, &rti_mutex,
+                                "Failed to write ip address to socket of federate %d.", fed_id);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
-  LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id,
-                 get_server_hostname(remote_fed->fed_netdrv), server_port);
+  LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id, server_host_name,
+                 server_port);
 }
 
 void handle_address_ad(uint16_t federate_id) {
@@ -1381,6 +1395,10 @@ static bool authenticate_federate(netdrv_t* fed_netdrv) {
 #endif
 
 void lf_connect_to_federates(netdrv_t* rti_netdrv) {
+  // netdrv_t* netdrv_array[rti_remote->base.number_of_scheduling_nodes];
+  // for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+  //   netdrv_array[i] = establish_communication_session(rti_netdrv);
+  // }
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     netdrv_t* fed_netdrv = accept_netdrv(rti_netdrv, NULL);
 // Wait for the first message from the federate when RTI -a option is on.
