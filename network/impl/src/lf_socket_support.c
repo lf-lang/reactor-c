@@ -1,6 +1,7 @@
-#include <stdlib.h> // malloc
-#include <string.h> // strerror
+#include <stdlib.h> // malloc()
+#include <string.h> // strerror()
 #include <errno.h>  // errno
+#include <unistd.h> // read() write()
 
 #include "net_driver.h"
 #include "socket_common.h"
@@ -97,4 +98,161 @@ netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
   }
   fed_priv->socket_descriptor = socket_id;
   return fed_netdrv;
+}
+
+int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  int socket = priv->socket_descriptor;
+  if (socket < 0) {
+    // Socket is not open.
+    errno = EBADF;
+    return -1;
+  }
+  ssize_t bytes_read = 0;
+  while (bytes_read < (ssize_t)num_bytes) {
+    ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
+    if (more < 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
+      // Those error codes set by the socket indicates
+      // that we should try again (@see man errno).
+      LF_PRINT_DEBUG("Reading from socket %d failed with error: `%s`. Will try again.", socket, strerror(errno));
+      lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
+      continue;
+    } else if (more < 0) {
+      // A more serious error occurred.
+      lf_print_error("Reading from socket %d failed. With error: `%s`", socket, strerror(errno));
+      return -1;
+    } else if (more == 0) {
+      // EOF received.
+      return 1;
+    }
+    bytes_read += more;
+  }
+  return 0;
+}
+
+int read_from_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
+  int read_failed = read_from_netdrv(drv, num_bytes, buffer);
+  if (read_failed) {
+    // Read failed.
+    // Socket has probably been closed from the other side.
+    // Shut down and close the socket from this side.
+    shutdown_netdrv(drv, false);
+    return -1;
+  }
+  return 0;
+}
+
+void read_from_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+                                    char* format, ...) {
+  va_list args;
+  int read_failed = read_from_netdrv_close_on_error(drv, num_bytes, buffer);
+  if (read_failed) {
+    // Read failed.
+    if (mutex != NULL) {
+      LF_MUTEX_UNLOCK(mutex);
+    }
+    if (format != NULL) {
+      va_start(args, format);
+      lf_print_error_system_failure(format, args);
+      va_end(args);
+    } else {
+      lf_print_error_system_failure("Failed to read from socket.");
+    }
+  }
+}
+
+int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  int socket = priv->socket_descriptor;
+  if (socket < 0) {
+    // Socket is not open.
+    errno = EBADF;
+    return -1;
+  }
+  ssize_t bytes_written = 0;
+  while (bytes_written < (ssize_t)num_bytes) {
+    ssize_t more = write(socket, buffer + bytes_written, num_bytes - (size_t)bytes_written);
+    if (more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
+      // The error codes EAGAIN or EWOULDBLOCK indicate
+      // that we should try again (@see man errno).
+      // The error code EINTR means the system call was interrupted before completing.
+      LF_PRINT_DEBUG("Writing to socket %d was blocked. Will try again.", socket);
+      lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
+      continue;
+    } else if (more < 0) {
+      // A more serious error occurred.
+      lf_print_error("Writing to socket %d failed. With error: `%s`", socket, strerror(errno));
+      return -1;
+    }
+    bytes_written += more;
+  }
+  return 0;
+}
+
+int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
+  int result = write_to_netdrv(drv, num_bytes, buffer);
+  if (result) {
+    // Write failed.
+    // Socket has probably been closed from the other side.
+    // Shut down and close the socket from this side.
+    shutdown_netdrv(drv, false);
+  }
+  return result;
+}
+
+void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+                                   char* format, ...) {
+  va_list args;
+  int result = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
+  if (result) {
+    // Write failed.
+    if (mutex != NULL) {
+      LF_MUTEX_UNLOCK(mutex);
+    }
+    if (format != NULL) {
+      va_start(args, format);
+      lf_print_error_system_failure(format, args);
+      va_end(args);
+    } else {
+      lf_print_error("Failed to write to socket. Closing it.");
+    }
+  }
+}
+
+int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  if (!read_before_closing) {
+    if (shutdown(priv->socket_descriptor, SHUT_RDWR)) {
+      lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
+      return -1;
+    }
+  } else {
+    // Signal the other side that no further writes are expected by sending a FIN packet.
+    // This indicates the write direction is closed. For more details, refer to:
+    // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
+    if (shutdown(priv->socket_descriptor, SHUT_WR)) {
+      lf_print_log("Failed to shutdown socket: %s", strerror(errno));
+      return -1;
+    }
+
+    // Wait for the other side to send an EOF or encounter a socket error.
+    // Discard any incoming bytes. Normally, this read should return 0, indicating the peer has also closed the
+    // connection.
+    // This compensates for delayed ACKs and scenarios where Nagle's algorithm is disabled, ensuring the shutdown
+    // completes gracefully.
+    unsigned char buffer[10];
+    while (read(priv->socket_descriptor, buffer, 10) > 0)
+      ;
+  }
+  // NOTE: In all common TCP/IP stacks, there is a time period,
+  // typically between 30 and 120 seconds, called the TIME_WAIT period,
+  // before the port is released after this close. This is because
+  // the OS is preventing another program from accidentally receiving
+  // duplicated packets intended for this program.
+  if (close(priv->socket_descriptor)) {
+    lf_print_log("Error while closing socket: %s\n", strerror(errno));
+    return -1;
+  }
+  priv->socket_descriptor = -1;
+  return 0;
 }
