@@ -136,7 +136,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
-  lf_print("  -d, --dnet_disabled Turn off DNET signals.\n");
+  lf_print("  -d, --disable_dnet Turn off the use of DNET signals.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
