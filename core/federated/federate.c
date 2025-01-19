@@ -1484,38 +1484,26 @@ static void* listen_to_rti_TCP(void* args) {
   // Listen for messages from the federate.
   while (1) {
     // Check whether the RTI socket is still valid
-    if (_fed.socket_TCP_RTI < 0) {
-      lf_print_warning("Socket to the RTI unexpectedly closed.");
+    if (_fed.netdrv_to_RTI == NULL) {
+      lf_print_warning("Network driver to the RTI unexpectedly closed.");
       return NULL;
     }
     // Read one byte to get the message type.
     // This will exit if the read fails.
-    int read_failed = read_from_netdrv(_fed.socket_TCP_RTI, 1, buffer);
+    int read_failed = read_from_netdrv(_fed.netdrv_to_RTI, 1, buffer);
     if (read_failed < 0) {
-      if (errno == ECONNRESET) {
-        lf_print_error("Socket connection to the RTI was closed by the RTI without"
-                       " properly sending an EOF first. Considering this a soft error.");
-        // FIXME: If this happens, possibly a new RTI must be elected.
-        shutdown_netdrv(&_fed.socket_TCP_RTI, false);
-        return NULL;
-      } else {
-        lf_print_error("Socket connection to the RTI has been broken with error %d: %s."
-                       " The RTI should close connections with an EOF first."
-                       " Considering this a soft error.",
-                       errno, strerror(errno));
-        // FIXME: If this happens, possibly a new RTI must be elected.
-        shutdown_netdrv(&_fed.socket_TCP_RTI, false);
-        return NULL;
-      }
+      lf_print_error("Connection to the RTI was closed by the RTI with an error. Considering this a soft error.");
+      shutdown_netdrv(_fed.netdrv_to_RTI, false);
+      return NULL;
     } else if (read_failed > 0) {
       // EOF received.
       lf_print("Connection to the RTI closed with an EOF.");
-      shutdown_netdrv(&_fed.socket_TCP_RTI, false);
+      shutdown_netdrv(_fed.netdrv_to_RTI, false);
       return NULL;
     }
     switch (buffer[0]) {
     case MSG_TYPE_TAGGED_MESSAGE:
-      if (handle_tagged_message(&_fed.socket_TCP_RTI, -1)) {
+      if (handle_tagged_message(_fed.netdrv_to_RTI, -1)) {
         // Failures to complete the read of messages from the RTI are fatal.
         lf_print_error_and_exit("Failed to complete the reading of a message from the RTI.");
       }
@@ -1533,7 +1521,7 @@ static void* listen_to_rti_TCP(void* args) {
       handle_stop_granted_message();
       break;
     case MSG_TYPE_PORT_ABSENT:
-      if (handle_port_absent_message(&_fed.socket_TCP_RTI, -1)) {
+      if (handle_port_absent_message(_fed.netdrv_to_RTI, -1)) {
         // Failures to complete the read of absent messages from the RTI are fatal.
         lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
       }
