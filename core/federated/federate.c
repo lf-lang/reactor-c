@@ -133,7 +133,7 @@ static void send_tag(unsigned char type, tag_t tag) {
 
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   if (_fed.netdrv_to_RTI == NULL) {
-    lf_print_warning("Socket is no longer connected. Dropping message.");
+    lf_print_warning("RTI is no longer connected. Dropping message.");
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
     return;
   }
@@ -146,8 +146,8 @@ static void send_tag(unsigned char type, tag_t tag) {
 }
 
 /**
- * Return true if either the socket to the RTI is broken or the socket is
- * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
+ * Return true if either the network driver to the RTI is broken or the network driver is
+ * alive and the first unread byte on the network driver's queue is MSG_TYPE_FAILED.
  */
 static bool rti_failed() {
   unsigned char first_byte;
@@ -400,7 +400,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 }
 
 /**
- * Close the socket that receives incoming messages from the
+ * Close the network driver that receives incoming messages from the
  * specified federate ID.
  *
  * @param fed_id The ID of the peer federate sending messages to this
@@ -770,7 +770,7 @@ static void* listen_to_federates(void* _args) {
         LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
         if (handle_tagged_message(netdrv, fed_id)) {
           // P2P tagged messages are only used in decentralized coordination, and
-          // it is not a fatal error if the socket is closed before the whole message is read.
+          // it is not a fatal error if the network driver is closed before the whole message is read.
           // But this thread should exit.
           lf_print_warning("Failed to complete reading of tagged message.");
           netdrv_closed = true;
@@ -780,7 +780,7 @@ static void* listen_to_federates(void* _args) {
         LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
         if (handle_port_absent_message(netdrv, fed_id)) {
           // P2P tagged messages are only used in decentralized coordination, and
-          // it is not a fatal error if the socket is closed before the whole message is read.
+          // it is not a fatal error if the network driver is closed before the whole message is read.
           // But this thread should exit.
           lf_print_warning("Failed to complete reading of tagged message.");
           netdrv_closed = true;
@@ -791,13 +791,13 @@ static void* listen_to_federates(void* _args) {
       }
     }
     if (bad_message) {
-      lf_print_error("Received erroneous message type: %d. Closing the socket.", buffer[0]);
+      lf_print_error("Received erroneous message type: %d. Closing the network driver.", buffer[0]);
       // Trace the event when tracing is enabled
       tracepoint_federate_from_federate(receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
       break; // while loop
     }
     if (netdrv_closed) {
-      // For decentralized execution, once this socket is closed, we
+      // For decentralized execution, once this network driver is closed, we
       // update last known tags of all ports connected to the specified federate to FOREVER_TAG,
       // which would eliminate the need to wait for STAA to assume an input is absent.
       mark_inputs_known_absent(fed_id);
@@ -809,21 +809,21 @@ static void* listen_to_federates(void* _args) {
 }
 
 /**
- * Close the socket that sends outgoing messages to the
+ * Close the network driver that sends outgoing messages to the
  * specified federate ID. This function acquires the lf_outbound_netdrv_mutex mutex lock
  * if _lf_normal_termination is true and otherwise proceeds without the lock.
  * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
  */
-static void close_outbound_socket(int fed_id) {
+static void close_outbound_netdrv(int fed_id) {
   assert(fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
   // Close outbound connections, in case they have not closed themselves.
   // This will result in EOF being sent to the remote federate, except for
-  // abnormal termination, in which case it will just close the socket.
+  // abnormal termination, in which case it will just close the network driver.
   if (_lf_normal_termination) {
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
     if (_fed.netdrvs_for_outbound_p2p_connections[fed_id] >= 0) {
-      // Close the socket by sending a FIN packet indicating that no further writes
+      // Close the network driver by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
       shutdown_netdrv(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], true);
     }
@@ -925,7 +925,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // Send the timestamp marker first.
   send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
 
-  // Read bytes from the socket. We need 9 bytes.
+  // Read bytes from the network driver. We need 9 bytes.
   // Buffer for message ID plus timestamp.
   size_t buffer_length = 1 + sizeof(instant_t);
   unsigned char buffer[buffer_length];
@@ -1375,7 +1375,7 @@ static void handle_stop_request_message() {
   // or we have previously sent a stop request to the RTI,
   // then we have already blocked tag advance in enclaves.
   // Do not do this twice. The record of whether the first has occurred
-  // is guarded by the outbound socket mutex.
+  // is guarded by the outbound network driver mutex.
   // The second is guarded by the global mutex.
   // Note that the RTI should not send stop requests more than once to federates.
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
@@ -1480,7 +1480,7 @@ static void* listen_to_rti_TCP(void* args) {
 
   // Listen for messages from the federate.
   while (1) {
-    // Check whether the RTI socket is still valid
+    // Check whether the RTI network driver is still valid
     if (_fed.netdrv_to_RTI == NULL) {
       lf_print_warning("Network driver to the RTI unexpectedly closed.");
       return NULL;
@@ -1528,7 +1528,7 @@ static void* listen_to_rti_TCP(void* args) {
       break;
     case MSG_TYPE_CLOCK_SYNC_T1:
     case MSG_TYPE_CLOCK_SYNC_T4:
-      lf_print_error("Federate %d received unexpected clock sync message from RTI on TCP socket.", _lf_my_fed_id);
+      lf_print_error("Federate %d received unexpected clock sync message from RTI.", _lf_my_fed_id);
       break;
     default:
       lf_print_error_and_exit("Received from RTI an unrecognized TCP message type: %hhx.", buffer[0]);
@@ -1593,7 +1593,7 @@ static bool bounded_NET(tag_t* tag) {
 // An empty version of this function is code generated for unfederated execution.
 
 /**
- * Close sockets used to communicate with other federates, if they are open,
+ * Close network drivers used to communicate with other federates, if they are open,
  * and send a MSG_TYPE_RESIGN message to the RTI. This implements the function
  * defined in reactor.h. For unfederated execution, the code generator
  * generates an empty implementation.
@@ -1614,28 +1614,28 @@ void lf_terminate_execution(environment_t* env) {
     }
   }
 
-  LF_PRINT_DEBUG("Closing incoming P2P sockets.");
-  // Close any incoming P2P sockets that are still open.
+  LF_PRINT_DEBUG("Closing incoming P2P network drivers.");
+  // Close any incoming P2P network drivers that are still open.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
-    close_inbound_socket(i);
-    // Ignore errors. Mark the socket closed.
-    _fed.netdrvs_for_inbound_p2p_connections[i] = -1;
+    close_inbound_netdrv(i);
+    // Ignore errors. Mark the network driver closed.
+    _fed.netdrvs_for_inbound_p2p_connections[i] = NULL;
   }
 
   // Check for all outgoing physical connections in
   // _fed.netdrvs_for_outbound_p2p_connections and
-  // if the socket ID is not -1, the connection is still open.
-  // Send an EOF by closing the socket here.
+  // if the network driver ID is not NULL, the connection is still open.
+  // Send an EOF by closing the network driver here.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
 
     // Close outbound connections, in case they have not closed themselves.
     // This will result in EOF being sent to the remote federate, except for
-    // abnormal termination, in which case it will just close the socket.
-    close_outbound_socket(i);
+    // abnormal termination, in which case it will just close the network driver.
+    close_outbound_netdrv(i);
   }
 
-  LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
-  // Wait for each inbound socket listener thread to close.
+  LF_PRINT_DEBUG("Waiting for inbound p2p network driver listener threads.");
+  // Wait for each inbound network driver listener thread to close.
   if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_netdriv_listeners != NULL) {
     LF_PRINT_LOG("Waiting for %zu threads listening for incoming messages to exit.",
                  _fed.number_of_inbound_p2p_connections);
@@ -1739,8 +1739,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   while (result < 0 && !_lf_termination_executed) {
     // Try again after some time if the connection failed.
     // Note that this should not really happen since the remote federate should be
-    // accepting socket connections. But possibly it will be busy (in process of accepting
-    // another socket connection?). Hence, we retry.
+    // accepting  connections. But possibly it will be busy (in process of accepting
+    // another connection?). Hence, we retry.
     if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
       // If the remote federate is not accepting the connection after CONNECT_TIMEOUT
       // treat it as a soft error condition and return.
@@ -1750,7 +1750,6 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     }
 
     // Check whether the RTI is still there.
-    // TODO: Fix.
     if (rti_failed()) {
       break;
     }
@@ -1767,7 +1766,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
 
-    // No need for a mutex because we have the only handle on the socket.
+    // No need for a mutex because we have the only handle on the network driver.
     write_to_netdrv_fail_on_error(netdrv, buffer_length, buffer, NULL, "Failed to send fed_id to federate %d.",
                                   remote_federate_id);
     write_to_netdrv_fail_on_error(netdrv, federation_id_length, (unsigned char*)federation_metadata.federation_id, NULL,
@@ -1942,7 +1941,7 @@ void lf_create_server(int specified_port) {
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(send_ADR_AD, _lf_my_fed_id, NULL);
 
-  // No need for a mutex because we have the only handle on this socket.
+  // No need for a mutex because we have the only handle on this network driver.
   write_to_netdrv_fail_on_error(server_netdrv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
                                 "Failed to send address advertisement.");
 
@@ -1982,7 +1981,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Wait for an incoming connection request.
     netdrv_t* netdrv = accept_netdrv(_fed.server_netdrv, _fed.netdrv_to_RTI);
     if (netdrv == NULL) {
-      lf_print_warning("Federate failed to accept the socket.");
+      lf_print_warning("Federate failed to accept the network driver.");
       return NULL;
     }
     LF_PRINT_LOG("Accepted new connection from remote federate.");
@@ -1991,7 +1990,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     unsigned char buffer[header_length];
     int read_failed = read_from_netdrv(netdrv, header_length, (unsigned char*)&buffer);
     if (read_failed || buffer[0] != MSG_TYPE_P2P_SENDING_FED_ID) {
-      lf_print_warning("Federate received invalid first message on P2P socket. Closing socket.");
+      lf_print_warning("Federate received invalid first message on P2P network driver. Closing network driver.");
       if (read_failed == 0) {
         // Wrong message received.
         unsigned char response[2];
@@ -2012,7 +2011,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     read_failed = read_from_netdrv(netdrv, federation_id_length, (unsigned char*)remote_federation_id);
     if (read_failed || (strncmp(federation_metadata.federation_id, remote_federation_id,
                                 strnlen(federation_metadata.federation_id, 255)) != 0)) {
-      lf_print_warning("Received invalid federation ID. Closing socket.");
+      lf_print_warning("Received invalid federation ID. Closing network driver.");
       if (read_failed == 0) {
         unsigned char response[2];
         response[0] = MSG_TYPE_REJECT;
@@ -2170,15 +2169,15 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
 
-  int* socket = &_fed.netdrvs_for_outbound_p2p_connections[federate];
+  netdrv_t* netdrv = _fed.netdrvs_for_outbound_p2p_connections[federate];
 
   // Trace the event when tracing is enabled
   tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
 
-  int result = write_to_netdrv_close_on_error(socket, header_length, header_buffer);
+  int result = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
   if (result == 0) {
     // Header sent successfully. Send the body.
-    result = write_to_netdrv_close_on_error(socket, length, message);
+    result = write_to_netdrv_close_on_error(netdrv, length, message);
   }
   if (result != 0) {
     // Message did not send. Since this is used for physical connections, this is not critical.
@@ -2347,25 +2346,25 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
 
 #ifdef FEDERATED_CENTRALIZED
   // Send the absent message through the RTI
-  int* socket = _fed.netdrv_to_RTI;
+  netdrv_t* netdrv = _fed.netdrv_to_RTI;
 #else
   // Send the absent message directly to the federate
-  int* socket = &_fed.netdrvs_for_outbound_p2p_connections[fed_ID];
+  netdrv_t* netdrv  = &_fed.netdrvs_for_outbound_p2p_connections[fed_ID];
 #endif
 
-  if (socket == _fed.netdrv_to_RTI) {
+  if (netdrv == _fed.netdrv_to_RTI) {
     tracepoint_federate_to_rti(send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
   } else {
     tracepoint_federate_to_federate(send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
   }
 
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-  int result = write_to_netdrv_close_on_error(socket, message_length, buffer);
+  int result = write_to_netdrv_close_on_error(netdrv, message_length, buffer);
   LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
   if (result != 0) {
     // Write failed. Response depends on whether coordination is centralized.
-    if (socket == _fed.netdrv_to_RTI) {
+    if (netdrv == _fed.netdrv_to_RTI) {
       // Centralized coordination. This is a critical error.
       lf_print_error_system_failure("Failed to send port absent message for port %hu to federate %hu.", port_ID,
                                     fed_ID);
@@ -2391,7 +2390,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
                  stop_tag.microstep);
 
     if (_fed.netdrv_to_RTI == NULL) {
-      lf_print_warning("Socket is no longer connected. Dropping message.");
+      lf_print_warning("RTI is no longer connected. Dropping message.");
       LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
       return -1;
     }
@@ -2461,19 +2460,19 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
 
-  int* socket;
+  netdrv_t* netdrv ;
   if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
-    socket = &_fed.netdrvs_for_outbound_p2p_connections[federate];
+    netdrv = _fed.netdrvs_for_outbound_p2p_connections[federate];
     tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
   } else {
-    socket = _fed.netdrv_to_RTI;
+    netdrv = _fed.netdrv_to_RTI;
     tracepoint_federate_to_rti(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
   }
 
-  int result = write_to_netdrv_close_on_error(socket, header_length, header_buffer);
+  int result = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
   if (result == 0) {
     // Header sent successfully. Send the body.
-    result = write_to_netdrv_close_on_error(socket, length, message);
+    result = write_to_netdrv_close_on_error(netdrv, length, message);
   }
   if (result != 0) {
     // Message did not send. Handling depends on message type.
