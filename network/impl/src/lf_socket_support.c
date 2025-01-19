@@ -288,6 +288,11 @@ char* get_server_hostname(netdrv_t* drv) {
   return priv->server_hostname;
 }
 
+int get_socket_id(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return priv->socket_descriptor;
+}
+
 void set_server_port(netdrv_t* drv, int32_t port) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   priv->server_port = port;
