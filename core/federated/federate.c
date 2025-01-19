@@ -152,7 +152,7 @@ static void send_tag(unsigned char type, tag_t tag) {
  */
 static bool rti_failed() {
   unsigned char first_byte;
-  ssize_t bytes = peek_from_socket(_fed.socket_TCP_RTI, &first_byte);
+  ssize_t bytes = peek_from_netdrv(_fed.netdrv_to_RTI, &first_byte);
   if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED))
     return true;
   else

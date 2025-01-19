@@ -242,6 +242,11 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
   }
 }
 
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return peek_from_socket(priv->socket_descriptor, result);
+}
+
 int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);

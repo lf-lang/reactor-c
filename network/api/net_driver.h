@@ -121,6 +121,8 @@ int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
 void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
 
+ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
+
 /**
  * @brief Gracefully shuts down and closes a socket, optionally reading until EOF.
  * Shutdown and close the socket. If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR
