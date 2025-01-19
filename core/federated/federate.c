@@ -76,8 +76,7 @@ int max_level_allowed_to_advance;
  * The state of this federate instance. Each executable has exactly one federate instance,
  * and the _fed global variable refers to that instance.
  */
-federate_instance_t _fed = {.socket_TCP_RTI = -1,
-                            .number_of_inbound_p2p_connections = 0,
+federate_instance_t _fed = {.number_of_inbound_p2p_connections = 0,
                             .inbound_netdriv_listeners = NULL,
                             .number_of_outbound_p2p_connections = 0,
                             .inbound_p2p_handling_thread_id = 0,
