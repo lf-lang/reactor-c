@@ -100,6 +100,17 @@ netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
   return fed_netdrv;
 }
 
+void create_client(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+}
+
+int connect_to_netdrv(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+
+  return connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port);
+}
+
 int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   int socket = priv->socket_descriptor;
@@ -246,10 +257,6 @@ int get_peer_address(netdrv_t* drv) {
   return 0;
 }
 
-void create_client(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
-}
 int32_t get_server_port(netdrv_t* drv) {
   // if (drv == NULL) {
   //   lf_print_warning("Netdriver is closed, returning -1.");
@@ -268,12 +275,12 @@ char* get_server_hostname(netdrv_t* drv) {
   return priv->server_hostname;
 }
 
-void set_port(netdrv_t* drv, int32_t port) {
+void set_server_port(netdrv_t* drv, int32_t port) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   priv->server_port = port;
 }
 
-void set_host_name(netdrv_t* drv, const char* hostname) {
+void set_server_host_name(netdrv_t* drv, const char* hostname) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   memcpy(priv->server_hostname, hostname, INET_ADDRSTRLEN);
 }

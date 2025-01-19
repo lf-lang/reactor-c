@@ -139,6 +139,8 @@ struct in_addr* get_ip_addr(netdrv_t* drv);
 
 char* get_server_hostname(netdrv_t* drv);
 
-void set_port(netdrv_t* drv, int32_t port);
+void set_server_port(netdrv_t* drv, int32_t port);
+
+void set_server_host_name(netdrv_t* drv, const char* hostname);
 
 #endif /* NET_DRIVER_H */

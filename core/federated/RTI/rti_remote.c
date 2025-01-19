@@ -662,7 +662,7 @@ void handle_address_ad(uint16_t federate_id) {
   assert(server_port < 65536);
 
   LF_MUTEX_LOCK(&rti_mutex);
-  set_port(fed->fed_netdrv, server_port);
+  set_server_port(fed->fed_netdrv, server_port);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);
