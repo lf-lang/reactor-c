@@ -50,7 +50,7 @@ extern instant_t start_time;
 extern bool _lf_termination_executed;
 
 // Global variables references in federate.h
-lf_mutex_t lf_outbound_socket_mutex;
+lf_mutex_t lf_outbound_netdrv_mutex;
 lf_cond_t lf_port_status_changed;
 
 /**
@@ -100,7 +100,7 @@ federation_metadata_t federation_metadata = {
 // Static functions (used only internally)
 
 /**
- * Send a time to the RTI. This acquires the lf_outbound_socket_mutex.
+ * Send a time to the RTI. This acquires the lf_outbound_netdrv_mutex.
  * @param type The message type (MSG_TYPE_TIMESTAMP).
  * @param time The time.
  */
@@ -115,15 +115,15 @@ static void send_time(unsigned char type, instant_t time) {
   tag_t tag = {.time = time, .microstep = 0};
   tracepoint_federate_to_rti(send_TIMESTAMP, _lf_my_fed_id, &tag);
 
-  LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
-  write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_write, buffer, &lf_outbound_socket_mutex,
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
+  write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
                                 "Failed to send time " PRINTF_TIME " to the RTI.", time - start_time);
-  LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 }
 
 /**
  * Send a tag to the RTI.
- * This function acquires the lf_outbound_socket_mutex.
+ * This function acquires the lf_outbound_netdrv_mutex.
  * @param type The message type (MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LATEST_TAG_CONFIRMED).
  * @param tag The tag.
  */
@@ -134,18 +134,18 @@ static void send_tag(unsigned char type, tag_t tag) {
   buffer[0] = type;
   encode_tag(&(buffer[1]), tag);
 
-  LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   if (_fed.socket_TCP_RTI < 0) {
     lf_print_warning("Socket is no longer connected. Dropping message.");
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
     return;
   }
   trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
-  write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_write, buffer, &lf_outbound_socket_mutex,
+  write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
                                 "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
-  LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 }
 
 /**
@@ -811,7 +811,7 @@ static void* listen_to_federates(void* _args) {
 
 /**
  * Close the socket that sends outgoing messages to the
- * specified federate ID. This function acquires the lf_outbound_socket_mutex mutex lock
+ * specified federate ID. This function acquires the lf_outbound_netdrv_mutex mutex lock
  * if _lf_normal_termination is true and otherwise proceeds without the lock.
  * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
@@ -822,13 +822,13 @@ static void close_outbound_socket(int fed_id) {
   // This will result in EOF being sent to the remote federate, except for
   // abnormal termination, in which case it will just close the socket.
   if (_lf_normal_termination) {
-    LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
     if (_fed.netdrvs_for_outbound_p2p_connections[fed_id] >= 0) {
       // Close the socket by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
       shutdown_socket(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], true);
     }
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   } else {
     shutdown_socket(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], false);
   }
@@ -1379,7 +1379,7 @@ static void handle_stop_request_message() {
   // is guarded by the outbound socket mutex.
   // The second is guarded by the global mutex.
   // Note that the RTI should not send stop requests more than once to federates.
-  LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   if (_fed.received_stop_request_from_rti) {
     LF_PRINT_LOG("Redundant MSG_TYPE_STOP_REQUEST from RTI. Ignoring it.");
     already_blocked = true;
@@ -1388,7 +1388,7 @@ static void handle_stop_request_message() {
     // prevent lf_request_stop from sending.
     _fed.received_stop_request_from_rti = true;
   }
-  LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
   if (already_blocked) {
     // Either we have sent a stop request to the RTI ourselves,
@@ -1422,11 +1422,11 @@ static void handle_stop_request_message() {
   tracepoint_federate_to_rti(send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
 
   // Send the current logical time to the RTI.
-  LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer,
-                                &lf_outbound_socket_mutex,
+                                &lf_outbound_netdrv_mutex,
                                 "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
-  LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
   LF_PRINT_DEBUG("Sent MSG_TYPE_STOP_REQUEST_REPLY to RTI with tag " PRINTF_TAG, tag_to_stop.time,
                  tag_to_stop.microstep);
@@ -1439,10 +1439,10 @@ static void send_resign_signal() {
   size_t bytes_to_write = 1;
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_RESIGN;
-  LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
-  write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_socket_mutex,
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
+  write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_netdrv_mutex,
                                 "Failed to send MSG_TYPE_RESIGN.");
-  LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   LF_PRINT_LOG("Resigned.");
 }
 
@@ -1694,10 +1694,10 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_ADR_QR, _lf_my_fed_id, NULL);
 
-    LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
-    write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(uint16_t) + 1, buffer, &lf_outbound_socket_mutex,
+    LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
+    write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(uint16_t) + 1, buffer, &lf_outbound_netdrv_mutex,
                                   "Failed to send address query for federate %d to RTI.", remote_federate_id);
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
     // Read RTI's response.
     read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(int32_t) + 1, buffer, NULL,
@@ -2036,11 +2036,11 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
 
-    LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
     write_to_socket_fail_on_error(&_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id], 1,
-                                  (unsigned char*)&response, &lf_outbound_socket_mutex,
+                                  (unsigned char*)&response, &lf_outbound_netdrv_mutex,
                                   "Failed to write MSG_TYPE_ACK in response to federate %d.", remote_fed_id);
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
     // Start a thread to listen for incoming messages from other federates.
     // The fed_id is a uint16_t, which we assume can be safely cast to and from void*.
@@ -2158,7 +2158,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   const int header_length = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t);
 
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
-  LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
 
   int* socket = &_fed.netdrvs_for_outbound_p2p_connections[federate];
 
@@ -2174,7 +2174,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
     // Message did not send. Since this is used for physical connections, this is not critical.
     lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
   }
-  LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   return result;
 }
 
@@ -2349,9 +2349,9 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
     tracepoint_federate_to_federate(send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
   }
 
-  LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   int result = write_to_socket_close_on_error(socket, message_length, buffer);
-  LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
   if (result != 0) {
     // Write failed. Response depends on whether coordination is centralized.
@@ -2374,7 +2374,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
   stop_tag.microstep++;
   ENCODE_STOP_REQUEST(buffer, stop_tag.time, stop_tag.microstep);
 
-  LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
   // Do not send a stop request if a stop request has been previously received from the RTI.
   if (!_fed.received_stop_request_from_rti) {
     LF_PRINT_LOG("Sending to RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".", stop_tag.time - start_time,
@@ -2382,21 +2382,21 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
 
     if (_fed.socket_TCP_RTI < 0) {
       lf_print_warning("Socket is no longer connected. Dropping message.");
-      LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+      LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
       return -1;
     }
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_STOP_REQ, _lf_my_fed_id, &stop_tag);
 
-    write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, buffer, &lf_outbound_socket_mutex,
+    write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, buffer, &lf_outbound_netdrv_mutex,
                                   "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
 
     // Treat this sending  as equivalent to having received a stop request from the RTI.
     _fed.received_stop_request_from_rti = true;
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
     return 0;
   } else {
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
     return 1;
   }
 }
@@ -2449,7 +2449,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
                current_message_intended_tag.microstep, next_destination_str);
 
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
-  LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
 
   int* socket;
   if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
@@ -2474,7 +2474,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
                                     next_destination_str, errno, strerror(errno));
     }
   }
-  LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   return result;
 }
 
