@@ -28,6 +28,10 @@ int create_server_(netdrv_t* drv, bool increment_port_on_retry);
 
 netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv);
 
+void create_client(netdrv_t* drv);
+
+int connect_to_netdrv(netdrv_t* drv);
+
 int get_peer_address(netdrv_t* drv);
 
 /**
