@@ -17,7 +17,6 @@
 #include <arpa/inet.h>  // inet_ntop & inet_pton
 #include <netdb.h>      // Defines getaddrinfo(), freeaddrinfo() and struct addrinfo.
 #include <netinet/in.h> // Defines struct sockaddr_in
-#include <sys/socket.h>
 #include <unistd.h> // Defines read(), write(), and close()
 #include <string.h> // Defines memset(), strnlen(), strncmp(), strncpy()
 #include <stdio.h>  // Defines strerror()
@@ -825,11 +824,11 @@ static void close_outbound_netdrv(int fed_id) {
     if (_fed.netdrvs_for_outbound_p2p_connections[fed_id] >= 0) {
       // Close the network driver by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
-      shutdown_netdrv(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], true);
+      shutdown_netdrv(_fed.netdrvs_for_outbound_p2p_connections[fed_id], true);
     }
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   } else {
-    shutdown_netdrv(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], false);
+    shutdown_netdrv(_fed.netdrvs_for_outbound_p2p_connections[fed_id], false);
   }
 }
 
@@ -1814,7 +1813,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
   // Create the client network driver.
   create_client(_fed.netdrv_to_RTI);
-  if (connect_to_netdrv(__fed.netdrv_to_RTI) < 0) {
+  if (connect_to_netdrv(_fed.netdrv_to_RTI) < 0) {
     lf_print_error_and_exit("Failed to connect() to RTI.");
   }
 
@@ -1881,7 +1880,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
       tracepoint_federate_from_rti(receive_REJECT, _lf_my_fed_id, NULL);
       // Read one more byte to determine the cause of rejection.
       unsigned char cause;
-      read_from_netdrv_fail_on_error(&_fed.netdrv_to_RTI, 1, &cause, NULL,
+      read_from_netdrv_fail_on_error(_fed.netdrv_to_RTI, 1, &cause, NULL,
                                      "Failed to read the cause of rejection by the RTI.");
       if (cause == FEDERATION_ID_DOES_NOT_MATCH || cause == WRONG_SERVER) {
         lf_print_warning("Connected to the wrong RTI. Will try again");
@@ -1913,7 +1912,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   unsigned char UDP_port_number[1 + sizeof(uint16_t)];
   UDP_port_number[0] = MSG_TYPE_UDP_PORT;
   encode_uint16(udp_port, &(UDP_port_number[1]));
-  write_to_netdrv_fail_on_error(&_fed.netdrv_to_RTI, 1 + sizeof(uint16_t), UDP_port_number, NULL,
+  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, 1 + sizeof(uint16_t), UDP_port_number, NULL,
                                 "Failed to send the UDP port number to the RTI.");
 }
 
@@ -2046,7 +2045,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    write_to_netdrv_fail_on_error(&_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id], 1,
+    write_to_netdrv_fail_on_error(_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id], 1,
                                   (unsigned char*)&response, &lf_outbound_netdrv_mutex,
                                   "Failed to write MSG_TYPE_ACK in response to federate %d.", remote_fed_id);
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
@@ -2349,7 +2348,7 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   netdrv_t* netdrv = _fed.netdrv_to_RTI;
 #else
   // Send the absent message directly to the federate
-  netdrv_t* netdrv  = &_fed.netdrvs_for_outbound_p2p_connections[fed_ID];
+  netdrv_t* netdrv  = _fed.netdrvs_for_outbound_p2p_connections[fed_ID];
 #endif
 
   if (netdrv == _fed.netdrv_to_RTI) {
