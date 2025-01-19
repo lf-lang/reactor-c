@@ -1811,7 +1811,13 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
-  // Create a socket
+
+
+  // Create a network driver.
+  _fed.netdrv_to_RTI = initialize_netdrv();
+  set_host_name(_fed.netdrv_to_RTI, hostname);
+  set_port(_fed.netdrv_to_RTI, port);
+  
   _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
   if (connect_to_socket(_fed.socket_TCP_RTI, hostname, port) < 0) {
     lf_print_error_and_exit("Failed to connect() to RTI.");
