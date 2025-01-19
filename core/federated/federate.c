@@ -412,7 +412,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 static void close_inbound_socket(int fed_id) {
   LF_MUTEX_LOCK(&netdrv_mutex);
   if (_fed.netdrvs_for_inbound_p2p_connections[fed_id] >= 0) {
-    shutdown_socket(&_fed.netdrvs_for_inbound_p2p_connections[fed_id], false);
+    shutdown_netdrv(&_fed.netdrvs_for_inbound_p2p_connections[fed_id], false);
   }
   LF_MUTEX_UNLOCK(&netdrv_mutex);
 }
@@ -826,11 +826,11 @@ static void close_outbound_socket(int fed_id) {
     if (_fed.netdrvs_for_outbound_p2p_connections[fed_id] >= 0) {
       // Close the socket by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
-      shutdown_socket(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], true);
+      shutdown_netdrv(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], true);
     }
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   } else {
-    shutdown_socket(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], false);
+    shutdown_netdrv(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], false);
   }
 }
 
@@ -1494,7 +1494,7 @@ static void* listen_to_rti_TCP(void* args) {
         lf_print_error("Socket connection to the RTI was closed by the RTI without"
                        " properly sending an EOF first. Considering this a soft error.");
         // FIXME: If this happens, possibly a new RTI must be elected.
-        shutdown_socket(&_fed.socket_TCP_RTI, false);
+        shutdown_netdrv(&_fed.socket_TCP_RTI, false);
         return NULL;
       } else {
         lf_print_error("Socket connection to the RTI has been broken with error %d: %s."
@@ -1502,13 +1502,13 @@ static void* listen_to_rti_TCP(void* args) {
                        " Considering this a soft error.",
                        errno, strerror(errno));
         // FIXME: If this happens, possibly a new RTI must be elected.
-        shutdown_socket(&_fed.socket_TCP_RTI, false);
+        shutdown_netdrv(&_fed.socket_TCP_RTI, false);
         return NULL;
       }
     } else if (read_failed > 0) {
       // EOF received.
       lf_print("Connection to the RTI closed with an EOF.");
-      shutdown_socket(&_fed.socket_TCP_RTI, false);
+      shutdown_netdrv(&_fed.socket_TCP_RTI, false);
       return NULL;
     }
     switch (buffer[0]) {
@@ -2007,7 +2007,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Ignore errors on this response.
         write_to_netdrv(netdrv, 2, response);
       }
-      shutdown_socket(&socket_id, false);
+      shutdown_netdrv(netdrv, false);
       continue;
     }
 
@@ -2027,7 +2027,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Ignore errors on this response.
         write_to_netdrv(netdrv, 2, response);
       }
-      shutdown_socket(&socket_id, false);
+      shutdown_netdrv(netdrv, false);
       continue;
     }
 
@@ -2065,7 +2065,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       // Failed to create a listening thread.
       LF_MUTEX_LOCK(&netdrv_mutex);
       if (_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] != NULL) {
-        shutdown_socket(&socket_id, false);
+        shutdown_netdrv(&socket_id, false);
         _fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] = NULL;
       }
       LF_MUTEX_UNLOCK(&netdrv_mutex);

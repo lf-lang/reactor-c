@@ -34,6 +34,12 @@ netdrv_t* initialize_netdrv() {
   return drv;
 }
 
+void free_netdrv(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  free(priv);
+  free(drv);
+}
+
 int create_server_(netdrv_t* drv, bool increment_port_on_retry) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   int socket_descriptor;
@@ -79,16 +85,18 @@ netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
       break;
     } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
       lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
-      //TODO: Must free memory.
+      free_netdrv(fed_netdrv);
       return NULL;
     } else if (errno == EPERM) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
+      free_netdrv(fed_netdrv);
       return NULL;
     } else {
       // For the federates, it should check if the rti_socket is still open, before retrying accept().
       socket_priv_t* rti_priv = (socket_priv_t*)rti_drv->priv;
       if (rti_priv->socket_descriptor != -1) {
         if (check_socket_closed(rti_priv->socket_descriptor)) {
+          free_netdrv(fed_netdrv);
           return NULL;
         }
       }
@@ -232,7 +240,12 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
 
 int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  return shutdown_socket(&priv->socket_descriptor, read_before_closing);
+  int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
+  if (ret != 0) {
+     lf_print_error("Failed to shutdown socket.");
+  }
+  free_netdrv(drv);
+  return ret;
 }
 
 int get_peer_address(netdrv_t* drv) {
