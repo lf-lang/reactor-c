@@ -1926,26 +1926,30 @@ void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
   netdrv_t* server_netdrv = initialize_netdrv();
+  set_server_port(server_netdrv, specified_port);
 
   if (create_server_(server_netdrv, false)) {
-    lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
+    lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
   };
-  LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
+  // Get the final server port set.
+  int32_t server_port = get_server_port(server_netdrv);
+
+  LF_PRINT_LOG("Server for communicating with other federates started using port %d.", server_port);
 
   // Send the server port number to the RTI
   // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
   unsigned char buffer[sizeof(int32_t) + 1];
   buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
-  encode_int32(_fed.server_port, &(buffer[1]));
+  encode_int32(server_port, &(buffer[1]));
 
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(send_ADR_AD, _lf_my_fed_id, NULL);
 
   // No need for a mutex because we have the only handle on this socket.
-  write_to_netdrv_fail_on_error(&_fed.socket_TCP_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
+  write_to_netdrv_fail_on_error(server_netdrv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
                                 "Failed to send address advertisement.");
 
-  LF_PRINT_DEBUG("Sent port %d to the RTI.", _fed.server_port);
+  LF_PRINT_DEBUG("Sent port %d to the RTI.", server_port);
 }
 
 void lf_enqueue_port_absent_reactions(environment_t* env) {
