@@ -246,6 +246,10 @@ int get_peer_address(netdrv_t* drv) {
   return 0;
 }
 
+void create_client(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+}
 int32_t get_server_port(netdrv_t* drv) {
   // if (drv == NULL) {
   //   lf_print_warning("Netdriver is closed, returning -1.");
