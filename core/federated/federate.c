@@ -1821,7 +1821,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
   // Create the client network driver.
   create_client();
-  if (connect_to_socket(_fed.socket_TCP_RTI, hostname, port) < 0) {
+  if (connect_to_netdrv(__fed.netdrv_to_RTI) < 0) {
     lf_print_error_and_exit("Failed to connect() to RTI.");
   }
 
