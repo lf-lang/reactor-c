@@ -1783,7 +1783,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
       result = -1;
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
       lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
-      lf_print_warning("Could not connect to federate %d. Will try again every" PRINTF_TIME "nanoseconds.\n",
+      lf_print_warning("Could not connect to federate %d. Will try again every " PRINTF_TIME "nanoseconds.\n",
                        remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
       continue;
     } else {
@@ -1927,7 +1927,7 @@ void lf_create_server(int specified_port) {
   };
   _fed.server_netdrv = server_netdrv;
   // Get the final server port set.
-  int32_t server_port = get_server_port(server_netdrv);
+  int32_t server_port = get_my_port(server_netdrv);
 
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", server_port);
 
@@ -1941,7 +1941,7 @@ void lf_create_server(int specified_port) {
   tracepoint_federate_to_rti(send_ADR_AD, _lf_my_fed_id, NULL);
 
   // No need for a mutex because we have the only handle on this network driver.
-  write_to_netdrv_fail_on_error(server_netdrv, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
+  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
                                 "Failed to send address advertisement.");
 
   LF_PRINT_DEBUG("Sent port %d to the RTI.", server_port);

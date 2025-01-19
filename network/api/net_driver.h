@@ -138,6 +138,8 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
  */
 int shutdown_netdrv(netdrv_t* drv, bool read_before_closing);
 
+int32_t get_my_port(netdrv_t* drv);
+
 int32_t get_server_port(netdrv_t* drv);
 
 struct in_addr* get_ip_addr(netdrv_t* drv);

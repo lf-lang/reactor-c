@@ -48,12 +48,17 @@ int create_server(netdrv_t* drv, bool increment_port_on_retry) {
 
 netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
   socket_priv_t* serv_priv = (socket_priv_t*)server_drv->priv;
-  socket_priv_t* rti_priv = (socket_priv_t*)rti_drv->priv;
-
+  int rti_socket;
+  if (rti_drv == NULL) {
+    rti_socket = -1;
+  } else {
+    socket_priv_t* rti_priv = (socket_priv_t*)rti_drv->priv;
+    rti_socket = rti_priv->socket_descriptor;
+  }
   netdrv_t* fed_netdrv = initialize_netdrv();
   socket_priv_t* fed_priv = (socket_priv_t*)fed_netdrv->priv;
 
-  int sock = accept_socket(serv_priv->socket_descriptor, rti_priv->socket_descriptor);
+  int sock = accept_socket(serv_priv->socket_descriptor, rti_socket);
   if (sock == -1) {
     free_netdrv(fed_netdrv);
     return NULL;
@@ -201,6 +206,10 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
 }
 
 int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
+  if (drv == NULL) {
+    lf_print("Socket already closed.");
+    return 0;
+  }
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
   if (ret != 0) {
@@ -232,10 +241,12 @@ int get_peer_address(netdrv_t* drv) {
   return 0;
 }
 
+int32_t get_my_port(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  return priv->port;
+}
+
 int32_t get_server_port(netdrv_t* drv) {
-  // if (drv == NULL) {
-  //   lf_print_warning("Netdriver is closed, returning -1.");
-  // }
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   return priv->server_port;
 }
