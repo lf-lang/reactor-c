@@ -1984,8 +1984,9 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   _fed.inbound_netdriv_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
     // Wait for an incoming connection request.
-    int socket_id = accept_socket(_fed.server_socket, _fed.socket_TCP_RTI);
-    if (socket_id < 0) {
+    netdrv_t* netdrv = accept_netdrv(_fed.server_netdrv, _fed.netdrv_to_RTI);
+    // int socket_id = accept_socket(_fed.server_socket, _fed.socket_TCP_RTI);
+    if (netdrv == NULL) {
       lf_print_warning("Federate failed to accept the socket.");
       return NULL;
     }
@@ -1993,7 +1994,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 
     size_t header_length = 1 + sizeof(uint16_t) + 1;
     unsigned char buffer[header_length];
-    int read_failed = read_from_netdrv(socket_id, header_length, (unsigned char*)&buffer);
+    int read_failed = read_from_netdrv(netdrv, header_length, (unsigned char*)&buffer);
     if (read_failed || buffer[0] != MSG_TYPE_P2P_SENDING_FED_ID) {
       lf_print_warning("Federate received invalid first message on P2P socket. Closing socket.");
       if (read_failed == 0) {
@@ -2004,7 +2005,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Trace the event when tracing is enabled
         tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
         // Ignore errors on this response.
-        write_to_netdrv(socket_id, 2, response);
+        write_to_netdrv(netdrv, 2, response);
       }
       shutdown_socket(&socket_id, false);
       continue;
@@ -2013,7 +2014,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Get the federation ID and check it.
     unsigned char federation_id_length = buffer[header_length - 1];
     char remote_federation_id[federation_id_length];
-    read_failed = read_from_netdrv(socket_id, federation_id_length, (unsigned char*)remote_federation_id);
+    read_failed = read_from_netdrv(netdrv, federation_id_length, (unsigned char*)remote_federation_id);
     if (read_failed || (strncmp(federation_metadata.federation_id, remote_federation_id,
                                 strnlen(federation_metadata.federation_id, 255)) != 0)) {
       lf_print_warning("Received invalid federation ID. Closing socket.");
@@ -2024,7 +2025,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Trace the event when tracing is enabled
         tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
         // Ignore errors on this response.
-        write_to_netdrv(socket_id, 2, response);
+        write_to_netdrv(netdrv, 2, response);
       }
       shutdown_socket(&socket_id, false);
       continue;
@@ -2037,12 +2038,12 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
 
-    // Once we record the socket_id here, all future calls to close() on
-    // the socket should be done while holding the netdrv_mutex, and this array
+    // Once we record the network driver here, all future calls to close() on
+    // the network driver should be done while holding the netdrv_mutex, and this array
     // element should be reset to -1 during that critical section.
     // Otherwise, there can be race condition where, during termination,
-    // two threads attempt to simultaneously close the socket.
-    _fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] = socket_id;
+    // two threads attempt to simultaneously close the network driver.
+    _fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] = netdrv;
 
     // Send an MSG_TYPE_ACK message.
     unsigned char response = MSG_TYPE_ACK;
@@ -2063,9 +2064,9 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     if (result != 0) {
       // Failed to create a listening thread.
       LF_MUTEX_LOCK(&netdrv_mutex);
-      if (_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] != -1) {
+      if (_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] != NULL) {
         shutdown_socket(&socket_id, false);
-        _fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] = -1;
+        _fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] = NULL;
       }
       LF_MUTEX_UNLOCK(&netdrv_mutex);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",

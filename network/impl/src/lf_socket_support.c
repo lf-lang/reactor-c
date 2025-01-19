@@ -79,15 +79,17 @@ netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
       break;
     } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
       lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
-      break;
+      //TODO: Must free memory.
+      return NULL;
     } else if (errno == EPERM) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
+      return NULL;
     } else {
       // For the federates, it should check if the rti_socket is still open, before retrying accept().
       socket_priv_t* rti_priv = (socket_priv_t*)rti_drv->priv;
       if (rti_priv->socket_descriptor != -1) {
         if (check_socket_closed(rti_priv->socket_descriptor)) {
-          break;
+          return NULL;
         }
       }
       // Try again
