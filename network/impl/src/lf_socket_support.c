@@ -34,7 +34,7 @@ netdrv_t* initialize_netdrv() {
   return drv;
 }
 
-int create_server_(netdrv_t* drv, server_type_t serv_type) {
+int create_server_(netdrv_t* drv, bool increment_port_on_retry) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   int socket_descriptor;
   struct timeval timeout_time;
@@ -47,7 +47,6 @@ int create_server_(netdrv_t* drv, server_type_t serv_type) {
     return -1;
   }
   set_socket_timeout_option(socket_descriptor, &timeout_time);
-  bool increment_port_on_retry = (serv_type == RTI) ? true : false;
 
   int used_port = set_socket_bind_option(socket_descriptor, priv->user_specified_port, increment_port_on_retry);
   // Enable listening for socket connections.

@@ -3,7 +3,6 @@
 
 #include "socket_common.h"
 
-typedef enum server_type_t { RTI, FED } server_type_t;
 typedef struct netdrv_t {
   void* priv;
   //   unsigned int read_remaining_bytes;
@@ -25,7 +24,7 @@ netdrv_t* initialize_netdrv();
  * @param serv_type Type of server, RTI or FED.
  * @return int 0 for success, -1 for failure.
  */
-int create_server_(netdrv_t* drv, server_type_t serv_type);
+int create_server_(netdrv_t* drv, bool increment_port_on_retry);
 
 netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv);
 

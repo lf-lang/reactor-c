@@ -208,6 +208,7 @@ uint16_t setup_clock_synchronization_with_rti() {
   return port_to_return;
 }
 
+//TODO: Fix clocks.
 void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
   LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
