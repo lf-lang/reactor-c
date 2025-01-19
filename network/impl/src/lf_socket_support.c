@@ -69,43 +69,17 @@ int create_server_(netdrv_t* drv, bool increment_port_on_retry) {
 
 netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
   socket_priv_t* serv_priv = (socket_priv_t*)server_drv->priv;
+  socket_priv_t* rti_priv = (socket_priv_t*)rti_drv->priv;
+  
   netdrv_t* fed_netdrv = initialize_netdrv();
   socket_priv_t* fed_priv = (socket_priv_t*)fed_netdrv->priv;
 
-  struct sockaddr client_fd;
-  // Wait for an incoming connection request.
-  uint32_t client_length = sizeof(client_fd);
-  // The following blocks until a federate connects.
-  int socket_id = -1;
-  while (true) {
-    // When close(socket) is called, the accept() will return -1.
-    socket_id = accept(serv_priv->socket_descriptor, &client_fd, &client_length);
-    if (socket_id >= 0) {
-      // Got a socket
-      break;
-    } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
-      lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
-      free_netdrv(fed_netdrv);
-      return NULL;
-    } else if (errno == EPERM) {
-      lf_print_error_system_failure("Firewall permissions prohibit connection.");
-      free_netdrv(fed_netdrv);
-      return NULL;
-    } else {
-      // For the federates, it should check if the rti_socket is still open, before retrying accept().
-      socket_priv_t* rti_priv = (socket_priv_t*)rti_drv->priv;
-      if (rti_priv->socket_descriptor != -1) {
-        if (check_socket_closed(rti_priv->socket_descriptor)) {
-          free_netdrv(fed_netdrv);
-          return NULL;
-        }
-      }
-      // Try again
-      lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
-      continue;
-    }
+  int sock = accept_socket(serv_priv->socket_descriptor, rti_priv->socket_descriptor);
+  if (sock == -1) {
+    free_netdrv(fed_netdrv);
+    return NULL;
   }
-  fed_priv->socket_descriptor = socket_id;
+  fed_priv->socket_descriptor = sock;
   return fed_netdrv;
 }
 

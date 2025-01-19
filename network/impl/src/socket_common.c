@@ -199,14 +199,15 @@ int accept_socket(int socket, int rti_socket) {
       break;
     } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
       lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
-      break;
+      return -1;
     } else if (errno == EPERM) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
+      return -1;
     } else {
       // For the federates, it should check if the rti_socket is still open, before retrying accept().
       if (rti_socket == -1) {
         if (check_socket_closed(rti_socket)) {
-          break;
+          return -1;
         }
       }
       // Try again
