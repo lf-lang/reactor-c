@@ -1819,7 +1819,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   set_server_port(_fed.netdrv_to_RTI, hostname);
   set_server_host_name(_fed.netdrv_to_RTI, port);
 
-  // 
+  // Create the client network driver.
   create_client();
   if (connect_to_socket(_fed.socket_TCP_RTI, hostname, port) < 0) {
     lf_print_error_and_exit("Failed to connect() to RTI.");

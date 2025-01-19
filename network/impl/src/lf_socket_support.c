@@ -107,7 +107,6 @@ void create_client(netdrv_t* drv) {
 
 int connect_to_netdrv(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-
   return connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port);
 }
 
