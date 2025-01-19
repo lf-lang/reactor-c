@@ -1931,6 +1931,7 @@ void lf_create_server(int specified_port) {
   if (create_server_(server_netdrv, false)) {
     lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
   };
+  _fed.server_netdrv = server_netdrv;
   // Get the final server port set.
   int32_t server_port = get_server_port(server_netdrv);
 
