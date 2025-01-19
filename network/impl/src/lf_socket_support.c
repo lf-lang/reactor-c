@@ -136,6 +136,10 @@ int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
       LF_PRINT_DEBUG("Reading from socket %d failed with error: `%s`. Will try again.", socket, strerror(errno));
       lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
       continue;
+    } else if (more < 0 && errno == ECONNRESET) {
+      lf_print_error(
+          "Connection was closed by the peer without properly sending an EOF first. Considering this a soft error.");
+      return -1;
     } else if (more < 0) {
       // A more serious error occurred.
       lf_print_error("Reading from socket %d failed. With error: `%s`", socket, strerror(errno));
@@ -242,7 +246,7 @@ int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
   if (ret != 0) {
-     lf_print_error("Failed to shutdown socket.");
+    lf_print_error("Failed to shutdown socket.");
   }
   free_netdrv(drv);
   return ret;
