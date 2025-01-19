@@ -19,8 +19,6 @@ netdrv_t* initialize_netdrv() {
   if (priv == NULL) {
     lf_print_error_and_exit("Falied to malloc socket_priv_t.");
   }
-  // Initialize to zero.
-  //   memset(priv, 0, sizeof(socket_priv_t));
 
   // Server initialization.
   priv->port = 0;
