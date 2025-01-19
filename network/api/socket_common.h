@@ -74,7 +74,7 @@ typedef enum socket_type_t { TCP, UDP } socket_type_t;
 /**
  * Mutex protecting socket close operations.
  */
-extern lf_mutex_t socket_mutex;
+extern lf_mutex_t netdrv_mutex;
 
 typedef struct socket_priv_t {
   int socket_descriptor;

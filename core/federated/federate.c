@@ -410,11 +410,11 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  *  federate.
  */
 static void close_inbound_socket(int fed_id) {
-  LF_MUTEX_LOCK(&socket_mutex);
+  LF_MUTEX_LOCK(&netdrv_mutex);
   if (_fed.netdrvs_for_inbound_p2p_connections[fed_id] >= 0) {
     shutdown_socket(&_fed.netdrvs_for_inbound_p2p_connections[fed_id], false);
   }
-  LF_MUTEX_UNLOCK(&socket_mutex);
+  LF_MUTEX_UNLOCK(&netdrv_mutex);
 }
 
 /**
@@ -2032,7 +2032,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     tracepoint_federate_to_federate(receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
 
     // Once we record the socket_id here, all future calls to close() on
-    // the socket should be done while holding the socket_mutex, and this array
+    // the socket should be done while holding the netdrv_mutex, and this array
     // element should be reset to -1 during that critical section.
     // Otherwise, there can be race condition where, during termination,
     // two threads attempt to simultaneously close the socket.
@@ -2056,12 +2056,12 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     int result = lf_thread_create(&_fed.inbound_netdriv_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
-      LF_MUTEX_LOCK(&socket_mutex);
+      LF_MUTEX_LOCK(&netdrv_mutex);
       if (_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] != -1) {
         shutdown_socket(&socket_id, false);
         _fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] = -1;
       }
-      LF_MUTEX_UNLOCK(&socket_mutex);
+      LF_MUTEX_UNLOCK(&netdrv_mutex);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }

@@ -304,7 +304,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
  * the T4 and the coded probe message is not as expected, then reject
  * this clock synchronization round. If it is not rejected, then make
  * an adjustment to the clock offset based on the estimated error.
- * This function does not acquire the socket_mutex lock.
+ * This function does not acquire the netdrv_mutex lock.
  * The caller should acquire it unless it is sure there is only one thread running.
  * @param buffer The buffer containing the message, including the message type.
  * @param socket The socket (either _lf_rti_socket_TCP or _lf_rti_socket_UDP).
