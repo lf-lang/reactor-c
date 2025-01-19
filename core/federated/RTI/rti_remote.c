@@ -1495,9 +1495,8 @@ int start_rti_server() {
   };
   lf_print("RTI: Listening for federates.");
   // Create the UDP socket server
-  // Try to get the rti_remote->final_port_TCP + 1 port
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-    if (create_clock_server(rti_remote->final_port_TCP + 1, &rti_remote->socket_descriptor_UDP,
+    if (create_clock_server(DEFAULT_UDP_PORT, &rti_remote->socket_descriptor_UDP,
                             &rti_remote->final_port_UDP)) {
       lf_print_error_system_failure("RTI failed to create UDP server: %s.", strerror(errno));
       return -1;

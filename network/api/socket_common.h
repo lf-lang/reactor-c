@@ -64,6 +64,8 @@
  */
 #define DEFAULT_PORT 15045u
 
+#define DEFAULT_UDP_PORT 15061u
+
 /**
  * Byte identifying that the federate or the RTI has failed.
  */
