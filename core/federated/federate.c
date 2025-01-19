@@ -1922,7 +1922,7 @@ void lf_create_server(int specified_port) {
   netdrv_t* server_netdrv = initialize_netdrv();
   set_server_port(server_netdrv, specified_port);
 
-  if (create_server_(server_netdrv, false)) {
+  if (create_server(server_netdrv, false)) {
     lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
   };
   _fed.server_netdrv = server_netdrv;

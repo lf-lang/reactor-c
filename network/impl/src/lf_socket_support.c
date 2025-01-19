@@ -40,37 +40,16 @@ void free_netdrv(netdrv_t* drv) {
   free(drv);
 }
 
-int create_server_(netdrv_t* drv, bool increment_port_on_retry) {
+int create_server(netdrv_t* drv, bool increment_port_on_retry) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  int socket_descriptor;
-  struct timeval timeout_time;
-  // Create an IPv4 socket for TCP.
-  socket_descriptor = create_real_time_tcp_socket_errexit();
-  // Set the timeout time for the communications of the server
-  timeout_time = (struct timeval){.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
-  if (socket_descriptor < 0) {
-    lf_print_error("Failed to create TCP socket.");
-    return -1;
-  }
-  set_socket_timeout_option(socket_descriptor, &timeout_time);
-
-  int used_port = set_socket_bind_option(socket_descriptor, priv->user_specified_port, increment_port_on_retry);
-  // Enable listening for socket connections.
-  // The second argument is the maximum number of queued socket requests,
-  // which according to the Mac man page is limited to 128.
-  if (listen(socket_descriptor, 128)) {
-    lf_print_error("Failed to listen on %d socket: %s.", socket_descriptor, strerror(errno));
-    return -1;
-  }
-  priv->socket_descriptor = socket_descriptor;
-  priv->port = used_port;
-  return 0;
+  return create_socket_server(priv->user_specified_port, &priv->socket_descriptor, &priv->port,
+                              increment_port_on_retry);
 }
 
 netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
   socket_priv_t* serv_priv = (socket_priv_t*)server_drv->priv;
   socket_priv_t* rti_priv = (socket_priv_t*)rti_drv->priv;
-  
+
   netdrv_t* fed_netdrv = initialize_netdrv();
   socket_priv_t* fed_priv = (socket_priv_t*)fed_netdrv->priv;
 

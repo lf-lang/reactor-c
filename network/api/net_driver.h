@@ -24,7 +24,7 @@ netdrv_t* initialize_netdrv();
  * @param serv_type Type of server, RTI or FED.
  * @return int 0 for success, -1 for failure.
  */
-int create_server_(netdrv_t* drv, bool increment_port_on_retry);
+int create_server(netdrv_t* drv, bool increment_port_on_retry);
 
 netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv);
 

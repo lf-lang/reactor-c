@@ -1489,7 +1489,7 @@ int start_rti_server() {
   // Initialize RTI's network driver.
   rti_remote->rti_netdrv = initialize_netdrv();
   // Create the server
-  if (create_server_(rti_remote->rti_netdrv, true)) {
+  if (create_server(rti_remote->rti_netdrv, true)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
     return -1;
   };

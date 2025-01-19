@@ -136,12 +136,10 @@ int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool 
  * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
- * @param sock_type Type of the socket, TCP or UDP.
  * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
-int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
-                  bool increment_port_on_retry);
+int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry);
 
 int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port);
 

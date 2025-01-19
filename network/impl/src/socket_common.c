@@ -119,38 +119,27 @@ int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool 
   return used_port;
 }
 
-// TODO: Fix on federate.
-int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
-                  bool increment_port_on_retry) {
+int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry) {
   int socket_descriptor;
   struct timeval timeout_time;
-  if (sock_type == TCP) {
-    // Create an IPv4 socket for TCP.
-    socket_descriptor = create_real_time_tcp_socket_errexit();
-    // Set the timeout time for the communications of the server
-    timeout_time =
-        (struct timeval){.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
-  } else {
-    // Create a UDP socket.
-    socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    timeout_time =
-        (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
-  }
-  char* type = (sock_type == TCP) ? "TCP" : "UDP";
+
+  // Create an IPv4 socket for TCP.
+  socket_descriptor = create_real_time_tcp_socket_errexit();
+  // Set the timeout time for the communications of the server
+  timeout_time = (struct timeval){.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
+
   if (socket_descriptor < 0) {
-    lf_print_error("Failed to create %s socket.", type);
+    lf_print_error("Failed to create TCP socket.");
     return -1;
   }
   set_socket_timeout_option(socket_descriptor, &timeout_time);
   int used_port = set_socket_bind_option(socket_descriptor, port, increment_port_on_retry);
-  if (sock_type == TCP) {
-    // Enable listening for socket connections.
-    // The second argument is the maximum number of queued socket requests,
-    // which according to the Mac man page is limited to 128.
-    if (listen(socket_descriptor, 128)) {
-      lf_print_error("Failed to listen on %d socket: %s.", socket_descriptor, strerror(errno));
-      return -1;
-    }
+  // Enable listening for socket connections.
+  // The second argument is the maximum number of queued socket requests,
+  // which according to the Mac man page is limited to 128.
+  if (listen(socket_descriptor, 128)) {
+    lf_print_error("Failed to listen on %d socket: %s.", socket_descriptor, strerror(errno));
+    return -1;
   }
   *final_socket = socket_descriptor;
   *final_port = used_port;
