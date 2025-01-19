@@ -78,7 +78,7 @@ int max_level_allowed_to_advance;
  */
 federate_instance_t _fed = {.socket_TCP_RTI = -1,
                             .number_of_inbound_p2p_connections = 0,
-                            .inbound_socket_listeners = NULL,
+                            .inbound_netdriv_listeners = NULL,
                             .number_of_outbound_p2p_connections = 0,
                             .inbound_p2p_handling_thread_id = 0,
                             .server_socket = -1,
@@ -411,8 +411,8 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  */
 static void close_inbound_socket(int fed_id) {
   LF_MUTEX_LOCK(&socket_mutex);
-  if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-    shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], false);
+  if (_fed.netdrvs_for_inbound_p2p_connections[fed_id] >= 0) {
+    shutdown_socket(&_fed.netdrvs_for_inbound_p2p_connections[fed_id], false);
   }
   LF_MUTEX_UNLOCK(&socket_mutex);
 }
@@ -726,7 +726,7 @@ static int handle_port_absent_message(int* socket, int fed_id) {
  * peer federate and calls the appropriate handling function for
  * each message type. If an error occurs or an EOF is received
  * from the peer, then this procedure sets the corresponding
- * socket in _fed.sockets_for_inbound_p2p_connections
+ * socket in _fed.netdrvs_for_inbound_p2p_connections
  * to -1 and returns, terminating the thread.
  * @param _args The remote federate ID (cast to void*).
  * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
@@ -738,7 +738,7 @@ static void* listen_to_federates(void* _args) {
 
   LF_PRINT_LOG("Listening to federate %d.", fed_id);
 
-  int* socket_id = &_fed.sockets_for_inbound_p2p_connections[fed_id];
+  int* socket_id = &_fed.netdrvs_for_inbound_p2p_connections[fed_id];
 
   // Buffer for incoming messages.
   // This does not constrain the message size
@@ -823,14 +823,14 @@ static void close_outbound_socket(int fed_id) {
   // abnormal termination, in which case it will just close the socket.
   if (_lf_normal_termination) {
     LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
-    if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
+    if (_fed.netdrvs_for_outbound_p2p_connections[fed_id] >= 0) {
       // Close the socket by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
-      shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[fed_id], true);
+      shutdown_socket(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], true);
     }
     LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
   } else {
-    shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[fed_id], false);
+    shutdown_socket(&_fed.netdrvs_for_outbound_p2p_connections[fed_id], false);
   }
 }
 
@@ -1632,11 +1632,11 @@ void lf_terminate_execution(environment_t* env) {
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
     close_inbound_socket(i);
     // Ignore errors. Mark the socket closed.
-    _fed.sockets_for_inbound_p2p_connections[i] = -1;
+    _fed.netdrvs_for_inbound_p2p_connections[i] = -1;
   }
 
   // Check for all outgoing physical connections in
-  // _fed.sockets_for_outbound_p2p_connections and
+  // _fed.netdrvs_for_outbound_p2p_connections and
   // if the socket ID is not -1, the connection is still open.
   // Send an EOF by closing the socket here.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
@@ -1649,23 +1649,23 @@ void lf_terminate_execution(environment_t* env) {
 
   LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
   // Wait for each inbound socket listener thread to close.
-  if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_socket_listeners != NULL) {
+  if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_netdriv_listeners != NULL) {
     LF_PRINT_LOG("Waiting for %zu threads listening for incoming messages to exit.",
                  _fed.number_of_inbound_p2p_connections);
     for (size_t i = 0; i < _fed.number_of_inbound_p2p_connections; i++) {
       // Ignoring errors here.
-      lf_thread_join(_fed.inbound_socket_listeners[i], NULL);
+      lf_thread_join(_fed.inbound_netdriv_listeners[i], NULL);
     }
   }
 
-  LF_PRINT_DEBUG("Waiting for RTI's socket listener threads.");
+  LF_PRINT_DEBUG("Waiting for RTI's network driver listener threads.");
   // Wait for the thread listening for messages from the RTI to close.
-  lf_thread_join(_fed.RTI_socket_listener, NULL);
+  lf_thread_join(_fed.RTI_netdrv_listener, NULL);
 
   // For abnormal termination, there is no need to free memory.
   if (_lf_normal_termination) {
     LF_PRINT_DEBUG("Freeing memory occupied by the federate.");
-    free(_fed.inbound_socket_listeners);
+    free(_fed.inbound_netdriv_listeners);
     free(federation_metadata.rti_host);
     free(federation_metadata.rti_user);
   }
@@ -1801,7 +1801,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   }
   // Once we set this variable, then all future calls to close() on this
   // socket ID should reset it to -1 within a critical section.
-  _fed.sockets_for_outbound_p2p_connections[remote_federate_id] = socket_id;
+  _fed.netdrvs_for_outbound_p2p_connections[remote_federate_id] = socket_id;
 }
 
 void lf_connect_to_rti(const char* hostname, int port) {
@@ -1967,7 +1967,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   LF_ASSERT_NON_NULL(env_arg);
   size_t received_federates = 0;
   // Allocate memory to store thread IDs.
-  _fed.inbound_socket_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
+  _fed.inbound_netdriv_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
     // Wait for an incoming connection request.
     int socket_id = accept_socket(_fed.server_socket, _fed.socket_TCP_RTI);
@@ -2028,7 +2028,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // element should be reset to -1 during that critical section.
     // Otherwise, there can be race condition where, during termination,
     // two threads attempt to simultaneously close the socket.
-    _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = socket_id;
+    _fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] = socket_id;
 
     // Send an MSG_TYPE_ACK message.
     unsigned char response = MSG_TYPE_ACK;
@@ -2037,7 +2037,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
 
     LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
-    write_to_socket_fail_on_error(&_fed.sockets_for_inbound_p2p_connections[remote_fed_id], 1,
+    write_to_socket_fail_on_error(&_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id], 1,
                                   (unsigned char*)&response, &lf_outbound_socket_mutex,
                                   "Failed to write MSG_TYPE_ACK in response to federate %d.", remote_fed_id);
     LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
@@ -2045,13 +2045,13 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Start a thread to listen for incoming messages from other federates.
     // The fed_id is a uint16_t, which we assume can be safely cast to and from void*.
     void* fed_id_arg = (void*)(uintptr_t)remote_fed_id;
-    int result = lf_thread_create(&_fed.inbound_socket_listeners[received_federates], listen_to_federates, fed_id_arg);
+    int result = lf_thread_create(&_fed.inbound_netdriv_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
       LF_MUTEX_LOCK(&socket_mutex);
-      if (_fed.sockets_for_inbound_p2p_connections[remote_fed_id] != -1) {
+      if (_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] != -1) {
         shutdown_socket(&socket_id, false);
-        _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = -1;
+        _fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] = -1;
       }
       LF_MUTEX_UNLOCK(&socket_mutex);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
@@ -2160,7 +2160,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
   LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
 
-  int* socket = &_fed.sockets_for_outbound_p2p_connections[federate];
+  int* socket = &_fed.netdrvs_for_outbound_p2p_connections[federate];
 
   // Trace the event when tracing is enabled
   tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
@@ -2340,7 +2340,7 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   int* socket = &_fed.socket_TCP_RTI;
 #else
   // Send the absent message directly to the federate
-  int* socket = &_fed.sockets_for_outbound_p2p_connections[fed_ID];
+  int* socket = &_fed.netdrvs_for_outbound_p2p_connections[fed_ID];
 #endif
 
   if (socket == &_fed.socket_TCP_RTI) {
@@ -2453,7 +2453,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
 
   int* socket;
   if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
-    socket = &_fed.sockets_for_outbound_p2p_connections[federate];
+    socket = &_fed.netdrvs_for_outbound_p2p_connections[federate];
     tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
   } else {
     socket = &_fed.socket_TCP_RTI;
@@ -2508,11 +2508,11 @@ void lf_synchronize_with_other_federates(void) {
   start_time = get_start_time_from_rti(lf_time_physical());
   lf_tracing_set_start_time(start_time);
 
-  // Start a thread to listen for incoming TCP messages from the RTI.
+  // Start a thread to listen for incoming messages from the RTI.
   // @note Up until this point, the federate has been listening for messages
   //  from the RTI in a sequential manner in the main thread. From now on, a
   //  separate thread is created to allow for asynchronous communication.
-  lf_thread_create(&_fed.RTI_socket_listener, listen_to_rti_TCP, NULL);
+  lf_thread_create(&_fed.RTI_netdrv_listener, listen_to_rti_TCP, NULL);
   lf_thread_t thread_id;
   if (create_clock_sync_thread(&thread_id)) {
     lf_print_warning("Failed to create thread to handle clock synchronization.");

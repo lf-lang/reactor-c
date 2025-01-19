@@ -18,6 +18,7 @@
 #include "lf_types.h"
 #include "environment.h"
 #include "low_level_platform.h"
+#include "net_driver.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)
@@ -31,16 +32,16 @@
  */
 typedef struct federate_instance_t {
   /**
-   * The TCP socket descriptor for this federate to communicate with the RTI.
+   * The network driver for this federate to communicate with the RTI.
    * This is set by lf_connect_to_rti(), which must be called before other
    * functions that communicate with the rti are called.
    */
-  int socket_TCP_RTI;
+  netdrv_t* netdrv_to_RTI;
 
   /**
-   * Thread listening for incoming TCP messages from the RTI.
+   * Thread listening for incoming messages from the RTI.
    */
-  lf_thread_t RTI_socket_listener;
+  lf_thread_t RTI_netdrv_listener;
 
   /**
    * Number of inbound physical connections to the federate.
@@ -54,7 +55,7 @@ typedef struct federate_instance_t {
    * This is NULL if there are none and otherwise has size given by
    * number_of_inbound_p2p_connections.
    */
-  lf_thread_t* inbound_socket_listeners;
+  lf_thread_t* inbound_netdriv_listeners;
 
   /**
    * Number of outbound peer-to-peer connections from the federate.
@@ -64,34 +65,34 @@ typedef struct federate_instance_t {
   size_t number_of_outbound_p2p_connections;
 
   /**
-   * An array that holds the socket descriptors for inbound
+   * An array that holds the network drivers for inbound
    * connections from each federate. The index will be the federate
    * ID of the remote sending federate. This is initialized at startup
-   * to -1 and is set to a socket ID by lf_handle_p2p_connections_from_federates()
-   * when the socket is opened.
+   * to -1 and is set to a socket ID by lf_handle_p2p_connections_from_federates() //TODO: Check here.
+   * when the network drivers is opened.
    *
-   * @note There will not be an inbound socket unless a physical connection
+   * @note There will not be an inbound network driver unless a physical connection
    * or a p2p logical connection (by setting the coordination target property
    * to "distributed") is specified in the Lingua Franca program where this
    * federate is the destination. Multiple incoming p2p connections from the
-   * same remote federate will use the same socket.
+   * same remote federate will use the same network driver.
    */
-  int sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+  netdrv_t* netdrvs_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
-   * An array that holds the socket descriptors for outbound direct
+   * An array that holds the network drivers for outbound direct
    * connections to each remote federate. The index will be the federate
    * ID of the remote receiving federate. This is initialized at startup
-   * to -1 and is set to a socket ID by lf_connect_to_federate()
-   * when the socket is opened.
+   * to -1 and is set to a socket ID by lf_connect_to_federate() //TODO: Check here.
+   * when the network drivers is opened.
    *
-   * @note This federate will not open an outbound socket unless a physical
+   * @note This federate will not open an outbound network drivers unless a physical
    * connection or a p2p logical connection (by setting the coordination target
    * property to "distributed") is specified in the Lingua Franca
    * program where this federate acts as the source. Multiple outgoing p2p
-   * connections to the same remote federate will use the same socket.
+   * connections to the same remote federate will use the same network drivers.
    */
-  int sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+  netdrv_t* netdrvs_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
    * Thread ID for a thread that accepts sockets and then supervises
@@ -105,7 +106,7 @@ typedef struct federate_instance_t {
    * This socket is used to listen to incoming physical connections from
    * remote federates. Once an incoming connection is accepted, the
    * opened socket will be stored in
-   * federate_sockets_for_inbound_p2p_connections.
+   * federate_netdrvs_for_inbound_p2p_connections.
    */
   int server_socket;
 
@@ -227,7 +228,7 @@ extern lf_cond_t lf_port_status_changed;
  * the IP address and port number of the specified federate. It then attempts
  * to establish a socket connection to the specified federate.
  * If this fails, the program exits. If it succeeds, it sets element [id] of
- * the _fed.sockets_for_outbound_p2p_connections global array to
+ * the _fed.netdrvs_for_outbound_p2p_connections global array to
  * refer to the socket for communicating directly with the federate.
  * @param remote_federate_id The ID of the remote federate.
  */
