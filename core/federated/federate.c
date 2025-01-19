@@ -854,14 +854,14 @@ static int perform_hmac_authentication() {
   RAND_bytes(fed_nonce, NONCE_LENGTH);
   memcpy(&fed_hello_buf[1 + fed_id_length], fed_nonce, NONCE_LENGTH);
 
-  write_to_netdrv_fail_on_error(&_fed.socket_TCP_RTI, message_length, fed_hello_buf, NULL, "Failed to write nonce.");
+  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, message_length, fed_hello_buf, NULL, "Failed to write nonce.");
 
   // Check HMAC of received FED_RESPONSE message.
   unsigned int hmac_length = SHA256_HMAC_LENGTH;
   size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
 
   unsigned char received[1 + NONCE_LENGTH + hmac_length];
-  if (read_from_netdrv_close_on_error(&_fed.socket_TCP_RTI, 1 + NONCE_LENGTH + hmac_length, received)) {
+  if (read_from_netdrv_close_on_error(_fed.netdrv_to_RTI, 1 + NONCE_LENGTH + hmac_length, received)) {
     lf_print_warning("Failed to read RTI response.");
     return -1;
   }
@@ -895,7 +895,7 @@ static int perform_hmac_authentication() {
     response[1] = HMAC_DOES_NOT_MATCH;
 
     // Ignore errors on writing back.
-    write_to_netdrv(_fed.socket_TCP_RTI, 2, response);
+    write_to_netdrv(_fed.netdrv_to_RTI, 2, response);
     return -1;
   } else {
     LF_PRINT_LOG("HMAC verified.");
@@ -909,7 +909,7 @@ static int perform_hmac_authentication() {
     HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH, &sender[1],
          &hmac_length);
 
-    write_to_netdrv_fail_on_error(&_fed.socket_TCP_RTI, 1 + hmac_length, sender, NULL, "Failed to write fed response.");
+    write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, 1 + hmac_length, sender, NULL, "Failed to write fed response.");
   }
   return 0;
 }
