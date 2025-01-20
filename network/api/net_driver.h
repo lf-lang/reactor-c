@@ -109,7 +109,7 @@ int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
 
 /**
  * Write the specified number of bytes to the specified socket using
- * write_to_socket_close_on_error and exit with an error code if an error occurs.
+ * write_to_netdrv_close_on_error and exit with an error code if an error occurs.
  * If the mutex argument is non-NULL, release the mutex before exiting.  If the
  * format argument is non-null, then use it an any additional arguments to form
  * the error message using printf conventions. Otherwise, print a generic error

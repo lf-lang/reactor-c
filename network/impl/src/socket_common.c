@@ -164,7 +164,12 @@ int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port) 
   return 0;
 }
 
-bool check_socket_closed(int socket) {
+/**
+ * Return true if either the socket to the RTI is broken or the socket is
+ * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
+ * @param socket Socket to check.
+ */
+static bool check_socket_closed(int socket) {
   unsigned char first_byte;
   ssize_t bytes = peek_from_socket(socket, &first_byte);
   if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {
@@ -289,39 +294,6 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
   return 0;
 }
 
-int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
-  assert(socket);
-  int read_failed = read_from_socket(*socket, num_bytes, buffer);
-  if (read_failed) {
-    // Read failed.
-    // Socket has probably been closed from the other side.
-    // Shut down and close the socket from this side.
-    shutdown_socket(socket, false);
-    return -1;
-  }
-  return 0;
-}
-
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                    char* format, ...) {
-  va_list args;
-  assert(socket);
-  int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);
-  if (read_failed) {
-    // Read failed.
-    if (mutex != NULL) {
-      LF_MUTEX_UNLOCK(mutex);
-    }
-    if (format != NULL) {
-      va_start(args, format);
-      lf_print_error_system_failure(format, args);
-      va_end(args);
-    } else {
-      lf_print_error_system_failure("Failed to read from socket.");
-    }
-  }
-}
-
 ssize_t peek_from_socket(int socket, unsigned char* result) {
   ssize_t bytes_read = recv(socket, result, 1, MSG_DONTWAIT | MSG_PEEK);
   if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
@@ -354,38 +326,6 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
     bytes_written += more;
   }
   return 0;
-}
-
-int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
-  assert(socket);
-  int result = write_to_socket(*socket, num_bytes, buffer);
-  if (result) {
-    // Write failed.
-    // Socket has probably been closed from the other side.
-    // Shut down and close the socket from this side.
-    shutdown_socket(socket, false);
-  }
-  return result;
-}
-
-void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...) {
-  va_list args;
-  assert(socket);
-  int result = write_to_socket_close_on_error(socket, num_bytes, buffer);
-  if (result) {
-    // Write failed.
-    if (mutex != NULL) {
-      LF_MUTEX_UNLOCK(mutex);
-    }
-    if (format != NULL) {
-      va_start(args, format);
-      lf_print_error_system_failure(format, args);
-      va_end(args);
-    } else {
-      lf_print_error("Failed to write to socket. Closing it.");
-    }
-  }
 }
 
 int shutdown_socket(int* socket, bool read_before_closing) {

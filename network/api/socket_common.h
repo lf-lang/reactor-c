@@ -146,13 +146,6 @@ int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port,
 int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port);
 
 /**
- * Return true if either the socket to the RTI is broken or the socket is
- * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
- * @param socket Socket to check.
- */
-bool check_socket_closed(int socket);
-
-/**
  * Wait for an incoming connection request on the specified server socket.
  * This blocks until a connection is successfully accepted. If an error occurs that is not
  * temporary (e.g., `EAGAIN` or `EWOULDBLOCK`), it reports the error and exits. Temporary
