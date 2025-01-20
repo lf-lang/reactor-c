@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CLOCK_SYNC_H
 
 #include "low_level_platform.h"
+#include "net_driver.h"
 
 // Clock synchronization defaults to performing clock synchronization only at initialization.
 #define LF_CLOCK_SYNC_OFF 1
@@ -157,15 +158,15 @@ uint16_t setup_clock_synchronization_with_rti(void);
  * is required.
  *
  * This is a blocking function that expects
- * to read a MSG_TYPE_CLOCK_SYNC_T1 from the RTI TCP socket.
+ * to read a MSG_TYPE_CLOCK_SYNC_T1 from the RTI network driver.
  * It will then follow the PTP protocol to synchronize the local
  * physical clock with the RTI.
  * Failing to complete this protocol is treated as a catastrophic
  * error that causes the federate to exit.
  *
- * @param rti_socket_TCP Pointer to the RTI's socket
+ * @param rti_netdrv Pointer to the RTI's network driver.
  */
-void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
+void synchronize_initial_physical_clock_with_rti(netdrv_t* rti_netdrv);
 
 /**
  * Handle a clock synchroninzation message T1 coming from the RTI.
@@ -174,29 +175,45 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
  * It also measures the time it takes between when the method is
  * called and the reply has been sent.
  * @param buffer The buffer containing the message, including the message type.
- * @param socket The socket (either _lf_rti_socket_TCP or _lf_rti_socket_UDP).
+ * @param netdrv_t The pointer to the network driver.
  * @param t2 The physical time at which the T1 message was received.
  * @return 0 if T3 reply is successfully sent, -1 otherwise.
  */
-int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2);
+int handle_T1_clock_sync_message(unsigned char* buffer, netdrv_t* netdrv, instant_t t2);
 
 /**
- * Handle a clock synchronization message T4 coming from the RTI.
- * If the socket is _lf_rti_socket_TCP, then assume we are in the
- * initial clock synchronization phase and set the clock offset
+ * This does the same function as handle_T1_clock_sync_message(), only using a UDP socket.
+ * @param buffer The buffer containing the message, including the message type.
+ * @param socket The pointer to the UDP socket.
+ * @param t2 The physical time at which the T1 message was received.
+ * @return 0 if T3 reply is successfully sent, -1 otherwise.
+ */
+int handle_T1_clock_sync_message_UDP(unsigned char* buffer, int* UDP_socket, instant_t t2);
+
+/**
+ * Handle a clock synchronization message T4 coming from the RTI using the network driver.
+ * Assume this is the initial clock synchronization phase and set the clock offset
  * based on the estimated clock synchronization error.
- * Otherwise, if the socket is _lf_rti_socket_UDP, then this looks also for a
- * subsequent "coded probe" message on the socket. If the delay between
- * the T4 and the coded probe message is not as expected, then reject
- * this clock synchronization round. If it is not rejected, then make
- * an adjustment to the clock offset based on the estimated error.
  * This function does not acquire the netdrv_mutex lock.
  * The caller should acquire it unless it is sure there is only one thread running.
  * @param buffer The buffer containing the message, including the message type.
- * @param socket The socket (either _lf_rti_socket_TCP or _lf_rti_socket_UDP).
+ * @param netdrv_t The pointer to the network driver.
  * @param r4 The physical time at which this T4 message was received.
  */
-void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r4);
+void handle_T4_clock_sync_message(unsigned char* buffer, netdrv_t* netdrv, instant_t r4);
+
+/**
+ * Handle a clock synchronization message T4 coming from the RTI using a UDP socket.
+ * Look for a subsequent "coded probe" message on the socket.
+ * If the delay between the T4 and the coded probe message is not as expected, reject the clock synchronization round.
+ * If it is not rejected, then make an adjustment to the clock offset based on the estimated error.
+ * This function does not acquire the netdrv_mutex lock.
+ * The caller should acquire it unless it is sure there is only one thread running.
+ * @param buffer The buffer containing the message, including the message type.
+ * @param socket The pointer to the UDP socket.
+ * @param r4 The physical time at which this T4 message was received.
+ */
+void handle_T4_clock_sync_message_UDP(unsigned char* buffer, int* UDP_socket, instant_t r4);
 
 /**
  * Thread that listens for UDP inputs from the RTI.
