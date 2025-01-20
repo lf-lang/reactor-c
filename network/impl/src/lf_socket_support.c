@@ -79,36 +79,7 @@ int connect_to_netdrv(netdrv_t* drv) {
 
 int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  int socket = priv->socket_descriptor;
-  if (socket < 0) {
-    // Socket is not open.
-    errno = EBADF;
-    return -1;
-  }
-  ssize_t bytes_read = 0;
-  while (bytes_read < (ssize_t)num_bytes) {
-    ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-    if (more < 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
-      // Those error codes set by the socket indicates
-      // that we should try again (@see man errno).
-      LF_PRINT_DEBUG("Reading from socket %d failed with error: `%s`. Will try again.", socket, strerror(errno));
-      lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
-      continue;
-    } else if (more < 0 && errno == ECONNRESET) {
-      lf_print_error(
-          "Connection was closed by the peer without properly sending an EOF first. Considering this a soft error.");
-      return -1;
-    } else if (more < 0) {
-      // A more serious error occurred.
-      lf_print_error("Reading from socket %d failed. With error: `%s`", socket, strerror(errno));
-      return -1;
-    } else if (more == 0) {
-      // EOF received.
-      return 1;
-    }
-    bytes_read += more;
-  }
-  return 0;
+  return read_from_socket(priv->socket_descriptor, num_bytes, buffer);
 }
 
 int read_from_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
@@ -145,30 +116,7 @@ void read_from_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned ch
 
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  int socket = priv->socket_descriptor;
-  if (socket < 0) {
-    // Socket is not open.
-    errno = EBADF;
-    return -1;
-  }
-  ssize_t bytes_written = 0;
-  while (bytes_written < (ssize_t)num_bytes) {
-    ssize_t more = write(socket, buffer + bytes_written, num_bytes - (size_t)bytes_written);
-    if (more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
-      // The error codes EAGAIN or EWOULDBLOCK indicate
-      // that we should try again (@see man errno).
-      // The error code EINTR means the system call was interrupted before completing.
-      LF_PRINT_DEBUG("Writing to socket %d was blocked. Will try again.", socket);
-      lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
-      continue;
-    } else if (more < 0) {
-      // A more serious error occurred.
-      lf_print_error("Writing to socket %d failed. With error: `%s`", socket, strerror(errno));
-      return -1;
-    }
-    bytes_written += more;
-  }
-  return 0;
+  return write_to_socket(priv->socket_descriptor, num_bytes, buffer);
 }
 
 int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
