@@ -112,12 +112,13 @@ int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
 }
 
 int read_from_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
   int read_failed = read_from_netdrv(drv, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
     // Socket has probably been closed from the other side.
     // Shut down and close the socket from this side.
-    shutdown_netdrv(drv, false);
+    shutdown_socket(&priv->socket_descriptor, false);
     return -1;
   }
   return 0;
@@ -171,12 +172,13 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
 }
 
 int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
   int result = write_to_netdrv(drv, num_bytes, buffer);
   if (result) {
     // Write failed.
     // Socket has probably been closed from the other side.
     // Shut down and close the socket from this side.
-    shutdown_netdrv(drv, false);
+    shutdown_socket(&priv->socket_descriptor, false);
   }
   return result;
 }
