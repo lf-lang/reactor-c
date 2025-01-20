@@ -1395,10 +1395,6 @@ static bool authenticate_federate(netdrv_t* fed_netdrv) {
 #endif
 
 void lf_connect_to_federates(netdrv_t* rti_netdrv) {
-  // netdrv_t* netdrv_array[rti_remote->base.number_of_scheduling_nodes];
-  // for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-  //   netdrv_array[i] = establish_communication_session(rti_netdrv);
-  // }
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     netdrv_t* fed_netdrv = accept_netdrv(rti_netdrv, NULL);
 // Wait for the first message from the federate when RTI -a option is on.
