@@ -157,7 +157,7 @@ int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port,
 }
 
 int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port) {
-  return create_socket_server(port, final_socket, final_port, UDP, true);
+  return create_socket_server(port, final_socket, final_port, UDP, false);
 }
 
 /**
