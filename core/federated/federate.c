@@ -17,9 +17,9 @@
 #include <arpa/inet.h>  // inet_ntop & inet_pton
 #include <netdb.h>      // Defines getaddrinfo(), freeaddrinfo() and struct addrinfo.
 #include <netinet/in.h> // Defines struct sockaddr_in
-#include <unistd.h> // Defines read(), write(), and close()
-#include <string.h> // Defines memset(), strnlen(), strncmp(), strncpy()
-#include <stdio.h>  // Defines strerror()
+#include <unistd.h>     // Defines read(), write(), and close()
+#include <string.h>     // Defines memset(), strnlen(), strncmp(), strncpy()
+#include <stdio.h>      // Defines strerror()
 
 #include <assert.h>
 #include <errno.h>   // Defined perror(), errno
@@ -2045,9 +2045,9 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    write_to_netdrv_fail_on_error(_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id], 1,
-                                  (unsigned char*)&response, &lf_outbound_netdrv_mutex,
-                                  "Failed to write MSG_TYPE_ACK in response to federate %d.", remote_fed_id);
+    write_to_netdrv_fail_on_error(_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id], 1, (unsigned char*)&response,
+                                  &lf_outbound_netdrv_mutex, "Failed to write MSG_TYPE_ACK in response to federate %d.",
+                                  remote_fed_id);
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
     // Start a thread to listen for incoming messages from other federates.
@@ -2058,7 +2058,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       // Failed to create a listening thread.
       LF_MUTEX_LOCK(&netdrv_mutex);
       if (_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] != NULL) {
-        shutdown_netdrv(netdrv, false);
+        shutdown_netdrv(_fed.netdrvs_for_inbound_p2p_connections[remote_fed_id], false);
         _fed.netdrvs_for_inbound_p2p_connections[remote_fed_id] = NULL;
       }
       LF_MUTEX_UNLOCK(&netdrv_mutex);
@@ -2348,7 +2348,7 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   netdrv_t* netdrv = _fed.netdrv_to_RTI;
 #else
   // Send the absent message directly to the federate
-  netdrv_t* netdrv  = _fed.netdrvs_for_outbound_p2p_connections[fed_ID];
+  netdrv_t* netdrv = _fed.netdrvs_for_outbound_p2p_connections[fed_ID];
 #endif
 
   if (netdrv == _fed.netdrv_to_RTI) {
@@ -2459,7 +2459,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
 
-  netdrv_t* netdrv ;
+  netdrv_t* netdrv;
   if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
     netdrv = _fed.netdrvs_for_outbound_p2p_connections[federate];
     tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);

@@ -989,7 +989,7 @@ void* federate_info_thread_TCP(void* fed) {
       // Nothing more to do. Close the socket and exit.
       // Prevent multiple threads from closing the same socket at the same time.
       LF_MUTEX_LOCK(&rti_mutex);
-      shutdown_netdrv(my_fed->fed_netdrv, false); //  from unistd.h
+      shutdown_netdrv(my_fed->fed_netdrv, false);
       LF_MUTEX_UNLOCK(&rti_mutex);
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
