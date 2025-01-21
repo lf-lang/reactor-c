@@ -821,7 +821,7 @@ static void close_outbound_netdrv(int fed_id) {
   // abnormal termination, in which case it will just close the network driver.
   if (_lf_normal_termination) {
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    if (_fed.netdrvs_for_outbound_p2p_connections[fed_id] >= 0) {
+    if (_fed.netdrvs_for_outbound_p2p_connections[fed_id] != NULL) {
       // Close the network driver by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
       shutdown_netdrv(_fed.netdrvs_for_outbound_p2p_connections[fed_id], true);
