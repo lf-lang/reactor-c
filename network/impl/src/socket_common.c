@@ -120,7 +120,7 @@ int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool 
 }
 
 int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
-                  bool increment_port_on_retry) {
+                         bool increment_port_on_retry) {
   int socket_descriptor;
   struct timeval timeout_time;
   if (sock_type == TCP) {
@@ -252,8 +252,10 @@ int connect_to_socket(int sock, const char* hostname, int port) {
       }
       lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds. Connecting to port %d.\n",
                        CONNECT_RETRY_INTERVAL, used_port);
+      freeaddrinfo(result);
       continue;
     } else {
+      freeaddrinfo(result);
       break;
     }
     freeaddrinfo(result);
