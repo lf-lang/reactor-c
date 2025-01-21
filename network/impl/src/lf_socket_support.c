@@ -22,6 +22,7 @@ netdrv_t* initialize_netdrv() {
 
   // Server initialization.
   priv->port = 0;
+  priv->user_specified_port = 0;
   priv->socket_descriptor = -1;
 
   // Federate initialization
