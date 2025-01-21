@@ -141,7 +141,8 @@ int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool 
  * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
-int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, bool increment_port_on_retry);
+int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
+                         bool increment_port_on_retry);
 
 int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port);
 

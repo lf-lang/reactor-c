@@ -42,7 +42,7 @@ void free_netdrv(netdrv_t* drv) {
 
 int create_server(netdrv_t* drv, bool increment_port_on_retry) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  return create_socket_server(priv->user_specified_port, &priv->socket_descriptor, &priv->port,
+  return create_socket_server(priv->user_specified_port, &priv->socket_descriptor, &priv->port, TCP,
                               increment_port_on_retry);
 }
 
