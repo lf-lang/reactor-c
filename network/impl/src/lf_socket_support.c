@@ -9,6 +9,29 @@
 #include "util.h"
 // #include "lf_socket_support.h"
 
+static int get_peer_address(netdrv_t* drv) {
+  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  struct sockaddr_in peer_addr;
+  socklen_t addr_len = sizeof(peer_addr);
+  if (getpeername(priv->socket_descriptor, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
+    lf_print_error("Failed to get peer address.");
+    return -1;
+  }
+  priv->server_ip_addr = peer_addr.sin_addr;
+
+#if LOG_LEVEL >= LOG_LEVEL_DEBUG
+  // Create the human readable format and copy that into
+  // the .server_hostname field of the federate.
+  char str[INET_ADDRSTRLEN + 1];
+  inet_ntop(AF_INET, &priv->server_ip_addr, str, INET_ADDRSTRLEN);
+  strncpy(priv->server_hostname, str, INET_ADDRSTRLEN - 1); // Copy up to INET_ADDRSTRLEN - 1 characters
+  priv->server_hostname[INET_ADDRSTRLEN - 1] = '\0';        // Null-terminate explicitly
+
+  LF_PRINT_DEBUG("Got address %s", priv->server_hostname);
+#endif
+  return 0;
+}
+
 netdrv_t* initialize_netdrv() {
   netdrv_t* drv = malloc(sizeof(netdrv_t));
   if (drv == NULL) {
@@ -172,29 +195,6 @@ int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
   }
   free_netdrv(drv);
   return ret;
-}
-
-static int get_peer_address(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
-  struct sockaddr_in peer_addr;
-  socklen_t addr_len = sizeof(peer_addr);
-  if (getpeername(priv->socket_descriptor, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
-    lf_print_error("Failed to get peer address.");
-    return -1;
-  }
-  priv->server_ip_addr = peer_addr.sin_addr;
-
-#if LOG_LEVEL >= LOG_LEVEL_DEBUG
-  // Create the human readable format and copy that into
-  // the .server_hostname field of the federate.
-  char str[INET_ADDRSTRLEN + 1];
-  inet_ntop(AF_INET, &priv->server_ip_addr, str, INET_ADDRSTRLEN);
-  strncpy(priv->server_hostname, str, INET_ADDRSTRLEN - 1); // Copy up to INET_ADDRSTRLEN - 1 characters
-  priv->server_hostname[INET_ADDRSTRLEN - 1] = '\0';        // Null-terminate explicitly
-
-  LF_PRINT_DEBUG("Got address %s", priv->server_hostname);
-#endif
-  return 0;
 }
 
 int32_t get_my_port(netdrv_t* drv) {
