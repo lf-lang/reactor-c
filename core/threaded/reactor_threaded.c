@@ -195,7 +195,7 @@ void lf_set_present(lf_port_base_t* port) {
 }
 
 bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
-  if (!fast) {
+  if (!fast || (wait_until_time == FOREVER && keepalive_specified)) {
     LF_PRINT_DEBUG("-------- Waiting until physical time " PRINTF_TIME, wait_until_time - start_time);
     // Check whether we actually need to wait, or if we have already passed the timepoint.
     interval_t wait_duration = wait_until_time - lf_time_physical();
@@ -586,7 +586,7 @@ void _lf_initialize_start_tag(environment_t* env) {
   // If we have a non-zero STA offset, then we need to allow messages to arrive
   // at the start time.  To avoid spurious STP violations, we temporarily
   // set the current time back by the STA offset.
-  env->current_tag.time -= lf_fed_STA_offset;
+  env->current_tag.time = lf_time_subtract(env->current_tag.time, lf_fed_STA_offset);
 #else
   // For other than federated decentralized execution, there is no lf_fed_STA_offset variable defined.
   // To use uniform code below, we define it here as a local variable.
