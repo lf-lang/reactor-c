@@ -787,10 +787,10 @@ void send_physical_clock_UDP(unsigned char message_type, federate_info_t* fed) {
 static void handle_physical_clock_sync_message_helper(federate_info_t* my_fed, bool send_coded_probe) {
   LF_MUTEX_LOCK(&rti_mutex);
   if (!send_coded_probe) {
-  // Reply with a T4 type message
-  send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed);
-  // Send the corresponding coded probe immediately after,
-  // but only if this is a UDP channel.
+    // Reply with a T4 type message
+    send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed);
+    // Send the corresponding coded probe immediately after,
+    // but only if this is a UDP channel.
   } else {
     send_physical_clock_UDP(MSG_TYPE_CLOCK_SYNC_T4, my_fed);
     send_physical_clock_UDP(MSG_TYPE_CLOCK_SYNC_CODED_PROBE, my_fed);
