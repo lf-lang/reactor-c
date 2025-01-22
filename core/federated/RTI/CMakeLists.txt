@@ -34,10 +34,7 @@ if (NOT DEFINED LOG_LEVEL)
     set(LOG_LEVEL 0)
 ENDIF(NOT DEFINED LOG_LEVEL)
 
-# option(COMM_TYPE "Communication type between RTI and federate(s)." ON)
-# IF(COMM_TYPE MATCHES ON)
 set(COMM_TYPE TCP)
-# ENDIF()
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages
