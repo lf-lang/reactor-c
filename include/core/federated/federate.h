@@ -68,7 +68,7 @@ typedef struct federate_instance_t {
    * An array that holds the network drivers for inbound
    * connections from each federate. The index will be the federate
    * ID of the remote sending federate. This is initialized at startup
-   * to -1 and is set to a socket ID by lf_handle_p2p_connections_from_federates() //TODO: Check here.
+   * to NULL and is set to the pointer of the network driver by lf_connect_to_federate()
    * when the network drivers is opened.
    *
    * @note There will not be an inbound network driver unless a physical connection
@@ -83,7 +83,7 @@ typedef struct federate_instance_t {
    * An array that holds the network drivers for outbound direct
    * connections to each remote federate. The index will be the federate
    * ID of the remote receiving federate. This is initialized at startup
-   * to -1 and is set to a socket ID by lf_connect_to_federate() //TODO: Check here.
+   * to NULL and is set to the pointer of the network driver by lf_connect_to_federate()
    * when the network drivers is opened.
    *
    * @note This federate will not open an outbound network drivers unless a physical
@@ -313,7 +313,7 @@ void lf_reset_status_fields_on_input_port_triggers();
  * @brief Send a message to another federate.
  *
  * This function is used for physical connections
- * between federates. If the socket connection to the remote federate or the RTI has been broken,
+ * between federates. If the connection to the remote federate or the RTI has been broken,
  * then this returns -1 without sending. Otherwise, it returns 0.
  *
  * This method assumes that the caller does not hold the lf_outbound_netdrv_mutex lock,
@@ -495,7 +495,7 @@ void lf_stall_advance_level_federation_locked(size_t level);
  * @brief Synchronize the start with other federates via the RTI.
  *
  * This assumes that a connection to the RTI is already made
- * and _lf_rti_socket_TCP is valid. It then sends the current logical //TODO: Check.
+ * and netdrv_to_RTI is valid. It then sends the current logical
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
  */
