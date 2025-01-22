@@ -194,6 +194,7 @@ void lf_set_present(lf_port_base_t* port) {
   }
 }
 
+#ifndef LF_SIMULATE_PHYSICAL_TIME
 bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
   if (!fast || (wait_until_time == FOREVER && keepalive_specified)) {
     LF_PRINT_DEBUG("-------- Waiting until physical time " PRINTF_TIME, wait_until_time - start_time);
@@ -226,6 +227,7 @@ bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
   }
   return true;
 }
+#endif
 
 /**
  * Return the tag of the next event on the event queue.

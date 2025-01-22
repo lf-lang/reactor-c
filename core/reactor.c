@@ -67,6 +67,7 @@ void lf_set_present(lf_port_base_t* port) {
   }
 }
 
+#ifndef LF_SIMULATE_PHYSICAL_TIME
 /**
  * Wait until physical time matches the given logical time or the time of a
  * concurrently scheduled physical action, which might be earlier than the
@@ -81,6 +82,7 @@ int wait_until(environment_t* env, instant_t wakeup_time) {
   }
   return 0;
 }
+#endif
 
 #ifndef NDEBUG
 void lf_print_snapshot(environment_t* env) {
