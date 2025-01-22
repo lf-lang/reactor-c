@@ -409,6 +409,7 @@ static void close_inbound_netdrv(int fed_id) {
   LF_MUTEX_LOCK(&netdrv_mutex);
   if (_fed.netdrvs_for_inbound_p2p_connections[fed_id] != NULL) {
     shutdown_netdrv(_fed.netdrvs_for_inbound_p2p_connections[fed_id], false);
+    _fed.netdrvs_for_inbound_p2p_connections[fed_id] = NULL;
   }
   LF_MUTEX_UNLOCK(&netdrv_mutex);
 }
@@ -825,10 +826,12 @@ static void close_outbound_netdrv(int fed_id) {
       // Close the network driver by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
       shutdown_netdrv(_fed.netdrvs_for_outbound_p2p_connections[fed_id], true);
+      _fed.netdrvs_for_outbound_p2p_connections[fed_id] = NULL;
     }
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
   } else {
     shutdown_netdrv(_fed.netdrvs_for_outbound_p2p_connections[fed_id], false);
+    _fed.netdrvs_for_outbound_p2p_connections[fed_id] = NULL;
   }
 }
 
