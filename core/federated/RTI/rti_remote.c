@@ -1427,7 +1427,7 @@ void lf_connect_to_federates(netdrv_t* rti_netdrv) {
     netdrv_t* fed_netdrv = accept_netdrv(rti_netdrv, NULL);
     if (fed_netdrv == NULL) {
       lf_print_warning("RTI failed to accept the federate.");
-      return NULL;
+      return;
     }
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
