@@ -1425,6 +1425,10 @@ static bool authenticate_federate(netdrv_t* fed_netdrv) {
 void lf_connect_to_federates(netdrv_t* rti_netdrv) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     netdrv_t* fed_netdrv = accept_netdrv(rti_netdrv, NULL);
+    if (fed_netdrv == NULL) {
+      lf_print_warning("RTI failed to accept the federate.");
+      return NULL;
+    }
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
     if (rti_remote->authentication_enabled) {
@@ -1483,6 +1487,9 @@ void* respond_to_erroneous_connections(void* nothing) {
     // The following will block until either a federate attempts to connect
     // or shutdown_socket(rti->socket_descriptor_TCP) is called.
     netdrv_t* fed_netdrv = accept_netdrv(rti_remote->rti_netdrv, NULL);
+    if (fed_netdrv == NULL) {
+      return NULL;
+    }
     if (rti_remote->all_federates_exited) {
       return NULL;
     }
