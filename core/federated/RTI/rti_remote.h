@@ -297,16 +297,9 @@ void handle_timestamp(federate_info_t* my_fed);
  *
  * @param message_type The type of the clock sync message (see net_common.h).
  * @param fed The federate to send the physical time to.
+ * @param use_UDP Boolean to use UDP or the network driver.
  */
-void send_physical_clock(unsigned char message_type, federate_info_t* fed);
-
-/**
- * This does the same function with send_physical_clock(), but uses UDP.
- *
- * @param message_type The type of the clock sync message (see net_common.h).
- * @param fed The federate to send the physical time to.
- */
-void send_physical_clock_UDP(unsigned char message_type, federate_info_t* fed);
+void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool use_UDP);
 
 /**
  * Handle clock synchronization T3 messages from federates.
@@ -319,10 +312,9 @@ void send_physical_clock_UDP(unsigned char message_type, federate_info_t* fed);
  * clock synchronization round.
  *
  * @param my_fed The sending federate.
+ * @param use_UDP Boolean to send a coded probe message (for UDP only).
  */
-void handle_physical_clock_sync_message(federate_info_t* my_fed);
-
-void handle_physical_clock_sync_message_UDP(federate_info_t* my_fed);
+void handle_physical_clock_sync_message(federate_info_t* my_fed, bool use_UDP);
 
 /**
  * A (quasi-)periodic thread that performs clock synchronization with each

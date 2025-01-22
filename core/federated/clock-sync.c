@@ -230,7 +230,7 @@ void synchronize_initial_physical_clock_with_rti(netdrv_t* rti_netdrv) {
     // Handle the message and send a reply T3 message.
     // NOTE: No need to acquire the mutex lock during initialization because only
     // one thread is running.
-    if (handle_T1_clock_sync_message(buffer, rti_netdrv, receive_time) != 0) {
+    if (handle_T1_clock_sync_message(buffer, (void*)rti_netdrv, receive_time, false) != 0) {
       lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
     }
 
@@ -245,7 +245,7 @@ void synchronize_initial_physical_clock_with_rti(netdrv_t* rti_netdrv) {
     }
 
     // Handle the message.
-    handle_T4_clock_sync_message(buffer, rti_netdrv, receive_time);
+    handle_T4_clock_sync_message(buffer, (void*)rti_netdrv, receive_time, false);
   }
 
   LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
@@ -260,10 +260,10 @@ void synchronize_initial_physical_clock_with_rti(netdrv_t* rti_netdrv) {
  * @param buffer The buffer containing the message, including the message type.
  * @param socket_or_netdrv The pointer of either UDP socket or the network driver.
  * @param t2 The physical time at which the T1 message was received.
+ * @param use_UDP Boolean to use UDP or the network driver.
  * @return 0 if T3 reply is successfully sent, -1 otherwise.
  */
-static int handle_T1_clock_sync_message_common(unsigned char* buffer, void* socket_or_netdrv, instant_t t2,
-                                               bool use_udp) {
+int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netdrv, instant_t t2, bool use_udp) {
   // Extract the payload
   instant_t t1 = extract_int64(&(buffer[1]));
 
@@ -298,16 +298,6 @@ static int handle_T1_clock_sync_message_common(unsigned char* buffer, void* sock
   return 0;
 }
 
-// Wrapper for handling clock synchronization over netdrv (e.g., TCP)
-int handle_T1_clock_sync_message(unsigned char* buffer, netdrv_t* netdrv, instant_t t2) {
-  return handle_T1_clock_sync_message_common(buffer, (void*)netdrv, t2, false);
-}
-
-// Wrapper for handling clock synchronization over UDP
-int handle_T1_clock_sync_message_UDP(unsigned char* buffer, int* UDP_socket, instant_t t2) {
-  return handle_T1_clock_sync_message_common(buffer, (void*)UDP_socket, t2, true);
-}
-
 /**
  * Handle a clock synchronization message T4 coming from the RTI.
  * If using the network driver, then assume we are in the
@@ -323,9 +313,9 @@ int handle_T1_clock_sync_message_UDP(unsigned char* buffer, int* UDP_socket, ins
  * @param buffer The buffer containing the message, including the message type.
  * @param socket_or_netdrv The pointer of either UDP socket or the network driver.
  * @param r4 The physical time at which this T4 message was received.
+ * @param use_UDP Boolean to use UDP or the network driver.
  */
-static void handle_T4_clock_sync_message_common(unsigned char* buffer, void* socket_or_netdrv, instant_t r4,
-                                                int use_udp) {
+void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_netdrv, instant_t r4, bool use_udp) {
   // Increment the number of received T4 messages
   _lf_rti_socket_stat.received_T4_messages_in_current_sync_window++;
 
@@ -450,20 +440,6 @@ static void handle_T4_clock_sync_message_common(unsigned char* buffer, void* soc
 }
 
 /**
- * Wrapper for handling clock synchronization messages via TCP.
- */
-void handle_T4_clock_sync_message(unsigned char* buffer, netdrv_t* netdrv, instant_t r4) {
-  handle_T4_clock_sync_message_common(buffer, (void*)netdrv, r4, 0);
-}
-
-/**
- * Wrapper for handling clock synchronization messages via UDP.
- */
-void handle_T4_clock_sync_message_UDP(unsigned char* buffer, int* UDP_socket, instant_t r4) {
-  handle_T4_clock_sync_message_common(buffer, (void*)UDP_socket, r4, 1);
-}
-
-/**
  * Thread that listens for UDP inputs from the RTI.
  */
 void* listen_to_rti_UDP_thread(void* args) {
@@ -528,7 +504,7 @@ void* listen_to_rti_UDP_thread(void* args) {
           break;
         }
         connected = true;
-        if (handle_T1_clock_sync_message_UDP(buffer, &_lf_rti_socket_UDP, receive_time) != 0) {
+        if (handle_T1_clock_sync_message(buffer, (void*)&_lf_rti_socket_UDP, receive_time, true) != 0) {
           // Failed to send T3 reply. Wait for the next T1.
           waiting_for_T1 = true;
           continue;
@@ -541,7 +517,7 @@ void* listen_to_rti_UDP_thread(void* args) {
         continue;
       }
     } else if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T4) {
-      handle_T4_clock_sync_message_UDP(buffer, &_lf_rti_socket_UDP, receive_time);
+      handle_T4_clock_sync_message(buffer, (void*)&_lf_rti_socket_UDP, receive_time, true);
       waiting_for_T1 = true;
     } else {
       lf_print_warning("Clock sync: Received from RTI an unexpected UDP message type: %u. "
