@@ -327,6 +327,10 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
 }
 
 int shutdown_socket(int* socket, bool read_before_closing) {
+  if (*socket == -1) {
+    lf_print_log("Socket is already closed.");
+    return 0;
+  }
   if (!read_before_closing) {
     if (shutdown(*socket, SHUT_RDWR)) {
       lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
