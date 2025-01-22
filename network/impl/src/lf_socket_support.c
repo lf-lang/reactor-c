@@ -185,7 +185,8 @@ int get_peer_address(netdrv_t* drv) {
   // the .server_hostname field of the federate.
   char str[INET_ADDRSTRLEN + 1];
   inet_ntop(AF_INET, &priv->server_ip_addr, str, INET_ADDRSTRLEN);
-  strncpy(priv->server_hostname, str, INET_ADDRSTRLEN);
+  strncpy(priv->server_hostname, str, INET_ADDRSTRLEN - 1);  // Copy up to INET_ADDRSTRLEN - 1 characters
+priv->server_hostname[INET_ADDRSTRLEN - 1] = '\0';        // Null-terminate explicitly
 
   LF_PRINT_DEBUG("RTI got address %s", priv->server_hostname);
 #endif
