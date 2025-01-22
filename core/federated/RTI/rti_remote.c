@@ -75,7 +75,6 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   // This function is called in notify_advance_grant_if_safe(), which is a long
   // function. During this call, the socket might close, causing the following write_to_netdrv
   // to fail. Consider a failure here a soft failure and update the federate's status.
-  // TODO: Check if works well.
   if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
     e->state = NOT_CONNECTED;
@@ -1159,10 +1158,6 @@ static int32_t receive_and_check_fed_id_message(netdrv_t* fed_netdrv) {
   federate_info_t* fed = GET_FED_INFO(fed_id);
   // The MSG_TYPE_FED_IDS message has the right federation ID.
 
-  // Get the peer address from the connected socket_id. Then assign it as the federate's socket server.
-  if (get_peer_address(fed_netdrv) != 0) {
-    lf_print_error("RTI failed to get peer address.");
-  };
   fed->fed_netdrv = fed_netdrv;
 
   // Set the federate's state as pending

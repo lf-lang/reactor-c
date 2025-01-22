@@ -32,8 +32,6 @@ void create_client(netdrv_t* drv);
 
 int connect_to_netdrv(netdrv_t* drv);
 
-int get_peer_address(netdrv_t* drv);
-
 /**
  * Read the specified number of bytes from the specified socket into the specified buffer.
  * If an error occurs during this reading, return -1 and set errno to indicate

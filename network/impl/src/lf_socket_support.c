@@ -65,6 +65,10 @@ netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
     return NULL;
   }
   fed_priv->socket_descriptor = sock;
+  // Get the peer address from the connected socket_id.
+  if (get_peer_address(fed_netdrv) != 0) {
+    lf_print_error("RTI failed to get peer address.");
+  };
   return fed_netdrv;
 }
 
@@ -170,12 +174,12 @@ int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
   return ret;
 }
 
-int get_peer_address(netdrv_t* drv) {
+static int get_peer_address(netdrv_t* drv) {
   socket_priv_t* priv = (socket_priv_t*)drv->priv;
   struct sockaddr_in peer_addr;
   socklen_t addr_len = sizeof(peer_addr);
   if (getpeername(priv->socket_descriptor, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
-    lf_print_error("RTI failed to get peer address.");
+    lf_print_error("Failed to get peer address.");
     return -1;
   }
   priv->server_ip_addr = peer_addr.sin_addr;
@@ -188,7 +192,7 @@ int get_peer_address(netdrv_t* drv) {
   strncpy(priv->server_hostname, str, INET_ADDRSTRLEN - 1); // Copy up to INET_ADDRSTRLEN - 1 characters
   priv->server_hostname[INET_ADDRSTRLEN - 1] = '\0';        // Null-terminate explicitly
 
-  LF_PRINT_DEBUG("RTI got address %s", priv->server_hostname);
+  LF_PRINT_DEBUG("Got address %s", priv->server_hostname);
 #endif
   return 0;
 }
