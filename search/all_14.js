@@ -15,8 +15,6 @@ var searchData=
   ['user_5fvalue_12',['user_value',['../db/dc1/trace__types_8h.html#ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1',1,'trace_types.h']]],
   ['ushort_13',['ushort',['../d6/d1d/lf__types_8h.html#a3fa7784c89589b49764048e9909d0e07',1,'lf_types.h']]],
   ['usr_14',['usr',['../da/d5e/struct__influx__client__t.html#a564c3a7ef8c914430e326de886aa67cd',1,'_influx_client_t::usr'],['../da/d55/struct__influx__v2__client__t.html#a880cda6995aff705ac4f3b3bf3164b5c',1,'_influx_v2_client_t::usr']]],
-  ['util_15',['/lib/C/util/',['../dc/d6e/md_util_2_r_e_a_d_m_e.html',1,'']]],
-  ['util_20tracing_16',['util/tracing',['../d2/da5/md_util_2tracing_2_r_e_a_d_m_e.html',1,'']]],
-  ['util_2ec_17',['util.c',['../de/df1/util_8c.html',1,'']]],
-  ['util_2eh_18',['util.h',['../d8/d3c/util_8h.html',1,'']]]
+  ['util_2ec_15',['util.c',['../de/df1/util_8c.html',1,'']]],
+  ['util_2eh_16',['util.h',['../d8/d3c/util_8h.html',1,'']]]
 ];

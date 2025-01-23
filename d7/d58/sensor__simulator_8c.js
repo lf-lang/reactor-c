@@ -20,7 +20,7 @@ var sensor__simulator_8c =
     [ "register_sensor_key", "d7/d58/sensor__simulator_8c.html#a196614841046dea5b94b2a60108fff40", null ],
     [ "show_tick", "d7/d58/sensor__simulator_8c.html#a3c9ec0901afe8264c0e75d40c940bd5a", null ],
     [ "start_sensor_simulator", "d7/d58/sensor__simulator_8c.html#a491b52110965df05da5f18cb820ae99f", null ],
-    [ "_lf_sensor", "d7/d58/sensor__simulator_8c.html#aa31421e2302e39963b9c3ac64e031507", null ],
+    [ "_lf_sensor", "d7/d58/sensor__simulator_8c.html#ae1dba844ed6fd4a6717aedebef48d054", null ],
     [ "_lf_sensor_any_key_trigger", "d7/d58/sensor__simulator_8c.html#af6dff3826fe260fe7ef094143ea9d904", null ],
     [ "_lf_sensor_mutex", "d7/d58/sensor__simulator_8c.html#afb458531acce5cf61822ddd3018fb1cc", null ],
     [ "_lf_sensor_sensor_newline_trigger", "d7/d58/sensor__simulator_8c.html#aa1fe54b3698dcbd3d9b07bd6fe1934d7", null ],

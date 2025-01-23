@@ -25,29 +25,13 @@
 var NAVTREE =
 [
   [ "reactor-c", "index.html", [
-    [ "README", "d8/d7b/md_core_2federated_2_r_t_i_2_r_e_a_d_m_e.html", null ],
-    [ "hashset.c", "d7/dd5/md_core_2utils_2hashset_2_r_e_a_d_m_e.html", [
-      [ "Example", "d7/dd5/md_core_2utils_2hashset_2_r_e_a_d_m_e.html#autotoc_md1", null ]
-    ] ],
-    [ "hashset.c", "d2/de9/md_include_2core_2utils_2hashset_2_r_e_a_d_m_e.html", [
-      [ "Example", "d2/de9/md_include_2core_2utils_2hashset_2_r_e_a_d_m_e.html#autotoc_md3", null ]
-    ] ],
     [ "LICENSE", "d2/d35/md__l_i_c_e_n_s_e.html", null ],
-    [ "README", "d0/d05/md_low__level__platform_2_r_e_a_d_m_e.html", null ],
     [ "README", "d3/dcc/md__r_e_a_d_m_e.html", [
       [ "Reactor-C: A reactor runtime implementation in C", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md4", [
         [ "Documentation", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md5", null ],
         [ "Code-formatting", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md6", null ],
         [ "Testing", "d3/dcc/md__r_e_a_d_m_e.html#autotoc_md7", null ]
       ] ]
-    ] ],
-    [ "/lib/C/util/", "dc/d6e/md_util_2_r_e_a_d_m_e.html", null ],
-    [ "util/tracing", "d2/da5/md_util_2tracing_2_r_e_a_d_m_e.html", [
-      [ "Installing", "d2/da5/md_util_2tracing_2_r_e_a_d_m_e.html#autotoc_md10", null ]
-    ] ],
-    [ "Trace sequence diagram visualizer", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html", [
-      [ "Installing", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md15", null ],
-      [ "Running", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md16", null ]
     ] ],
     [ "Deprecated List", "da/d58/deprecated.html", null ],
     [ "Namespaces", "namespaces.html", [
@@ -84,16 +68,16 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d2/da5/md_util_2tracing_2_r_e_a_d_m_e.html",
-"d4/dd2/reactor__threaded_8h.html#a3d1cd5263a79c14e62a5fb34530a0a93",
-"d6/d51/pqueue__base_8h.html#a5a4c8b51b16189ab4a687f562733b1a5",
-"d7/dc9/structlf__waveform__t.html",
-"d9/dc7/trace__util_8h.html#ad8876683159ec2203bd41295d8af3017",
-"db/d7a/trace__to__chrome_8c.html#a989cdd5c8f2865f73a49b47929c46307",
-"dc/d69/fedsd_8py.html#a5ebcdd4622d06ef5aeac3f3d41522d51",
-"de/d4d/port_8c.html",
-"functions_o.html"
+"d2/da6/trace__impl_8h.html#a5d7ebab8b9d2b0d41fb5d5d3ad854df0",
+"d4/dd2/reactor__threaded_8h.html#aa8e97abcbd89bb371d396da44ff4becb",
+"d6/d51/pqueue__base_8h.html#a9bb9cb0e5f41746db17b7581f5fe0559",
+"d7/dd0/struct__lf__sensor__message__t.html#a3a9fd3aca3ae40d8a10665c4cc89cd68",
+"d9/dd5/clock-sync_8h.html#a4f1aaaa9e0b74867ba6b60eb962dfca6",
+"db/d93/structtrace__t.html#a2ad765032dc6d7b9720f0856638377f1",
+"dc/da9/rti__common_8h_source.html",
+"de/dcd/influxdb_8h.html#a133af84dbff3d84a97044d8a89cf295d",
+"globals_func_g.html"
 ];
 
-var SYNCONMSG = 'click to disable panel synchronisation';
-var SYNCOFFMSG = 'click to enable panel synchronisation';
+var SYNCONMSG = 'click to disable panel synchronization';
+var SYNCOFFMSG = 'click to enable panel synchronization';
