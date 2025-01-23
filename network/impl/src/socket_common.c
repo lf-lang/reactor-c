@@ -52,7 +52,13 @@ int create_real_time_tcp_socket_errexit() {
   return sock;
 }
 
-void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
+/**
+ * Set the socket timeout options.
+ * @param socket_descriptor The file descriptor of the socket on which to set options.
+ * @param timeout_time A pointer to a `struct timeval` that specifies the timeout duration
+ *                     for socket operations (receive and send).
+ */
+static void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time) {
   // Set the option for this socket to reuse the same address
   int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
   if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
@@ -67,7 +73,15 @@ void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_ti
   }
 }
 
-int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool increment_port_on_retry) {
+/**
+ * Assign a port to the socket, and bind the socket.
+ *
+ * @param socket_descriptor The file descriptor of the socket to be bound to an address and port.
+ * @param specified_port The port number to bind the socket to.
+ * @param increment_port_on_retry Boolean to retry port increment.
+ * @return The final port number used.
+ */
+static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool increment_port_on_retry) {
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.

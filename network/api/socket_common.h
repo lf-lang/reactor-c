@@ -105,24 +105,6 @@ typedef struct socket_priv_t {
 int create_real_time_tcp_socket_errexit();
 
 /**
- * Set the socket timeout options.
- * @param socket_descriptor The file descriptor of the socket on which to set options.
- * @param timeout_time A pointer to a `struct timeval` that specifies the timeout duration
- *                     for socket operations (receive and send).
- */
-void set_socket_timeout_option(int socket_descriptor, struct timeval* timeout_time);
-
-/**
- * Assign a port to the socket, and bind the socket.
- *
- * @param socket_descriptor The file descriptor of the socket to be bound to an address and port.
- * @param specified_port The port number to bind the socket to.
- * @param increment_port_on_retry Boolean to retry port increment.
- * @return The final port number used.
- */
-int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool increment_port_on_retry);
-
-/**
  * @brief Create a TCP server that listens for socket connections.
  *
  * If the specified port number is greater than zero, this function will attempt to acquire that port.

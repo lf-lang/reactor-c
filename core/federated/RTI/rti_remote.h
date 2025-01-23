@@ -53,10 +53,7 @@ typedef struct federate_info_t {
                                          // to a request for stop from the RTI. Used to prevent double-counting
                                          // a federate when handling lf_request_stop().
   lf_thread_t thread_id;                 // The ID of the thread handling communication with this federate.
-
   netdrv_t* fed_netdrv;                  // The netdriver that the RTI handling each federate.
-
-  int socket;                            // The TCP socket descriptor for communicating with this federate.
   struct sockaddr_in UDP_addr;           // The UDP address for the federate.
   bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                          // for this federate. Enabled by default.

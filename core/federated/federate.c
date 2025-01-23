@@ -1923,13 +1923,14 @@ void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
   netdrv_t* server_netdrv = initialize_netdrv();
+  //TODO: Check.
   set_server_port(server_netdrv, specified_port);
 
   if (create_server(server_netdrv, false)) {
     lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
   };
   _fed.server_netdrv = server_netdrv;
-  // Get the final server port set.
+  // Get the final server port to send to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message.
   int32_t server_port = get_my_port(server_netdrv);
 
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", server_port);
