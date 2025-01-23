@@ -153,6 +153,7 @@ macro(define X)
     endif(DEFINED ${X})
 endmacro()
 
+# Variant of define() above that adds quotation marks around the variable X.
 macro(defineString X)
     if(DEFINED ${X})
         message(STATUS ${X}=\"${${X}}\")
