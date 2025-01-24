@@ -207,7 +207,7 @@ void set_my_port(netdrv_t* drv, int32_t port);
  * number. The
  *
  * @param drv Network driver instance
- * @param port
+ * @param port The target server's port
  */
 void set_server_port(netdrv_t* drv, int32_t port);
 
@@ -215,7 +215,7 @@ void set_server_port(netdrv_t* drv, int32_t port);
  * Set the target server's hostname to the network driver.
  *
  * @param drv Network driver instance
- * @param hostname The target server's hos
+ * @param hostname The target server's hostname
  */
 void set_server_hostname(netdrv_t* drv, const char* hostname);
 
