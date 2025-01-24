@@ -89,7 +89,7 @@ netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
     return NULL;
   }
   fed_priv->socket_descriptor = sock;
-  // Get the peer address from the connected socket_id.
+  // Get the peer address from the connected socket_id. Saving this for the address query.
   if (get_peer_address(fed_netdrv) != 0) {
     lf_print_error("RTI failed to get peer address.");
   };
@@ -218,9 +218,9 @@ char* get_server_hostname(netdrv_t* drv) {
   return priv->server_hostname;
 }
 
-int get_socket_id(netdrv_t* drv) {
+void set_my_port(netdrv_t* drv, int32_t port) {
   socket_priv_t* priv = get_socket_priv_t(drv);
-  return priv->socket_descriptor;
+  priv->port = port;
 }
 
 void set_server_port(netdrv_t* drv, int32_t port) {
@@ -228,7 +228,7 @@ void set_server_port(netdrv_t* drv, int32_t port) {
   priv->server_port = port;
 }
 
-void set_server_host_name(netdrv_t* drv, const char* hostname) {
+void set_server_hostname(netdrv_t* drv, const char* hostname) {
   socket_priv_t* priv = get_socket_priv_t(drv);
   memcpy(priv->server_hostname, hostname, INET_ADDRSTRLEN);
 }

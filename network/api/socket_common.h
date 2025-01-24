@@ -64,6 +64,9 @@
  */
 #define DEFAULT_PORT 15045u
 
+/**
+ * Default port number for the RTI's clock server.
+ */
 #define DEFAULT_UDP_PORT 15061u
 
 /**
