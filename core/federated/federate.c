@@ -742,13 +742,11 @@ static void* listen_to_federates(void* _args) {
   // because the message will be put into malloc'd memory.
   unsigned char buffer[FED_COM_BUFFER_SIZE];
 
-  int socket_id = get_socket_id(netdrv);
-
   // Listen for messages from the federate.
   while (1) {
     bool netdrv_closed = false;
     // Read one byte to get the message type.
-    LF_PRINT_DEBUG("Waiting for a P2P message on socket %d.", socket_id);
+    LF_PRINT_DEBUG("Waiting for a P2P message.");
     bool bad_message = false;
     if (read_from_netdrv_close_on_error(netdrv, 1, buffer)) {
       // Network driver has been closed.
@@ -756,7 +754,7 @@ static void* listen_to_federates(void* _args) {
       // Stop listening to this federate.
       netdrv_closed = true;
     } else {
-      LF_PRINT_DEBUG("Received a P2P message on socket %d of type %d.", socket_id, buffer[0]);
+      LF_PRINT_DEBUG("Received a P2P message of type %d.", buffer[0]);
       switch (buffer[0]) {
       case MSG_TYPE_P2P_MESSAGE:
         LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
