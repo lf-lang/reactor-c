@@ -153,6 +153,7 @@ typedef struct rti_remote_t {
    * Boolean indicating that authentication is enabled.
    */
   bool authentication_enabled;
+
   /**
    * Boolean indicating that a stop request is already in progress.
    */
