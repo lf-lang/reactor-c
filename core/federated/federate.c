@@ -1727,7 +1727,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   netdrv_t* netdrv = initialize_netdrv();
   // Set the received host name and port to the network driver.
   set_server_port(netdrv, uport);
-  set_server_host_name(netdrv, hostname);
+  set_server_hostname(netdrv, hostname);
   // Create the client network driver.
   create_client(netdrv);
   if (connect_to_netdrv(netdrv) < 0) {
@@ -1810,7 +1810,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   _fed.netdrv_to_RTI = initialize_netdrv();
   // Set the user specified host name and port to the network driver.
   set_server_port(_fed.netdrv_to_RTI, port);
-  set_server_host_name(_fed.netdrv_to_RTI, hostname);
+  set_server_hostname(_fed.netdrv_to_RTI, hostname);
 
   // Create the client network driver.
   create_client(_fed.netdrv_to_RTI);
