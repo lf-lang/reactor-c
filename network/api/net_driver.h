@@ -28,8 +28,9 @@ int create_server(netdrv_t* drv, bool increment_port_on_retry);
  * The implementation should include three steps.
  * 1. Initialize the network driver of the connected federate.
  * 2. Wait for the incoming connection request. This should block until the connection is successfully accepted.
- * 3. Save the information in the connected network driver, such as the address of the connected peer, for future querying address.
- * 
+ * 3. Save the information in the connected network driver, such as the address of the connected peer, for future
+ * querying address.
+ *
  * @param server_drv The server network driver that is listening for incoming connections.
  * @param rti_drv The rti's network driver to check if it is still open.
  * @return netdrv_t* The network driver for the newly accepted connection on success, or NULL on failure
@@ -38,14 +39,15 @@ netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv);
 
 /**
  * Using the initialized network driver, create a client network driver ready to connect to a server.
- * 
+ *
  * @param drv The initialized network driver.
  */
 void create_client(netdrv_t* drv);
 
 /**
- * Connect to the server network driver. The server's connection information, such as the port and address should be set before calling this function.
- * 
+ * Connect to the server network driver. The server's connection information, such as the port and address should be set
+ * before calling this function.
+ *
  * @param drv Network driver to connect.
  * @return int 0 on success, -1 on failure, and `errno` is set to indicate the specific error.
  */
@@ -157,8 +159,9 @@ int shutdown_netdrv(netdrv_t* drv, bool read_before_closing);
 
 /**
  * Get the open port number from the network driver.
- * This is used when the federate sends a MSG_TYPE_ADDRESS_ADVERTISEMENT to the RTI, informing its port number. The RTI will save this port number, and send it to the other federate in a MSG_TYPE_ADDRESS_QUERY_REPLY message.
- * 
+ * This is used when the federate sends a MSG_TYPE_ADDRESS_ADVERTISEMENT to the RTI, informing its port number. The RTI
+ * will save this port number, and send it to the other federate in a MSG_TYPE_ADDRESS_QUERY_REPLY message.
+ *
  * @param drv Network driver instance
  * @return The port number of a server network driver.
  */
@@ -166,8 +169,9 @@ int32_t get_my_port(netdrv_t* drv);
 
 /**
  * Get the port number of the connected peer.
- * This is used by the RTI, when there is a request from the federate to the RTI, for the MSG_TYPE_ADDRESS_QUERY message.
- * 
+ * This is used by the RTI, when there is a request from the federate to the RTI, for the MSG_TYPE_ADDRESS_QUERY
+ * message.
+ *
  * @param drv Network driver instance
  * @return Port number of the connected peer.
  */
@@ -175,7 +179,7 @@ int32_t get_server_port(netdrv_t* drv);
 
 /**
  * Get the IP address of the connected peer.
- * 
+ *
  * @param drv Network driver instance
  * @return Pointer to the server IP address
  */
@@ -183,7 +187,7 @@ struct in_addr* get_ip_addr(netdrv_t* drv);
 
 /**
  * Get the hostname of the connected peer.
- * 
+ *
  * @param drv Network driver instance
  * @return Pointer to the server hostname
  */
@@ -191,23 +195,25 @@ char* get_server_hostname(netdrv_t* drv);
 
 /**
  * Set the user specified port to the created network driver.
- * 
+ *
  * @param drv Network driver instance
  * @param port The user specified port
  */
 void set_my_port(netdrv_t* drv, int32_t port);
 
 /**
- * Set server port number to the target network driver. The federate and RTI receives the port number fr on aom another federate MSG_TYPE_ADDRESS_ADVERTISEMENT message. This function is used to set the network driver's target server port number. The 
- * 
+ * Set server port number to the target network driver. The federate and RTI receives the port number fr on aom another
+ * federate MSG_TYPE_ADDRESS_ADVERTISEMENT message. This function is used to set the network driver's target server port
+ * number. The
+ *
  * @param drv Network driver instance
- * @param port 
+ * @param port
  */
 void set_server_port(netdrv_t* drv, int32_t port);
 
 /**
  * Set the target server's hostname to the network driver.
- * 
+ *
  * @param drv Network driver instance
  * @param hostname The target server's hos
  */

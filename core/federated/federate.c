@@ -1921,7 +1921,6 @@ void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
   netdrv_t* server_netdrv = initialize_netdrv();
-  //TODO: Check.
   set_my_port(server_netdrv, specified_port);
 
   if (create_server(server_netdrv, false)) {
