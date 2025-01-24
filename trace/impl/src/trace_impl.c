@@ -260,10 +260,37 @@ void lf_tracing_global_init(char* process_name, char* process_names, int fedid, 
   }
   process_id = fedid;
   char filename[100];
+
+  // When tracing transient federates, a new trace file is created for each execution. For this, the function 
+  // checks for file existance. If the file exists, the function appends a number to the file name and checks 
+  // again.
+  int iter = 0;
+  bool file_exists = false;
+  bool new_file = false;
   if (strcmp(process_name, "rti") == 0) {
     sprintf(filename, "%s.lft", process_name);
   } else {
-    sprintf(filename, "%s_%d.lft", process_name, process_id);
+    FILE* file;
+    do {
+      if (iter == 0) {
+        sprintf(filename, "%s_%d.lft", process_name, process_id);
+      } else {
+        sprintf(filename, "%s_%d_%d.lft", process_name, process_id, iter);
+      }
+      file = fopen(filename, "r");
+      if (file) {
+        file_exists = true;
+        new_file = true;
+        fclose(file);
+        iter++;
+      } else {
+        file_exists = false;
+      }
+    } while (file_exists);
+  }
+  if (new_file) {
+    lf_print_warning("No overwriting! The default file name already exists. A new trace file named %s is created.",
+                     filename);
   }
   trace_new(filename);
   start_trace(&trace, max_num_local_threads);
