@@ -261,8 +261,8 @@ void lf_tracing_global_init(char* process_name, char* process_names, int fedid, 
   process_id = fedid;
   char filename[100];
 
-  // When tracing transient federates, a new trace file is created for each execution. For this, the function 
-  // checks for file existance. If the file exists, the function appends a number to the file name and checks 
+  // When tracing transient federates, a new trace file is created for each execution. For this, the function
+  // checks for file existance. If the file exists, the function appends a number to the file name and checks
   // again.
   int iter = 0;
   bool file_exists = false;
