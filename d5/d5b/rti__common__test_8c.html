@@ -114,8 +114,8 @@ $(function(){initNavTree('d5/d5b/rti__common__test_8c.html','../../'); initResiz
 Functions</h2></td></tr>
 <tr class="memitem:ac461d9160af51d5b52ae07578fbae62e" id="r_ac461d9160af51d5b52ae07578fbae62e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac461d9160af51d5b52ae07578fbae62e">delete_scheduling_node</a> (scheduling_node_t *node)</td></tr>
 <tr class="separator:ac461d9160af51d5b52ae07578fbae62e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a137e99b99b7442e9338165eaea224059" id="r_a137e99b99b7442e9338165eaea224059"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a137e99b99b7442e9338165eaea224059">set_scheduling_node</a> (int id, int num_upstream, int num_downstream, int *upstream, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> *upstream_delay, int *downstream)</td></tr>
-<tr class="separator:a137e99b99b7442e9338165eaea224059"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae813745e3e10b87cc30b358ad31f2dd1" id="r_ae813745e3e10b87cc30b358ad31f2dd1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae813745e3e10b87cc30b358ad31f2dd1">set_scheduling_node</a> (int id, int num_immediate_upstreams, int num_immediate_downstreams, int *immediate_upstreams, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> *immediate_upstream_delays, int *immediate_downstreams)</td></tr>
+<tr class="separator:ae813745e3e10b87cc30b358ad31f2dd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afcbeaa1514d484830c5d8a745440a43b" id="r_afcbeaa1514d484830c5d8a745440a43b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afcbeaa1514d484830c5d8a745440a43b">reset_common_RTI</a> ()</td></tr>
 <tr class="separator:afcbeaa1514d484830c5d8a745440a43b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:affa6903178f9f0cb6596b471ed0f62ba" id="r_affa6903178f9f0cb6596b471ed0f62ba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#affa6903178f9f0cb6596b471ed0f62ba">set_common_RTI</a> (uint16_t num_nodes)</td></tr>
@@ -228,8 +228,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a137e99b99b7442e9338165eaea224059" name="a137e99b99b7442e9338165eaea224059"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a137e99b99b7442e9338165eaea224059">&#9670;&#160;</a></span>set_scheduling_node()</h2>
+<a id="ae813745e3e10b87cc30b358ad31f2dd1" name="ae813745e3e10b87cc30b358ad31f2dd1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae813745e3e10b87cc30b358ad31f2dd1">&#9670;&#160;</a></span>set_scheduling_node()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -242,38 +242,38 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_upstream</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_immediate_upstreams</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_downstream</em></span>, </td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>num_immediate_downstreams</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>upstream</em></span>, </td>
+          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>immediate_upstreams</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> *</td>          <td class="paramname"><span class="paramname"><em>upstream_delay</em></span>, </td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> *</td>          <td class="paramname"><span class="paramname"><em>immediate_upstream_delays</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>downstream</em></span>&#160;)</td>
+          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>immediate_downstreams</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Set the parameters of scheduling node to construct the test case. Before calling this function, reset_common_RTI should be called to reset every scheduling nodes. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">id</td><td>The ID of the scheduling node. </td></tr>
-    <tr><td class="paramname">num_upstream</td><td>The number of upstreams of the scheduling node. </td></tr>
-    <tr><td class="paramname">num_downstream</td><td>The number of downstreams of the scheduling node. </td></tr>
-    <tr><td class="paramname">upstream</td><td>The array of IDs from upstream nodes. </td></tr>
-    <tr><td class="paramname">upstream_delay</td><td>The array of delays from upstream nodes. </td></tr>
-    <tr><td class="paramname">downstream</td><td>The array of IDs from downstream nodes. </td></tr>
+    <tr><td class="paramname">num_immediate_upstreams</td><td>The number of upstreams of the scheduling node. </td></tr>
+    <tr><td class="paramname">num_immediate_downstreams</td><td>The number of downstreams of the scheduling node. </td></tr>
+    <tr><td class="paramname">immediate_upstreams</td><td>The array of IDs from immediate upstream nodes. </td></tr>
+    <tr><td class="paramname">immediate_upstream_delays</td><td>The array of delays from immediate upstream nodes. </td></tr>
+    <tr><td class="paramname">immediate_downstreams</td><td>The array of IDs from immediate downstream nodes. </td></tr>
   </table>
   </dd>
 </dl>

@@ -18,6 +18,7 @@ var net__common_8h =
     [ "MSG_TYPE_CLOCK_SYNC_T1", "d9/da6/net__common_8h.html#aea37eff76ade1b2781a7e6298afb3a04", null ],
     [ "MSG_TYPE_CLOCK_SYNC_T3", "d9/da6/net__common_8h.html#a52a76e4cc36217a169f32d5adde590cc", null ],
     [ "MSG_TYPE_CLOCK_SYNC_T4", "d9/da6/net__common_8h.html#ae128056ab2af39988103856ee815d930", null ],
+    [ "MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG", "d9/da6/net__common_8h.html#afb060091e032562cf32c0eb62340d309", null ],
     [ "MSG_TYPE_FAILED", "d9/da6/net__common_8h.html#af27674f627be1c469a529a995da5c074", null ],
     [ "MSG_TYPE_FED_IDS", "d9/da6/net__common_8h.html#a8e49ce0b1c3a58c881849ca4d0bae824", null ],
     [ "MSG_TYPE_FED_NONCE", "d9/da6/net__common_8h.html#a191b27bec42ab0370248fbc64cc9b860", null ],

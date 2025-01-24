@@ -185,67 +185,68 @@ $(function(){initNavTree('d1/d1c/rti__remote_8h_source.html','../../'); initResi
 <div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>  int32_t clock_sync_exchanges_per_interval;</div>
 <div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span></div>
 <div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>  <span class="keywordtype">bool</span> authentication_enabled;</div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  <span class="keywordtype">bool</span> stop_in_progress;</div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>} rti_remote_t;</div>
-<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span></div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span><span class="keyword">extern</span> <span class="keywordtype">int</span> <a class="code hl_function" href="../../d5/dbc/reactor__threaded_8c.html#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a>(<a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a>* env);</div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span></div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span><span class="keyword">extern</span> <span class="keywordtype">int</span> <a class="code hl_function" href="../../d5/dbc/reactor__threaded_8c.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a>(<a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a>* env);</div>
-<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span></div>
-<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span><span class="keyword">extern</span> <span class="keywordtype">bool</span> _lf_federate_reports_error;</div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span></div>
-<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span><span class="keywordtype">void</span> update_federate_next_event_tag_locked(uint16_t federate_id, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event_tag);</div>
-<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span></div>
-<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span><span class="keywordtype">void</span> handle_port_absent_message(federate_info_t* sending_federate, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* <a class="code hl_variable" href="../../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62">buffer</a>);</div>
-<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span></div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span><span class="keywordtype">void</span> handle_timed_message(federate_info_t* sending_federate, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* <a class="code hl_variable" href="../../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62">buffer</a>);</div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span></div>
-<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span><span class="keywordtype">void</span> handle_latest_tag_confirmed(federate_info_t* fed);</div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span></div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span><span class="keywordtype">void</span> handle_next_event_tag(federate_info_t* fed);</div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span></div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span></div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span><span class="keywordtype">void</span> handle_stop_request_message(federate_info_t* fed);</div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span></div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span><span class="keywordtype">void</span> handle_stop_request_reply(federate_info_t* fed);</div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span></div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span></div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span><span class="keywordtype">void</span> handle_address_query(uint16_t fed_id);</div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span></div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span><span class="keywordtype">void</span> handle_address_ad(uint16_t federate_id);</div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span></div>
-<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span><span class="keywordtype">void</span> handle_timestamp(federate_info_t* my_fed);</div>
-<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span></div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span><span class="keywordtype">void</span> send_physical_clock(<span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> message_type, federate_info_t* fed, <a class="code hl_enumeration" href="../../de/dbd/socket__common_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type);</div>
-<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span></div>
-<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span><span class="keywordtype">void</span> handle_physical_clock_sync_message(federate_info_t* my_fed, <a class="code hl_enumeration" href="../../de/dbd/socket__common_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type);</div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span></div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span><span class="keywordtype">void</span>* clock_synchronization_thread(<span class="keywordtype">void</span>* noargs);</div>
-<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span></div>
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span><span class="keywordtype">void</span>* federate_info_thread_TCP(<span class="keywordtype">void</span>* fed);</div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span></div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span><span class="keywordtype">void</span> send_reject(<span class="keywordtype">int</span>* socket_id, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> error_code);</div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span></div>
-<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span><span class="keywordtype">void</span> lf_connect_to_federates(<span class="keywordtype">int</span> socket_descriptor);</div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span></div>
-<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span><span class="keywordtype">void</span>* respond_to_erroneous_connections(<span class="keywordtype">void</span>* <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#abddc82f328c9384f6c66210d6740e6aa">nothing</a>);</div>
-<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span></div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span><span class="keywordtype">void</span> initialize_federate(federate_info_t* fed, uint16_t <span class="keywordtype">id</span>);</div>
-<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span></div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>int32_t start_rti_server(uint16_t port);</div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span></div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span><span class="keywordtype">void</span> wait_for_federates(<span class="keywordtype">int</span> socket_descriptor);</div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span></div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span><span class="keywordtype">void</span> <a class="code hl_function" href="../../db/d7a/trace__to__chrome_8c.html#a2ef30c42cbc289d899a8be5d2d8f77d0">usage</a>(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span>* argv[]);</div>
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span></div>
-<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span><span class="keywordtype">int</span> process_clock_sync_args(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span>* argv[]);</div>
-<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span></div>
-<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span><span class="keywordtype">int</span> <a class="code hl_function" href="../../dd/d37/reactor__common_8c.html#a80aaf4eeed3e2902f8fe9de80b45777d">process_args</a>(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span>* argv[]);</div>
-<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span></div>
-<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span><span class="keywordtype">void</span> initialize_RTI(rti_remote_t* rti);</div>
-<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span> </div>
-<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span><span class="preprocessor">#endif </span><span class="comment">// RTI_REMOTE_H</span></div>
-<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span><span class="preprocessor">#endif </span><span class="comment">// STANDALONE_RTI</span></div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span></div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>  <span class="keywordtype">bool</span> stop_in_progress;</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>} rti_remote_t;</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span></div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span><span class="keyword">extern</span> <span class="keywordtype">int</span> <a class="code hl_function" href="../../d5/dbc/reactor__threaded_8c.html#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a>(<a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a>* env);</div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span></div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span><span class="keyword">extern</span> <span class="keywordtype">int</span> <a class="code hl_function" href="../../d5/dbc/reactor__threaded_8c.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a>(<a class="code hl_struct" href="../../d2/d01/structenvironment__t.html">environment_t</a>* env);</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span></div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span><span class="keyword">extern</span> <span class="keywordtype">bool</span> _lf_federate_reports_error;</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span></div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span><span class="keywordtype">void</span> update_federate_next_event_tag_locked(uint16_t federate_id, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event_tag);</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span></div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span><span class="keywordtype">void</span> handle_port_absent_message(federate_info_t* sending_federate, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* <a class="code hl_variable" href="../../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62">buffer</a>);</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span></div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span><span class="keywordtype">void</span> handle_timed_message(federate_info_t* sending_federate, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span>* <a class="code hl_variable" href="../../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62">buffer</a>);</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span></div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span><span class="keywordtype">void</span> handle_latest_tag_confirmed(federate_info_t* fed);</div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span></div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span><span class="keywordtype">void</span> handle_next_event_tag(federate_info_t* fed);</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span></div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span></div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span><span class="keywordtype">void</span> handle_stop_request_message(federate_info_t* fed);</div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span></div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span><span class="keywordtype">void</span> handle_stop_request_reply(federate_info_t* fed);</div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span></div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span></div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span><span class="keywordtype">void</span> handle_address_query(uint16_t fed_id);</div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span></div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span><span class="keywordtype">void</span> handle_address_ad(uint16_t federate_id);</div>
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span></div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span><span class="keywordtype">void</span> handle_timestamp(federate_info_t* my_fed);</div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span></div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span><span class="keywordtype">void</span> send_physical_clock(<span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> message_type, federate_info_t* fed, <a class="code hl_enumeration" href="../../de/dbd/socket__common_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type);</div>
+<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span></div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span><span class="keywordtype">void</span> handle_physical_clock_sync_message(federate_info_t* my_fed, <a class="code hl_enumeration" href="../../de/dbd/socket__common_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type);</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span></div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span><span class="keywordtype">void</span>* clock_synchronization_thread(<span class="keywordtype">void</span>* noargs);</div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span></div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span><span class="keywordtype">void</span>* federate_info_thread_TCP(<span class="keywordtype">void</span>* fed);</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span></div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span><span class="keywordtype">void</span> send_reject(<span class="keywordtype">int</span>* socket_id, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> error_code);</div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span></div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span><span class="keywordtype">void</span> lf_connect_to_federates(<span class="keywordtype">int</span> socket_descriptor);</div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span></div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span><span class="keywordtype">void</span>* respond_to_erroneous_connections(<span class="keywordtype">void</span>* <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#abddc82f328c9384f6c66210d6740e6aa">nothing</a>);</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span></div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span><span class="keywordtype">void</span> initialize_federate(federate_info_t* fed, uint16_t <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span></div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>int32_t start_rti_server(uint16_t port);</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span></div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span><span class="keywordtype">void</span> wait_for_federates(<span class="keywordtype">int</span> socket_descriptor);</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span></div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span><span class="keywordtype">void</span> <a class="code hl_function" href="../../db/d7a/trace__to__chrome_8c.html#a2ef30c42cbc289d899a8be5d2d8f77d0">usage</a>(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span>* argv[]);</div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span></div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span><span class="keywordtype">int</span> process_clock_sync_args(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span>* argv[]);</div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span></div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span><span class="keywordtype">int</span> <a class="code hl_function" href="../../dd/d37/reactor__common_8c.html#a80aaf4eeed3e2902f8fe9de80b45777d">process_args</a>(<span class="keywordtype">int</span> argc, <span class="keyword">const</span> <span class="keywordtype">char</span>* argv[]);</div>
+<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span></div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span><span class="keywordtype">void</span> initialize_RTI(rti_remote_t* rti);</div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span> </div>
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span><span class="preprocessor">#endif </span><span class="comment">// RTI_REMOTE_H</span></div>
+<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span><span class="preprocessor">#endif </span><span class="comment">// STANDALONE_RTI</span></div>
 <div class="ttc" id="ahashmap_8h_html_abddc82f328c9384f6c66210d6740e6aa"><div class="ttname"><a href="../../d6/df3/hashmap_8h.html#abddc82f328c9384f6c66210d6740e6aa">nothing</a></div><div class="ttdeci">K nothing</div><div class="ttdef"><b>Definition</b> hashmap.h:54</div></div>
 <div class="ttc" id="alf__arduino__support_8h_html_a7439fbd7bc7c609b5662aa94dc389e70"><div class="ttname"><a href="../../d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70">lf_thread_t</a></div><div class="ttdeci">void * lf_thread_t</div><div class="ttdef"><b>Definition</b> lf_arduino_support.h:120</div></div>
 <div class="ttc" id="alf__types_8h_html"><div class="ttname"><a href="../../d6/d1d/lf__types_8h.html">lf_types.h</a></div><div class="ttdoc">Type definitions that are widely used across different parts of the runtime.</div></div>

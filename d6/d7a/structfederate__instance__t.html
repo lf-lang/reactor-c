@@ -141,6 +141,12 @@ Data Fields</h2></td></tr>
 <tr class="separator:ae95f54a01b0367048faa6460ff86e987"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42618a45ae75b42e1caec4b373471d96" id="r_a42618a45ae75b42e1caec4b373471d96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a42618a45ae75b42e1caec4b373471d96">last_sent_NET</a></td></tr>
 <tr class="separator:a42618a45ae75b42e1caec4b373471d96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea5dc61da0294f35ff2d233111441822" id="r_aea5dc61da0294f35ff2d233111441822"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aea5dc61da0294f35ff2d233111441822">last_skipped_NET</a></td></tr>
+<tr class="separator:aea5dc61da0294f35ff2d233111441822"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aacdbed93ccac5ebb5c141d30b20baef4" id="r_aacdbed93ccac5ebb5c141d30b20baef4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aacdbed93ccac5ebb5c141d30b20baef4">received_any_DNET</a></td></tr>
+<tr class="separator:aacdbed93ccac5ebb5c141d30b20baef4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a736230ead584f1e37ae91c5a9c7eef1f" id="r_a736230ead584f1e37ae91c5a9c7eef1f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a736230ead584f1e37ae91c5a9c7eef1f">last_DNET</a></td></tr>
+<tr class="separator:a736230ead584f1e37ae91c5a9c7eef1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91a34b0d7f0f604c2f21cf062dbe0314" id="r_a91a34b0d7f0f604c2f21cf062dbe0314"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a91a34b0d7f0f604c2f21cf062dbe0314">min_delay_from_physical_action_to_federate_output</a></td></tr>
 <tr class="separator:a91a34b0d7f0f604c2f21cf062dbe0314"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -222,6 +228,21 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
+<a id="a736230ead584f1e37ae91c5a9c7eef1f" name="a736230ead584f1e37ae91c5a9c7eef1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a736230ead584f1e37ae91c5a9c7eef1f">&#9670;&#160;</a></span>last_DNET</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a> federate_instance_t::last_DNET</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A record of the most recent DNET (downstream next event tag) signal. </p>
+
+</div>
+</div>
 <a id="ae95f54a01b0367048faa6460ff86e987" name="ae95f54a01b0367048faa6460ff86e987"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae95f54a01b0367048faa6460ff86e987">&#9670;&#160;</a></span>last_sent_LTC</h2>
 
@@ -249,7 +270,22 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>A record of the most recently sent NET (next event tag) message. </p>
+<p>A record of the most recently sent NET (next event tag) signal. </p>
+
+</div>
+</div>
+<a id="aea5dc61da0294f35ff2d233111441822" name="aea5dc61da0294f35ff2d233111441822"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea5dc61da0294f35ff2d233111441822">&#9670;&#160;</a></span>last_skipped_NET</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a> federate_instance_t::last_skipped_NET</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A record of the most recently skipped NET (next event tag) signal. </p>
 
 </div>
 </div>
@@ -310,6 +346,21 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Number of outbound peer-to-peer connections from the federate. This can be either physical connections, or logical connections in the decentralized coordination, or both. </p>
+
+</div>
+</div>
+<a id="aacdbed93ccac5ebb5c141d30b20baef4" name="aacdbed93ccac5ebb5c141d30b20baef4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aacdbed93ccac5ebb5c141d30b20baef4">&#9670;&#160;</a></span>received_any_DNET</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool federate_instance_t::received_any_DNET</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Indicator of whether this federate has received any DNET (downstream next event tag) signal. </p>
 
 </div>
 </div>

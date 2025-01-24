@@ -15,6 +15,7 @@ var tag_8c =
     [ "lf_tag", "d4/db3/tag_8c.html#acbe5117469b98e0e6df45b5421f58026", null ],
     [ "lf_tag_add", "d4/db3/tag_8c.html#aa1186f7e330ecbfd20a4dd90b97439e6", null ],
     [ "lf_tag_compare", "d4/db3/tag_8c.html#a596d8734432616c9c7847283fde63cfa", null ],
+    [ "lf_tag_latest_earlier", "d4/db3/tag_8c.html#a1e92870e0258c83da4c541e4ec48169b", null ],
     [ "lf_time_add", "d4/db3/tag_8c.html#a1789de56286aa33c086b194b544c2d91", null ],
     [ "lf_time_logical", "d4/db3/tag_8c.html#a751c9fce12510f5bb98d862f57077396", null ],
     [ "lf_time_logical_elapsed", "d4/db3/tag_8c.html#a6faad0d905f7135352f511bc235425e1", null ],

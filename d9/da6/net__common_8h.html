@@ -195,6 +195,8 @@ Macros</h2></td></tr>
 <tr class="separator:a77a9c1b741d7ca0f4e8d00a5b74ef91e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af27674f627be1c469a529a995da5c074" id="r_af27674f627be1c469a529a995da5c074"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af27674f627be1c469a529a995da5c074">MSG_TYPE_FAILED</a>&#160;&#160;&#160;25</td></tr>
 <tr class="separator:af27674f627be1c469a529a995da5c074"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb060091e032562cf32c0eb62340d309" id="r_afb060091e032562cf32c0eb62340d309"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afb060091e032562cf32c0eb62340d309">MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG</a>&#160;&#160;&#160;26</td></tr>
+<tr class="separator:afb060091e032562cf32c0eb62340d309"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a653676d1f302fe08249af3dee78fa294" id="r_a653676d1f302fe08249af3dee78fa294"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a653676d1f302fe08249af3dee78fa294">FEDERATION_ID_DOES_NOT_MATCH</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a653676d1f302fe08249af3dee78fa294"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae3bd830cd17cf0914b61d0516360abc1" id="r_ae3bd830cd17cf0914b61d0516360abc1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae3bd830cd17cf0914b61d0516360abc1">FEDERATE_ID_IN_USE</a>&#160;&#160;&#160;2</td></tr>
@@ -565,6 +567,21 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="afb060091e032562cf32c0eb62340d309" name="afb060091e032562cf32c0eb62340d309"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb060091e032562cf32c0eb62340d309">&#9670;&#160;</a></span>MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG&#160;&#160;&#160;26</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Byte identifying a downstream next event tag (DNET) message sent from the RTI in centralized coordination. The next eight bytes will be the timestamp. The next four bytes will be the microstep. This signal from the RTI tells the destination federate that downstream federates do not need for it to send any next event tag (NET) signal with a tag <em>g</em> less than the specified tag. Thus, it should only send those signals if needs permission from the RTI to advance to <em>g</em>. </p>
 
 </div>
 </div>
