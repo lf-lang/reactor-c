@@ -7,10 +7,11 @@
 #include "net_driver.h"
 #include "socket_common.h"
 #include "util.h"
-// #include "lf_socket_support.h"
+
+static socket_priv_t* get_socket_priv_t(netdrv_t* drv) { return (socket_priv_t*)drv->priv; }
 
 static int get_peer_address(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   struct sockaddr_in peer_addr;
   socklen_t addr_len = sizeof(peer_addr);
   if (getpeername(priv->socket_descriptor, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
@@ -59,28 +60,28 @@ netdrv_t* initialize_netdrv() {
 }
 
 void free_netdrv(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   free(priv);
   free(drv);
 }
 
 int create_server(netdrv_t* drv, bool increment_port_on_retry) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return create_socket_server(priv->user_specified_port, &priv->socket_descriptor, &priv->port, TCP,
                               increment_port_on_retry);
 }
 
 netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
-  socket_priv_t* serv_priv = (socket_priv_t*)server_drv->priv;
+  socket_priv_t* serv_priv = get_socket_priv_t(server_drv);
   int rti_socket;
   if (rti_drv == NULL) {
     rti_socket = -1;
   } else {
-    socket_priv_t* rti_priv = (socket_priv_t*)rti_drv->priv;
+    socket_priv_t* rti_priv = get_socket_priv_t(rti_drv);
     rti_socket = rti_priv->socket_descriptor;
   }
   netdrv_t* fed_netdrv = initialize_netdrv();
-  socket_priv_t* fed_priv = (socket_priv_t*)fed_netdrv->priv;
+  socket_priv_t* fed_priv = get_socket_priv_t(fed_netdrv);
 
   int sock = accept_socket(serv_priv->socket_descriptor, rti_socket);
   if (sock == -1) {
@@ -96,22 +97,22 @@ netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv) {
 }
 
 void create_client(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   priv->socket_descriptor = create_real_time_tcp_socket_errexit();
 }
 
 int connect_to_netdrv(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port);
 }
 
 int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return read_from_socket(priv->socket_descriptor, num_bytes, buffer);
 }
 
 int read_from_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   int read_failed = read_from_netdrv(drv, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
@@ -143,12 +144,12 @@ void read_from_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned ch
 }
 
 int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return write_to_socket(priv->socket_descriptor, num_bytes, buffer);
 }
 
 int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   int result = write_to_netdrv(drv, num_bytes, buffer);
   if (result) {
     // Write failed.
@@ -179,7 +180,7 @@ void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
 }
 
 ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return peek_from_socket(priv->socket_descriptor, result);
 }
 
@@ -188,7 +189,7 @@ int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
     lf_print("Socket already closed.");
     return 0;
   }
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
   if (ret != 0) {
     lf_print_error("Failed to shutdown socket.");
@@ -198,36 +199,36 @@ int shutdown_netdrv(netdrv_t* drv, bool read_before_closing) {
 }
 
 int32_t get_my_port(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return priv->port;
 }
 
 int32_t get_server_port(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return priv->server_port;
 }
 
 struct in_addr* get_ip_addr(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return &priv->server_ip_addr;
 }
 
 char* get_server_hostname(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return priv->server_hostname;
 }
 
 int get_socket_id(netdrv_t* drv) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   return priv->socket_descriptor;
 }
 
 void set_server_port(netdrv_t* drv, int32_t port) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   priv->server_port = port;
 }
 
 void set_server_host_name(netdrv_t* drv, const char* hostname) {
-  socket_priv_t* priv = (socket_priv_t*)drv->priv;
+  socket_priv_t* priv = get_socket_priv_t(drv);
   memcpy(priv->server_hostname, hostname, INET_ADDRSTRLEN);
 }
