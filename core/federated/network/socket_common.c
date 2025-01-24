@@ -401,7 +401,7 @@ int shutdown_socket(int* socket, bool read_before_closing) {
   if (!read_before_closing) {
     if (shutdown(*socket, SHUT_RDWR)) {
       lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
-      return -1;
+      goto close_socket;  // Try closing socket.
     }
   } else {
     // Signal the other side that no further writes are expected by sending a FIN packet.
@@ -409,7 +409,7 @@ int shutdown_socket(int* socket, bool read_before_closing) {
     // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
     if (shutdown(*socket, SHUT_WR)) {
       lf_print_log("Failed to shutdown socket: %s", strerror(errno));
-      return -1;
+      goto close_socket;  // Try closing socket.
     }
 
     // Wait for the other side to send an EOF or encounter a socket error.
@@ -421,6 +421,8 @@ int shutdown_socket(int* socket, bool read_before_closing) {
     while (read(*socket, buffer, 10) > 0)
       ;
   }
+
+close_socket:  // Label to jump to the closing part of the function
   // NOTE: In all common TCP/IP stacks, there is a time period,
   // typically between 30 and 120 seconds, called the TIME_WAIT period,
   // before the port is released after this close. This is because
