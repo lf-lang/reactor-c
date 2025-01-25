@@ -413,7 +413,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 static void close_inbound_socket(int fed_id) {
   LF_MUTEX_LOCK(&socket_mutex);
   if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-    shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], true);
+    shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], false);
   }
   LF_MUTEX_UNLOCK(&socket_mutex);
 }
