@@ -125,8 +125,8 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     // Note that this is transitive.
     // NOTE: This is not needed for enclaves because zero-delay loops are prohibited.
     // It's only needed for federates, which is why this is implemented here.
-    for (int j = 0; j < e->num_upstream; j++) {
-      scheduling_node_t* upstream = rti_remote->base.scheduling_nodes[e->upstream[j]];
+    for (int j = 0; j < e->num_immediate_upstreams; j++) {
+      scheduling_node_t* upstream = rti_remote->base.scheduling_nodes[e->immediate_upstreams[j]];
 
       // Ignore this federate if it has resigned.
       if (upstream->state == NOT_CONNECTED)
@@ -143,6 +143,35 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         notify_provisional_tag_advance_grant(upstream, tag);
       }
     }
+  }
+}
+
+void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
+  if (e->state == NOT_CONNECTED) {
+    return;
+  }
+  // Need to make sure that the destination federate's thread has already
+  // sent the starting MSG_TYPE_TIMESTAMP message.
+  while (e->state == PENDING) {
+    // Need to wait here.
+    lf_cond_wait(&sent_start_time);
+  }
+  size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
+  unsigned char buffer[message_length];
+  buffer[0] = MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG;
+  encode_int64(tag.time, &(buffer[1]));
+  encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
+
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_DNET, e->id, &tag);
+  }
+  if (write_to_socket(((federate_info_t*)e)->socket, message_length, buffer)) {
+    lf_print_error("RTI failed to send downstream next event tag to federate %d.", e->id);
+    e->state = NOT_CONNECTED;
+  } else {
+    e->last_DNET = tag;
+    LF_PRINT_LOG("RTI sent to federate %d the Downstream Next Event Tag (DNET) " PRINTF_TAG ".", e->id,
+                 tag.time - start_time, tag.microstep);
   }
 }
 
@@ -1175,31 +1204,29 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
   } else {
     federate_info_t* fed = GET_FED_INFO(fed_id);
     // Read the number of upstream and downstream connections
-    fed->enclave.num_upstream = extract_int32(&(connection_info_header[1]));
-    fed->enclave.num_downstream = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
-    LF_PRINT_DEBUG("RTI got %d upstreams and %d downstreams from federate %d.", fed->enclave.num_upstream,
-                   fed->enclave.num_downstream, fed_id);
+    fed->enclave.num_immediate_upstreams = extract_int32(&(connection_info_header[1]));
+    fed->enclave.num_immediate_downstreams = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
+    LF_PRINT_DEBUG("RTI got %d upstreams and %d downstreams from federate %d.", fed->enclave.num_immediate_upstreams,
+                   fed->enclave.num_immediate_downstreams, fed_id);
 
     // Allocate memory for the upstream and downstream pointers
-    if (fed->enclave.num_upstream > 0) {
-      fed->enclave.upstream = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
-      LF_ASSERT_NON_NULL(fed->enclave.upstream);
+    if (fed->enclave.num_immediate_upstreams > 0) {
+      fed->enclave.immediate_upstreams = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_immediate_upstreams);
       // Allocate memory for the upstream delay pointers
-      fed->enclave.upstream_delay = (interval_t*)malloc(sizeof(interval_t) * fed->enclave.num_upstream);
-      LF_ASSERT_NON_NULL(fed->enclave.upstream_delay);
+      fed->enclave.immediate_upstream_delays =
+          (interval_t*)malloc(sizeof(interval_t) * fed->enclave.num_immediate_upstreams);
     } else {
-      fed->enclave.upstream = (uint16_t*)NULL;
-      fed->enclave.upstream_delay = (interval_t*)NULL;
+      fed->enclave.immediate_upstreams = (uint16_t*)NULL;
+      fed->enclave.immediate_upstream_delays = (interval_t*)NULL;
     }
-    if (fed->enclave.num_downstream > 0) {
-      fed->enclave.downstream = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
-      LF_ASSERT_NON_NULL(fed->enclave.downstream);
+    if (fed->enclave.num_immediate_downstreams > 0) {
+      fed->enclave.immediate_downstreams = (uint16_t*)malloc(sizeof(uint16_t) * fed->enclave.num_immediate_downstreams);
     } else {
-      fed->enclave.downstream = (uint16_t*)NULL;
+      fed->enclave.immediate_downstreams = (uint16_t*)NULL;
     }
 
-    size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) * fed->enclave.num_upstream) +
-                                        (sizeof(uint16_t) * fed->enclave.num_downstream);
+    size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) * fed->enclave.num_immediate_upstreams) +
+                                        (sizeof(uint16_t) * fed->enclave.num_immediate_downstreams);
     unsigned char* connections_info_body = NULL;
     if (connections_info_body_size > 0) {
       connections_info_body = (unsigned char*)malloc(connections_info_body_size);
@@ -1210,16 +1237,16 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
       // Keep track of where we are in the buffer
       size_t message_head = 0;
       // First, read the info about upstream federates
-      for (int i = 0; i < fed->enclave.num_upstream; i++) {
-        fed->enclave.upstream[i] = extract_uint16(&(connections_info_body[message_head]));
+      for (int i = 0; i < fed->enclave.num_immediate_upstreams; i++) {
+        fed->enclave.immediate_upstreams[i] = extract_uint16(&(connections_info_body[message_head]));
         message_head += sizeof(uint16_t);
-        fed->enclave.upstream_delay[i] = extract_int64(&(connections_info_body[message_head]));
+        fed->enclave.immediate_upstream_delays[i] = extract_int64(&(connections_info_body[message_head]));
         message_head += sizeof(int64_t);
       }
 
       // Next, read the info about downstream federates
-      for (int i = 0; i < fed->enclave.num_downstream; i++) {
-        fed->enclave.downstream[i] = extract_uint16(&(connections_info_body[message_head]));
+      for (int i = 0; i < fed->enclave.num_immediate_downstreams; i++) {
+        fed->enclave.immediate_downstreams[i] = extract_uint16(&(connections_info_body[message_head]));
         message_head += sizeof(uint16_t);
       }
 
@@ -1557,6 +1584,7 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->clock_sync_exchanges_per_interval = 10;
   rti_remote->authentication_enabled = false;
   rti_remote->base.tracing_enabled = false;
+  rti_remote->base.dnet_disabled = false;
   rti_remote->stop_in_progress = false;
 }
 
@@ -1567,17 +1595,15 @@ void clock_sync_add_offset(instant_t* t) { (void)t; }
 void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
+  invalidate_min_delays();
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
     scheduling_node_t* node = scheduling_nodes[i];
-    if (node->upstream != NULL) {
-      free(node->upstream);
-      free(node->upstream_delay);
+    if (node->immediate_upstreams != NULL) {
+      free(node->immediate_upstreams);
+      free(node->immediate_upstream_delays);
     }
-    if (node->min_delays != NULL) {
-      free(node->min_delays);
-    }
-    if (node->downstream != NULL) {
-      free(node->downstream);
+    if (node->immediate_downstreams != NULL) {
+      free(node->immediate_downstreams);
     }
     free(node);
   }
