@@ -411,7 +411,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 static void close_inbound_socket(int fed_id) {
   LF_MUTEX_LOCK(&socket_mutex);
   if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-    shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], false);
+    shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], true);
   }
   LF_MUTEX_UNLOCK(&socket_mutex);
 }
@@ -653,6 +653,8 @@ static int handle_tagged_message(int* socket, int fed_id) {
                      intended_tag.microstep);
       // Close socket, reading any incoming data and discarding it.
       close_inbound_socket(fed_id);
+      LF_MUTEX_UNLOCK(&env->mutex);
+      return -1;
     } else {
       // Need to use intended_tag here, not actual_tag, so that STP violations are detected.
       // It will become actual_tag (that is when the reactions will be invoked).
