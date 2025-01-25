@@ -36,7 +36,7 @@ typedef struct federate_instance_t {
    * This is set by lf_connect_to_rti(), which must be called before other
    * functions that communicate with the rti are called.
    */
-  netdrv_t* netdrv_to_RTI;
+  netdrv_t netdrv_to_RTI;
 
   /**
    * Thread listening for incoming messages from the RTI.
@@ -77,7 +77,7 @@ typedef struct federate_instance_t {
    * federate is the destination. Multiple incoming p2p connections from the
    * same remote federate will use the same network driver.
    */
-  netdrv_t* netdrvs_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+  netdrv_t netdrvs_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
    * An array that holds the network drivers for outbound direct
@@ -92,7 +92,7 @@ typedef struct federate_instance_t {
    * program where this federate acts as the source. Multiple outgoing p2p
    * connections to the same remote federate will use the same network drivers.
    */
-  netdrv_t* netdrvs_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+  netdrv_t netdrvs_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
    * Thread ID for a thread that accepts network drivers and then supervises
@@ -108,7 +108,7 @@ typedef struct federate_instance_t {
    * opened network driver will be stored in
    * federate_netdrvs_for_inbound_p2p_connections.
    */
-  netdrv_t* server_netdrv;
+  netdrv_t server_netdrv;
 
   /**
    * Most recent tag advance grant (TAG) received from the RTI, or NEVER if none
@@ -339,7 +339,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
  * information is needed for the RTI to perform the centralized coordination.
  * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
  */
-void lf_send_neighbor_structure_to_RTI(netdrv_t*);
+void lf_send_neighbor_structure_to_RTI(netdrv_t);
 
 /**
  * @brief Send a next event tag (NET) signal.

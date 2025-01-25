@@ -208,7 +208,7 @@ uint16_t setup_clock_synchronization_with_rti() {
   return port_to_return;
 }
 
-void synchronize_initial_physical_clock_with_rti(netdrv_t* rti_netdrv) {
+void synchronize_initial_physical_clock_with_rti(netdrv_t rti_netdrv) {
   LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
   size_t message_size = 1 + sizeof(instant_t);
@@ -284,7 +284,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netdrv, 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
   int result = use_udp ? write_to_socket(*(int*)socket_or_netdrv, 1 + sizeof(uint16_t), reply_buffer)
-                       : write_to_netdrv((netdrv_t*)socket_or_netdrv, 1 + sizeof(uint16_t), reply_buffer);
+                       : write_to_netdrv((netdrv_t)socket_or_netdrv, 1 + sizeof(uint16_t), reply_buffer);
 
   if (result) {
     lf_print_error("Clock sync: Failed to send T3 message to RTI.");

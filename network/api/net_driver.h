@@ -3,15 +3,13 @@
 
 #include "socket_common.h"
 
-typedef struct netdrv_t {
-  void* priv;
-} netdrv_t;
+typedef void* netdrv_t;
 
 /**
  * Allocate memory for the network driver.
- * @return netdrv_t* Initialized network driver.
+ * @return netdrv_t Initialized network driver.
  */
-netdrv_t* initialize_netdrv();
+netdrv_t initialize_netdrv();
 
 /**
  * Create a netdriver server. This is such as a server socket which accepts connections. However this is only the
@@ -21,7 +19,7 @@ netdrv_t* initialize_netdrv();
  * @param serv_type Type of server, RTI or FED.
  * @return int 0 for success, -1 for failure.
  */
-int create_server(netdrv_t* drv, bool increment_port_on_retry);
+int create_server(netdrv_t drv, bool increment_port_on_retry);
 
 /**
  * Wait for an incoming connection request on the specified server network driver.
@@ -33,16 +31,16 @@ int create_server(netdrv_t* drv, bool increment_port_on_retry);
  *
  * @param server_drv The server network driver that is listening for incoming connections.
  * @param rti_drv The rti's network driver to check if it is still open.
- * @return netdrv_t* The network driver for the newly accepted connection on success, or NULL on failure
+ * @return netdrv_t The network driver for the newly accepted connection on success, or NULL on failure
  */
-netdrv_t* accept_netdrv(netdrv_t* server_drv, netdrv_t* rti_drv);
+netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv);
 
 /**
  * Using the initialized network driver, create a client network driver ready to connect to a server.
  *
  * @param drv The initialized network driver.
  */
-void create_client(netdrv_t* drv);
+void create_client(netdrv_t drv);
 
 /**
  * Connect to the server network driver. The server's connection information, such as the port and address should be set
@@ -51,7 +49,7 @@ void create_client(netdrv_t* drv);
  * @param drv Network driver to connect.
  * @return int 0 on success, -1 on failure, and `errno` is set to indicate the specific error.
  */
-int connect_to_netdrv(netdrv_t* drv);
+int connect_to_netdrv(netdrv_t drv);
 
 /**
  * Read the specified number of bytes from the specified socket into the specified buffer.
@@ -67,7 +65,7 @@ int connect_to_netdrv(netdrv_t* drv);
  * @param buffer The buffer into which to put the bytes.
  * @return 0 for success, 1 for EOF, and -1 for an error.
  */
-int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
+int read_from_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
  * Read the specified number of bytes to the specified socket using read_from_socket
@@ -78,7 +76,7 @@ int read_from_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int read_from_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
+int read_from_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
  * Read the specified number of bytes from the specified socket into the
@@ -96,7 +94,7 @@ int read_from_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned ch
  * @return The number of bytes read, or 0 if an EOF is received, or
  *  a negative number for an error.
  */
-void read_from_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+void read_from_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                     char* format, ...);
 
 /**
@@ -113,7 +111,7 @@ void read_from_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned ch
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
+int write_to_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
  * Write the specified number of bytes to the specified socket using write_to_socket
@@ -124,7 +122,7 @@ int write_to_netdrv(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer);
+int write_to_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
  * Write the specified number of bytes to the specified socket using
@@ -141,10 +139,10 @@ int write_to_netdrv_close_on_error(netdrv_t* drv, size_t num_bytes, unsigned cha
  *  fields that will be used to fill the format string as in printf, or NULL
  *  to print a generic error message.
  */
-void write_to_netdrv_fail_on_error(netdrv_t* drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+void write_to_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
 
-ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
+ssize_t peek_from_netdrv(netdrv_t drv, unsigned char* result);
 
 /**
  * @brief Gracefully shuts down and closes a socket, optionally reading until EOF.
@@ -155,7 +153,7 @@ ssize_t peek_from_netdrv(netdrv_t* drv, unsigned char* result);
  * @param read_before_closing If true, read until EOF before closing the socket.
  * @return int Returns 0 on success, -1 on failure (errno will indicate the error).
  */
-int shutdown_netdrv(netdrv_t* drv, bool read_before_closing);
+int shutdown_netdrv(netdrv_t drv, bool read_before_closing);
 
 /**
  * Get the open port number from the network driver.
@@ -165,7 +163,7 @@ int shutdown_netdrv(netdrv_t* drv, bool read_before_closing);
  * @param drv Network driver instance
  * @return The port number of a server network driver.
  */
-int32_t get_my_port(netdrv_t* drv);
+int32_t get_my_port(netdrv_t drv);
 
 /**
  * Get the port number of the connected peer.
@@ -175,7 +173,7 @@ int32_t get_my_port(netdrv_t* drv);
  * @param drv Network driver instance
  * @return Port number of the connected peer.
  */
-int32_t get_server_port(netdrv_t* drv);
+int32_t get_server_port(netdrv_t drv);
 
 /**
  * Get the IP address of the connected peer.
@@ -183,7 +181,7 @@ int32_t get_server_port(netdrv_t* drv);
  * @param drv Network driver instance
  * @return Pointer to the server IP address
  */
-struct in_addr* get_ip_addr(netdrv_t* drv);
+struct in_addr* get_ip_addr(netdrv_t drv);
 
 /**
  * Get the hostname of the connected peer.
@@ -191,7 +189,7 @@ struct in_addr* get_ip_addr(netdrv_t* drv);
  * @param drv Network driver instance
  * @return Pointer to the server hostname
  */
-char* get_server_hostname(netdrv_t* drv);
+char* get_server_hostname(netdrv_t drv);
 
 /**
  * Set the user specified port to the created network driver.
@@ -199,7 +197,7 @@ char* get_server_hostname(netdrv_t* drv);
  * @param drv Network driver instance
  * @param port The user specified port
  */
-void set_my_port(netdrv_t* drv, int32_t port);
+void set_my_port(netdrv_t drv, int32_t port);
 
 /**
  * Set server port number to the target network driver. The federate and RTI receives the port number fr on aom another
@@ -209,7 +207,7 @@ void set_my_port(netdrv_t* drv, int32_t port);
  * @param drv Network driver instance
  * @param port The target server's port
  */
-void set_server_port(netdrv_t* drv, int32_t port);
+void set_server_port(netdrv_t drv, int32_t port);
 
 /**
  * Set the target server's hostname to the network driver.
@@ -217,6 +215,6 @@ void set_server_port(netdrv_t* drv, int32_t port);
  * @param drv Network driver instance
  * @param hostname The target server's hostname
  */
-void set_server_hostname(netdrv_t* drv, const char* hostname);
+void set_server_hostname(netdrv_t drv, const char* hostname);
 
 #endif /* NET_DRIVER_H */

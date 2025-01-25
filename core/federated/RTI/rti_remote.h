@@ -53,7 +53,7 @@ typedef struct federate_info_t {
                                          // to a request for stop from the RTI. Used to prevent double-counting
                                          // a federate when handling lf_request_stop().
   lf_thread_t thread_id;                 // The ID of the thread handling communication with this federate.
-  netdrv_t* fed_netdrv;                  // The netdriver that the RTI handling each federate.
+  netdrv_t fed_netdrv;                  // The netdriver that the RTI handling each federate.
   struct sockaddr_in UDP_addr;           // The UDP address for the federate.
   bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                          // for this federate. Enabled by default.
@@ -121,7 +121,7 @@ typedef struct rti_remote_t {
   /**
    * The rti's network driver.
    */
-  netdrv_t* rti_netdrv;
+  netdrv_t rti_netdrv;
 
   /************* Clock synchronization information *************/
   /* Thread performing PTP clock sync sessions periodically. */
@@ -338,7 +338,7 @@ void* federate_info_thread_TCP(void* fed);
  * @param drv Pointer to the network driver.
  * @param error_code An error code.
  */
-void send_reject(netdrv_t* drv, unsigned char error_code);
+void send_reject(netdrv_t drv, unsigned char error_code);
 
 /**
  * Wait for one incoming connection request from each federate,
@@ -346,7 +346,7 @@ void send_reject(netdrv_t* drv, unsigned char error_code);
  * that federate. Return when all federates have connected.
  * @param rti_netdrv The rti's network driver on which to accept connections.
  */
-void lf_connect_to_federates(netdrv_t* rti_netdrv);
+void lf_connect_to_federates(netdrv_t rti_netdrv);
 
 /**
  * Thread to respond to new connections, which could be federates of other

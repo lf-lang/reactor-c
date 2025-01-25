@@ -166,7 +166,7 @@ uint16_t setup_clock_synchronization_with_rti(void);
  *
  * @param rti_netdrv Pointer to the RTI's network driver.
  */
-void synchronize_initial_physical_clock_with_rti(netdrv_t* rti_netdrv);
+void synchronize_initial_physical_clock_with_rti(netdrv_t rti_netdrv);
 
 /**
  * Handle a clock synchroninzation message T1 coming from the RTI.

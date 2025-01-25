@@ -465,7 +465,7 @@ static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t int
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure.
  */
-static int handle_message(netdrv_t* netdrv, int fed_id) {
+static int handle_message(netdrv_t netdrv, int fed_id) {
   (void)fed_id;
   // Read the header.
   size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t);
@@ -519,7 +519,7 @@ static int handle_message(netdrv_t* netdrv, int fed_id) {
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 on successfully reading the message, -1 on failure (e.g. due to network driver closed).
  */
-static int handle_tagged_message(netdrv_t* netdrv, int fed_id) {
+static int handle_tagged_message(netdrv_t netdrv, int fed_id) {
   // Environment is always the one corresponding to the top-level scheduling enclave.
   environment_t* env;
   _lf_get_environments(&env);
@@ -683,7 +683,7 @@ static int handle_tagged_message(netdrv_t* netdrv, int fed_id) {
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure to complete the read.
  */
-static int handle_port_absent_message(netdrv_t* netdrv, int fed_id) {
+static int handle_port_absent_message(netdrv_t netdrv, int fed_id) {
   size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
   if (read_from_netdrv_close_on_error(netdrv, bytes_to_read, buffer)) {
@@ -735,7 +735,7 @@ static void* listen_to_federates(void* _args) {
 
   LF_PRINT_LOG("Listening to federate %d.", fed_id);
 
-  netdrv_t* netdrv = _fed.netdrvs_for_inbound_p2p_connections[fed_id];
+  netdrv_t netdrv = _fed.netdrvs_for_inbound_p2p_connections[fed_id];
 
   // Buffer for incoming messages.
   // This does not constrain the message size
@@ -1724,7 +1724,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
 
   // Create a network driver.
-  netdrv_t* netdrv = initialize_netdrv();
+  netdrv_t netdrv = initialize_netdrv();
   // Set the received host name and port to the network driver.
   set_server_port(netdrv, uport);
   set_server_hostname(netdrv, hostname);
@@ -1920,7 +1920,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
-  netdrv_t* server_netdrv = initialize_netdrv();
+  netdrv_t server_netdrv = initialize_netdrv();
   set_my_port(server_netdrv, specified_port);
 
   if (create_server(server_netdrv, false)) {
@@ -1979,7 +1979,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   _fed.inbound_netdriv_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
     // Wait for an incoming connection request.
-    netdrv_t* netdrv = accept_netdrv(_fed.server_netdrv, _fed.netdrv_to_RTI);
+    netdrv_t netdrv = accept_netdrv(_fed.server_netdrv, _fed.netdrv_to_RTI);
     if (netdrv == NULL) {
       lf_print_warning("Federate failed to accept the network driver.");
       return NULL;
@@ -2169,7 +2169,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
 
-  netdrv_t* netdrv = _fed.netdrvs_for_outbound_p2p_connections[federate];
+  netdrv_t netdrv = _fed.netdrvs_for_outbound_p2p_connections[federate];
 
   // Trace the event when tracing is enabled
   tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
@@ -2346,10 +2346,10 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
 
 #ifdef FEDERATED_CENTRALIZED
   // Send the absent message through the RTI
-  netdrv_t* netdrv = _fed.netdrv_to_RTI;
+  netdrv_t netdrv = _fed.netdrv_to_RTI;
 #else
   // Send the absent message directly to the federate
-  netdrv_t* netdrv = _fed.netdrvs_for_outbound_p2p_connections[fed_ID];
+  netdrv_t netdrv = _fed.netdrvs_for_outbound_p2p_connections[fed_ID];
 #endif
 
   if (netdrv == _fed.netdrv_to_RTI) {
@@ -2460,7 +2460,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
 
-  netdrv_t* netdrv;
+  netdrv_t netdrv;
   if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
     netdrv = _fed.netdrvs_for_outbound_p2p_connections[federate];
     tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
