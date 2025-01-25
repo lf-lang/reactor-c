@@ -83,7 +83,7 @@ extern lf_mutex_t netdrv_mutex;
 
 typedef struct socket_priv_t {
   int socket_descriptor;
-  uint16_t port;                // The port number. // TODO: Only used in federate.c to send federate's port.
+  uint16_t port;                // The port number. //
   uint16_t user_specified_port; // Default as 0 for both RTI and federate.
 
   // The connected other side's info. The
