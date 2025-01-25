@@ -408,7 +408,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 static void close_inbound_netdrv(int fed_id) {
   LF_MUTEX_LOCK(&netdrv_mutex);
   if (_fed.netdrvs_for_inbound_p2p_connections[fed_id] != NULL) {
-    shutdown_netdrv(_fed.netdrvs_for_inbound_p2p_connections[fed_id], true);
+    shutdown_netdrv(_fed.netdrvs_for_inbound_p2p_connections[fed_id], false);
     _fed.netdrvs_for_inbound_p2p_connections[fed_id] = NULL;
   }
   LF_MUTEX_UNLOCK(&netdrv_mutex);
