@@ -83,9 +83,12 @@ federate_instance_t _fed = {.number_of_inbound_p2p_connections = 0,
                             .is_last_TAG_provisional = false,
                             .has_upstream = false,
                             .has_downstream = false,
+                            .received_any_DNET = false,
+                            .last_DNET = {.time = NEVER, .microstep = 0u},
                             .received_stop_request_from_rti = false,
                             .last_sent_LTC = {.time = NEVER, .microstep = 0u},
                             .last_sent_NET = {.time = NEVER, .microstep = 0u},
+                            .last_skipped_NET = {.time = NEVER, .microstep = 0u},
                             .min_delay_from_physical_action_to_federate_output = NEVER};
 
 federation_metadata_t federation_metadata = {
@@ -1436,6 +1439,36 @@ static void handle_stop_request_message() {
 }
 
 /**
+ * Handle a downstream next event tag (DNET) message from the RTI.
+ */
+static void handle_downstream_next_event_tag() {
+  size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
+  unsigned char buffer[bytes_to_read];
+  read_from_netdrv_fail_on_error(_fed.netdrv_to_RTI, bytes_to_read, buffer, NULL,
+                                 "Failed to read downstream next event tag from RTI.");
+  tag_t DNET = extract_tag(buffer);
+
+  // Trace the event when tracing is enabled
+  tracepoint_federate_from_rti(receive_DNET, _lf_my_fed_id, &DNET);
+
+  LF_PRINT_LOG("Received Downstream Next Event Tag (DNET): " PRINTF_TAG ".", DNET.time - start_time, DNET.microstep);
+  _fed.received_any_DNET = true;
+
+  environment_t* env;
+  _lf_get_environments(&env);
+  if (lf_tag_compare(DNET, _fed.last_skipped_NET) < 0) {
+    LF_PRINT_LOG("The incoming DNET " PRINTF_TAG " is earlier than the last skipped NET " PRINTF_TAG
+                 ". Send the skipped NET",
+                 DNET.time - start_time, DNET.microstep, _fed.last_skipped_NET.time, _fed.last_skipped_NET.microstep);
+    send_tag(MSG_TYPE_NEXT_EVENT_TAG, _fed.last_skipped_NET);
+    _fed.last_sent_NET = _fed.last_skipped_NET;
+    _fed.last_skipped_NET = NEVER_TAG;
+  }
+
+  _fed.last_DNET = DNET;
+}
+
+/**
  * Send a resign signal to the RTI.
  */
 static void send_resign_signal() {
@@ -1526,6 +1559,9 @@ static void* listen_to_rti_TCP(void* args) {
         // Failures to complete the read of absent messages from the RTI are fatal.
         lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
       }
+      break;
+    case MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG:
+      handle_downstream_next_event_tag();
       break;
     case MSG_TYPE_FAILED:
       handle_rti_failed_message();
@@ -2218,6 +2254,22 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
     if (lf_tag_compare(_fed.last_TAG, tag) >= 0) {
       LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received.",
                      _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
+
+      // In case a downstream federate needs the NET of this tag or has not received any DNET, send NET.
+      if (!_fed.received_any_DNET ||
+          (lf_tag_compare(_fed.last_DNET, tag) < 0 && lf_tag_compare(_fed.last_DNET, _fed.last_sent_NET) >= 0)) {
+        send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
+        _fed.last_sent_NET = tag;
+        _fed.last_skipped_NET = NEVER_TAG;
+        LF_PRINT_LOG("Sent a next event tag (NET) " PRINTF_TAG " to RTI based on the last DNET " PRINTF_TAG ".",
+                     tag.time - start_time, tag.microstep, _fed.last_DNET.time - start_time, _fed.last_DNET.microstep);
+      } else {
+        _fed.last_skipped_NET = tag;
+        LF_PRINT_LOG("Skip sending a next event tag (NET) " PRINTF_TAG " to RTI based on the last DNET " PRINTF_TAG
+                     " and the last sent NET" PRINTF_TAG ".",
+                     tag.time - start_time, tag.microstep, _fed.last_DNET.time - start_time, _fed.last_DNET.microstep,
+                     _fed.last_sent_NET.time - start_time, _fed.last_sent_NET.microstep);
+      }
       return _fed.last_TAG;
     }
 
@@ -2239,9 +2291,15 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       // This if statement does not fall through but rather returns.
       // NET is not bounded by physical time or has no downstream federates.
       // Normal case.
-      send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
-      _fed.last_sent_NET = tag;
-      LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
+      if (lf_tag_compare(_fed.last_DNET, tag) < 0 || (_fed.has_upstream && lf_tag_compare(_fed.last_TAG, tag) < 0)) {
+        send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
+        _fed.last_sent_NET = tag;
+        _fed.last_skipped_NET = NEVER_TAG;
+        LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
+      } else {
+        _fed.last_skipped_NET = tag;
+        LF_PRINT_LOG("Skip sending next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
+      }
 
       if (!wait_for_reply) {
         LF_PRINT_LOG("Not waiting for reply to NET.");
@@ -2277,6 +2335,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
         if (lf_tag_compare(next_tag, tag) != 0) {
           send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag);
           _fed.last_sent_NET = next_tag;
+          _fed.last_skipped_NET = NEVER_TAG;
           LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI from loop.", next_tag.time - lf_time_start(),
                        next_tag.microstep);
         }
@@ -2471,6 +2530,10 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   } else {
     netdrv = _fed.netdrv_to_RTI;
     tracepoint_federate_to_rti(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
+  }
+
+  if (lf_tag_compare(_fed.last_DNET, current_message_intended_tag) > 0) {
+    _fed.last_DNET = current_message_intended_tag;
   }
 
   int result = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
