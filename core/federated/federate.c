@@ -408,7 +408,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 static void close_inbound_netdrv(int fed_id) {
   LF_MUTEX_LOCK(&netdrv_mutex);
   if (_fed.netdrvs_for_inbound_p2p_connections[fed_id] != NULL) {
-    shutdown_netdrv(_fed.netdrvs_for_inbound_p2p_connections[fed_id], false);
+    shutdown_netdrv(_fed.netdrvs_for_inbound_p2p_connections[fed_id], true);
     _fed.netdrvs_for_inbound_p2p_connections[fed_id] = NULL;
   }
   LF_MUTEX_UNLOCK(&netdrv_mutex);
@@ -651,6 +651,8 @@ static int handle_tagged_message(netdrv_t netdrv, int fed_id) {
                      intended_tag.microstep);
       // Close network driver, reading any incoming data and discarding it.
       close_inbound_netdrv(fed_id);
+      LF_MUTEX_UNLOCK(&env->mutex);
+      return -1;
     } else {
       // Need to use intended_tag here, not actual_tag, so that STP violations are detected.
       // It will become actual_tag (that is when the reactions will be invoked).
