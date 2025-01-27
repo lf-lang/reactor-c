@@ -53,16 +53,17 @@ typedef struct scheduling_node_t {
   tag_t last_granted;               // The maximum TAG that has been granted so far (or NEVER if none granted)
   tag_t last_provisionally_granted; // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
   tag_t next_event;                 // Most recent NET received from the scheduling node (or NEVER if none received).
-  tag_t last_DNET;                  // Most recent DNET.
   scheduling_node_state_t state;    // State of the scheduling node.
-  uint16_t* immediate_upstreams;    // Array of immediate upstream scheduling node ids.
-  interval_t* immediate_upstream_delays; // Minimum delay on connections from immdediate upstream scheduling nodes.
-                                         // Here, NEVER encodes no delay. 0LL is a microstep delay.
-  uint16_t num_immediate_upstreams;      // Size of the array of immediate upstream scheduling nodes and delays.
-  uint16_t* immediate_downstreams;       // Array of immediate downstream scheduling node ids.
-  uint16_t num_immediate_downstreams;    // Size of the array of immediate downstream scheduling nodes.
-  execution_mode_t mode;                 // FAST or REALTIME.
-  int flags;                             // One of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
+  uint16_t* upstream;               // Array of upstream scheduling node ids.
+  interval_t* upstream_delay;       // Minimum delay on connections from upstream scheduling nodes.
+                                    // Here, NEVER encodes no delay. 0LL is a microstep delay.
+  int num_upstream;                 // Size of the array of upstream scheduling nodes and delays.
+  uint16_t* downstream;             // Array of downstream scheduling node ids.
+  int num_downstream;               // Size of the array of downstream scheduling nodes.
+  execution_mode_t mode;            // FAST or REALTIME.
+  minimum_delay_t* min_delays;      // Array of minimum delays from upstream nodes, not including this node.
+  size_t num_min_delays;            // Size of min_delays array.
+  int flags;                        // Or of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
 } scheduling_node_t;
 
 /**
@@ -75,13 +76,7 @@ typedef struct rti_common_t {
   scheduling_node_t** scheduling_nodes;
 
   // Number of scheduling nodes
-  uint16_t number_of_scheduling_nodes;
-
-  // Matrix of minimum delays between pairs of nodes.
-  // Rows represent upstream nodes and Columns represent downstream nodes.
-  // FOREVER_TAG means there is no path, and ZERO_TAG means there is no delay.
-  // This could be NULL if the matrix is not being used, so accesses should test for NULL first.
-  tag_t* min_delays;
+  int32_t number_of_scheduling_nodes;
 
   // RTI's decided stop tag for the scheduling nodes
   tag_t max_stop_tag;
@@ -91,9 +86,6 @@ typedef struct rti_common_t {
 
   // Boolean indicating that tracing is enabled.
   bool tracing_enabled;
-
-  // Boolean indicating that DNET is enabled.
-  bool dnet_disabled;
 
   // The RTI mutex for making thread-safe access to the shared state.
   lf_mutex_t* mutex;
@@ -254,50 +246,6 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
 tag_t eimt_strict(scheduling_node_t* e);
 
 /**
- * If necessary, update the `min_delays` and the fields that indicate cycles.
- * These fields will be updated only if they have not been previously updated or if invalidate_min_delays
- * has been called since they were last updated.
- * @param node The node.
- */
-void update_min_delays();
-
-/**
- * Find the tag g that is the latest tag that satisfies lf_tag_add(g, minimum_delay) < next_event_tag.
- * This function behaves like the tag subtraction, next_event_tag - minimum_delay.
- * minimum_delay cannot be NEVER.
- *
- * This function is called in function downstream_next_event_tag.
- * @param next_event_tag The next event tag of a downstream node.
- * @param minimum_delay The minimum delay between the target upstream node and the downstream node.
- */
-tag_t get_dnet_candidate(tag_t next_event_tag, tag_t minimum_delay);
-
-/**
- * @brief Determine whether the specified scheduling node is needed to receive a downstream next event tag (DNET),
- * and, if so, return the details.
- *
- * This function is called upon receiving a NET from one of the specified node's downstream nodes.
- *
- * This function calculates the minimum tag M over
- * all downstream scheduling nodes of the most recent NET from that node minus the "after delay" (see function
- * get_dnet_candidate). If M is earlier than the startup tag, then set the result as the NEVER_TAG.
- *
- * @param node The target node that may receive a new DNET.
- * @param node_sending_new_net_id The ID of the node that sends a new NET. If this node's new NET does not
- * change the DNET value, we can exit this function immediately. If it does, we have to look up the target node's
- * downstream federates to compute the exact new DNET value.
- * @return If needed, return the tag value. Otherwise, return the NEVER_TAG.
- */
-tag_t downstream_next_event_tag(scheduling_node_t* node, uint16_t node_sending_new_net_id);
-
-/**
- * Notify a downstream next event tag (DNET) signal to the specified scheduling node.
- * @param e The target node.
- * @param tag The downstream next event tag for e.
- */
-void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag);
-
-/**
  * Return true if the node is in a zero-delay cycle.
  * @param node The node.
  */
@@ -310,10 +258,22 @@ bool is_in_zero_delay_cycle(scheduling_node_t* node);
 bool is_in_cycle(scheduling_node_t* node);
 
 /**
- * Invalidate the `min_delays`, `num_min_delays`, and the fields that indicate cycles
- * of all nodes. This should be called whenever the structure of the connections have changed.
+ * For the given scheduling node (enclave or federate), if necessary, update the `min_delays`,
+ * `num_min_delays`, and the fields that indicate cycles.  These fields will be
+ * updated only if they have not been previously updated or if invalidate_min_delays_upstream
+ * has been called since they were last updated.
+ * @param node The node.
  */
-void invalidate_min_delays();
+void update_min_delays_upstream(scheduling_node_t* node);
+
+/**
+ * For the given scheduling node (enclave or federate), invalidate the `min_delays`,
+ * `num_min_delays`, and the fields that indicate cycles.
+ * This should be called whenever the structure of the connections upstream of the
+ * given node have changed.
+ * @param node The node.
+ */
+void invalidate_min_delays_upstream(scheduling_node_t* node);
 
 /**
  * Free dynamically allocated memory on the scheduling nodes and the scheduling node array itself.

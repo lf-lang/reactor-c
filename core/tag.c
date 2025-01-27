@@ -143,18 +143,6 @@ tag_t lf_delay_strict(tag_t tag, interval_t interval) {
   return result;
 }
 
-tag_t lf_tag_latest_earlier(tag_t tag) {
-  if (lf_tag_compare(tag, NEVER_TAG) == 0 || lf_tag_compare(tag, FOREVER_TAG) == 0) {
-    return tag;
-  } else if (tag.microstep == 0) {
-    tag.time -= 1;
-    tag.microstep = UINT_MAX;
-  } else {
-    tag.microstep -= 1;
-  }
-  return tag;
-}
-
 instant_t lf_time_logical(void* env) {
   assert(env != GLOBAL_ENVIRONMENT);
   return ((environment_t*)env)->current_tag.time;
