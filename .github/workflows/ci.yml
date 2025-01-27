@@ -73,11 +73,11 @@ jobs:
 
   lf-python:
     needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/py-tests.yml@master
+    uses: lf-lang/lingua-franca/.github/workflows/py-tests.yml@debug-dnet-in-ci
     with:
       reactor-c-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'python') }}
+    # if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'python') }}
 
   # lf-gedf-np:
   #   needs: [fetch-lf]
