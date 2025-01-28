@@ -22,6 +22,7 @@
 #include <poll.h>
 #include <alsa/asoundlib.h>
 #include <stdbool.h>
+#include "util.h"
 
 // Audio device to use for playback
 #define AUDIO_DEVICE "default"
@@ -227,7 +228,7 @@ void* run_audio_loop(void* ignored) {
      * has elapsed.
      */
 
-    if ((error_number = snd_pcm_wait(playback_handle, BUFFER_DURATION_NS / 1000)) < 0) {
+    if ((error_number = snd_pcm_wait(playback_handle, BUFFER_DURATION_NS / MSEC(1))) < 0) {
       lf_print_error("Poll failed (%s)\n", strerror(errno));
       break;
     }
@@ -239,7 +240,7 @@ void* run_audio_loop(void* ignored) {
         lf_print_error("An xrun occured\n");
         continue;
       } else {
-        lf_print_error("Unknown ALSA avail update return value (%d)\n", frames_to_deliver);
+        lf_print_error("Unknown ALSA avail update return value (%ld)\n", frames_to_deliver);
         break;
       }
     }
