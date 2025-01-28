@@ -29,21 +29,6 @@
 #include "modes.h"
 #include "port.h"
 
-//////////////////////  Constants & Macros  //////////////////////
-
-/**
- * @brief Constant giving the minimum amount of time to sleep to wait
- * for physical time to reach a logical time.
- *
- * Unless the "fast" option is given, an LF program will wait until
- * physical time matches logical time before handling an event with
- * a given logical time. The amount of time is less than this given
- * threshold, then no wait will occur. The purpose of this is
- * to prevent unnecessary delays caused by simply setting up and
- * performing the wait.
- */
-// #define MIN_SLEEP_DURATION USEC(10)
-
 //////////////////////  Global Variables  //////////////////////
 
 // The following variables are defined in reactor_common.c and used in reactor.c,

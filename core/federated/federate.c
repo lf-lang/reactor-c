@@ -1123,13 +1123,13 @@ static void* update_ports_from_staa_offsets(void* args) {
       // we require a minimum wait time here.  Note that zero-valued STAAs are
       // included, and STA might be zero or very small.
       // In this case, this thread will fail to ever release the environment mutex.
-      // This causes chaos.  The MIN_SLEEP_DURATION is the smallest amount of time
+      // This causes chaos.  The lf_min_sleep_duration is the smallest amount of time
       // that wait_until will actually wait. Note that this strategy does not
       // block progress of any execution that is actually processing events.
       // It only slightly delays the decision that an event is absent, and only
       // if the STAA and STA are extremely small.
-      if (wait_time < 5 * MIN_SLEEP_DURATION) {
-        wait_until_time += 5 * MIN_SLEEP_DURATION;
+      if (wait_time < 5 * lf_min_sleep_duration) {
+        wait_until_time += 5 * lf_min_sleep_duration;
       }
       while (a_port_is_unknown(staa_elem)) {
         LF_PRINT_DEBUG("**** (update thread) waiting until: " PRINTF_TIME, wait_until_time - lf_time_start());
@@ -1197,7 +1197,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       // The wait is necessary to prevent a busy wait, which will only occur if port
       // status are always known inside the while loop
       // Be sure to use wait_until() instead of sleep() because sleep() will not release the mutex.
-      instant_t wait_until_time = lf_time_add(env->current_tag.time, 2 * MIN_SLEEP_DURATION);
+      instant_t wait_until_time = lf_time_add(env->current_tag.time, 2 * lf_min_sleep_duration);
       wait_until(wait_until_time, &lf_port_status_changed);
 
       continue;
