@@ -202,10 +202,11 @@ bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
     // Check whether we actually need to wait, or if we have already passed the timepoint.
     interval_t wait_duration = wait_until_time - lf_time_physical();
     if (wait_duration < lf_min_sleep_duration) {
-      LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than lf_min_sleep_duration " PRINTF_TIME ". Performing busy wait.",
+      LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than lf_min_sleep_duration " PRINTF_TIME
+                     ". Performing busy wait.",
                      wait_duration, lf_min_sleep_duration);
       while (lf_time_physical() < wait_until_time) {
-        //Busy wait
+        // Busy wait
       }
       return true;
     }
