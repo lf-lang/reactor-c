@@ -39,8 +39,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>      // Defines memcpy()
 #include <time.h>        // Defines nanosleep()
-#include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
-#include <netinet/tcp.h> // TCP_NODELAY
 
 #include "net_util.h"
 #include "util.h"
