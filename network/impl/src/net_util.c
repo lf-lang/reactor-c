@@ -37,8 +37,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h> // Defines va_list
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>      // Defines memcpy()
-#include <time.h>        // Defines nanosleep()
+#include <string.h> // Defines memcpy()
+#include <time.h>   // Defines nanosleep()
 
 #include "net_util.h"
 #include "util.h"
