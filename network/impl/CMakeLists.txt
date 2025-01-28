@@ -5,7 +5,6 @@ add_library(lf-network-impl STATIC ${LF_NETWORK_FILES})
 add_library(lf::network-impl ALIAS lf-network-impl)
 target_sources(lf-network-impl PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/src/net_util.c
-    ${CMAKE_CURRENT_LIST_DIR}/src/net_driver.c
     ${CMAKE_CURRENT_LIST_DIR}/src/socket_common.c
 )
 
