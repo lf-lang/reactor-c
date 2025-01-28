@@ -85,16 +85,19 @@ lf_waveform_t* read_wave_file(const char* path) {
     }
   }
 
-  fread(&wav, 1, sizeof(lf_wav_t), fp);
+  if (fread(&wav, 1, sizeof(lf_wav_t), fp) == 0) {
+    fprintf(stderr, "WARNING: Failed to read wave file: %s\n", path);
+    return NULL;
+  }
 
   lf_wav_format_t fmt = wav.fmt;
   lf_wav_data_t data = wav.data;
 
   // Wave file format is described here:
   // https://sites.google.com/site/musicgapi/technical-documents/wav-file-format
-  uint32_t expected_chunk_id = (uint32_t)'FFIR';    // Little-endian version of RIFF.
-  uint32_t expected_format = (uint32_t)'EVAW';      // Little-endian version of WAVE.
-  uint32_t expected_subchunk_id = (uint32_t)' tmf'; // Little-endian version of 'fmt '.
+  uint32_t expected_chunk_id = ((uint32_t)'F' << 24) | ((uint32_t)'F' << 16) | ((uint32_t)'I' << 8) | (uint32_t)'R';
+  uint32_t expected_format = ((uint32_t)'E' << 24) | ((uint32_t)'V' << 16) | ((uint32_t)'A' << 8) | (uint32_t)'W';
+  uint32_t expected_subchunk_id = ((uint32_t)' ' << 24) | ((uint32_t)'t' << 16) | ((uint32_t)'m' << 8) | (uint32_t)'f';
   if (*(uint32_t*)wav.riff.chunk_id != expected_chunk_id || *(uint32_t*)wav.riff.format != expected_format ||
       *(uint32_t*)fmt.subchunk_id != expected_subchunk_id || fmt.subchunk_size != 16 || fmt.audio_format != 1 ||
       fmt.sample_rate != 44100 || fmt.bits_per_sample != 16) {
@@ -112,7 +115,7 @@ lf_waveform_t* read_wave_file(const char* path) {
   }
   // Ignore any intermediate chunks that are not 'data' chunks.
   // Apparently, Apple software sometimes inserts junk here.
-  uint32_t expected_data_id = (uint32_t)'atad'; // Little-endian version of 'data'.
+  uint32_t expected_data_id = ((uint32_t)'a' << 24) | ((uint32_t)'t' << 16) | ((uint32_t)'a' << 8) | (uint32_t)'d';
   while (*(uint32_t*)data.subchunk_id != expected_data_id) {
     char junk[data.subchunk_size];
     size_t bytes_read = fread(junk, 1, data.subchunk_size, fp);
