@@ -42,6 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "clock-sync.h"
 #include "net_common.h"
 #include "net_util.h"
+#include "socket_common.h"
 #include "util.h"
 
 /** Offset calculated by the clock synchronization algorithm. */
@@ -85,6 +86,9 @@ static void adjust_lf_clock_sync_offset(interval_t adjustment) {
 }
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
+
+#include <math.h> // For sqrtl()
+
 /**
  * Update statistic on the socket based on the newly calculated network delay
  * and clock synchronization error
@@ -135,7 +139,7 @@ lf_stat_ll calculate_socket_stat(struct socket_stat_t* socket_stat) {
 
   return stats;
 }
-#endif
+#endif // _LF_CLOCK_SYNC_COLLECT_STATS
 
 /**
  * Reset statistics on the socket.
@@ -158,8 +162,8 @@ void reset_socket_stat(struct socket_stat_t* socket_stat) {
  *   will be sent.
  */
 uint16_t setup_clock_synchronization_with_rti() {
-  uint16_t port_to_return = UINT16_MAX;
-#ifdef _LF_CLOCK_SYNC_ON
+  uint16_t port_to_return = UINT16_MAX; // Default if clock sync is off.
+#if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   // Initialize the UDP socket
   _lf_rti_socket_UDP = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
   // Initialize the necessary information for the UDP address
@@ -198,11 +202,9 @@ uint16_t setup_clock_synchronization_with_rti() {
   if (setsockopt(_lf_rti_socket_UDP, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
     lf_print_error("Failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
   }
-#else // No runtime clock synchronization. Send port -1 or 0 instead.
-#ifdef _LF_CLOCK_SYNC_INITIAL
+#elif (LF_CLOCK_SYNC == LF_CLOCK_SYNC_INIT)
   port_to_return = 0u;
-#endif
-#endif // _LF_CLOCK_SYNC_ON
+#endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   return port_to_return;
 }
 
@@ -274,13 +276,13 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
   // T3-T2 between receiving the T1 message and replying.
 
   // Reply will have the federate ID as a payload.
-  unsigned char reply_buffer[1 + sizeof(int)];
+  unsigned char reply_buffer[1 + sizeof(uint16_t)];
   reply_buffer[0] = MSG_TYPE_CLOCK_SYNC_T3;
-  encode_int32(_lf_my_fed_id, &(reply_buffer[1]));
+  encode_uint16(_lf_my_fed_id, &(reply_buffer[1]));
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
-  if (write_to_socket(socket, 1 + sizeof(int), reply_buffer)) {
+  if (write_to_socket(socket, 1 + sizeof(uint16_t), reply_buffer)) {
     lf_print_error("Clock sync: Failed to send T3 message to RTI.");
     return -1;
   }
@@ -389,7 +391,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS // Enabled by default
   // Update RTI's socket stats
   update_socket_stat(&_lf_rti_socket_stat, network_round_trip_delay, estimated_clock_error);
-#endif
+#endif // _LF_CLOCK_SYNC_COLLECT_STATS
 
   // FIXME: Enable alternative regression mechanism here.
   LF_PRINT_DEBUG("Clock sync: Adjusting clock offset running average by " PRINTF_TIME ".",
@@ -412,13 +414,13 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
       reset_socket_stat(&_lf_rti_socket_stat);
       return;
     }
-#endif
+#endif // _LF_CLOCK_SYNC_COLLECT_STATS
     // The number of received T4 messages has reached _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL
     // which means we can now adjust the clock offset.
     // For the AVG algorithm, history is a running average and can be directly
-    // applied
+    // applied.
     adjust_lf_clock_sync_offset(_lf_rti_socket_stat.history);
-    // @note AVG and SD will be zero if collect-stats is set to false
+    // @note AVG and SD will be zero if _LF_CLOCK_SYNC_COLLECT_STATS is set to false
     LF_PRINT_LOG("Clock sync:"
                  " New offset: " PRINTF_TIME "."
                  " Round trip delay to RTI (now): " PRINTF_TIME "."
@@ -527,17 +529,21 @@ void* listen_to_rti_UDP_thread(void* args) {
 
 // If clock synchronization is enabled, provide implementations. If not
 // just empty implementations that should be optimized away.
-#if defined(FEDERATED) && defined(_LF_CLOCK_SYNC_ON)
-void clock_sync_apply_offset(instant_t* t) { *t += (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
+#if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_INIT)
+void clock_sync_add_offset(instant_t* t) {
+  *t = lf_time_add(*t, (_lf_clock_sync_offset + _lf_clock_sync_constant_bias));
+}
 
-void clock_sync_remove_offset(instant_t* t) { *t -= (_lf_clock_sync_offset + _lf_clock_sync_constant_bias); }
+void clock_sync_subtract_offset(instant_t* t) {
+  *t = lf_time_add(*t, -(_lf_clock_sync_offset + _lf_clock_sync_constant_bias));
+}
 
 void clock_sync_set_constant_bias(interval_t offset) { _lf_clock_sync_constant_bias = offset; }
-#else
-void clock_sync_apply_offset(instant_t* t) { (void)t; }
-void clock_sync_remove_offset(instant_t* t) { (void)t; }
+#else  // i.e. (LF_CLOCK_SYNC < LF_CLOCK_SYNC_INIT)
+void clock_sync_add_offset(instant_t* t) { (void)t; }
+void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
-#endif
+#endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_INIT)
 
 /**
  * Create the thread responsible for handling clock synchronization
@@ -548,13 +554,13 @@ void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
  * \ingroup agroup
  */
 int create_clock_sync_thread(lf_thread_t* thread_id) {
-#ifdef _LF_CLOCK_SYNC_ON
+#if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   // One for UDP messages if clock synchronization is enabled for this federate
   return lf_thread_create(thread_id, listen_to_rti_UDP_thread, NULL);
-#else
-  (void)thread_id;
-#endif // _LF_CLOCK_SYNC_ON
+#else  // i.e. (LF_CLOCK_SYNC < LF_CLOCK_SYNC_ON)
+  (void)thread_id; // Suppress unused parameter warning.
+#endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   return 0;
 }
 
-#endif
+#endif // FEDERATED

@@ -1,8 +1,8 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author{Marten Lohstroh <marten@berkeley.edu>}
- * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @author Soroush Bateni
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
@@ -11,16 +11,6 @@
 #define REACTOR_THREADED_H
 
 #include "lf_types.h"
-
-/**
- * @brief Advance to the next level.
- * For federated runtimes, this function should
- * stall the advance until we know that we can safely execute the next level
- * given knowledge about upstream network port statuses.
- * @param env The environment.
- * @param next_reaction_level The place to store the next reaction level.
- */
-void try_advance_level(environment_t* env, volatile size_t* next_reaction_level);
 
 /**
  * Enqueue port absent reactions that will send a PORT_ABSENT
@@ -90,7 +80,35 @@ void _lf_decrement_tag_barrier_locked(environment_t* env);
 
 int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag);
 void lf_synchronize_with_other_federates(void);
-bool wait_until(instant_t logical_time_ns, lf_cond_t* condition);
+
+/**
+ * @brief Wait until physical time matches or exceeds the time of the specified tag.
+ *
+ * If -fast is given, there will be no wait.
+ *
+ * If an event is put on the event queue during the wait, then the wait is
+ * interrupted and this function returns false. It also returns false if the
+ * timeout time is reached before the wait has completed. Note this this could
+ * return true even if the a new event was placed on the queue. This will occur
+ * if that event time matches or exceeds the specified time.
+ *
+ * The mutex lock associated with the condition argument is assumed to be held by
+ * the calling thread. This mutex is released while waiting. If the wait time is
+ * too small to actually wait (less than MIN_SLEEP_DURATION), then this function
+ * immediately returns true and the mutex is not released.
+ *
+ * @param env Environment within which we are executing.
+ * @param wait_until_time The time to wait until physical time matches it.
+ * @param condition A condition variable that can interrupt the wait. The mutex
+ * associated with this condition variable will be released during the wait.
+ *
+ * @return Return false if the wait is interrupted either because of an event
+ *  queue signal or if the wait time was interrupted early by reaching
+ *  the stop time, if one was specified. Return true if the full wait time
+ *  was reached.
+ */
+bool wait_until(instant_t wait_until_time, lf_cond_t* condition);
+
 tag_t get_next_event_tag(environment_t* env);
 tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply);
 void _lf_next_locked(environment_t* env);

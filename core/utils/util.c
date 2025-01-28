@@ -33,12 +33,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util.h"
 
+#include <stdio.h>
+
 #ifndef STANDALONE_RTI
 #include "environment.h"
 #endif
 
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h> // Defines memcpy()
@@ -57,7 +58,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The ID of this federate. For a non-federated execution, this will be -1.
  * For a federated execution, it will be assigned in the generated code.
  */
-int _lf_my_fed_id = -1;
+uint16_t _lf_my_fed_id = UINT16_MAX; // Federate IDs are counted up from 0. If we hit this, we have too many.
 
 /**
  * If non-null, this function will be used instead of the printf to
@@ -68,7 +69,7 @@ print_message_function_t* print_message_function = NULL;
 /** The level of messages to redirect to print_message_function. */
 int print_message_level = -1;
 
-int lf_fed_id() { return _lf_my_fed_id; }
+uint16_t lf_fed_id() { return _lf_my_fed_id; }
 
 // Declaration needed to attach attributes to suppress warnings of the form:
 // "warning: function '_lf_message_print' might be a candidate for 'gnu_printf'
@@ -111,7 +112,7 @@ void _lf_message_print(const char* prefix, const char* format, va_list args,
     // interleaved between threads.
     // vprintf() is a version that takes an arg list rather than multiple args.
     char* message;
-    if (_lf_my_fed_id < 0) {
+    if (_lf_my_fed_id == UINT16_MAX) {
       size_t length = strlen(prefix) + strlen(format) + 32;
       message = (char*)malloc(length + 1);
       snprintf(message, length, "%s%s\n", prefix, format);
@@ -205,6 +206,8 @@ void lf_print_error_system_failure(const char* format, ...) {
   va_start(args, format);
   lf_vprint_error(format, args);
   va_end(args);
+  // Windows warns that strerror is deprecated but doesn't define strerror_r.
+  // There seems to be no portable replacement.
   lf_print_error_and_exit("Error %d: %s", errno, strerror(errno));
   exit(EXIT_FAILURE);
 }

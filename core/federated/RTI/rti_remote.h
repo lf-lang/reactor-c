@@ -31,14 +31,13 @@
 
 #include "lf_types.h"
 #include "pqueue_tag.h"
+#include "socket_common.h"
 
 /** Time allowed for federates to reply to stop request. */
 #define MAX_TIME_FOR_REPLY_TO_STOP_REQUEST SEC(30)
 
 /////////////////////////////////////////////
 //// Data structures
-
-typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
 /**
  * Information about a federate known to the RTI, including its runtime state,
@@ -154,6 +153,7 @@ typedef struct rti_remote_t {
    * Boolean indicating that authentication is enabled.
    */
   bool authentication_enabled;
+
   /**
    * Boolean indicating that a stop request is already in progress.
    */
@@ -217,14 +217,14 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
 void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer);
 
 /**
- * Handle a latest tag complete (LTC) message. @see
- * MSG_TYPE_LATEST_TAG_COMPLETE in rti.h.
+ * Handle a latest tag confirmed (LTC) message. @see
+ * MSG_TYPE_LATEST_TAG_CONFIRMED in rti.h.
  *
  * This function assumes the caller does not hold the mutex.
  *
  * @param fed The federate that has completed a logical tag.
  */
-void handle_latest_tag_complete(federate_info_t* fed);
+void handle_latest_tag_confirmed(federate_info_t* fed);
 
 /**
  * Handle a next event tag (NET) message. @see MSG_TYPE_NEXT_EVENT_TAG in rti.h.

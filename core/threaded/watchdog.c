@@ -58,9 +58,14 @@ void watchdog_wait(watchdog_t* watchdog) {
   instant_t physical_time = lf_time_physical();
   while (watchdog->expiration != NEVER && physical_time < watchdog->expiration && !watchdog->terminate) {
     // Wait for expiration, or a signal to stop or terminate.
+    LF_PRINT_DEBUG("Watchdog %p sleeps until " PRINTF_TIME, (void*)watchdog, watchdog->expiration);
     lf_clock_cond_timedwait(&watchdog->cond, watchdog->expiration);
     physical_time = lf_time_physical();
+    LF_PRINT_DEBUG("Watchdog %p woke up at " PRINTF_TIME " expires at " PRINTF_TIME, (void*)watchdog, physical_time,
+                   watchdog->expiration);
   }
+  LF_PRINT_DEBUG("Watchdog %p returns with expired=%d terminated=%d", (void*)watchdog,
+                 physical_time >= watchdog->expiration, watchdog->terminate);
 }
 
 /**
@@ -94,24 +99,31 @@ static void* watchdog_thread_main(void* arg) {
 
     // Step 1: Wait for a timeout to start watching for.
     if (watchdog->expiration == NEVER) {
+      LF_PRINT_DEBUG("Watchdog %p waiting on cond var to be started", (void*)watchdog);
       // Watchdog has been stopped.
       // Let the runtime know that we are in an inactive/stopped state.
       watchdog->active = false;
       // Wait here until the watchdog is started and we can enter the active state.
       LF_COND_WAIT(&watchdog->cond);
+      LF_PRINT_DEBUG("Watchdog %p woke up from cond var", (void*)watchdog);
       continue;
     } else {
       // Watchdog has been started.
+      LF_PRINT_DEBUG("Watchdog %p started", (void*)watchdog);
       watchdog_wait(watchdog);
 
       // At this point we have returned from the watchdog wait. But it could
       // be that it was to terminate the watchdog.
-      if (watchdog->terminate)
+      if (watchdog->terminate) {
+        LF_PRINT_DEBUG("Watchdog %p was terminated", (void*)watchdog);
         break;
+      }
 
       // It could also be that the watchdog was stopped
-      if (watchdog->expiration == NEVER)
+      if (watchdog->expiration == NEVER) {
+        LF_PRINT_DEBUG("Watchdog %p was stopped", (void*)watchdog);
         continue;
+      }
 
       // If we reach here, the watchdog actually timed out. Handle it.
       LF_PRINT_DEBUG("Watchdog %p timed out", (void*)watchdog);
@@ -140,13 +152,15 @@ void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
 }
 
 void lf_watchdog_stop(watchdog_t* watchdog) {
-  // If the watchdog isnt active, then it is no reason to stop it.
+  // Assumes reactor mutex is already held.
+  watchdog->expiration = NEVER;
+
+  // If lf_watchdog_stop is called very close to lf_watchdog_start, it might
+  // not have had the time to wake up and start sleeping.
   if (!watchdog->active) {
     return;
   }
 
-  // Assumes reactor mutex is already held.
-  watchdog->expiration = NEVER;
   LF_COND_SIGNAL(&watchdog->cond);
 }
 

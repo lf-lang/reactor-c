@@ -21,6 +21,7 @@
 
 #include "modal_models/modes.h" // Modal model support
 #include "utils/pqueue.h"
+#include "utils/pqueue_tag.h"
 #include "lf_token.h"
 #include "tag.h"
 #include "vector.h"
@@ -156,9 +157,7 @@ struct reaction_t {
   void* self;                   // Pointer to a struct with the reactor's state. INSTANCE.
   int number;                   // The number of the reaction in the reactor (0 is the first reaction).
   index_t index;                // Inverse priority determined by dependency analysis. INSTANCE.
-  // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
-  unsigned long long chain_id;
-  size_t pos; // Current position in the priority queue. RUNTIME.
+  size_t pos;                   // Current position in the priority queue. RUNTIME.
   reaction_t*
       last_enabling_reaction; // The last enabling reaction, or NULL if there is none. Used for optimization. INSTANCE.
   size_t num_outputs;         // Number of outputs that may possibly be produced by this function. COMMON.
@@ -195,15 +194,12 @@ typedef struct event_t event_t;
 
 /** Event activation record to push onto the event queue. */
 struct event_t {
-  instant_t time;     // Time of release.
-  trigger_t* trigger; // Associated trigger, NULL if this is a dummy event.
-  size_t pos;         // Position in the priority queue.
-  lf_token_t* token;  // Pointer to the token wrapping the value.
-  bool is_dummy;      // Flag to indicate whether this event is merely a placeholder or an actual event.
+  pqueue_tag_element_t base; // Elements of pqueue_tag. It contains tag of release and position in the priority queue.
+  trigger_t* trigger;        // Associated trigger, NULL if this is a dummy event.
+  lf_token_t* token;         // Pointer to the token wrapping the value.
 #ifdef FEDERATED
   tag_t intended_tag; // The intended tag.
 #endif
-  event_t* next; // Pointer to the next event lined up in superdense time.
 };
 
 /**
@@ -255,8 +251,8 @@ struct trigger_t {
  * An allocation record that is used by a destructor for a reactor
  * to free memory that has been dynamically allocated for the particular
  * instance of the reactor.  This will be an element of linked list.
- * If the indirect field is true, then the allocated pointer points to
- * pointer to allocated memory, rather than directly to the allocated memory.
+ * The `allocated` pointer points to the allocated memory, and the `next`
+ * pointer points to the next allocation record (or NULL if there are no more).
  */
 typedef struct allocation_record_t {
   void* allocated;
@@ -281,6 +277,9 @@ typedef struct self_base_t {
   struct allocation_record_t* allocations;
   struct reaction_t* executing_reaction; // The currently executing reaction of the reactor.
   environment_t* environment;
+  char* name;          // The name of the reactor. If a bank, appended with [index].
+  char* full_name;     // The full name of the reactor or NULL if lf_reactor_full_name() is not called.
+  self_base_t* parent; // The parent of this reactor.
 #if !defined(LF_SINGLE_THREADED)
   void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
                        // It is not declared as such to avoid a dependence on platform.h.
@@ -302,6 +301,7 @@ typedef struct {
   trigger_t* trigger; // THIS HAS TO MATCH lf_action_internal_t
   self_base_t* parent;
   bool has_value;
+  int source_id; // Used only for federated network input actions.
 } lf_action_base_t;
 
 /**

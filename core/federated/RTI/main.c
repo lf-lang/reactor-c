@@ -136,6 +136,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
+  lf_print("  -d, --disable_dnet Turn off the use of DNET signals.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
@@ -225,7 +226,7 @@ int process_args(int argc, const char* argv[]) {
       }
       i++;
       long num_federates = strtol(argv[i], NULL, 10);
-      if (num_federates == 0L || num_federates == LONG_MAX || num_federates == LONG_MIN) {
+      if (num_federates <= 0L || num_federates == LONG_MAX || num_federates == LONG_MIN) {
         lf_print_error("--number_of_federates needs a valid positive integer argument.");
         usage(argc, argv);
         return 0;
@@ -263,6 +264,8 @@ int process_args(int argc, const char* argv[]) {
       rti.authentication_enabled = true;
     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
       rti.base.tracing_enabled = true;
+    } else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dnet_disabled") == 0) {
+      rti.base.dnet_disabled = true;
     } else if (strcmp(argv[i], " ") == 0) {
       // Tolerate spaces
       continue;
@@ -271,11 +274,6 @@ int process_args(int argc, const char* argv[]) {
       usage(argc, argv);
       return 0;
     }
-  }
-  if (rti.base.number_of_scheduling_nodes == 0) {
-    lf_print_error("--number_of_federates needs a valid positive integer argument.");
-    usage(argc, argv);
-    return 0;
   }
   return 1;
 }
@@ -312,7 +310,7 @@ int main(int argc, const char* argv[]) {
     // sync thread. Add 1 for the thread that responds to erroneous
     // connections attempted after initialization phase has completed. Add 1
     // for the main thread.
-    lf_tracing_global_init("rti", -1, _lf_number_of_workers * 2 + 3);
+    lf_tracing_global_init("rti", NULL, -1, _lf_number_of_workers * 2 + 3);
     lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
   }
 
@@ -321,9 +319,9 @@ int main(int argc, const char* argv[]) {
   assert(rti.base.number_of_scheduling_nodes < UINT16_MAX);
 
   // Allocate memory for the federates
-  rti.base.scheduling_nodes =
-      (scheduling_node_t**)calloc(rti.base.number_of_scheduling_nodes, sizeof(scheduling_node_t*));
-  for (uint16_t i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
+  int n = rti.base.number_of_scheduling_nodes;
+  rti.base.scheduling_nodes = (scheduling_node_t**)calloc(n, sizeof(scheduling_node_t*));
+  for (uint16_t i = 0; i < n; i++) {
     federate_info_t* fed_info = (federate_info_t*)calloc(1, sizeof(federate_info_t));
     initialize_federate(fed_info, i);
     rti.base.scheduling_nodes[i] = (scheduling_node_t*)fed_info;

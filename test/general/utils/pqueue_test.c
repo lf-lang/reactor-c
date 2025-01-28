@@ -47,7 +47,7 @@ static void find_from_queue(pqueue_tag_t* q) {
 }
 
 static void insert_if_no_match(pqueue_tag_t* q) {
-  int size = pqueue_tag_size(q);
+  size_t size = pqueue_tag_size(q);
   tag_t t1 = {.time = USEC(3), .microstep = 0};
   tag_t t4 = {.time = USEC(1), .microstep = 2};
   // Return value is non-zero on failure to insert:
@@ -84,7 +84,7 @@ static void remove_from_queue(pqueue_tag_t* q, pqueue_tag_element_t* e1, pqueue_
   assert(pqueue_tag_size(q) == 1);
 }
 
-int main(int argc, char* argv[]) {
+int main() {
   trivial();
   // Create an event queue.
   pqueue_tag_t* q = pqueue_tag_init(2);

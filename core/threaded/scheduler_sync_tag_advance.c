@@ -1,39 +1,14 @@
-#if !defined(LF_SINGLE_THREADED)
-/*************
-Copyright (c) 2022, The University of Texas at Dallas.
-Copyright (c) 2022, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
-
 /**
- * @file scheduler_sync_tag_advance.c
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @author Edward A. Lee <eal@berkeley.edu>
- * @author Marten Lohstroh <marten@berkeley.edu>
+ * @file
+ * @author Soroush Bateni
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
  * @brief API used to advance tag globally.
- *
- * @copyright Copyright (c) 2022, The University of Texas at Dallas.
- * @copyright Copyright (c) 2022, The University of California at Berkeley.
+ * @copyright (c) 2020-2024, The University of California at Berkeley and The University of Texas at Dallas
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  */
+
+#if !defined(LF_SINGLE_THREADED)
 
 #include "scheduler_sync_tag_advance.h"
 #include "rti_local.h"
@@ -41,43 +16,29 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tracepoint.h"
 #include "util.h"
 
-/////////////////// External Functions /////////////////////////
-/**
- * Placeholder for function that will advance tag and initially fill the
- * reaction queue.
- *
- * This does not acquire the mutex lock. It assumes the lock is already held.
- */
+// Forward declaration of function defined in reactor_threaded.h
+void _lf_next_locked(struct environment_t* env);
 
 /**
- * @brief Indicator that execution of at least one tag has completed.
+ * @brief Indicator that execution of the specified tag has completed.
  */
-static bool _latest_tag_completed = false;
+static tag_t _latest_tag_completed = NEVER_TAG_INITIALIZER;
 
-/**
- * Return true if the worker should stop now; false otherwise.
- * This function assumes the caller holds the mutex lock.
- */
 bool should_stop_locked(lf_scheduler_t* sched) {
   // If this is not the very first step, check against the stop tag to see whether this is the last step.
-  if (_latest_tag_completed) {
+  // Also, stop only after completing the stop tag.
+  if (lf_tag_compare(_latest_tag_completed, sched->env->current_tag) == 0) {
     // If we are at the stop tag, do not call _lf_next_locked()
     // to prevent advancing the logical time.
     if (lf_tag_compare(sched->env->current_tag, sched->env->stop_tag) >= 0) {
+      LF_PRINT_DEBUG("****************** Stopping execution at tag " PRINTF_TAG,
+                     sched->env->current_tag.time - lf_time_start(), sched->env->current_tag.microstep);
       return true;
     }
   }
   return false;
 }
 
-/**
- * Advance tag. This will also pop events for the newly acquired tag and put
- * the triggered reactions on the '_lf_sched_vector_of_reaction_qs'.
- *
- * This function assumes the caller holds the 'mutex' lock.
- *
- * @return should_exit True if the worker thread should exit. False otherwise.
- */
 bool _lf_sched_advance_tag_locked(lf_scheduler_t* sched) {
   environment_t* env = sched->env;
   logical_tag_complete(env->current_tag);
@@ -92,11 +53,10 @@ bool _lf_sched_advance_tag_locked(lf_scheduler_t* sched) {
     return true;
   }
 
-  _latest_tag_completed = true;
+  _latest_tag_completed = env->current_tag;
 
   // Advance time.
-  // _lf_next_locked() may block waiting for real time to pass or events to appear.
-  // to appear on the event queue. Note that we already
+  // _lf_next_locked() may block waiting for real time to pass or events to appear on the event queue.
   tracepoint_scheduler_advancing_time_starts(env);
   _lf_next_locked(env);
   tracepoint_scheduler_advancing_time_ends(env);

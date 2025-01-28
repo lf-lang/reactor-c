@@ -163,7 +163,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * each federate has a valid event at the start tag (start time, 0) and it will
  * inform the RTI of this event.
  * Subsequently, at the conclusion of each tag, each federate will send a
- * `MSG_TYPE_LATEST_TAG_COMPLETE` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
+ * `MSG_TYPE_LATEST_TAG_CONFIRMED` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
  * the comment for each message for further explanation). Each federate would
  * have to wait for a `MSG_TYPE_TAG_ADVANCE_GRANT` or a
  * `MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT` before it can advance to a
@@ -180,42 +180,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NET_COMMON_H
 
 /**
- * The timeout time in ns for TCP operations.
- * Default value is 10 secs.
- */
-#define TCP_TIMEOUT_TIME SEC(10)
-
-/**
- * The timeout time in ns for UDP operations.
- * Default value is 1 sec.
- */
-#define UDP_TIMEOUT_TIME SEC(1)
-
-/**
  * Size of the buffer used for messages sent between federates.
  * This is used by both the federates and the rti, so message lengths
  * should generally match.
  */
 #define FED_COM_BUFFER_SIZE 256u
-
-/**
- * Time between a federate's attempts to connect to the RTI.
- */
-#define CONNECT_RETRY_INTERVAL MSEC(500)
-
-/**
- * Bound on the number of retries to connect to the RTI.
- * A federate will retry every CONNECT_RETRY_INTERVAL seconds
- * this many times before giving up.
- */
-#define CONNECT_MAX_RETRIES 100
-
-/**
- * Maximum number of port addresses that a federate will try to connect to the RTI on.
- * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
- * on the number of RTIs that can be running on the same host.
- */
-#define MAX_NUM_PORT_ADDRESSES 16
 
 /**
  * Time that a federate waits before asking
@@ -224,28 +193,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * does not know.  This allows time for federates to start separately.
  */
 #define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)
-
-/**
- * Time to wait before re-attempting to bind to a port.
- * When a process closes, the network stack typically waits between 30 and 120
- * seconds before releasing the port.  This is to allow for delayed packets so
- * that a new process does not receive packets from a previous process.
- * Here, we limit the retries to 60 seconds.
- */
-#define PORT_BIND_RETRY_INTERVAL SEC(1)
-
-/**
- * Number of attempts to bind to a port before giving up.
- */
-#define PORT_BIND_RETRY_LIMIT 60
-
-/**
- * Default port number for the RTI.
- * Unless a specific port has been specified by the LF program in the "at"
- * for the RTI or on the command line, when the RTI starts up, it will attempt
- * to open a socket server on this port.
- */
-#define DEFAULT_PORT 15045u
 
 /**
  * Delay the start of all federates by this amount.
@@ -434,12 +381,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT 8
 
 /**
- * Byte identifying a latest tag complete (LTC) message sent by a federate
+ * Byte identifying a latest tag confirmed (LTC) message sent by a federate
  * to the RTI.
  * The next eight bytes will be the timestep of the completed tag.
  * The next four bytes will be the microsteps of the completed tag.
  */
-#define MSG_TYPE_LATEST_TAG_COMPLETE 9
+#define MSG_TYPE_LATEST_TAG_CONFIRMED 9
 
 /////////// Messages used in lf_request_stop() ///////////////
 //// Overview of the algorithm:
@@ -483,7 +430,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   do {                                                                                                                 \
     buffer[0] = MSG_TYPE_STOP_REQUEST;                                                                                 \
     encode_int64(time, &(buffer[1]));                                                                                  \
-    assert(microstep >= 0);                                                                                            \
     encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)]));                                                \
   } while (0)
 
@@ -501,7 +447,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   do {                                                                                                                 \
     buffer[0] = MSG_TYPE_STOP_REQUEST_REPLY;                                                                           \
     encode_int64(time, &(buffer[1]));                                                                                  \
-    assert(microstep >= 0);                                                                                            \
     encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)]));                                                \
   } while (0)
 
@@ -518,7 +463,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   do {                                                                                                                 \
     buffer[0] = MSG_TYPE_STOP_GRANTED;                                                                                 \
     encode_int64(time, &(buffer[1]));                                                                                  \
-    assert(microstep >= 0);                                                                                            \
     encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)]));                                                \
   } while (0)
 
@@ -673,6 +617,18 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FAILED 25
 
+/**
+ * Byte identifying a downstream next event tag (DNET) message sent
+ * from the RTI in centralized coordination.
+ * The next eight bytes will be the timestamp.
+ * The next four bytes will be the microstep.
+ * This signal from the RTI tells the destination federate that downstream
+ * federates do not need for it to send any next event tag (NET) signal
+ * with a tag _g_ less than the specified tag. Thus, it should only send
+ * those signals if needs permission from the RTI to advance to _g_.
+ */
+#define MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG 26
+
 /////////////////////////////////////////////
 //// Rejection codes
 
@@ -698,5 +654,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** HMAC authentication failed. */
 #define HMAC_DOES_NOT_MATCH 6
+
+/** RTI not executed using -a or --auth option. */
+#define RTI_NOT_EXECUTED_WITH_AUTH 7
 
 #endif /* NET_COMMON_H */

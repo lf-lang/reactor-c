@@ -1,32 +1,11 @@
 /**
  * @file
- * @author Erling R. Jellum (erling.r.jellum@ntnu.no)
+ * @author Erling R. Jellum
+ * @copyright (c) 2023-2024, The Norwegian University of Science and Technology.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  *
- * @section LICENSE
- * Copyright (c) 2023, The Norwegian University of Science and Technology.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * @section DESCRIPTION Functions intitializing and freeing memory for environments.
- *  See environment.h for docs.
+ * This file defines functions intitializing and freeing memory for environments.
+ * See environment.h for docs.
  */
 
 #include "environment.h"
@@ -37,6 +16,31 @@
 #if !defined(LF_SINGLE_THREADED)
 #include "scheduler.h"
 #endif
+
+//////////////////
+// Local functions, not intended for use outside this file.
+
+/**
+ * @brief Callback function to determine whether two events have the same trigger.
+ * This function is used by event queue and recycle.
+ * Return 1 if the triggers are identical, 0 otherwise.
+ * @param event1 A pointer to an event.
+ * @param event2 A pointer to an event.
+ */
+static int event_matches(void* event1, void* event2) {
+  return (((event_t*)event1)->trigger == ((event_t*)event2)->trigger);
+}
+
+/**
+ * @brief Callback function to print information about an event.
+ * This function is used by event queue and recycle.
+ * @param element A pointer to an event.
+ */
+static void print_event(void* event) {
+  event_t* e = (event_t*)event;
+  LF_PRINT_DEBUG("tag: " PRINTF_TAG ", trigger: %p, token: %p", e->base.tag.time, e->base.tag.microstep,
+                 (void*)e->trigger, (void*)e->token);
+}
 
 /**
  * @brief Initialize the threaded part of the environment struct.
@@ -58,6 +62,7 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
   (void)num_workers;
 #endif
 }
+
 /**
  * @brief Initialize the single-threaded-specific parts of the environment struct.
  */
@@ -112,7 +117,10 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
  * @brief Initialize the federation-specific parts of the environment struct.
  */
 static void environment_init_federated(environment_t* env, int num_is_present_fields) {
-#ifdef FEDERATED_DECENTRALIZED
+#if defined(FEDERATED_CENTRALIZED)
+  env->need_to_send_LTC = false;
+  (void)num_is_present_fields;
+#elif defined(FEDERATED_DECENTRALIZED)
   if (num_is_present_fields > 0) {
     env->_lf_intended_tag_fields = (tag_t**)calloc(num_is_present_fields, sizeof(tag_t*));
     LF_ASSERT_NON_NULL(env->_lf_intended_tag_fields);
@@ -125,18 +133,6 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
   (void)env;
   (void)num_is_present_fields;
 #endif
-}
-
-void environment_init_tags(environment_t* env, instant_t start_time, interval_t duration) {
-  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
-
-  tag_t stop_tag = FOREVER_TAG_INITIALIZER;
-  if (duration >= 0LL) {
-    // A duration has been specified. Calculate the stop time.
-    stop_tag.time = env->current_tag.time + duration;
-    stop_tag.microstep = 0;
-  }
-  env->stop_tag = stop_tag;
 }
 
 static void environment_free_threaded(environment_t* env) {
@@ -176,6 +172,9 @@ static void environment_free_federated(environment_t* env) {
 #endif
 }
 
+//////////////////
+// Functions defined in environment.h.
+
 void environment_free(environment_t* env) {
   free(env->name);
   free(env->timer_triggers);
@@ -184,14 +183,25 @@ void environment_free(environment_t* env) {
   free(env->reset_reactions);
   free(env->is_present_fields);
   free(env->is_present_fields_abbreviated);
-  pqueue_free(env->event_q);
-  pqueue_free(env->recycle_q);
-  pqueue_free(env->next_q);
+  pqueue_tag_free(env->event_q);
+  pqueue_tag_free(env->recycle_q);
 
   environment_free_threaded(env);
   environment_free_single_threaded(env);
   environment_free_modes(env);
   environment_free_federated(env);
+}
+
+void environment_init_tags(environment_t* env, instant_t start_time, interval_t duration) {
+  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+
+  tag_t stop_tag = FOREVER_TAG_INITIALIZER;
+  if (duration >= 0LL) {
+    // A duration has been specified. Calculate the stop time.
+    stop_tag.time = env->current_tag.time + duration;
+    stop_tag.microstep = 0;
+  }
+  env->stop_tag = stop_tag;
 }
 
 int environment_init(environment_t* env, const char* name, int id, int num_workers, int num_timers,
@@ -200,10 +210,16 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
                      const char* trace_file_name) {
   (void)trace_file_name; // Will be used with future enclave support.
 
-  env->name = malloc(strlen(name) + 1); // +1 for the null terminator
-  LF_ASSERT_NON_NULL(env->name);
-  strcpy(env->name, name);
-
+  // Space for the name string with the null terminator.
+  if (name != NULL) {
+    size_t name_size = strlen(name) + 1; // +1 for the null terminator
+    env->name = (char*)malloc(name_size);
+    LF_ASSERT_NON_NULL(env->name);
+    // Use strncpy rather than strcpy to avoid compiler warnings.
+    strncpy(env->name, name, name_size);
+  } else {
+    env->name = NULL;
+  }
   env->id = id;
   env->stop_tag = FOREVER_TAG;
 
@@ -261,12 +277,9 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
   env->_lf_handle = 1;
 
   // Initialize our priority queues.
-  env->event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time, get_event_position,
-                             set_event_position, event_matches, print_event);
-  env->recycle_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time, get_event_position,
-                               set_event_position, event_matches, print_event);
-  env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time, get_event_position,
-                            set_event_position, event_matches, print_event);
+  env->event_q = pqueue_tag_init_customize(INITIAL_EVENT_QUEUE_SIZE, pqueue_tag_compare, event_matches, print_event);
+  env->recycle_q =
+      pqueue_tag_init_customize(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, event_matches, print_event);
 
   // Initialize functionality depending on target properties.
   environment_init_threaded(env, num_workers);
@@ -276,4 +289,10 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
 
   env->initialized = true;
   return 0;
+}
+
+void environment_verify(environment_t* env) {
+  for (int i = 0; i < env->is_present_fields_size; i++) {
+    LF_ASSERT_NON_NULL(env->is_present_fields[i]);
+  }
 }

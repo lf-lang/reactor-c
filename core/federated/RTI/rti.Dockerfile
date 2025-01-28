@@ -1,7 +1,6 @@
-# Docker file for building the image of the rti
-FROM alpine:latest
-COPY core /lingua-franca/core
-COPY include /lingua-franca/include
+ARG BASEIMAGE=alpine:latest 
+FROM ${BASEIMAGE} AS builder
+COPY . /lingua-franca
 WORKDIR /lingua-franca/core/federated/RTI
 RUN set -ex && apk add --no-cache gcc musl-dev cmake make && \
     mkdir container && \
@@ -10,5 +9,14 @@ RUN set -ex && apk add --no-cache gcc musl-dev cmake make && \
     make && \
     make install
 
-# Use ENTRYPOINT not CMD so that command-line arguments go through
-ENTRYPOINT ["RTI"]
+WORKDIR /lingua-franca
+
+# application stage
+FROM ${BASEIMAGE} AS app
+LABEL maintainer="lf-lang"
+LABEL source="https://github.com/lf-lang/reactor-c/tree/main/core/federated/RTI"
+COPY --from=builder /usr/local/bin/RTI /usr/local/bin/RTI
+
+WORKDIR /lingua-franca
+
+ENTRYPOINT ["/usr/local/bin/RTI"]

@@ -149,6 +149,38 @@ void lf_set_stop_tag(environment_t* env, tag_t tag) {
   }
 }
 
+const char* lf_reactor_name(self_base_t* self) { return self->name; }
+
+const char* lf_reactor_full_name(self_base_t* self) {
+  if (self->full_name != NULL) {
+    return self->full_name;
+  }
+  // First find the length of the full name.
+  size_t name_len = strlen(self->name);
+  size_t len = name_len;
+  self_base_t* parent = self->parent;
+  while (parent != NULL) {
+    len++; // For the dot.
+    len += strlen(parent->name);
+    parent = parent->parent;
+  }
+  self->full_name = (char*)lf_allocate(len + 1, sizeof(char), &self->allocations);
+  self->full_name[len] = '\0'; // Null terminate the string.
+
+  size_t location = len - name_len;
+  memcpy(&self->full_name[location], self->name, name_len);
+  parent = self->parent;
+  while (parent != NULL) {
+    location--;
+    self->full_name[location] = '.';
+    size_t parent_len = strlen(parent->name);
+    location -= parent_len;
+    memcpy(&self->full_name[location], parent->name, parent_len);
+    parent = parent->parent;
+  }
+  return self->full_name;
+}
+
 #ifdef FEDERATED_DECENTRALIZED
 
 interval_t lf_get_stp_offset() { return lf_fed_STA_offset; }
@@ -210,11 +242,13 @@ void _lf_start_time_step(environment_t* env) {
     }
 #endif // FEDERATED_DECENTRALIZED
 
+#ifdef FEDERATED_CENTRALIZED
+    env->need_to_send_LTC = false;
+#endif // FEDERATED_CENTRALIZED
+
     // Reset absent fields on network ports because
     // their status is unknown
     lf_reset_status_fields_on_input_port_triggers();
-    // Signal the helper thread to reset its progress since the logical time has changed.
-    lf_cond_signal(&lf_current_tag_changed);
   }
 #endif // FEDERATED
 }
@@ -230,19 +264,15 @@ void _lf_pop_events(environment_t* env) {
   _lf_handle_mode_triggered_reactions(env);
 #endif
 
-  event_t* event = (event_t*)pqueue_peek(env->event_q);
-  while (event != NULL && event->time == env->current_tag.time) {
-    event = (event_t*)pqueue_pop(env->event_q);
+  event_t* event = (event_t*)pqueue_tag_peek(env->event_q);
+  while (event != NULL && lf_tag_compare(event->base.tag, env->current_tag) == 0) {
+    event = (event_t*)pqueue_tag_pop(env->event_q);
 
-    if (event->is_dummy) {
+    if (event->trigger == NULL) {
       LF_PRINT_DEBUG("Popped dummy event from the event queue.");
-      if (event->next != NULL) {
-        LF_PRINT_DEBUG("Putting event from the event queue for the next microstep.");
-        pqueue_insert(env->next_q, event->next);
-      }
       lf_recycle_event(env, event);
       // Peek at the next event in the event queue.
-      event = (event_t*)pqueue_peek(env->event_q);
+      event = (event_t*)pqueue_tag_peek(env->event_q);
       continue;
     }
 
@@ -305,13 +335,19 @@ void _lf_pop_events(environment_t* env) {
       }
     }
 
-    // Mark the trigger present.
+    // Mark the trigger present
     event->trigger->status = present;
 
     // If the trigger is a periodic timer, create a new event for its next execution.
     if (event->trigger->is_timer && event->trigger->period > 0LL) {
       // Reschedule the trigger.
       lf_schedule_trigger(env, event->trigger, event->trigger->period, NULL);
+    } else {
+      // For actions, store a pointer to status field so it is reset later.
+      int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+      if (ipfas < env->is_present_fields_size) {
+        env->is_present_fields_abbreviated[ipfas] = (bool*)&event->trigger->status;
+      }
     }
 
     // Copy the token pointer into the trigger struct so that the
@@ -325,34 +361,17 @@ void _lf_pop_events(environment_t* env) {
     // freed prematurely.
     _lf_done_using(token);
 
-    // Mark the trigger present.
-    event->trigger->status = present;
-
-    // If this event points to a next event, insert it into the next queue.
-    if (event->next != NULL) {
-      // Insert the next event into the next queue.
-      pqueue_insert(env->next_q, event->next);
-    }
-
     lf_recycle_event(env, event);
 
     // Peek at the next event in the event queue.
-    event = (event_t*)pqueue_peek(env->event_q);
+    event = (event_t*)pqueue_tag_peek(env->event_q);
   };
-
-  LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(env->next_q));
-
-  // After populating the reaction queue, see if there are things on the
-  // next queue to put back into the event queue.
-  while (pqueue_peek(env->next_q) != NULL) {
-    pqueue_insert(env->event_q, pqueue_pop(env->next_q));
-  }
 }
 
 event_t* lf_get_new_event(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
   // Recycle event_t structs, if possible.
-  event_t* e = (event_t*)pqueue_pop(env->recycle_q);
+  event_t* e = (event_t*)pqueue_tag_pop(env->recycle_q);
   if (e == NULL) {
     e = (event_t*)calloc(1, sizeof(struct event_t));
     if (e == NULL)
@@ -376,7 +395,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     // && (timer->offset != 0 || timer->period != 0)) {
     event_t* e = lf_get_new_event(env);
     e->trigger = timer;
-    e->time = lf_time_logical(env) + timer->offset;
+    e->base.tag = (tag_t){.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
     return;
   }
@@ -399,12 +418,16 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
 
   // Get an event_t struct to put on the event queue.
   // Recycle event_t structs, if possible.
-  event_t* e = lf_get_new_event(env);
-  e->trigger = timer;
-  e->time = lf_time_logical(env) + delay;
-  // NOTE: No lock is being held. Assuming this only happens at startup.
-  pqueue_insert(env->event_q, e);
-  tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
+  tag_t next_tag = (tag_t){.time = lf_time_logical(env) + delay, .microstep = 0};
+  // Do not schedule the next event if it is after the timeout.
+  if (!lf_is_tag_after_stop_tag(env, next_tag)) {
+    event_t* e = lf_get_new_event(env);
+    e->trigger = timer;
+    e->base.tag = next_tag;
+    // NOTE: No lock is being held. Assuming this only happens at startup.
+    pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
+    tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
+  }
 }
 
 void _lf_initialize_timers(environment_t* env) {
@@ -462,38 +485,21 @@ void _lf_trigger_shutdown_reactions(environment_t* env) {
 
 void lf_recycle_event(environment_t* env, event_t* e) {
   assert(env != GLOBAL_ENVIRONMENT);
-  e->time = 0LL;
+  e->base.tag = (tag_t){.time = 0LL, .microstep = 0};
   e->trigger = NULL;
-  e->pos = 0;
   e->token = NULL;
-  e->is_dummy = false;
 #ifdef FEDERATED_DECENTRALIZED
   e->intended_tag = (tag_t){.time = NEVER, .microstep = 0u};
 #endif
-  e->next = NULL;
-  pqueue_insert(env->recycle_q, e);
+  pqueue_tag_insert(env->recycle_q, (pqueue_tag_element_t*)e);
 }
 
-event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant_t time, event_t* next,
-                                 microstep_t offset) {
-  event_t* first_dummy = lf_get_new_event(env);
-  event_t* dummy = first_dummy;
-  dummy->time = time;
-  dummy->is_dummy = true;
-  dummy->trigger = trigger;
-  while (offset > 0) {
-    if (offset == 1) {
-      dummy->next = next;
-      break;
-    }
-    dummy->next = lf_get_new_event(env);
-    dummy = dummy->next;
-    dummy->time = time;
-    dummy->is_dummy = true;
-    dummy->trigger = trigger;
-    offset--;
-  }
-  return first_dummy;
+event_t* _lf_create_dummy_events(environment_t* env, tag_t tag) {
+  event_t* dummy = lf_get_new_event(env);
+  dummy->base.tag = tag;
+
+  dummy->trigger = NULL;
+  return dummy;
 }
 
 void lf_replace_token(event_t* event, lf_token_t* token) {
@@ -531,7 +537,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
 
   event_t* e = lf_get_new_event(env);
   // Set the event time
-  e->time = tag.time;
+  e->base.tag = tag;
 
   tracepoint_schedule(env, trigger, tag.time - current_logical_tag.time);
 
@@ -547,133 +553,37 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
   e->intended_tag = trigger->intended_tag;
 #endif
 
-  event_t* found = (event_t*)pqueue_find_equal_same_priority(env->event_q, e);
+  event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)e);
   if (found != NULL) {
-    if (tag.microstep == 0u) {
-      // The microstep is 0, which means that the event is being scheduled
-      // at a future time and at the beginning of the skip list of events
-      // at that time.
-      // In case the event is a dummy event
-      // convert it to a real event.
-      found->is_dummy = false;
-      switch (trigger->policy) {
-      case drop:
-        if (found->token != token) {
-          _lf_done_using(token);
-        }
-        lf_recycle_event(env, e);
-        return (0);
-        break;
-      case replace:
-        // Replace the payload of the event at the head with our
-        // current payload.
-        lf_replace_token(found, token);
+    switch (trigger->policy) {
+    case drop:
+      if (found->token != token) {
+        _lf_done_using(token);
+      }
+      lf_recycle_event(env, e);
+      return (0);
+      break;
+    case replace:
+      // Replace the payload of the event at the head with our
+      // current payload.
+      lf_replace_token(found, token);
+      lf_recycle_event(env, e);
+      return 0;
+      break;
+    default:
+      // Adding a microstep to the original
+      // intended tag.
+      tag.microstep++;
+      e->base.tag = tag;
+      if (lf_is_tag_after_stop_tag(env, (tag_t){.time = tag.time, .microstep = tag.microstep})) {
+        // Scheduling e will incur a microstep after the stop tag,
+        // which is illegal.
         lf_recycle_event(env, e);
         return 0;
-        break;
-      default:
-        // Adding a microstep to the original
-        // intended tag.
-        if (lf_is_tag_after_stop_tag(env, (tag_t){.time = found->time, .microstep = 1})) {
-          // Scheduling e will incur a microstep after the stop tag,
-          // which is illegal.
-          lf_recycle_event(env, e);
-          return 0;
-        }
-        if (found->next != NULL) {
-          lf_print_error("_lf_schedule_at_tag: in-order contract violated.");
-          return -1;
-        }
-        found->next = e;
       }
-    } else {
-      // We are requesting a microstep greater than 0
-      // where there is already an event for this trigger on the event queue.
-      // That event may itself be a dummy event for a real event that is
-      // also at a microstep greater than 0.
-      // We have to insert our event into the chain or append it
-      // to the end of the chain, depending on which microstep is lesser.
-      microstep_t microstep_of_found = 0;
-      if (tag.time == current_logical_tag.time) {
-        // This is a situation where the head of the queue
-        // is an event with microstep == current_microstep + 1
-        // which should be reflected in our steps calculation.
-        microstep_of_found += current_logical_tag.microstep + 1; // Indicating that
-                                                                 // the found event
-                                                                 // is at this microstep.
-      }
-      // Follow the chain of events until the right point
-      // to insert the new event.
-      while (microstep_of_found < tag.microstep - 1) {
-        if (found->next == NULL) {
-          // The chain stops short of where we want to be.
-          // If it exactly one microstep short of where we want to be,
-          // then we don't need a dummy. Otherwise, we do.
-          microstep_t undershot_by = (tag.microstep - 1) - microstep_of_found;
-          if (undershot_by > 0) {
-            found->next = _lf_create_dummy_events(env, trigger, tag.time, e, undershot_by);
-          } else {
-            found->next = e;
-          }
-          return 1;
-        }
-        found = found->next;
-        microstep_of_found++;
-      }
-      // At this point, microstep_of_found == tag.microstep - 1.
-      if (found->next == NULL) {
-        found->next = e;
-      } else {
-        switch (trigger->policy) {
-        case drop:
-          if (found->next->token != token) {
-            _lf_done_using(token);
-          }
-          lf_recycle_event(env, e);
-          return 0;
-          break;
-        case replace:
-          // Replace the payload of the event at the head with our
-          // current payload.
-          lf_replace_token(found->next, token);
-          lf_recycle_event(env, e);
-          return 0;
-          break;
-        default:
-          // Adding a microstep to the original
-          // intended tag.
-          if (lf_is_tag_after_stop_tag(env, (tag_t){.time = found->time, .microstep = microstep_of_found + 1})) {
-            // Scheduling e will incur a microstep at timeout,
-            // which is illegal.
-            lf_recycle_event(env, e);
-            return 0;
-          }
-          if (found->next->next != NULL) {
-            lf_print_error("_lf_schedule_at_tag: in-order contract violated.");
-            return -1;
-          }
-          found->next->next = e;
-        }
-      }
-    }
-  } else {
-    // No existing event queued.
-    microstep_t relative_microstep = tag.microstep;
-    if (tag.time == current_logical_tag.time) {
-      relative_microstep -= current_logical_tag.microstep;
-    }
-    if ((tag.time == current_logical_tag.time && relative_microstep == 1 && env->execution_started) ||
-        tag.microstep == 0) {
-      // Do not need a dummy event if we are scheduling at 1 microstep
-      // in the future at current time or at microstep 0 in a future time.
-      // Note that if execution hasn't started, then we have to insert dummy events.
-      pqueue_insert(env->event_q, e);
-    } else {
-      // Create a dummy event. Insert it into the queue, and let its next
-      // pointer point to the actual event.
-      pqueue_insert(env->event_q, _lf_create_dummy_events(env, trigger, tag.time, e, relative_microstep));
     }
   }
+  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
   trigger_handle_t return_value = env->_lf_handle++;
   if (env->_lf_handle < 0) {
     env->_lf_handle = 1;
@@ -732,8 +642,12 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // for which we decrement the reference count.
   _lf_replace_template_token((token_template_t*)trigger, token);
 
-  // Mark the trigger present.
+  // Mark the trigger present and store a pointer to it for marking it as absent later.
   trigger->status = present;
+  int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+  if (ipfas < env->is_present_fields_size) {
+    env->is_present_fields_abbreviated[ipfas] = (bool*)&trigger->status;
+  }
 
   // Push the corresponding reactions for this trigger
   // onto the reaction queue.
@@ -757,36 +671,37 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   return 1;
 }
 
-void _lf_advance_logical_time(environment_t* env, instant_t next_time) {
+void _lf_advance_tag(environment_t* env, tag_t next_tag) {
   assert(env != GLOBAL_ENVIRONMENT);
 
-// FIXME: The following checks that _lf_advance_logical_time()
+// FIXME: The following checks that _lf_advance_tag()
 // is being called correctly. Namely, check if logical time
 // is being pushed past the head of the event queue. This should
-// never happen if _lf_advance_logical_time() is called correctly.
+// never happen if _lf_advance_tag() is called correctly.
 // This is commented out because it will add considerable overhead
 // to the ordinary execution of LF programs. Instead, there might
 // be a need for a target property that enables these kinds of logic
 // assertions for development purposes only.
 #ifndef NDEBUG
-  event_t* next_event = (event_t*)pqueue_peek(env->event_q);
+  event_t* next_event = (event_t*)pqueue_tag_peek(env->event_q);
   if (next_event != NULL) {
-    if (next_time > next_event->time) {
-      lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move time to " PRINTF_TIME ", which is "
-                              "past the head of the event queue, " PRINTF_TIME ".",
-                              next_time - start_time, next_event->time - start_time);
+    if (lf_tag_compare(next_tag, next_event->base.tag) > 0) {
+      lf_print_error_and_exit("_lf_advance_tag(): Attempted to move tag to " PRINTF_TAG ", which is "
+                              "past the head of the event queue, " PRINTF_TAG ".",
+                              next_tag.time - start_time, next_tag.microstep, next_event->base.tag.time - start_time,
+                              next_event->base.tag.microstep);
     }
   }
 #endif
-  if (env->current_tag.time < next_time) {
-    env->current_tag.time = next_time;
-    env->current_tag.microstep = 0;
-  } else if (env->current_tag.time == next_time) {
-    env->current_tag.microstep++;
+  if (lf_tag_compare(env->current_tag, next_tag) < 0) {
+    env->current_tag = next_tag;
   } else {
-    lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
+    lf_print_error_and_exit("_lf_advance_tag(): Attempted to move (elapsed) tag to " PRINTF_TAG ", which is "
+                            "earlier than or equal to the (elapsed) current tag, " PRINTF_TAG ".",
+                            next_tag.time - start_time, next_tag.microstep, env->current_tag.time - start_time,
+                            env->current_tag.microstep);
   }
-  LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG " at physical time " PRINTF_TIME, next_time - start_time,
+  LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG " at physical time " PRINTF_TIME, next_tag.time - start_time,
                env->current_tag.microstep, lf_time_physical_elapsed());
 }
 
@@ -954,6 +869,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         violation = true;
         // Invoke the local handler, if there is one.
         reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;
+        tracepoint_reaction_starts(env, downstream_to_execute_now, worker);
         if (handler != NULL) {
           // Assume the mutex is still not held.
           (*handler)(downstream_to_execute_now->self);
@@ -962,6 +878,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
           // triggered reactions into the queue or execute them directly if possible.
           schedule_output_reactions(env, downstream_to_execute_now, worker);
         }
+        tracepoint_reaction_ends(env, downstream_to_execute_now, worker);
       }
     }
     if (!violation) {
@@ -982,7 +899,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
 
 /**
  * Print a usage message.
- * TODO: This is not necessary for NO_TTY
+ * TODO: This is not necessary for NO_CLI
  */
 void usage(int argc, const char* argv[]) {
   printf("\nCommand-line arguments: \n\n");
@@ -1020,7 +937,7 @@ const char** default_argv = NULL;
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
- * TODO: Not necessary for NO_TTY
+ * TODO: Not necessary for NO_CLI
  */
 int process_args(int argc, const char* argv[]) {
   int i = 1;
@@ -1168,26 +1085,26 @@ int process_args(int argc, const char* argv[]) {
  * core runtime.
  */
 #ifdef LF_TRACE
-static void check_version(version_t version) {
+static void check_version(const version_t* version) {
 #ifdef LF_SINGLE_THREADED
-  LF_ASSERT(version.build_config.single_threaded == TRIBOOL_TRUE ||
-                version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.single_threaded == TRIBOOL_TRUE ||
+                version->build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
             "expected single-threaded version");
 #else
-  LF_ASSERT(version.build_config.single_threaded == TRIBOOL_FALSE ||
-                version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.single_threaded == TRIBOOL_FALSE ||
+                version->build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
             "expected multi-threaded version");
 #endif
 #ifdef NDEBUG
-  LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_FALSE ||
-                version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.build_type_is_debug == TRIBOOL_FALSE ||
+                version->build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
             "expected release version");
 #else
-  LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_TRUE ||
-                version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.build_type_is_debug == TRIBOOL_TRUE ||
+                version->build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
             "expected debug version");
 #endif
-  LF_ASSERT(version.build_config.log_level == LOG_LEVEL || version.build_config.log_level == INT_MAX,
+  LF_ASSERT(version->build_config.log_level == LOG_LEVEL || version->build_config.log_level == INT_MAX,
             "expected log level %d", LOG_LEVEL);
   // assert(!version.core_version_name || strcmp(version.core_version_name, CORE_SHA) == 0); // TODO: provide CORE_SHA
 }
@@ -1209,18 +1126,26 @@ void initialize_global(void) {
   int num_envs = _lf_get_environments(&envs);
   int max_threads_tracing = envs[0].num_workers * num_envs + 1; // add 1 for the main thread
 #endif
+
 #if defined(FEDERATED)
   // NUMBER_OF_FEDERATES is an upper bound on the number of upstream federates
   // -- threads are spawned to listen to upstream federates. Add 1 for the
   // clock sync thread and add 1 for the staa thread
   max_threads_tracing += NUMBER_OF_FEDERATES + 2;
-  lf_tracing_global_init("federate__", FEDERATE_ID, max_threads_tracing);
+  lf_tracing_global_init(envs[0].name, _LF_FEDERATE_NAMES_COMMA_SEPARATED, FEDERATE_ID, max_threads_tracing);
 #else
-  lf_tracing_global_init("trace_", 0, max_threads_tracing);
+  lf_tracing_global_init("main", NULL, 0, max_threads_tracing);
 #endif
   // Call the code-generated function to initialize all actions, timers, and ports
   // This is done for all environments/enclaves at the same time.
   _lf_initialize_trigger_objects();
+
+#if !defined(LF_SINGLE_THREADED) && !defined(NDEBUG)
+  // If we are testing, verify that environment with pointers is correctly set up.
+  for (int i = 0; i < num_envs; i++) {
+    environment_verify(&envs[i]);
+  }
+#endif
 }
 
 /**
@@ -1269,12 +1194,12 @@ void termination(void) {
       _lf_terminate_modal_reactors(&env[i]);
 #endif
       // If the event queue still has events on it, report that.
-      if (env[i].event_q != NULL && pqueue_size(env[i].event_q) > 0) {
+      if (env[i].event_q != NULL && pqueue_tag_size(env[i].event_q) > 0) {
         lf_print_warning("---- There are %zu unprocessed future events on the event queue.",
-                         pqueue_size(env[i].event_q));
-        event_t* event = (event_t*)pqueue_peek(env[i].event_q);
-        interval_t event_time = event->time - start_time;
-        lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
+                         pqueue_tag_size(env[i].event_q));
+        event_t* event = (event_t*)pqueue_tag_peek(env[i].event_q);
+        lf_print_warning("---- The first future event has timestamp " PRINTF_TAG " after start tag.",
+                         event->base.tag.time - start_time, event->base.tag.microstep);
       }
       // Print elapsed times.
       // If these are negative, then the program failed to start up.
@@ -1293,6 +1218,7 @@ void termination(void) {
       }
     }
   }
+  lf_tracing_global_shutdown();
   // Skip most cleanup on abnormal termination.
   if (_lf_normal_termination) {
     _lf_free_all_tokens(); // Must be done before freeing reactors.
@@ -1325,7 +1251,6 @@ void termination(void) {
     free_local_rti();
 #endif
   }
-  lf_tracing_global_shutdown();
 }
 
 index_t lf_combine_deadline_and_level(interval_t deadline, int level) {

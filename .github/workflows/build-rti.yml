@@ -4,16 +4,32 @@ on:
   workflow_call:
 
 jobs:
-  run:
+  native-build:
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [ubuntu-24.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.platform }}
 
     steps:
       - name: Check out reactor-c repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Build the RTI with AUTH=OFF
         run: .github/scripts/build-rti.sh -DAUTH=OFF
       - name: Build the RTI with AUTH=ON
         run: .github/scripts/build-rti.sh -DAUTH=ON
+
+  docker-build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out reactor-c repository
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          file: ./core/federated/RTI/rti.Dockerfile
+          context: .
+          platforms: linux/amd64, linux/arm64, linux/arm/v7, linux/riscv64
+          push: false
+          tags: lflang/rti:latest

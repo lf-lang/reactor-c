@@ -53,9 +53,9 @@ void initialize_local_rti(environment_t* envs, int num_envs) {
     rti_local->base.scheduling_nodes[i] = (scheduling_node_t*)enclave_info;
 
     // Encode the connection topology into the enclave_info object.
-    enclave_info->base.num_downstream = lf_get_downstream_of(i, &enclave_info->base.downstream);
-    enclave_info->base.num_upstream = lf_get_upstream_of(i, &enclave_info->base.upstream);
-    lf_get_upstream_delay_of(i, &enclave_info->base.upstream_delay);
+    enclave_info->base.num_immediate_downstreams = _lf_get_downstream_of(i, &enclave_info->base.immediate_downstreams);
+    enclave_info->base.num_immediate_upstreams = _lf_get_upstream_of(i, &enclave_info->base.immediate_upstreams);
+    _lf_get_upstream_delay_of(i, &enclave_info->base.immediate_upstream_delays);
 
     enclave_info->base.state = GRANTED;
   }
@@ -112,7 +112,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
   }
 
   // If this enclave has no upstream, then we give a TAG till forever straight away.
-  if (e->base.num_upstream == 0) {
+  if (e->base.num_immediate_upstreams == 0) {
     LF_PRINT_LOG("RTI: enclave %u has no upstream. Giving it a to the NET", e->base.id);
     e->base.last_granted = next_event_tag;
   }
@@ -189,6 +189,10 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
 // delay enclave loops.
 void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   LF_PRINT_LOG("RTI: enclave %u callback with PTAG " PRINTF_TAG " ", e->id, tag.time - lf_time_start(), tag.microstep);
+}
+
+void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
+  // Nothing to do here.
 }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
