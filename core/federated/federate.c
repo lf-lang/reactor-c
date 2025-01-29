@@ -14,10 +14,7 @@
 #error No support for federated execution on this platform.
 #endif
 
-#include <arpa/inet.h>  // inet_ntop & inet_pton
-#include <netdb.h>      // Defines getaddrinfo(), freeaddrinfo() and struct addrinfo.
-#include <netinet/in.h> // Defines struct sockaddr_in
-#include <unistd.h>     // Defines read(), write(), and close()
+#include <arpa/inet.h>  // inet_ntop
 #include <string.h>     // Defines memset(), strnlen(), strncmp(), strncpy()
 #include <stdio.h>      // Defines strerror()
 
