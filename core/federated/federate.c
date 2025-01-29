@@ -14,10 +14,9 @@
 #error No support for federated execution on this platform.
 #endif
 
-#include <arpa/inet.h>  // inet_ntop
-#include <string.h>     // Defines memset(), strnlen(), strncmp(), strncpy()
-#include <stdio.h>      // Defines strerror()
-
+#include <arpa/inet.h> // inet_ntop
+#include <string.h>    // Defines memset(), strnlen(), strncmp(), strncpy()
+#include <stdio.h>     // Defines strerror()
 #include <assert.h>
 #include <errno.h>   // Defined perror(), errno
 #include <strings.h> // Defines bzero().
