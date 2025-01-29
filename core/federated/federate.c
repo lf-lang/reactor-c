@@ -147,14 +147,7 @@ static void send_tag(unsigned char type, tag_t tag) {
  * Return true if either the network driver to the RTI is broken or the network driver is
  * alive and the first unread byte on the network driver's queue is MSG_TYPE_FAILED.
  */
-static bool rti_failed() {
-  unsigned char first_byte;
-  ssize_t bytes = peek_from_netdrv(_fed.netdrv_to_RTI, &first_byte);
-  if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED))
-    return true;
-  else
-    return false;
-}
+static bool rti_failed() { return check_netdrv_closed(_fed.netdrv_to_RTI); }
 
 //////////////////////////////// Port Status Handling ///////////////////////////////////////
 

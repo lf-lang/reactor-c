@@ -131,7 +131,7 @@ int write_to_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char
  * format argument is non-null, then use it an any additional arguments to form
  * the error message using printf conventions. Otherwise, print a generic error
  * message.
- * @param drv Pointer to the socket ID.
+ * @param drv The network driver.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
  * @param mutex If non-NULL, the mutex to unlock before exiting.
@@ -142,7 +142,13 @@ int write_to_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char
 void write_to_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
 
-ssize_t peek_from_netdrv(netdrv_t drv, unsigned char* result);
+/**
+ * Checks if the network driver is still connected to the peer.
+ *
+ * @param drv The network driver.
+ * @return true if closed, false if still open.
+ */
+bool check_netdrv_closed(netdrv_t drv);
 
 /**
  * @brief Gracefully shuts down and closes a socket, optionally reading until EOF.

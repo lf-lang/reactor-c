@@ -174,12 +174,7 @@ int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port) 
   return create_socket_server(port, final_socket, final_port, UDP, false);
 }
 
-/**
- * Return true if either the socket to the RTI is broken or the socket is
- * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
- * @param socket Socket to check.
- */
-static bool check_socket_closed(int socket) {
+bool check_socket_closed(int socket) {
   unsigned char first_byte;
   ssize_t bytes = peek_from_socket(socket, &first_byte);
   if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {

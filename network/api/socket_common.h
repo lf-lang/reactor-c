@@ -222,6 +222,13 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
 ssize_t peek_from_socket(int socket, unsigned char* result);
 
 /**
+ * Return true if either the socket to the RTI is broken or the socket is
+ * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
+ * @param socket Socket to check.
+ */
+bool check_socket_closed(int socket);
+
+/**
  * Write the specified number of bytes to the specified socket from the
  * specified buffer. If an error occurs, return -1 and set errno to indicate
  * the cause of the error. If the write succeeds, return 0.

@@ -178,9 +178,9 @@ void write_to_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char
   }
 }
 
-ssize_t peek_from_netdrv(netdrv_t drv, unsigned char* result) {
+bool check_netdrv_closed(netdrv_t drv) {
   socket_priv_t* priv = get_socket_priv_t(drv);
-  return peek_from_socket(priv->socket_descriptor, result);
+  return check_socket_closed(priv->socket_descriptor);
 }
 
 int shutdown_netdrv(netdrv_t drv, bool read_before_closing) {
