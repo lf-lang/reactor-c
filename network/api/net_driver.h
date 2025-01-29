@@ -65,8 +65,7 @@ int read_from_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
  * Read the specified number of bytes to the specified network driver using read_from_netdrv
- * and close the network driver if an error occurs. If an error occurs, this will change the
- * socket ID pointed to by the first argument to -1 and will return -1.
+ * and close the network driver if an error occurs.
  * @param drv The network driver.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
@@ -107,9 +106,8 @@ void read_from_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned cha
 int write_to_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
- * Write the specified number of bytes to the specified network driver using write_to_netfdrv
- * and close the network driver if an error occurs. If an error occurs, this will change the
- * socket ID pointed to by the first argument to -1 and will return -1.
+ * Write the specified number of bytes to the specified network driver using write_to_netdrv
+ * and close the network driver if an error occurs.
  * @param drv The network driver.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
@@ -145,9 +143,9 @@ bool check_netdrv_closed(netdrv_t drv);
 
 /**
  * @brief Gracefully shuts down and closes the network driver, optionally reading until EOF.
- * Shutdown and close the network driver. If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR
- * and close(). If read_before_closing is true, it calls shutdown with SHUT_WR, only disallowing further writing. Then,
- * it calls read() until EOF is received, and discards all received bytes.
+ * Shutdown and close the network driver. If read_before_closing is false, it just immediately calls shutdown() with
+ * SHUT_RDWR and close(). If read_before_closing is true, it calls shutdown with SHUT_WR, only disallowing further
+ * writing. Then, it calls read() until EOF is received, and discards all received bytes.
  * @param drv The network driver to shutdown and close.
  * @param read_before_closing If true, read until EOF before closing the network driver.
  * @return int Returns 0 on success, -1 on failure (errno will indicate the error).
@@ -199,9 +197,10 @@ char* get_server_hostname(netdrv_t drv);
 void set_my_port(netdrv_t drv, int32_t port);
 
 /**
- * Set server port number to the target network driver. The federate and RTI receives the port number fr on aom another
- * federate MSG_TYPE_ADDRESS_ADVERTISEMENT message. This function is used to set the network driver's target server port
- * number. The
+ * Set server port number to the target network driver.
+ * The federate and RTI receives the port number from another
+ * federate MSG_TYPE_ADDRESS_ADVERTISEMENT message.
+ * This function is used to set the network driver's target server port number.
  *
  * @param drv The network driver.
  * @param port The target server's port
