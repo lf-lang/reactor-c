@@ -1,7 +1,7 @@
 #ifndef SOCKET_COMMON_H
 #define SOCKET_COMMON_H
 
-#include "low_level_platform.h"
+#include "low_level_platform.h" // lf_mutex_t
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/time.h>
