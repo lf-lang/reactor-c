@@ -52,15 +52,11 @@ void create_client(netdrv_t drv);
 int connect_to_netdrv(netdrv_t drv);
 
 /**
- * Read the specified number of bytes from the specified socket into the specified buffer.
+ * Read the specified number of bytes from the specified network driver into the specified buffer.
  * If an error occurs during this reading, return -1 and set errno to indicate
  * the cause of the error. If the read succeeds in reading the specified number of bytes,
  * return 0. If an EOF occurs before reading the specified number of bytes, return 1.
- * This function repeats the read attempt until the specified number of bytes
- * have been read, an EOF is read, or an error occurs. Specifically, errors EAGAIN,
- * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
- * another attempt. A delay between attempts is given by DELAY_BETWEEN_SOCKET_RETRIES.
- * @param drv The socket ID.
+ * @param drv The network driver.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to put the bytes.
  * @return 0 for success, 1 for EOF, and -1 for an error.
@@ -68,10 +64,10 @@ int connect_to_netdrv(netdrv_t drv);
 int read_from_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
- * Read the specified number of bytes to the specified socket using read_from_socket
- * and close the socket if an error occurs. If an error occurs, this will change the
+ * Read the specified number of bytes to the specified network driver using read_from_netdrv
+ * and close the network driver if an error occurs. If an error occurs, this will change the
  * socket ID pointed to by the first argument to -1 and will return -1.
- * @param socket Pointer to the socket ID.
+ * @param drv The network driver.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
@@ -79,14 +75,14 @@ int read_from_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 int read_from_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
- * Read the specified number of bytes from the specified socket into the
+ * Read the specified number of bytes from the specified network driver into the
  * specified buffer. If a disconnect or an EOF occurs during this
  * reading, then if format is non-null, report an error and exit.
  * If the mutex argument is non-NULL, release the mutex before exiting.
  * If format is null, then report the error, but do not exit.
  * This function takes a formatted string and additional optional arguments
  * similar to printf(format, ...) that is appended to the error messages.
- * @param drv The socket ID.
+ * @param drv The network driver.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to put the bytes.
  * @param format A printf-style format string, followed by arguments to
@@ -98,15 +94,12 @@ void read_from_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned cha
                                     char* format, ...);
 
 /**
- * Write the specified number of bytes to the specified socket from the
+ * Write the specified number of bytes to the specified network driver from the
  * specified buffer. If an error occurs, return -1 and set errno to indicate
  * the cause of the error. If the write succeeds, return 0.
  * This function repeats the attempt until the specified number of bytes
- * have been written or an error occurs. Specifically, errors EAGAIN,
- * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
- * another attempt. A delay between attempts is given by
- * DELAY_BETWEEN_SOCKET_RETRIES.
- * @param drv The socket ID.
+ * have been written or an error occurs.
+ * @param drv The network driver.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
@@ -114,10 +107,10 @@ void read_from_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned cha
 int write_to_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
- * Write the specified number of bytes to the specified socket using write_to_socket
- * and close the socket if an error occurs. If an error occurs, this will change the
+ * Write the specified number of bytes to the specified network driver using write_to_netfdrv
+ * and close the network driver if an error occurs. If an error occurs, this will change the
  * socket ID pointed to by the first argument to -1 and will return -1.
- * @param drv Pointer to the socket ID.
+ * @param drv The network driver.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
@@ -125,7 +118,7 @@ int write_to_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 int write_to_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer);
 
 /**
- * Write the specified number of bytes to the specified socket using
+ * Write the specified number of bytes to the specified network driver using
  * write_to_netdrv_close_on_error and exit with an error code if an error occurs.
  * If the mutex argument is non-NULL, release the mutex before exiting.  If the
  * format argument is non-null, then use it an any additional arguments to form
@@ -151,12 +144,12 @@ void write_to_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char
 bool check_netdrv_closed(netdrv_t drv);
 
 /**
- * @brief Gracefully shuts down and closes a socket, optionally reading until EOF.
- * Shutdown and close the socket. If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR
+ * @brief Gracefully shuts down and closes the network driver, optionally reading until EOF.
+ * Shutdown and close the network driver. If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR
  * and close(). If read_before_closing is true, it calls shutdown with SHUT_WR, only disallowing further writing. Then,
  * it calls read() until EOF is received, and discards all received bytes.
- * @param drv Pointer to the socket descriptor to shutdown and close.
- * @param read_before_closing If true, read until EOF before closing the socket.
+ * @param drv The network driver to shutdown and close.
+ * @param read_before_closing If true, read until EOF before closing the network driver.
  * @return int Returns 0 on success, -1 on failure (errno will indicate the error).
  */
 int shutdown_netdrv(netdrv_t drv, bool read_before_closing);
@@ -166,7 +159,7 @@ int shutdown_netdrv(netdrv_t drv, bool read_before_closing);
  * This is used when the federate sends a MSG_TYPE_ADDRESS_ADVERTISEMENT to the RTI, informing its port number. The RTI
  * will save this port number, and send it to the other federate in a MSG_TYPE_ADDRESS_QUERY_REPLY message.
  *
- * @param drv Network driver instance
+ * @param drv The network driver.
  * @return The port number of a server network driver.
  */
 int32_t get_my_port(netdrv_t drv);
@@ -176,7 +169,7 @@ int32_t get_my_port(netdrv_t drv);
  * This is used by the RTI, when there is a request from the federate to the RTI, for the MSG_TYPE_ADDRESS_QUERY
  * message.
  *
- * @param drv Network driver instance
+ * @param drv The network driver.
  * @return Port number of the connected peer.
  */
 int32_t get_server_port(netdrv_t drv);
@@ -184,7 +177,7 @@ int32_t get_server_port(netdrv_t drv);
 /**
  * Get the IP address of the connected peer.
  *
- * @param drv Network driver instance
+ * @param drv The network driver.
  * @return Pointer to the server IP address
  */
 struct in_addr* get_ip_addr(netdrv_t drv);
@@ -192,7 +185,7 @@ struct in_addr* get_ip_addr(netdrv_t drv);
 /**
  * Get the hostname of the connected peer.
  *
- * @param drv Network driver instance
+ * @param drv The network driver.
  * @return Pointer to the server hostname
  */
 char* get_server_hostname(netdrv_t drv);
@@ -200,7 +193,7 @@ char* get_server_hostname(netdrv_t drv);
 /**
  * Set the user specified port to the created network driver.
  *
- * @param drv Network driver instance
+ * @param drv The network driver.
  * @param port The user specified port
  */
 void set_my_port(netdrv_t drv, int32_t port);
@@ -210,7 +203,7 @@ void set_my_port(netdrv_t drv, int32_t port);
  * federate MSG_TYPE_ADDRESS_ADVERTISEMENT message. This function is used to set the network driver's target server port
  * number. The
  *
- * @param drv Network driver instance
+ * @param drv The network driver.
  * @param port The target server's port
  */
 void set_server_port(netdrv_t drv, int32_t port);
@@ -218,7 +211,7 @@ void set_server_port(netdrv_t drv, int32_t port);
 /**
  * Set the target server's hostname to the network driver.
  *
- * @param drv Network driver instance
+ * @param drv The network driver.
  * @param hostname The target server's hostname
  */
 void set_server_hostname(netdrv_t drv, const char* hostname);
