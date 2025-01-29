@@ -199,14 +199,6 @@ bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
     LF_PRINT_DEBUG("-------- Waiting until physical time " PRINTF_TIME, wait_until_time - start_time);
     // Check whether we actually need to wait, or if we have already passed the timepoint.
     interval_t wait_duration = wait_until_time - lf_time_physical();
-    if (wait_duration < MIN_SLEEP_DURATION) {
-      LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than lf_min_sleep_duration " PRINTF_TIME
-                     ". Performing busy wait.",
-                     wait_duration, MIN_SLEEP_DURATION);
-      while (lf_time_physical() < wait_until_time) {
-        // Busy wait
-      }
-    }
 
     // We do the sleep on the cond var so we can be awakened by the
     // asynchronous scheduling of a physical action. lf_clock_cond_timedwait

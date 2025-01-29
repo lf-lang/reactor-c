@@ -93,9 +93,7 @@ void lf_synchronize_with_other_federates(void);
  * if that event time matches or exceeds the specified time.
  *
  * The mutex lock associated with the condition argument is assumed to be held by
- * the calling thread. This mutex is released while waiting. If the wait time is
- * too small (less than MIN_SLEEP_DURATION) to wait using lf_clock_cond_timedwait,
- * then this function performs busy wait and the mutex is not released.
+ * the calling thread.
  *
  * @param env Environment within which we are executing.
  * @param wait_until_time The time to wait until physical time matches it.
