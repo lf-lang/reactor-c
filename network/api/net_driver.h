@@ -43,8 +43,8 @@ netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv);
 void create_client(netdrv_t drv);
 
 /**
- * Connect to the server network driver. The server's connection information, such as the port and address should be set
- * before calling this function.
+ * Connect to the server network driver. The server's connection information,
+ * such as the port and address should be set before calling this function.
  *
  * @param drv Network driver to connect.
  * @return int 0 on success, -1 on failure, and `errno` is set to indicate the specific error.
