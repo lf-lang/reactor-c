@@ -15,13 +15,6 @@
 #ifndef RTI_REMOTE_H
 #define RTI_REMOTE_H
 
-#include <sys/socket.h>
-#include <sys/types.h>  // Provides select() function to read from multiple sockets.
-#include <netinet/in.h> // Defines struct sockaddr_in
-#include <arpa/inet.h>  // inet_ntop & inet_pton
-#include <unistd.h>     // Defines read(), write(), and close()
-#include <strings.h>    // Defines bzero().
-
 #include "rti_common.h"
 
 #ifdef __RTI_AUTH__
