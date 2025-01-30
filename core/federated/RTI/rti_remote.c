@@ -73,7 +73,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     tracepoint_rti_to_federate(send_TAG, e->id, &tag);
   }
   // This function is called in notify_advance_grant_if_safe(), which is a long
-  // function. During this call, the socket might close, causing the following write_to_netdrv
+  // function. During this call, the network driver might close, causing the following write_to_netdrv
   // to fail. Consider a failure here a soft failure and update the federate's status.
   if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
@@ -106,7 +106,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     tracepoint_rti_to_federate(send_PTAG, e->id, &tag);
   }
   // This function is called in notify_advance_grant_if_safe(), which is a long
-  // function. During this call, the socket might close, causing the following write_to_netdrv
+  // function. During this call, the network driver might close, causing the following write_to_netdrv
   // to fail. Consider a failure here a soft failure and update the federate's status.
   if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
@@ -200,7 +200,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
   }
 
   // Need to acquire the mutex lock to ensure that the thread handling
-  // messages coming from the socket connected to the destination does not
+  // messages coming from the network driver connected to the destination does not
   // issue a TAG before this message has been forwarded.
   LF_MUTEX_LOCK(&rti_mutex);
 
@@ -285,12 +285,12 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   }
 
   // Need to acquire the mutex lock to ensure that the thread handling
-  // messages coming from the socket connected to the destination does not
+  // messages coming from the network driver connected to the destination does not
   // issue a TAG before this message has been forwarded.
   LF_MUTEX_LOCK(&rti_mutex);
 
   // If the destination federate is no longer connected, issue a warning,
-  // remove the message from the socket and return.
+  // remove the message from the network driver and return.
   federate_info_t* fed = GET_FED_INFO(federate_id);
   if (fed->enclave.state == NOT_CONNECTED) {
     lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.", federate_id);
@@ -351,7 +351,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     // FIXME: a mutex needs to be held for this so that other threads
     // do not write to destination_socket and cause interleaving. However,
     // holding the rti_mutex might be very expensive. Instead, each outgoing
-    // socket should probably have its own mutex.
+    // network driver should probably have its own mutex.
     write_to_netdrv_fail_on_error(fed->fed_netdrv, bytes_to_read, buffer, &rti_mutex,
                                   "RTI failed to send message chunks.");
   }
@@ -701,7 +701,7 @@ void handle_address_ad(uint16_t federate_id) {
 
 void handle_timestamp(federate_info_t* my_fed) {
   unsigned char buffer[sizeof(int64_t)];
-  // Read bytes from the socket. We need 8 bytes.
+  // Read bytes from the network driver. We need 8 bytes.
   read_from_netdrv_fail_on_error(my_fed->fed_netdrv, sizeof(int64_t), (unsigned char*)&buffer, NULL,
                                  "ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
 
@@ -905,7 +905,7 @@ void* clock_synchronization_thread(void* noargs) {
  * @param my_fed The federate sending a MSG_TYPE_FAILED message.
  */
 static void handle_federate_failed(federate_info_t* my_fed) {
-  // Nothing more to do. Close the socket and exit.
+  // Nothing more to do. Close the network driver and exit.
   LF_MUTEX_LOCK(&rti_mutex);
 
   if (rti_remote->base.tracing_enabled) {
@@ -940,13 +940,13 @@ static void handle_federate_failed(federate_info_t* my_fed) {
  * This function assumes the caller does not hold the mutex.
  *
  * @note At this point, the RTI might have outgoing messages to the federate. This
- * function thus first performs a shutdown on the socket, which sends an EOF. It then
- * waits for the remote socket to be closed before closing the socket itself.
+ * function thus first performs a shutdown on the network driver, which sends an EOF. It then
+ * waits for the remote network driver to be closed before closing the network driver itself.
  *
  * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
  */
 static void handle_federate_resign(federate_info_t* my_fed) {
-  // Nothing more to do. Close the socket and exit.
+  // Nothing more to do. Close the network driver and exit.
   LF_MUTEX_LOCK(&rti_mutex);
 
   if (rti_remote->base.tracing_enabled) {
@@ -986,11 +986,11 @@ void* federate_info_thread_TCP(void* fed) {
     // Read no more than one byte to get the message type.
     int read_failed = read_from_netdrv(my_fed->fed_netdrv, 1, buffer);
     if (read_failed) {
-      // Socket is closed
+      // ㅜetwork driver is closed
       lf_print_error("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
-      // Nothing more to do. Close the socket and exit.
-      // Prevent multiple threads from closing the same socket at the same time.
+      // Nothing more to do. Close the network driver and exit.
+      // Prevent multiple threads from closing the same network driver at the same time.
       LF_MUTEX_LOCK(&rti_mutex);
       shutdown_netdrv(my_fed->fed_netdrv, false);
       LF_MUTEX_UNLOCK(&rti_mutex);
@@ -1054,9 +1054,9 @@ void send_reject(netdrv_t drv, unsigned char error_code) {
   LF_MUTEX_LOCK(&rti_mutex);
   // NOTE: Ignore errors on this response.
   if (write_to_netdrv(drv, 2, response)) {
-    lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
+    lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the network driver.");
   }
-  // Close the socket without reading until EOF.
+  // Close the network driver without reading until EOF.
   shutdown_netdrv(drv, false);
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -1067,7 +1067,6 @@ void send_reject(netdrv_t drv, unsigned char error_code) {
  * matches this federation, send an MSG_TYPE_ACK and otherwise send
  * a MSG_TYPE_REJECT message.
  * @param fed_netdrv Pointer to the network driver on which to listen.
- * @param client_fd The socket address.
  * @return The federate ID for success or -1 for failure.
  */
 static int32_t receive_and_check_fed_id_message(netdrv_t fed_netdrv) {
@@ -1077,7 +1076,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t fed_netdrv) {
 
   // Read bytes from the socket. We need 4 bytes.
   if (read_from_netdrv_close_on_error(fed_netdrv, length, buffer)) {
-    lf_print_error("RTI failed to read from accepted socket.");
+    lf_print_error("RTI failed to read from accepted network driver.");
     return -1;
   }
 
@@ -1307,7 +1306,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t fed_netdrv, uint16
           size_t message_size = 1 + sizeof(uint16_t);
           unsigned char buffer[message_size];
           read_from_netdrv_fail_on_error(fed_netdrv, message_size, buffer, NULL,
-                                         "Socket to federate %d unexpectedly closed.", fed_id);
+                                         "Network driver to federate %d unexpectedly closed.", fed_id);
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
             uint16_t fed_id = extract_uint16(&(buffer[1]));
             LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
@@ -1427,7 +1426,7 @@ void lf_connect_to_federates(netdrv_t rti_netdrv) {
     if (rti_remote->authentication_enabled) {
       if (!authenticate_federate(fed_netdrv)) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
-        // Close the socket without reading until EOF.
+        // Close the network driver without reading until EOF.
         shutdown_netdrv(fed_netdrv, false);
         // Ignore the federate that failed authentication.
         i--;
@@ -1495,7 +1494,7 @@ void* respond_to_erroneous_connections(void* nothing) {
     if (write_to_netdrv(fed_netdrv, 2, response)) {
       lf_print_warning("RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
     }
-    // Close the socket without reading until EOF.
+    // Close the network driver without reading until EOF.
     shutdown_netdrv(fed_netdrv, false);
   }
   return NULL;
@@ -1522,7 +1521,8 @@ int start_rti_server() {
   lf_print("RTI: Listening for federates.");
   // Create the UDP socket server
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-    if (create_clock_server(DEFAULT_UDP_PORT, &rti_remote->socket_descriptor_UDP, &rti_remote->final_port_UDP)) {
+    if (create_socket_server(DEFAULT_UDP_PORT, &rti_remote->socket_descriptor_UDP, &rti_remote->final_port_UDP, UDP,
+                             false)) {
       lf_print_error_system_failure("RTI failed to create UDP server: %s.", strerror(errno));
       return -1;
     }
@@ -1537,7 +1537,7 @@ void wait_for_federates() {
   // All federates have connected.
   lf_print("RTI: All expected federates have connected. Starting execution.");
 
-  // The socket server will not continue to accept connections after all the federates
+  // The network driver server will not continue to accept connections after all the federates
   // have joined.
   // In case some other federation's federates are trying to join the wrong
   // federation, need to respond. Start a separate thread to do that.
@@ -1556,7 +1556,7 @@ void wait_for_federates() {
 
   rti_remote->all_federates_exited = true;
 
-  // Shutdown and close the socket that is listening for incoming connections
+  // Shutdown and close the network driver that is listening for incoming connections
   // so that the accept() call in respond_to_erroneous_connections returns.
   // That thread should then check rti->all_federates_exited and it should exit.
   shutdown_netdrv(rti_remote->rti_netdrv, false);

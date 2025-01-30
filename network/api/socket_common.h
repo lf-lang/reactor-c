@@ -129,8 +129,6 @@ int create_real_time_tcp_socket_errexit();
 int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
                          bool increment_port_on_retry);
 
-int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port);
-
 /**
  * Wait for an incoming connection request on the specified server socket.
  * This blocks until a connection is successfully accepted. If an error occurs that is not
@@ -147,7 +145,6 @@ int create_clock_server(uint16_t port, int* final_socket, uint16_t* final_port);
  * @return The file descriptor for the newly accepted socket on success, or -1 on failure
  *             (with an appropriate error message printed).
  */
-
 int accept_socket(int socket, int rti_socket);
 
 /**
@@ -225,6 +222,7 @@ ssize_t peek_from_socket(int socket, unsigned char* result);
  * Return true if either the socket to the RTI is broken or the socket is
  * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
  * @param socket Socket to check.
+ * @return True if closed, false if still connected.
  */
 bool check_socket_closed(int socket);
 

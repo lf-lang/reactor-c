@@ -12,8 +12,8 @@ typedef void* netdrv_t;
 netdrv_t initialize_netdrv();
 
 /**
- * Create a netdriver server. This is such as a server socket which accepts connections. However this is only the
- * creation of the server netdriver.
+ * Create a netdriver server. This is such as a server socket which accepts connections.
+ * However this is only the creation of the server netdriver.
  *
  * @param drv Server's network driver.
  * @param serv_type Type of server, RTI or FED.
