@@ -1492,11 +1492,11 @@ static void send_failed_signal() {
 static void handle_rti_failed_message(void) { exit(1); }
 
 /**
- * Thread that listens for TCP inputs from the RTI.
+ * Thread that listens for network driver inputs from the RTI.
  * When messages arrive, this calls the appropriate handler.
  * @param args Ignored
  */
-static void* listen_to_rti_TCP(void* args) {
+static void* listen_to_rti_netdrv(void* args) {
   (void)args;
   initialize_lf_thread_id();
   // Buffer for incoming messages.
@@ -1560,7 +1560,7 @@ static void* listen_to_rti_TCP(void* args) {
       lf_print_error("Federate %d received unexpected clock sync message from RTI.", _lf_my_fed_id);
       break;
     default:
-      lf_print_error_and_exit("Received from RTI an unrecognized TCP message type: %hhx.", buffer[0]);
+      lf_print_error_and_exit("Received from RTI an unrecognized message type: %hhx.", buffer[0]);
       // Trace the event when tracing is enabled
       tracepoint_federate_from_rti(receive_UNIDENTIFIED, _lf_my_fed_id, NULL);
     }
@@ -2577,7 +2577,7 @@ void lf_synchronize_with_other_federates(void) {
   // @note Up until this point, the federate has been listening for messages
   //  from the RTI in a sequential manner in the main thread. From now on, a
   //  separate thread is created to allow for asynchronous communication.
-  lf_thread_create(&_fed.RTI_netdrv_listener, listen_to_rti_TCP, NULL);
+  lf_thread_create(&_fed.RTI_netdrv_listener, listen_to_rti_netdrv, NULL);
   lf_thread_t thread_id;
   if (create_clock_sync_thread(&thread_id)) {
     lf_print_warning("Failed to create thread to handle clock synchronization.");

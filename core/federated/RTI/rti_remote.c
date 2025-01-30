@@ -666,10 +666,10 @@ void handle_address_query(uint16_t fed_id) {
 
   // Send the port number (which could be -1) and the server IP address to federate.
   write_to_netdrv_fail_on_error(fed->fed_netdrv, 1 + sizeof(int32_t), (unsigned char*)buffer, &rti_mutex,
-                                "Failed to write port number to socket of federate %d.", fed_id);
+                                "Failed to write port number to network driver of federate %d.", fed_id);
 
   write_to_netdrv_fail_on_error(fed->fed_netdrv, sizeof(uint32_t), (unsigned char*)ip_address, &rti_mutex,
-                                "Failed to write ip address to socket of federate %d.", fed_id);
+                                "Failed to write ip address to network driver of federate %d.", fed_id);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id, server_host_name,
@@ -760,7 +760,7 @@ void handle_timestamp(federate_info_t* my_fed) {
 
 void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool use_UDP) {
   if (fed->enclave.state == NOT_CONNECTED) {
-    lf_print_warning("Clock sync: RTI failed to send physical time to federate %d. Socket not connected.\n",
+    lf_print_warning("Clock sync: RTI failed to send physical time to federate %d. Network driver not connected.\n",
                      fed->enclave.id);
     return;
   }
@@ -780,8 +780,8 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool 
       return;
     }
   } else {
-    // Send using TCP
-    LF_PRINT_DEBUG("Clock sync: RTI sending TCP message type %u.", buffer[0]);
+    // Send using network driver.
+    LF_PRINT_DEBUG("Clock sync: RTI sending message type %u.", buffer[0]);
     LF_MUTEX_LOCK(&rti_mutex);
     write_to_netdrv_fail_on_error(fed->fed_netdrv, 1 + sizeof(int64_t), buffer, &rti_mutex,
                                   "Clock sync: RTI failed to send physical time to federate %d.", fed->enclave.id);
@@ -987,7 +987,7 @@ void* federate_info_thread_TCP(void* fed) {
     int read_failed = read_from_netdrv(my_fed->fed_netdrv, 1, buffer);
     if (read_failed) {
       // ㅜetwork driver is closed
-      lf_print_error("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
+      lf_print_error("RTI: Network driver to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
       // Nothing more to do. Close the network driver and exit.
       // Prevent multiple threads from closing the same network driver at the same time.
@@ -1074,7 +1074,7 @@ static int32_t receive_and_check_fed_id_message(netdrv_t fed_netdrv) {
   size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
   unsigned char buffer[length];
 
-  // Read bytes from the socket. We need 4 bytes.
+  // Read bytes from the network driver. We need 4 bytes.
   if (read_from_netdrv_close_on_error(fed_netdrv, length, buffer)) {
     lf_print_error("RTI failed to read from accepted network driver.");
     return -1;
@@ -1477,7 +1477,7 @@ void* respond_to_erroneous_connections(void* nothing) {
   while (true) {
     // Wait for an incoming connection request.
     // The following will block until either a federate attempts to connect
-    // or shutdown_socket(rti->socket_descriptor_TCP) is called.
+    // or shutdown_netdrv(rti->rti_netdrv) is called.
     netdrv_t fed_netdrv = accept_netdrv(rti_remote->rti_netdrv, NULL);
     if (fed_netdrv == NULL) {
       return NULL;
