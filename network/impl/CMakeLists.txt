@@ -10,6 +10,8 @@ target_sources(lf-network-impl PUBLIC
 
 if(COMM_TYPE MATCHES TCP)
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/lf_socket_support.c)
+elseif(COMM_TYPE MATCHES SST)
+    target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/lf_sst_support.c)
 else()
     message(FATAL_ERROR "Your communication type is not supported! The C target supports TCP.")
 endif()
