@@ -16,29 +16,6 @@ static socket_priv_t* get_socket_priv_t(netdrv_t drv) {
   return (socket_priv_t*)drv;
 }
 
-static int get_peer_address(netdrv_t drv) {
-  socket_priv_t* priv = get_socket_priv_t(drv);
-  struct sockaddr_in peer_addr;
-  socklen_t addr_len = sizeof(peer_addr);
-  if (getpeername(priv->socket_descriptor, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
-    lf_print_error("Failed to get peer address.");
-    return -1;
-  }
-  priv->server_ip_addr = peer_addr.sin_addr;
-
-#if LOG_LEVEL >= LOG_LEVEL_DEBUG
-  // Create the human readable format and copy that into
-  // the .server_hostname field of the federate.
-  char str[INET_ADDRSTRLEN + 1];
-  inet_ntop(AF_INET, &priv->server_ip_addr, str, INET_ADDRSTRLEN);
-  strncpy(priv->server_hostname, str, INET_ADDRSTRLEN - 1); // Copy up to INET_ADDRSTRLEN - 1 characters
-  priv->server_hostname[INET_ADDRSTRLEN - 1] = '\0';        // Null-terminate explicitly
-
-  LF_PRINT_DEBUG("Got address %s", priv->server_hostname);
-#endif
-  return 0;
-}
-
 netdrv_t initialize_netdrv() {
   // Initialize priv.
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));
@@ -74,6 +51,8 @@ netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv) {
   socket_priv_t* serv_priv = get_socket_priv_t(server_drv);
   int rti_socket;
   if (rti_drv == NULL) {
+    // Set to -1, to indicate that this accept_netdrv() call is not trying to check if the rti_drv is available, inside
+    // the accept_socket() function.
     rti_socket = -1;
   } else {
     socket_priv_t* rti_priv = get_socket_priv_t(rti_drv);

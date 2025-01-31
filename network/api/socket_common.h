@@ -225,6 +225,14 @@ ssize_t peek_from_socket(int socket, unsigned char* result);
  * @return True if closed, false if still connected.
  */
 bool check_socket_closed(int socket);
+/**
+ * Get the connected peer name from the connected socket.
+ * Set it to the server_ip_addr. Also, set server_hostname if LOG_LEVEL is higher than LOG_LEVEL_DEBUG.
+ *
+ * @param priv The socket_priv struct.
+ * @return 0 for success, -1 for failure.
+ */
+int get_peer_address(socket_priv_t* priv);
 
 /**
  * Write the specified number of bytes to the specified socket from the
