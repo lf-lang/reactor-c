@@ -91,5 +91,25 @@ netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv) {
   return fed_netdrv;
 }
 
+void create_client(netdrv_t drv) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  priv->socket_priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+  SST_ctx_t* ctx = init_SST(sst_config_path);
+  priv->sst_ctx = ctx;
+}
+
+int connect_to_netdrv(netdrv_t drv) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  int ret = connect_to_socket(priv->socket_priv->socket_descriptor, priv->socket_priv->server_hostname,
+                              priv->socket_priv->server_port);
+  if (ret != 0) {
+    return ret;
+  }
+  session_key_list_t* s_key_list = get_session_key(priv->sst_ctx, NULL);
+  SST_session_ctx_t* session_ctx = secure_connect_to_server_with_socket(&s_key_list->s_key[0], priv->socket_priv->socket_descriptor);
+  priv->session_ctx = session_ctx;
+  return 0;
+}
+
 // Helper function.
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
