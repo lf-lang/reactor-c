@@ -51,6 +51,8 @@ netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv) {
   socket_priv_t* serv_priv = get_socket_priv_t(server_drv);
   int rti_socket;
   if (rti_drv == NULL) {
+    // Set to -1, to indicate that this accept_netdrv() call is not trying to check if the rti_drv is available, inside
+    // the accept_socket() function.
     rti_socket = -1;
   } else {
     socket_priv_t* rti_priv = get_socket_priv_t(rti_drv);
