@@ -2508,14 +2508,14 @@ void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
     // FIXME: Gives error freeing memory not allocated!!!!
     scheduling_node_t* node = scheduling_nodes[i];
-      if (node->immediate_upstreams != NULL) {
-        free(node->immediate_upstreams);
-        free(node->immediate_upstream_delays);
-      }
-      if (node->immediate_downstreams != NULL) {
-        free(node->immediate_downstreams);
-      }
-      free(node);
+    if (node->immediate_upstreams != NULL) {
+      free(node->immediate_upstreams);
+      free(node->immediate_upstream_delays);
+    }
+    if (node->immediate_downstreams != NULL) {
+      free(node->immediate_downstreams);
+    }
+    free(node);
   }
   free(scheduling_nodes);
 }
