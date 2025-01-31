@@ -653,14 +653,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * A message the informs a downstream federate that a federate upstream of it
  * is connected. The next 2 bytes are the federate ID of the upstream federate.
  */
-#define MSG_TYPE_UPSTREAM_CONNECTED 26
+#define MSG_TYPE_UPSTREAM_CONNECTED 27
 #define MSG_TYPE_UPSTREAM_CONNECTED_LENGTH (1 + sizeof(uint16_t))
 
 /**
  * A message the informs a downstream federate that a federate upstream of it
  * is no longer connected. The next 2 bytes are the federate ID of the upstream federate.
  */
-#define MSG_TYPE_UPSTREAM_DISCONNECTED 27
+#define MSG_TYPE_UPSTREAM_DISCONNECTED 28
 #define MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
 
 /**

@@ -42,6 +42,7 @@ void invalidate_min_delays() {
       node->flags = 0; // All flags cleared because they get set lazily.
     }
     free(rti_common->min_delays);
+    rti_common->min_delays = NULL;
   }
 }
 
