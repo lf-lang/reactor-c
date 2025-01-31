@@ -77,11 +77,17 @@ netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv) {
   }
   fed_priv->socket_priv->socket_descriptor = sock;
   // Get the peer address from the connected socket_id. Saving this for the address query.
-  if (get_peer_address(fed_netdrv) != 0) {
+  if (get_peer_address(fed_priv->socket_priv) != 0) {
     lf_print_error("RTI failed to get peer address.");
   };
 
+  // TODO: Do we need to copy sst_ctx form server_drv to fed_drv?
   session_key_list_t* s_key_list = init_empty_session_key_list();
+  SST_session_ctx_t* session_ctx =
+      server_secure_comm_setup(serv_priv->sst_ctx, fed_priv->socket_priv->socket_descriptor, s_key_list);
+  // Session key used is copied to the session_ctx.
+  free_session_key_list_t(s_key_list);
+  fed_priv->session_ctx = session_ctx;
   return fed_netdrv;
 }
 
