@@ -32,6 +32,12 @@ typedef enum _lf_time_type { LF_LOGICAL, LF_PHYSICAL, LF_ELAPSED_LOGICAL, LF_ELA
 // Global variables declared in tag.h:
 instant_t start_time = NEVER;
 
+/**
+ * Only useful for transient federates. It records the effective start tag, to
+ * be used at startup. Elapsed logical time calculations will use start_time.
+ */
+tag_t effective_start_tag = {.time = 0LL, .microstep = 0};
+
 ////////////////  Functions declared in tag.h
 
 tag_t lf_tag(void* env) {
@@ -172,6 +178,8 @@ instant_t lf_time_physical(void) {
 instant_t lf_time_physical_elapsed(void) { return lf_time_physical() - start_time; }
 
 instant_t lf_time_start(void) { return start_time; }
+
+tag_t lf_tag_start_effective(void) { return effective_start_tag; }
 
 size_t lf_readable_time(char* buffer, instant_t time) {
   if (time <= (instant_t)0) {
