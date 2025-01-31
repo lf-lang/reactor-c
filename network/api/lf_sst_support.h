@@ -1,0 +1,12 @@
+#ifndef LF_SST_SUPPORT_H
+#define LF_SST_SUPPORT_H
+
+#include "socket_common.h"
+
+typedef struct sst_priv_t {
+  socket_priv_t* socket_priv;
+  SST_ctx_t* sst_ctx;
+  SST_session_ctx_t* session_ctx;
+} sst_priv_t;
+
+#endif /* LF_SST_SUPPORT_H */
