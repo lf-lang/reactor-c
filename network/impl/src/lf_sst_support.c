@@ -106,10 +106,105 @@ int connect_to_netdrv(netdrv_t drv) {
     return ret;
   }
   session_key_list_t* s_key_list = get_session_key(priv->sst_ctx, NULL);
-  SST_session_ctx_t* session_ctx = secure_connect_to_server_with_socket(&s_key_list->s_key[0], priv->socket_priv->socket_descriptor);
+  SST_session_ctx_t* session_ctx =
+      secure_connect_to_server_with_socket(&s_key_list->s_key[0], priv->socket_priv->socket_descriptor);
   priv->session_ctx = session_ctx;
   return 0;
 }
+
+// TODO:
+int read_from_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  return read_from_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
+}
+
+int read_from_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  int read_failed = read_from_netdrv(drv, num_bytes, buffer);
+  if (read_failed) {
+    // Read failed.
+    // Socket has probably been closed from the other side.
+    // Shut down and close the socket from this side.
+    shutdown_socket(&priv->socket_priv->socket_descriptor, false);
+    return -1;
+  }
+  return 0;
+}
+
+void read_from_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+                                    char* format, ...) {
+  va_list args;
+  int read_failed = read_from_netdrv_close_on_error(drv, num_bytes, buffer);
+  if (read_failed) {
+    // Read failed.
+    if (mutex != NULL) {
+      LF_MUTEX_UNLOCK(mutex);
+    }
+    if (format != NULL) {
+      va_start(args, format);
+      lf_print_error_system_failure(format, args);
+      va_end(args);
+    } else {
+      lf_print_error_system_failure("Failed to read from socket.");
+    }
+  }
+}
+
+int write_to_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  return write_to_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
+}
+
+int write_to_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  int result = write_to_netdrv(drv, num_bytes, buffer);
+  if (result) {
+    // Write failed.
+    // Socket has probably been closed from the other side.
+    // Shut down and close the socket from this side.
+    shutdown_socket(&priv->socket_priv->socket_descriptor, false);
+  }
+  return result;
+}
+
+void write_to_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+                                   char* format, ...) {
+  va_list args;
+  int result = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
+  if (result) {
+    // Write failed.
+    if (mutex != NULL) {
+      LF_MUTEX_UNLOCK(mutex);
+    }
+    if (format != NULL) {
+      va_start(args, format);
+      lf_print_error_system_failure(format, args);
+      va_end(args);
+    } else {
+      lf_print_error("Failed to write to socket. Closing it.");
+    }
+  }
+}
+
+bool check_netdrv_closed(netdrv_t drv) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  return check_socket_closed(priv->socket_priv->socket_descriptor);
+}
+
+int shutdown_netdrv(netdrv_t drv, bool read_before_closing) {
+  if (drv == NULL) {
+    lf_print("Socket already closed.");
+    return 0;
+  }
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  int ret = shutdown_socket(&priv->socket_priv->socket_descriptor, read_before_closing);
+  if (ret != 0) {
+    lf_print_error("Failed to shutdown socket.");
+  }
+  free_netdrv(drv);
+  return ret;
+}
+// END of TODO:
 
 // Get/set functions.
 int32_t get_my_port(netdrv_t drv) {
@@ -146,7 +241,6 @@ void set_server_hostname(netdrv_t drv, const char* hostname) {
   sst_priv_t* priv = get_sst_priv_t(drv);
   memcpy(priv->socket_priv->server_hostname, hostname, INET_ADDRSTRLEN);
 }
-
 
 // Helper function.
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
