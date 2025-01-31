@@ -1069,6 +1069,17 @@ int process_args(int argc, const char* argv[]) {
       }
     }
 #endif
+#ifdef COMM_TYPE_SST
+    else if (strcmp(arg, "-sst") == 0 || strcmp(arg, "--sst") == 0) {
+      if (argc < i + 1) {
+        lf_print_error("--sst needs a string argument.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* fid = argv[i++];
+      lf_set_sst_config_path(fid);
+    }
+#endif
     else if (strcmp(arg, "--ros-args") == 0) {
       // FIXME: Ignore ROS arguments for now
     } else {
