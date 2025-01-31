@@ -1760,7 +1760,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   // Create the client network driver.
   create_client(netdrv);
   if (connect_to_netdrv(netdrv) < 0) {
-    lf_print_error_and_exit("Failed to connect() to RTI.");
+    lf_print_error_and_exit("Failed to connect to federate.");
   }
 
   // Iterate until we either successfully connect or we exceed the CONNECT_TIMEOUT
@@ -1844,7 +1844,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   // Create the client network driver.
   create_client(_fed.netdrv_to_RTI);
   if (connect_to_netdrv(_fed.netdrv_to_RTI) < 0) {
-    lf_print_error_and_exit("Failed to connect() to RTI.");
+    lf_print_error_and_exit("Failed to connect to RTI.");
   }
 
   instant_t start_connect = lf_time_physical();
