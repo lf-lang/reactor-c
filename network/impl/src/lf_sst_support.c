@@ -2,6 +2,8 @@
 #include "lf_sst_support.h"
 #include "util.h"
 
+const char* sst_config_path; // The SST's configuration file path.
+
 static sst_priv_t* get_sst_priv_t(netdrv_t drv) {
   if (drv == NULL) {
     lf_print_error("Network driver is already closed.");
@@ -47,3 +49,11 @@ void free_netdrv(netdrv_t drv) {
   free(priv);
 }
 
+int create_server(netdrv_t drv, bool increment_port_on_retry) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  SST_ctx_t* ctx = init_SST(sst_config_path);
+  return create_socket_server(priv->socket_priv->user_specified_port, &priv->socket_priv->socket_descriptor,
+                              &priv->socket_priv->port, TCP, increment_port_on_retry);
+}
+
+void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }

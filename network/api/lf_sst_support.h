@@ -9,4 +9,6 @@ typedef struct sst_priv_t {
   SST_session_ctx_t* session_ctx;
 } sst_priv_t;
 
+void lf_set_sst_config_path(const char* config_path);
+
 #endif /* LF_SST_SUPPORT_H */
