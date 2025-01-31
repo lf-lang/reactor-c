@@ -68,7 +68,7 @@ netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv) {
   }
   fed_priv->socket_descriptor = sock;
   // Get the peer address from the connected socket_id. Saving this for the address query.
-  if (get_peer_address(fed_netdrv) != 0) {
+  if (get_peer_address(fed_priv) != 0) {
     lf_print_error("RTI failed to get peer address.");
   };
   return fed_netdrv;
