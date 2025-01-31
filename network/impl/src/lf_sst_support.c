@@ -56,4 +56,33 @@ int create_server(netdrv_t drv, bool increment_port_on_retry) {
                               &priv->socket_priv->port, TCP, increment_port_on_retry);
 }
 
+netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv) {
+  sst_priv_t* serv_priv = get_sst_priv_t(server_drv);
+  int rti_socket;
+  if (rti_drv == NULL) {
+    rti_socket = -1;
+  } else {
+    sst_priv_t* rti_priv = get_sst_priv_t(rti_drv);
+    rti_socket = rti_priv->socket_priv->socket_descriptor;
+  }
+  netdrv_t fed_netdrv = initialize_netdrv();
+  sst_priv_t* fed_priv = get_sst_priv_t(fed_netdrv);
+
+  int sock = accept_socket(serv_priv->socket_priv->socket_descriptor, rti_socket);
+  if (sock == -1) {
+    free_netdrv(fed_netdrv);
+    return NULL;
+  }
+  fed_priv->socket_priv->socket_descriptor = sock;
+  // Get the peer address from the connected socket_id. Saving this for the address query.
+  if (get_peer_address(fed_netdrv) != 0) {
+    lf_print_error("RTI failed to get peer address.");
+  };
+
+
+  session_key_list_t *s_key_list = init_empty_session_key_list();
+  return fed_netdrv;
+}
+
+// Helper function.
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
