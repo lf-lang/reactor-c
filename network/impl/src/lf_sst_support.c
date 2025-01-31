@@ -111,5 +111,42 @@ int connect_to_netdrv(netdrv_t drv) {
   return 0;
 }
 
+// Get/set functions.
+int32_t get_my_port(netdrv_t drv) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  return priv->socket_priv->port;
+}
+
+int32_t get_server_port(netdrv_t drv) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  return priv->socket_priv->server_port;
+}
+
+struct in_addr* get_ip_addr(netdrv_t drv) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  return &priv->socket_priv->server_ip_addr;
+}
+
+char* get_server_hostname(netdrv_t drv) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  return priv->socket_priv->server_hostname;
+}
+
+void set_my_port(netdrv_t drv, int32_t port) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  priv->socket_priv->port = port;
+}
+
+void set_server_port(netdrv_t drv, int32_t port) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  priv->socket_priv->server_port = port;
+}
+
+void set_server_hostname(netdrv_t drv, const char* hostname) {
+  sst_priv_t* priv = get_sst_priv_t(drv);
+  memcpy(priv->socket_priv->server_hostname, hostname, INET_ADDRSTRLEN);
+}
+
+
 // Helper function.
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
