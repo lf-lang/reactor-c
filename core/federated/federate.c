@@ -406,7 +406,9 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 
 /**
  * Close the socket that receives incoming messages from the
- * specified federate ID.
+ * specified federate ID. This function should be called when a read
+ * of incoming socket fails or when an EOF is received.
+ * It can also be called when the receiving end wants to stop communication.
  *
  * @param fed_id The ID of the peer federate sending messages to this
  *  federate.
@@ -656,6 +658,8 @@ static int handle_tagged_message(int* socket, int fed_id) {
                      intended_tag.microstep);
       // Close socket, reading any incoming data and discarding it.
       close_inbound_socket(fed_id);
+      LF_MUTEX_UNLOCK(&env->mutex);
+      return -1;
     } else {
       // Need to use intended_tag here, not actual_tag, so that STP violations are detected.
       // It will become actual_tag (that is when the reactions will be invoked).
