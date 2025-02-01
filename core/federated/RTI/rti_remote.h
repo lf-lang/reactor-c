@@ -15,13 +15,6 @@
 #ifndef RTI_REMOTE_H
 #define RTI_REMOTE_H
 
-#include <sys/socket.h>
-#include <sys/types.h>  // Provides select() function to read from multiple sockets.
-#include <netinet/in.h> // Defines struct sockaddr_in
-#include <arpa/inet.h>  // inet_ntop & inet_pton
-#include <unistd.h>     // Defines read(), write(), and close()
-#include <strings.h>    // Defines bzero().
-
 #include "rti_common.h"
 
 #ifdef __RTI_AUTH__
@@ -31,7 +24,7 @@
 
 #include "lf_types.h"
 #include "pqueue_tag.h"
-#include "socket_common.h"
+#include "net_driver.h"
 
 /** Time allowed for federates to reply to stop request. */
 #define MAX_TIME_FOR_REPLY_TO_STOP_REQUEST SEC(30)
@@ -53,20 +46,13 @@ typedef struct federate_info_t {
                                          // to a request for stop from the RTI. Used to prevent double-counting
                                          // a federate when handling lf_request_stop().
   lf_thread_t thread_id;                 // The ID of the thread handling communication with this federate.
-  int socket;                            // The TCP socket descriptor for communicating with this federate.
+  netdrv_t fed_netdrv;                   // The netdriver that the RTI handling each federate.
   struct sockaddr_in UDP_addr;           // The UDP address for the federate.
   bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                          // for this federate. Enabled by default.
   pqueue_tag_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
                                          // yet processed. This record is ordered based on the time
                                          // value of each message for a more efficient access.
-  char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
-  int32_t server_port;                   // port number of the socket server of the federate
-                                         // if it has any incoming direct connections from other federates.
-                                         // The port number will be -1 if there is no server or if the
-                                         // RTI has not been informed of the port number.
-  struct in_addr server_ip_addr;         // Information about the IP address of the socket
-                                         // server of the federate.
 } federate_info_t;
 
 /**
@@ -113,14 +99,10 @@ typedef struct rti_remote_t {
   const char* federation_id;
 
   /************* TCP server information *************/
-  /** The desired port specified by the user on the command line. */
+  /** The desired port specified by the user on the command line.
+   * This should be not moved to the net_driver, because the user can configure this as -p or --port.
+   */
   uint16_t user_specified_port;
-
-  /** The final port number that the TCP socket server ends up using. */
-  uint16_t final_port_TCP;
-
-  /** The TCP socket descriptor for the socket server. */
-  int socket_descriptor_TCP;
 
   /************* UDP server information *************/
   /** The final port number that the UDP socket server ends up using. */
@@ -128,6 +110,11 @@ typedef struct rti_remote_t {
 
   /** The UDP socket descriptor for the socket server. */
   int socket_descriptor_UDP;
+
+  /**
+   * The rti's network driver.
+   */
+  netdrv_t rti_netdrv;
 
   /************* Clock synchronization information *************/
   /* Thread performing PTP clock sync sessions periodically. */
@@ -295,15 +282,15 @@ void handle_timestamp(federate_info_t* my_fed);
 
 /**
  * Take a snapshot of the physical clock time and send
- * it to federate fed_id.
+ * it to federate fed_id using the network driver.
  *
  * This version assumes the caller holds the mutex lock.
  *
  * @param message_type The type of the clock sync message (see net_common.h).
  * @param fed The federate to send the physical time to.
- * @param socket_type The socket type (TCP or UDP).
+ * @param use_UDP Boolean to use UDP or the network driver.
  */
-void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type);
+void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool use_UDP);
 
 /**
  * Handle clock synchronization T3 messages from federates.
@@ -316,9 +303,9 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, socke
  * clock synchronization round.
  *
  * @param my_fed The sending federate.
- * @param socket_type The RTI's socket type used for the communication (TCP or UDP)
+ * @param use_UDP Boolean to send a coded probe message (for UDP only).
  */
-void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t socket_type);
+void handle_physical_clock_sync_message(federate_info_t* my_fed, bool use_UDP);
 
 /**
  * A (quasi-)periodic thread that performs clock synchronization with each
@@ -342,18 +329,18 @@ void* federate_info_thread_TCP(void* fed);
 
 /**
  * Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
- * @param socket_id Pointer to the socket ID.
+ * @param drv Pointer to the network driver.
  * @param error_code An error code.
  */
-void send_reject(int* socket_id, unsigned char error_code);
+void send_reject(netdrv_t drv, unsigned char error_code);
 
 /**
  * Wait for one incoming connection request from each federate,
  * and upon receiving it, create a thread to communicate with
  * that federate. Return when all federates have connected.
- * @param socket_descriptor The socket on which to accept connections.
+ * @param rti_netdrv The rti's network driver on which to accept connections.
  */
-void lf_connect_to_federates(int socket_descriptor);
+void lf_connect_to_federates(netdrv_t rti_netdrv);
 
 /**
  * Thread to respond to new connections, which could be federates of other
@@ -369,20 +356,16 @@ void* respond_to_erroneous_connections(void* nothing);
 void initialize_federate(federate_info_t* fed, uint16_t id);
 
 /**
- * Start the socket server for the runtime infrastructure (RTI) and
- * return the socket descriptor.
- * @param num_feds Number of federates.
- * @param port The port on which to listen for socket connections, or
- *  0 to use the default port range.
+ * Start the socket server for the runtime infrastructure (RTI).
+ * @return 0 for success, -1 for failure.
  */
-int32_t start_rti_server(uint16_t port);
+int start_rti_server();
 
 /**
  * Start the runtime infrastructure (RTI) interaction with the federates
  * and wait for the federates to exit.
- * @param socket_descriptor The socket descriptor returned by start_rti_server().
  */
-void wait_for_federates(int socket_descriptor);
+void wait_for_federates();
 
 /**
  * Print a usage message.
