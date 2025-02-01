@@ -105,7 +105,7 @@ typedef struct socket_priv_t {
  *
  * @return The socket ID (a file descriptor).
  */
-int create_real_time_tcp_socket_errexit();
+int create_real_time_tcp_socket_errexit(void);
 
 /**
  * @brief Create a TCP server that listens for socket connections.

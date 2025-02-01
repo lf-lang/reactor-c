@@ -25,7 +25,7 @@
 // A deadlock can occur if two threads simulataneously attempt to close the same network driver.
 lf_mutex_t netdrv_mutex;
 
-int create_real_time_tcp_socket_errexit() {
+int create_real_time_tcp_socket_errexit(void) {
   int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (sock < 0) {
     lf_print_error_system_failure("Could not open TCP socket.");
