@@ -2,6 +2,7 @@
 #define LF_SST_SUPPORT_H
 
 #include "socket_common.h"
+#include <sst-c-api/c_api.h>
 
 typedef struct sst_priv_t {
   socket_priv_t* socket_priv;
