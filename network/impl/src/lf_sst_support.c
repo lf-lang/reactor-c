@@ -1,3 +1,6 @@
+#include <stdlib.h>    // malloc()
+#include <string.h>    // strncpy()
+
 #include "net_driver.h"
 #include "lf_sst_support.h"
 #include "util.h"
@@ -52,6 +55,7 @@ void free_netdrv(netdrv_t drv) {
 int create_server(netdrv_t drv, bool increment_port_on_retry) {
   sst_priv_t* priv = get_sst_priv_t(drv);
   SST_ctx_t* ctx = init_SST(sst_config_path);
+  priv->sst_ctx = ctx;
   return create_socket_server(priv->socket_priv->user_specified_port, &priv->socket_priv->socket_descriptor,
                               &priv->socket_priv->port, TCP, increment_port_on_retry);
 }
