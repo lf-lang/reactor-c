@@ -234,7 +234,7 @@ int process_args(int argc, const char* argv[]) {
       rti.base.number_of_scheduling_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
       lf_print("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
     } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
-#ifdef COMM_TYPE_TCP
+#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
       if (argc < i + 2) {
         lf_print_error("--port needs a short unsigned integer argument ( > 0 and < %d).", UINT16_MAX);
         usage(argc, argv);
