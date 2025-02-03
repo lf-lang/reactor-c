@@ -919,6 +919,9 @@ void usage(int argc, const char* argv[]) {
   printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
   printf("  -l\n");
   printf("   Send stdout to individual log files for each federate.\n\n");
+#ifdef COMM_TYPE_SST
+  printf("  -sst, --sst <n>\n");
+#endif
 #endif
 
   printf("Command given:\n");
