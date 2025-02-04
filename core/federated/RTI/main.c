@@ -137,6 +137,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
   lf_print("  -d, --disable_dnet Turn off the use of DNET signals.\n");
+  lf_print("  -sst, --sst SST config path for RTI.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
