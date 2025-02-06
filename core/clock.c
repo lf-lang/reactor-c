@@ -17,7 +17,6 @@ void clock_sync_add_offset(instant_t* t) { (void)t; }
 void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 #endif // defined(FEDERATED)
 
-#ifndef LF_SIMULATE_PHYSICAL_TIME
 static instant_t last_read_physical_time = NEVER;
 int lf_clock_gettime(instant_t* now) {
   instant_t last_read_local;
@@ -43,7 +42,6 @@ int lf_clock_gettime(instant_t* now) {
 
   return 0;
 }
-#endif // LF_SIMULATE_PHYSICAL_TIME
 
 int lf_clock_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
   // Remove any clock sync offset and call the Platform API.

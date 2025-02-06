@@ -4,12 +4,17 @@ set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 include(${LF_ROOT}/core/lf_utils.cmake)
 
 # Get the general common sources for reactor-c
-list(APPEND GENERAL_SOURCES tag.c clock.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
+list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
 
 # Add tracing support if requested
 if(DEFINED LF_TRACE)
     message(STATUS "Including sources specific to tracing.")
     list(APPEND GENERAL_SOURCES tracepoint.c)
+endif()
+
+# Add clock implementation unless specified otherwise.
+if(NOT DEFINED LF_EXTERNAL_CLOCK_IMPLEMENTATION)
+    list(APPEND GENERAL_SOURCES clock.c)
 endif()
 
 # Add the general sources to the list of REACTORC_SOURCES
