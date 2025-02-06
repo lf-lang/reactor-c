@@ -62,7 +62,7 @@ int lf_clock_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
   return _lf_cond_timedwait(cond, wakeup_time);
 }
 #endif // !defined(LF_SINGLE_THREADED)
-#else // defined(LF_EXTERNAL_CLOCK_PLUGIN)
+#else  // defined(LF_EXTERNAL_CLOCK_PLUGIN)
 // The following empty "dummy" function is here to avoid an "Empty translation unit" compiler
 // warning if the user has defined LF_EXTERNAL_CLOCK_PLUGIN to provide their own implementation.
 void __clock_dummy_function(void) {}
