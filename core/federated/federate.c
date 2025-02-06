@@ -1547,13 +1547,13 @@ static void* listen_to_rti_netdrv(void* args) {
     case MSG_TYPE_STOP_GRANTED:
       handle_stop_granted_message();
       break;
-//TODO: Check. RTI does not send MSG_TYPE_PORT_ABSENT
-    // case MSG_TYPE_PORT_ABSENT:
-    //   if (handle_port_absent_message(_fed.netdrv_to_RTI, -1)) {
-    //     // Failures to complete the read of absent messages from the RTI are fatal.
-    //     lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
-    //   }
-    //   break;
+      // TODO: Check. RTI does not send MSG_TYPE_PORT_ABSENT
+      //  case MSG_TYPE_PORT_ABSENT:
+      //    if (handle_port_absent_message(_fed.netdrv_to_RTI, -1)) {
+      //      // Failures to complete the read of absent messages from the RTI are fatal.
+      //      lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
+      //    }
+      //    break;
     case MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG:
       handle_downstream_next_event_tag();
       break;
@@ -2212,7 +2212,8 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   // Trace the event when tracing is enabled
   tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
 
-  int result = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
+  int result = write_to_netdrv_close_on_error(netdrv, 1, header_buffer);
+  result = write_to_netdrv_close_on_error(netdrv, header_length - 1, header_buffer + 1);
   if (result == 0) {
     // Header sent successfully. Send the body.
     result = write_to_netdrv_close_on_error(netdrv, length, message);
