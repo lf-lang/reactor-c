@@ -167,7 +167,8 @@ void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_to_federate(send_DNET, e->id, &tag);
   }
-  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, 1, buffer) || write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length - 1, buffer + 1)) {
+  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, 1, buffer) ||
+      write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length - 1, buffer + 1)) {
     lf_print_error("RTI failed to send downstream next event tag to federate %d.", e->id);
     e->state = NOT_CONNECTED;
   } else {
@@ -238,7 +239,9 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
   }
 
   // Forward the message.
-  write_to_netdrv_fail_on_error(fed->fed_netdrv, message_size + 1, buffer, &rti_mutex,
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, 1, buffer, &rti_mutex, "RTI failed to forward message to federate %d.",
+                                federate_id);
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, message_size, buffer + 1, &rti_mutex,
                                 "RTI failed to forward message to federate %d.", federate_id);
 
   LF_MUTEX_UNLOCK(&rti_mutex);

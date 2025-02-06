@@ -1547,13 +1547,12 @@ static void* listen_to_rti_netdrv(void* args) {
     case MSG_TYPE_STOP_GRANTED:
       handle_stop_granted_message();
       break;
-      // TODO: Check. RTI does not send MSG_TYPE_PORT_ABSENT
-      //  case MSG_TYPE_PORT_ABSENT:
-      //    if (handle_port_absent_message(_fed.netdrv_to_RTI, -1)) {
-      //      // Failures to complete the read of absent messages from the RTI are fatal.
-      //      lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
-      //    }
-      //    break;
+    case MSG_TYPE_PORT_ABSENT:
+      if (handle_port_absent_message(_fed.netdrv_to_RTI, -1)) {
+        // Failures to complete the read of absent messages from the RTI are fatal.
+        lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
+      }
+      break;
     case MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG:
       handle_downstream_next_event_tag();
       break;
