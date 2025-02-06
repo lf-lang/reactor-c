@@ -5,6 +5,12 @@
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Implementations of functions in clock.h.
  */
+
+// By defining the following compile def, the user can provide their own
+// implementation of the clock functions. This allows controlling the
+// physical time the runtime sees. It is useful for integration with simulators
+// or for repeatable test environments.
+#if !defined(LF_EXTERNAL_CLOCK_PLUGIN)
 #include "clock.h"
 #include "low_level_platform.h"
 
@@ -56,3 +62,8 @@ int lf_clock_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
   return _lf_cond_timedwait(cond, wakeup_time);
 }
 #endif // !defined(LF_SINGLE_THREADED)
+#else // defined(LF_EXTERNAL_CLOCK_PLUGIN)
+// The following empty "dummy" function is here to avoid an "Empty translation unit" compiler
+// warning if the user has defined LF_EXTERNAL_CLOCK_PLUGIN to provide their own implementation.
+void __clock_dummy_function(void) {}
+#endif // !defined(LF_EXTERNAL_CLOCK_PLUGIN)
