@@ -6,10 +6,18 @@
  * @brief Implementations of functions in clock.h.
  */
 
-// By defining the following compile def, the user can provide their own
-// implementation of the clock functions. This allows controlling the
-// physical time the runtime sees. It is useful for integration with simulators
-// or for repeatable test environments.
+/**
+ * By providing the following compile def, the user can provide their own
+ * implementation of the clock functions. This allows controlling the
+ * physical time the runtime sees. It is useful for integration with simulators
+ * or for repeatable test environments.
+ * 
+ * Steps to provide an external clock plugin:
+ * 1. Use the cmake-include target property to add a custom CMake file to the build.
+ * 2. Add `target_compile_definition(reactor-uc PUBLIC LF_EXTERNAL_CLOCK_PLUGIN)` to the custom CMake file.
+ * 3. Implement the functions in clock.h in a separate file, e.g. my_clock.c
+ * 4. Add `target_sources(${LF_MAIN_TARGET} PUBLIC my_clock.c)` to the custom CMake file.
+ */
 #if !defined(LF_EXTERNAL_CLOCK_PLUGIN)
 #include "clock.h"
 #include "low_level_platform.h"
