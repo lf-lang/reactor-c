@@ -228,10 +228,10 @@ void* run_audio_loop(void* ignored) {
      * has elapsed.
      */
 
-    if ((error_number = snd_pcm_wait(playback_handle, BUFFER_DURATION_NS / MSEC(1))) < 0) {
-      lf_print_error("Poll failed (%s)\n", strerror(errno));
-      break;
-    }
+    // if ((error_number = snd_pcm_wait(playback_handle, BUFFER_DURATION_NS / MSEC(1))) < 0) {
+    //   lf_print_error("Poll failed (%s)\n", strerror(errno));
+    //   break;
+    // }
 
     /* Find out how much space is available for playback data */
 
