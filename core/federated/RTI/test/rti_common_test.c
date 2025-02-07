@@ -7,7 +7,7 @@
 #include "tag.h"
 
 // The RTI under test.
-static rti_common_t test_rti;
+static rti_common_t test_RTI;
 
 /******************************************Start of Utility
  * Functions******************************************************/
@@ -17,16 +17,16 @@ static rti_common_t test_rti;
  * @param node The node to be freed
  */
 void delete_scheduling_node(scheduling_node_t* node) {
-  if (node->upstream != NULL) {
-    free(node->upstream);
+  if (node->immediate_upstreams != NULL) {
+    free(node->immediate_upstreams);
   }
-  if (node->upstream_delay != NULL) {
-    free(node->upstream_delay);
+  if (node->immediate_upstream_delays != NULL) {
+    free(node->immediate_upstream_delays);
   }
-  if (node->downstream != NULL) {
-    free(node->downstream);
+  if (node->immediate_downstreams != NULL) {
+    free(node->immediate_downstreams);
   }
-  invalidate_min_delays_upstream(node);
+  free(node);
 }
 
 /**
@@ -34,35 +34,35 @@ void delete_scheduling_node(scheduling_node_t* node) {
  * Before calling this function, reset_common_RTI should be called to
  * reset every scheduling nodes.
  * @param id The ID of the scheduling node.
- * @param num_upstream The number of upstreams of the scheduling node.
- * @param num_downstream The number of downstreams of the scheduling node.
- * @param upstream The array of IDs from upstream nodes.
- * @param upstream_delay The array of delays from upstream nodes.
- * @param downstream The array of IDs from downstream nodes.
+ * @param num_immediate_upstreams The number of upstreams of the scheduling node.
+ * @param num_immediate_downstreams The number of downstreams of the scheduling node.
+ * @param immediate_upstreams The array of IDs from immediate upstream nodes.
+ * @param immediate_upstream_delays The array of delays from immediate upstream nodes.
+ * @param immediate_downstreams The array of IDs from immediate downstream nodes.
  */
-void set_scheduling_node(int id, int num_upstream, int num_downstream, int* upstream, interval_t* upstream_delay,
-                         int* downstream) {
-  // Save the number of upstream and downstream nodes.
-  test_rti.scheduling_nodes[id]->num_upstream = num_upstream;
-  test_rti.scheduling_nodes[id]->num_downstream = num_downstream;
+void set_scheduling_node(int id, int num_immediate_upstreams, int num_immediate_downstreams, int* immediate_upstreams,
+                         interval_t* immediate_upstream_delays, int* immediate_downstreams) {
+  // Save the number of immediate upstream and immediate downstream nodes.
+  test_RTI.scheduling_nodes[id]->num_immediate_upstreams = num_immediate_upstreams;
+  test_RTI.scheduling_nodes[id]->num_immediate_downstreams = num_immediate_downstreams;
 
-  // If there is any upstream nodes, store IDs and delays from the upstream nodes into the structure.
-  if (test_rti.scheduling_nodes[id]->num_upstream > 0) {
-    test_rti.scheduling_nodes[id]->upstream =
-        (uint16_t*)calloc(test_rti.scheduling_nodes[id]->num_upstream, sizeof(uint16_t));
-    test_rti.scheduling_nodes[id]->upstream_delay =
-        (interval_t*)calloc(test_rti.scheduling_nodes[id]->num_upstream, sizeof(interval_t));
-    for (int i = 0; i < test_rti.scheduling_nodes[id]->num_upstream; i++) {
-      test_rti.scheduling_nodes[id]->upstream[i] = upstream[i];
-      test_rti.scheduling_nodes[id]->upstream_delay[i] = upstream_delay[i];
+  // If there is any immediate upstream nodes, store IDs and delays from the upstream nodes into the structure.
+  if (test_RTI.scheduling_nodes[id]->num_immediate_upstreams > 0) {
+    test_RTI.scheduling_nodes[id]->immediate_upstreams =
+        (uint16_t*)calloc(test_RTI.scheduling_nodes[id]->num_immediate_upstreams, sizeof(uint16_t));
+    test_RTI.scheduling_nodes[id]->immediate_upstream_delays =
+        (interval_t*)calloc(test_RTI.scheduling_nodes[id]->num_immediate_upstreams, sizeof(interval_t));
+    for (int i = 0; i < test_RTI.scheduling_nodes[id]->num_immediate_upstreams; i++) {
+      test_RTI.scheduling_nodes[id]->immediate_upstreams[i] = immediate_upstreams[i];
+      test_RTI.scheduling_nodes[id]->immediate_upstream_delays[i] = immediate_upstream_delays[i];
     }
   }
-  // If there is any downstream nodes, store IDs of the downstream nodes into the structure.
-  if (test_rti.scheduling_nodes[id]->num_downstream > 0) {
-    test_rti.scheduling_nodes[id]->downstream =
-        (uint16_t*)calloc(test_rti.scheduling_nodes[id]->num_downstream, sizeof(uint16_t));
-    for (int i = 0; i < test_rti.scheduling_nodes[id]->num_downstream; i++) {
-      test_rti.scheduling_nodes[id]->downstream[i] = downstream[i];
+  // If there is any immediate downstream nodes, store IDs of the downstream nodes into the structure.
+  if (test_RTI.scheduling_nodes[id]->num_immediate_downstreams > 0) {
+    test_RTI.scheduling_nodes[id]->immediate_downstreams =
+        (uint16_t*)calloc(test_RTI.scheduling_nodes[id]->num_immediate_downstreams, sizeof(uint16_t));
+    for (int i = 0; i < test_RTI.scheduling_nodes[id]->num_immediate_downstreams; i++) {
+      test_RTI.scheduling_nodes[id]->immediate_downstreams[i] = immediate_downstreams[i];
     }
   }
 }
@@ -72,15 +72,15 @@ void set_scheduling_node(int id, int num_upstream, int num_downstream, int* upst
  * This includes freeing every scheduling node and the array of nodes.
  */
 void reset_common_RTI() {
+  invalidate_min_delays();
   // For every scheduling nodes, delete them and free themselves, too.
-  for (uint16_t i = 0; i < test_rti.number_of_scheduling_nodes; i++) {
-    delete_scheduling_node(test_rti.scheduling_nodes[i]);
-    free(test_rti.scheduling_nodes[i]);
+  for (uint16_t i = 0; i < test_RTI.number_of_scheduling_nodes; i++) {
+    delete_scheduling_node(test_RTI.scheduling_nodes[i]);
   }
   // Free the array of scheduling nodes either. This will be re-created
   // in set_common_RTI().
-  if (test_rti.scheduling_nodes != NULL) {
-    free(test_rti.scheduling_nodes);
+  if (test_RTI.scheduling_nodes != NULL) {
+    free(test_RTI.scheduling_nodes);
   }
 }
 
@@ -90,17 +90,18 @@ void reset_common_RTI() {
  * @param num_nodes The number of scheduling nodes.
  */
 void set_common_RTI(uint16_t num_nodes) {
-  reset_common_RTI();
-
-  test_rti.number_of_scheduling_nodes = num_nodes;
+  test_RTI.number_of_scheduling_nodes = num_nodes;
 
   // Allocate memory for the scheduling nodes
-  test_rti.scheduling_nodes =
-      (scheduling_node_t**)calloc(test_rti.number_of_scheduling_nodes, sizeof(scheduling_node_t*));
-  for (uint16_t i = 0; i < test_rti.number_of_scheduling_nodes; i++) {
+  test_RTI.scheduling_nodes =
+      (scheduling_node_t**)calloc(test_RTI.number_of_scheduling_nodes, sizeof(scheduling_node_t*));
+
+  test_RTI.min_delays = NULL;
+
+  for (uint16_t i = 0; i < test_RTI.number_of_scheduling_nodes; i++) {
     scheduling_node_t* scheduling_node = (scheduling_node_t*)malloc(sizeof(scheduling_node_t));
     initialize_scheduling_node(scheduling_node, i);
-    test_rti.scheduling_nodes[i] = scheduling_node;
+    test_RTI.scheduling_nodes[i] = scheduling_node;
   }
 }
 
@@ -110,8 +111,8 @@ void set_common_RTI(uint16_t num_nodes) {
  * @param state The state that every scheduling node will have.
  */
 void set_state_of_nodes(scheduling_node_state_t state) {
-  for (uint16_t i = 0; i < test_rti.number_of_scheduling_nodes; i++) {
-    test_rti.scheduling_nodes[i]->state = state;
+  for (uint16_t i = 0; i < test_RTI.number_of_scheduling_nodes; i++) {
+    test_RTI.scheduling_nodes[i]->state = state;
   }
 }
 /******************************************End of Utility
@@ -119,6 +120,7 @@ void set_state_of_nodes(scheduling_node_state_t state) {
 
 void valid_cache() {
   set_common_RTI(2);
+  uint16_t n = test_RTI.number_of_scheduling_nodes;
 
   // Construct the structure illustrated below.
   // node[0] --> node[1]
@@ -127,15 +129,19 @@ void valid_cache() {
 
   set_state_of_nodes(GRANTED);
 
+  test_RTI.min_delays = (tag_t*)calloc((n * n), sizeof(tag_t));
+  test_RTI.min_delays[0] = (tag_t){.time = NSEC(1), .microstep = 0};
+
   // If min_delays is not null (the cached data is valid), nothing should be changed.
-  test_rti.scheduling_nodes[1]->num_min_delays = 1;
-  test_rti.scheduling_nodes[1]->min_delays = (minimum_delay_t*)calloc(1, sizeof(minimum_delay_t));
-  update_min_delays_upstream(test_rti.scheduling_nodes[1]);
-  assert(test_rti.scheduling_nodes[1]->num_min_delays == 1);
+  update_min_delays();
+  assert(lf_tag_compare(test_RTI.min_delays[0], (tag_t){.time = NSEC(1), .microstep = 0}) == 0);
+
+  reset_common_RTI();
 }
 
 void not_connected() {
   set_common_RTI(2);
+  uint16_t n = test_RTI.number_of_scheduling_nodes;
 
   // Construct the structure illustrated below.
   // node[0] --> node[1]
@@ -144,13 +150,20 @@ void not_connected() {
 
   set_state_of_nodes(NOT_CONNECTED);
 
-  // If the nodes are not connected, num_min_delays should not be changed.
-  update_min_delays_upstream(test_rti.scheduling_nodes[1]);
-  assert(test_rti.scheduling_nodes[1]->num_min_delays == 0);
+  // If the nodes are not connected, the matrix should be filled with FOREVER_TAG.
+  update_min_delays();
+  for (uint16_t i = 0; i < n; i++) {
+    for (uint16_t j = 0; j < n; j++) {
+      assert(lf_tag_compare(test_RTI.min_delays[i * n + j], FOREVER_TAG) == 0);
+    }
+  }
+
+  reset_common_RTI();
 }
 
 static void two_nodes_no_delay() {
   set_common_RTI(2);
+  uint16_t n = test_RTI.number_of_scheduling_nodes;
 
   // Construct the structure illustrated below.
   // node[0] --> node[1]
@@ -159,18 +172,22 @@ static void two_nodes_no_delay() {
 
   set_state_of_nodes(GRANTED);
 
-  update_min_delays_upstream(test_rti.scheduling_nodes[0]);
-  assert(test_rti.scheduling_nodes[1]->num_min_delays == 0); // node[0] has no upstream nodes.
+  update_min_delays();
+  // The min_delay from 0 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 0 to 1 should be ZERO_TAG which means no delay.
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 1], ZERO_TAG) == 0);
+  // The min_delay from 1 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 1 to 1 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 1], FOREVER_TAG) == 0);
 
-  update_min_delays_upstream(test_rti.scheduling_nodes[1]);
-  assert(test_rti.scheduling_nodes[1]->num_min_delays == 1);   // node[1] has one upstream nodes.
-  assert(test_rti.scheduling_nodes[1]->min_delays[0].id == 0); // node[1]'s upstream node is node[0].
-  // The min_delay between them is node[0] and node[1] which means no delay.
-  assert(lf_tag_compare(test_rti.scheduling_nodes[1]->min_delays[0].min_delay, ZERO_TAG) == 0);
+  reset_common_RTI();
 }
 
 static void two_nodes_zero_delay() {
   set_common_RTI(2);
+  uint16_t n = test_RTI.number_of_scheduling_nodes;
 
   // Construct the structure illustrated below.
   // node[0] --/0/--> node[1]
@@ -179,19 +196,22 @@ static void two_nodes_zero_delay() {
 
   set_state_of_nodes(GRANTED);
 
-  update_min_delays_upstream(test_rti.scheduling_nodes[0]);
-  assert(test_rti.scheduling_nodes[1]->num_min_delays == 0); // node[0] has no upstream nodes.
+  update_min_delays();
+  // The min_delay from 0 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 0 to 1 should be (0, 1).
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 1], (tag_t){.time = 0, .microstep = 1}) == 0);
+  // The min_delay from 1 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 1 to 1 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 1], FOREVER_TAG) == 0);
 
-  update_min_delays_upstream(test_rti.scheduling_nodes[1]);
-  assert(test_rti.scheduling_nodes[1]->num_min_delays == 1);   // node[1] has one upstream nodes.
-  assert(test_rti.scheduling_nodes[1]->min_delays[0].id == 0); // node[1]'s upstream node is node[0].
-  // The min_delay between node[0] and node[1] is (0, 1) which means zero delay.
-  assert(lf_tag_compare(test_rti.scheduling_nodes[1]->min_delays[0].min_delay, (tag_t){.time = 0, .microstep = 1}) ==
-         0);
+  reset_common_RTI();
 }
 
 static void two_nodes_normal_delay() {
   set_common_RTI(2);
+  uint16_t n = test_RTI.number_of_scheduling_nodes;
 
   // Construct the structure illustrated below.
   // node[0] --/1 nsec/--> node[1]
@@ -200,19 +220,81 @@ static void two_nodes_normal_delay() {
 
   set_state_of_nodes(GRANTED);
 
-  update_min_delays_upstream(test_rti.scheduling_nodes[0]);
-  assert(test_rti.scheduling_nodes[1]->num_min_delays == 0); // node[0] has no upstream nodes.
+  update_min_delays();
+  // The min_delay from 0 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 0 to 1 should be (1, 0).
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 1], (tag_t){.time = 1, .microstep = 0}) == 0);
+  // The min_delay from 1 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 1 to 1 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 1], FOREVER_TAG) == 0);
 
-  update_min_delays_upstream(test_rti.scheduling_nodes[1]);
-  assert(test_rti.scheduling_nodes[1]->num_min_delays == 1);   // node[1] has one upstream nodes.
-  assert(test_rti.scheduling_nodes[1]->min_delays[0].id == 0); // node[1]'s upstream node is node[0].
-  // The min_delay between node[0] and node[1] is (1 nsec, 0).
-  assert(lf_tag_compare(test_rti.scheduling_nodes[1]->min_delays[0].min_delay,
-                        (tag_t){.time = NSEC(1), .microstep = 0}) == 0);
+  reset_common_RTI();
+}
+
+static void two_nodes_cycle() {
+  set_common_RTI(2);
+  uint16_t n = test_RTI.number_of_scheduling_nodes;
+
+  // Construct the structure illustrated below.
+  // node[0] --/1 nsec/--> node[1] --> node[0]
+  set_scheduling_node(0, 1, 1, (int[]){1}, (interval_t[]){NEVER}, (int[]){1});
+  set_scheduling_node(1, 1, 1, (int[]){0}, (interval_t[]){NSEC(1)}, (int[]){0});
+
+  set_state_of_nodes(GRANTED);
+
+  update_min_delays();
+  // The min_delay from 0 to 0 should be (1, 0).
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 0], (tag_t){.time = 1, .microstep = 0}) == 0);
+  // The min_delay from 0 to 1 should be (1, 0).
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 1], (tag_t){.time = 1, .microstep = 0}) == 0);
+  // The min_delay from 1 to 0 should be ZERO_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 0], ZERO_TAG) == 0);
+  // The min_delay from 1 to 1 should be (1, 0).
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 1], (tag_t){.time = 1, .microstep = 0}) == 0);
+
+  // Both of them are in a cycle.
+  assert(is_in_cycle(test_RTI.scheduling_nodes[0]) == 1);
+  assert(is_in_cycle(test_RTI.scheduling_nodes[1]) == 1);
+  // Both of them are in a zero delay cycle.
+  assert(is_in_zero_delay_cycle(test_RTI.scheduling_nodes[0]) == 0);
+  assert(is_in_zero_delay_cycle(test_RTI.scheduling_nodes[1]) == 0);
+
+  reset_common_RTI();
+}
+
+static void two_nodes_ZDC() {
+  set_common_RTI(2);
+  uint16_t n = test_RTI.number_of_scheduling_nodes;
+
+  // Construct the structure illustrated below.
+  // node[0] --> node[1] --> node[0]
+  set_scheduling_node(0, 1, 1, (int[]){1}, (interval_t[]){NEVER}, (int[]){1});
+  set_scheduling_node(1, 1, 1, (int[]){0}, (interval_t[]){NEVER}, (int[]){0});
+
+  set_state_of_nodes(GRANTED);
+
+  update_min_delays();
+  // The min_delay from 0 to 0 should be ZERO_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 0], ZERO_TAG) == 0);
+  // The min_delay from 0 to 1 should be ZERO_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 1], ZERO_TAG) == 0);
+  // The min_delay from 1 to 0 should be ZERO_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 0], ZERO_TAG) == 0);
+  // The min_delay from 1 to 1 should be ZERO_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 1], ZERO_TAG) == 0);
+
+  // Both of them are in a zero delay cycle.
+  assert(is_in_zero_delay_cycle(test_RTI.scheduling_nodes[0]) == 1);
+  assert(is_in_zero_delay_cycle(test_RTI.scheduling_nodes[1]) == 1);
+
+  reset_common_RTI();
 }
 
 static void multiple_nodes() {
   set_common_RTI(4);
+  uint16_t n = test_RTI.number_of_scheduling_nodes;
 
   // Construct the structure illustrated below.
   // node[0] --/1 nsec/--> node[1] --/0/--> node[2] --/2 nsec/--> node[3]
@@ -223,36 +305,56 @@ static void multiple_nodes() {
 
   set_state_of_nodes(GRANTED);
 
-  update_min_delays_upstream(test_rti.scheduling_nodes[2]);
-  assert(test_rti.scheduling_nodes[2]->num_min_delays == 2);   // node[2] has two upstream nodes.
-  assert(test_rti.scheduling_nodes[2]->min_delays[1].id == 1); // node[2]'s first upstream node is node[1].
-  // The min_delay between node[1] and node[2] is (0, 1), which denotes zero delay.
-  assert(lf_tag_compare(test_rti.scheduling_nodes[2]->min_delays[1].min_delay, (tag_t){0, 1}) == 0);
-  assert(test_rti.scheduling_nodes[2]->min_delays[0].id == 0); // node[2]'s second upstream node is node[0].
-  // The min_delay between node[0] and node[2] is (1 nsec, 1) = 1 nsec + zero delay.
-  assert(lf_tag_compare(test_rti.scheduling_nodes[2]->min_delays[0].min_delay, (tag_t){NSEC(1), 1}) == 0);
+  update_min_delays();
+  // The min_delay from 0 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 0 to 1 should be (1, 0).
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 1], (tag_t){.time = 1, .microstep = 0}) == 0);
+  // The min_delay from 0 to 2 should be (1, 1).
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 2], (tag_t){.time = 1, .microstep = 1}) == 0);
+  // The min_delay from 0 to 3 should be (3, 0).
+  assert(lf_tag_compare(test_RTI.min_delays[0 * n + 3], (tag_t){.time = 3, .microstep = 0}) == 0);
 
-  update_min_delays_upstream(test_rti.scheduling_nodes[3]);
-  assert(test_rti.scheduling_nodes[3]->num_min_delays == 3);   // node[3] has three upstream nodes.
-  assert(test_rti.scheduling_nodes[3]->min_delays[2].id == 2); // node[3]'s first upstream node is node [2].
-  // The min_delay between node[2] and node[3] is (2 nsec, 0).
-  assert(lf_tag_compare(test_rti.scheduling_nodes[3]->min_delays[2].min_delay, (tag_t){NSEC(2), 0}) == 0);
-  assert(test_rti.scheduling_nodes[3]->min_delays[1].id == 1); // node[3]'s second upstream node is node [1].
-  // The min_delay between node[1] and node[3] is (2 nsec, 0) = zero_delay + 2 nsec.
-  assert(lf_tag_compare(test_rti.scheduling_nodes[3]->min_delays[1].min_delay, (tag_t){NSEC(2), 0}) == 0);
-  assert(test_rti.scheduling_nodes[3]->min_delays[0].id == 0); // node[3]'s third upstream node is node [0].
-  // The min_delay between node[0] and node[3] is (3 nsec, 0) = 1 nsec + zero_delay + 2 nsec.
-  assert(lf_tag_compare(test_rti.scheduling_nodes[3]->min_delays[0].min_delay, (tag_t){NSEC(3), 0}) == 0);
+  // The min_delay from 1 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 1 to 1 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 1], FOREVER_TAG) == 0);
+  // The min_delay from 1 to 2 should be (0, 1).
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 2], (tag_t){.time = 0, .microstep = 1}) == 0);
+  // The min_delay from 1 to 3 should be (2, 0).
+  assert(lf_tag_compare(test_RTI.min_delays[1 * n + 3], (tag_t){.time = 2, .microstep = 0}) == 0);
+
+  // The min_delay from 2 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[2 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 2 to 1 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[2 * n + 1], FOREVER_TAG) == 0);
+  // The min_delay from 2 to 2 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[2 * n + 2], FOREVER_TAG) == 0);
+  // The min_delay from 2 to 3 should be (2, 0).
+  assert(lf_tag_compare(test_RTI.min_delays[2 * n + 3], (tag_t){.time = 2, .microstep = 0}) == 0);
+
+  // The min_delay from 3 to 0 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[3 * n + 0], FOREVER_TAG) == 0);
+  // The min_delay from 3 to 1 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[3 * n + 1], FOREVER_TAG) == 0);
+  // The min_delay from 3 to 2 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[3 * n + 2], FOREVER_TAG) == 0);
+  // The min_delay from 3 to 3 should be FOREVER_TAG.
+  assert(lf_tag_compare(test_RTI.min_delays[3 * n + 3], FOREVER_TAG) == 0);
+
+  reset_common_RTI();
 }
 
 int main() {
-  initialize_rti_common(&test_rti);
+  initialize_rti_common(&test_RTI);
 
-  // Tests for the function update_min_delays_upstream()
+  // Tests for the function update_min_delays
   valid_cache();
   not_connected();
   two_nodes_no_delay();
   two_nodes_zero_delay();
   two_nodes_normal_delay();
+  two_nodes_cycle();
+  two_nodes_ZDC();
   multiple_nodes();
 }
