@@ -3,13 +3,17 @@
 
 #include "socket_common.h"
 
+#if defined(COMM_TYPE_SST)
+#include "lf_sst_support.h"
+#endif
+
 typedef void* netdrv_t;
 
 /**
  * Allocate memory for the network driver.
  * @return netdrv_t Initialized network driver.
  */
-netdrv_t initialize_netdrv();
+netdrv_t initialize_netdrv(void);
 
 /**
  * Create a netdriver server. This is such as a server socket which accepts connections.
