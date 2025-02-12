@@ -75,8 +75,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   // This function is called in notify_advance_grant_if_safe(), which is a long
   // function. During this call, the network driver might close, causing the following write_to_netdrv
   // to fail. Consider a failure here a soft failure and update the federate's status.
-  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, 1, buffer) ||
-      write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length - 1, buffer + 1)) {
+  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
     e->state = NOT_CONNECTED;
   } else {
@@ -109,8 +108,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   // This function is called in notify_advance_grant_if_safe(), which is a long
   // function. During this call, the network driver might close, causing the following write_to_netdrv
   // to fail. Consider a failure here a soft failure and update the federate's status.
-  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, 1, buffer) ||
-      write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length - 1, buffer + 1)) {
+  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
     e->state = NOT_CONNECTED;
   } else {
@@ -167,8 +165,7 @@ void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_to_federate(send_DNET, e->id, &tag);
   }
-  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, 1, buffer) ||
-      write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length - 1, buffer + 1)) {
+  if (write_to_netdrv(((federate_info_t*)e)->fed_netdrv, message_length, buffer)) {
     lf_print_error("RTI failed to send downstream next event tag to federate %d.", e->id);
     e->state = NOT_CONNECTED;
   } else {
@@ -239,17 +236,16 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
   }
 
   // Forward the message.
-  write_to_netdrv_fail_on_error(fed->fed_netdrv, 1, buffer, &rti_mutex, "RTI failed to forward message to federate %d.",
-                                federate_id);
-  write_to_netdrv_fail_on_error(fed->fed_netdrv, message_size, buffer + 1, &rti_mutex,
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, message_size + 1, buffer, &rti_mutex,
                                 "RTI failed to forward message to federate %d.", federate_id);
 
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
 void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer) {
-  size_t header_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(int64_t) + sizeof(uint32_t);
-  read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, header_size, &(buffer[1]), NULL,
+  size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(int64_t) + sizeof(uint32_t);
+  // Read the header, minus the first byte which has already been read.
+  read_from_netdrv_fail_on_error(sending_federate->fed_netdrv, header_size - 1, &(buffer[1]), NULL,
                                  "RTI failed to read the timed message header from remote federate.");
   // Extract the header information. of the sender
   uint16_t reactor_port_id;
@@ -335,9 +331,8 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_to_federate(send_TAGGED_MSG, federate_id, &intended_tag);
   }
-  write_to_netdrv_fail_on_error(fed->fed_netdrv, 1, buffer, &rti_mutex,
-                                "RTI failed to forward message header to federate %d.", federate_id);
-  write_to_netdrv_fail_on_error(fed->fed_netdrv, bytes_read - 1, buffer + 1, &rti_mutex,
+
+  write_to_netdrv_fail_on_error(fed->fed_netdrv, bytes_read, buffer, &rti_mutex,
                                 "RTI failed to forward message to federate %d.", federate_id);
 
   // The message length may be longer than the buffer,
@@ -463,10 +458,7 @@ static void broadcast_stop_time_to_federates_locked() {
     if (rti_remote->base.tracing_enabled) {
       tracepoint_rti_to_federate(send_STOP_GRN, fed->enclave.id, &rti_remote->base.max_stop_tag);
     }
-    write_to_netdrv_fail_on_error(fed->fed_netdrv, 1, outgoing_buffer, &rti_mutex,
-                                  "RTI failed to send MSG_TYPE_STOP_GRANTED message header to federate %d.",
-                                  fed->enclave.id);
-    write_to_netdrv_fail_on_error(fed->fed_netdrv, MSG_TYPE_STOP_GRANTED_LENGTH - 1, outgoing_buffer + 1, &rti_mutex,
+    write_to_netdrv_fail_on_error(fed->fed_netdrv, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer, &rti_mutex,
                                   "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", fed->enclave.id);
   }
 
@@ -586,11 +578,8 @@ void handle_stop_request_message(federate_info_t* fed) {
       if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_to_federate(send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
       }
-      write_to_netdrv_fail_on_error(f->fed_netdrv, 1, stop_request_buffer, &rti_mutex,
-                                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message header to federate %d.",
-                                    f->enclave.id);
-      write_to_netdrv_fail_on_error(f->fed_netdrv, MSG_TYPE_STOP_REQUEST_LENGTH - 1, stop_request_buffer + 1,
-                                    &rti_mutex, "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.",
+      write_to_netdrv_fail_on_error(f->fed_netdrv, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
+                                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.",
                                     f->enclave.id);
     }
   }

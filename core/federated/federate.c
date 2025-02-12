@@ -111,9 +111,7 @@ static void send_time(unsigned char type, instant_t time) {
   tracepoint_federate_to_rti(send_TIMESTAMP, _lf_my_fed_id, &tag);
 
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, 1, buffer, &lf_outbound_netdrv_mutex,
-                                "Failed to send MSG_TYPE_TIMESTAMP header.");
-  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, bytes_to_write - 1, buffer + 1, &lf_outbound_netdrv_mutex,
+  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
                                 "Failed to send time " PRINTF_TIME " to the RTI.", time - start_time);
   LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 }
@@ -140,8 +138,7 @@ static void send_tag(unsigned char type, tag_t tag) {
   trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
-  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, 1, buffer, &lf_outbound_netdrv_mutex, "Failed to send tag header.");
-  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, bytes_to_write - 1, buffer + 1, &lf_outbound_netdrv_mutex,
+  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, bytes_to_write, buffer, &lf_outbound_netdrv_mutex,
                                 "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
   LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 }
@@ -1420,9 +1417,7 @@ static void handle_stop_request_message() {
 
   // Send the current logical time to the RTI.
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, 1, outgoing_buffer, &lf_outbound_netdrv_mutex,
-                                "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
-  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1, outgoing_buffer + 1,
+  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer,
                                 &lf_outbound_netdrv_mutex,
                                 "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
   LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
@@ -1715,9 +1710,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     tracepoint_federate_to_rti(send_ADR_QR, _lf_my_fed_id, NULL);
 
     LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-    write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, 1, buffer, &lf_outbound_netdrv_mutex,
-                                  "Failed to send address query header for federate %d to RTI.", remote_federate_id);
-    write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, sizeof(uint16_t), buffer + 1, &lf_outbound_netdrv_mutex,
+    write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, sizeof(uint16_t) + 1, buffer, &lf_outbound_netdrv_mutex,
                                   "Failed to send address query for federate %d to RTI.", remote_federate_id);
     LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
@@ -1977,9 +1970,7 @@ void lf_create_server(int specified_port) {
   tracepoint_federate_to_rti(send_ADR_AD, _lf_my_fed_id, NULL);
 
   // No need for a mutex because we have the only handle on this network driver.
-  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, 1, (unsigned char*)buffer, NULL,
-                                "Failed to send address advertisement header.");
-  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, sizeof(int32_t), (unsigned char*)buffer + 1, NULL,
+  write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
                                 "Failed to send address advertisement.");
 
   LF_PRINT_DEBUG("Sent port %d to the RTI.", server_port);
@@ -2211,8 +2202,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   // Trace the event when tracing is enabled
   tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
 
-  int result = write_to_netdrv_close_on_error(netdrv, 1, header_buffer);
-  result = write_to_netdrv_close_on_error(netdrv, header_length - 1, header_buffer + 1);
+  int result = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
   if (result == 0) {
     // Header sent successfully. Send the body.
     result = write_to_netdrv_close_on_error(netdrv, length, message);
@@ -2420,8 +2410,7 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   }
 
   LF_MUTEX_LOCK(&lf_outbound_netdrv_mutex);
-  int result = write_to_netdrv_close_on_error(netdrv, 1, buffer);
-  result = write_to_netdrv_close_on_error(netdrv, message_length - 1, buffer + 1);
+  int result = write_to_netdrv_close_on_error(netdrv, message_length, buffer);
   LF_MUTEX_UNLOCK(&lf_outbound_netdrv_mutex);
 
   if (result != 0) {
@@ -2458,11 +2447,9 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
     }
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_STOP_REQ, _lf_my_fed_id, &stop_tag);
-    write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, 1, buffer, &lf_outbound_netdrv_mutex,
-                                  "Failed to send stop request header.");
-    write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, MSG_TYPE_STOP_REQUEST_LENGTH - 1, buffer + 1,
-                                  &lf_outbound_netdrv_mutex, "Failed to send stop time " PRINTF_TIME " to the RTI.",
-                                  stop_tag.time - start_time);
+
+    write_to_netdrv_fail_on_error(_fed.netdrv_to_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, buffer, &lf_outbound_netdrv_mutex,
+                                  "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
 
     // Treat this sending  as equivalent to having received a stop request from the RTI.
     _fed.received_stop_request_from_rti = true;
@@ -2536,8 +2523,8 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   if (lf_tag_compare(_fed.last_DNET, current_message_intended_tag) > 0) {
     _fed.last_DNET = current_message_intended_tag;
   }
-  int result = write_to_netdrv_close_on_error(netdrv, 1, header_buffer);
-  result = write_to_netdrv_close_on_error(netdrv, header_length - 1, header_buffer + 1);
+
+  int result = write_to_netdrv_close_on_error(netdrv, header_length, header_buffer);
   if (result == 0) {
     // Header sent successfully. Send the body.
     result = write_to_netdrv_close_on_error(netdrv, length, message);
