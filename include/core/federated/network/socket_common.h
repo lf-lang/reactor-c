@@ -240,4 +240,14 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
 
+/**
+ * Shutdown and close the socket. If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR
+ * and close(). If read_before_closing is true, it calls shutdown with SHUT_WR, only disallowing further writing. Then,
+ * it calls read() until EOF is received, and discards all received bytes.
+ * @param socket Pointer to the socket descriptor to shutdown and close.
+ * @param read_before_closing If true, read until EOF before closing the socket.
+ * @return int 0 for success and -1 for an error.
+ */
+int shutdown_socket(int* socket, bool read_before_closing);
+
 #endif /* SOCKET_COMMON_H */
