@@ -42,6 +42,7 @@ void invalidate_min_delays() {
       node->flags = 0; // All flags cleared because they get set lazily.
     }
     free(rti_common->min_delays);
+    rti_common->min_delays = NULL;
   }
 }
 
@@ -101,6 +102,8 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
     if (lf_tag_compare(rti_common->min_delays[i * n + e->id], FOREVER_TAG) != 0) {
       // Node i is upstream of e with min delay rti_common->min_delays[i * n + e->id]
       scheduling_node_t* upstream = rti_common->scheduling_nodes[i];
+      if (upstream->state == NOT_CONNECTED)
+        continue;
       // If we haven't heard from the upstream node, then assume it can send an event at the start time.
       if (lf_tag_compare(upstream->next_event, NEVER_TAG) == 0) {
         tag_t start_tag = {.time = start_time, .microstep = 0};
@@ -163,6 +166,9 @@ tag_t eimt_strict(scheduling_node_t* e) {
 tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
   tag_advance_grant_t result = {.tag = NEVER_TAG, .is_provisional = false};
 
+  // Check how many upstream federates are connected
+  int num_connected_upstream = 0;
+
   // Find the earliest LTC of upstream scheduling_nodes (M).
   tag_t min_upstream_completed = FOREVER_TAG;
 
@@ -172,6 +178,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     // Ignore this enclave/federate if it is not connected.
     if (upstream->state == NOT_CONNECTED)
       continue;
+    num_connected_upstream++;
 
     // Adjust by the "after" delay.
     // Note that "no delay" is encoded as NEVER,
@@ -184,8 +191,15 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
   }
   LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is " PRINTF_TAG "(adjusted by after delay).", e->id,
                min_upstream_completed.time - start_time, min_upstream_completed.microstep);
-  if (lf_tag_compare(min_upstream_completed, e->last_granted) > 0 &&
-      lf_tag_compare(min_upstream_completed, e->next_event) >= 0 // The enclave has to advance its tag
+
+  if (num_connected_upstream == 0) {
+    // When none of the upstream federates is connected (case of transients),
+    if (lf_tag_compare(e->next_event, FOREVER_TAG) != 0) {
+      result.tag = e->next_event;
+      return result;
+    }
+  } else if (lf_tag_compare(min_upstream_completed, e->last_granted) > 0 &&
+             lf_tag_compare(min_upstream_completed, e->next_event) >= 0 // The enclave has to advance its tag
   ) {
     result.tag = min_upstream_completed;
     return result;

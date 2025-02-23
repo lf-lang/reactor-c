@@ -219,6 +219,14 @@ instant_t lf_time_physical_elapsed(void);
 instant_t lf_time_start(void);
 
 /**
+ * Return the tag at which the execution effectively started.
+ * Most of the time, this will default to {.time = start_time, .microstep: 0}.
+ * When the reactor is a transient federate, however, the value will be different.
+ * @return A tag.
+ */
+tag_t lf_tag_start_effective(void);
+
+/**
  * For user-friendly reporting of time values, the buffer length required.
  * This is calculated as follows, based on 64-bit time in nanoseconds:
  * Maximum number of weeks is 15,250
