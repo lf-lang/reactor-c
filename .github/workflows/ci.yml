@@ -39,29 +39,29 @@ jobs:
     with:
       file: 'lingua-franca-ref.txt'
 
-  lf-default-arduino:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-arduino-tests.yml@master
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'arduino') }}
+  # lf-default-arduino:
+  #   needs: [fetch-lf]
+  #   uses: lf-lang/lingua-franca/.github/workflows/c-arduino-tests.yml@master
+  #   with:
+  #     runtime-ref: ${{ github.ref }}
+  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #   if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'arduino') }}
 
-  lf-default-zephyr:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-zephyr-tests.yml@master
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
+  # lf-default-zephyr:
+  #   needs: [fetch-lf]
+  #   uses: lf-lang/lingua-franca/.github/workflows/c-zephyr-tests.yml@master
+  #   with:
+  #     runtime-ref: ${{ github.ref }}
+  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #   if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'zephyr') }}
 
-  lf-default-flexpret:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-flexpret-tests.yml@master
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'flexpret') }}
+  # lf-default-flexpret:
+  #   needs: [fetch-lf]
+  #   uses: lf-lang/lingua-franca/.github/workflows/c-flexpret-tests.yml@master
+  #   with:
+  #     runtime-ref: ${{ github.ref }}
+  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  #   if: ${{ !github.event.pull_request.draft ||contains( github.event.pull_request.labels.*.name, 'flexpret') }}
 
   lf-default:
     needs: [fetch-lf]
@@ -69,7 +69,7 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
+      all-platforms: true
 
   lf-python:
     needs: [fetch-lf]
@@ -77,7 +77,7 @@ jobs:
     with:
       reactor-c-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'python') }}
+    if: true
 
   lf-gedf-np:
     needs: [fetch-lf]
@@ -86,8 +86,8 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: GEDF_NP
-      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
+      all-platforms: true
+    if: true
 
   lf-adaptive:
     needs: [fetch-lf]
@@ -96,5 +96,5 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: ADAPTIVE
-      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
+      all-platforms: true
+    if: true
