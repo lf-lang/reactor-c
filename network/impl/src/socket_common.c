@@ -21,9 +21,9 @@
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-// Mutex lock held while performing networ driver close operations.
-// A deadlock can occur if two threads simulataneously attempt to close the same network driver.
-lf_mutex_t netdrv_mutex;
+// Mutex lock held while performing network channel close operations.
+// A deadlock can occur if two threads simulataneously attempt to close the same network channel.
+lf_mutex_t netchan_mutex;
 
 int create_real_time_tcp_socket_errexit(void) {
   int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
