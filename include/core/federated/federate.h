@@ -32,16 +32,16 @@
  */
 typedef struct federate_instance_t {
   /**
-   * The network driver for this federate to communicate with the RTI.
+   * The network channel for this federate to communicate with the RTI.
    * This is set by lf_connect_to_rti(), which must be called before other
    * functions that communicate with the rti are called.
    */
-  netdrv_t netdrv_to_RTI;
+  netchan_t netchan_to_RTI;
 
   /**
    * Thread listening for incoming messages from the RTI.
    */
-  lf_thread_t RTI_netdrv_listener;
+  lf_thread_t RTI_netchan_listener;
 
   /**
    * Number of inbound physical connections to the federate.
@@ -65,50 +65,50 @@ typedef struct federate_instance_t {
   size_t number_of_outbound_p2p_connections;
 
   /**
-   * An array that holds the network drivers for inbound
+   * An array that holds the network channels for inbound
    * connections from each federate. The index will be the federate
    * ID of the remote sending federate. This is initialized at startup
-   * to NULL and is set to the pointer of the network driver by lf_connect_to_federate()
-   * when the network drivers is opened.
+   * to NULL and is set to the pointer of the network channel by lf_connect_to_federate()
+   * when the network channels is opened.
    *
-   * @note There will not be an inbound network driver unless a physical connection
+   * @note There will not be an inbound network channel unless a physical connection
    * or a p2p logical connection (by setting the coordination target property
    * to "distributed") is specified in the Lingua Franca program where this
    * federate is the destination. Multiple incoming p2p connections from the
-   * same remote federate will use the same network driver.
+   * same remote federate will use the same network channel.
    */
-  netdrv_t netdrvs_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+  netchan_t netchans_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
-   * An array that holds the network drivers for outbound direct
+   * An array that holds the network channels for outbound direct
    * connections to each remote federate. The index will be the federate
    * ID of the remote receiving federate. This is initialized at startup
-   * to NULL and is set to the pointer of the network driver by lf_connect_to_federate()
-   * when the network drivers is opened.
+   * to NULL and is set to the pointer of the network channel by lf_connect_to_federate()
+   * when the network channels is opened.
    *
-   * @note This federate will not open an outbound network drivers unless a physical
+   * @note This federate will not open an outbound network channels unless a physical
    * connection or a p2p logical connection (by setting the coordination target
    * property to "distributed") is specified in the Lingua Franca
    * program where this federate acts as the source. Multiple outgoing p2p
-   * connections to the same remote federate will use the same network drivers.
+   * connections to the same remote federate will use the same network channels.
    */
-  netdrv_t netdrvs_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+  netchan_t netchans_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
-   * Thread ID for a thread that accepts network drivers and then supervises
-   * listening to those network drivers for incoming P2P (physical) connections.
+   * Thread ID for a thread that accepts network channels and then supervises
+   * listening to those network channels for incoming P2P (physical) connections.
    */
   lf_thread_t inbound_p2p_handling_thread_id;
 
   /**
-   * A network driver for the server of the federate.
+   * A network channel for the server of the federate.
    * This is assigned in lf_create_server().
-   * This network driver is used to listen to incoming physical connections from
+   * This network channel is used to listen to incoming physical connections from
    * remote federates. Once an incoming connection is accepted, the
-   * opened network driver will be stored in
-   * federate_netdrvs_for_inbound_p2p_connections.
+   * opened network channel will be stored in
+   * federate_netchans_for_inbound_p2p_connections.
    */
-  netdrv_t server_netdrv;
+  netchan_t server_netchan;
 
   /**
    * Most recent tag advance grant (TAG) received from the RTI, or NEVER if none
@@ -215,9 +215,9 @@ typedef enum parse_rti_code_t { SUCCESS, INVALID_PORT, INVALID_HOST, INVALID_USE
 // Global variables
 
 /**
- * Mutex lock held while performing network driver write and close operations.
+ * Mutex lock held while performing network channel write and close operations.
  */
-extern lf_mutex_t lf_outbound_netdrv_mutex;
+extern lf_mutex_t lf_outbound_netchan_mutex;
 
 /**
  * Condition variable for blocking on unkonwn federate input ports.
@@ -234,10 +234,10 @@ extern lf_cond_t lf_port_status_changed;
  * to send messages directly to the specified federate.
  * This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain
  * the IP address and port number of the specified federate. It then attempts
- * to establish a network driver connection to the specified federate.
+ * to establish a network channel connection to the specified federate.
  * If this fails, the program exits. If it succeeds, it sets element [id] of
- * the _fed.netdrvs_for_outbound_p2p_connections global array to
- * refer to the network driver for communicating directly with the federate.
+ * the _fed.netchans_for_outbound_p2p_connections global array to
+ * refer to the network channel for communicating directly with the federate.
  * @param remote_federate_id The ID of the remote federate.
  */
 void lf_connect_to_federate(uint16_t);
@@ -245,12 +245,12 @@ void lf_connect_to_federate(uint16_t);
 /**
  * @brief Connect to the RTI at the specified host and port.
  *
- * This will return the network driver for the connection.
+ * This will return the network channel for the connection.
  * If port_number is 0, then start at DEFAULT_PORT and increment
  * the port number on each attempt. If an attempt fails, wait CONNECT_RETRY_INTERVAL
  * and try again.  If it fails after CONNECT_TIMEOUT, the program exits.
- * If it succeeds, it sets the _fed.netdrv_to_RTI global variable to refer to
- * the network driver for communicating with the RTI.
+ * If it succeeds, it sets the _fed.netchan_to_RTI global variable to refer to
+ * the network channel for communicating with the RTI.
  * @param hostname A hostname, such as "localhost".
  * @param port_number A port number or 0 to start with the default.
  */
@@ -260,8 +260,8 @@ void lf_connect_to_rti(const char* hostname, int port_number);
  * @brief Create a server to listen to incoming P2P connections.
  *
  * Such connections are used for physical connections or any connection if using
- * decentralized coordination. This function only handles the creation of the server network driver.
- * The bound port for the server network driver is then sent to the RTI by sending an
+ * decentralized coordination. This function only handles the creation of the server network channel.
+ * The bound port for the server network channel is then sent to the RTI by sending an
  * MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
  * This function expects no response from the RTI.
  *
@@ -288,8 +288,8 @@ void lf_enqueue_port_absent_reactions(environment_t* env);
  *
  * This thread accepts connections from federates that send messages directly
  * to this one (not through the RTI). This thread starts a thread for
- * each accepted network driver connection to read messages and, once it has opened all expected
- * network drivers, exits.
+ * each accepted network channel connection to read messages and, once it has opened all expected
+ * network channels, exits.
  * @param ignored No argument needed for this thread.
  */
 void* lf_handle_p2p_connections_from_federates(void*);
@@ -331,7 +331,7 @@ void lf_reset_status_fields_on_input_port_triggers();
  * between federates. If the connection to the remote federate or the RTI has been broken,
  * then this returns -1 without sending. Otherwise, it returns 0.
  *
- * This method assumes that the caller does not hold the lf_outbound_netdrv_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_netchan_mutex lock,
  * which it acquires to perform the send.
  *
  * @param message_type The type of the message being sent (currently only MSG_TYPE_P2P_MESSAGE).
@@ -354,7 +354,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
  * information is needed for the RTI to perform the centralized coordination.
  * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
  */
-void lf_send_neighbor_structure_to_RTI(netdrv_t);
+void lf_send_neighbor_structure_to_RTI(netchan_t);
 
 /**
  * @brief Send a next event tag (NET) signal.
@@ -433,7 +433,7 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
  *
  * The payload is the specified tag plus one microstep. If this federate has previously
  * received a stop request from the RTI, then do not send the message and
- * return 1. Return -1 if the network driver is disconnected. Otherwise, return 0.
+ * return 1. Return -1 if the network channel is disconnected. Otherwise, return 0.
  * @return 0 if the message is sent.
  */
 int lf_send_stop_request_to_rti(tag_t stop_tag);
@@ -445,7 +445,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  * If the delayed tag falls after the timeout time, then the message is not sent and -1 is returned.
  * The caller can reuse or free the memory storing the message after this returns.
  *
- * If the message fails to send (e.g. the network driver connection is broken), then the
+ * If the message fails to send (e.g. the network channel connection is broken), then the
  * response depends on the message_type.  For MSG_TYPE_TAGGED_MESSAGE, the message is
  * supposed to go via the RTI, and failure to communicate with the RTI is a critical failure.
  * In this case, the program will exit with an error message. If the message type is
@@ -454,7 +454,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  * to believe that there were no messages forthcoming.  In this case, on failure to send
  * the message, this function returns -11.
  *
- * This method assumes that the caller does not hold the lf_outbound_netdrv_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_netchan_mutex lock,
  * which it acquires to perform the send.
  *
  * @param env The environment from which to get the current tag.
@@ -510,7 +510,7 @@ void lf_stall_advance_level_federation_locked(size_t level);
  * @brief Synchronize the start with other federates via the RTI.
  *
  * This assumes that a connection to the RTI is already made
- * and netdrv_to_RTI is valid. It then sends the current logical
+ * and netchan_to_RTI is valid. It then sends the current logical
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
  */
