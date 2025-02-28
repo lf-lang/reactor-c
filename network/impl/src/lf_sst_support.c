@@ -1,5 +1,5 @@
-#include <stdlib.h>    // malloc()
-#include <string.h>    // strncpy()
+#include <stdlib.h> // malloc()
+#include <string.h> // strncpy()
 
 #include "net_driver.h"
 #include "lf_sst_support.h"
