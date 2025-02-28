@@ -74,6 +74,11 @@ typedef enum socket_type_t { TCP, UDP } socket_type_t;
 extern lf_mutex_t socket_mutex;
 
 /**
+ * Mutex protecting socket shutdown operations.
+ */
+extern lf_mutex_t shutdown_mutex;
+
+/**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
  * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
  * on any error.
