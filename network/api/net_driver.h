@@ -16,8 +16,8 @@ typedef void* netchan_t;
 netchan_t initialize_netchan(void);
 
 /**
- * Create a netdriver server. This is such as a server socket which accepts connections.
- * However this is only the creation of the server netdriver.
+ * Create a netchannel server. This is such as a server socket which accepts connections.
+ * However this is only the creation of the server network channel.
  *
  * @param chan Server's network channel.
  * @param serv_type Type of server, RTI or FED.

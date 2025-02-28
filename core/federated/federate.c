@@ -72,7 +72,7 @@ int max_level_allowed_to_advance;
  * and the _fed global variable refers to that instance.
  */
 federate_instance_t _fed = {.number_of_inbound_p2p_connections = 0,
-                            .inbound_netdriv_listeners = NULL,
+                            .inbound_netchan_listeners = NULL,
                             .number_of_outbound_p2p_connections = 0,
                             .inbound_p2p_handling_thread_id = 0,
                             .last_TAG = {.time = NEVER, .microstep = 0u},
@@ -1664,12 +1664,12 @@ void lf_terminate_execution(environment_t* env) {
 
   LF_PRINT_DEBUG("Waiting for inbound p2p network channel listener threads.");
   // Wait for each inbound network channel listener thread to close.
-  if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_netdriv_listeners != NULL) {
+  if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_netchan_listeners != NULL) {
     LF_PRINT_LOG("Waiting for %zu threads listening for incoming messages to exit.",
                  _fed.number_of_inbound_p2p_connections);
     for (size_t i = 0; i < _fed.number_of_inbound_p2p_connections; i++) {
       // Ignoring errors here.
-      lf_thread_join(_fed.inbound_netdriv_listeners[i], NULL);
+      lf_thread_join(_fed.inbound_netchan_listeners[i], NULL);
     }
   }
 
@@ -1680,7 +1680,7 @@ void lf_terminate_execution(environment_t* env) {
   // For abnormal termination, there is no need to free memory.
   if (_lf_normal_termination) {
     LF_PRINT_DEBUG("Freeing memory occupied by the federate.");
-    free(_fed.inbound_netdriv_listeners);
+    free(_fed.inbound_netchan_listeners);
     free(federation_metadata.rti_host);
     free(federation_metadata.rti_user);
   }
@@ -2004,7 +2004,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   LF_ASSERT_NON_NULL(env_arg);
   size_t received_federates = 0;
   // Allocate memory to store thread IDs.
-  _fed.inbound_netdriv_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
+  _fed.inbound_netchan_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
     // Wait for an incoming connection request.
     netchan_t netchan = accept_netchan(_fed.server_netchan, _fed.netchan_to_RTI);
@@ -2082,7 +2082,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Start a thread to listen for incoming messages from other federates.
     // The fed_id is a uint16_t, which we assume can be safely cast to and from void*.
     void* fed_id_arg = (void*)(uintptr_t)remote_fed_id;
-    int result = lf_thread_create(&_fed.inbound_netdriv_listeners[received_federates], listen_to_federates, fed_id_arg);
+    int result = lf_thread_create(&_fed.inbound_netchan_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
       LF_MUTEX_LOCK(&netchan_mutex);
