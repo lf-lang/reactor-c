@@ -7,15 +7,15 @@
 
 const char* sst_config_path; // The SST's configuration file path.
 
-static sst_priv_t* get_sst_priv_t(netdrv_t drv) {
-  if (drv == NULL) {
+static sst_priv_t* get_sst_priv_t(netchan_t chan) {
+  if (chan == NULL) {
     lf_print_error("Network driver is already closed.");
     return NULL;
   }
-  return (sst_priv_t*)drv;
+  return (sst_priv_t*)chan;
 }
 
-netdrv_t initialize_netdrv() {
+netchan_t initialize_netchan() {
   // Initialize sst_priv.
   sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
   if (sst_priv == NULL) {
@@ -43,40 +43,40 @@ netdrv_t initialize_netdrv() {
   sst_priv->sst_ctx = NULL;
   sst_priv->session_ctx = NULL;
 
-  return (netdrv_t)sst_priv;
+  return (netchan_t)sst_priv;
 }
 
-void free_netdrv(netdrv_t drv) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+void free_netchan(netchan_t chan) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   free(priv->socket_priv);
   free(priv);
 }
 
-int create_server(netdrv_t drv, bool increment_port_on_retry) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+int create_server(netchan_t chan, bool increment_port_on_retry) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   SST_ctx_t* ctx = init_SST(sst_config_path);
   priv->sst_ctx = ctx;
   return create_socket_server(priv->socket_priv->user_specified_port, &priv->socket_priv->socket_descriptor,
                               &priv->socket_priv->port, TCP, increment_port_on_retry);
 }
 
-netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv) {
-  sst_priv_t* serv_priv = get_sst_priv_t(server_drv);
+netchan_t accept_netchan(netchan_t server_chan, netchan_t rti_chan) {
+  sst_priv_t* serv_priv = get_sst_priv_t(server_chan);
   int rti_socket;
-  if (rti_drv == NULL) {
-    // Set to -1, to indicate that this accept_netdrv() call is not trying to check if the rti_drv is available, inside
+  if (rti_chan == NULL) {
+    // Set to -1, to indicate that this accept_netchan() call is not trying to check if the rti_chan is available, inside
     // the accept_socket() function.
     rti_socket = -1;
   } else {
-    sst_priv_t* rti_priv = get_sst_priv_t(rti_drv);
+    sst_priv_t* rti_priv = get_sst_priv_t(rti_chan);
     rti_socket = rti_priv->socket_priv->socket_descriptor;
   }
-  netdrv_t fed_netdrv = initialize_netdrv();
-  sst_priv_t* fed_priv = get_sst_priv_t(fed_netdrv);
+  netchan_t fed_netchan = initialize_netchan();
+  sst_priv_t* fed_priv = get_sst_priv_t(fed_netchan);
 
   int sock = accept_socket(serv_priv->socket_priv->socket_descriptor, rti_socket);
   if (sock == -1) {
-    free_netdrv(fed_netdrv);
+    free_netchan(fed_netchan);
     return NULL;
   }
   fed_priv->socket_priv->socket_descriptor = sock;
@@ -85,25 +85,25 @@ netdrv_t accept_netdrv(netdrv_t server_drv, netdrv_t rti_drv) {
     lf_print_error("RTI failed to get peer address.");
   };
 
-  // TODO: Do we need to copy sst_ctx form server_drv to fed_drv?
+  // TODO: Do we need to copy sst_ctx form server_chan to fed_chan?
   session_key_list_t* s_key_list = init_empty_session_key_list();
   SST_session_ctx_t* session_ctx =
       server_secure_comm_setup(serv_priv->sst_ctx, fed_priv->socket_priv->socket_descriptor, s_key_list);
   // Session key used is copied to the session_ctx.
   free_session_key_list_t(s_key_list);
   fed_priv->session_ctx = session_ctx;
-  return fed_netdrv;
+  return fed_netchan;
 }
 
-void create_client(netdrv_t drv) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+void create_client(netchan_t chan) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   priv->socket_priv->socket_descriptor = create_real_time_tcp_socket_errexit();
   SST_ctx_t* ctx = init_SST(sst_config_path);
   priv->sst_ctx = ctx;
 }
 
-int connect_to_netdrv(netdrv_t drv) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+int connect_to_netchan(netchan_t chan) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   int ret = connect_to_socket(priv->socket_priv->socket_descriptor, priv->socket_priv->server_hostname,
                               priv->socket_priv->server_port);
   if (ret != 0) {
@@ -117,14 +117,14 @@ int connect_to_netdrv(netdrv_t drv) {
 }
 
 // TODO: Still need to fix...
-int read_from_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+int read_from_netchan(netchan_t chan, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   return read_from_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
 }
 
-int read_from_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
-  int read_failed = read_from_netdrv(drv, num_bytes, buffer);
+int read_from_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
+  int read_failed = read_from_netchan(chan, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
     // Socket has probably been closed from the other side.
@@ -135,10 +135,10 @@ int read_from_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned cha
   return 0;
 }
 
-void read_from_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+void read_from_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                     char* format, ...) {
   va_list args;
-  int read_failed = read_from_netdrv_close_on_error(drv, num_bytes, buffer);
+  int read_failed = read_from_netchan_close_on_error(chan, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
     if (mutex != NULL) {
@@ -154,14 +154,14 @@ void read_from_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned cha
   }
 }
 
-int write_to_netdrv(netdrv_t drv, size_t num_bytes, unsigned char* buffer) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+int write_to_netchan(netchan_t chan, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   return write_to_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
 }
 
-int write_to_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
-  int result = write_to_netdrv(drv, num_bytes, buffer);
+int write_to_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
+  int result = write_to_netchan(chan, num_bytes, buffer);
   if (result) {
     // Write failed.
     // Socket has probably been closed from the other side.
@@ -171,10 +171,10 @@ int write_to_netdrv_close_on_error(netdrv_t drv, size_t num_bytes, unsigned char
   return result;
 }
 
-void write_to_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+void write_to_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...) {
   va_list args;
-  int result = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
+  int result = write_to_netchan_close_on_error(chan, num_bytes, buffer);
   if (result) {
     // Write failed.
     if (mutex != NULL) {
@@ -190,59 +190,59 @@ void write_to_netdrv_fail_on_error(netdrv_t drv, size_t num_bytes, unsigned char
   }
 }
 
-bool check_netdrv_closed(netdrv_t drv) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+bool check_netchan_closed(netchan_t chan) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   return check_socket_closed(priv->socket_priv->socket_descriptor);
 }
 
-int shutdown_netdrv(netdrv_t drv, bool read_before_closing) {
-  if (drv == NULL) {
+int shutdown_netchan(netchan_t chan, bool read_before_closing) {
+  if (chan == NULL) {
     lf_print("Socket already closed.");
     return 0;
   }
-  sst_priv_t* priv = get_sst_priv_t(drv);
+  sst_priv_t* priv = get_sst_priv_t(chan);
   int ret = shutdown_socket(&priv->socket_priv->socket_descriptor, read_before_closing);
   if (ret != 0) {
     lf_print_error("Failed to shutdown socket.");
   }
-  free_netdrv(drv);
+  free_netchan(chan);
   return ret;
 }
 // END of TODO:
 
 // Get/set functions.
-int32_t get_my_port(netdrv_t drv) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+int32_t get_my_port(netchan_t chan) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   return priv->socket_priv->port;
 }
 
-int32_t get_server_port(netdrv_t drv) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+int32_t get_server_port(netchan_t chan) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   return priv->socket_priv->server_port;
 }
 
-struct in_addr* get_ip_addr(netdrv_t drv) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+struct in_addr* get_ip_addr(netchan_t chan) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   return &priv->socket_priv->server_ip_addr;
 }
 
-char* get_server_hostname(netdrv_t drv) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+char* get_server_hostname(netchan_t chan) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   return priv->socket_priv->server_hostname;
 }
 
-void set_my_port(netdrv_t drv, int32_t port) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+void set_my_port(netchan_t chan, int32_t port) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   priv->socket_priv->port = port;
 }
 
-void set_server_port(netdrv_t drv, int32_t port) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+void set_server_port(netchan_t chan, int32_t port) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   priv->socket_priv->server_port = port;
 }
 
-void set_server_hostname(netdrv_t drv, const char* hostname) {
-  sst_priv_t* priv = get_sst_priv_t(drv);
+void set_server_hostname(netchan_t chan, const char* hostname) {
+  sst_priv_t* priv = get_sst_priv_t(chan);
   memcpy(priv->socket_priv->server_hostname, hostname, INET_ADDRSTRLEN);
 }
 
