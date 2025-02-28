@@ -208,7 +208,7 @@ uint16_t setup_clock_synchronization_with_rti() {
   return port_to_return;
 }
 
-void synchronize_initial_physical_clock_with_rti(netdrv_t rti_netdrv) {
+void synchronize_initial_physical_clock_with_rti(netchan_t rti_netchan) {
   LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
   size_t message_size = 1 + sizeof(instant_t);
@@ -216,7 +216,7 @@ void synchronize_initial_physical_clock_with_rti(netdrv_t rti_netdrv) {
 
   for (int i = 0; i < _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL; i++) {
     // The first message expected from the RTI is MSG_TYPE_CLOCK_SYNC_T1
-    read_from_netdrv_fail_on_error(rti_netdrv, message_size, buffer, NULL,
+    read_from_netchan_fail_on_error(rti_netchan, message_size, buffer, NULL,
                                    "Federate %d did not get the initial clock synchronization message T1 from the RTI.",
                                    _lf_my_fed_id);
 
@@ -230,12 +230,12 @@ void synchronize_initial_physical_clock_with_rti(netdrv_t rti_netdrv) {
     // Handle the message and send a reply T3 message.
     // NOTE: No need to acquire the mutex lock during initialization because only
     // one thread is running.
-    if (handle_T1_clock_sync_message(buffer, (void*)rti_netdrv, receive_time, false) != 0) {
+    if (handle_T1_clock_sync_message(buffer, (void*)rti_netchan, receive_time, false) != 0) {
       lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
     }
 
     // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-    read_from_netdrv_fail_on_error(rti_netdrv, message_size, buffer, NULL,
+    read_from_netchan_fail_on_error(rti_netchan, message_size, buffer, NULL,
                                    "Federate %d did not get the clock synchronization message T4 from the RTI.",
                                    _lf_my_fed_id);
 
@@ -245,7 +245,7 @@ void synchronize_initial_physical_clock_with_rti(netdrv_t rti_netdrv) {
     }
 
     // Handle the message.
-    handle_T4_clock_sync_message(buffer, (void*)rti_netdrv, receive_time, false);
+    handle_T4_clock_sync_message(buffer, (void*)rti_netchan, receive_time, false);
   }
 
   LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
@@ -258,12 +258,12 @@ void synchronize_initial_physical_clock_with_rti(netdrv_t rti_netdrv) {
  * It also measures the time it takes between when the method is
  * called and the reply has been sent.
  * @param buffer The buffer containing the message, including the message type.
- * @param socket_or_netdrv The pointer of either UDP socket or the network driver.
+ * @param socket_or_netchan The pointer of either UDP socket or the network channel.
  * @param t2 The physical time at which the T1 message was received.
- * @param use_UDP Boolean to use UDP or the network driver.
+ * @param use_UDP Boolean to use UDP or the network channel.
  * @return 0 if T3 reply is successfully sent, -1 otherwise.
  */
-int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netdrv, instant_t t2, bool use_udp) {
+int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netchan, instant_t t2, bool use_udp) {
   // Extract the payload
   instant_t t1 = extract_int64(&(buffer[1]));
 
@@ -283,8 +283,8 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netdrv, 
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
-  int result = use_udp ? write_to_socket(*(int*)socket_or_netdrv, 1 + sizeof(uint16_t), reply_buffer)
-                       : write_to_netdrv((netdrv_t)socket_or_netdrv, 1 + sizeof(uint16_t), reply_buffer);
+  int result = use_udp ? write_to_socket(*(int*)socket_or_netchan, 1 + sizeof(uint16_t), reply_buffer)
+                       : write_to_netchan((netchan_t)socket_or_netchan, 1 + sizeof(uint16_t), reply_buffer);
 
   if (result) {
     lf_print_error("Clock sync: Failed to send T3 message to RTI.");
@@ -300,7 +300,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netdrv, 
 
 /**
  * Handle a clock synchronization message T4 coming from the RTI.
- * If using the network driver, then assume we are in the
+ * If using the network channel, then assume we are in the
  * initial clock synchronization phase and set the clock offset
  * based on the estimated clock synchronization error.
  * Otherwise, if using the UDP socket, then this looks also for a
@@ -308,14 +308,14 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netdrv, 
  * the T4 and the coded probe message is not as expected, then reject
  * this clock synchronization round. If it is not rejected, then make
  * an adjustment to the clock offset based on the estimated error.
- * This function does not acquire the netdrv_mutex lock.
+ * This function does not acquire the netchan_mutex lock.
  * The caller should acquire it unless it is sure there is only one thread running.
  * @param buffer The buffer containing the message, including the message type.
- * @param socket_or_netdrv The pointer of either UDP socket or the network driver.
+ * @param socket_or_netchan The pointer of either UDP socket or the network channel.
  * @param r4 The physical time at which this T4 message was received.
- * @param use_UDP Boolean to use UDP or the network driver.
+ * @param use_UDP Boolean to use UDP or the network channel.
  */
-void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_netdrv, instant_t r4, bool use_udp) {
+void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_netchan, instant_t r4, bool use_udp) {
   // Increment the number of received T4 messages
   _lf_rti_socket_stat.received_T4_messages_in_current_sync_window++;
 
@@ -350,7 +350,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_netdrv,
   if (use_udp) {
     // Read the coded probe message.
     // We can reuse the same buffer.
-    int read_failed = read_from_socket(*(int*)socket_or_netdrv, 1 + sizeof(instant_t), buffer);
+    int read_failed = read_from_socket(*(int*)socket_or_netchan, 1 + sizeof(instant_t), buffer);
 
     instant_t r5 = lf_time_physical();
 

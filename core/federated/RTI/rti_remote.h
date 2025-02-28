@@ -46,7 +46,7 @@ typedef struct federate_info_t {
                                          // to a request for stop from the RTI. Used to prevent double-counting
                                          // a federate when handling lf_request_stop().
   lf_thread_t thread_id;                 // The ID of the thread handling communication with this federate.
-  netdrv_t fed_netdrv;                   // The netdriver that the RTI handling each federate.
+  netchan_t fed_netchan;                   // The netdriver that the RTI handling each federate.
   struct sockaddr_in UDP_addr;           // The UDP address for the federate.
   bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                          // for this federate. Enabled by default.
@@ -112,9 +112,9 @@ typedef struct rti_remote_t {
   int socket_descriptor_UDP;
 
   /**
-   * The rti's network driver.
+   * The rti's network channel.
    */
-  netdrv_t rti_netdrv;
+  netchan_t rti_netchan;
 
   /************* Clock synchronization information *************/
   /* Thread performing PTP clock sync sessions periodically. */
@@ -282,13 +282,13 @@ void handle_timestamp(federate_info_t* my_fed);
 
 /**
  * Take a snapshot of the physical clock time and send
- * it to federate fed_id using the network driver.
+ * it to federate fed_id using the network channel.
  *
  * This version assumes the caller holds the mutex lock.
  *
  * @param message_type The type of the clock sync message (see net_common.h).
  * @param fed The federate to send the physical time to.
- * @param use_UDP Boolean to use UDP or the network driver.
+ * @param use_UDP Boolean to use UDP or the network channel.
  */
 void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool use_UDP);
 
@@ -329,18 +329,18 @@ void* federate_info_thread_TCP(void* fed);
 
 /**
  * Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
- * @param drv Pointer to the network driver.
+ * @param chan Pointer to the network channel.
  * @param error_code An error code.
  */
-void send_reject(netdrv_t drv, unsigned char error_code);
+void send_reject(netchan_t chan, unsigned char error_code);
 
 /**
  * Wait for one incoming connection request from each federate,
  * and upon receiving it, create a thread to communicate with
  * that federate. Return when all federates have connected.
- * @param rti_netdrv The rti's network driver on which to accept connections.
+ * @param rti_netchan The rti's network channel on which to accept connections.
  */
-void lf_connect_to_federates(netdrv_t rti_netdrv);
+void lf_connect_to_federates(netchan_t rti_netchan);
 
 /**
  * Thread to respond to new connections, which could be federates of other
