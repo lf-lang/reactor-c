@@ -22,7 +22,6 @@
 
 // Mutex lock held while performing socket close operations.
 // A deadlock can occur if two threads simulataneously attempt to close the same socket.
-lf_mutex_t socket_mutex;
 lf_mutex_t shutdown_mutex;
 
 int create_real_time_tcp_socket_errexit() {

@@ -50,6 +50,7 @@ extern bool _lf_termination_executed;
 
 // Global variables references in federate.h
 lf_mutex_t lf_outbound_socket_mutex;
+lf_mutex_t lf_inbound_socket_mutex;
 lf_cond_t lf_port_status_changed;
 
 /**
@@ -414,11 +415,11 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  *  federate.
  */
 static void close_inbound_socket(int fed_id) {
-  LF_MUTEX_LOCK(&socket_mutex);
+  LF_MUTEX_LOCK(&lf_inbound_socket_mutex);
   if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
     shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], false);
   }
-  LF_MUTEX_UNLOCK(&socket_mutex);
+  LF_MUTEX_UNLOCK(&lf_inbound_socket_mutex);
 }
 
 /**
@@ -2090,12 +2091,12 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     int result = lf_thread_create(&_fed.inbound_socket_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
-      LF_MUTEX_LOCK(&socket_mutex);
+      LF_MUTEX_LOCK(&lf_inbound_socket_mutex);
       if (_fed.sockets_for_inbound_p2p_connections[remote_fed_id] != -1) {
         shutdown_socket(&socket_id, false);
         _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = -1;
       }
-      LF_MUTEX_UNLOCK(&socket_mutex);
+      LF_MUTEX_UNLOCK(&lf_inbound_socket_mutex);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }

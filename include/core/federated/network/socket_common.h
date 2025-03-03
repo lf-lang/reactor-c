@@ -69,11 +69,6 @@
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
 /**
- * Mutex protecting socket close operations.
- */
-extern lf_mutex_t socket_mutex;
-
-/**
  * Mutex protecting socket shutdown operations.
  */
 extern lf_mutex_t shutdown_mutex;
