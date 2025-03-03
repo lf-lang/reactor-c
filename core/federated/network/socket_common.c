@@ -428,6 +428,7 @@ int shutdown_socket(int* socket, bool read_before_closing) {
       ;
   }
   LF_MUTEX_UNLOCK(&shutdown_mutex);
+  return 0;
 
 close_socket: // Label to jump to the closing part of the function
   // NOTE: In all common TCP/IP stacks, there is a time period,
