@@ -50,7 +50,9 @@ extern bool _lf_termination_executed;
 
 // Global variables references in federate.h
 lf_mutex_t lf_outbound_socket_mutex;
+
 lf_mutex_t lf_inbound_socket_mutex;
+
 lf_cond_t lf_port_status_changed;
 
 /**

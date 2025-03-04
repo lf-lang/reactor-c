@@ -20,8 +20,7 @@
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-// Mutex lock held while performing socket close operations.
-// A deadlock can occur if two threads simulataneously attempt to close the same socket.
+// Mutex lock held while performing socket shutdown and close operations.
 lf_mutex_t shutdown_mutex;
 
 int create_real_time_tcp_socket_errexit() {
