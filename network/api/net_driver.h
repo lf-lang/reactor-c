@@ -3,13 +3,17 @@
 
 #include "socket_common.h"
 
+#if defined(COMM_TYPE_SST)
+#include "lf_sst_support.h"
+#endif
+
 typedef void* netchan_t;
 
 /**
  * Allocate memory for the network channel.
  * @return netchan_t Initialized network channel.
  */
-netchan_t initialize_netchan();
+netchan_t initialize_netchan(void);
 
 /**
  * Create a netchannel server. This is such as a server socket which accepts connections.

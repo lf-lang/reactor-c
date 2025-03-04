@@ -347,13 +347,16 @@ void end_sensor_simulator() {
   lf_register_print_function(NULL, -1);
   _lf_sensor_post_message(_lf_sensor_close_windows, NULL);
 
-  void* thread_return;
-  lf_thread_join(_lf_sensor.output_thread_id, &thread_return);
+  // Join thread, if it was created and it was not already joined.
+  if (_lf_sensor.thread_created > 0) {
+    void* thread_return;
+    lf_thread_join(_lf_sensor.output_thread_id, &thread_return);
+    _lf_sensor.thread_created = 0;
+  }
 
   // Timeout mode should result in the input thread exiting on its own.
   // pthread_kill(_lf_sensor.input_thread_id, SIGINT);
 
-  _lf_sensor.thread_created = 0;
   if (_lf_sensor.log_file != NULL) {
     fclose(_lf_sensor.log_file);
   }
