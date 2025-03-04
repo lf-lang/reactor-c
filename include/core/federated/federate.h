@@ -215,9 +215,14 @@ typedef enum parse_rti_code_t { SUCCESS, INVALID_PORT, INVALID_HOST, INVALID_USE
 // Global variables
 
 /**
- * Mutex lock held while performing network channel write and close operations.
+ * Mutex lock held while performing outbound network channel write and close operations.
  */
 extern lf_mutex_t lf_outbound_netchan_mutex;
+
+/**
+ * Mutex lock held while performing inbound network channel write and close operations.
+ */
+extern lf_mutex_t lf_inbound_netchan_mutex;
 
 /**
  * Condition variable for blocking on unkonwn federate input ports.

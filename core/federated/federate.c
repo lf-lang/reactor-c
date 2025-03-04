@@ -46,6 +46,9 @@ extern bool _lf_termination_executed;
 
 // Global variables references in federate.h
 lf_mutex_t lf_outbound_netchan_mutex;
+
+lf_mutex_t lf_inbound_netchan_mutex;
+
 lf_cond_t lf_port_status_changed;
 
 /**
@@ -400,12 +403,11 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  *  federate.
  */
 static void close_inbound_netchan(int fed_id) {
-  LF_MUTEX_LOCK(&netchan_mutex);
-  if (_fed.netchans_for_inbound_p2p_connections[fed_id] != NULL) {
-    shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[fed_id], false);
-    _fed.netchans_for_inbound_p2p_connections[fed_id] = NULL;
+  LF_MUTEX_LOCK(&lf_inbound_netchan_mutex);
+  if (_fed.netchans_for_inbound_p2p_connections[fed_id] >= 0) {
+    shutdown_netchan(&_fed.netchans_for_inbound_p2p_connections[fed_id], false);
   }
-  LF_MUTEX_UNLOCK(&netchan_mutex);
+  LF_MUTEX_UNLOCK(&lf_inbound_netchan_mutex);
 }
 
 /**
@@ -1947,18 +1949,10 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
-
-  netchan_t server_netchan = initialize_netchan();
-  set_my_port(server_netchan, specified_port);
-
-  if (create_server(server_netchan, false)) {
-    lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
+  if (create_server(specified_port, &_fed.server_socket, (uint16_t*)&_fed.server_port, TCP, false)) {
+    lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
-  _fed.server_netchan = server_netchan;
-  // Get the final server port to send to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message.
-  int32_t server_port = get_my_port(server_netchan);
-
-  LF_PRINT_LOG("Server for communicating with other federates started using port %d.", server_port);
+  LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
 
   // Send the server port number to the RTI
   // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
@@ -2085,12 +2079,12 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     int result = lf_thread_create(&_fed.inbound_netchan_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
-      LF_MUTEX_LOCK(&netchan_mutex);
+      LF_MUTEX_LOCK(&lf_inbound_netchan_mutex);
       if (_fed.netchans_for_inbound_p2p_connections[remote_fed_id] != NULL) {
         shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[remote_fed_id], false);
         _fed.netchans_for_inbound_p2p_connections[remote_fed_id] = NULL;
       }
-      LF_MUTEX_UNLOCK(&netchan_mutex);
+      LF_MUTEX_UNLOCK(&lf_inbound_netchan_mutex);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }
