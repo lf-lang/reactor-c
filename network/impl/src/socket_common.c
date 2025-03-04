@@ -21,9 +21,8 @@
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-// Mutex lock held while performing network channel close operations.
-// A deadlock can occur if two threads simulataneously attempt to close the same network channel.
-lf_mutex_t netchan_mutex;
+// Mutex lock held while performing network channel shutdown and close operations.
+lf_mutex_t shutdown_mutex;
 
 int create_real_time_tcp_socket_errexit(void) {
   int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -355,8 +354,10 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
 }
 
 int shutdown_socket(int* socket, bool read_before_closing) {
+  LF_MUTEX_LOCK(&shutdown_mutex);
   if (*socket == -1) {
     lf_print_log("Socket is already closed.");
+    LF_MUTEX_UNLOCK(&shutdown_mutex);
     return 0;
   }
   if (!read_before_closing) {
@@ -382,6 +383,8 @@ int shutdown_socket(int* socket, bool read_before_closing) {
     while (read(*socket, buffer, 10) > 0)
       ;
   }
+  LF_MUTEX_UNLOCK(&shutdown_mutex);
+  return 0;
 
 close_socket: // Label to jump to the closing part of the function
   // NOTE: In all common TCP/IP stacks, there is a time period,
@@ -391,8 +394,10 @@ close_socket: // Label to jump to the closing part of the function
   // duplicated packets intended for this program.
   if (close(*socket)) {
     lf_print_log("Error while closing socket: %s\n", strerror(errno));
+    LF_MUTEX_UNLOCK(&shutdown_mutex);
     return -1;
   }
   *socket = -1;
+  LF_MUTEX_UNLOCK(&shutdown_mutex);
   return 0;
 }
