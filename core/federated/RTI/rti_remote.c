@@ -1563,7 +1563,7 @@ void initialize_RTI(rti_remote_t* rti) {
 
   // Initialize thread synchronization primitives
   LF_MUTEX_INIT(&rti_mutex);
-  LF_MUTEX_INIT(&shutdown_mutex);
+  init_shutdown_mutex();
   LF_COND_INIT(&received_start_times, &rti_mutex);
   LF_COND_INIT(&sent_start_time, &rti_mutex);
 

@@ -69,11 +69,6 @@
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
 /**
- * Mutex protecting socket shutdown operations.
- */
-extern lf_mutex_t shutdown_mutex;
-
-/**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
  * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
  * on any error.
@@ -239,6 +234,11 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
  */
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
+
+/**
+ * Initialize shutdown mutex.
+ */
+void init_shutdown_mutex(void);
 
 /**
  * Shutdown and close the socket. If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR

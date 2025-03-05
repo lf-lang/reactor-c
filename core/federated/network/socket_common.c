@@ -396,6 +396,8 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
   }
 }
 
+void init_shutdown_mutex(void) { LF_MUTEX_INIT(&shutdown_mutex); }
+
 int shutdown_socket(int* socket, bool read_before_closing) {
   LF_MUTEX_LOCK(&shutdown_mutex);
   if (*socket == -1) {
