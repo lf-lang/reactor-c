@@ -226,11 +226,6 @@ typedef enum parse_rti_code_t { SUCCESS, INVALID_PORT, INVALID_HOST, INVALID_USE
 extern lf_mutex_t lf_outbound_socket_mutex;
 
 /**
- * Mutex lock held while performing inbound socket write and close operations.
- */
-extern lf_mutex_t lf_inbound_socket_mutex;
-
-/**
  * Condition variable for blocking on unkonwn federate input ports.
  */
 extern lf_cond_t lf_port_status_changed;
