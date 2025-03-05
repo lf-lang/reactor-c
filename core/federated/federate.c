@@ -417,11 +417,11 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  *  federate.
  */
 static void close_inbound_socket(int fed_id) {
-  LF_MUTEX_LOCK(&lf_inbound_socket_mutex);
+  // LF_MUTEX_LOCK(&lf_inbound_socket_mutex);
   if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
     shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], false);
   }
-  LF_MUTEX_UNLOCK(&lf_inbound_socket_mutex);
+  // LF_MUTEX_UNLOCK(&lf_inbound_socket_mutex);
 }
 
 /**
@@ -831,13 +831,13 @@ static void close_outbound_socket(int fed_id) {
   // This will result in EOF being sent to the remote federate, except for
   // abnormal termination, in which case it will just close the socket.
   if (_lf_normal_termination) {
-    LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
+    // LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
     if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
       // Close the socket by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
       shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[fed_id], true);
     }
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+    // LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
   } else {
     shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[fed_id], false);
   }
@@ -2093,12 +2093,12 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     int result = lf_thread_create(&_fed.inbound_socket_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
-      LF_MUTEX_LOCK(&lf_inbound_socket_mutex);
+      // LF_MUTEX_LOCK(&lf_inbound_socket_mutex);
       if (_fed.sockets_for_inbound_p2p_connections[remote_fed_id] != -1) {
         shutdown_socket(&socket_id, false);
         _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = -1;
       }
-      LF_MUTEX_UNLOCK(&lf_inbound_socket_mutex);
+      // LF_MUTEX_UNLOCK(&lf_inbound_socket_mutex);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }
