@@ -1,7 +1,10 @@
 #ifndef SOCKET_COMMON_H
 #define SOCKET_COMMON_H
 
-#include "low_level_platform.h"
+#include "low_level_platform.h" // lf_mutex_t
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/time.h>
 
 /**
  * The amount of time to wait after a failed socket read or write before trying again. This defaults to 100 ms.
@@ -62,16 +65,33 @@
 #define DEFAULT_PORT 15045u
 
 /**
+ * Default port number for the RTI's clock server.
+ */
+#define DEFAULT_UDP_PORT 15061u
+
+/**
  * Byte identifying that the federate or the RTI has failed.
  */
 #define MSG_TYPE_FAILED 25
 
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
-/**
- * Mutex protecting socket close operations.
- */
-extern lf_mutex_t socket_mutex;
+typedef struct socket_priv_t {
+  int socket_descriptor;
+  uint16_t port;                // The port number. //
+  uint16_t user_specified_port; // Default as 0 for both RTI and federate.
+
+  // The connected other side's info. The
+  char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
+  int32_t server_port;                   // port number of the socket server of the federate
+                                         // if it has any incoming direct connections from other federates.
+                                         // The port number will be -1 if there is no server or if the
+                                         // RTI has not been informed of the port number.
+  struct in_addr server_ip_addr;         // Information about the IP address of the socket
+                                         // server of the federate.
+
+  struct sockaddr_in UDP_addr; // The UDP address for the federate.
+} socket_priv_t;
 
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
@@ -80,7 +100,7 @@ extern lf_mutex_t socket_mutex;
  *
  * @return The socket ID (a file descriptor).
  */
-int create_real_time_tcp_socket_errexit();
+int create_real_time_tcp_socket_errexit(void);
 
 /**
  * @brief Create a TCP server that listens for socket connections.
@@ -98,12 +118,11 @@ int create_real_time_tcp_socket_errexit();
  * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
- * @param sock_type Type of the socket, TCP or UDP.
  * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
-int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
-                  bool increment_port_on_retry);
+int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
+                         bool increment_port_on_retry);
 
 /**
  * Wait for an incoming connection request on the specified server socket.
@@ -121,7 +140,6 @@ int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket
  * @return The file descriptor for the newly accepted socket on success, or -1 on failure
  *             (with an appropriate error message printed).
  */
-
 int accept_socket(int socket, int rti_socket);
 
 /**
@@ -196,6 +214,22 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
 ssize_t peek_from_socket(int socket, unsigned char* result);
 
 /**
+ * Return true if either the socket to the RTI is broken or the socket is
+ * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
+ * @param socket Socket to check.
+ * @return True if closed, false if still connected.
+ */
+bool check_socket_closed(int socket);
+/**
+ * Get the connected peer name from the connected socket.
+ * Set it to the server_ip_addr. Also, set server_hostname if LOG_LEVEL is higher than LOG_LEVEL_DEBUG.
+ *
+ * @param priv The socket_priv struct.
+ * @return 0 for success, -1 for failure.
+ */
+int get_peer_address(socket_priv_t* priv);
+
+/**
  * Write the specified number of bytes to the specified socket from the
  * specified buffer. If an error occurs, return -1 and set errno to indicate
  * the cause of the error. If the write succeeds, return 0.
@@ -239,5 +273,20 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
  */
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
+
+/**
+ * Initialize shutdown mutex.
+ */
+void init_shutdown_mutex(void);
+
+/**
+ * Shutdown and close the socket. If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR
+ * and close(). If read_before_closing is true, it calls shutdown with SHUT_WR, only disallowing further writing. Then,
+ * it calls read() until EOF is received, and discards all received bytes.
+ * @param socket Pointer to the socket descriptor to shutdown and close.
+ * @param read_before_closing If true, read until EOF before closing the socket.
+ * @return int 0 for success and -1 for an error.
+ */
+int shutdown_socket(int* socket, bool read_before_closing);
 
 #endif /* SOCKET_COMMON_H */
