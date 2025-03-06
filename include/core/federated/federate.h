@@ -55,7 +55,7 @@ typedef struct federate_instance_t {
    * This is NULL if there are none and otherwise has size given by
    * number_of_inbound_p2p_connections.
    */
-  lf_thread_t* inbound_netdriv_listeners;
+  lf_thread_t* inbound_netchan_listeners;
 
   /**
    * Number of outbound peer-to-peer connections from the federate.

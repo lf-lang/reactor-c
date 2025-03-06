@@ -1950,10 +1950,18 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
-  if (create_server(specified_port, &_fed.server_socket, (uint16_t*)&_fed.server_port, TCP, false)) {
-    lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
+
+  netchan_t* server_netchan = initialize_netchan();
+  set_my_port(server_netchan, specified_port);
+
+  if (create_server(server_netchan, false)) {
+    lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
   };
-  LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
+  _fed.server_netchan = server_netchan;
+  // Get the final server port to send to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message.
+  int32_t server_port = get_my_port(server_netchan);
+
+  LF_PRINT_LOG("Server for communicating with other federates started using port %d.", server_port);
 
   // Send the server port number to the RTI
   // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
@@ -1964,7 +1972,7 @@ void lf_create_server(int specified_port) {
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(send_ADR_AD, _lf_my_fed_id, NULL);
 
-  // No need for a mutex because we have the only handle on this network channel.
+  // No need for a mutex because we have the only handle on this network driver.
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
                                 "Failed to send address advertisement.");
 
