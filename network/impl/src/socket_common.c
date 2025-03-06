@@ -353,6 +353,8 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
   return 0;
 }
 
+void init_shutdown_mutex(void) { LF_MUTEX_INIT(&shutdown_mutex); }
+
 int shutdown_socket(int* socket, bool read_before_closing) {
   LF_MUTEX_LOCK(&shutdown_mutex);
   if (*socket == -1) {

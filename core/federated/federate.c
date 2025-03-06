@@ -47,8 +47,6 @@ extern bool _lf_termination_executed;
 // Global variables references in federate.h
 lf_mutex_t lf_outbound_netchan_mutex;
 
-lf_mutex_t lf_inbound_netchan_mutex;
-
 lf_cond_t lf_port_status_changed;
 
 /**
@@ -403,11 +401,9 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  *  federate.
  */
 static void close_inbound_netchan(int fed_id) {
-  LF_MUTEX_LOCK(&lf_inbound_netchan_mutex);
   if (_fed.netchans_for_inbound_p2p_connections[fed_id] >= 0) {
     shutdown_netchan(&_fed.netchans_for_inbound_p2p_connections[fed_id], false);
   }
-  LF_MUTEX_UNLOCK(&lf_inbound_netchan_mutex);
 }
 
 /**
@@ -817,14 +813,12 @@ static void close_outbound_netchan(int fed_id) {
   // This will result in EOF being sent to the remote federate, except for
   // abnormal termination, in which case it will just close the network channel.
   if (_lf_normal_termination) {
-    LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
     if (_fed.netchans_for_outbound_p2p_connections[fed_id] != NULL) {
       // Close the network channel by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
       shutdown_netchan(_fed.netchans_for_outbound_p2p_connections[fed_id], true);
       _fed.netchans_for_outbound_p2p_connections[fed_id] = NULL;
     }
-    LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
   } else {
     shutdown_netchan(_fed.netchans_for_outbound_p2p_connections[fed_id], false);
     _fed.netchans_for_outbound_p2p_connections[fed_id] = NULL;
@@ -2088,12 +2082,10 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     int result = lf_thread_create(&_fed.inbound_netchan_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
-      LF_MUTEX_LOCK(&lf_inbound_netchan_mutex);
       if (_fed.netchans_for_inbound_p2p_connections[remote_fed_id] != NULL) {
         shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[remote_fed_id], false);
         _fed.netchans_for_inbound_p2p_connections[remote_fed_id] = NULL;
       }
-      LF_MUTEX_UNLOCK(&lf_inbound_netchan_mutex);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }

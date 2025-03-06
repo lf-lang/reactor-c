@@ -991,9 +991,7 @@ void* federate_info_thread_TCP(void* fed) {
       my_fed->enclave.state = NOT_CONNECTED;
       // Nothing more to do. Close the network channel and exit.
       // Prevent multiple threads from closing the same network channel at the same time.
-      LF_MUTEX_LOCK(&rti_mutex);
       shutdown_netchan(my_fed->fed_netchan, false);
-      LF_MUTEX_UNLOCK(&rti_mutex);
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
     }
@@ -1572,7 +1570,7 @@ void initialize_RTI(rti_remote_t* rti) {
 
   // Initialize thread synchronization primitives
   LF_MUTEX_INIT(&rti_mutex);
-  LF_MUTEX_INIT(&shutdown_mutex);
+  init_shutdown_mutex();
   LF_COND_INIT(&received_start_times, &rti_mutex);
   LF_COND_INIT(&sent_start_time, &rti_mutex);
 
