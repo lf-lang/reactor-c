@@ -71,12 +71,12 @@ var NAVTREEINDEX =
 "d2/da6/trace__impl_8h.html#a5d7ebab8b9d2b0d41fb5d5d3ad854df0",
 "d4/dd2/reactor__threaded_8h.html#a70c4ab92f00f9bcc31e4d696db1c0526",
 "d6/d51/pqueue__base_8h.html#a884902da135214a6167f1536ad4ed4bc",
-"d7/dc9/structlf__waveform__t.html",
-"d9/dd5/clock-sync_8h.html",
-"db/d7a/trace__to__chrome_8c.html#ab04adf9d48bee166b0822ef94ac2624f",
-"dc/d85/reactor_8h.html#adf76c4fc43b07691236fa6a483762481",
-"de/dbd/socket__common_8h_source.html",
-"globals_f.html"
+"d7/dc7/struct__lf__tag__advancement__barrier.html#a49b697f9e16f30a2112910efd1ee6da6",
+"d9/dc7/trace__util_8h.html#ad8876683159ec2203bd41295d8af3017",
+"db/d7a/trace__to__chrome_8c.html#a989cdd5c8f2865f73a49b47929c46307",
+"dc/d85/reactor_8h.html#ab5bf112c4237da16d08736ff3e3e36b8",
+"de/dbd/socket__common_8h.html#af11c9d6cd02e9e78e38a848cf75205cb",
+"globals_e.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

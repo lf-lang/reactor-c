@@ -1,5 +1,8 @@
 var NAVTREEINDEX8 =
 {
+"de/dbd/socket__common_8h.html#af11c9d6cd02e9e78e38a848cf75205cb":[5,0,1,1,0,0,2,6],
+"de/dbd/socket__common_8h.html#af27674f627be1c469a529a995da5c074":[5,0,1,1,0,0,2,5],
+"de/dbd/socket__common_8h.html#af88884c303b81143ef5ab7af4683a66c":[5,0,1,1,0,0,2,23],
 "de/dbd/socket__common_8h_source.html":[5,0,1,1,0,0,2],
 "de/dc8/structlf__semaphore__t.html":[4,0,27],
 "de/dc8/structlf__semaphore__t.html#a37a3bc5a68d8a9245dbc59e6b9010f3b":[4,0,27,0],
@@ -246,8 +249,5 @@ var NAVTREEINDEX8 =
 "globals_defs_u.html":[5,1,6,18],
 "globals_defs_v.html":[5,1,6,19],
 "globals_defs_w.html":[5,1,6,20],
-"globals_defs_z.html":[5,1,6,21],
-"globals_e.html":[5,1,0,5],
-"globals_enum.html":[5,1,4],
-"globals_eval.html":[5,1,5]
+"globals_defs_z.html":[5,1,6,21]
 };

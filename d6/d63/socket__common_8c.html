@@ -151,11 +151,15 @@ Functions</h2></td></tr>
 <tr class="separator:af88884c303b81143ef5ab7af4683a66c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada8d9360bdf4e9d7f36bbfc7e682f06e" id="r_ada8d9360bdf4e9d7f36bbfc7e682f06e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ada8d9360bdf4e9d7f36bbfc7e682f06e">write_to_socket_fail_on_error</a> (int *socket, size_t num_bytes, unsigned char *<a class="el" href="../../d5/df4/trace__util_8c.html#af00b615ca097c43dbb02ae3a00ea3a62">buffer</a>, <a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a> *mutex, char *format,...)</td></tr>
 <tr class="separator:ada8d9360bdf4e9d7f36bbfc7e682f06e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc2dc02aa0e242eab3574240e90984b4" id="r_adc2dc02aa0e242eab3574240e90984b4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc2dc02aa0e242eab3574240e90984b4">init_shutdown_mutex</a> (void)</td></tr>
+<tr class="separator:adc2dc02aa0e242eab3574240e90984b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a365eba5b8b3f6445eeaffcb4435165c5" id="r_a365eba5b8b3f6445eeaffcb4435165c5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a365eba5b8b3f6445eeaffcb4435165c5">shutdown_socket</a> (int *socket, bool read_before_closing)</td></tr>
+<tr class="separator:a365eba5b8b3f6445eeaffcb4435165c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:adf691c9f60ed681da024d99b083c2705" id="r_adf691c9f60ed681da024d99b083c2705"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adf691c9f60ed681da024d99b083c2705">socket_mutex</a></td></tr>
-<tr class="separator:adf691c9f60ed681da024d99b083c2705"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac90dc994dfe2bf6e840c85ffed60db74" id="r_ac90dc994dfe2bf6e840c85ffed60db74"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac90dc994dfe2bf6e840c85ffed60db74">shutdown_mutex</a></td></tr>
+<tr class="separator:ac90dc994dfe2bf6e840c85ffed60db74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="af58c457e08491f7cfd5a0a46940e11ad" name="af58c457e08491f7cfd5a0a46940e11ad"></a>
@@ -325,6 +329,24 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="adc2dc02aa0e242eab3574240e90984b4" name="adc2dc02aa0e242eab3574240e90984b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc2dc02aa0e242eab3574240e90984b4">&#9670;&#160;</a></span>init_shutdown_mutex()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void init_shutdown_mutex </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Initialize shutdown mutex. </p>
+
+</div>
+</div>
 <a id="ae4ba6b1361cd7c47e8a0eb70729d9636" name="ae4ba6b1361cd7c47e8a0eb70729d9636"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae4ba6b1361cd7c47e8a0eb70729d9636">&#9670;&#160;</a></span>peek_from_socket()</h2>
 
@@ -474,6 +496,35 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a365eba5b8b3f6445eeaffcb4435165c5" name="a365eba5b8b3f6445eeaffcb4435165c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a365eba5b8b3f6445eeaffcb4435165c5">&#9670;&#160;</a></span>shutdown_socket()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int shutdown_socket </td>
+          <td>(</td>
+          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>socket</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>read_before_closing</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Shutdown and close the socket. If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR and close(). If read_before_closing is true, it calls shutdown with SHUT_WR, only disallowing further writing. Then, it calls read() until EOF is received, and discards all received bytes. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">socket</td><td>Pointer to the socket descriptor to shutdown and close. </td></tr>
+    <tr><td class="paramname">read_before_closing</td><td>If true, read until EOF before closing the socket. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>int 0 for success and -1 for an error. </dd></dl>
+
+</div>
+</div>
 <a id="ae8d4b83faeac37f665666429742813f9" name="ae8d4b83faeac37f665666429742813f9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae8d4b83faeac37f665666429742813f9">&#9670;&#160;</a></span>write_to_socket()</h2>
 
@@ -596,18 +647,17 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="adf691c9f60ed681da024d99b083c2705" name="adf691c9f60ed681da024d99b083c2705"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adf691c9f60ed681da024d99b083c2705">&#9670;&#160;</a></span>socket_mutex</h2>
+<a id="ac90dc994dfe2bf6e840c85ffed60db74" name="ac90dc994dfe2bf6e840c85ffed60db74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac90dc994dfe2bf6e840c85ffed60db74">&#9670;&#160;</a></span>shutdown_mutex</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a> socket_mutex</td>
+          <td class="memname"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a> shutdown_mutex</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Mutex protecting socket close operations. </p>
 
 </div>
 </div>
