@@ -221,7 +221,7 @@ typedef enum parse_rti_code_t { SUCCESS, INVALID_PORT, INVALID_HOST, INVALID_USE
 // Global variables
 
 /**
- * Mutex lock held while performing socket write and close operations.
+ * Mutex lock held while performing outbound socket write and close operations.
  */
 extern lf_mutex_t lf_outbound_socket_mutex;
 

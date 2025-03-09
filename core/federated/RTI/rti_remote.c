@@ -900,14 +900,7 @@ static void handle_federate_failed(federate_info_t* my_fed) {
   // Indicate that there will no further events from this federate.
   my_fed->enclave.next_event = FOREVER_TAG;
 
-  // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-  // the close should happen when receiving a 0 length message from the other end.
-  // Here, we just signal the other side that no further writes to the socket are
-  // forthcoming, which should result in the other end getting a zero-length reception.
-  shutdown(my_fed->socket, SHUT_RDWR);
-
-  // We can now safely close the socket.
-  close(my_fed->socket); //  from unistd.h
+  shutdown_socket(&my_fed->socket, false);
 
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
@@ -946,21 +939,7 @@ static void handle_federate_resign(federate_info_t* my_fed) {
   // Indicate that there will no further events from this federate.
   my_fed->enclave.next_event = FOREVER_TAG;
 
-  // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-  // the close should happen when receiving a 0 length message from the other end.
-  // Here, we just signal the other side that no further writes to the socket are
-  // forthcoming, which should result in the other end getting a zero-length reception.
-  shutdown(my_fed->socket, SHUT_WR);
-
-  // Wait for the federate to send an EOF or a socket error to occur.
-  // Discard any incoming bytes. Normally, this read should return 0 because
-  // the federate is resigning and should itself invoke shutdown.
-  unsigned char buffer[10];
-  while (read(my_fed->socket, buffer, 10) > 0)
-    ;
-
-  // We can now safely close the socket.
-  close(my_fed->socket); //  from unistd.h
+  shutdown_socket(&my_fed->socket, true);
 
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
@@ -989,7 +968,9 @@ void* federate_info_thread_TCP(void* fed) {
       // Socket is closed
       lf_print_error("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
-      my_fed->socket = -1;
+      // Nothing more to do. Close the socket and exit.
+      // Prevent multiple threads from closing the same socket at the same time.
+      shutdown_socket(&my_fed->socket, false); //  from unistd.h
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
     }
@@ -1039,12 +1020,6 @@ void* federate_info_thread_TCP(void* fed) {
       }
     }
   }
-
-  // Nothing more to do. Close the socket and exit.
-  // Prevent multiple threads from closing the same socket at the same time.
-  LF_MUTEX_LOCK(&rti_mutex);
-  close(my_fed->socket); //  from unistd.h
-  LF_MUTEX_UNLOCK(&rti_mutex);
   return NULL;
 }
 
@@ -1058,10 +1033,8 @@ void send_reject(int* socket_id, unsigned char error_code) {
   if (write_to_socket(*socket_id, 2, response)) {
     lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
   }
-  // Close the socket.
-  shutdown(*socket_id, SHUT_RDWR);
-  close(*socket_id);
-  *socket_id = -1;
+  // Close the socket without reading until EOF.
+  shutdown_socket(socket_id, false);
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
@@ -1444,10 +1417,8 @@ void lf_connect_to_federates(int socket_descriptor) {
     if (rti_remote->authentication_enabled) {
       if (!authenticate_federate(&socket_id)) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
-        // Close the socket.
-        shutdown(socket_id, SHUT_RDWR);
-        close(socket_id);
-        socket_id = -1;
+        // Close the socket without reading until EOF.
+        shutdown_socket(&socket_id, false);
         // Ignore the federate that failed authentication.
         i--;
         continue;
@@ -1497,7 +1468,7 @@ void* respond_to_erroneous_connections(void* nothing) {
   while (true) {
     // Wait for an incoming connection request.
     // The following will block until either a federate attempts to connect
-    // or close(rti->socket_descriptor_TCP) is called.
+    // or shutdown_socket(rti->socket_descriptor_TCP) is called.
     int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
     if (socket_id < 0) {
       return NULL;
@@ -1514,9 +1485,8 @@ void* respond_to_erroneous_connections(void* nothing) {
     if (write_to_socket(socket_id, 2, response)) {
       lf_print_warning("RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
     }
-    // Close the socket.
-    shutdown(socket_id, SHUT_RDWR);
-    close(socket_id);
+    // Close the socket without reading until EOF.
+    shutdown_socket(&socket_id, false);
   }
   return NULL;
 }
@@ -1579,21 +1549,10 @@ void wait_for_federates(int socket_descriptor) {
   // Shutdown and close the socket that is listening for incoming connections
   // so that the accept() call in respond_to_erroneous_connections returns.
   // That thread should then check rti->all_federates_exited and it should exit.
-  if (shutdown(socket_descriptor, SHUT_RDWR)) {
-    LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
-  }
-  // NOTE: In all common TCP/IP stacks, there is a time period,
-  // typically between 30 and 120 seconds, called the TIME_WAIT period,
-  // before the port is released after this close. This is because
-  // the OS is preventing another program from accidentally receiving
-  // duplicated packets intended for this program.
-  close(socket_descriptor);
+  shutdown_socket(&socket_descriptor, false);
 
   if (rti_remote->socket_descriptor_UDP > 0) {
-    if (shutdown(rti_remote->socket_descriptor_UDP, SHUT_RDWR)) {
-      LF_PRINT_LOG("On shut down UDP socket, received reply: %s", strerror(errno));
-    }
-    close(rti_remote->socket_descriptor_UDP);
+    shutdown_socket(&rti_remote->socket_descriptor_UDP, false);
   }
 }
 
@@ -1602,6 +1561,7 @@ void initialize_RTI(rti_remote_t* rti) {
 
   // Initialize thread synchronization primitives
   LF_MUTEX_INIT(&rti_mutex);
+  init_shutdown_mutex();
   LF_COND_INIT(&received_start_times, &rti_mutex);
   LF_COND_INIT(&sent_start_time, &rti_mutex);
 
