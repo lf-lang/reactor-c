@@ -51,8 +51,8 @@ netchan_t accept_netchan(netchan_t server_chan, netchan_t rti_chan) {
   socket_priv_t* serv_priv = get_socket_priv_t(server_chan);
   int rti_socket;
   if (rti_chan == NULL) {
-    // Set to -1, to indicate that this accept_netchan() call is not trying to check if the rti_chan is available, inside
-    // the accept_socket() function.
+    // Set to -1, to indicate that this accept_netchan() call is not trying to check if the rti_chan is available,
+    // inside the accept_socket() function.
     rti_socket = -1;
   } else {
     socket_priv_t* rti_priv = get_socket_priv_t(rti_chan);
@@ -103,7 +103,7 @@ int read_from_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned 
 }
 
 void read_from_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                    char* format, ...) {
+                                     char* format, ...) {
   va_list args;
   int read_failed = read_from_netchan_close_on_error(chan, num_bytes, buffer);
   if (read_failed) {
@@ -139,7 +139,7 @@ int write_to_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned c
 }
 
 void write_to_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...) {
+                                    char* format, ...) {
   va_list args;
   int result = write_to_netchan_close_on_error(chan, num_bytes, buffer);
   if (result) {
