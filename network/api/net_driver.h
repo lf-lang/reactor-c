@@ -94,7 +94,7 @@ int read_from_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned 
  *  a negative number for an error.
  */
 void read_from_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                    char* format, ...);
+                                     char* format, ...);
 
 /**
  * Write the specified number of bytes to the specified network channel from the
@@ -135,7 +135,7 @@ int write_to_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned c
  *  to print a generic error message.
  */
 void write_to_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...);
+                                    char* format, ...);
 
 /**
  * Checks if the network channel is still connected to the peer.
