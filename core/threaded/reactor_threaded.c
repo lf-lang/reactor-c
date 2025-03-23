@@ -579,7 +579,7 @@ void _lf_initialize_start_tag(environment_t* env) {
     env->stop_tag = ((tag_t){.time = start_time + duration, .microstep = 0});
   }
 
-  _lf_initialize_timers(env);
+  bool timers_triggered_at_start = _lf_initialize_timers(env);
 
 #if defined FEDERATED_DECENTRALIZED
   // If we have a non-zero STA offset, then we need to allow messages to arrive
@@ -627,6 +627,22 @@ void _lf_initialize_start_tag(environment_t* env) {
   // once the complete message has been read. Here, we wait for that barrier
   // to be removed, if appropriate before proceeding to executing tag (0,0).
   _lf_wait_on_tag_barrier(env, (tag_t){.time = start_time, .microstep = 0});
+
+  // In addition, if the earliest event on the event queue has a tag greater
+  // than (0,0), then wait until the time of that tag. This prevents the runtime
+  // from committing to a start time and then assuming inputs are absent.
+  // Do this only if there are no startup reactions.
+  if (!timers_triggered_at_start && env->startup_reactions_size == 0) {
+    // There are no startup reactions, so we can wait for the earliest event on the event queue.
+    tag_t next_tag = get_next_event_tag(env);
+    if (next_tag.time > start_time) {
+      while (!wait_until(next_tag.time, &env->event_q_changed)) {
+        // Did not wait the full time. Check for a new next_tag.
+        next_tag = get_next_event_tag(env);
+      }
+    }
+  }
+
   lf_spawn_staa_thread();
 
 #else  // NOT FEDERATED_DECENTRALIZED
