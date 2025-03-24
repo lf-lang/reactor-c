@@ -579,9 +579,9 @@ void _lf_initialize_start_tag(environment_t* env) {
     env->stop_tag = ((tag_t){.time = start_time + duration, .microstep = 0});
   }
 
+#if defined FEDERATED_DECENTRALIZED
   bool timers_triggered_at_start = _lf_initialize_timers(env);
 
-#if defined FEDERATED_DECENTRALIZED
   // If we have a non-zero STA offset, then we need to allow messages to arrive
   // at the start time.  To avoid spurious STP violations, we temporarily
   // set the current time back by the STA offset.
