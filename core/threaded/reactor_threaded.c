@@ -589,6 +589,7 @@ void _lf_initialize_start_tag(environment_t* env) {
   // set the current time back by the STA offset.
   env->current_tag.time = lf_time_subtract(env->current_tag.time, lf_fed_STA_offset);
 #else
+  _lf_initialize_timers(env);
   // For other than federated decentralized execution, there is no lf_fed_STA_offset variable defined.
   // To use uniform code below, we define it here as a local variable.
   instant_t lf_fed_STA_offset = 0;

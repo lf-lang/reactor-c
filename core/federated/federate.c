@@ -1090,16 +1090,12 @@ static void* update_ports_from_staa_offsets(void* args) {
       // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
       // The list is sorted in increasing order of adjusted STAA offsets.
       // We need to add the lf_fed_STA_offset to the wait time and guard against overflow.
-#ifdef FEDERATED_DECENTRALIZED
       // Skip this if the current tag is the dynamically determined stop time
       // (due to a call to lf_request_stop()).  This is indicated by a stop_tag with microstep greater than 0.
       interval_t wait_time = 0;
       if (lf_tag_compare(env->current_tag, env->stop_tag) != 0 || env->stop_tag.microstep == 0) {
         wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
       }
-#else  // not FEDERATED_DECENTRALIZED
-      interval_t wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
-#endif // FEDERATED_DECENTRALIZED
       instant_t wait_until_time = lf_time_add(env->current_tag.time, wait_time);
       LF_PRINT_DEBUG("**** (update thread) wait_until_time: " PRINTF_TIME, wait_until_time - lf_time_start());
 
