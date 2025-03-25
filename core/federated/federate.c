@@ -1097,7 +1097,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       if (lf_tag_compare(env->current_tag, env->stop_tag) != 0 || env->stop_tag.microstep == 0) {
         wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
       }
-#else // not FEDERATED_DECENTRALIZED
+#else  // not FEDERATED_DECENTRALIZED
       interval_t wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
 #endif // FEDERATED_DECENTRALIZED
       instant_t wait_until_time = lf_time_add(env->current_tag.time, wait_time);
