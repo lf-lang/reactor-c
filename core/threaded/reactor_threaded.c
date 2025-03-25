@@ -381,11 +381,13 @@ void _lf_next_locked(environment_t* env) {
   // This can be interrupted if a physical action triggers (e.g., a message
   // arrives from an upstream federate or a local physical action triggers).
   while (true) {
-#ifdef FEDERATED_DECENTRALIZED
-    // Apply the STA, if needed.
-    interval_t wait_until_time = lf_wait_until_time(next_tag);
-#else  // not FEDERATED_DECENTRALIZED
     interval_t wait_until_time = next_tag.time;
+#ifdef FEDERATED_DECENTRALIZED
+    // Apply the STA, if needed. Skip this if the next tag is the dynamically determined stop time
+    // (due to a call to lf_request_stop()).  This is indicated by a stop_tag with microstep greater than 0.
+    if (lf_tag_compare(next_tag, env->stop_tag) != 0 || env->stop_tag.microstep == 0) {
+      wait_until_time = lf_wait_until_time(next_tag);
+    }
 #endif // FEDERATED_DECENTRALIZED
     LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (wait_until_time - start_time));
     if (wait_until(wait_until_time, &env->event_q_changed)) {
