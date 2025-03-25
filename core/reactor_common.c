@@ -398,7 +398,7 @@ bool _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     e->trigger = timer;
     e->base.tag = (tag_t){.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
-    return;
+    return result;
   }
 #endif
   if (timer->offset == 0) {
