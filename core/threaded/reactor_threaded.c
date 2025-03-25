@@ -383,11 +383,8 @@ void _lf_next_locked(environment_t* env) {
   while (true) {
     interval_t wait_until_time = next_tag.time;
 #ifdef FEDERATED_DECENTRALIZED
-    // Apply the STA, if needed. Skip this if the next tag is the dynamically determined stop time
-    // (due to a call to lf_request_stop()).  This is indicated by a stop_tag with microstep greater than 0.
-    if (lf_tag_compare(next_tag, env->stop_tag) != 0 || env->stop_tag.microstep == 0) {
-      wait_until_time = lf_wait_until_time(next_tag);
-    }
+    // Apply the STA, if needed.
+    wait_until_time = lf_wait_until_time(next_tag);
 #endif // FEDERATED_DECENTRALIZED
     LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (wait_until_time - start_time));
     if (wait_until(wait_until_time, &env->event_q_changed)) {
