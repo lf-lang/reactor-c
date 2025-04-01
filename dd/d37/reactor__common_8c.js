@@ -2,8 +2,8 @@ var reactor__common_8c =
 [
     [ "_lf_advance_tag", "dd/d37/reactor__common_8c.html#a4659db62370c837baa55484134b3bfb7", null ],
     [ "_lf_create_dummy_events", "dd/d37/reactor__common_8c.html#a6396bfcdac50ddb71b6b29fa33a3cc5d", null ],
-    [ "_lf_initialize_timer", "dd/d37/reactor__common_8c.html#a680ad4849cdbbb46c3a8268663bd37dc", null ],
-    [ "_lf_initialize_timers", "dd/d37/reactor__common_8c.html#a61d27ca2e7a856120bff72150fdec9a4", null ],
+    [ "_lf_initialize_timer", "dd/d37/reactor__common_8c.html#a61a2c70695093f8a38b1e922fb36547f", null ],
+    [ "_lf_initialize_timers", "dd/d37/reactor__common_8c.html#a37bdd5c8fe3428b85eff05f0629da411", null ],
     [ "_lf_insert_reactions_for_trigger", "dd/d37/reactor__common_8c.html#aeac3f6a2d15f30e3adecc9f431162bef", null ],
     [ "_lf_invoke_reaction", "dd/d37/reactor__common_8c.html#a7fe988f0eee005defaa2ad2c9f1f2fd8", null ],
     [ "_lf_pop_events", "dd/d37/reactor__common_8c.html#a41e1c14ed7c1ab5ab19b8b98d84006b6", null ],

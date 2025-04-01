@@ -159,12 +159,12 @@ Functions</h2></td></tr>
 <tr class="memitem:af31f8aca1b004a6e5e0e695063de1b47" id="r_af31f8aca1b004a6e5e0e695063de1b47"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af31f8aca1b004a6e5e0e695063de1b47">_lf_trigger_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *reaction, int worker_number)</td></tr>
 <tr class="memdesc:af31f8aca1b004a6e5e0e695063de1b47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger the specified reaction on the specified worker in the specified environment.  <br /></td></tr>
 <tr class="separator:af31f8aca1b004a6e5e0e695063de1b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a680ad4849cdbbb46c3a8268663bd37dc" id="r_a680ad4849cdbbb46c3a8268663bd37dc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a680ad4849cdbbb46c3a8268663bd37dc">_lf_initialize_timer</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *timer)</td></tr>
-<tr class="memdesc:a680ad4849cdbbb46c3a8268663bd37dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the given timer. If this timer has a zero offset, enqueue the reactions it triggers. If this timer is to trigger reactions at a <em>future</em> tag as well, schedule it accordingly.  <br /></td></tr>
-<tr class="separator:a680ad4849cdbbb46c3a8268663bd37dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a61d27ca2e7a856120bff72150fdec9a4" id="r_a61d27ca2e7a856120bff72150fdec9a4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a61d27ca2e7a856120bff72150fdec9a4">_lf_initialize_timers</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="memdesc:a61d27ca2e7a856120bff72150fdec9a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize all the timers in the environment.  <br /></td></tr>
-<tr class="separator:a61d27ca2e7a856120bff72150fdec9a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61a2c70695093f8a38b1e922fb36547f" id="r_a61a2c70695093f8a38b1e922fb36547f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a61a2c70695093f8a38b1e922fb36547f">_lf_initialize_timer</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *timer)</td></tr>
+<tr class="memdesc:a61a2c70695093f8a38b1e922fb36547f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the given timer. If this timer has a zero offset, enqueue the reactions it triggers. If this timer is to trigger reactions at a <em>future</em> tag as well, schedule it accordingly.  <br /></td></tr>
+<tr class="separator:a61a2c70695093f8a38b1e922fb36547f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37bdd5c8fe3428b85eff05f0629da411" id="r_a37bdd5c8fe3428b85eff05f0629da411"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a37bdd5c8fe3428b85eff05f0629da411">_lf_initialize_timers</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:a37bdd5c8fe3428b85eff05f0629da411"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize all the timers in the environment.  <br /></td></tr>
+<tr class="separator:a37bdd5c8fe3428b85eff05f0629da411"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd3a0abded3adbc25ab7dbc261e7b16c" id="r_afd3a0abded3adbc25ab7dbc261e7b16c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afd3a0abded3adbc25ab7dbc261e7b16c">_lf_trigger_startup_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="memdesc:afd3a0abded3adbc25ab7dbc261e7b16c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger all the startup reactions in the specified environment.  <br /></td></tr>
 <tr class="separator:afd3a0abded3adbc25ab7dbc261e7b16c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -307,14 +307,14 @@ Erling Rennemo Jellum </dd></dl>
 
 </div>
 </div>
-<a id="a680ad4849cdbbb46c3a8268663bd37dc" name="a680ad4849cdbbb46c3a8268663bd37dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a680ad4849cdbbb46c3a8268663bd37dc">&#9670;&#160;</a></span>_lf_initialize_timer()</h2>
+<a id="a61a2c70695093f8a38b1e922fb36547f" name="a61a2c70695093f8a38b1e922fb36547f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61a2c70695093f8a38b1e922fb36547f">&#9670;&#160;</a></span>_lf_initialize_timer()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void _lf_initialize_timer </td>
+          <td class="memname">bool _lf_initialize_timer </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span>, </td>
         </tr>
@@ -334,17 +334,18 @@ Erling Rennemo Jellum </dd></dl>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the timer has an offset of 0, in which case the reaction is triggered rather than scheduled. </dd></dl>
 
 </div>
 </div>
-<a id="a61d27ca2e7a856120bff72150fdec9a4" name="a61d27ca2e7a856120bff72150fdec9a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a61d27ca2e7a856120bff72150fdec9a4">&#9670;&#160;</a></span>_lf_initialize_timers()</h2>
+<a id="a37bdd5c8fe3428b85eff05f0629da411" name="a37bdd5c8fe3428b85eff05f0629da411"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a37bdd5c8fe3428b85eff05f0629da411">&#9670;&#160;</a></span>_lf_initialize_timers()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void _lf_initialize_timers </td>
+          <td class="memname">bool _lf_initialize_timers </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span></td><td>)</td>
           <td></td>
@@ -359,6 +360,7 @@ Erling Rennemo Jellum </dd></dl>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>true if any timer has an offset of 0, in which case the reaction is triggered rather than scheduled. </dd></dl>
 
 </div>
 </div>
@@ -511,7 +513,7 @@ Erling Rennemo Jellum </dd></dl>
 <p>If there is an event found at the requested tag, the payload is replaced and 0 is returned.</p>
 <p>Note that this function is an internal API that must be called with a tag that is in the future relative to the current tag (or the environment has not started executing). Also, it must be called with tags that are in order for a given trigger. This means that the following order is illegal: </p><div class="fragment"><div class="line"><a class="code hl_function" href="../../dd/d37/reactor__common_8c.html#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(trigger1, bigger_tag, ...);</div>
 <div class="line"><a class="code hl_function" href="../../dd/d37/reactor__common_8c.html#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(trigger1, smaller_tag, ...);</div>
-<div class="ttc" id="areactor__common_8c_html_a9d2634d70492498740984f320dffe8f0"><div class="ttname"><a href="../../dd/d37/reactor__common_8c.html#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_at_tag(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdoc">Schedule an event at a specific tag (time, microstep).</div><div class="ttdef"><b>Definition</b> reactor_common.c:514</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9d2634d70492498740984f320dffe8f0"><div class="ttname"><a href="../../dd/d37/reactor__common_8c.html#a9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_at_tag(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdoc">Schedule an event at a specific tag (time, microstep).</div><div class="ttdef"><b>Definition</b> reactor_common.c:520</div></div>
 </div><!-- fragment --><p> where <code>bigger_tag &gt; smaller_tag</code>. This function is primarily used for network communication (which is assumed to be in order).</p>
 <p>This function assumes the caller holds the mutex lock.</p>
 <dl class="params"><dt>Parameters</dt><dd>
