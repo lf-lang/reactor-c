@@ -383,7 +383,8 @@ event_t* lf_get_new_event(environment_t* env) {
   return e;
 }
 
-void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+bool _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   interval_t delay = 0;
 
@@ -397,16 +398,17 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     e->trigger = timer;
     e->base.tag = (tag_t){.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
-    return;
+    return result;
   }
 #endif
   if (timer->offset == 0) {
     for (int i = 0; i < timer->number_of_reactions; i++) {
       _lf_trigger_reaction(env, timer->reactions[i], -1);
+      result = true;
       tracepoint_schedule(env, timer, 0LL); // Trace even though schedule is not called.
     }
     if (timer->period == 0) {
-      return;
+      return result;
     } else {
       // Schedule at t + period.
       delay = timer->period;
@@ -428,13 +430,15 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
     tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
   }
+  return result;
 }
 
-void _lf_initialize_timers(environment_t* env) {
+bool _lf_initialize_timers(environment_t* env) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   for (int i = 0; i < env->timer_triggers_size; i++) {
     if (env->timer_triggers[i] != NULL) {
-      _lf_initialize_timer(env, env->timer_triggers[i]);
+      result = _lf_initialize_timer(env, env->timer_triggers[i]) || result;
     }
   }
 
@@ -444,6 +448,8 @@ void _lf_initialize_timers(environment_t* env) {
     event_t* e = lf_get_new_event(env);
     lf_recycle_event(env, e);
   }
+
+  return result;
 }
 
 void _lf_trigger_startup_reactions(environment_t* env) {

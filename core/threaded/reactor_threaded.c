@@ -381,11 +381,10 @@ void _lf_next_locked(environment_t* env) {
   // This can be interrupted if a physical action triggers (e.g., a message
   // arrives from an upstream federate or a local physical action triggers).
   while (true) {
+    interval_t wait_until_time = next_tag.time;
 #ifdef FEDERATED_DECENTRALIZED
     // Apply the STA, if needed.
-    interval_t wait_until_time = lf_wait_until_time(next_tag);
-#else  // not FEDERATED_DECENTRALIZED
-    interval_t wait_until_time = next_tag.time;
+    wait_until_time = lf_wait_until_time(next_tag);
 #endif // FEDERATED_DECENTRALIZED
     LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (wait_until_time - start_time));
     if (wait_until(wait_until_time, &env->event_q_changed)) {
@@ -579,14 +578,15 @@ void _lf_initialize_start_tag(environment_t* env) {
     env->stop_tag = ((tag_t){.time = start_time + duration, .microstep = 0});
   }
 
-  _lf_initialize_timers(env);
-
 #if defined FEDERATED_DECENTRALIZED
+  bool timers_triggered_at_start = _lf_initialize_timers(env);
+
   // If we have a non-zero STA offset, then we need to allow messages to arrive
   // at the start time.  To avoid spurious STP violations, we temporarily
   // set the current time back by the STA offset.
   env->current_tag.time = lf_time_subtract(env->current_tag.time, lf_fed_STA_offset);
 #else
+  _lf_initialize_timers(env);
   // For other than federated decentralized execution, there is no lf_fed_STA_offset variable defined.
   // To use uniform code below, we define it here as a local variable.
   instant_t lf_fed_STA_offset = 0;
@@ -627,6 +627,22 @@ void _lf_initialize_start_tag(environment_t* env) {
   // once the complete message has been read. Here, we wait for that barrier
   // to be removed, if appropriate before proceeding to executing tag (0,0).
   _lf_wait_on_tag_barrier(env, (tag_t){.time = start_time, .microstep = 0});
+
+  // In addition, if the earliest event on the event queue has a tag greater
+  // than (0,0), then wait until the time of that tag. This prevents the runtime
+  // from committing to a start time and then assuming inputs are absent.
+  // Do this only if there are no startup reactions.
+  if (!timers_triggered_at_start && env->startup_reactions_size == 0) {
+    // There are no startup reactions, so we can wait for the earliest event on the event queue.
+    tag_t next_tag = get_next_event_tag(env);
+    if (next_tag.time > start_time) {
+      while (!wait_until(next_tag.time, &env->event_q_changed)) {
+        // Did not wait the full time. Check for a new next_tag.
+        next_tag = get_next_event_tag(env);
+      }
+    }
+  }
+
   lf_spawn_staa_thread();
 
 #else  // NOT FEDERATED_DECENTRALIZED
