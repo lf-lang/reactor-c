@@ -262,9 +262,10 @@ static void update_last_known_status_on_input_ports(tag_t tag, environment_t* en
  *
  * @param env The top-level environment, whose mutex is assumed to be held.
  * @param tag The tag on which the latest status of the specified network input port is known.
+ * @param warn If true, print a warning if the tag is less than the last known status tag of the port.
  * @param portID The port ID.
  */
-static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id) {
+static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id, bool warn) {
   if (lf_tag_compare(tag, env->current_tag) < 0)
     tag = env->current_tag;
   trigger_t* input_port_action = action_for_port(port_id)->trigger;
@@ -287,7 +288,7 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
     lf_cond_broadcast(&lf_port_status_changed);
     lf_cond_broadcast(&env->event_q_changed);
-  } else {
+  } else if (warn) {
     // Message arrivals should be monotonic, so this should not occur.
     lf_print_warning("Attempt to update the last known status tag " PRINTF_TAG
                      " of network input port %d to an earlier tag " PRINTF_TAG " was ignored.",
@@ -315,7 +316,7 @@ static void mark_inputs_known_absent(int fed_id) {
   for (size_t i = 0; i < _lf_action_table_size; i++) {
     lf_action_base_t* action = _lf_action_table[i];
     if (action->source_id == fed_id) {
-      update_last_known_status_on_input_port(env, FOREVER_TAG, i);
+      update_last_known_status_on_input_port(env, FOREVER_TAG, i, true);
     }
   }
   LF_MUTEX_UNLOCK(&env->mutex);
@@ -606,7 +607,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
     // Since the message is intended for the current tag and a port absent reaction
     // was waiting for the message, trigger the corresponding reactions for this message.
 
-    update_last_known_status_on_input_port(env, intended_tag, port_id);
+    update_last_known_status_on_input_port(env, intended_tag, port_id, true);
 
     LF_PRINT_LOG("Inserting reactions directly at tag " PRINTF_TAG ". "
                  "Intended tag: " PRINTF_TAG ".",
@@ -647,7 +648,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
 #endif // FEDERATED_DECENTRALIZED
        // The following will update the input_port_action->last_known_status_tag.
        // For decentralized coordination, this is needed to unblock the STAA.
-    update_last_known_status_on_input_port(env, actual_tag, port_id);
+    update_last_known_status_on_input_port(env, actual_tag, port_id, true);
 
     // If the current time >= stop time, discard the message.
     // But only if the stop time is not equal to the start time!
@@ -720,7 +721,7 @@ static int handle_port_absent_message(int* socket, int fed_id) {
   _lf_get_environments(&env);
 
   LF_MUTEX_LOCK(&env->mutex);
-  update_last_known_status_on_input_port(env, intended_tag, port_id);
+  update_last_known_status_on_input_port(env, intended_tag, port_id, true);
   LF_MUTEX_UNLOCK(&env->mutex);
 
   return 0;
@@ -1138,7 +1139,7 @@ static void* update_ports_from_staa_offsets(void* args) {
               input_port_action->trigger->status = absent;
               LF_PRINT_DEBUG("**** (update thread) Assuming port absent at tag " PRINTF_TAG,
                              lf_tag(env).time - start_time, lf_tag(env).microstep);
-              update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
+              update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action), false);
               lf_cond_broadcast(&lf_port_status_changed);
             }
           }
