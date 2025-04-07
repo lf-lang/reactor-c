@@ -292,7 +292,8 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     lf_print_warning("Attempt to update the last known status tag " PRINTF_TAG
                      " of network input port %d to an earlier tag " PRINTF_TAG " was ignored.",
                      input_port_action->last_known_status_tag.time - lf_time_start(),
-                     input_port_action->last_known_status_tag.microstep, port_id, tag.time - lf_time_start(), tag.microstep);
+                     input_port_action->last_known_status_tag.microstep, port_id, tag.time - lf_time_start(),
+                     tag.microstep);
   }
 }
 
