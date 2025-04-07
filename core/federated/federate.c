@@ -289,9 +289,10 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     lf_cond_broadcast(&env->event_q_changed);
   } else {
     // Message arrivals should be monotonic, so this should not occur.
-    lf_print_warning("Attempt to update the last known status tag "
-                     "of network input port %d to an earlier tag was ignored.",
-                     port_id);
+    lf_print_warning("Attempt to update the last known status tag " PRINTF_TAG
+                     " of network input port %d to an earlier tag " PRINTF_TAG " was ignored.",
+                     input_port_action->last_known_status_tag.time - lf_time_start(),
+                     input_port_action->last_known_status_tag.microstep, port_id, tag.time - lf_time_start(), tag.microstep);
   }
 }
 
