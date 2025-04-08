@@ -732,7 +732,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t* env, int w
  *
  * @return true if an STP violation occurred and was handled. false otherwise.
  */
-bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker_number, reaction_t* reaction) {
+static bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker_number, reaction_t* reaction) {
   bool violation_occurred = false;
   // If the reaction violates the STP offset,
   // an input trigger to this reaction has been triggered at a later
@@ -800,8 +800,8 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
 bool _lf_worker_handle_violations(environment_t* env, int worker_number, reaction_t* reaction) {
   bool violation = false;
 
-  violation = _lf_worker_handle_deadline_violation_for_reaction(env, worker_number, reaction) ||
-              _lf_worker_handle_STP_violation_for_reaction(env, worker_number, reaction);
+  violation = _lf_worker_handle_STP_violation_for_reaction(env, worker_number, reaction) ||
+              _lf_worker_handle_deadline_violation_for_reaction(env, worker_number, reaction);
   return violation;
 }
 
