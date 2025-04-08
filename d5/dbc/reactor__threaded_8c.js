@@ -11,7 +11,6 @@ var reactor__threaded_8c =
     [ "_lf_wait_on_tag_barrier", "d5/dbc/reactor__threaded_8c.html#a3d1cd5263a79c14e62a5fb34530a0a93", null ],
     [ "_lf_worker_do_work", "d5/dbc/reactor__threaded_8c.html#aea898ec61472010683510639516c731a", null ],
     [ "_lf_worker_handle_deadline_violation_for_reaction", "d5/dbc/reactor__threaded_8c.html#a7afeacd5ca6e5287e256c26ce4249afa", null ],
-    [ "_lf_worker_handle_STP_violation_for_reaction", "d5/dbc/reactor__threaded_8c.html#ab0712a5ae2165ebf50aff2bc1de7b91e", null ],
     [ "_lf_worker_handle_violations", "d5/dbc/reactor__threaded_8c.html#a2c11b17740bdc30694ea62c0960d1ca9", null ],
     [ "_lf_worker_invoke_reaction", "d5/dbc/reactor__threaded_8c.html#a3b3be80932590a67d7e07f1a62b13c29", null ],
     [ "determine_number_of_workers", "d5/dbc/reactor__threaded_8c.html#aff80c9b69d76f5dc1fb6c7c671de9708", null ],

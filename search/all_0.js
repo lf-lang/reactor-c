@@ -104,11 +104,10 @@ var searchData=
   ['_5flf_5fwatchdog_5fterminate_5fall_101',['_lf_watchdog_terminate_all',['../d6/d88/watchdog_8c.html#ab3957d31bade9b6ebcbc27aae6be3f14',1,'watchdog.c']]],
   ['_5flf_5fworker_5fdo_5fwork_102',['_lf_worker_do_work',['../d5/dbc/reactor__threaded_8c.html#aea898ec61472010683510639516c731a',1,'reactor_threaded.c']]],
   ['_5flf_5fworker_5fhandle_5fdeadline_5fviolation_5ffor_5freaction_103',['_lf_worker_handle_deadline_violation_for_reaction',['../d5/dbc/reactor__threaded_8c.html#a7afeacd5ca6e5287e256c26ce4249afa',1,'reactor_threaded.c']]],
-  ['_5flf_5fworker_5fhandle_5fstp_5fviolation_5ffor_5freaction_104',['_lf_worker_handle_STP_violation_for_reaction',['../d5/dbc/reactor__threaded_8c.html#ab0712a5ae2165ebf50aff2bc1de7b91e',1,'reactor_threaded.c']]],
-  ['_5flf_5fworker_5fhandle_5fviolations_105',['_lf_worker_handle_violations',['../d5/dbc/reactor__threaded_8c.html#a2c11b17740bdc30694ea62c0960d1ca9',1,'reactor_threaded.c']]],
-  ['_5flf_5fworker_5finvoke_5freaction_106',['_lf_worker_invoke_reaction',['../d5/dbc/reactor__threaded_8c.html#a3b3be80932590a67d7e07f1a62b13c29',1,'reactor_threaded.c']]],
-  ['_5floop_5fnext_107',['_LOOP_NEXT',['../de/dcd/influxdb_8h.html#ad82790662264e54a9d1f0c4815b9245e',1,'influxdb.h']]],
-  ['_5fopen_5ffiles_108',['_open_files',['../d5/df4/trace__util_8c.html#ae013e47b5c905db9ba2cf198efbf69e7',1,'trace_util.c']]],
-  ['_5fsys_5f_5ftimespec_5fh_5f_109',['_SYS__TIMESPEC_H_',['../d3/d79/lf__arduino__support_8h.html#abb50862d2e0e95d4abacd7eb12b34060',1,'lf_arduino_support.h']]],
-  ['_5funtil_110',['_UNTIL',['../de/dcd/influxdb_8h.html#a6220fbb96443025e3a7ff76dbb816a79',1,'influxdb.h']]]
+  ['_5flf_5fworker_5fhandle_5fviolations_104',['_lf_worker_handle_violations',['../d5/dbc/reactor__threaded_8c.html#a2c11b17740bdc30694ea62c0960d1ca9',1,'reactor_threaded.c']]],
+  ['_5flf_5fworker_5finvoke_5freaction_105',['_lf_worker_invoke_reaction',['../d5/dbc/reactor__threaded_8c.html#a3b3be80932590a67d7e07f1a62b13c29',1,'reactor_threaded.c']]],
+  ['_5floop_5fnext_106',['_LOOP_NEXT',['../de/dcd/influxdb_8h.html#ad82790662264e54a9d1f0c4815b9245e',1,'influxdb.h']]],
+  ['_5fopen_5ffiles_107',['_open_files',['../d5/df4/trace__util_8c.html#ae013e47b5c905db9ba2cf198efbf69e7',1,'trace_util.c']]],
+  ['_5fsys_5f_5ftimespec_5fh_5f_108',['_SYS__TIMESPEC_H_',['../d3/d79/lf__arduino__support_8h.html#abb50862d2e0e95d4abacd7eb12b34060',1,'lf_arduino_support.h']]],
+  ['_5funtil_109',['_UNTIL',['../de/dcd/influxdb_8h.html#a6220fbb96443025e3a7ff76dbb816a79',1,'influxdb.h']]]
 ];

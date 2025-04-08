@@ -1,6 +1,5 @@
 var NAVTREEINDEX7 =
 {
-"dc/d85/reactor_8h.html#ab5bf112c4237da16d08736ff3e3e36b8":[5,0,1,1,10,7],
 "dc/d85/reactor_8h.html#adaa6f5f1a265e7a37aeb3b6a0d101732":[5,0,1,1,10,10],
 "dc/d85/reactor_8h.html#adf76c4fc43b07691236fa6a483762481":[5,0,1,1,10,2],
 "dc/d85/reactor_8h.html#ae76171d83c29dadd3adb3f9294a92138":[5,0,1,1,10,8],
@@ -249,5 +248,6 @@ var NAVTREEINDEX7 =
 "de/dbd/socket__common_8h.html#ada8d9360bdf4e9d7f36bbfc7e682f06e":[5,0,1,1,0,0,2,24],
 "de/dbd/socket__common_8h.html#adc2dc02aa0e242eab3574240e90984b4":[5,0,1,1,0,0,2,16],
 "de/dbd/socket__common_8h.html#ae4ba6b1361cd7c47e8a0eb70729d9636":[5,0,1,1,0,0,2,17],
-"de/dbd/socket__common_8h.html#ae8d4b83faeac37f665666429742813f9":[5,0,1,1,0,0,2,22]
+"de/dbd/socket__common_8h.html#ae8d4b83faeac37f665666429742813f9":[5,0,1,1,0,0,2,22],
+"de/dbd/socket__common_8h.html#af11c9d6cd02e9e78e38a848cf75205cb":[5,0,1,1,0,0,2,6]
 };

@@ -1,6 +1,5 @@
 var NAVTREEINDEX4 =
 {
-"d7/dc7/struct__lf__tag__advancement__barrier.html#a49b697f9e16f30a2112910efd1ee6da6":[4,0,3,1],
 "d7/dc7/struct__lf__tag__advancement__barrier.html#ad60842fa9c91497e893075d9b42913ba":[4,0,3,0],
 "d7/dc9/structlf__waveform__t.html":[4,0,35],
 "d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd":[4,0,35,0],
@@ -249,5 +248,6 @@ var NAVTREEINDEX4 =
 "d9/dc7/trace__util_8h.html#ab1c55a27299014bb233dac20381bd7d4":[5,0,10,0,7,16],
 "d9/dc7/trace__util_8h.html#ab8e2538ed85d0094a64f532aa261c407":[5,0,10,0,7,17],
 "d9/dc7/trace__util_8h.html#ac84b6d7af9cb309303d5658997f0d7a2":[5,0,10,0,7,15],
-"d9/dc7/trace__util_8h.html#ac8588a40ed5942245242363f13a698f5":[5,0,10,0,7,6]
+"d9/dc7/trace__util_8h.html#ac8588a40ed5942245242363f13a698f5":[5,0,10,0,7,6],
+"d9/dc7/trace__util_8h.html#ad8876683159ec2203bd41295d8af3017":[5,0,10,0,7,18]
 };

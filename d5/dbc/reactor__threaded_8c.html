@@ -162,8 +162,6 @@ Functions</h2></td></tr>
 <tr class="separator:ab2e993d75ef5508ea9ab302f7aa3efdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7afeacd5ca6e5287e256c26ce4249afa" id="r_a7afeacd5ca6e5287e256c26ce4249afa"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7afeacd5ca6e5287e256c26ce4249afa">_lf_worker_handle_deadline_violation_for_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, int worker_number, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *reaction)</td></tr>
 <tr class="separator:a7afeacd5ca6e5287e256c26ce4249afa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab0712a5ae2165ebf50aff2bc1de7b91e" id="r_ab0712a5ae2165ebf50aff2bc1de7b91e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab0712a5ae2165ebf50aff2bc1de7b91e">_lf_worker_handle_STP_violation_for_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, int worker_number, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *reaction)</td></tr>
-<tr class="separator:ab0712a5ae2165ebf50aff2bc1de7b91e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c11b17740bdc30694ea62c0960d1ca9" id="r_a2c11b17740bdc30694ea62c0960d1ca9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2c11b17740bdc30694ea62c0960d1ca9">_lf_worker_handle_violations</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, int worker_number, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *reaction)</td></tr>
 <tr class="separator:a2c11b17740bdc30694ea62c0960d1ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b3be80932590a67d7e07f1a62b13c29" id="r_a3b3be80932590a67d7e07f1a62b13c29"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3b3be80932590a67d7e07f1a62b13c29">_lf_worker_invoke_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, int worker_number, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *reaction)</td></tr>
@@ -513,41 +511,6 @@ Soroush Bateni </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if a deadline violation occurred. false otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="ab0712a5ae2165ebf50aff2bc1de7b91e" name="ab0712a5ae2165ebf50aff2bc1de7b91e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab0712a5ae2165ebf50aff2bc1de7b91e">&#9670;&#160;</a></span>_lf_worker_handle_STP_violation_for_reaction()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool _lf_worker_handle_STP_violation_for_reaction </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>worker_number</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *</td>          <td class="paramname"><span class="paramname"><em>reaction</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Handle STP violation for 'reaction'. The mutex should NOT be locked when this function is called. It might acquire the mutex when scheduling the reactions that are triggered as a result of executing the STP violation handler on the 'reaction', if it exists. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
-    <tr><td class="paramname">worker_number</td><td>The ID of the worker. </td></tr>
-    <tr><td class="paramname">reaction</td><td>The reaction whose STP offset has been violated.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true if an STP violation occurred and was handled. false otherwise. </dd></dl>
 
 </div>
 </div>
