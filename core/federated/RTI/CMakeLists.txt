@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(RTI VERSION 0.0.2 LANGUAGES C)
+project(RTI VERSION 0.2.0 LANGUAGES C)
 
 set(CoreLib ../../../core)
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
