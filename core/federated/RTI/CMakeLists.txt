@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(RTI VERSION 1.0.0 LANGUAGES C)
+project(RTI VERSION 0.0.2 LANGUAGES C)
 
 set(CoreLib ../../../core)
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
@@ -99,6 +99,30 @@ ENDIF(AUTH MATCHES ON)
 
 # Link the main target with the library.
 target_link_libraries(${RTI_MAIN} PRIVATE ${RTI_LIB})
+
+# Add semantic versioning
+# Get the version from the project definition
+set(RTI_VERSION "${PROJECT_VERSION}")
+
+# Get the current commit hash using git
+find_package(Git REQUIRED)
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE RTI_COMMIT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the current build date
+string(TIMESTAMP RTI_BUILD_DATE "%Y-%m-%d")
+
+# Add compile definitions for versioning
+target_compile_definitions(${RTI_LIB} PUBLIC 
+    RTI_VERSION="${RTI_VERSION}"
+    RTI_COMMIT="${RTI_COMMIT}"
+    RTI_BUILD_DATE="${RTI_BUILD_DATE}"
+)
+
 
 install(
     TARGETS RTI
