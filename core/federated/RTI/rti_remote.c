@@ -1062,6 +1062,16 @@ static bool receive_and_check_protocol_version_message(int* socket_id) {
       lf_print_error("RTI received the MSG_TYPE_FED_IDS msg before MSG_TYPE_PROTOCOL_VERSION. This suggests "
                      "that the federate is running an outdated version of the reactor-c runtime. Please make sure that "
                      "the version of LFC and the version of the RTI are compatible.");
+    // To avoid the federate from deadlocking, we must read out the remainder of its
+    // MSG_TYPE_FED_IDS message before sending the reject message.
+    size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
+    char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
+    // Next read the actual federation ID.
+    if (read_from_socket_close_on_error(socket_id, federation_id_length, (unsigned char*)federation_id_received)) {
+      lf_print_error("RTI failed to read federation id from socket %d.", *socket_id);
+      return -1;
+    }
+
       send_reject(socket_id, UNEXPECTED_MESSAGE);
     } else if (msg_type == MSG_TYPE_P2P_SENDING_FED_ID || msg_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       // The federate is trying to connect to a peer, not to the RTI.
