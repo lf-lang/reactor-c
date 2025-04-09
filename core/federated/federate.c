@@ -1865,8 +1865,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
   while (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT) && !_lf_termination_executed) {
 
     // Have connected to an RTI, but not sure it's the right RTI.
-    // Send a MSG_TYPE_FED_IDS message and wait for a reply.
-    // Notify the RTI of the ID of this federate and its federation.
+    // Send a MSG_TYPE_INITIAL_HANDSHAKE message and wait for a reply.
+    // Notify the RTI of the protocol version, the ID of this federate and its federation.
 
 #ifdef FEDERATED_AUTHENTICATED
     LF_PRINT_LOG("Connected to an RTI. Performing HMAC-based authentication using federation ID.");
@@ -1884,16 +1884,18 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
     // Send the message type first.
     unsigned char buffer[4];
-    buffer[0] = MSG_TYPE_FED_IDS;
+    buffer[0] = MSG_TYPE_INITIAL_HANDSHAKE;
+    // Next send the version byte of the protocol
+    encode_uint8(FEDERATE_PROTOCOL_V2, &buffer[1]);
     // Next send the federate ID.
     if (_lf_my_fed_id == UINT16_MAX) {
       lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX - 1);
     }
-    encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
+    encode_uint16((uint16_t)_lf_my_fed_id, &buffer[2]);
     // Next send the federation ID length.
     // The federation ID is limited to 255 bytes.
     size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
-    buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
+    buffer[2 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
 
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_FED_ID, _lf_my_fed_id, NULL);
@@ -1929,6 +1931,10 @@ void lf_connect_to_rti(const char* hostname, int port) {
       if (cause == FEDERATION_ID_DOES_NOT_MATCH || cause == WRONG_SERVER) {
         lf_print_warning("Connected to the wrong RTI. Will try again");
         continue;
+      } else if (cause == FEDERATE_PROTOCOL_VERSION_NOT_SUPPORTED) {
+        lf_print_error_and_exit(
+            "RTI does not support the requsted protocol version '%d'. Please install the correct version of the RTI.",
+            FEDERATE_PROTOCOL_V2);
       }
     } else if (response == MSG_TYPE_ACK) {
       // Trace the event when tracing is enabled

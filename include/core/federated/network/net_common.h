@@ -42,7 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * use DEFAULT_PORT.
  *
  * When it has successfully opened a TCP connection, the first message it sends
- * to the RTI is a MSG_TYPE_FED_IDS message, which contains the ID of this federate
+ * to the RTI is a MSG_TYPE_FED_IDS_DEPRECATED message, which contains the ID of this federate
  * within the federation, contained in the global variable _lf_my_fed_id
  * in the federate code
  * (which is initialized by the code generator) and the unique ID of
@@ -205,6 +205,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define DELAY_START SEC(1)
 
+#define FEDERATE_PROTOCOL_V1 1
+#define FEDERATE_PROTOCOL_V2 2
+#define FEDERATE_PROTOCOL_INVALID 255
+
 ////////////////////////////////////////////
 //// Message types
 
@@ -228,7 +232,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_ACK 255
 
 /**
- * Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS message
+ * Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS_DEPRECATED message
  * sent by the RTI to the federate
  * with a payload indicating the UDP port to use for clock synchronization.
  * The next four bytes will be the port number for the UDP server, or
@@ -237,23 +241,34 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_UDP_PORT 254
 
+/** Byte identifying a initial handshake message from a federate to an RTI containing
+ *  the federation ID and the federate ID. The message contains, in this order:
+ *  * One byte equal to MSG_TYPE_INITIAL_HANDSHAKE.
+ *  * One byte giving the federate protocol version.
+ *  * Two bytes (ushort) giving the federate ID.
+ *  * One byte (uchar) giving the length N of the federation ID.
+ *  * N bytes containing the federation ID. Each federate needs to have a unique ID
+ *    between 0 and NUMBER_OF_FEDERATES-1. Each federate, when starting up, should send
+ *    this message to the RTI. This is its first message to the RTI. The RTI will
+ *    respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT. If the
+ *    federate is a C target LF program, the generated federate code does this by
+ *    calling lf_synchronize_with_other_federates(), passing to it its federate ID.
+ */
+#define MSG_TYPE_INITIAL_HANDSHAKE 253
+
 /** Byte identifying a message from a federate to an RTI containing
  *  the federation ID and the federate ID. The message contains, in
  *  this order:
- *  * One byte equal to MSG_TYPE_FED_IDS.
+ *  * One byte equal to MSG_TYPE_FED_IDS_DEPRECATED.
  *  * Two bytes (ushort) giving the federate ID.
  *  * One byte (uchar) giving the length N of the federation ID.
  *  * N bytes containing the federation ID.
  *  Each federate needs to have a unique ID between 0 and
  *  NUMBER_OF_FEDERATES-1.
- *  Each federate, when starting up, should send this message
- *  to the RTI. This is its first message to the RTI.
- *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
- *  If the federate is a C target LF program, the generated federate
- *  code does this by calling lf_synchronize_with_other_federates(),
- *  passing to it its federate ID.
+ *  NOTE: This message is deprecated and will be sent by federates using
+ *  a runtime with a version older than 1.0
  */
-#define MSG_TYPE_FED_IDS 1
+#define MSG_TYPE_FED_IDS_DEPRECATED 1
 
 /////////// Messages used for authenticated federation. ///////////////
 /**
@@ -657,5 +672,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** RTI not executed using -a or --auth option. */
 #define RTI_NOT_EXECUTED_WITH_AUTH 7
+
+/** RTI does not support the requested protocol version. */
+#define FEDERATE_PROTOCOL_VERSION_NOT_SUPPORTED 8
 
 #endif /* NET_COMMON_H */
