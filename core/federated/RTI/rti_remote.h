@@ -105,9 +105,6 @@ typedef struct rti_remote_t {
    */
   volatile bool all_federates_exited;
 
-  /** The protocol version used by the current federation.*/
-  uint8_t protocol_version;
-
   /**
    * The ID of the federation that this RTI will supervise.
    * This should be overridden with a command-line -i option to ensure

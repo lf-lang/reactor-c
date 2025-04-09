@@ -1039,15 +1039,94 @@ void send_reject(int* socket_id, unsigned char error_code) {
 }
 
 /**
- * Listen for a MSG_TYPE_INITIAL_HANDSHAKE message, which includes as a payload
- * the protocol version, a federate ID and a federation ID. If the federation ID
+ * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
+ * a federate ID and a federation ID. If the federation ID
  * matches this federation, send an MSG_TYPE_ACK and otherwise send
  * a MSG_TYPE_REJECT message.
  * @param socket_id Pointer to the socket on which to listen.
  * @param client_fd The socket address.
  * @return The federate ID for success or -1 for failure.
  */
-static int32_t receive_and_check_initial_handshake_message(int* socket_id) {
+static bool receive_and_check_protocol_version_message(int* socket_id) {
+  unsigned char msg_type;
+  unsigned char protocol_version;
+
+  if (read_from_socket_close_on_error(socket_id, 1, &msg_type)) {
+    lf_print_error("RTI failed to read from accepted socket.");
+    return false;
+  }
+
+  if (msg_type != MSG_TYPE_PROTOCOL_VERSION) {
+    if (msg_type == MSG_TYPE_FED_IDS) {
+      lf_print_error("RTI received the MSG_TYPE_FED_IDS msg before MSG_TYPE_PROTOCOL_VERSION. This suggests "
+                     "that the federate is running an outdated version of the reactor-c runtime. Please make sure that "
+                     "the version of LFC and the version of the RTI are compatible.");
+      send_reject(socket_id, UNEXPECTED_MESSAGE);
+    } else if (msg_type == MSG_TYPE_P2P_SENDING_FED_ID || msg_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
+      // The federate is trying to connect to a peer, not to the RTI.
+      // It has connected to the RTI instead.
+      // FIXME: This should not happen, but apparently has been observed.
+      // It should not happen because the peers get the port and IP address
+      // of the peer they want to connect to from the RTI.
+      // If the connection is a peer-to-peer connection between two
+      // federates, reject the connection with the WRONG_SERVER error.
+      send_reject(socket_id, WRONG_SERVER);
+    } else if (msg_type == MSG_TYPE_FED_NONCE) {
+      send_reject(socket_id, RTI_NOT_EXECUTED_WITH_AUTH);
+      lf_print_error("RTI not executed with HMAC authentication option using -a or --auth.");
+    } else {
+      send_reject(socket_id, UNEXPECTED_MESSAGE);
+    }
+    lf_print_error("RTI expected a MSG_TYPE_PROTOCOL_VERSION message. Got %u (see net_common.h).", msg_type);
+    return false;
+  } else {
+    // Next read the actual protocol version
+    if (read_from_socket_close_on_error(socket_id, 1, &protocol_version)) {
+      lf_print_error("RTI failed to read the protocol version from socket %d.", *socket_id);
+      return false;
+    }
+    LF_PRINT_DEBUG("RTI received protocol version: %u.", protocol_version);
+
+    if (protocol_version != FEDERATE_PROTOCOL_V2) {
+      lf_print_error("RTI received request for unsupported federate protocol v%d", protocol_version);
+      send_reject(socket_id, FEDERATE_PROTOCOL_VERSION_NOT_SUPPORTED);
+      return false;
+    }
+    // Read two padding bytes that make this compatible with older versions of the RTI
+    unsigned char padding[2];
+    if (read_from_socket_close_on_error(socket_id, 2, padding)) {
+      lf_print_error("RTI failed to read the 2 padding bytes from %d", *socket_id);
+      return false;
+    }
+
+    LF_PRINT_DEBUG("RTI responding with MSG_TYPE_ACK to socket %d.", *socket_id);
+    // Send an MSG_TYPE_ACK message.
+    unsigned char ack_message = MSG_TYPE_ACK;
+
+    LF_MUTEX_LOCK(&rti_mutex);
+    if (write_to_socket_close_on_error(socket_id, 1, &ack_message)) {
+      LF_MUTEX_UNLOCK(&rti_mutex);
+      lf_print_error("RTI failed to write MSG_TYPE_ACK message to federate %d.", *socket_id);
+      return false;
+    }
+    LF_MUTEX_UNLOCK(&rti_mutex);
+
+    LF_PRINT_DEBUG("RTI sent MSG_TYPE_ACK to federate %d.", *socket_id);
+
+    return true;
+  }
+}
+
+/**
+ * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
+ * a federate ID and a federation ID. If the federation ID
+ * matches this federation, send an MSG_TYPE_ACK and otherwise send
+ * a MSG_TYPE_REJECT message.
+ * @param socket_id Pointer to the socket on which to listen.
+ * @param client_fd The socket address.
+ * @return The federate ID for success or -1 for failure.
+ */
+static int32_t receive_and_check_fed_id_message(int* socket_id) {
   // Buffer for message ID, federate ID, and federation ID length.
   size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
   unsigned char buffer[length];
@@ -1057,66 +1136,24 @@ static int32_t receive_and_check_initial_handshake_message(int* socket_id) {
     lf_print_error("RTI failed to read from accepted socket.");
     return -1;
   }
-  uint8_t protocol_version = 255;                                // Initialize to an invalid value
+
   uint16_t fed_id = rti_remote->base.number_of_scheduling_nodes; // Initialize to an invalid value.
 
   // First byte received is the message type.
-  if (buffer[0] != MSG_TYPE_INITIAL_HANDSHAKE) {
+  if (buffer[0] != MSG_TYPE_FED_IDS) {
     if (rti_remote->base.tracing_enabled) {
       tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
     }
-    if (buffer[0] == MSG_TYPE_FED_IDS_DEPRECATED) {
-      lf_print_error(
-          "RTI received an initial message that indicates that the federate is compiled with an outdated\n"
-          "version of the reactor-c runtime. Make sure that the version of LFC and the RTI are compatible. ");
-      send_reject(socket_id, UNEXPECTED_MESSAGE);
-    } else if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
-      // The federate is trying to connect to a peer, not to the RTI.
-      // It has connected to the RTI instead.
-      // FIXME: This should not happen, but apparently has been observed.
-      // It should not happen because the peers get the port and IP address
-      // of the peer they want to connect to from the RTI.
-      // If the connection is a peer-to-peer connection between two
-      // federates, reject the connection with the WRONG_SERVER error.
-      send_reject(socket_id, WRONG_SERVER);
-    } else if (buffer[0] == MSG_TYPE_FED_NONCE) {
-      send_reject(socket_id, RTI_NOT_EXECUTED_WITH_AUTH);
-      lf_print_error("RTI not executed with HMAC authentication option using -a or --auth.");
-    } else {
-      send_reject(socket_id, UNEXPECTED_MESSAGE);
-    }
-    lf_print_error("RTI expected a MSG_TYPE_INITIAL_HANDSHAKE message. Got %u (see net_common.h).", buffer[0]);
+    lf_print_error("RTI expected a MSG_TYPE_FED_IDS message. Got %u (see net_common.h).", buffer[0]);
     return -1;
   } else {
-    // Received MSG_TYPE_INITIAL_HANDSHAKE.
-
-    // Read and verify the protocol version.
-    protocol_version = buffer[1];
-
-    // If we have not selected a protocol version yet, then make sure it is supported.
-    if (rti_remote->protocol_version == FEDERATE_PROTOCOL_INVALID) {
-      if (protocol_version != FEDERATE_PROTOCOL_V2) {
-        lf_print_error("RTI received handshake with unsupported federate protocol v%d", protocol_version);
-        send_reject(socket_id, FEDERATE_PROTOCOL_VERSION_NOT_SUPPORTED);
-        return -1;
-      } else {
-        rti_remote->protocol_version = protocol_version;
-      }
-    } else {
-      // We have already received a message with a protocol version. Make sure this federate requests the same.
-      if (protocol_version != rti_remote->protocol_version) {
-        lf_print_error("RTI received handshake with unsupported federate protocol v%d", protocol_version);
-        send_reject(socket_id, FEDERATE_PROTOCOL_VERSION_NOT_SUPPORTED);
-        return -1;
-      }
-    }
-
-    // Read the federation ID.  First read the length, which is one byte.
-    fed_id = extract_uint16(buffer + 2);
+    // Received federate ID.
+    fed_id = extract_uint16(buffer + 1);
     LF_PRINT_DEBUG("RTI received federate ID: %d.", fed_id);
 
-    size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 2];
-    char federation_id_received[federation_id_length + 2]; // One extra for null terminator.
+    // Read the federation ID.  First read the length, which is one byte.
+    size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
+    char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
     // Next read the actual federation ID.
     if (read_from_socket_close_on_error(socket_id, federation_id_length, (unsigned char*)federation_id_received)) {
       lf_print_error("RTI failed to read federation id from federate %d.", fed_id);
@@ -1163,7 +1200,7 @@ static int32_t receive_and_check_initial_handshake_message(int* socket_id) {
     }
   }
   federate_info_t* fed = GET_FED_INFO(fed_id);
-  // The MSG_TYPE_INITIAL_HANDSHAKE message has a supported protocol version and the right federation ID.
+  // The MSG_TYPE_FED_IDS message has the right federation ID.
 
   // Get the peer address from the connected socket_id. Then assign it as the federate's socket server.
   struct sockaddr_in peer_addr;
@@ -1453,8 +1490,12 @@ void lf_connect_to_federates(int socket_descriptor) {
     }
 #endif
 
-    // The first message from the federate should contain its ID and the federation ID.
-    int32_t fed_id = receive_and_check_initial_handshake_message(&socket_id);
+    if (!receive_and_check_protocol_version_message(&socket_id)) {
+      // Received protocol version message was rejected. Try again.
+      i--;
+    }
+
+    int32_t fed_id = receive_and_check_fed_id_message(&socket_id);
     if (fed_id >= 0 && socket_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
         receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
 
@@ -1600,7 +1641,6 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->num_feds_proposed_start = 0;
   rti_remote->all_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";
-  rti_remote->protocol_version = FEDERATE_PROTOCOL_INVALID;
   rti_remote->user_specified_port = 0;
   rti_remote->final_port_TCP = 0;
   rti_remote->socket_descriptor_TCP = -1;
