@@ -1048,13 +1048,14 @@ void send_reject(int* socket_id, unsigned char error_code) {
  * @return The federate ID for success or -1 for failure.
  */
 static bool receive_and_check_protocol_version_message(int* socket_id) {
-  unsigned char msg_type;
-  unsigned char protocol_version;
+  size_t length = 2 + sizeof(uint16_t);
+  unsigned char buffer[length];
 
-  if (read_from_socket_close_on_error(socket_id, 1, &msg_type)) {
+  if (read_from_socket_close_on_error(socket_id, length, buffer)) {
     lf_print_error("RTI failed to read from accepted socket.");
     return false;
   }
+  unsigned char msg_type = buffer[0];
 
   if (msg_type != MSG_TYPE_PROTOCOL_VERSION) {
     if (msg_type == MSG_TYPE_FED_IDS) {
@@ -1080,24 +1081,15 @@ static bool receive_and_check_protocol_version_message(int* socket_id) {
     lf_print_error("RTI expected a MSG_TYPE_PROTOCOL_VERSION message. Got %u (see net_common.h).", msg_type);
     return false;
   } else {
-    // Next read the actual protocol version
-    if (read_from_socket_close_on_error(socket_id, 1, &protocol_version)) {
-      lf_print_error("RTI failed to read the protocol version from socket %d.", *socket_id);
-      return false;
-    }
-    LF_PRINT_DEBUG("RTI received protocol version: %u.", protocol_version);
 
+    unsigned char protocol_version = buffer[1];
+    LF_PRINT_DEBUG("RTI received protocol version: %u.", protocol_version);
     if (protocol_version != FEDERATE_PROTOCOL_V2) {
       lf_print_error("RTI received request for unsupported federate protocol v%d", protocol_version);
       send_reject(socket_id, FEDERATE_PROTOCOL_VERSION_NOT_SUPPORTED);
       return false;
     }
-    // Read two padding bytes that make this compatible with older versions of the RTI
-    unsigned char padding[2];
-    if (read_from_socket_close_on_error(socket_id, 2, padding)) {
-      lf_print_error("RTI failed to read the 2 padding bytes from %d", *socket_id);
-      return false;
-    }
+
 
     LF_PRINT_DEBUG("RTI responding with MSG_TYPE_ACK to socket %d.", *socket_id);
     // Send an MSG_TYPE_ACK message.
@@ -1493,6 +1485,7 @@ void lf_connect_to_federates(int socket_descriptor) {
     if (!receive_and_check_protocol_version_message(&socket_id)) {
       // Received protocol version message was rejected. Try again.
       i--;
+      continue;
     }
 
     int32_t fed_id = receive_and_check_fed_id_message(&socket_id);
@@ -1508,6 +1501,7 @@ void lf_connect_to_federates(int socket_descriptor) {
     } else {
       // Received message was rejected. Try again.
       i--;
+      continue;
     }
   }
   // All federates have connected.

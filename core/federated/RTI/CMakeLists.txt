@@ -34,7 +34,7 @@ target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/modal_models)
 target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/utils)
 
 if (NOT DEFINED LOG_LEVEL)
-    set(LOG_LEVEL 2)
+    set(LOG_LEVEL 9)
 ENDIF(NOT DEFINED LOG_LEVEL)
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
