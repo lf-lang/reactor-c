@@ -1883,10 +1883,10 @@ void lf_connect_to_rti(const char* hostname, int port) {
 #endif
 
     // Send the message type first.
-    unsigned char buffer[4];
+    unsigned char buffer[5];
     buffer[0] = MSG_TYPE_INITIAL_HANDSHAKE;
     // Next send the version byte of the protocol
-    encode_uint8(FEDERATE_PROTOCOL_V2, &buffer[1]);
+    buffer[1] = FEDERATE_PROTOCOL_V2;
     // Next send the federate ID.
     if (_lf_my_fed_id == UINT16_MAX) {
       lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX - 1);
