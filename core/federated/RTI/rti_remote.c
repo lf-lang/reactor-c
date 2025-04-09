@@ -1039,13 +1039,13 @@ void send_reject(int* socket_id, unsigned char error_code) {
 }
 
 /**
- * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
- * a federate ID and a federation ID. If the federation ID
- * matches this federation, send an MSG_TYPE_ACK and otherwise send
- * a MSG_TYPE_REJECT message.
+ * Listen for a MSG_TYPE_PROTOCOL_VERSION message, which includes as a payload
+ * the requested protocol version form a federate. If this version is supported,
+ * send an MSG_TYPE_ACK, otherwise send a MSG_TYPE_REJECT with appropriate cause.
+ * If we receive any other message, then this is likely due to a different versions
+ * of RTI and federates. Print informative error and send MSG_TYPE_REJECT.
  * @param socket_id Pointer to the socket on which to listen.
- * @param client_fd The socket address.
- * @return The federate ID for success or -1 for failure.
+ * @return Whether a MSG_TYPE_PROTOCOL_VERSION was received and accepted.
  */
 static bool receive_and_check_protocol_version_message(int* socket_id) {
   size_t length = 2 + sizeof(uint16_t);
@@ -1062,16 +1062,6 @@ static bool receive_and_check_protocol_version_message(int* socket_id) {
       lf_print_error("RTI received the MSG_TYPE_FED_IDS msg before MSG_TYPE_PROTOCOL_VERSION. This suggests "
                      "that the federate is running an outdated version of the reactor-c runtime. Please make sure that "
                      "the version of LFC and the version of the RTI are compatible.");
-    // To avoid the federate from deadlocking, we must read out the remainder of its
-    // MSG_TYPE_FED_IDS message before sending the reject message.
-    size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
-    char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
-    // Next read the actual federation ID.
-    if (read_from_socket_close_on_error(socket_id, federation_id_length, (unsigned char*)federation_id_received)) {
-      lf_print_error("RTI failed to read federation id from socket %d.", *socket_id);
-      return -1;
-    }
-
       send_reject(socket_id, UNEXPECTED_MESSAGE);
     } else if (msg_type == MSG_TYPE_P2P_SENDING_FED_ID || msg_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       // The federate is trying to connect to a peer, not to the RTI.
@@ -1099,7 +1089,6 @@ static bool receive_and_check_protocol_version_message(int* socket_id) {
       send_reject(socket_id, FEDERATE_PROTOCOL_VERSION_NOT_SUPPORTED);
       return false;
     }
-
 
     LF_PRINT_DEBUG("RTI responding with MSG_TYPE_ACK to socket %d.", *socket_id);
     // Send an MSG_TYPE_ACK message.
