@@ -205,6 +205,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define DELAY_START SEC(1)
 
+/**
+ * The different protocol versions. Sent from federate to RTI wihtin the MSG_TYPE_PROTOCOL_VERSION.
+ */
 #define FEDERATE_PROTOCOL_V1 1
 #define FEDERATE_PROTOCOL_V2 2
 #define FEDERATE_PROTOCOL_INVALID 255
@@ -241,7 +244,18 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_UDP_PORT 254
 
+/** Byte identifying a message from a federate to an RTI containing
+ *  the federation ID and the federate ID. The message contains, in
+ *  this order:
+ *  * One byte equal to MSG_TYPE_PROTOCOL_VERSION.
+ *  * One byte equal to the protocol version
+ *  * Two extra padding bytes that are unused.
+ *  This is the very first message sent from the federate to the RTI.
+ *  If the RTI supports the requested protocol version, it will respond
+ *  with an MSG_TYPE_ACK, if not with a MSG_TYPE_REJECT.
+ */
 #define MSG_TYPE_PROTOCOL_VERSION 253
+
 /** Byte identifying a message from a federate to an RTI containing
  *  the federation ID and the federate ID. The message contains, in
  *  this order:

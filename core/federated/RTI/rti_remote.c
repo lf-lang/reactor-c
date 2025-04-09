@@ -1048,7 +1048,8 @@ void send_reject(int* socket_id, unsigned char error_code) {
  * @return Whether a MSG_TYPE_PROTOCOL_VERSION was received and accepted.
  */
 static bool receive_and_check_protocol_version_message(int* socket_id) {
-  size_t length = 2 + sizeof(uint16_t);
+  // The length of this message is 4 bytes, the 2 last are unused padding bytes.
+  size_t length = 4
   unsigned char buffer[length];
 
   if (read_from_socket_close_on_error(socket_id, length, buffer)) {

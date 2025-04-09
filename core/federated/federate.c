@@ -1861,6 +1861,7 @@ static bool lf_send_protocol_version_to_rti() {
   // Send the protocol version first
   buffer[0] = MSG_TYPE_PROTOCOL_VERSION;
   buffer[1] = FEDERATE_PROTOCOL_V2;
+
   // This message has two padding bytes to make its length equal to the length of the previous initial message.
   // This avoids a deadlock when we try to connect to an older version of the RTI.
   buffer[2] = 255;
@@ -2011,6 +2012,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
     if (!lf_send_fed_ids_to_rti()) {
       continue;
     }
+    lf_print_warning("feds ids OK\n");
     connected = true;
   }
 
