@@ -1848,10 +1848,9 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   _fed.sockets_for_outbound_p2p_connections[remote_federate_id] = socket_id;
 }
 
-
 /**
- * Sends the initial mesasge MSG_TYPE_PROTOCOL_VERSION to the RTI and checks the response. 
- * 
+ * Sends the initial mesasge MSG_TYPE_PROTOCOL_VERSION to the RTI and checks the response.
+ *
  * @return Whether message was succesfully sent and an MSG_TYPE_ACK was received back.
  */
 static bool lf_send_protocol_version_to_rti() {
@@ -1899,8 +1898,8 @@ static bool lf_send_protocol_version_to_rti() {
 }
 
 /**
- * Sends the MSG_TYPE_FED_IDS to the RTI and checks the response. 
- * 
+ * Sends the MSG_TYPE_FED_IDS to the RTI and checks the response.
+ *
  * @return Whether message was succesfully sent and an MSG_TYPE_ACK was received back.
  */
 static bool lf_send_fed_ids_to_rti() {
