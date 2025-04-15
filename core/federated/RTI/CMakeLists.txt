@@ -88,8 +88,11 @@ target_compile_options(${RTI_LIB} PUBLIC -Werror)
 find_package(Threads REQUIRED)
 target_link_libraries(${RTI_LIB} PUBLIC Threads::Threads)
 
-# Option for enabling federate authentication by RTI.
-option(AUTH "Federate authentication by RTI enabled." OFF)
+# If AUTH is defined, then the RTI will be able to authenticate federates. By default, this is off.
+if (NOT DEFINED AUTH)
+    set(AUTH OFF)
+ENDIF()
+
 IF(AUTH MATCHES ON)
   target_compile_definitions(${RTI_LIB} PUBLIC __RTI_AUTH__)
   # Find OpenSSL and link to it
