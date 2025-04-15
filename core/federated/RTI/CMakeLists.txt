@@ -88,6 +88,7 @@ target_compile_options(${RTI_LIB} PUBLIC -Werror)
 find_package(Threads REQUIRED)
 target_link_libraries(${RTI_LIB} PUBLIC Threads::Threads)
 
+# If AUTH is defined, then the RTI will be able to authenticate federates. By default, this is off.
 if (NOT DEFINED AUTH)
     set(AUTH OFF)
 ENDIF()
