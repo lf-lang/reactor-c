@@ -56,14 +56,27 @@ void lf_set_stop_tag(environment_t* env, tag_t tag);
 
 /**
  * @brief Return the global STP offset on advancement of logical time for federated execution.
+ * @deprecated Use lf_get_sta() instead.
  */
 interval_t lf_get_stp_offset(void);
 
 /**
+ * @brief Return the global STA (safe to advance) offset for federated execution.
+ */
+interval_t lf_get_sta(void);
+
+/**
  * @brief Set the global STP offset on advancement of logical time for federated execution.
- * @param offset A positive time value to be applied as the STP offset.
+ * @param offset A non-negative time value to be applied as the STP offset.
+ * @deprecated Use lf_set_sta() instead.
  */
 void lf_set_stp_offset(interval_t offset);
+
+/**
+ * @brief Set the global STA (safe to advance) offset for federated execution.
+ * @param offset A non-negative time value to be applied as the STA offset.
+ */
+void lf_set_sta(interval_t offset);
 
 #endif // FEDERATED_DECENTRALIZED
 

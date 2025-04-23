@@ -53,8 +53,8 @@ extern int _lf_count_payload_allocations;
  * @brief Global STA (safe to advance) offset uniformly applied to advancement of each
  * time step in federated execution.
  *
- * This can be retrieved in user code by calling lf_get_stp_offset() and adjusted by
- * calling lf_set_stp_offset(interval_t offset).
+ * This can be retrieved in user code by calling lf_get_sta() and adjusted by
+ * calling lf_set_sta(interval_t offset).
  */
 interval_t lf_fed_STA_offset = 0LL;
 
@@ -185,11 +185,11 @@ const char* lf_reactor_full_name(self_base_t* self) {
 
 interval_t lf_get_stp_offset() { return lf_fed_STA_offset; }
 
-void lf_set_stp_offset(interval_t offset) {
-  if (offset > 0LL) {
-    lf_fed_STA_offset = offset;
-  }
-}
+interval_t lf_get_sta() { return lf_fed_STA_offset; }
+
+void lf_set_stp_offset(interval_t offset) { lf_set_sta(offset); }
+
+void lf_set_sta(interval_t offset) { lf_fed_STA_offset = offset; }
 
 #endif // FEDERATED_DECENTRALIZED
 
