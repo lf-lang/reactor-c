@@ -244,7 +244,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         lf_recycle_event(env, e);
         return (0);
       case replace:
-        LF_PRINT_DEBUG("Policy is replace. Replacing the previous event.");
+        LF_PRINT_DEBUG("Policy is replace. Replacing the previous event with new tag and payload.");
         // If the event with the previous tag is still on the event
         // queue, then replace the token.  To find this event, we have
         // to construct a dummy event_t struct.
@@ -254,19 +254,11 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)dummy);
 
         if (found != NULL) {
-          // Recycle the existing token and the new event
-          // and update the token of the existing event.
-          lf_replace_token(found, token);
-          lf_recycle_event(env, e);
-          lf_recycle_event(env, dummy);
-          // Leave the last_tag the same.
-          return (0);
+          // Remove the previous event.
+          pqueue_tag_remove(env->event_q, found);
         }
+        // Recycle the dummy event used to find the previous event.
         lf_recycle_event(env, dummy);
-
-        // If the preceding event _has_ been handled, then adjust
-        // the tag to defer the event.
-        intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
         break;
       default:
         // Default policy is defer
