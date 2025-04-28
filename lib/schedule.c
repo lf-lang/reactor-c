@@ -227,7 +227,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
     // scheduled event. It determines the
     // earliest time at which the new event can be scheduled.
     // Check to see whether the event is too early.
-    instant_t earliest_time = trigger->last_tag.time + min_spacing;
+    instant_t earliest_time = lf_time_add(trigger->last_tag.time, min_spacing);
     LF_PRINT_DEBUG("There is a previously scheduled event; earliest possible time "
                    "with min spacing: " PRINTF_TIME,
                    earliest_time);
