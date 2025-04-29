@@ -72,13 +72,15 @@ typedef struct _lf_tag_advancement_barrier {
  * The default policy is `defer`: adjust the tag to that the minimum
  * interarrival time is satisfied.
  * The `drop` policy simply drops events that are scheduled too early.
- * The `replace` policy will attempt to replace the value of the event
- * that it preceded it. Unless the preceding event has already been
+ * The `replace` policy drops the preceding event and replaces it with
+ * the newly scheduled event.
+ * The `update` policy will attempt to update the payload of
+ * the preceding event. Unless the preceding event has already been
  * handled, its gets assigned the value of the new event. If the
  * preceding event has already been popped off the event queue, the
  * `defer` policy is fallen back to.
  */
-typedef enum { defer, drop, replace } lf_spacing_policy_t;
+typedef enum { defer, drop, replace, update } lf_spacing_policy_t;
 
 /**
  * Status of a given port at a given logical time.
