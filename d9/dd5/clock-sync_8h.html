@@ -360,10 +360,17 @@ DESCRIPTION</h1>
 <p>Add the current clock synchronization offset to a specified timestamp. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">t</td><td>Pointer to the timestamp to which to add the offset. </td></tr>
+    <tr><td class="paramname">t</td><td>Pointer to the timestamp to which to add the offset.</td></tr>
   </table>
   </dd>
 </dl>
+<p>By providing the following compile def, the user can provide their own implementation of the clock functions. This allows controlling the physical time the runtime sees. It is useful for integration with simulators or for repeatable test environments.</p>
+<p>Steps to provide an external clock plugin:</p><ol type="1">
+<li>Use the cmake-include target property to add a custom CMake file to the build.</li>
+<li>Add <code>target_compile_definition(reactor-uc PUBLIC LF_EXTERNAL_CLOCK_PLUGIN)</code> to the custom CMake file.</li>
+<li>Implement the functions in <a class="el" href="../../d7/d6e/clock_8h.html" title="A higher level API to the clock utilities provided by the platform API.">clock.h</a> in a separate file, e.g. my_clock.c</li>
+<li>Add <code>target_sources(${LF_MAIN_TARGET} PUBLIC my_clock.c)</code> to the custom CMake file. </li>
+</ol>
 
 </div>
 </div>
