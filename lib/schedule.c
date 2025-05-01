@@ -255,7 +255,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
 
         if (found != NULL) {
           // Remove the previous event.
-          pqueue_tag_remove(env->event_q, found);
+          pqueue_tag_remove(env->event_q, (pqueue_tag_element_t*)found);
         }
         // Recycle the dummy event used to find the previous event.
         lf_recycle_event(env, dummy);
