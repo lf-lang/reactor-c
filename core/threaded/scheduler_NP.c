@@ -66,9 +66,9 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t* scheduler, reaction
   // ensure that all worker threads are idle, and thus, none are triggering
   // reactions (and therefore calling this function).
   if (reaction_level == current_level) {
-    LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %zu.", reaction_level);
+    LF_PRINT_DEBUG("Scheduler %d: Trying to lock the mutex for level %zu.", scheduler->env->id, reaction_level);
     LF_MUTEX_LOCK(&scheduler->custom_data->array_of_mutexes[reaction_level]);
-    LF_PRINT_DEBUG("Scheduler: Locked the mutex for level %zu.", reaction_level);
+    LF_PRINT_DEBUG("Scheduler %d: Locked the mutex for level %zu.", scheduler->env->id, reaction_level);
   }
   // The level index for the current level can sometimes become negative. Set
   // it back to zero before adding a reaction (otherwise worker threads will
@@ -79,10 +79,11 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t* scheduler, reaction
 #endif
   int reaction_q_level_index = lf_atomic_fetch_add((int*)&scheduler->indexes[reaction_level], 1);
   assert(reaction_q_level_index >= 0);
-  LF_PRINT_DEBUG("Scheduler: Accessing triggered reactions at the level %zu with index %d.", reaction_level,
-                 reaction_q_level_index);
+  LF_PRINT_DEBUG("Scheduler %d: Accessing triggered reactions at the level %zu with index %d.", scheduler->env->id,
+                 reaction_level, reaction_q_level_index);
   ((reaction_t***)scheduler->custom_data->triggered_reactions)[reaction_level][reaction_q_level_index] = reaction;
-  LF_PRINT_DEBUG("Scheduler: Index for level %zu is at %d.", reaction_level, reaction_q_level_index);
+  LF_PRINT_DEBUG("Scheduler %d: Index for level %zu is at %d.", scheduler->env->id, reaction_level,
+                 reaction_q_level_index);
 #ifdef FEDERATED
   if (reaction_level == current_level) {
     LF_MUTEX_UNLOCK(&scheduler->custom_data->array_of_mutexes[reaction_level]);
@@ -132,10 +133,11 @@ static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
   // current level.
   size_t workers_to_awaken = LF_MIN(scheduler->number_of_idle_workers,
                                     (size_t)(scheduler->indexes[scheduler->custom_data->next_reaction_level - 1]));
-  LF_PRINT_DEBUG("Scheduler: Notifying %zu workers.", workers_to_awaken);
+  LF_PRINT_DEBUG("Scheduler %d: Notifying %zu workers.", scheduler->env->id, workers_to_awaken);
 
   scheduler->number_of_idle_workers -= workers_to_awaken;
-  LF_PRINT_DEBUG("Scheduler: New number of idle workers: %zu.", scheduler->number_of_idle_workers);
+  LF_PRINT_DEBUG("Scheduler %d: New number of idle workers: %zu.", scheduler->env->id,
+                 scheduler->number_of_idle_workers);
 
   if (workers_to_awaken > 1) {
     // Notify all the workers except the worker thread that has called this
@@ -172,10 +174,10 @@ static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* schedul
       scheduler->custom_data->next_reaction_level = 0;
       LF_MUTEX_LOCK(&env->mutex);
       // Nothing more happening at this tag.
-      LF_PRINT_DEBUG("Scheduler: Advancing tag.");
+      LF_PRINT_DEBUG("Scheduler %d: Advancing tag.", scheduler->env->id);
       // This worker thread will take charge of advancing tag.
       if (_lf_sched_advance_tag_locked(scheduler)) {
-        LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
+        LF_PRINT_DEBUG("Scheduler %d: Reached stop tag.", scheduler->env->id);
         _lf_sched_signal_stop(scheduler);
         LF_MUTEX_UNLOCK(&env->mutex);
         break;
@@ -205,14 +207,15 @@ static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_num
   // worker thread to become idle.
   if (lf_atomic_add_fetch((int*)&scheduler->number_of_idle_workers, 1) == (int)scheduler->number_of_workers) {
     // Last thread to go idle
-    LF_PRINT_DEBUG("Scheduler: Worker %zu is the last idle thread.", worker_number);
+    LF_PRINT_DEBUG("Scheduler %d: Worker %zu is the last idle thread.", scheduler->env->id, worker_number);
     // Call on the scheduler to distribute work or advance tag.
     _lf_scheduler_try_advance_tag_and_distribute(scheduler);
   } else {
     // Not the last thread to become idle. Wait for work to be released.
-    LF_PRINT_DEBUG("Scheduler: Worker %zu is trying to acquire the scheduling semaphore.", worker_number);
+    LF_PRINT_DEBUG("Scheduler %d: Worker %zu is trying to acquire the scheduling semaphore.", scheduler->env->id,
+                   worker_number);
     lf_semaphore_acquire(scheduler->custom_data->semaphore);
-    LF_PRINT_DEBUG("Scheduler: Worker %zu acquired the scheduling semaphore.", worker_number);
+    LF_PRINT_DEBUG("Scheduler %d: Worker %zu acquired the scheduling semaphore.", scheduler->env->id, worker_number);
   }
 }
 
@@ -233,7 +236,7 @@ static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_num
 void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t* params) {
   assert(env != GLOBAL_ENVIRONMENT);
 
-  LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
+  LF_PRINT_DEBUG("Scheduler %d: Initializing with %zu workers", env->id, number_of_workers);
 
   // This scheduler is unique in that it requires `num_reactions_per_level` to
   // work correctly.
@@ -248,7 +251,7 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
     return;
   }
 
-  LF_PRINT_DEBUG("Scheduler: Max reaction level: %zu", env->scheduler->max_reaction_level);
+  LF_PRINT_DEBUG("Scheduler %d: Max reaction level: %zu", env->id, env->scheduler->max_reaction_level);
 
   env->scheduler->custom_data = (custom_scheduler_data_t*)calloc(1, sizeof(custom_scheduler_data_t));
 
@@ -274,7 +277,7 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
     // Initialize the reaction vectors
     env->scheduler->custom_data->triggered_reactions[i] = (reaction_t**)calloc(queue_size, sizeof(reaction_t*));
 
-    LF_PRINT_DEBUG("Scheduler: Initialized vector of reactions for level %zu with size %zu", i, queue_size);
+    LF_PRINT_DEBUG("Scheduler %d: Initialized vector of reactions for level %zu with size %zu", env->id, i, queue_size);
 
     // Initialize the mutexes for the reaction vectors
     LF_MUTEX_INIT(&env->scheduler->custom_data->array_of_mutexes[i]);
@@ -324,9 +327,9 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
 #endif
     int current_level_q_index = lf_atomic_add_fetch((int*)&scheduler->indexes[current_level], -1);
     if (current_level_q_index >= 0) {
-      LF_PRINT_DEBUG("Scheduler: Worker %d popping reaction with level %zu, index "
+      LF_PRINT_DEBUG("Scheduler %d: Worker %d popping reaction with level %zu, index "
                      "for level: %d.",
-                     worker_number, current_level, current_level_q_index);
+                     scheduler->env->id, worker_number, current_level, current_level_q_index);
       reaction_to_return = scheduler->custom_data->executing_reactions[current_level_q_index];
       scheduler->custom_data->executing_reactions[current_level_q_index] = NULL;
     }
@@ -391,7 +394,8 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
   if (reaction == NULL || !lf_atomic_bool_compare_and_swap((int*)&reaction->status, inactive, queued)) {
     return;
   }
-  LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.", reaction->name, LF_LEVEL(reaction->index));
+  LF_PRINT_DEBUG("Scheduler %d: Enqueueing reaction %s, which has level %lld.", scheduler->env->id, reaction->name,
+                 LF_LEVEL(reaction->index));
   _lf_sched_insert_reaction(scheduler, reaction);
 }
 #endif // SCHEDULER == SCHED_NP || !defined(SCHEDULER)

@@ -707,8 +707,8 @@ void _lf_advance_tag(environment_t* env, tag_t next_tag) {
                             next_tag.time - start_time, next_tag.microstep, env->current_tag.time - start_time,
                             env->current_tag.microstep);
   }
-  LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG " at physical time " PRINTF_TIME, next_tag.time - start_time,
-               env->current_tag.microstep, lf_time_physical_elapsed());
+  LF_PRINT_LOG("Environment %d: Advanced (elapsed) tag to " PRINTF_TAG " at physical time " PRINTF_TIME, env->id,
+               next_tag.time - start_time, env->current_tag.microstep, lf_time_physical_elapsed());
 }
 
 /**
