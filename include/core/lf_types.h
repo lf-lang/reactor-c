@@ -74,10 +74,10 @@ typedef struct _lf_tag_advancement_barrier {
  * The `drop` policy simply drops events that are scheduled too early.
  * The `replace` policy will attempt to replace the payload of
  * the preceding event. Unless the preceding event has already been
- * handled, its gets assigned the value of the new event. If the
+ * handled, it gets assigned the value of the new event. If the
  * preceding event has already been popped off the event queue, the
  * `defer` policy is fallen back to.
- * The `update` policy drops the preceding event and updates it with
+ * The `update` policy drops the preceding event, if it is still in the event queue, and updates it with
  * the newly scheduled event.
  */
 typedef enum { defer, drop, replace, update } lf_spacing_policy_t;
