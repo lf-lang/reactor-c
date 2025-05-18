@@ -173,14 +173,18 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  * schedule it accordingly.
  * @param env Environment in which we are executing.
  * @param timer The timer to initialize.
+ * @return true if the timer has an offset of 0, in which case the reaction is triggered rather
+ *  than scheduled.
  */
-void _lf_initialize_timer(environment_t* env, trigger_t* timer);
+bool _lf_initialize_timer(environment_t* env, trigger_t* timer);
 
 /**
  * @brief Initialize all the timers in the environment
  * @param env Environment in which we are executing.
+ * @return true if any timer has an offset of 0, in which case the reaction is triggered rather
+ *  than scheduled.
  */
-void _lf_initialize_timers(environment_t* env);
+bool _lf_initialize_timers(environment_t* env);
 
 /**
  * @brief Trigger all the startup reactions in the specified environment.

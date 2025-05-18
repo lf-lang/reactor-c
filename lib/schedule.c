@@ -234,6 +234,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
     // If the event is early, see which policy applies.
     if (earliest_time > intended_tag.time) {
       LF_PRINT_DEBUG("Event is early.");
+      event_t *dummy, *found;
       switch (trigger->policy) {
       case drop:
         LF_PRINT_DEBUG("Policy is drop. Dropping the event.");
@@ -247,10 +248,10 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         // If the event with the previous tag is still on the event
         // queue, then replace the token.  To find this event, we have
         // to construct a dummy event_t struct.
-        event_t* dummy = lf_get_new_event(env);
+        dummy = lf_get_new_event(env);
         dummy->trigger = trigger;
         dummy->base.tag = trigger->last_tag;
-        event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)dummy);
+        found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)dummy);
 
         if (found != NULL) {
           // Recycle the existing token and the new event

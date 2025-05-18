@@ -1,6 +1,6 @@
 /**
  * @file
- * @author{Peter Donovan <peterdonovan@berkeley.edu>}
+ * @author Peter Donovan
  * @copyright (c) 2020-2024, The University of California at Berkeley.
  * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief This is a non-priority-driven scheduler. See scheduler.h for documentation.
@@ -21,11 +21,13 @@
 #include "environment.h"
 #include "util.h"
 
+#ifdef FEDERATED
+#include "federate.h"
+#endif
+
 #ifndef MAX_REACTION_LEVEL
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
 #endif
-
-void try_advance_level(environment_t* env, volatile size_t* next_reaction_level);
 
 /////////////////// Forward declarations /////////////////////////
 extern bool fast;
@@ -132,7 +134,7 @@ static size_t cond_of(size_t worker) {
 static void set_level(lf_scheduler_t* scheduler, size_t level) {
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   assert(level < worker_assignments->num_levels);
-  assert(0 <= level);
+  assert(0 <= (long long)level);
   data_collection_end_level(scheduler, worker_assignments->current_level, worker_assignments->num_workers);
   worker_assignments->current_level = level;
   worker_assignments->num_reactions_by_worker = worker_assignments->num_reactions_by_worker_by_level[level];
@@ -205,7 +207,7 @@ static void worker_assignments_free(lf_scheduler_t* scheduler) {
 static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
 #ifndef FEDERATED
-  int index = lf_atomic_add_fetch32((int32_t*)(worker_assignments->num_reactions_by_worker + worker), -1);
+  int index = lf_atomic_add_fetch(worker_assignments->num_reactions_by_worker + worker, -1);
   if (index >= 0) {
     return worker_assignments->reactions_by_worker[worker][index];
   }
@@ -221,9 +223,9 @@ static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
     old_num_reactions = current_num_reactions;
     if (old_num_reactions <= 0)
       return NULL;
-  } while ((current_num_reactions = lf_atomic_val_compare_and_swap32(
-                ((int32_t*)worker_assignments->num_reactions_by_worker + worker), old_num_reactions,
-                (index = old_num_reactions - 1))) != old_num_reactions);
+  } while ((current_num_reactions =
+                lf_atomic_val_compare_and_swap(worker_assignments->num_reactions_by_worker + worker, old_num_reactions,
+                                               (index = old_num_reactions - 1))) != old_num_reactions);
   return worker_assignments->reactions_by_worker[worker][index];
 #endif
 }
@@ -236,9 +238,9 @@ static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
  */
 static reaction_t* worker_assignments_get_or_lock(lf_scheduler_t* scheduler, size_t worker) {
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
-  assert(worker >= 0);
+  assert((long long)worker >= 0);
   // assert(worker < num_workers);  // There are edge cases where this doesn't hold.
-  assert(worker_assignments->num_reactions_by_worker[worker] >= 0);
+  assert((long long)worker_assignments->num_reactions_by_worker[worker] >= 0);
   reaction_t* ret;
   while (true) {
     if ((ret = get_reaction(scheduler, worker)))
@@ -280,7 +282,7 @@ static void worker_assignments_put(lf_scheduler_t* scheduler, reaction_t* reacti
   hash = hash ^ (hash >> 31);
   size_t worker = hash % worker_assignments->num_workers_by_level[level];
   size_t num_preceding_reactions =
-      lf_atomic_fetch_add32((int32_t*)&worker_assignments->num_reactions_by_worker_by_level[level][worker], 1);
+      lf_atomic_fetch_add(&worker_assignments->num_reactions_by_worker_by_level[level][worker], 1);
   worker_assignments->reactions_by_worker_by_level[level][worker][num_preceding_reactions] = reaction;
 }
 
@@ -381,7 +383,7 @@ static bool worker_states_finished_with_level_locked(lf_scheduler_t* scheduler, 
   assert(((int64_t)worker_assignments->num_reactions_by_worker[worker]) <= 0);
   // Why use an atomic operation when we are supposed to be "as good as locked"? Because I took a
   // shortcut, and the shortcut was imperfect.
-  size_t ret = lf_atomic_add_fetch32((int32_t*)&worker_states->num_loose_threads, -1);
+  size_t ret = lf_atomic_add_fetch(&worker_states->num_loose_threads, -1);
   assert(ret <= worker_assignments->max_num_workers); // Check for underflow
   return !ret;
 }
@@ -423,6 +425,7 @@ static void worker_states_sleep_and_unlock(lf_scheduler_t* scheduler, size_t wor
 static void advance_level_and_unlock(lf_scheduler_t* scheduler, size_t worker) {
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   size_t max_level = worker_assignments->num_levels - 1;
+  size_t total_num_reactions;
   while (true) {
     if (worker_assignments->current_level == max_level) {
       data_collection_end_tag(scheduler, worker_assignments->num_workers_by_level,
@@ -435,10 +438,16 @@ static void advance_level_and_unlock(lf_scheduler_t* scheduler, size_t worker) {
         return;
       }
     } else {
-      try_advance_level(scheduler->env, &worker_assignments->current_level);
-      set_level(scheduler, worker_assignments->current_level);
+#ifdef FEDERATED
+      lf_stall_advance_level_federation_locked(worker_assignments->current_level);
+#endif
+      total_num_reactions = get_num_reactions(scheduler);
+      if (!total_num_reactions) {
+        worker_assignments->current_level++;
+        set_level(scheduler, worker_assignments->current_level);
+      }
     }
-    size_t total_num_reactions = get_num_reactions(scheduler);
+    total_num_reactions = get_num_reactions(scheduler);
     if (total_num_reactions) {
       size_t num_workers_to_awaken = LF_MIN(total_num_reactions, worker_assignments->num_workers);
       LF_ASSERT(num_workers_to_awaken > 0, "");
@@ -593,6 +602,7 @@ static size_t restrict_to_range(size_t start_inclusive, size_t end_inclusive, si
  */
 static void compute_number_of_workers(lf_scheduler_t* scheduler, size_t* num_workers_by_level,
                                       size_t* max_num_workers_by_level, bool jitter) {
+
   data_collection_t* data_collection = scheduler->custom_data->data_collection;
   for (size_t level = 0; level < data_collection->num_levels; level++) {
     interval_t this_execution_time =
@@ -684,7 +694,6 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
   worker_assignments_free(scheduler);
   data_collection_free(scheduler);
   free(scheduler->custom_data);
-  lf_semaphore_destroy(scheduler->semaphore);
 }
 
 ///////////////////////// Scheduler Worker API ///////////////////////////////
@@ -717,7 +726,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {
   LF_ASSERT(worker_number >= -1, "Sched: Invalid worker number");
-  if (!lf_atomic_bool_compare_and_swap32((int32_t*)&reaction->status, inactive, queued))
+  if (!lf_atomic_bool_compare_and_swap((int*)&reaction->status, inactive, queued))
     return;
   worker_assignments_put(scheduler, reaction);
 }

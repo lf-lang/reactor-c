@@ -18,8 +18,8 @@
 #include "reactor_common.h"
 #include "environment.h"
 
-// Embedded platforms with no TTY shouldnt have signals
-#if !defined(NO_TTY)
+// Embedded platforms with no command line interface shouldnt have signals
+#if !defined(NO_CLI)
 #include <signal.h> // To trap ctrl-c and invoke termination().
 #endif
 
@@ -164,6 +164,7 @@ int _lf_do_step(environment_t* env) {
         // Deadline violation has occurred.
         violation = true;
         // Invoke the local handler, if there is one.
+        tracepoint_reaction_starts(env, reaction, 0);
         reaction_function_t handler = reaction->deadline_violation_handler;
         if (handler != NULL) {
           (*handler)(reaction->self);
@@ -171,6 +172,7 @@ int _lf_do_step(environment_t* env) {
           // triggered reactions into the queue.
           schedule_output_reactions(env, reaction, 0);
         }
+        tracepoint_reaction_ends(env, reaction, 0);
       }
     }
 
@@ -287,12 +289,6 @@ void lf_request_stop(void) {
 }
 
 /**
- * Return false.
- * @param reaction The reaction.
- */
-bool _lf_is_blocked_by_executing_reaction(void) { return false; }
-
-/**
  * The main loop of the LF program.
  *
  * An unambiguous function name that can be called
@@ -319,8 +315,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // The above handles only "normal" termination (via a call to exit).
     // As a consequence, we need to also trap Ctrl-C, which issues a SIGINT,
     // and cause it to call exit.
-    // Embedded platforms with NO_TTY have no concept of a signal; for those, we exclude this call.
-#ifndef NO_TTY
+    // Embedded platforms with NO_CLI have no concept of a signal; for those, we exclude this call.
+#ifndef NO_CLI
     signal(SIGINT, exit);
 #endif
     // Create and initialize the environment

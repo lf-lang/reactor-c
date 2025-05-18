@@ -150,12 +150,12 @@ typedef struct federate_instance_t {
   bool received_stop_request_from_rti;
 
   /**
-   * A record of the most recently sent LTC (latest tag complete) message.
+   * A record of the most recently sent LTC (latest tag confirmed) message.
    * In some situations, federates can send logical_tag_complete for
    * the same tag twice or more in-a-row to the RTI. For example, when
    * _lf_next() returns without advancing tag. To prevent overwhelming
    * the RTI with extra messages, record the last sent logical tag
-   * complete message and check against it in lf_latest_tag_complete().
+   * complete message and check against it in lf_latest_tag_confirmed().
    *
    * @note Here, the underlying assumption is that the TCP stack will
    *  deliver the Logical TAG Complete message to the RTI eventually
@@ -164,9 +164,24 @@ typedef struct federate_instance_t {
   tag_t last_sent_LTC;
 
   /**
-   * A record of the most recently sent NET (next event tag) message.
+   * A record of the most recently sent NET (next event tag) signal.
    */
   tag_t last_sent_NET;
+
+  /**
+   * A record of the most recently skipped NET (next event tag) signal.
+   */
+  tag_t last_skipped_NET;
+
+  /**
+   * Indicator of whether this federate has received any DNET (downstream next event tag) signal.
+   */
+  bool received_any_DNET;
+
+  /**
+   * A record of the most recent DNET (downstream next event tag) signal.
+   */
+  tag_t last_DNET;
 
   /**
    * For use in federates with centralized coordination, the minimum
@@ -206,7 +221,7 @@ typedef enum parse_rti_code_t { SUCCESS, INVALID_PORT, INVALID_HOST, INVALID_USE
 // Global variables
 
 /**
- * Mutex lock held while performing socket write and close operations.
+ * Mutex lock held while performing outbound socket write and close operations.
  */
 extern lf_mutex_t lf_outbound_socket_mutex;
 
@@ -214,11 +229,6 @@ extern lf_mutex_t lf_outbound_socket_mutex;
  * Condition variable for blocking on unkonwn federate input ports.
  */
 extern lf_cond_t lf_port_status_changed;
-
-/**
- * Condition variable for blocking on tag advance in
- */
-extern lf_cond_t lf_current_tag_changed;
 
 //////////////////////////////////////////////////////////////////////////////////
 // Public functions (in alphabetical order)
@@ -291,7 +301,7 @@ void lf_enqueue_port_absent_reactions(environment_t* env);
 void* lf_handle_p2p_connections_from_federates(void*);
 
 /**
- * @brief Send a latest tag complete (LTC) signal to the RTI.
+ * @brief Send a latest tag confirmed (LTC) signal to the RTI.
  *
  * This avoids the send if an equal or later LTC has previously been sent.
  *
@@ -300,7 +310,7 @@ void* lf_handle_p2p_connections_from_federates(void*);
  *
  * @param tag_to_send The tag to send.
  */
-void lf_latest_tag_complete(tag_t);
+void lf_latest_tag_confirmed(tag_t);
 
 /**
  * @brief Parse the address of the RTI and store them into the global federation_metadata struct.
@@ -497,6 +507,12 @@ void lf_spawn_staa_thread(void);
 void lf_stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
+ * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex lock.
+ * @param level The level to which we would like to advance.
+ */
+void lf_stall_advance_level_federation_locked(size_t level);
+
+/**
  * @brief Synchronize the start with other federates via the RTI.
  *
  * This assumes that a connection to the RTI is already made
@@ -522,5 +538,20 @@ void lf_synchronize_with_other_federates();
  * @return True if the MLAA changed.
  */
 bool lf_update_max_level(tag_t tag, bool is_provisional);
+
+#ifdef FEDERATED_DECENTRALIZED
+/**
+ * @brief Return the physical time that we should wait until before advancing to the specified tag.
+ *
+ * This function adds the STA offset (STP_offset parameter) to the time of the specified tag unless
+ * the tag is the starting tag (it is always safe to advance to the starting tag). It also avoids
+ * adding the STA offset if all network input ports are known at least up to one microstep earlier
+ * than the specified tag.
+ *
+ * This function assumes that the caller holds the environment mutex.
+ * @param time The specified time.
+ */
+instant_t lf_wait_until_time(tag_t tag);
+#endif // FEDERATED_DECENTRALIZED
 
 #endif // FEDERATE_H

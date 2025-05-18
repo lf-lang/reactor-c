@@ -1,7 +1,8 @@
-/* C11 threads support for the C target of Lingua Franca. */
+
+/* Patmos API support for the C target of Lingua Franca. */
 
 /*************
-Copyright (c) 2019, The University of California at Berkeley.
+Copyright (c) 2024, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -24,21 +25,28 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** \file if_c11_threads_support.c
- * C11 threads support for the C target of Lingua Franca.
+/**
+ * Patmos API support for the C target of Lingua Franca.
  *
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+ * This is based on lf_nrf_support.h in icyphy/lf-buckler.
+ *
+ * @author{Ehsan Khodadad <ehkh@dtu.dk>}
+ * @author{Luca Pezzarossa <lpez@dtu.dk>}
+ * @author{Martin Schoeberl <masca@dtu.dk>}
  */
-#ifndef LF_C11_THREADS_SUPPORT_H
-#define LF_C11_THREADS_SUPPORT_H
 
-#include <threads.h>
+#ifndef LF_PATMOS_SUPPORT_H
+#define LF_PATMOS_SUPPORT_H
 
-typedef mtx_t lf_mutex_t;
-typedef struct {
-  lf_mutex_t* mutex;
-  cnd_t condition;
-} lf_cond_t;
-typedef thrd_t lf_thread_t;
+// This embedded platform has no TTY suport
+#define NO_TTY
 
-#endif
+#include <stdint.h> // For fixed-width integral types
+#include <stdbool.h>
+
+#include <inttypes.h> // Needed to define PRId64 and PRIu32
+#define PRINTF_TIME "%" PRId64
+#define PRINTF_MICROSTEP "%" PRIu32
+#define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
+
+#endif // LF_PATMOS_SUPPORT_H

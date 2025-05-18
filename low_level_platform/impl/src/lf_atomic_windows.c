@@ -10,18 +10,18 @@
 #include "platform/lf_atomic.h"
 #include <windows.h>
 
-int32_t lf_atomic_fetch_add32(int32_t* ptr, int32_t value) { return InterlockedExchangeAdd(ptr, value); }
+int lf_atomic_fetch_add(int* ptr, int value) { return InterlockedExchangeAdd((LONG*)ptr, (LONG)value); }
 int64_t lf_atomic_fetch_add64(int64_t* ptr, int64_t value) { return InterlockedExchangeAdd64(ptr, value); }
-int32_t lf_atomic_add_fetch32(int32_t* ptr, int32_t value) { return InterlockedAdd(ptr, value); }
+int lf_atomic_add_fetch(int* ptr, int value) { return InterlockedAdd((LONG*)ptr, (LONG)value); }
 int64_t lf_atomic_add_fetch64(int64_t* ptr, int64_t value) { return InterlockedAdd64(ptr, value); }
-bool lf_atomic_bool_compare_and_swap32(int32_t* ptr, int32_t oldval, int32_t newval) {
-  return (InterlockedCompareExchange(ptr, newval, oldval) == oldval);
+bool lf_atomic_bool_compare_and_swap(int* ptr, int oldval, int newval) {
+  return (InterlockedCompareExchange((LONG*)ptr, (LONG)newval, (LONG)oldval) == oldval);
 }
 bool lf_atomic_bool_compare_and_swap64(int64_t* ptr, int64_t oldval, int64_t newval) {
   return (InterlockedCompareExchange64(ptr, newval, oldval) == oldval);
 }
-int32_t lf_atomic_val_compare_and_swap32(int32_t* ptr, int32_t oldval, int32_t newval) {
-  return InterlockedCompareExchange(ptr, newval, oldval);
+int lf_atomic_val_compare_and_swap(int* ptr, int oldval, int newval) {
+  return InterlockedCompareExchange((LONG*)ptr, (LONG)newval, (LONG)oldval);
 }
 int64_t lf_atomic_val_compare_and_swap64(int64_t* ptr, int64_t oldval, int64_t newval) {
   return InterlockedCompareExchange64(ptr, newval, oldval);

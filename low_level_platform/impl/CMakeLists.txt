@@ -13,18 +13,16 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(LF_LOW_LEVEL_PLATFORM_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_clock_support.c
-        ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_syscall_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_linux_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_gcc_clang.c
     )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     set(LF_LOW_LEVEL_PLATFORM_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_clock_support.c
-        ${CMAKE_CURRENT_LIST_DIR}/src/lf_unix_syscall_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_macos_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_gcc_clang.c
     )
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "nRF52")
     set(LF_LOW_LEVEL_PLATFORM_FILES
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_nrf52_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
@@ -41,11 +39,21 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_rp2040_support.c
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
     )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
+    set(LF_LOW_LEVEL_PLATFORM_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_flexpret_support.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
+    )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Patmos")
+    set(LF_LOW_LEVEL_PLATFORM_FILES
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_patmos_support.c
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_atomic_irq.c
+    )
 else()
-    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Zephyr, Nrf52 and RP2040.")
+    message(FATAL_ERROR "Your platform is not supported! The C target supports FlexPRET, Patmos, Linux, MacOS, nRF52, RP2040, Windows, and Zephyr.")
 endif()
 
-list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/platform_internal.c)
+list(APPEND LF_LOW_LEVEL_PLATFORM_FILES ${CMAKE_CURRENT_LIST_DIR}/src/lf_platform_util.c)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     if(${LF_ZEPHYR_CLOCK_COUNTER})
@@ -53,11 +61,49 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     else()
         message(STATUS "Building Zephyr library with Kernel clock ")
     endif()
+
     zephyr_library_named(lf-low-level-platform-impl)
     zephyr_library_sources(${LF_LOW_LEVEL_PLATFORM_FILES})
     zephyr_library_link_libraries(kernel)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+    if (DEFINED NUMBER_OF_WORKERS)
+        if (${NUMBER_OF_WORKERS} GREATER 2)
+            message(FATAL_ERROR "RP2040 can have at most 2 workers (one per core).\
+                Number of requested workers is ${NUMBER_OF_WORKERS}.")
+        endif()
+    endif()
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FlexPRET")
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+    target_link_libraries(lf-low-level-platform-impl PRIVATE fp-sdk)
+
+    if (DEFINED NUMBER_OF_WORKERS)
+        # Verify that FlexPRET has the number of requested workers
+        # That information is available in the SDK's hwconfig
+        include($ENV{FP_SDK_PATH}/flexpret/hwconfig.cmake)
+        if (NOT DEFINED THREADS)
+            message(FATAL_ERROR
+                "Missing FlexPRET hardware configuration; check that FlexPRET has \
+                been installed to the SDK."
+            )
+        endif()
+
+        math(EXPR FLEXPRET_AVAILABLE_WORKERS "${THREADS} - 1")
+
+        if (${NUMBER_OF_WORKERS} GREATER ${FLEXPRET_AVAILABLE_WORKERS})
+            message(FATAL_ERROR
+                "Number of requested workers (${NUMBER_OF_WORKERS}) is higher \
+                than FlexPRET's number of available workers \
+                (${FLEXPRET_AVAILABLE_WORKERS}). Note that FlexPRET uses \
+                hardware threads, not the usual software threads"
+            )
+        endif()
+    endif()
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Patmos")
+    add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
 else()
     add_library(lf-low-level-platform-impl STATIC ${LF_LOW_LEVEL_PLATFORM_FILES})
+
     # Link the platform to a threading library
     if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
         find_package(Threads REQUIRED)
@@ -72,13 +118,14 @@ target_link_libraries(lf-low-level-platform-impl PRIVATE lf::low-level-platform-
 target_link_libraries(lf-low-level-platform-impl PUBLIC lf-logging-api)
 
 target_compile_definitions(lf-low-level-platform-impl PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
-message(STATUS "Applying preprocessor definitions to platform...")
+message(STATUS "Applying preprocessor definitions to low-level-platform...")
 macro(low_level_platform_define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
         target_compile_definitions(lf-low-level-platform-impl PUBLIC ${X}=${${X}})
     endif(DEFINED ${X})
 endmacro()
+
 low_level_platform_define(LF_SINGLE_THREADED)
 low_level_platform_define(LOG_LEVEL)
 low_level_platform_define(MODAL_REACTORS)

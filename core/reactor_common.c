@@ -53,8 +53,8 @@ extern int _lf_count_payload_allocations;
  * @brief Global STA (safe to advance) offset uniformly applied to advancement of each
  * time step in federated execution.
  *
- * This can be retrieved in user code by calling lf_get_stp_offset() and adjusted by
- * calling lf_set_stp_offset(interval_t offset).
+ * This can be retrieved in user code by calling lf_get_sta() and adjusted by
+ * calling lf_set_sta(interval_t offset).
  */
 interval_t lf_fed_STA_offset = 0LL;
 
@@ -149,15 +149,47 @@ void lf_set_stop_tag(environment_t* env, tag_t tag) {
   }
 }
 
+const char* lf_reactor_name(self_base_t* self) { return self->name; }
+
+const char* lf_reactor_full_name(self_base_t* self) {
+  if (self->full_name != NULL) {
+    return self->full_name;
+  }
+  // First find the length of the full name.
+  size_t name_len = strlen(self->name);
+  size_t len = name_len;
+  self_base_t* parent = self->parent;
+  while (parent != NULL) {
+    len++; // For the dot.
+    len += strlen(parent->name);
+    parent = parent->parent;
+  }
+  self->full_name = (char*)lf_allocate(len + 1, sizeof(char), &self->allocations);
+  self->full_name[len] = '\0'; // Null terminate the string.
+
+  size_t location = len - name_len;
+  memcpy(&self->full_name[location], self->name, name_len);
+  parent = self->parent;
+  while (parent != NULL) {
+    location--;
+    self->full_name[location] = '.';
+    size_t parent_len = strlen(parent->name);
+    location -= parent_len;
+    memcpy(&self->full_name[location], parent->name, parent_len);
+    parent = parent->parent;
+  }
+  return self->full_name;
+}
+
 #ifdef FEDERATED_DECENTRALIZED
 
 interval_t lf_get_stp_offset() { return lf_fed_STA_offset; }
 
-void lf_set_stp_offset(interval_t offset) {
-  if (offset > 0LL) {
-    lf_fed_STA_offset = offset;
-  }
-}
+interval_t lf_get_sta() { return lf_fed_STA_offset; }
+
+void lf_set_stp_offset(interval_t offset) { lf_set_sta(offset); }
+
+void lf_set_sta(interval_t offset) { lf_fed_STA_offset = offset; }
 
 #endif // FEDERATED_DECENTRALIZED
 
@@ -210,11 +242,13 @@ void _lf_start_time_step(environment_t* env) {
     }
 #endif // FEDERATED_DECENTRALIZED
 
+#ifdef FEDERATED_CENTRALIZED
+    env->need_to_send_LTC = false;
+#endif // FEDERATED_CENTRALIZED
+
     // Reset absent fields on network ports because
     // their status is unknown
     lf_reset_status_fields_on_input_port_triggers();
-    // Signal the helper thread to reset its progress since the logical time has changed.
-    lf_cond_signal(&lf_current_tag_changed);
   }
 #endif // FEDERATED
 }
@@ -301,13 +335,19 @@ void _lf_pop_events(environment_t* env) {
       }
     }
 
-    // Mark the trigger present.
+    // Mark the trigger present
     event->trigger->status = present;
 
     // If the trigger is a periodic timer, create a new event for its next execution.
     if (event->trigger->is_timer && event->trigger->period > 0LL) {
       // Reschedule the trigger.
       lf_schedule_trigger(env, event->trigger, event->trigger->period, NULL);
+    } else {
+      // For actions, store a pointer to status field so it is reset later.
+      int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+      if (ipfas < env->is_present_fields_size) {
+        env->is_present_fields_abbreviated[ipfas] = (bool*)&event->trigger->status;
+      }
     }
 
     // Copy the token pointer into the trigger struct so that the
@@ -320,9 +360,6 @@ void _lf_pop_events(environment_t* env) {
     // that call will increment the reference count and we need to not let the token be
     // freed prematurely.
     _lf_done_using(token);
-
-    // Mark the trigger present.
-    event->trigger->status = present;
 
     lf_recycle_event(env, event);
 
@@ -346,7 +383,8 @@ event_t* lf_get_new_event(environment_t* env) {
   return e;
 }
 
-void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+bool _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   interval_t delay = 0;
 
@@ -360,16 +398,17 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     e->trigger = timer;
     e->base.tag = (tag_t){.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
-    return;
+    return result;
   }
 #endif
   if (timer->offset == 0) {
     for (int i = 0; i < timer->number_of_reactions; i++) {
       _lf_trigger_reaction(env, timer->reactions[i], -1);
+      result = true;
       tracepoint_schedule(env, timer, 0LL); // Trace even though schedule is not called.
     }
     if (timer->period == 0) {
-      return;
+      return result;
     } else {
       // Schedule at t + period.
       delay = timer->period;
@@ -381,19 +420,25 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
 
   // Get an event_t struct to put on the event queue.
   // Recycle event_t structs, if possible.
-  event_t* e = lf_get_new_event(env);
-  e->trigger = timer;
-  e->base.tag = (tag_t){.time = lf_time_logical(env) + delay, .microstep = 0};
-  // NOTE: No lock is being held. Assuming this only happens at startup.
-  pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
-  tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
+  tag_t next_tag = (tag_t){.time = lf_time_logical(env) + delay, .microstep = 0};
+  // Do not schedule the next event if it is after the timeout.
+  if (!lf_is_tag_after_stop_tag(env, next_tag)) {
+    event_t* e = lf_get_new_event(env);
+    e->trigger = timer;
+    e->base.tag = next_tag;
+    // NOTE: No lock is being held. Assuming this only happens at startup.
+    pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
+    tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
+  }
+  return result;
 }
 
-void _lf_initialize_timers(environment_t* env) {
+bool _lf_initialize_timers(environment_t* env) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   for (int i = 0; i < env->timer_triggers_size; i++) {
     if (env->timer_triggers[i] != NULL) {
-      _lf_initialize_timer(env, env->timer_triggers[i]);
+      result = _lf_initialize_timer(env, env->timer_triggers[i]) || result;
     }
   }
 
@@ -403,6 +448,8 @@ void _lf_initialize_timers(environment_t* env) {
     event_t* e = lf_get_new_event(env);
     lf_recycle_event(env, e);
   }
+
+  return result;
 }
 
 void _lf_trigger_startup_reactions(environment_t* env) {
@@ -601,8 +648,12 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // for which we decrement the reference count.
   _lf_replace_template_token((token_template_t*)trigger, token);
 
-  // Mark the trigger present.
+  // Mark the trigger present and store a pointer to it for marking it as absent later.
   trigger->status = present;
+  int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+  if (ipfas < env->is_present_fields_size) {
+    env->is_present_fields_abbreviated[ipfas] = (bool*)&trigger->status;
+  }
 
   // Push the corresponding reactions for this trigger
   // onto the reaction queue.
@@ -824,6 +875,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         violation = true;
         // Invoke the local handler, if there is one.
         reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;
+        tracepoint_reaction_starts(env, downstream_to_execute_now, worker);
         if (handler != NULL) {
           // Assume the mutex is still not held.
           (*handler)(downstream_to_execute_now->self);
@@ -832,6 +884,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
           // triggered reactions into the queue or execute them directly if possible.
           schedule_output_reactions(env, downstream_to_execute_now, worker);
         }
+        tracepoint_reaction_ends(env, downstream_to_execute_now, worker);
       }
     }
     if (!violation) {
@@ -852,7 +905,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
 
 /**
  * Print a usage message.
- * TODO: This is not necessary for NO_TTY
+ * TODO: This is not necessary for NO_CLI
  */
 void usage(int argc, const char* argv[]) {
   printf("\nCommand-line arguments: \n\n");
@@ -890,7 +943,7 @@ const char** default_argv = NULL;
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
- * TODO: Not necessary for NO_TTY
+ * TODO: Not necessary for NO_CLI
  */
 int process_args(int argc, const char* argv[]) {
   int i = 1;
@@ -1038,26 +1091,26 @@ int process_args(int argc, const char* argv[]) {
  * core runtime.
  */
 #ifdef LF_TRACE
-static void check_version(version_t version) {
+static void check_version(const version_t* version) {
 #ifdef LF_SINGLE_THREADED
-  LF_ASSERT(version.build_config.single_threaded == TRIBOOL_TRUE ||
-                version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.single_threaded == TRIBOOL_TRUE ||
+                version->build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
             "expected single-threaded version");
 #else
-  LF_ASSERT(version.build_config.single_threaded == TRIBOOL_FALSE ||
-                version.build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.single_threaded == TRIBOOL_FALSE ||
+                version->build_config.single_threaded == TRIBOOL_DOES_NOT_MATTER,
             "expected multi-threaded version");
 #endif
 #ifdef NDEBUG
-  LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_FALSE ||
-                version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.build_type_is_debug == TRIBOOL_FALSE ||
+                version->build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
             "expected release version");
 #else
-  LF_ASSERT(version.build_config.build_type_is_debug == TRIBOOL_TRUE ||
-                version.build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
+  LF_ASSERT(version->build_config.build_type_is_debug == TRIBOOL_TRUE ||
+                version->build_config.build_type_is_debug == TRIBOOL_DOES_NOT_MATTER,
             "expected debug version");
 #endif
-  LF_ASSERT(version.build_config.log_level == LOG_LEVEL || version.build_config.log_level == INT_MAX,
+  LF_ASSERT(version->build_config.log_level == LOG_LEVEL || version->build_config.log_level == INT_MAX,
             "expected log level %d", LOG_LEVEL);
   // assert(!version.core_version_name || strcmp(version.core_version_name, CORE_SHA) == 0); // TODO: provide CORE_SHA
 }
@@ -1079,18 +1132,26 @@ void initialize_global(void) {
   int num_envs = _lf_get_environments(&envs);
   int max_threads_tracing = envs[0].num_workers * num_envs + 1; // add 1 for the main thread
 #endif
+
 #if defined(FEDERATED)
   // NUMBER_OF_FEDERATES is an upper bound on the number of upstream federates
   // -- threads are spawned to listen to upstream federates. Add 1 for the
   // clock sync thread and add 1 for the staa thread
   max_threads_tracing += NUMBER_OF_FEDERATES + 2;
-  lf_tracing_global_init("federate__", FEDERATE_ID, max_threads_tracing);
+  lf_tracing_global_init(envs[0].name, _LF_FEDERATE_NAMES_COMMA_SEPARATED, FEDERATE_ID, max_threads_tracing);
 #else
-  lf_tracing_global_init("trace_", 0, max_threads_tracing);
+  lf_tracing_global_init("main", NULL, 0, max_threads_tracing);
 #endif
   // Call the code-generated function to initialize all actions, timers, and ports
   // This is done for all environments/enclaves at the same time.
   _lf_initialize_trigger_objects();
+
+#if !defined(LF_SINGLE_THREADED) && !defined(NDEBUG)
+  // If we are testing, verify that environment with pointers is correctly set up.
+  for (int i = 0; i < num_envs; i++) {
+    environment_verify(&envs[i]);
+  }
+#endif
 }
 
 /**
@@ -1163,6 +1224,7 @@ void termination(void) {
       }
     }
   }
+  lf_tracing_global_shutdown();
   // Skip most cleanup on abnormal termination.
   if (_lf_normal_termination) {
     _lf_free_all_tokens(); // Must be done before freeing reactors.
@@ -1195,7 +1257,6 @@ void termination(void) {
     free_local_rti();
 #endif
   }
-  lf_tracing_global_shutdown();
 }
 
 index_t lf_combine_deadline_and_level(interval_t deadline, int level) {

@@ -24,6 +24,17 @@ static lf_platform_mutex_ptr_t trace_mutex;
 static trace_t trace;
 static int process_id;
 static int64_t start_time;
+static version_t version = {.build_config =
+                                {
+                                    .single_threaded = TRIBOOL_DOES_NOT_MATTER,
+#ifdef NDEBUG
+                                    .build_type_is_debug = TRIBOOL_FALSE,
+#else
+                                    .build_type_is_debug = TRIBOOL_TRUE,
+#endif
+                                    .log_level = LOG_LEVEL,
+                                },
+                            .core_version_name = NULL};
 
 // PRIVATE HELPERS ***********************************************************
 
@@ -32,46 +43,46 @@ static int64_t start_time;
  * See trace.h.
  * @return The number of items written to the object table or -1 for failure.
  */
-static int write_trace_header(trace_t* trace) {
-  if (trace->_lf_trace_file != NULL) {
-    size_t items_written = fwrite(&start_time, sizeof(int64_t), 1, trace->_lf_trace_file);
+static int write_trace_header(trace_t* t) {
+  if (t->_lf_trace_file != NULL) {
+    size_t items_written = fwrite(&start_time, sizeof(int64_t), 1, t->_lf_trace_file);
     if (items_written != 1)
-      _LF_TRACE_FAILURE(trace);
+      _LF_TRACE_FAILURE(t);
 
     // The next item in the header is the size of the
     // _lf_trace_object_descriptions table.
-    items_written = fwrite(&trace->_lf_trace_object_descriptions_size, sizeof(int), 1, trace->_lf_trace_file);
+    items_written = fwrite(&t->_lf_trace_object_descriptions_size, sizeof(int), 1, t->_lf_trace_file);
     if (items_written != 1)
-      _LF_TRACE_FAILURE(trace);
+      _LF_TRACE_FAILURE(t);
 
     // Next we write the table.
-    for (size_t i = 0; i < trace->_lf_trace_object_descriptions_size; i++) {
+    for (size_t i = 0; i < t->_lf_trace_object_descriptions_size; i++) {
       // Write the pointer to the self struct.
-      items_written = fwrite(&trace->_lf_trace_object_descriptions[i].pointer, sizeof(void*), 1, trace->_lf_trace_file);
+      items_written = fwrite(&t->_lf_trace_object_descriptions[i].pointer, sizeof(void*), 1, t->_lf_trace_file);
       if (items_written != 1)
-        _LF_TRACE_FAILURE(trace);
+        _LF_TRACE_FAILURE(t);
 
       // Write the pointer to the trigger_t struct.
-      items_written = fwrite(&trace->_lf_trace_object_descriptions[i].trigger, sizeof(void*), 1, trace->_lf_trace_file);
+      items_written = fwrite(&t->_lf_trace_object_descriptions[i].trigger, sizeof(void*), 1, t->_lf_trace_file);
       if (items_written != 1)
-        _LF_TRACE_FAILURE(trace);
+        _LF_TRACE_FAILURE(t);
 
       // Write the object type.
-      items_written = fwrite(&trace->_lf_trace_object_descriptions[i].type, // Write the pointer value.
-                             sizeof(_lf_trace_object_t), 1, trace->_lf_trace_file);
+      items_written = fwrite(&t->_lf_trace_object_descriptions[i].type, // Write the pointer value.
+                             sizeof(_lf_trace_object_t), 1, t->_lf_trace_file);
       if (items_written != 1)
-        _LF_TRACE_FAILURE(trace);
+        _LF_TRACE_FAILURE(t);
 
       // Write the description.
-      size_t description_size = strlen(trace->_lf_trace_object_descriptions[i].description);
-      items_written = fwrite(trace->_lf_trace_object_descriptions[i].description, sizeof(char),
+      size_t description_size = strlen(t->_lf_trace_object_descriptions[i].description);
+      items_written = fwrite(t->_lf_trace_object_descriptions[i].description, sizeof(char),
                              description_size + 1, // Include null terminator.
-                             trace->_lf_trace_file);
+                             t->_lf_trace_file);
       if (items_written != description_size + 1)
-        _LF_TRACE_FAILURE(trace);
+        _LF_TRACE_FAILURE(t);
     }
   }
-  return trace->_lf_trace_object_descriptions_size;
+  return (int)t->_lf_trace_object_descriptions_size;
 }
 
 /**
@@ -114,37 +125,38 @@ static void flush_trace_locked(trace_t* trace, int worker) {
 
 /**
  * @brief Flush the specified buffer to a file.
+ * @param t The trace struct.
  * @param worker Index specifying the trace to flush.
  */
-static void flush_trace(trace_t* trace, int worker) {
+static void flush_trace(trace_t* t, int worker) {
   // To avoid having more than one worker writing to the file at the same time,
   // enter a critical section.
   lf_platform_mutex_lock(trace_mutex);
-  flush_trace_locked(trace, worker);
+  flush_trace_locked(t, worker);
   lf_platform_mutex_unlock(trace_mutex);
 }
 
-static void start_trace(trace_t* trace, int max_num_local_threads) {
+static void start_trace(trace_t* t, int max_num_local_threads) {
   // Do not write the trace header information to the file yet
-  // so that startup reactions can register user-defined trace objects.
+  // so that startup reactions can register user-defined t objects.
   // write_trace_header();
-  trace->_lf_trace_header_written = false;
+  t->_lf_trace_header_written = false;
 
   // Allocate an array of arrays of trace records, one per worker thread plus one
   // for the 0 thread (the main thread, or in an single-threaded program, the only
   // thread).
-  trace->_lf_number_of_trace_buffers = max_num_local_threads;
-  trace->_lf_trace_buffer =
-      (trace_record_nodeps_t**)malloc(sizeof(trace_record_nodeps_t*) * (trace->_lf_number_of_trace_buffers + 1));
-  trace->_lf_trace_buffer++; // the buffer at index -1 is a fallback for user threads.
-  for (int i = -1; i < (int)trace->_lf_number_of_trace_buffers; i++) {
-    trace->_lf_trace_buffer[i] = (trace_record_nodeps_t*)malloc(sizeof(trace_record_nodeps_t) * TRACE_BUFFER_CAPACITY);
+  t->_lf_number_of_trace_buffers = max_num_local_threads;
+  t->_lf_trace_buffer =
+      (trace_record_nodeps_t**)malloc(sizeof(trace_record_nodeps_t*) * (t->_lf_number_of_trace_buffers + 1));
+  t->_lf_trace_buffer++; // the buffer at index -1 is a fallback for user threads.
+  for (int i = -1; i < (int)t->_lf_number_of_trace_buffers; i++) {
+    t->_lf_trace_buffer[i] = (trace_record_nodeps_t*)malloc(sizeof(trace_record_nodeps_t) * TRACE_BUFFER_CAPACITY);
   }
   // Array of counters that track the size of each trace record (per thread).
-  trace->_lf_trace_buffer_size = (size_t*)calloc(sizeof(size_t), trace->_lf_number_of_trace_buffers + 1);
-  trace->_lf_trace_buffer_size++;
+  t->_lf_trace_buffer_size = (size_t*)calloc(t->_lf_number_of_trace_buffers + 1, sizeof(size_t));
+  t->_lf_trace_buffer_size++;
 
-  trace->_lf_trace_stop = 0;
+  t->_lf_trace_stop = 0;
   LF_PRINT_DEBUG("Started tracing.");
 }
 
@@ -192,21 +204,7 @@ static void stop_trace(trace_t* trace) {
 
 // IMPLEMENTATION OF VERSION API *********************************************
 
-version_t lf_version_tracing() {
-  return (version_t){
-      .build_config =
-          (build_config_t){
-              .single_threaded = TRIBOOL_DOES_NOT_MATTER,
-#ifdef NDEBUG
-              .build_type_is_debug = TRIBOOL_FALSE,
-#else
-              .build_type_is_debug = TRIBOOL_TRUE,
-#endif
-              .log_level = LOG_LEVEL,
-          },
-      .core_version_name = NULL,
-  };
-}
+const version_t* lf_version_tracing() { return &version; }
 
 // IMPLEMENTATION OF TRACE API ***********************************************
 
@@ -253,7 +251,8 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr) {
   }
 }
 
-void lf_tracing_global_init(char* file_name_prefix, int fedid, int max_num_local_threads) {
+void lf_tracing_global_init(char* process_name, char* process_names, int fedid, int max_num_local_threads) {
+  (void)process_names;
   trace_mutex = lf_platform_mutex_new();
   if (!trace_mutex) {
     fprintf(stderr, "WARNING: Failed to initialize trace mutex.\n");
@@ -261,10 +260,10 @@ void lf_tracing_global_init(char* file_name_prefix, int fedid, int max_num_local
   }
   process_id = fedid;
   char filename[100];
-  if (strcmp(file_name_prefix, "rti") == 0) {
-    sprintf(filename, "%s.lft", file_name_prefix);
+  if (strcmp(process_name, "rti") == 0) {
+    sprintf(filename, "%s.lft", process_name);
   } else {
-    sprintf(filename, "%s%d.lft", file_name_prefix, process_id);
+    sprintf(filename, "%s_%d.lft", process_name, process_id);
   }
   trace_new(filename);
   start_trace(&trace, max_num_local_threads);
