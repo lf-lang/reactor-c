@@ -357,7 +357,7 @@ static inline void tracepoint_federate_from_federate(trace_event_t event_type, i
 }
 
 /// \cond INTERNAL  // Doxygen conditional.
-// The following is defined intrace.h, so ask Doxygen to ignore this.
+// The following is defined in trace.h, so ask Doxygen to ignore this.
 
 static inline void lf_tracing_global_init(char* process_name, char* process_names, int process_id,
                                           int max_num_local_threads) {
@@ -369,7 +369,7 @@ static inline void lf_tracing_global_init(char* process_name, char* process_name
 static inline void lf_tracing_global_shutdown() {}
 static inline void lf_tracing_set_start_time(int64_t start_time) { (void)start_time; }
 
-+/// \endcond // INTERNAL
+/// \endcond // INTERNAL
 
 #define tracepoint_reaction_starts(env, reaction, worker)                                                              \
   while (0) {                                                                                                          \
