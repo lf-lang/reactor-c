@@ -51,7 +51,7 @@ PROJECT_BRIEF          = "C Runtime for Lingua Franca"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           =
+PROJECT_LOGO           = ../docs/logo.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -1257,7 +1257,7 @@ HTML_STYLESHEET        =
 # list). For an example see the documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_EXTRA_STYLESHEET  =
+HTML_EXTRA_STYLESHEET  = ../docs/doxygen-awesome.css
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
@@ -1306,7 +1306,7 @@ HTML_COLORSTYLE_GAMMA  = 80
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_TIMESTAMP         = NO
+HTML_TIMESTAMP         = YES
 
 # If the HTML_DYNAMIC_MENUS tag is set to YES then the generated HTML
 # documentation will contain a main index with vertical navigation menus that
@@ -1325,7 +1325,7 @@ HTML_DYNAMIC_MENUS     = YES
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_DYNAMIC_SECTIONS  = NO
+HTML_DYNAMIC_SECTIONS  = YES
 
 # With HTML_INDEX_NUM_ENTRIES one can control the preferred number of entries
 # shown in the various tree structured indices initially; the user can expand
@@ -1607,7 +1607,7 @@ EXT_LINKS_IN_WINDOW    = NO
 # The default value is: png.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_FORMULA_FORMAT    = png
+HTML_FORMULA_FORMAT    = svg
 
 # Use this tag to change the font size of LaTeX formulas included as images in
 # the HTML documentation. When you change the font size after a successful
@@ -1616,7 +1616,7 @@ HTML_FORMULA_FORMAT    = png
 # Minimum value: 8, maximum value: 50, default value: 10.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-FORMULA_FONTSIZE       = 10
+FORMULA_FONTSIZE       = 12
 
 # Use the FORMULA_TRANSPARENT tag to determine whether or not the images
 # generated for formulas are transparent PNGs. Transparent PNGs are not
@@ -1644,7 +1644,7 @@ FORMULA_MACROFILE      =
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-USE_MATHJAX            = NO
+USE_MATHJAX            = YES
 
 # With MATHJAX_VERSION it is possible to specify the MathJax version to be used.
 # Note that the different versions of MathJax have different requirements with
@@ -1652,10 +1652,10 @@ USE_MATHJAX            = NO
 # settings have to be changed when switching between the different MathJax
 # versions.
 # Possible values are: MathJax_2 and MathJax_3.
-# The default value is: MathJax_2.
+# The default value is: MathJax_3.
 # This tag requires that the tag USE_MATHJAX is set to YES.
 
-MATHJAX_VERSION        = MathJax_2
+MATHJAX_VERSION        = MathJax_3
 
 # When MathJax is enabled you can set the default output format to be used for
 # the MathJax output. For more details about the output format see MathJax
@@ -1669,10 +1669,10 @@ MATHJAX_VERSION        = MathJax_2
 # for NathJax 2. For MathJax version 3 chtml will be used instead.), chtml (This
 # is the name for Mathjax version 3, for MathJax version 2 this will be
 # translated into HTML-CSS) and SVG.
-# The default value is: HTML-CSS.
+# The default value is: chtml.
 # This tag requires that the tag USE_MATHJAX is set to YES.
 
-MATHJAX_FORMAT         = HTML-CSS
+MATHJAX_FORMAT         = chtml
 
 # When MathJax is enabled you need to specify the location relative to the HTML
 # output directory using the MATHJAX_RELPATH option. The destination directory
