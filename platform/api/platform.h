@@ -40,7 +40,7 @@ int lf_platform_mutex_unlock(lf_platform_mutex_ptr_t mutex);
 
 /**
  * @brief The ID of the current thread.
- * 
+ *
  * The only guarantee is that these IDs will be a contiguous range of numbers
  * starting at 0.
  */
