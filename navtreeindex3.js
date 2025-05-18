@@ -1,5 +1,6 @@
 var NAVTREEINDEX3 =
 {
+"d6/d51/pqueue__base_8h.html#a884902da135214a6167f1536ad4ed4bc":[5,0,1,1,3,4,6],
 "d6/d51/pqueue__base_8h.html#a921be3b49e4021888c595188438fdf7a":[5,0,1,1,3,4,20],
 "d6/d51/pqueue__base_8h.html#a9bb9cb0e5f41746db17b7581f5fe0559":[5,0,1,1,3,4,11],
 "d6/d51/pqueue__base_8h.html#a9ec5c03203b587dbb92f8d2a977aa7e4":[5,0,1,1,3,4,17],
@@ -248,6 +249,5 @@ var NAVTREEINDEX3 =
 "d7/dc7/lf__nrf52__support_8h.html#aa985f1f1f508c8761ecdef3fe8a9edf5":[5,0,4,0,0,6,5],
 "d7/dc7/lf__nrf52__support_8h.html#aca036d4cc9846cf6669d6e57ea281e1c":[5,0,4,0,0,6,0],
 "d7/dc7/lf__nrf52__support_8h_source.html":[5,0,4,0,0,6],
-"d7/dc7/struct__lf__tag__advancement__barrier.html":[4,0,3],
-"d7/dc7/struct__lf__tag__advancement__barrier.html#a49b697f9e16f30a2112910efd1ee6da6":[4,0,3,1]
+"d7/dc7/struct__lf__tag__advancement__barrier.html":[4,0,3]
 };

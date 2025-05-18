@@ -26,7 +26,8 @@ var lf__types_8h =
     [ "lf_spacing_policy_t", "d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822", [
       [ "defer", "d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90", null ],
       [ "drop", "d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019", null ],
-      [ "replace", "d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323", null ]
+      [ "replace", "d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323", null ],
+      [ "update", "d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a15edc24cdf7dea17a43c6c50580eba2b", null ]
     ] ],
     [ "port_status_t", "d6/d1d/lf__types_8h.html#a759ba374f75ea0025b9af1bb35f14d7e", [
       [ "absent", "d6/d1d/lf__types_8h.html#a759ba374f75ea0025b9af1bb35f14d7ea1a8fae68a24a59c5629c241401fabb08", null ],

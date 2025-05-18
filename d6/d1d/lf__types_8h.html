@@ -181,6 +181,7 @@ Enumerations</h2></td></tr>
 <tr class="memitem:a0183c0b43037a172a1cd9aa6ed6b3822" id="r_a0183c0b43037a172a1cd9aa6ed6b3822"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0183c0b43037a172a1cd9aa6ed6b3822">lf_spacing_policy_t</a> { <a class="el" href="#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90">defer</a>
 , <a class="el" href="#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019">drop</a>
 , <a class="el" href="#a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323">replace</a>
+, <a class="el" href="#a0183c0b43037a172a1cd9aa6ed6b3822a15edc24cdf7dea17a43c6c50580eba2b">update</a>
  }</td></tr>
 <tr class="separator:a0183c0b43037a172a1cd9aa6ed6b3822"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a759ba374f75ea0025b9af1bb35f14d7e" id="r_a759ba374f75ea0025b9af1bb35f14d7e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a759ba374f75ea0025b9af1bb35f14d7e">port_status_t</a> { <a class="el" href="#a759ba374f75ea0025b9af1bb35f14d7ea1a8fae68a24a59c5629c241401fabb08">absent</a> = false
@@ -429,11 +430,12 @@ Mehrdad Niknami (<a href="#" onclick="location.href='mai'+'lto:'+'mni'+'kn'+'ami
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Policy for handling scheduled events that violate the specified minimum interarrival time. The default policy is <code>defer</code>: adjust the tag to that the minimum interarrival time is satisfied. The <code>drop</code> policy simply drops events that are scheduled too early. The <code>replace</code> policy will attempt to replace the value of the event that it preceded it. Unless the preceding event has already been handled, its gets assigned the value of the new event. If the preceding event has already been popped off the event queue, the <code>defer</code> policy is fallen back to. </p>
+<p>Policy for handling scheduled events that violate the specified minimum interarrival time. The default policy is <code>defer</code>: adjust the tag to that the minimum interarrival time is satisfied. The <code>drop</code> policy simply drops events that are scheduled too early. The <code>replace</code> policy will attempt to replace the payload of the preceding event. Unless the preceding event has already been handled, it gets assigned the value of the new event. If the preceding event has already been popped off the event queue, the <code>defer</code> policy is fallen back to. The <code>update</code> policy drops the preceding event, if it is still in the event queue, and updates it with the newly scheduled event. </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90" name="a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90"></a>defer&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019" name="a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019"></a>drop&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323" name="a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323"></a>replace&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a0183c0b43037a172a1cd9aa6ed6b3822a15edc24cdf7dea17a43c6c50580eba2b" name="a0183c0b43037a172a1cd9aa6ed6b3822a15edc24cdf7dea17a43c6c50580eba2b"></a>update&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
