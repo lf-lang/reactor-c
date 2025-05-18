@@ -38,6 +38,9 @@ int lf_platform_mutex_lock(lf_platform_mutex_ptr_t mutex);
  */
 int lf_platform_mutex_unlock(lf_platform_mutex_ptr_t mutex);
 
+/// \cond INTERNAL  // Doxygen conditional.
+// The following is defined in low_level_platform.h, so ask Doxygen to ignore this.
+
 /**
  * @brief The ID of the current thread.
  *
@@ -45,3 +48,5 @@ int lf_platform_mutex_unlock(lf_platform_mutex_ptr_t mutex);
  * starting at 0.
  */
 int lf_thread_id();
+
+/// \endcond // INTERNAL
