@@ -13,13 +13,6 @@
 #include "lf_types.h"
 
 /**
- * Enqueue port absent reactions that will send a PORT_ABSENT
- * message to downstream federates if a given network output port is not present.
- * @param env The environment in which we are executing
- */
-void lf_enqueue_port_absent_reactions(environment_t* env);
-
-/**
  * Raise a barrier to prevent the current tag for the specified environment from advancing
  * to or beyond the value of the future_tag argument, if possible.
  * If the current tag is already at or beyond future_tag, then
