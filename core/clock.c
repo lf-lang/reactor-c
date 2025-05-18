@@ -11,7 +11,7 @@
  * implementation of the clock functions. This allows controlling the
  * physical time the runtime sees. It is useful for integration with simulators
  * or for repeatable test environments.
- * 
+ *
  * Steps to provide an external clock plugin:
  * 1. Use the cmake-include target property to add a custom CMake file to the build.
  * 2. Add `target_compile_definition(reactor-uc PUBLIC LF_EXTERNAL_CLOCK_PLUGIN)` to the custom CMake file.
