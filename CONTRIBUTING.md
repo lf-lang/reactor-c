@@ -25,7 +25,7 @@ Normally, this should point to `master`, but to run tests temporarily with a bra
 
 To run the system tests locally on your machine, check out the lingua-franca repository and replace the reactor-c submodule with your branch:
 
-```
+```sh
 git clone git@github.com:lf-lang/lingua-franca.git
 git submodule update --init --recursive
 cd lingua-franca/core/src/main/resources/lib/c/reactor-c/
@@ -45,17 +45,21 @@ depending on parameters passed to `cmake`.
 To run tests for the single-threaded runtime, execute the following. Note that
 `-U` is required to undefine a name that may be cached from a previous run.
 
-- `rm -rf build && mkdir build && cd build`
-- `cmake .. -UNUMBER_OF_WORKERS`
-- `cmake --build .`
-- `make test`
+```sh
+rm -rf build && mkdir build && cd build
+cmake .. -UNUMBER_OF_WORKERS
+cmake --build .
+make test
+```
 
 To run tests for the multithreaded runtime, provide a nonzero number of workers
 when invoking `cmake`. For example:
 
-- `cmake .. -DNUMBER_OF_WORKERS=2`
-- `cmake --build .`
-- `sudo make test`
+```sh
+cmake .. -DNUMBER_OF_WORKERS=2
+cmake --build .
+sudo make test
+```
 
 Note that one of the tests in the multithreaded test suite requires sudo because
 it changes the scheduling policy and priorities.
@@ -68,7 +72,7 @@ arguments to `cmake` in the same way as with `NUMBER_OF_WORKERS`, using the same
 ## Code style and formatting
 We use clang-format to format our codebase. To run the formatter on all source and header files in reactor-c:
 
-```
+```sh
 make format
 ```
 The CI will do a "dry-run" of the formatter to verify that all files are correctly formatted and will indicate errors if not.
