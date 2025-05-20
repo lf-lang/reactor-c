@@ -34,11 +34,6 @@
 // then the odd construct is needed.
 
 /**
- * @defgroup API Reaction API
- * @brief API for use in inline reaction bodies.
- */
-
-/**
  * @brief Mark a port present.
  * @ingroup API
  *

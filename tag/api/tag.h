@@ -6,51 +6,78 @@
  * @brief Time and tag definitions and functions for Lingua Franca
  */
 
-/**
- * @defgroup Advanced Advanced API
- * @brief API mainly used internally, but occasionally useful for users.
- */
-
 #ifndef TAG_H
 #define TAG_H
 
+/*! @brief Number of nanoseconds @ingroup Constants */
 #define NSEC(t) ((interval_t)(t * 1LL))
+/*! @brief Number of nanoseconds @ingroup Constants */
 #define NSECS(t) ((interval_t)(t * 1LL))
+/*! @brief Number of microseconds @ingroup Constants */
 #define USEC(t) ((interval_t)(t * 1000LL))
+/*! @brief Number of microseconds @ingroup Constants */
 #define USECS(t) ((interval_t)(t * 1000LL))
+/*! @brief Number of milliseconds @ingroup Constants */
 #define MSEC(t) ((interval_t)(t * 1000000LL))
+/*! @brief Number of milliseconds @ingroup Constants */
 #define MSECS(t) ((interval_t)(t * 1000000LL))
+/*! @brief Number of seconds @ingroup Constants */
 #define SEC(t) ((interval_t)(t * 1000000000LL))
+/*! @brief Number of seconds @ingroup Constants */
 #define SECS(t) ((interval_t)(t * 1000000000LL))
+/*! @brief Number of seconds @ingroup Constants */
 #define SECOND(t) ((interval_t)(t * 1000000000LL))
+/*! @brief Number of seconds @ingroup Constants */
 #define SECONDS(t) ((interval_t)(t * 1000000000LL))
+/*! @brief Number of minutes @ingroup Constants */
 #define MINUTE(t) ((interval_t)(t * 60000000000LL))
+/*! @brief Number of minutes @ingroup Constants */
 #define MINUTES(t) ((interval_t)(t * 60000000000LL))
+/*! @brief Number of hours @ingroup Constants */
 #define HOUR(t) ((interval_t)(t * 3600000000000LL))
+/*! @brief Number of hours @ingroup Constants */
 #define HOURS(t) ((interval_t)(t * 3600000000000LL))
+/*! @brief Number of days @ingroup Constants */
 #define DAY(t) ((interval_t)(t * 86400000000000LL))
+/*! @brief Number of days @ingroup Constants */
 #define DAYS(t) ((interval_t)(t * 86400000000000LL))
+/*! @brief Number of weeks @ingroup Constants */
 #define WEEK(t) ((interval_t)(t * 604800000000000LL))
+/*! @brief Number of weeks @ingroup Constants */
 #define WEEKS(t) ((interval_t)(t * 604800000000000LL))
 
+/*! @brief Time earlier than all other times @ingroup Constants */
 #define NEVER ((interval_t)LLONG_MIN)
+/*! @brief Smallest microstep @ingroup Constants */
 #define NEVER_MICROSTEP 0u
+/*! @brief Time greater than all other times @ingroup Constants */
 #define FOREVER ((interval_t)LLONG_MAX)
+/*! @brief Largest microstep @ingroup Constants */
 #define FOREVER_MICROSTEP UINT_MAX
+/*! @brief Tag earlier than all other tags @ingroup Constants */
 #define NEVER_TAG                                                                                                      \
   (tag_t) { .time = NEVER, .microstep = NEVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
+/*! @brief Initializer for tag earlier than all other tags @ingroup Constants */
 #define NEVER_TAG_INITIALIZER {NEVER, NEVER_MICROSTEP}
+/*! @brief Tag later than all other tags @ingroup Constants */
 #define FOREVER_TAG                                                                                                    \
   (tag_t) { .time = FOREVER, .microstep = FOREVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
+/*! @brief Initializer for tag later than all other tags @ingroup Constants */
 #define FOREVER_TAG_INITIALIZER {FOREVER, FOREVER_MICROSTEP}
+/*! @brief Zero tag @ingroup Constants */
 #define ZERO_TAG (tag_t){.time = 0LL, .microstep = 0u}
 
-// Returns true if timeout has elapsed.
+/**
+ * @brief Expression that is true if physical time since start exceeds the duration.
+ * @ingroup API
+ * @param start The start time.
+ * @param duration The duration.
+ */
 #define CHECK_TIMEOUT(start, duration) (lf_time_physical() > ((start) + (duration)))
 
-// Convenience for converting times
+/*! @brief The number of nanoseconds in one second @ingroup Constants */
 #define BILLION ((instant_t)1000000000LL)
 
 #include <stdint.h>
@@ -60,23 +87,28 @@
 ////////////////  Type definitions
 
 /**
- * Time instant. Both physical and logical times are represented
- * using this typedef.
+ * @brief Time instant.
+ * @ingroup Types
+ *
+ * Both physical and logical times are represented using this typedef.
  */
 typedef int64_t instant_t;
 
 /**
- * Interval of time.
+ * @brief Interval of time.
+ * @ingroup Types
  */
 typedef int64_t interval_t;
 
 /**
- * Microstep instant.
+ * @brief Microstep.
+ * @ingroup Types
  */
 typedef uint32_t microstep_t;
 
 /**
- * A tag is a time, microstep pair.
+ * @brief A tag is a time, microstep pair.
+ * @ingroup Types
  */
 typedef struct {
   instant_t time;
@@ -86,13 +118,18 @@ typedef struct {
 ////////////////  Functions
 
 /**
- * Return the current tag, a logical time, microstep pair.
+ * @brief Return the current tag, a logical time, microstep pair.
+ * @ingroup API
+ *
  * @param env A pointer to the environment from which we want the current tag.
  */
 tag_t lf_tag(void* env);
 
 /**
- * Add two tags.  If either tag has has NEVER or FOREVER in its time field, then
+ * @brief Add two tags.
+ * @ingroup API
+ *
+ * If either tag has has NEVER or FOREVER in its time field, then
  * return NEVER_TAG or FOREVER_TAG, respectively. Also return NEVER_TAG or FOREVER_TAG
  * if the result underflows or overflows when adding the times.
  * If the microstep overflows, also return FOREVER_TAG.
@@ -106,6 +143,7 @@ tag_t lf_tag_add(tag_t a, tag_t b);
 
 /**
  * @brief Return the sum of an interval and an instant, saturating on overflow and underflow.
+ * @ingroup API
  *
  * @param a
  * @param b
@@ -115,6 +153,7 @@ instant_t lf_time_add(instant_t a, interval_t b);
 
 /**
  * @brief Return an instant minus an interval, saturating on overflow and underflow.
+ * @ingroup API
  *
  * @param a
  * @param b
@@ -140,7 +179,7 @@ int lf_tag_compare(tag_t tag1, tag_t tag2);
 /**
  * @brief Delay a tag by the specified time interval to realize the "after" keyword.
  * @ingroup API
- * 
+ *
  * Any interval less than 0 (including NEVER) is interpreted as "no delay",
  * whereas an interval equal to 0 is interpreted as one microstep delay.
  * If the time field of the tag is NEVER or the interval is negative,
@@ -163,7 +202,7 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval);
  * @brief Return the latest tag strictly less than the specified tag plus the
  * interval, unless tag is NEVER or interval is negative (including NEVER),
  * @ingroup Advanced
- * 
+ *
  * in which case return the tag unmodified.  Any interval less than 0
  * (including NEVER) is interpreted as "no delay", whereas an interval
  * equal to 0 is interpreted as one microstep delay. If the time sum
@@ -244,7 +283,7 @@ instant_t lf_time_start(void);
 /**
  * @brief For user-friendly reporting of time values, the buffer length required.
  * @ingroup API
- * 
+ *
  * This is calculated as follows, based on 64-bit time in nanoseconds:
  * Maximum number of weeks is 15,250
  * Maximum number of days is 6
@@ -262,7 +301,7 @@ instant_t lf_time_start(void);
 
 /**
  * @brief Store into the specified buffer a string giving a human-readable
- * rendition of the specified time. 
+ * rendition of the specified time.
  * @ingroup API
  *
  * The buffer must have length at least
@@ -283,7 +322,7 @@ size_t lf_readable_time(char* buffer, instant_t time);
  * @brief Print a non-negative time value in nanoseconds with commas separating thousands
  * into the specified buffer.
  * @ingroup API
- * 
+ *
  * Ideally, this would use the locale to
  * use periods if appropriate, but I haven't found a sufficiently portable
  * way to do that.

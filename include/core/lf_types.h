@@ -4,8 +4,6 @@
  * @author Marten Lohstroh (marten@berkeley.edu)
  * @author Chris Gill (cdgill@wustl.edu)
  * @author Mehrdad Niknami (mniknami@berkeley.edu)
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Type definitions that are widely used across different parts of the runtime.
  *
  * <b>IMPORTANT:</b> Many of the structs defined here require matching layouts
@@ -26,17 +24,17 @@
 #include "tag.h"
 #include "vector.h"
 
+#ifndef _SYS_TYPES_H
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
  * @see sys/types.h
  *
  * @note using sizeof(ushort) should be okay but not sizeof ushort.
  */
-#ifndef _SYS_TYPES_H
 typedef unsigned short int ushort;
 #endif
 
-/**
+/*
  * Define scheduler types as integers. This way we can conditionally
  * include/exclude code with the preprocessor with
  * #if SCHEDULER == SCHED_ADAPTIVE etc
@@ -81,7 +79,7 @@ typedef struct _lf_tag_advancement_barrier {
 typedef enum { defer, drop, replace } lf_spacing_policy_t;
 
 /**
- * Status of a given port at a given logical time.
+ * @brief Status of a given port at a given logical time.
  *
  * If the value is 'present', it is an indicator that the port is present at the given logical time.
  * If the value is 'absent', it is an indicator that the port is absent at the given logical time.
@@ -109,20 +107,24 @@ typedef enum { absent = false, present = true, unknown } port_status_t;
 typedef enum { inactive = 0, queued, running } reaction_status_t;
 
 /**
- * Handles for scheduled triggers. These handles are returned
+ * @brief Handles for scheduled triggers.
+ *
+ * These handles are returned
  * by lf_schedule() functions. The intent is that the handle can be
  * used to cancel a future scheduled event, but this is not
  * implemented yet.
  */
 typedef int trigger_handle_t;
 
-/**
- * String type so that we don't have to use {= char* =}.
- * Use this for strings that are not dynamically allocated.
- * For dynamically allocated strings that have to be freed after
- * being consumed downstream, use type char*.
- */
 #ifndef string
+/**
+ * @brief String type so that we don't have to use {= char* =}.
+ * @ingroup Types
+ *
+ * Use this as the type for ports sending and receiving strings that are not dynamically allocated.
+ * For dynamically allocated strings that have to be freed after
+ * being consumed downstream, use type `char*`.
+ */
 typedef char* string;
 #else
 #warning "string typedef has been previously given."
@@ -132,17 +134,23 @@ typedef char* string;
 typedef pqueue_pri_t index_t;
 
 /**
- * Reaction function type. The argument passed to one of
+ * @brief Reaction function type.
+ *
+ * The argument passed to one of
  * these reaction functions is a pointer to the self struct
  * for the reactor.
  */
 typedef void (*reaction_function_t)(void*);
 
-/** Trigger struct representing an output, timer, action, or input. See below. */
+/* Trigger struct representing an output, timer, action, or input. */
 typedef struct trigger_t trigger_t;
 
+typedef struct reaction_t reaction_t;
+
 /**
- * Reaction activation record to push onto the reaction queue.
+ * @brief Reaction activation record to push onto the reaction queue.
+ * @ingroup AdvTypes
+ *
  * Some of the information in this struct is common among all instances
  * of the reactor, and some is specific to each particular instance.
  * These are marked below COMMON or INSTANCE accordingly.
@@ -151,7 +159,6 @@ typedef struct trigger_t trigger_t;
  * during execution.
  * Instances of this struct are put onto the reaction queue by the scheduler.
  */
-typedef struct reaction_t reaction_t;
 struct reaction_t {
   reaction_function_t function; // The reaction function. COMMON.
   void* self;                   // Pointer to a struct with the reactor's state. INSTANCE.
@@ -192,7 +199,10 @@ struct reaction_t {
 /** Typedef for event_t struct, used for storing activation records. */
 typedef struct event_t event_t;
 
-/** Event activation record to push onto the event queue. */
+/**
+ * @brief Event activation record to push onto the event queue.
+ * @ingroup AdvTypes
+ */
 struct event_t {
   pqueue_tag_element_t base; // Elements of pqueue_tag. It contains tag of release and position in the priority queue.
   trigger_t* trigger;        // Associated trigger, NULL if this is a dummy event.
@@ -203,7 +213,8 @@ struct event_t {
 };
 
 /**
- * Trigger struct representing an output, timer, action, or input.
+ * @brief Trigger struct representing an output, timer, action, or input.
+ * @ingroup AdvTypes
  */
 struct trigger_t {
   token_template_t tmplt;  // Type and token information (template is a C++ keyword).
@@ -248,6 +259,9 @@ struct trigger_t {
 };
 
 /**
+ * @brief Allocation record to keep track of dynamically-allocated memory.
+ * @ingroup AdvTypes
+ *
  * An allocation record that is used by a destructor for a reactor
  * to free memory that has been dynamically allocated for the particular
  * instance of the reactor.  This will be an element of linked list.
@@ -263,6 +277,7 @@ typedef struct environment_t environment_t;
 
 /**
  * @brief The base type for all reactor self structs.
+ * @ingroup AdvTypes
  *
  * The first element of every self struct defined in generated code
  * will be a pointer to an allocation record, which is either NULL
@@ -290,6 +305,9 @@ typedef struct self_base_t {
 } self_base_t;
 
 /**
+ * @brief Base type for actions.
+ * @ingroup AdvTypes
+ *
  * Action structs are customized types because their payloads are type
  * specific.  This struct represents their common features. Given any
  * pointer to an action struct, it can be cast to lf_action_base_t,
@@ -313,6 +331,7 @@ typedef struct {
 
 /**
  * @brief Internal part of the port structs.
+ *
  * HAS TO MATCH lf_port_base_t after tmplt and is_present.
  */
 typedef struct {
