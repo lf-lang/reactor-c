@@ -227,7 +227,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
     // scheduled event. It determines the
     // earliest time at which the new event can be scheduled.
     // Check to see whether the event is too early.
-    instant_t earliest_time = trigger->last_tag.time + min_spacing;
+    instant_t earliest_time = lf_time_add(trigger->last_tag.time, min_spacing);
     LF_PRINT_DEBUG("There is a previously scheduled event; earliest possible time "
                    "with min spacing: " PRINTF_TIME,
                    earliest_time);
@@ -244,9 +244,9 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         lf_recycle_event(env, e);
         return (0);
       case replace:
-        LF_PRINT_DEBUG("Policy is replace. Replacing the previous event.");
+        LF_PRINT_DEBUG("Policy is replace. Replace the previous event's payload with new payload.");
         // If the event with the previous tag is still on the event
-        // queue, then replace the token.  To find this event, we have
+        // queue, then replace the token. To find this event, we have
         // to construct a dummy event_t struct.
         dummy = lf_get_new_event(env);
         dummy->trigger = trigger;
@@ -267,6 +267,23 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         // If the preceding event _has_ been handled, then adjust
         // the tag to defer the event.
         intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
+        break;
+      case update:
+        LF_PRINT_DEBUG("Policy is update. Drop the previous event and insert a new event.");
+        // If the event with the previous tag is still on the event
+        // queue, then drop the previous event. To find this event, we have
+        // to construct a dummy event_t struct.
+        dummy = lf_get_new_event(env);
+        dummy->trigger = trigger;
+        dummy->base.tag = trigger->last_tag;
+        found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)dummy);
+
+        if (found != NULL) {
+          // Remove the previous event.
+          pqueue_tag_remove(env->event_q, (pqueue_tag_element_t*)found);
+        }
+        // Recycle the dummy event used to find the previous event.
+        lf_recycle_event(env, dummy);
         break;
       default:
         // Default policy is defer
