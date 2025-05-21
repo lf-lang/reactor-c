@@ -88,6 +88,12 @@ int lf_critical_section_exit(environment_t* env);
 #define LF_SCHED_MAX_PRIORITY 99
 #define LF_SCHED_MIN_PRIORITY 0
 
+// For unthreaded platforms, the mutex functions below are implemented in reactor.c
+// and do nothing, returning 0.
+
+/** @brief Mutex type. @ingroup Platform */
+typedef void* lf_mutex_t;
+
 /**
  * @brief Initialize a mutex.
  * @ingroup Platform
@@ -118,8 +124,6 @@ int lf_mutex_unlock(lf_mutex_t* mutex);
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
 #if defined(LF_SINGLE_THREADED)
-
-typedef void* lf_mutex_t;
 
 /**
  * @brief Disable interrupts with support for nested calls
