@@ -88,42 +88,16 @@ int lf_critical_section_exit(environment_t* env);
 #define LF_SCHED_MAX_PRIORITY 99
 #define LF_SCHED_MIN_PRIORITY 0
 
-// For unthreaded platforms, the mutex functions below are implemented in reactor.c
-// and do nothing, returning 0.
-
-/** @brief Mutex type. @ingroup Platform */
-typedef void* lf_mutex_t;
-
-/**
- * @brief Initialize a mutex.
- * @ingroup Platform
- *
- * @param mutex The mutex
- * @return 0 on success
- */
-int lf_mutex_init(lf_mutex_t* mutex);
-
-/**
- * @brief Lock the specified mutex.
- * @ingroup Platform
- *
- * @param mutex The mutex
- * @return 0 on success
- */
-int lf_mutex_lock(lf_mutex_t* mutex);
-
-/**
- * @brief Unlock the specified mutex.
- * @ingroup Platform
- *
- * @param mutex The mutex
- * @return 0 on success
- */
-int lf_mutex_unlock(lf_mutex_t* mutex);
-
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
 #if defined(LF_SINGLE_THREADED)
+
+// For unthreaded platforms, the mutex functions below are implemented in reactor.c
+// and do nothing, returning 0.
+typedef void* lf_mutex_t;
+int lf_mutex_unlock(lf_mutex_t* mutex);
+int lf_mutex_init(lf_mutex_t* mutex);
+int lf_mutex_lock(lf_mutex_t* mutex);
 
 /**
  * @brief Disable interrupts with support for nested calls
@@ -247,6 +221,33 @@ int lf_thread_set_priority(lf_thread_t thread, int priority);
  * @return int 0 on success, platform-specific error number otherwise.
  */
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy);
+
+/**
+ * @brief Initialize a mutex.
+ * @ingroup Platform
+ *
+ * @param mutex The mutex
+ * @return 0 on success
+ */
+int lf_mutex_init(lf_mutex_t* mutex);
+
+/**
+ * @brief Lock the specified mutex.
+ * @ingroup Platform
+ *
+ * @param mutex The mutex
+ * @return 0 on success
+ */
+int lf_mutex_lock(lf_mutex_t* mutex);
+
+/**
+ * @brief Unlock the specified mutex.
+ * @ingroup Platform
+ *
+ * @param mutex The mutex
+ * @return 0 on success
+ */
+int lf_mutex_unlock(lf_mutex_t* mutex);
 
 /**
  * @brief Initialize a conditional variable.
