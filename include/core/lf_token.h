@@ -1,8 +1,6 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @author Edward A. Lee
  * @brief Definitions for token objects, reference-counted wrappers around dynamically-allocated messages.
  *
  * This header file supports token objects, which are reference-counted wrappers
@@ -330,4 +328,3 @@ token_freed _lf_done_using(lf_token_t* token);
 void _lf_free_token_copies(void);
 
 #endif /* LF_TOKEN_H */
-/** @} */
