@@ -46,12 +46,11 @@ typedef unsigned short int ushort;
 #define SCHED_GEDF_NP 2
 #define SCHED_NP 3
 
-/*
- * A struct representing a barrier in threaded
- * Lingua Franca programs that can prevent advancement
- * of tag if
- * 1- Number of requestors is larger than 0
- * 2- Value of horizon is not (FOREVER, 0)
+/**
+ * @brief A struct representing a barrier in threaded LF programs.
+ *
+ * This will prevent advancement of the current tag if
+ * the number of requestors is larger than 0 or the value of horizon is not (FOREVER, 0).
  */
 typedef struct _lf_tag_advancement_barrier {
   int requestors; // Used to indicate the number of
