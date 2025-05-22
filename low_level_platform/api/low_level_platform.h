@@ -1,9 +1,7 @@
 /**
  * @file
- * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author Soroush Bateni
  * @brief Platform API support for the C target of Lingua Franca.
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  *
  * This file defines functions that need to be implemented for any new platform
  * (operating system or bare-metal SDK).

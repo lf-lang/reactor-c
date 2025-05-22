@@ -2,8 +2,7 @@
  * @file
  * @author Edward A. Lee
  * @author Peter Donovan
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief Definitions of tracepoint functions for use with the C code generator and any other
  * code generator that uses the C infrastructure (such as the Python code generator).
  *

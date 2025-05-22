@@ -1,8 +1,7 @@
 /**
  * @file
  * @author Hou Seng Wong
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief Undefine macros defined in api/reaction_macros.h.
  *
  * This file is included at the end of each reaction body to undefine the macros used in reaction bodies.

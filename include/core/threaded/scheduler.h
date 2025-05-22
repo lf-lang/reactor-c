@@ -2,8 +2,7 @@
  * @file
  * @author Soroush Bateni
  * @author Edward A. Lee
- * @copyright (c) 2022-2024, The University of Texas at Dallas and The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief Scheduler API for the threaded C runtime.
  *
  * A scheduler for the threaded runtime of reactor-c should provide an

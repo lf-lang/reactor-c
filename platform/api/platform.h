@@ -1,12 +1,9 @@
 /**
  * @file platform.h
- * @author Peter Donovan (peter@xronos.com)
+ * @author Peter Donovan
+ *
  * @brief Platform API for runtime plugins to use while sharing implementation
  * source code and binaries with the core and with each other.
- * @version 0.1
- * @date 2024-01-29
- *
- * @copyright Copyright (c) 2024
  */
 
 /**

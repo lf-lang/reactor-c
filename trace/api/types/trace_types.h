@@ -1,10 +1,9 @@
 /**
  * @file trace-types.h
- * @author Peter Donovan <peter@xronos.com>
+ * @author Peter Donovan
+ *
  * @brief Definitions that are needed by both implementors and callers of the
  * trace API regardless of whether tracing is enabled at compile time.
- *
- * @copyright Copyright (c) 2024
  */
 
 #ifndef TRACE_TYPES_H

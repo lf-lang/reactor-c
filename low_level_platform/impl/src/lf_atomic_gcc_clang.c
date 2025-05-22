@@ -1,12 +1,12 @@
-#if defined(PLATFORM_Linux) || defined(PLATFORM_Darwin)
-#if defined(__GNUC__) || defined(__clang__)
 /**
+ * @file
  * @author Soroush Bateni
  * @author Erling Rennemo Jellum
- * @copyright (c) 2023
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
- * @brief Implements the atomics API using GCC/Clang APIs.
+ *
+ * @brief Atomic operations using GCC/Clang APIs.
  */
+#if defined(PLATFORM_Linux) || defined(PLATFORM_Darwin)
+#if defined(__GNUC__) || defined(__clang__)
 
 #include "platform/lf_atomic.h"
 #include "low_level_platform.h"

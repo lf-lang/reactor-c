@@ -1,9 +1,8 @@
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 /**
+ * @file
  * @author Soroush Bateni
  * @author Erling Rennemo Jellum
- * @copyright (c) 2023
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Implements the atomic API for Windows machines.
  */
 

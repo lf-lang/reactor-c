@@ -1,14 +1,13 @@
 /**
  * @file lf_core_version.h
- * @author Peter Donovan (peter@xronos.com)
- * @brief API for runtime plugins to use to sanity-check compatibility with the
- * core. Plugins APIs can include a function to get information about the
+ * @author Peter Donovan
+ *
+ * @brief Structs for the API for runtime plugins to use to sanity-check compatibility with the
+ * core.
+ *
+ * Plugins APIs can include a function to get information about the
  * version of the plugin, and the core can use that information to determine if
  * the plugin is compatible with the core.
- * @version 0.1
- * @date 2024-01-29
- *
- * @copyright Copyright (c) 2024
  */
 #ifndef VERSION_H
 #define VERSION_H

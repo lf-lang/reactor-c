@@ -1,7 +1,6 @@
 /**
  * @author Erling Rennemo Jellum
- * @copyright (c) 2023
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief This file defines the LF atomic API. These functions will have platform-dependent implementations.
  */
 #ifndef LF_ATOMICS_H

@@ -1,12 +1,8 @@
 /**
  * @file platform.c
- * @author Peter Donovan (peter@xronos.com)
- * @brief A variant of the platform abstraction whose ABI is
- * platform-independent.
- * @version 0.1
- * @date 2024-01-29
+ * @author Peter Donovan
  *
- * @copyright Copyright (c) 2024
+ * @brief A variant of the platform abstraction whose ABI is platform-independent.
  */
 #include <stdlib.h>
 
