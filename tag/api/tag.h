@@ -1,9 +1,14 @@
 /**
- * @file
+ * @file tag.h
+ * @brief Time and tag definitions and functions for Lingua Franca.
+ *
  * @author Edward A. Lee
  * @author Soroush Bateni
  * @author Hou Seng (Steven) Wong
- * @brief Time and tag definitions and functions for Lingua Franca
+ *
+ * This file defines the core time and tag types and operations used throughout
+ * the Lingua Franca runtime. It provides functions for manipulating logical and
+ * physical time, as well as the tag structure that combines time with microsteps.
  */
 
 #ifndef TAG_H

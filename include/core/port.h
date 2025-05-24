@@ -1,7 +1,8 @@
 /**
- * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @brief Support for opimizing sparse input through multiports.
+ * @file port.h
+ * @brief Support for optimizing sparse input through multiports.
+ *
+ * @author Edward A. Lee
  *
  * This header file is for macros, functions, and structs for optimized sparse
  * input through multiports. When reading from a wide input multiport,

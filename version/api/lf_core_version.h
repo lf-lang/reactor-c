@@ -1,9 +1,8 @@
 /**
  * @file lf_core_version.h
- * @author Peter Donovan
+ * @brief Structs for the API for runtime plugins to use to sanity-check compatibility with the core.
  *
- * @brief Structs for the API for runtime plugins to use to sanity-check compatibility with the
- * core.
+ * @author Peter Donovan
  *
  * Plugins APIs can include a function to get information about the
  * version of the plugin, and the core can use that information to determine if

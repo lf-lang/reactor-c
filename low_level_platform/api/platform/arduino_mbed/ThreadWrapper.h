@@ -1,7 +1,12 @@
 /**
- * @brief Threading support in RTOS-enabled Arduino Boards (MBED)
+ * @file ThreadWrapper.h
+ * @brief Threading support for RTOS-enabled Arduino boards using MBED.
  *
  * @author Anirudh Rengarajan
+ *
+ * This header file provides a C wrapper around the MBED RTOS threading API
+ * for use with Arduino boards that support MBED. It provides thread creation,
+ * management, and synchronization primitives.
  */
 
 #ifndef THREADWRAPPER_H

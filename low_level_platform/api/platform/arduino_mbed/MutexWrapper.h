@@ -1,7 +1,12 @@
 /**
- * @brief Mutex support in RTOS-enabled Arduino Boards (MBED)
+ * @file MutexWrapper.h
+ * @brief Mutex support for RTOS-enabled Arduino boards using MBED.
  *
  * @author Anirudh Rengarajan
+ *
+ * This header file provides a C wrapper around the MBED RTOS mutex API
+ * for use with Arduino boards that support MBED. It provides mutex creation,
+ * locking, and unlocking functionality.
  */
 
 #ifndef MUTEXWRAPPER_H

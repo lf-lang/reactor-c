@@ -1,13 +1,13 @@
 /**
- * @file
+ * @file reactor_common.h
+ * @brief Declarations of functions with implementations in reactor.c and reactor_threaded.c.
+ *
  * @author Edward A. Lee
  * @author Marten Lohstroh
  * @author Soroush Bateni
  * @author Mehrdad Niknami
  * @author Alexander Schulz-Rosengarten
  * @author Erling Rennemo Jellum
- *
- * @brief Declarations of functions with implementations in reactor.c and reactor_threaded.c.
  *
  * The functions declared in this file, as opposed to the ones in reactor.h, are not meant to be
  * called by application programmers. They should be viewed as private functions that make up the

@@ -1,7 +1,8 @@
 /**
- * @file
- * @author Edward A. Lee
+ * @file lf_token.h
  * @brief Definitions for token objects, reference-counted wrappers around dynamically-allocated messages.
+ *
+ * @author Edward A. Lee
  *
  * This header file supports token objects, which are reference-counted wrappers
  * around values that are carried by events scheduled on the event queue and held
@@ -21,7 +22,7 @@
  * can be cast to token_template_t, which has a token_type_t field called type
  * and a pointer to a token (which may be NULL).  The same instance can also be
  * cast to token_type_t, which has an element_size field and (possibly) function
- * pointers to a destructor and a copy constructor.
+ * pointers to a destructor and copy constructor.
  *
  * A "template token" is one pointed to by a token_template_t (an action or a port).
  * This template token ensures that port an action values persist until they are

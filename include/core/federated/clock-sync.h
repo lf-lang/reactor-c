@@ -1,9 +1,16 @@
 /**
- * @file
+ * @file clock-sync.h
+ * @brief Utility functions for clock synchronization in federated Lingua Franca programs.
+ *
  * @author Edward A. Lee (eal@berkeley.edu)
  * @author Soroush Bateni (soroush@utdallas.edu)
  *
- * @brief Utility functions for clock synchronization.
+ * This file provides utility functions and data structures for synchronizing physical clocks
+ * between federates and the RTI in federated Lingua Franca programs. It implements a variant
+ * of the Precision Time Protocol (PTP) for clock synchronization, with support for both
+ * initial synchronization and runtime synchronization. The file includes functions for
+ * handling clock synchronization messages, managing synchronization statistics, and adjusting
+ * clock offsets.
  */
 
 #ifndef CLOCK_SYNC_H

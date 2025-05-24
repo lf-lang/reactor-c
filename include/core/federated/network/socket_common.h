@@ -1,3 +1,14 @@
+/**
+ * @file socket_common.h
+ * @brief Common socket operations and utilities for federated Lingua Franca programs.
+ *
+ * @author Edward A. Lee
+ *
+ * This file provides common socket operations and utilities used in federated Lingua Franca programs.
+ * It includes functions for creating and managing TCP/UDP sockets, handling connections,
+ * and performing read/write operations with proper error handling and retry mechanisms.
+ * The file also defines various constants for timeouts, retry intervals, and port configurations.
+ */
 #ifndef SOCKET_COMMON_H
 #define SOCKET_COMMON_H
 

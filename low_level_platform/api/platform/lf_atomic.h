@@ -1,7 +1,13 @@
 /**
+ * @file lf_atomic.h
+ * @brief Platform-independent atomic operations API for Lingua Franca.
+ *
  * @author Erling Rennemo Jellum
  *
- * @brief This file defines the LF atomic API. These functions will have platform-dependent implementations.
+ * This file defines the LF atomic API that provides platform-independent
+ * atomic operations for memory access. These functions will have
+ * platform-dependent implementations but provide a consistent interface
+ * across all supported platforms.
  */
 #ifndef LF_ATOMICS_H
 #define LF_ATOMICS_H

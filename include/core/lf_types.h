@@ -1,15 +1,14 @@
 /**
- * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Marten Lohstroh (marten@berkeley.edu)
- * @author Chris Gill (cdgill@wustl.edu)
- * @author Mehrdad Niknami (mniknami@berkeley.edu)
+ * @file lf_types.h
  * @brief Type definitions that are widely used across different parts of the runtime.
+ *
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
+ * @author Chris Gill
+ * @author Mehrdad Niknami
  *
  * <b>IMPORTANT:</b> Many of the structs defined here require matching layouts
  * and, if changed, will require changes in the code generator.
- * See <a href="https://github.com/lf-lang/reactor-c/wiki/Structs-in-the-Reactor-C-Runtime">
- * Structs in the Reactor-C Runtime</a>.
  */
 
 #ifndef TYPES_H

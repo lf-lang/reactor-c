@@ -1,7 +1,13 @@
 /**
- * @brief Arduino Platform API support for the C target of Lingua Franca.
+ * @file lf_arduino_support.h
+ * @brief Platform-specific support for Arduino boards in the Lingua Franca C runtime.
  *
  * @author Anirudh Rengarajan
+ *
+ * This header file provides platform-specific definitions and implementations
+ * for running Lingua Franca programs on Arduino boards. It includes board
+ * detection, type definitions, and platform-specific constants needed for
+ * the runtime.
  */
 
 #ifndef LF_ARDUINO_SUPPORT_H

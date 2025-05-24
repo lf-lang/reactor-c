@@ -1,9 +1,9 @@
 /**
- * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Soroush Bateni (soroush@utdallas.edu)
- *
+ * @file net_common.h
  * @brief Common message types and definitions for federated Lingua Franca programs.
+ *
+ * @author Edward A. Lee
+ * @author Soroush Bateni
  *
  * This file defines the message types for the federate to communicate with the RTI.
  * Each message type has a unique one-byte ID.
@@ -148,7 +148,6 @@
  * STAAs, as further explained in https://doi.org/10.48550/arXiv.2109.07771.
  *
  * FIXME: Expand this. Explain port absent reactions.
- *
  */
 
 #ifndef NET_COMMON_H

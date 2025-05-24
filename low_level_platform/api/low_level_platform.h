@@ -1,7 +1,8 @@
 /**
- * @file
- * @author Soroush Bateni
+ * @file low_level_platform.h
  * @brief Platform API support for the C target of Lingua Franca.
+ *
+ * @author Soroush Bateni
  *
  * This file defines functions that need to be implemented for any new platform
  * (operating system or bare-metal SDK).

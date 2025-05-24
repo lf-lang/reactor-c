@@ -1,7 +1,12 @@
 /**
- * @brief Zephyr support for reactor-c
+ * @file lf_zephyr_support.h
+ * @brief Platform-specific support for Zephyr RTOS in the Lingua Franca C runtime.
  *
  * @author Erling Jellum
+ *
+ * This header file provides platform-specific definitions and implementations
+ * for running Lingua Franca programs on Zephyr RTOS. It includes type definitions
+ * and platform-specific constants needed for the runtime.
  */
 
 #ifndef LF_ZEPHYR_SUPPORT_H

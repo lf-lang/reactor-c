@@ -1,11 +1,17 @@
 /**
- * @file
+ * @file federate.h
+ * @brief Data structures and functions for federated Lingua Franca programs.
+ *
  * @author Soroush Bateni
  * @author Peter Donovan
  * @author Edward A. Lee
  * @author Anirudh Rengarajsm
  *
- * @brief Data structures and functions used and defined in federate.c.
+ * This file defines the core data structures and functions used in federated Lingua Franca programs.
+ * It includes the federate instance structure that tracks the state of a federate, including its
+ * connections to the RTI and other federates, message handling, and coordination mechanisms.
+ * The file also provides functions for managing these connections, sending and receiving messages,
+ * and handling various aspects of federated execution.
  */
 
 #ifndef FEDERATE_H

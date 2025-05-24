@@ -1,8 +1,13 @@
 /**
- * @file
+ * @file lf_flexpret_support.h
+ * @brief Platform-specific support for FlexPRET in the Lingua Franca C runtime.
+ *
  * @author Magnus Mæhlum
  *
- * @brief FlexPRET API support for the C target of Lingua Franca.
+ * This header file provides platform-specific definitions and implementations
+ * for running Lingua Franca programs on FlexPRET. It includes type definitions,
+ * platform-specific constants, and interrupt handling mechanisms needed for
+ * the runtime.
  */
 
 #ifndef LF_FLEXPRET_SUPPORT_H

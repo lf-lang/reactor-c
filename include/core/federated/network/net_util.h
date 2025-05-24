@@ -1,9 +1,10 @@
 /**
- * @file
+ * @file net_util.h
+ * @brief Network utility functions for Lingua Franca programs.
+ *
  * @author Edward A. Lee
  * @author Soroush Bateni
  *
- * @section DESCRIPTION
  * Header file for network utility functions for Lingua Franca programs.
  * Note that these functions do not acquire any mutexes. To use them,
  * you must ensure either that only one thread ever sends on each socket
