@@ -3,8 +3,7 @@
  * @author Edward A. Lee
  * @author Soroush Bateni
  * @author Hou Seng (Steven) Wong
- * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ *
  * @brief Implementation of time and tag functions for Lingua Franca programs.
  */
 

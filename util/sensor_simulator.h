@@ -1,10 +1,6 @@
-#ifndef SENSOR_SIMULATOR_H
-#define SENSOR_SIMULATOR_H
 /**
  * @file
  * @author Edward A. Lee
- * @copyright (c) 2020-2023, The University of California at Berkeley and UT Dallas.
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  *
  * @brief Simple terminal-based user interface based on ncurses.
  *
@@ -40,6 +36,8 @@
  * the messaging functions in util.h, such as lf_print(). Otherwise, your messages
  * will be printed over other information.
  */
+#ifndef SENSOR_SIMULATOR_H
+#define SENSOR_SIMULATOR_H
 
 /**
  * Start the sensor simulator if it has not been already

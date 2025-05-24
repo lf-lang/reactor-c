@@ -1,3 +1,13 @@
+/**
+ * @file logging.h
+ * @brief Logging API for the C target of Lingua Franca.
+ *
+ * @author Peter Donovan
+ *
+ * This file defines the logging API used throughout the Lingua Franca runtime.
+ * It provides functions for different log levels (error, warning, info, log, debug)
+ * and allows for custom message handling through function registration.
+ */
 #include <stdarg.h>
 
 // To silence warnings about a function being a candidate for format checking

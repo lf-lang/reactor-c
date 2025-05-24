@@ -1,3 +1,12 @@
+/**
+ * @file lf_unix_clock_support.h
+ * @brief Unix clock support functions for the Lingua Franca C runtime.
+ *
+ * This header file provides utility functions for converting between Unix
+ * timespec structures and Lingua Franca time representations. These functions
+ * are used by platform implementations that rely on Unix clock mechanisms.
+ */
+
 #include <time.h>
 #include <errno.h>
 

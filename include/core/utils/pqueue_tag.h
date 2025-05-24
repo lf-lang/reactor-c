@@ -2,8 +2,7 @@
  * @file pqueue_tag.h
  * @author Byeonggil Jun
  * @author Edward A. Lee
- * @copyright (c) 2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ *
  * @brief Priority queue that uses tags for sorting.
  *
  * This file extends the pqueue infrastructure with support for queues that are sorted

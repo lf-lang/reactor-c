@@ -1,8 +1,7 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @author Edward A. Lee
+ *
  * @brief Implementation of schedule functions for Lingua Franca programs.
  */
 

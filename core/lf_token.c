@@ -1,9 +1,10 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
- * @brief Functions supporting token types.  See lf_token.h for docs.
+ * @author Edward A. Lee
+ *
+ * @brief Functions supporting token types.
+ *
+ * See @ref lf_token.h for docs.
  */
 
 #if !defined NDEBUG

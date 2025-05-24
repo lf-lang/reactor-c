@@ -1,9 +1,8 @@
 /**
- * @file
- * @author Erling R. Jellum
- * @copyright (c) 2023, The Norwegian University of Science and Technology.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @file environment.h
  * @brief API for the environment data structure.
+ *
+ * @author Erling R. Jellum
  *
  * This is an API for creating and destroying environments. An environment is the
  * "context" within which the reactors are executed. The environment contains data structures
@@ -138,4 +137,4 @@ void environment_init_tags(environment_t* env, instant_t start_time, interval_t 
  */
 int _lf_get_environments(environment_t** envs);
 
-#endif
+#endif // ENVIRONMENT_H

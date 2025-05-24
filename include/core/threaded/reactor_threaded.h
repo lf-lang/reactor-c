@@ -3,21 +3,13 @@
  * @author Edward A. Lee
  * @author Marten Lohstroh
  * @author Soroush Bateni
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
- * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
+ *
+ * @brief Runtime infrastructure for the threaded version of the C target of Lingua Franca.
  */
 #ifndef REACTOR_THREADED_H
 #define REACTOR_THREADED_H
 
 #include "lf_types.h"
-
-/**
- * Enqueue port absent reactions that will send a PORT_ABSENT
- * message to downstream federates if a given network output port is not present.
- * @param env The environment in which we are executing
- */
-void lf_enqueue_port_absent_reactions(environment_t* env);
 
 /**
  * Raise a barrier to prevent the current tag for the specified environment from advancing

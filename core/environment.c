@@ -1,10 +1,9 @@
 /**
  * @file
  * @author Erling R. Jellum
- * @copyright (c) 2023-2024, The Norwegian University of Science and Technology.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  *
- * This file defines functions intitializing and freeing memory for environments.
+ * @brief Functions for initializing and freeing memory for environments.
+ *
  * See environment.h for docs.
  */
 

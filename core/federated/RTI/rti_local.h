@@ -1,11 +1,9 @@
 /**
  * @file
- * @author Erling Jellum (erling.r.jellum@ntnu.no)
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @copyright (c) 2020-2024, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * @author Erling Jellum
+ * @author Edward A. Lee
+ * @author Chadlia Jerad
+ * @author Soroush Bateni
  *
  * @brief This file declares functions used to implement scheduling enclaves.
  *

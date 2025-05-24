@@ -1,3 +1,16 @@
+/**
+ * @file trace.h
+ * @brief API for the tracing module that records runtime events for debugging and analysis.
+ *
+ * @author Edward A. Lee
+ * @author Peter Donovan
+ *
+ * This header file defines the API for the tracing module, which records
+ * runtime events for debugging and analysis purposes. The tracing module
+ * maintains a table of objects and their descriptions, and records events
+ * with timestamps and other metadata.
+ */
+
 #ifndef TRACE_H
 #define TRACE_H
 

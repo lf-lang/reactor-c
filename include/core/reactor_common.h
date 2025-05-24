@@ -1,14 +1,13 @@
 /**
- * @file
- * @author Edward A. Lee (eal@berkeley.edu)
+ * @file reactor_common.h
+ * @brief Declarations of functions with implementations in reactor.c and reactor_threaded.c.
+ *
+ * @author Edward A. Lee
  * @author Marten Lohstroh
  * @author Soroush Bateni
  * @author Mehrdad Niknami
  * @author Alexander Schulz-Rosengarten
  * @author Erling Rennemo Jellum
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
- * @brief Declarations of functions with implementations in reactor.c and reactor_threaded.c.
  *
  * The functions declared in this file, as opposed to the ones in reactor.h, are not meant to be
  * called by application programmers. They should be viewed as private functions that make up the

@@ -6,8 +6,7 @@
  * @author Mehrdad Niknami
  * @author Alexander Schulz-Rosengarten
  * @author Erling Rennemo Jellum
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief Runtime infrastructure common to the threaded and single-threaded versions of the C runtime.
  */
 #include <assert.h>

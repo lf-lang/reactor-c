@@ -1,13 +1,14 @@
-#if defined(PLATFORM_ARDUINO) || defined(PLATFORM_NRF52) || defined(PLATFORM_ZEPHYR) || defined(PLATFORM_RP2040) ||    \
-    defined(PLATFORM_FLEXPRET) || defined(PLATFORM_PATMOS)
 /**
+ * @file
  * @author Erling Rennemo Jellum
- * @copyright (c) 2023
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Implements the atomics API by disabling interrupts. Typically used for platforms that
- * do not support atomic operations. The platforms need to implement `lf_enable_interrupts_nested`
+ * do not support atomic operations.
+ *
+ * The platforms need to implement `lf_enable_interrupts_nested`
  * and `lf_disable_interrupts_nested`.
  */
+#if defined(PLATFORM_ARDUINO) || defined(PLATFORM_NRF52) || defined(PLATFORM_ZEPHYR) || defined(PLATFORM_RP2040) ||    \
+    defined(PLATFORM_FLEXPRET) || defined(PLATFORM_PATMOS)
 
 #include "platform/lf_atomic.h"
 #include "low_level_platform.h"

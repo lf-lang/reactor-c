@@ -5,9 +5,8 @@
  * @author Soroush Bateni (soroush@utdallas.edu)
  * @author Erling Jellum (erling.r.jellum@ntnu.no)
  * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
- * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  * @brief Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs.
+ *
  * This file extends enclave.h with RTI features that are specific to federations and are not
  * used by scheduling enclaves.
  */

@@ -1,8 +1,7 @@
 /**
  * @file
  * @author Edward A. Lee
- * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ *
  * @brief Utility function for reading WAV audio files.
  *
  * This defines functions and data types for importing audio files with the
@@ -14,24 +13,26 @@
  * This code has few dependencies, so it should run on just about any platform.
  *
  * To use this, include the following flags in your target properties:
- * <pre>
-target C {
-    files: [
-        "/lib/c/reactor-c/util/wave_file_reader.c",
-        "/lib/c/reactor-c/util/wave_file_reader.h"
-    ],
-    cmake-include: [
-        "/lib/c/reactor-c/util/wave_file_reader.cmake"
-    ]
-}
- * </pre>
+ *
+ * ```
+ * target C {
+ *     files: [
+ *         "/lib/c/reactor-c/util/wave_file_reader.c",
+ *         "/lib/c/reactor-c/util/wave_file_reader.h"
+ *     ],
+ *     cmake-include: [
+ *         "/lib/c/reactor-c/util/wave_file_reader.cmake"
+ *     ]
+ * }
+ * ```
  *
  * In addition, you need this in your Lingua Franca file or reactor:
- * <pre>
+ *
+ * ```
  * preamble {=
  *     #include "wave_file_reader.h"
  * =}
- * </pre>
+ * ```
  */
 
 #ifndef WAVE_FILE_READER_H

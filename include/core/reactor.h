@@ -1,12 +1,11 @@
 /**
- * @file
+ * @file reactor.h
+ * @brief Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.
+ *
  * @author Edward A. Lee
  * @author Marten Lohstroh
  * @author Chris Gill
  * @author Mehrdad Niknami
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
- * @brief Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.
  *
  * This header file defines functions that programmers use in the body of reactions for reading and
  * writing inputs and outputs and scheduling future events. Other functions that might be useful to

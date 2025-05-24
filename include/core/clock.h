@@ -1,9 +1,8 @@
 /**
- * @file
- * @author Erling Rennemo Jellum
- * @copyright (c) 2024
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @file clock.h
  * @brief A higher level API to the clock utilities provided by the platform API.
+ *
+ * @author Erling Rennemo Jellum
  *
  * This builds on top of the clocking API of the different platforms and ensures:
  * 1. Monotonicity

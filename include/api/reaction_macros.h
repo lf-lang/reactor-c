@@ -1,8 +1,6 @@
 /**
- * @file
+ * @file reaction_macros.h Reaction Macros
  * @author Edward A. Lee (eal@berkeley.edu)
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Macros providing an API for use in inline reaction bodies.
  *
  * This set of macros is defined prior to each reaction body and undefined after the reaction body
@@ -37,6 +35,7 @@
 
 /**
  * @brief Mark a port present.
+ * @ingroup API
  *
  * This sets the is_present field of the specified output to true.
  *
@@ -49,6 +48,7 @@
 
 /**
  * @brief Set the specified output (or input of a contained reactor) to the specified value.
+ * @ingroup API
  *
  * If the value argument is a primitive type such as int,
  * double, etc. as well as the built-in types bool and string,
@@ -84,6 +84,7 @@
 /**
  * @brief Set the specified output (or input of a contained reactor)
  * to the specified array with the given length.
+ * @ingroup API
  *
  * The array is assumed to be in dynamically allocated memory.
  * The deallocation is delegated to downstream reactors, which
@@ -116,6 +117,7 @@
 /**
  * @brief Set the specified output (or input of a contained reactor)
  * to the specified token value.
+ * @ingroup API
  *
  * Tokens in the C runtime wrap messages that are in dynamically allocated memory and
  * perform reference counting to ensure that memory is not freed prematurely.
@@ -143,6 +145,7 @@
 
 /**
  * @brief Set the destructor associated with the specified port.
+ * @ingroup API
  *
  * The destructor will be used to free any value sent through the specified port when all
  * downstream users of the value are finished with it.
@@ -155,6 +158,7 @@
 
 /**
  * @brief Set the copy constructor associated with the specified port.
+ * @ingroup API
  *
  * The copy constructor will be used to copy any value sent through the specified port whenever
  * a downstream user of the value declares a mutable input port or calls `lf_writable_copy()`.
@@ -168,7 +172,10 @@
 #ifdef MODAL_REACTORS
 
 /**
- * Sets the next mode of a modal reactor. As with `lf_set` for outputs, only
+ * @brief Set the next mode of a modal reactor.
+ * @ingroup API
+ *
+ * As with `lf_set` for outputs, only
  * the last value will have effect if invoked multiple times at any given tag.
  * This works only in reactions with the target mode declared as effect.
  *
@@ -184,23 +191,27 @@
 // of the current reactor.
 
 /**
- * Return the current tag of the environment invoking this reaction.
+ * @brief Return the current tag of the environment invoking this reaction.
+ * @ingroup API
  */
 #define lf_tag() lf_tag(self->base.environment)
 
 /**
- * Return the current logical time in nanoseconds of the environment invoking this reaction.
+ * @brief Return the current logical time in nanoseconds of the environment invoking this reaction.
+ * @ingroup API
  */
 #define lf_time_logical() lf_time_logical(self->base.environment)
 
 /**
- * Return the current logical time of the environment invoking this reaction relative to the
+ * @brief Return the current logical time of the environment invoking this reaction relative to the
  * start time in nanoseconds.
+ * @ingroup API
  */
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 
 /**
  * @brief Return the instance name of the reactor.
+ * @ingroup API
  *
  * The instance name is the name of given to the instance created by the `new` operator in LF.
  * If the instance is in a bank, then the name will have a suffix of the form `[bank_index]`.
@@ -211,6 +222,7 @@
 
 /**
  * @brief Return the fully qualified name of the reactor.
+ * @ingroup API
  *
  * The fully qualified name of a reactor is the instance name of the reactor concatenated with the names of all
  * of its parents, separated by dots. If the reactor or any of its parents is a bank, then the name
