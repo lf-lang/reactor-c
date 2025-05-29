@@ -22,6 +22,7 @@
 
 /**
  * @brief Schedule an action to occur with the specified time offset with no payload (no value conveyed).
+ * @ingroup API
  *
  * The later tag will depend on whether the action is logical or physical. If it is logical,
  * the time of the event will be the current logical time of the environment associated with
@@ -40,6 +41,7 @@ trigger_handle_t lf_schedule(void* action, interval_t offset);
 
 /**
  * @brief Schedule the specified action with an integer value at a later logical time.
+ * @ingroup API
  *
  * The later tag will depend on whether the action is logical or physical. If it is logical,
  * the time of the event will be the current logical time of the environment associated with
@@ -59,6 +61,7 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
 
 /**
  * @brief Schedule the specified action at a later tag with the specified token as a payload.
+ * @ingroup API
  *
  * The later tag will depend on whether the action is logical or physical. If it is logical,
  * the time of the event will be the current logical time of the environment associated with
@@ -114,6 +117,7 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
 /**
  * @brief Schedule an action to occur with the specified value and time offset with a
  * copy of the specified value.
+ * @ingroup API
  *
  * If the value is non-null, then it will be copied
  * into newly allocated memory under the assumption that its size is given in
@@ -127,7 +131,7 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
  * If the action is physical, the time will be the current physical time plus the extra delay,
  * and the microstep will be zero.
  *
- * See lf_schedule_token(), which this uses, for details.
+ * See @ref lf_schedule_token(), which this uses, for details.
  *
  * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
  * @param offset The time offset over and above that in the action.
@@ -140,11 +144,12 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
 
 /**
  * @brief Variant of lf_schedule_token that creates a token to carry the specified value.
+ * @ingroup API
  *
  * The value is required to be malloc'd memory with a size equal to the
  * element_size of the specified action times the length parameter.
  *
- * See lf_schedule_token(), which this uses, for details.
+ * See @ref lf_schedule_token(), which this uses, for details.
  *
  * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
  * @param extra_delay Extra offset of the event release above that in the
@@ -159,6 +164,7 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
 
 /**
  * @brief Schedule the specified trigger to execute in the specified environment with given delay and token.
+ * @ingroup API
  *
  * This is the most flexible version of the schedule functions and is used in the implementation
  * of many of the others. End users would rarely use it.
@@ -196,6 +202,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
 /**
  * @brief Check the deadline of the currently executing reaction against the
  * current physical time.
+ * @ingroup API
  *
  * If the deadline has passed, invoke the deadline
  * handler (if invoke_deadline_handler parameter is set true) and return true.
