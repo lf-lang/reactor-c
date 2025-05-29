@@ -67,7 +67,7 @@
  *
  * @param out The output port (by name) or input of a contained
  *  reactor in form input_name.port_name.
- * @param value The value to insert into the self struct.
+ * @param val The value to insert into the self struct.
  */
 #define lf_set(out, val)                                                                                               \
   do {                                                                                                                 \
@@ -92,7 +92,7 @@
  *
  * @param out The output port (by name).
  * @param val The array to send (a pointer to the first element).
- * @param length The length of the array to send.
+ * @param len The length of the array to send.
  */
 #ifndef __cplusplus
 #define lf_set_array(out, val, len)                                                                                    \
@@ -123,7 +123,7 @@
  * perform reference counting to ensure that memory is not freed prematurely.
  *
  * @param out The output port (by name).
- * @param token A pointer to token obtained from an input, an action, or from `lf_new_token()`.
+ * @param newtoken A pointer to token obtained from an input, an action, or from `lf_new_token()`.
  */
 #ifndef __cplusplus
 #define lf_set_token(out, newtoken)                                                                                    \
@@ -164,7 +164,7 @@
  * a downstream user of the value declares a mutable input port or calls `lf_writable_copy()`.
  *
  * @param out The output port (by name) or input of a contained reactor in form reactor.port_name.
- * @param dtor A pointer to a void function that takes a pointer argument
+ * @param cpy_ctor A pointer to a void function that takes a pointer argument
  * (or NULL to use the default void `memcpy()` function.
  */
 #define lf_set_copy_constructor(out, cpy_ctor) ((token_type_t*)out)->copy_constructor = cpy_ctor
