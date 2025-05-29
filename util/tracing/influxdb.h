@@ -1,3 +1,25 @@
+/**
+ * @file influxdb.h
+ * @brief Structures and functions supporting interaction with InfluxDB.
+ *
+ *  Usage:
+ * ```
+ * send_udp/post_http(c,
+ *         INFLUX_MEAS("foo"),
+ *         INFLUX_TAG("k", "v"), INFLUX_TAG("k2", "v2"),
+ *         INFLUX_F_STR("s", "string"), INFLUX_F_FLT("f", 28.39, 2),
+ *
+ *         INFLUX_MEAS("bar"),
+ *         INFLUX_F_INT("i", 1048576), INFLUX_F_BOL("b", 1),
+ *         INFLUX_TS(1512722735522840439),
+ *
+ *         INFLUX_END);
+ * ```
+ **NOTICE**: For best performance you should sort tags by key before sending them to the database.
+ *           The sort should match the results from the [Go bytes.Compare
+ *function](https://golang.org/pkg/bytes/#Compare).
+ */
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -10,24 +32,6 @@
 #include <unistd.h>
 #include <curl/curl.h>
 
-/*
-  Usage:
-    send_udp/post_http(c,
-            INFLUX_MEAS("foo"),
-            INFLUX_TAG("k", "v"), INFLUX_TAG("k2", "v2"),
-            INFLUX_F_STR("s", "string"), INFLUX_F_FLT("f", 28.39, 2),
-
-            INFLUX_MEAS("bar"),
-            INFLUX_F_INT("i", 1048576), INFLUX_F_BOL("b", 1),
-            INFLUX_TS(1512722735522840439),
-
-            INFLUX_END);
-
-  **NOTICE**: For best performance you should sort tags by key before sending them to the database.
-              The sort should match the results from the [Go bytes.Compare
-  function](https://golang.org/pkg/bytes/#Compare).
- */
-
 #define INFLUX_MEAS(m) IF_TYPE_MEAS, (m)
 #define INFLUX_TAG(k, v) IF_TYPE_TAG, (k), (v)
 #define INFLUX_F_STR(k, v) IF_TYPE_FIELD_STRING, (k), (v)
@@ -37,7 +41,7 @@
 #define INFLUX_TS(ts) IF_TYPE_TIMESTAMP, (long long)(ts)
 #define INFLUX_END IF_TYPE_ARG_END
 
-typedef struct _influx_client_t {
+typedef struct influx_client_t {
   char* host;
   int port;
   char* db;    // http only
@@ -46,7 +50,7 @@ typedef struct _influx_client_t {
   char* token; // http only
 } influx_client_t;
 
-typedef struct _influx_v2_client_t {
+typedef struct influx_v2_client_t {
   char* host;
   int port;
   char* org;
