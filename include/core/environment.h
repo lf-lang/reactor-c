@@ -80,7 +80,7 @@ typedef struct environment_t {
   lf_mutex_t mutex;
   lf_cond_t event_q_changed;
   lf_scheduler_t* scheduler;
-  _lf_tag_advancement_barrier barrier;
+  lf_tag_advancement_barrier_t barrier;
   lf_cond_t global_tag_barrier_requestors_reached_zero;
 #endif // LF_SINGLE_THREADED
 #if defined(FEDERATED)

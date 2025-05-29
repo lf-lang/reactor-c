@@ -51,7 +51,7 @@ typedef unsigned short int ushort;
  * This will prevent advancement of the current tag if
  * the number of requestors is larger than 0 or the value of horizon is not (FOREVER, 0).
  */
-typedef struct _lf_tag_advancement_barrier {
+typedef struct lf_tag_advancement_barrier_t {
   int requestors; // Used to indicate the number of
                   // requestors that have asked
                   // for a barrier to be raised
@@ -60,7 +60,7 @@ typedef struct _lf_tag_advancement_barrier {
                   // then the runtime should not
                   // advance its tag beyond the
                   // horizon.
-} _lf_tag_advancement_barrier;
+} lf_tag_advancement_barrier_t;
 
 /**
  * Policy for handling scheduled events that violate the specified
