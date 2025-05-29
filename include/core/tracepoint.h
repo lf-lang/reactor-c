@@ -1,6 +1,7 @@
 /**
  * @file tracepoint.h
- * @brief Definitions of tracepoint functions for use with the C code generator and any other code generator that uses the C infrastructure (such as the Python code generator).
+ * @brief Definitions of tracepoint functions for use with the C code generator and any other code generator that uses
+ * the C infrastructure (such as the Python code generator).
  *
  * @author Edward A. Lee
  * @author Peter Donovan
