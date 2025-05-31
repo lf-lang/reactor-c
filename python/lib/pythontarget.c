@@ -656,8 +656,7 @@ PyObject* get_python_instance(string module, string class, int instance_id) {
     }
   }
 
-  if (globalPythonModule != NULL && globalPythonModuleDict != NULL) {
-    Py_INCREF(globalPythonModule);
+  if (globalPythonModuleDict != NULL) {
     // Convert the class name to a PyObject
     PyObject* list_name = PyUnicode_DecodeFSDefault(class);
 
@@ -667,6 +666,7 @@ PyObject* get_python_instance(string module, string class, int instance_id) {
     if (pClasses == NULL) {
       PyErr_Print();
       lf_print_error("Failed to load class list \"%s\" in module %s.", class, module);
+      Py_DECREF(globalPythonModuleDict);
       PyGILState_Release(gstate);
       return NULL;
     }
@@ -692,6 +692,36 @@ PyObject* get_python_instance(string module, string class, int instance_id) {
   lf_print_error("Failed to load \"%s\".", module);
   PyGILState_Release(gstate);
   return NULL;
+}
+
+int set_python_field_to_c_pointer(string module, string class, int instance_id, string field, void* pointer) {
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  PyObject* py_instance = get_python_instance(module, class, instance_id);
+  if (py_instance == NULL) {
+    lf_print_error("Could not get Python instance");
+    PyGILState_Release(gstate);
+    return -1;
+  }
+  PyObject* ptr = PyLong_FromVoidPtr(pointer);
+  if (ptr == NULL) {
+    Py_DECREF(py_instance);
+    lf_print_error("Could not create Python long from void pointer");
+    PyGILState_Release(gstate);
+    return -1;
+  }
+  if (PyObject_SetAttrString(py_instance, field, ptr) < 0) {
+    Py_DECREF(ptr);
+    Py_DECREF(py_instance);
+    lf_print_error("Could not set lf_self attribute");
+    PyGILState_Release(gstate);
+    return -1;
+  }
+  Py_DECREF(ptr);
+  Py_DECREF(py_instance);
+  PyGILState_Release(gstate);
+  return 0;
 }
 
 PyObject* load_serializer(string package_name) {

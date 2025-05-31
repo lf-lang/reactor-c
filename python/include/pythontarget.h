@@ -186,6 +186,18 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
 PyObject* get_python_instance(string module, string class, int instance_id);
 
 /**
+ * @brief Set a python field to a hold a C pointer.
+ * 
+ * @param module The module name.
+ * @param class The class name of the Python object.
+ * @param instance_id The instance ID of the Python object.
+ * @param field The field name to set.
+ * @param pointer The pointer for the field to hold.
+ * @return int 0 if successful.
+ */
+int set_python_field_to_c_pointer(string module, string class, int instance_id, string field, void* pointer);
+
+/**
  * Load the Serializer class from package name
  * @param package_name Name of the python package to load
  * @return Initialized Serializer class
