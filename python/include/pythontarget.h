@@ -78,28 +78,24 @@ extern environment_t* top_level_environment;
 /////////////  schedule Functions (to schedule an action)
 
 /**
- * Schedule an action to occur with the specified value and time offset
- * with no payload (no value conveyed).
- * See schedule_token(), which this uses, for details.
- * @param self Pointer to the calling object.
+ * @brief Schedule an action to occur with the specified time offset and (optional) value.
+ *
+ * This function is callable in Python by calling action_name.schedule(offset, value).
+ * @param self Pointer to the calling Python object, an action.
  * @param args contains:
- *      - action: Pointer to an action on the self struct.
  *      - offset: The time offset over and above that in the action.
- **/
-PyObject* py_schedule(PyObject* self, PyObject* args);
-
-/**
- * Schedule an action to occur with the specified value and time offset
- * with a copy of the specified value.
- * See reactor.h for documentation.
+ *      - value: Optional value to be conveyed.
  */
-PyObject* py_schedule_copy(PyObject* self, PyObject* args);
+PyObject* py_schedule(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 /////////////  Python Helper Functions (called from Python code)
 
 /**
- * Stop execution at the conclusion of the current logical time.
+ * @brief Stop execution at the conclusion of the current logical time.
+ * @param self The calling Python object
+ * @param args Empty
+ * @return Py_None
  */
 PyObject* py_request_stop(PyObject* self, PyObject* args);
 
@@ -120,34 +116,43 @@ PyObject* py_source_directory(PyObject* self, PyObject* args);
 PyObject* py_package_directory(PyObject* self, PyObject* args);
 
 /**
- * Check whether the deadline of the currently executing reaction has passed.
- * If the deadline has passed and invoke_deadline_handler is True,
- * invoke the deadline handler.
+ * @brief Check whether the deadline of the currently executing reaction has passed.
  *
- * @param self The self struct of the reactor.
+ * If the deadline has passed and invoke_deadline_handler is True,
+ * invoke the deadline handler, if there is one.
+ *
+ * @param self The Python object of the reactor.
  * @param args contains:
  *      - invoke_deadline_handler: Whether to invoke the deadline handler if the deadline has passed.
- * @return True if the deadline has passed, False otherwise.
+ * @return True if the deadline has passed and a deadline handler is invoked, False otherwise.
  */
 PyObject* py_check_deadline(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
+
+/**
+ * The main function of this Python module.
+ *
+ * @param py_args A single object, which should be a list
+ *  of arguments taken from sys.argv().
+ */
 PyObject* py_main(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 /////////////  Python Helper Functions
 
 /**
- * A function that is called any time a Python reaction is called with
+ * @brief Convert a C port to a Python port capsule.
+ *
+ * This function is called any time a Python reaction is called with
  * ports as inputs and outputs. This function converts ports that are
  * either a multiport or a non-multiport into a port_capsule.
  *
  * First, the void* pointer is stored in a PyCapsule. If the port is not
  * a multiport, the value and is_present fields are copied verbatim. These
  * feilds then can be accessed from the Python code as port.value and
- * port.is_present.
- * If the value is absent, it will be set to None.
+ * port.is_present. If the value is absent, it will be set to None.
  *
  * For multiports, the value of the port_capsule (i.e., port.value) is always
  * set to None and is_present is set to false.
@@ -156,17 +161,16 @@ PyObject* py_main(PyObject* self, PyObject* args);
 PyObject* convert_C_port_to_py(void* port, int width);
 
 /**
- * A helper function to convert C actions to Python action capsules
- * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend for details about C actions
+ * @brief Convert a C action to a Python action capsule.
+ *
  * Python actions have the following fields (for more information @see generic_action_capsule_struct):
- *   PyObject_HEAD
- *   PyObject* action;
- *   PyObject* value;
- *   bool is_present;
+ * *  PyObject* action;
+ * *  PyObject* value;
+ * *  bool is_present;
  *
  * The input to this function is a pointer to a C action, which might or
  * might not contain a value and an is_present field. To simplify the assumptions
- * made by this function, the "value" and "is_present" are passed to the function
+ * made by this function, the "value" and "is_present" fields are passed to the function
  * instead of expecting them to exist.
  *
  * The void* pointer to the C action instance is encapsulated in a PyCapsule instead of passing an exposed pointer
@@ -175,11 +179,12 @@ PyObject* convert_C_port_to_py(void* port, int width);
  *an agreed-upon container name inside the capsule. This capsule can then be treated as a PyObject* and safely passed
  *through Python code. On the other end (which is in schedule functions), PyCapsule_GetPointer(recieved_action,"action")
  *can be called to retrieve the void* pointer into recieved_action.
- **/
+ */
 PyObject* convert_C_action_to_py(void* action);
 
 /**
- * Get a Python function from a reactor instance.
+ * @brief Get a Python function from a reactor instance.
+ *
  * @param module The Python module name (e.g. "__main__")
  * @param class The class name
  * @param instance_id The instance ID
@@ -189,7 +194,8 @@ PyObject* convert_C_action_to_py(void* action);
 PyObject* get_python_function(string module, string class, int instance_id, string func);
 
 /**
- * Get a Python reactor instance by its module, class name, and instance ID.
+ * @brief Get a Python reactor instance by its module, class name, and instance ID.
+ *
  * @param module The Python module name (e.g. "__main__")
  * @param class The class name
  * @param instance_id The instance ID
@@ -210,14 +216,16 @@ PyObject* get_python_instance(string module, string class, int instance_id);
 int set_python_field_to_c_pointer(string module, string class, int instance_id, string field, void* pointer);
 
 /**
- * Load the Serializer class from package name
+ * @brief Load the Serializer class from package name.
+ *
  * @param package_name Name of the python package to load
  * @return Initialized Serializer class
  */
 PyObject* load_serializer(string package_name);
 
 /**
- * Serialize Python object to a bytes object using external serializer
+ * @brief Serialize Python object to a bytes object using external serializer.
+ *
  * @param obj The Python object to serialize
  * @param custom_serializer The custom Serializer class
  * @return Serialized Python bytes object
@@ -225,14 +233,17 @@ PyObject* load_serializer(string package_name);
 PyObject* custom_serialize(PyObject* obj, PyObject* custom_serializer);
 
 /**
- * Deserialize Python object from a bytes object using external serializer
+ * @brief Deserialize Python object from a bytes object using external serializer.
+ *
  * @param serialized_pyobject The serialized bytes Python object
  * @param custom_serializer The custom Serializer class
  * @return Deserialized Python object
  */
 PyObject* custom_deserialize(PyObject* serialized_pyobject, PyObject* custom_serializer);
 
-/*
+/**
+ * @brief Initialize the Python module.
+ *
  * The Python runtime will call this function to initialize the module.
  * The name of this function is dynamically generated to follow
  * the requirement of PyInit_MODULE_NAME. Since the MODULE_NAME is not

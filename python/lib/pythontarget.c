@@ -61,19 +61,6 @@ environment_t* top_level_environment = NULL;
 
 //////////// schedule Function(s) /////////////
 
-/**
- * Schedule an action to occur with the specified time offset
- * with no payload (no value conveyed). This function is callable
- * in Python by calling action_name.schedule(offset).
- * Some examples include:
- *  action_name.schedule(5)
- *  action_name.schedule(NSEC(5))
- * See schedule_token(), which this uses, for details.
- * @param self Pointer to the calling object.
- * @param args contains:
- *      - action: Pointer to an action on the self struct.
- *      - offset: The time offset over and above that in the action.
- **/
 PyObject* py_schedule(PyObject* self, PyObject* args) {
   generic_action_capsule_struct* act = (generic_action_capsule_struct*)self;
   long long offset;
@@ -105,34 +92,6 @@ PyObject* py_schedule(PyObject* self, PyObject* args) {
 
   // Pass the token along
   lf_schedule_token(action, offset, t);
-
-  // FIXME: handle is not passed to the Python side
-
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-/**
- * Schedule an action to occur with the specified value and time offset
- * with a copy of the specified value.
- * See reactor.h for documentation.
- */
-PyObject* py_schedule_copy(PyObject* self, PyObject* args) {
-  generic_action_capsule_struct* act;
-  long long offset;
-  PyObject* value;
-  int length;
-
-  if (!PyArg_ParseTuple(args, "OLOi", &act, &offset, &value, &length))
-    return NULL;
-
-  lf_action_base_t* action = (lf_action_base_t*)PyCapsule_GetPointer(act->action, "action");
-  if (action == NULL) {
-    lf_print_error("Null pointer received.");
-    exit(1);
-  }
-
-  lf_schedule_copy(action, offset, value, length);
 
   // FIXME: handle is not passed to the Python side
 
@@ -291,16 +250,6 @@ void* get_lf_self_pointer(PyObject* self) {
   return self_ptr;
 }
 
-/**
- * Check whether the deadline of the currently executing reaction has passed.
- * If the deadline has passed and invoke_deadline_handler is True,
- * invoke the deadline handler.
- *
- * @param self The self struct of the reactor.
- * @param args contains:
- *      - invoke_deadline_handler: Whether to invoke the deadline handler if the deadline has passed.
- * @return True if the deadline has passed, False otherwise.
- */
 PyObject* py_check_deadline(PyObject* self, PyObject* args) {
   PyObject* py_self;
   int invoke_deadline_handler = 1; // Default to True
@@ -318,12 +267,7 @@ PyObject* py_check_deadline(PyObject* self, PyObject* args) {
 
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
-/**
- * The main function of this Python module.
- *
- * @param py_args A single object, which should be a list
- *  of arguments taken from sys.argv().
- */
+
 PyObject* py_main(PyObject* self, PyObject* py_args) {
 
   LF_PRINT_DEBUG("Initializing main.");
@@ -364,12 +308,9 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
  * For example, for MODULE_NAME=Foo, this struct will
  * be called Foo_methods.
  * start() initiates the main loop in the C core library
- * @see schedule_copy
- * @see request_stop
  */
 static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"start", py_main, METH_VARARGS, NULL},
-    {"schedule_copy", py_schedule_copy, METH_VARARGS, NULL},
     {"tag", py_lf_tag, METH_NOARGS, NULL},
     {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
     {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
@@ -478,21 +419,6 @@ PyMODINIT_FUNC GEN_NAME(PyInit_, MODULE_NAME)(void) {
  **/
 void destroy_action_capsule(PyObject* capsule) { free(PyCapsule_GetPointer(capsule, "action")); }
 
-/**
- * A function that is called any time a Python reaction is called with
- * ports as inputs and outputs. This function converts ports that are
- * either a multiport or a non-multiport into a port_capsule.
- *
- * First, the void* pointer is stored in a PyCapsule. If the port is not
- * a multiport, the value and is_present fields are copied verbatim. These
- * fields then can be accessed from the Python code as port.value and
- * port.is_present.
- * If the value is absent, it will be set to None.
- *
- * For multiports, the value of the port_capsule (i.e., port.value) is always
- * set to None and is_present is set to false.
- * Individual ports can then later be accessed in Python code as port[idx].
- */
 PyObject* convert_C_port_to_py(void* port, int width) {
   // Create the port struct in Python
   PyObject* cap = (PyObject*)PyObject_New(generic_port_capsule_struct, &py_port_capsule_t);
@@ -538,27 +464,6 @@ PyObject* convert_C_port_to_py(void* port, int width) {
   return cap;
 }
 
-/**
- * A helper function to convert C actions to Python action capsules
- * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend for details about C actions
- * Python actions have the following fields (for more informatino @see generic_action_capsule_struct):
- *   PyObject_HEAD
- *   PyObject* action;
- *   PyObject* value;
- *   bool is_present;
- *
- * The input to this function is a pointer to a C action, which might or
- * might not contain a value and an is_present field. To simplify the assumptions
- * made by this function, the "value" and "is_present" are passed to the function
- * instead of expecting them to exist.
- *
- * The void* pointer to the C action instance is encapsulated in a PyCapsule instead of passing an exposed pointer
- *through Python. @see https://docs.python.org/3/c-api/capsule.html This encapsulation is done by calling
- *PyCapsule_New(action, "name_of_the_container_in_the_capsule", NULL), where "name_of_the_container_in_the_capsule" is
- *an agreed-upon container name inside the capsule. This capsule can then be treated as a PyObject* and safely passed
- *through Python code. On the other end (which is in schedule functions), PyCapsule_GetPointer(received_action,"action")
- *can be called to retrieve the void* pointer into received_action.
- **/
 PyObject* convert_C_action_to_py(void* action) {
   // Convert to trigger_t
   trigger_t* trigger = ((lf_action_base_t*)action)->trigger;
@@ -602,14 +507,6 @@ PyObject* convert_C_action_to_py(void* action) {
   return cap;
 }
 
-/**
- * Get a Python function from a reactor instance.
- * @param module The Python module name (e.g. "__main__")
- * @param class The class name
- * @param instance_id The instance ID
- * @param func The function name to get
- * @return The Python function object, or NULL if not found
- */
 PyObject* get_python_function(string module, string class, int instance_id, string func) {
   LF_PRINT_DEBUG("Getting Python function %s from %s.%s[%d]", func, module, class, instance_id);
 
