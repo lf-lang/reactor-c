@@ -268,6 +268,42 @@ void py_initialize_interpreter(void) {
   }
 }
 
+/**
+ * Check whether the deadline of the currently executing reaction has passed.
+ * If the deadline has passed and invoke_deadline_handler is True,
+ * invoke the deadline handler.
+ *
+ * @param self The self struct of the reactor.
+ * @param args contains:
+ *      - invoke_deadline_handler: Whether to invoke the deadline handler if the deadline has passed.
+ * @return True if the deadline has passed, False otherwise.
+ */
+PyObject* py_check_deadline(PyObject* self, PyObject* args) {
+  PyObject* py_self;
+  int invoke_deadline_handler = 1; // Default to True
+
+  if (!PyArg_ParseTuple(args, "O|p", &py_self, &invoke_deadline_handler)) {
+    return NULL;
+  }
+
+  // Get the lf_self pointer from the Python object
+  PyObject* lf_self_ptr = PyObject_GetAttrString(py_self, "lf_self");
+  if (lf_self_ptr == NULL) {
+    PyErr_SetString(PyExc_AttributeError, "lf_self attribute not found");
+    return NULL;
+  }
+  // Convert the Python long to a void pointer
+  void* self_ptr = PyLong_AsVoidPtr(lf_self_ptr);
+  Py_DECREF(lf_self_ptr);
+  if (self_ptr == NULL) {
+    PyErr_SetString(PyExc_ValueError, "Invalid lf_self pointer");
+    return NULL;
+  }
+  // Call the C function
+  bool result = lf_check_deadline(self_ptr, invoke_deadline_handler);
+  return PyBool_FromLong(result);
+}
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 /**
@@ -327,6 +363,8 @@ static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
     {"source_directory", py_source_directory, METH_NOARGS, "Source directory path for .lf file"},
     {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
+    {"check_deadline", (PyCFunction)py_check_deadline, METH_VARARGS,
+     "Check whether the deadline of the currently executing reaction has passed"},
     {NULL, NULL, 0, NULL}};
 
 /**

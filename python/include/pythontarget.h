@@ -119,6 +119,18 @@ PyObject* py_source_directory(PyObject* self, PyObject* args);
  */
 PyObject* py_package_directory(PyObject* self, PyObject* args);
 
+/**
+ * Check whether the deadline of the currently executing reaction has passed.
+ * If the deadline has passed and invoke_deadline_handler is True,
+ * invoke the deadline handler.
+ *
+ * @param self The self struct of the reactor.
+ * @param args contains:
+ *      - invoke_deadline_handler: Whether to invoke the deadline handler if the deadline has passed.
+ * @return True if the deadline has passed, False otherwise.
+ */
+PyObject* py_check_deadline(PyObject* self, PyObject* args);
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 PyObject* py_main(PyObject* self, PyObject* args);
