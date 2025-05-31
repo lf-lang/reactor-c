@@ -435,7 +435,7 @@ void destroy_action_capsule(PyObject* capsule) { free(PyCapsule_GetPointer(capsu
  *
  * First, the void* pointer is stored in a PyCapsule. If the port is not
  * a multiport, the value and is_present fields are copied verbatim. These
- * feilds then can be accessed from the Python code as port.value and
+ * fields then can be accessed from the Python code as port.value and
  * port.is_present.
  * If the value is absent, it will be set to None.
  *
@@ -553,42 +553,62 @@ PyObject* convert_C_action_to_py(void* action) {
 }
 
 /**
- * Invoke a Python func in class[instance_id] from module.
- * Class instances in generated Python code are always instantiated in a
- * list of template classs[_class(params), _class(params), ...] (note the extra s) regardless
- * of whether a bank is used or not. If there is no bank, or a bank of width 1, the list will be
- * instantiated as classs[_class(params)].
- *
- * This function would thus call classs[0] to access the first instance in a bank and so on.
- *
- * Possible optimizations include: - Not loading the module each time (by storing it in global memory),
- *                                 - Keeping a persistent argument table
- * @param module The Python module to load the function from. In embedded mode, it should
- *               be set to "__main__"
- * @param class The name of the list of classes in the generated Python code
- * @param instance_id The element number in the list of classes. class[instance_id] points to a class instance
- * @param func The reaction functino to be called
- * @param pArgs the PyList of arguments to be sent to function func()
- * @return The function or NULL on error.
+ * Get a Python function from a reactor instance.
+ * @param module The Python module name (e.g. "__main__")
+ * @param class The class name
+ * @param instance_id The instance ID
+ * @param func The function name to get
+ * @return The Python function object, or NULL if not found
  */
 PyObject* get_python_function(string module, string class, int instance_id, string func) {
-  LF_PRINT_DEBUG("Starting the function start().");
+  LF_PRINT_DEBUG("Getting Python function %s from %s.%s[%d]", func, module, class, instance_id);
 
-  // Necessary PyObject variables to load the react() function from test.py
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  // Get the Python instance first
+  // NOTE: This also acquires the GIL. OK for this to be nested?
+  PyObject* pInstance = get_python_instance(module, class, instance_id);
+  if (pInstance == NULL) {
+      PyGILState_Release(gstate);
+      return NULL;
+  }
+
+  // Get the function from the instance
+  PyObject* pFunc = PyObject_GetAttrString(pInstance, func);
+  Py_DECREF(pInstance);  // We don't need the instance anymore
+
+  if (pFunc == NULL) {
+      PyErr_Print();
+      PyGILState_Release(gstate);
+      lf_print_error("Failed to get function %s from instance.", func);
+      return NULL;
+  }
+
+  // Check if the function is callable
+  if (!PyCallable_Check(pFunc)) {
+      PyErr_Print();
+      lf_print_error("Function %s is not callable.", func);
+      Py_DECREF(pFunc);
+      PyGILState_Release(gstate);
+      return NULL;
+  }
+  Py_INCREF(pFunc);
+  PyGILState_Release(gstate);
+  return pFunc;
+}
+
+PyObject* get_python_instance(string module, string class, int instance_id) {
+  LF_PRINT_DEBUG("Getting Python instance for %s.%s[%d]", module, class, instance_id);
+
+  // Necessary PyObject variables
   PyObject* pFileName = NULL;
   PyObject* pModule = NULL;
   PyObject* pDict = NULL;
   PyObject* pClasses = NULL;
-  PyObject* pClass = NULL;
-  PyObject* pFunc = NULL;
+  PyObject* pInstance = NULL;
 
-  // According to
-  // https://docs.python.org/3/c-api/init.html#non-python-created-threads
-  // the following code does the following:
-  // - Register this thread with the interpreter
-  // - Acquire the GIL (Global Interpreter Lock)
-  // - Store (return) the thread pointer
-  // When done, we should always call PyGILState_Release(gstate);
+  // Acquire the GIL
   PyGILState_STATE gstate;
   gstate = PyGILState_Ensure();
 
@@ -604,11 +624,9 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
     }
 
     wchar_t wcwd[PATH_MAX];
-
     mbstowcs(wcwd, cwd, PATH_MAX);
 
-    // Deprecated: Py_SetPath(wcwd);
-    // Replace with the following more verbose version:
+    // Initialize Python with custom configuration
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
     // Add paths to the configuration
@@ -619,20 +637,14 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
     LF_PRINT_DEBUG("Loading module %s in %s.", module, cwd);
 
     pModule = PyImport_Import(pFileName);
-
-    LF_PRINT_DEBUG("Loaded module %p.", pModule);
-
-    // Free the memory occupied by pFileName
     Py_DECREF(pFileName);
 
     // Check if the module was correctly loaded
     if (pModule != NULL) {
-      // Get contents of module. pDict is a borrowed reference.
       pDict = PyModule_GetDict(pModule);
       if (pDict == NULL) {
         PyErr_Print();
         lf_print_error("Failed to load contents of module %s.", module);
-        /* Release the thread. No Python API allowed beyond this point. */
         PyGILState_Release(gstate);
         return NULL;
       }
@@ -655,57 +667,31 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
     if (pClasses == NULL) {
       PyErr_Print();
       lf_print_error("Failed to load class list \"%s\" in module %s.", class, module);
-      /* Release the thread. No Python API allowed beyond this point. */
       PyGILState_Release(gstate);
       return NULL;
     }
 
     Py_DECREF(globalPythonModuleDict);
 
-    pClass = PyList_GetItem(pClasses, instance_id);
-    if (pClass == NULL) {
+    // Get the specific instance from the list
+    pInstance = PyList_GetItem(pClasses, instance_id);
+    if (pInstance == NULL) {
       PyErr_Print();
-      lf_print_error("Failed to load class \"%s[%d]\" in module %s.", class, instance_id, module);
-      /* Release the thread. No Python API allowed beyond this point. */
+      lf_print_error("Failed to load instance \"%s[%d]\" in module %s.", class, instance_id, module);
       PyGILState_Release(gstate);
       return NULL;
     }
 
-    LF_PRINT_DEBUG("Loading function %s.", func);
-
-    // Get the function react from test.py
-    pFunc = PyObject_GetAttrString(pClass, func);
-
-    LF_PRINT_DEBUG("Loaded function %p.", pFunc);
-
-    // Check if the funciton is loaded properly
-    // and if it is callable
-    if (pFunc && PyCallable_Check(pFunc)) {
-      LF_PRINT_DEBUG("Calling function %s from class %s[%d].", func, class, instance_id);
-      Py_INCREF(pFunc);
-      /* Release the thread. No Python API allowed beyond this point. */
-      PyGILState_Release(gstate);
-      return pFunc;
-    } else {
-      // Function is not found or it is not callable
-      if (PyErr_Occurred()) {
-        PyErr_Print();
-      }
-      lf_print_error("Function %s was not found or is not callable.", func);
-    }
-    Py_XDECREF(pFunc);
-    Py_DECREF(globalPythonModule);
-  } else {
-    PyErr_Print();
-    lf_print_error("Failed to load \"%s\".", module);
+    // Increment reference count before returning
+    Py_INCREF(pInstance);
+    PyGILState_Release(gstate);
+    return pInstance;
   }
 
-  LF_PRINT_DEBUG("Done with start().");
-
-  Py_INCREF(Py_None);
-  /* Release the thread. No Python API allowed beyond this point. */
+  PyErr_Print();
+  lf_print_error("Failed to load \"%s\".", module);
   PyGILState_Release(gstate);
-  return Py_None;
+  return NULL;
 }
 
 PyObject* load_serializer(string package_name) {

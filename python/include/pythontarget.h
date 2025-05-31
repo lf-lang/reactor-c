@@ -76,6 +76,7 @@ extern environment_t* top_level_environment;
 
 //////////////////////////////////////////////////////////////
 /////////////  schedule Functions (to schedule an action)
+
 /**
  * Schedule an action to occur with the specified value and time offset
  * with no payload (no value conveyed).
@@ -166,24 +167,23 @@ PyObject* convert_C_port_to_py(void* port, int width);
 PyObject* convert_C_action_to_py(void* action);
 
 /**
- * Invoke a Python func in class[instance_id] from module.
- * Class instances in generated Python code are always instantiated in a
- * list of template classs[_class(params), _class(params), ...] (note the extra s) regardless
- * of whether a bank is used or not. If there is no bank, or a bank of width 1, the list will be
- * instantiated as classs[_class(params)].
- *
- * This function would thus call classs[0] to access the first instance in a bank and so on.
- *
- * Possible optimizations include: - Not loading the module each time (by storing it in global memory),
- *                                 - Keeping a persistent argument table
- * @param module The Python module to load the function from. In embedded mode, it should
- *               be set to "__main__"
- * @param class The name of the list of classes in the generated Python code
- * @param instance_id The element number in the list of classes. class[instance_id] points to a class instance
- * @param func The reaction functino to be called
- * @param pArgs the PyList of arguments to be sent to function func()
+ * Get a Python function from a reactor instance.
+ * @param module The Python module name (e.g. "__main__")
+ * @param class The class name
+ * @param instance_id The instance ID
+ * @param func The function name to get
+ * @return The Python function object, or NULL if not found
  */
 PyObject* get_python_function(string module, string class, int instance_id, string func);
+
+/**
+ * Get a Python reactor instance by its module, class name, and instance ID.
+ * @param module The Python module name (e.g. "__main__")
+ * @param class The class name
+ * @param instance_id The instance ID
+ * @return The Python reactor instance, or NULL if not found
+ */
+PyObject* get_python_instance(string module, string class, int instance_id);
 
 /**
  * Load the Serializer class from package name
