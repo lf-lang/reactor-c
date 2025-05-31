@@ -269,6 +269,29 @@ void py_initialize_interpreter(void) {
 }
 
 /**
+ * @brief Get the lf_self pointer from the Python object for a reactor.
+ * 
+ * @param self The Python object for the reactor.
+ * @return void* The lf_self pointer or NULL if it is not found.
+ */
+void* get_lf_self_pointer(PyObject* self) {
+  // Get the lf_self pointer from the Python object
+  PyObject* py_lf_self = PyObject_GetAttrString(self, "lf_self");
+  if (py_lf_self == NULL) {
+    PyErr_SetString(PyExc_AttributeError, "lf_self attribute not found");
+    return NULL;
+  }
+  // Convert the Python long to a void pointer
+  void* self_ptr = PyLong_AsVoidPtr(py_lf_self);
+  Py_DECREF(py_lf_self);
+  if (self_ptr == NULL) {
+    PyErr_SetString(PyExc_ValueError, "Invalid lf_self pointer");
+    return NULL;
+  }
+  return self_ptr;
+}
+
+/**
  * Check whether the deadline of the currently executing reaction has passed.
  * If the deadline has passed and invoke_deadline_handler is True,
  * invoke the deadline handler.
@@ -285,21 +308,10 @@ PyObject* py_check_deadline(PyObject* self, PyObject* args) {
   if (!PyArg_ParseTuple(args, "O|p", &py_self, &invoke_deadline_handler)) {
     return NULL;
   }
-
-  // Get the lf_self pointer from the Python object
-  PyObject* lf_self_ptr = PyObject_GetAttrString(py_self, "lf_self");
-  if (lf_self_ptr == NULL) {
-    PyErr_SetString(PyExc_AttributeError, "lf_self attribute not found");
-    return NULL;
-  }
-  // Convert the Python long to a void pointer
-  void* self_ptr = PyLong_AsVoidPtr(lf_self_ptr);
-  Py_DECREF(lf_self_ptr);
+  void* self_ptr = get_lf_self_pointer(py_self);
   if (self_ptr == NULL) {
-    PyErr_SetString(PyExc_ValueError, "Invalid lf_self pointer");
     return NULL;
   }
-  // Call the C function
   bool result = lf_check_deadline(self_ptr, invoke_deadline_handler);
   return PyBool_FromLong(result);
 }
