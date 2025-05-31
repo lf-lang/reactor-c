@@ -270,7 +270,7 @@ void py_initialize_interpreter(void) {
 
 /**
  * @brief Get the lf_self pointer from the Python object for a reactor.
- * 
+ *
  * @param self The Python object for the reactor.
  * @return void* The lf_self pointer or NULL if it is not found.
  */
