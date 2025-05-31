@@ -187,7 +187,7 @@ PyObject* get_python_instance(string module, string class, int instance_id);
 
 /**
  * @brief Set a python field to a hold a C pointer.
- * 
+ *
  * @param module The module name.
  * @param class The class name of the Python object.
  * @param instance_id The instance ID of the Python object.

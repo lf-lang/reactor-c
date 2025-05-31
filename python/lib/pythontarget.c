@@ -570,28 +570,28 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
   // NOTE: This also acquires the GIL. OK for this to be nested?
   PyObject* pInstance = get_python_instance(module, class, instance_id);
   if (pInstance == NULL) {
-      PyGILState_Release(gstate);
-      return NULL;
+    PyGILState_Release(gstate);
+    return NULL;
   }
 
   // Get the function from the instance
   PyObject* pFunc = PyObject_GetAttrString(pInstance, func);
-  Py_DECREF(pInstance);  // We don't need the instance anymore
+  Py_DECREF(pInstance); // We don't need the instance anymore
 
   if (pFunc == NULL) {
-      PyErr_Print();
-      PyGILState_Release(gstate);
-      lf_print_error("Failed to get function %s from instance.", func);
-      return NULL;
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    lf_print_error("Failed to get function %s from instance.", func);
+    return NULL;
   }
 
   // Check if the function is callable
   if (!PyCallable_Check(pFunc)) {
-      PyErr_Print();
-      lf_print_error("Function %s is not callable.", func);
-      Py_DECREF(pFunc);
-      PyGILState_Release(gstate);
-      return NULL;
+    PyErr_Print();
+    lf_print_error("Function %s is not callable.", func);
+    Py_DECREF(pFunc);
+    PyGILState_Release(gstate);
+    return NULL;
   }
   Py_INCREF(pFunc);
   PyGILState_Release(gstate);
