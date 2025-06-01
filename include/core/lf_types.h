@@ -1,6 +1,7 @@
 /**
  * @file lf_types.h
  * @brief Type definitions that are widely used across different parts of the runtime.
+ * @ingroup IntTypes
  *
  * @author Edward A. Lee
  * @author Marten Lohstroh
@@ -25,7 +26,9 @@
 
 #ifndef _SYS_TYPES_H
 /**
- * ushort type. Redefine here for portability if sys/types.h is not included.
+ * @brief Unsigned short type. Redefine here for portability if sys/types.h is not included.
+ * @ingroup IntTypes
+ *
  * @see sys/types.h
  *
  * @note using sizeof(ushort) should be okay but not sizeof ushort.
@@ -41,12 +44,27 @@ typedef unsigned short int ushort;
  * on SCHEDULER compile def.
  */
 
+/**
+ * @brief Experimental adaptive scheduler.
+ * @ingroup IntTypes
+ */
 #define SCHED_ADAPTIVE 1
+
+/**
+ * @brief Experimental GEDF-NP scheduler.
+ * @ingroup IntTypes
+ */
 #define SCHED_GEDF_NP 2
+
+/**
+ * @brief Default non-preemptive scheduler.
+ * @ingroup IntTypes
+ */
 #define SCHED_NP 3
 
 /**
  * @brief A struct representing a barrier in threaded LF programs.
+ * @ingroup IntTypes
  *
  * This will prevent advancement of the current tag if
  * the number of requestors is larger than 0 or the value of horizon is not (FOREVER, 0).
@@ -63,8 +81,10 @@ typedef struct lf_tag_advancement_barrier_t {
 } lf_tag_advancement_barrier_t;
 
 /**
- * Policy for handling scheduled events that violate the specified
+ * @brief Policy for handling scheduled events that violate the specified
  * minimum interarrival time.
+ * @ingroup IntTypes
+ *
  * The default policy is `defer`: adjust the tag to that the minimum
  * interarrival time is satisfied.
  * The `drop` policy simply drops events that are scheduled too early.
@@ -80,6 +100,7 @@ typedef enum { defer, drop, replace, update } lf_spacing_policy_t;
 
 /**
  * @brief Status of a given port at a given logical time.
+ * @ingroup IntTypes
  *
  * If the value is 'present', it is an indicator that the port is present at the given logical time.
  * If the value is 'absent', it is an indicator that the port is absent at the given logical time.
@@ -93,7 +114,8 @@ typedef enum { defer, drop, replace, update } lf_spacing_policy_t;
 typedef enum { absent = false, present = true, unknown } port_status_t;
 
 /**
- * Status of a given reaction at a given logical time.
+ * @brief Status of a given reaction at a given logical time.
+ * @ingroup IntTypes
  *
  * If a reaction is 'inactive', it is neither running nor queued.
  * If a reaction is 'queued', it is going to be executed at the current logical time,
@@ -102,12 +124,13 @@ typedef enum { absent = false, present = true, unknown } port_status_t;
  *
  * @note inactive must equal zero because it should be possible to allocate a reaction
  *  with default values using calloc.
- * FIXME: The running state does not seem to be read.
+ * @note The running state does not seem to be read.
  */
 typedef enum { inactive = 0, queued, running } reaction_status_t;
 
 /**
  * @brief Handles for scheduled triggers.
+ * @ingroup IntTypes
  *
  * These handles are returned
  * by lf_schedule() functions. The intent is that the handle can be
@@ -135,6 +158,7 @@ typedef pqueue_pri_t index_t;
 
 /**
  * @brief Reaction function type.
+ * @ingroup IntTypes
  *
  * The argument passed to one of
  * these reaction functions is a pointer to the self struct
@@ -217,44 +241,100 @@ struct event_t {
  * @ingroup IntTypes
  */
 struct trigger_t {
-  token_template_t tmplt;  // Type and token information (template is a C++ keyword).
-  reaction_t** reactions;  // Array of pointers to reactions sensitive to this trigger.
-  int number_of_reactions; // Number of reactions sensitive to this trigger.
-  bool is_timer;           // True if this is a timer (a special kind of action), false otherwise.
-  interval_t offset;       // Minimum delay of an action. For a timer, this is also the maximum delay.
-  interval_t period; // Minimum interarrival time of an action. For a timer, this is also the maximal interarrival time.
-  bool is_physical;  // Indicator that this denotes a physical action.
-  tag_t last_tag;    // Tag of the last event that was scheduled for this action.
-                     // This is only used for actions and will otherwise be NEVER.
-  lf_spacing_policy_t policy; // Indicates which policy to use when an event is scheduled too early.
-  port_status_t status;       // Determines the status of the port at the current logical time. Therefore, this
-                              // value needs to be reset at the beginning of each logical time.
-                              //
-  // This status is especially needed for the distributed execution because the receiver logic
-  // will need to know what it should do if it receives a message with 'intended tag = current
-  // tag' from another federate.
-  // - If status is 'unknown', it means that the federate has still no idea what the status of
-  //   this port is and thus has refrained from executing any reaction that has that port as its
-  //   input. This means that the receiver logic can directly inject the triggered reactions into
-  //   the reaction queue at the current logical time.
-  // - If the status is absent, it means that the federate has assumed that the port is 'absent'
-  //   for the current logical time. Therefore, receiving a message with 'intended tag = current
-  //   tag' is an error that should be handled, for example, as a violation of the STP offset in
-  //   the decentralized coordination.
-  // - Finally, if status is 'present', then this is an error since multiple
-  //   downstream messages have been produced for the same port for the same logical time.
-  reactor_mode_t* mode; // The enclosing mode of this reaction (if exists).
-                        // If enclosed in multiple, this will point to the innermost mode.
+  /**
+   * @brief Type and token information template.
+   * Contains type information and token handling details for the trigger.
+   * Note: 'template' is a C++ keyword, hence the abbreviated name.
+   */
+  token_template_t tmplt;
+
+  /**
+   * @brief Array of pointers to reactions that are sensitive to this trigger.
+   * These reactions will be executed when the trigger fires.
+   */
+  reaction_t** reactions;
+
+  /**
+   * @brief Number of reactions that are sensitive to this trigger.
+   * Indicates the size of the reactions array.
+   */
+  int number_of_reactions;
+
+  /**
+   * @brief Flag indicating whether this trigger is a timer.
+   * True if this is a timer (a special kind of action), false otherwise.
+   */
+  bool is_timer;
+
+  /**
+   * @brief Minimum delay for an action trigger.
+   * For timers, this also represents the maximum delay.
+   */
+  interval_t offset;
+
+  /**
+   * @brief Minimum interarrival time for an action trigger.
+   * For timers, this also represents the maximum interarrival time.
+   */
+  interval_t period;
+
+  /**
+   * @brief Flag indicating whether this trigger represents a physical action.
+   * True if this denotes a physical action, false otherwise.
+   */
+  bool is_physical;
+
+  /**
+   * @brief Tag of the last event scheduled for this action.
+   * Only used for actions and will be NEVER otherwise.
+   */
+  tag_t last_tag;
+
+  /**
+   * @brief Policy for handling events scheduled too early.
+   * Determines how to handle events that violate the minimum interarrival time.
+   * @see lf_spacing_policy_t for available policies.
+   */
+  lf_spacing_policy_t policy;
+
+  /**
+   * @brief Current status of the port at the current logical time.
+   * Needs to be reset at the beginning of each logical time.
+   * Particularly important for distributed execution to handle message coordination.
+   * @see port_status_t for possible values.
+   */
+  port_status_t status;
+
+  /**
+   * @brief Pointer to the enclosing mode of this trigger.
+   * If the trigger is enclosed in multiple modes, this points to the innermost mode.
+   * Only present when modal reactors are enabled.
+   */
+  reactor_mode_t* mode;
+
 #ifdef FEDERATED
-  tag_t last_known_status_tag; // Last known status of the port, either via a timed message, a port absent, or a
-                               // TAG from the RTI.
-  tag_t intended_tag;          // The amount of discrepency in logical time between the original intended
-                               // trigger time of this trigger and the actual trigger time. This currently
-                               // can only happen when logical connections are used using a decentralized coordination
-                               // mechanism (@see https://github.com/icyphy/lingua-franca/wiki/Logical-Connections).
-  instant_t physical_time_of_arrival; // The physical time at which the message has been received on the network
-                                      // according to the local clock. Note: The physical_time_of_arrival is only passed
-                                      // down one level of the hierarchy. Default: NEVER.
+  /**
+   * @brief Last known status tag of the port.
+   * Records the last known status via timed message, port absent, or TAG from RTI.
+   * Only present in federated execution.
+   */
+  tag_t last_known_status_tag;
+
+  /**
+   * @brief The intended trigger time of this trigger.
+   * Represents the discrepancy between intended and actual trigger time.
+   * Currently only relevant for logical connections using decentralized coordination.
+   * @see https://github.com/icyphy/lingua-franca/wiki/Logical-Connections
+   */
+  tag_t intended_tag;
+
+  /**
+   * @brief Physical time at which the message was received on the network.
+   * Based on the local clock. Note: This time is only passed down one level of hierarchy.
+   * Default value is NEVER.
+   * Only present in federated execution.
+   */
+  instant_t physical_time_of_arrival;
 #endif
 };
 
@@ -289,18 +369,57 @@ typedef struct environment_t environment_t;
  * it also records the current mode.
  */
 typedef struct self_base_t {
+  /**
+   * @brief Pointer to the head of a NULL-terminated linked list of allocation records.
+   * Used to track and free dynamically allocated memory for this reactor instance.
+   */
   struct allocation_record_t* allocations;
-  struct reaction_t* executing_reaction; // The currently executing reaction of the reactor.
+
+  /**
+   * @brief Pointer to the currently executing reaction of the reactor.
+   * This field is updated during reaction execution to track which reaction is running.
+   */
+  struct reaction_t* executing_reaction;
+
+  /**
+   * @brief Pointer to the environment in which the reactor is executing.
+   * Contains runtime context and configuration for the reactor.
+   */
   environment_t* environment;
-  char* name;          // The name of the reactor. If a bank, appended with [index].
-  char* full_name;     // The full name of the reactor or NULL if lf_reactor_full_name() is not called.
-  self_base_t* parent; // The parent of this reactor.
+
+  /**
+   * @brief The name of the reactor instance.
+   * For bank reactors, this will be appended with [index].
+   */
+  char* name;
+
+  /**
+   * @brief The full hierarchical name of the reactor.
+   * This will be NULL unless lf_reactor_full_name() is called.
+   */
+  char* full_name;
+
+  /**
+   * @brief Pointer to the parent reactor of this reactor instance.
+   * Used to maintain the reactor hierarchy.
+   */
+  self_base_t* parent;
+
 #if !defined(LF_SINGLE_THREADED)
-  void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
-                       // It is not declared as such to avoid a dependence on platform.h.
+  /**
+   * @brief Mutex used to protect the reactor from concurrent access.
+   * If not null, this is expected to point to an lf_mutex_t.
+   * Not declared as lf_mutex_t to avoid dependency on platform.h.
+   */
+  void* reactor_mutex;
 #endif
+
 #if defined(MODAL_REACTORS)
-  reactor_mode_state_t _lf__mode_state; // The current mode (for modal models).
+  /**
+   * @brief The current mode state for modal models.
+   * Only present when modal reactors are enabled.
+   */
+  reactor_mode_state_t _lf__mode_state;
 #endif
 } self_base_t;
 
@@ -309,17 +428,51 @@ typedef struct self_base_t {
  * @ingroup IntTypes
  *
  * Action structs are customized types because their payloads are type
- * specific.  This struct represents their common features. Given any
+ * specific. This struct represents their common features. Given any
  * pointer to an action struct, it can be cast to lf_action_base_t,
  * to token_template_t, or to token_type_t to access these common fields.
  */
 typedef struct {
-  token_template_t tmplt; // Type and token information (template is a C++ keyword).
+  /**
+   * @brief Type and token information template.
+   * Contains type information and token handling details for the action.
+   * Note: 'template' is a C++ keyword, hence the abbreviated name.
+   * This field must match the layout of token_template_t for proper casting.
+   */
+  token_template_t tmplt;
+
+  /**
+   * @brief Flag indicating whether the action has a value at the current logical time.
+   * True if the action is present at the current logical time, false otherwise.
+   */
   bool is_present;
-  trigger_t* trigger; // THIS HAS TO MATCH lf_action_internal_t
+
+  /**
+   * @brief Pointer to the trigger associated with this action.
+   * This field must match the layout of lf_action_internal_t for proper casting.
+   * @see trigger_t for details about the trigger structure.
+   */
+  trigger_t* trigger;
+
+  /**
+   * @brief Pointer to the parent reactor's self struct.
+   * Provides access to the reactor instance that owns this action.
+   */
   self_base_t* parent;
+
+  /**
+   * @brief Flag indicating whether the action has a value.
+   * True if the action has a value, false otherwise.
+   * This is distinct from is_present as it indicates value availability rather than temporal presence.
+   */
   bool has_value;
-  int source_id; // Used only for federated network input actions.
+
+  /**
+   * @brief Source identifier for federated network input actions.
+   * Used to identify the source of network input actions in federated execution.
+   * Only meaningful for federated network input actions.
+   */
+  int source_id;
 } lf_action_base_t;
 
 /**

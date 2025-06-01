@@ -15,6 +15,7 @@ INPUT =                 ./doxygen.h \
                         ../include/core/utils/impl/hashmap.h \
                         ../include/core/utils/impl/pointer_hashmap.h \
                         ../include/core/utils/lf_semaphore.h \
+                        ../include/core/lf_types.h \
                         ../include/core/federated/federate.h \
                         ../include/core/federated/network/net_common.h \
                         ../include/core/federated/network/net_util.h \
