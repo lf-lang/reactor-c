@@ -1,7 +1,15 @@
-/*
- * hashset_itr.h
+/**
+ * @file hashset_itr.h
+ * @brief A C hashset iterator implemenation.
+ * @ingroup Utilities
+ * 
+ * This is a simple iterator for a hashset. It is not thread-safe.
+ * 
+ * ## License
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
+ *  Copyright 2012 Couchbase, Inc.
+ * 
+ *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
  *   You may obtain a copy of the License at
  *
@@ -26,6 +34,10 @@
 extern "C" {
 #endif
 
+/**
+ * @brief A hashset iterator.
+ * @ingroup Utilities
+ */
 struct hashset_itr_st {
   hashset_t set;
   int index;
@@ -35,8 +47,11 @@ typedef struct hashset_itr_st* hashset_itr_t;
 
 /**
  * @brief Create a hashset iterator.
+ * @ingroup Utilities
+ * 
  * The caller should then iterate over the hashset as follows:
- * ```
+ * 
+ * ```c
  *   hashset_itr_t iterator = hashset_iterator(my_hashset);
  *   while (hashset_iterator_next(iterator) >= 0) {
  *     void* my_value = hashset_iterator_value(iterator);
@@ -44,25 +59,42 @@ typedef struct hashset_itr_st* hashset_itr_t;
  *   }
  *   free(iterator);
  * ```
- * The caller must call free() on this iterator after using it.
+ * The caller must call `free()` on this iterator after using it.
+ * 
+ * @param set The hashset to iterate over.
+ * @return A hashset iterator.
  */
 hashset_itr_t hashset_iterator(hashset_t set);
 
 /**
- * @brief Returns the value at the current index.
- * The called should check hashset_iterator_has_next before calling this.
+ * @brief Return the value at the current index.
+ * @ingroup Utilities
+ * 
+ * The called should check @ref hashset_iterator_has_next before calling this.
+ * 
+ * @param itr The hashset iterator.
+ * @return The value at the current index.
  */
 void* hashset_iterator_value(hashset_itr_t itr);
 
 /**
  * @brief Return 1 if there is a next value in the hashset and 0 otherwise.
+ * @ingroup Utilities
+ * 
+ * @param itr The hashset iterator.
+ * @return 1 if there is a next value in the hashset and 0 otherwise.
  */
 int hashset_iterator_has_next(hashset_itr_t itr);
 
 /**
  * @brief Advance to the next value in the hashset.
+ * @ingroup Utilities
+ *
  * This returns a non-negative number (the current index) if there is a next item
  * and -1 otherwise.
+ * 
+ * @param itr The hashset iterator.
+ * @return The current index.
  */
 int hashset_iterator_next(hashset_itr_t itr);
 

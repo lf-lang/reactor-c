@@ -1,6 +1,8 @@
 /**
+ * @file hashmap.h
  * @author Peter Donovan (peterdonovan@berkeley.edu)
  * @brief Defines a generic, non-resizing hashmap data type.
+ * @ingroup Utilities
  *
  * Hashmaps are defined by redefining K, V, HASH_OF, and HASHMAP, and including this file. A default
  * hashmap type is defined here. See pointer_hashmap.h for an example of a hashmap declaration.
@@ -31,11 +33,19 @@
 
 ////////////////////////// Type definitions ///////////////////////////
 
+/**
+ * @brief A hashmap entry.
+ * @ingroup Utilities
+ */
 typedef struct HASHMAP(entry_t) {
   K key;
   V value;
 } HASHMAP(entry_t);
 
+/**
+ * @brief A hashmap.
+ * @ingroup Utilities
+ */
 typedef struct HASHMAP(t) {
   HASHMAP(entry_t) * entries;
   size_t capacity;
@@ -47,20 +57,30 @@ typedef struct HASHMAP(t) {
 
 /**
  * @brief Construct a new hashmap object.
+ * @ingroup Utilities
+ * 
  * @param capacity A number that is much larger than the maximum number of items that this
  * hashmap will contain. Insufficient surplus capacity will cause poor performance.
  * @param nothing A key that is guaranteed never to be used.
  */
 HASHMAP(t) * HASHMAP(new)(size_t capacity, K nothing);
 
-/** @brief Free all memory used by the given hashmap. */
+/**
+ * @brief Free all memory used by the given hashmap.
+ * @ingroup Utilities
+ */
 void HASHMAP(free)(HASHMAP(t) * hashmap);
 
-/** @brief Associate a value with the given key. */
+/**
+ * @brief Associate a value with the given key.
+ * @ingroup Utilities
+ */
 void HASHMAP(put)(HASHMAP(t) * hashmap, K key, V value);
 
 /**
  * @brief Get the value associated with the given key.
+ * @ingroup Utilities
+ * 
  * Precondition: The key must be present in the map.
  */
 V HASHMAP(get)(HASHMAP(t) * hashmap, K key);
@@ -77,8 +97,10 @@ static HASHMAP(entry_t) * HASHMAP(get_ideal_address)(HASHMAP(t) * hashmap, K key
 /**
  * @brief Return the actual address of the hashmap entry corresponding to `key`, or the address of
  * the closest empty entry if no such entry exists.
+ * @ingroup Utilities
+ * 
+ * @param hashmap The hashmap to search.
  * @param key The key from which to begin a search.
- * @param desired The key that the desired returnable entry should have.
  */
 static HASHMAP(entry_t) * HASHMAP(get_actual_address)(HASHMAP(t) * hashmap, K key) {
   HASHMAP(entry_t)* address = HASHMAP(get_ideal_address)(hashmap, key);

@@ -206,7 +206,7 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval);
 /**
  * @brief Return the latest tag strictly less than the specified tag plus the
  * interval, unless tag is NEVER or interval is negative (including NEVER),
- * @ingroup Advanced
+ * @ingroup Internal
  *
  * in which case return the tag unmodified.  Any interval less than 0
  * (including NEVER) is interpreted as "no delay", whereas an interval
@@ -224,7 +224,7 @@ tag_t lf_delay_strict(tag_t tag, interval_t interval);
 
 /**
  * @brief Return the greatest tag earlier than the given tag.
- * @ingroup Advanced
+ * @ingroup Internal
  *
  * If the given tag is `FOREVER_TAG` or `NEVER_TAG`, however, just return the given tag.
  * @param tag The tag.
@@ -233,7 +233,7 @@ tag_t lf_tag_latest_earlier(tag_t tag);
 
 /**
  * @brief Return the current logical time in nanoseconds.
- * @ingroup Advanced
+ * @ingroup Internal
  *
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
@@ -246,7 +246,7 @@ instant_t lf_time_logical(void* env);
 /**
  * @brief Return the elapsed logical time in nanoseconds
  * since the start of execution.
- * @ingroup Advanced
+ * @ingroup Internal
  *
  * @param env The environment from which we want the elapsed logical time.
  * @return A time interval.

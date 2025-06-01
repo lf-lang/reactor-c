@@ -2,13 +2,19 @@ PROJECT_NAME = reactor-c
 PROJECT_BRIEF          = "C Runtime for Lingua Franca"
 PROJECT_NUMBER = 1.0
 PROJECT_LOGO           = ../docs/logo.png
-PROJECT_ICON           = ../docs/favicon.png
+PROJECT_ICON           = ../docs/favicon.ico
 
 OUTPUT_DIRECTORY = _build
-INPUT =                 ../docs/markdown/ \
-                        ../doxygen.h \
+INPUT =                 ./doxygen.h \
+                        ./markdown/ \
                         ../include/api/reaction_macros.h \
-                        ../include/api/schedule.h
+                        ../tag/api/tag.h \
+                        ../include/api/schedule.h \
+                        ../include/core/utils/hashset/hashset.h \
+                        ../include/core/utils/hashset/hashset_itr.h \
+                        ../include/core/utils/impl/hashmap.h \
+                        ../include/core/utils/impl/pointer_hashmap.h \
+                        ../include/core/utils/lf_semaphore.h \
 
 USE_MDFILE_AS_MAINPAGE =
 FILE_PATTERNS = *.h *.md
@@ -89,9 +95,9 @@ SHOW_GROUPED_MEMB_INC  = YES
 FORCE_LOCAL_INCLUDES   = NO
 INLINE_INFO            = YES
 SORT_MEMBER_DOCS       = YES
-SORT_BRIEF_DOCS        = NO
+SORT_BRIEF_DOCS        = YES
 SORT_MEMBERS_CTORS_1ST = NO
-SORT_GROUP_NAMES       = YES
+SORT_GROUP_NAMES       = NO
 SORT_BY_SCOPE_NAME     = YES
 STRICT_PROTO_MATCHING  = YES
 GENERATE_TODOLIST      = NO

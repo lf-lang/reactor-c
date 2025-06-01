@@ -149,7 +149,7 @@ typedef struct reaction_t reaction_t;
 
 /**
  * @brief Reaction activation record to push onto the reaction queue.
- * @ingroup AdvTypes
+ * @ingroup IntTypes
  *
  * Some of the information in this struct is common among all instances
  * of the reactor, and some is specific to each particular instance.
@@ -201,7 +201,7 @@ typedef struct event_t event_t;
 
 /**
  * @brief Event activation record to push onto the event queue.
- * @ingroup AdvTypes
+ * @ingroup IntTypes
  */
 struct event_t {
   pqueue_tag_element_t base; // Elements of pqueue_tag. It contains tag of release and position in the priority queue.
@@ -214,7 +214,7 @@ struct event_t {
 
 /**
  * @brief Trigger struct representing an output, timer, action, or input.
- * @ingroup AdvTypes
+ * @ingroup IntTypes
  */
 struct trigger_t {
   token_template_t tmplt;  // Type and token information (template is a C++ keyword).
@@ -260,7 +260,7 @@ struct trigger_t {
 
 /**
  * @brief Allocation record to keep track of dynamically-allocated memory.
- * @ingroup AdvTypes
+ * @ingroup IntTypes
  *
  * An allocation record that is used by a destructor for a reactor
  * to free memory that has been dynamically allocated for the particular
@@ -277,7 +277,7 @@ typedef struct environment_t environment_t;
 
 /**
  * @brief The base type for all reactor self structs.
- * @ingroup AdvTypes
+ * @ingroup IntTypes
  *
  * The first element of every self struct defined in generated code
  * will be a pointer to an allocation record, which is either NULL
@@ -306,7 +306,7 @@ typedef struct self_base_t {
 
 /**
  * @brief Base type for actions.
- * @ingroup AdvTypes
+ * @ingroup IntTypes
  *
  * Action structs are customized types because their payloads are type
  * specific.  This struct represents their common features. Given any

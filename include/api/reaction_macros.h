@@ -1,7 +1,8 @@
 /**
- * @file reaction_macros.h Reaction Macros
- * @author Edward A. Lee (eal@berkeley.edu)
+ * @file reaction_macros.h
+ * @author Edward A. Lee
  * @brief Macros providing an API for use in inline reaction bodies.
+ * @ingroup API
  *
  * This set of macros is defined prior to each reaction body and undefined after the reaction body
  * using the set_undef.h header file.  If you wish to use these macros in external code, such as

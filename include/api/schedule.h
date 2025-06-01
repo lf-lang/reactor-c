@@ -5,6 +5,7 @@
  * @author Soroush Bateni
  *
  * @brief API functions for scheduling actions.
+ * @ingroup API
  *
  * Most of these functions take a `void*` pointer to an action, which will be internally cast to
  * a `lf_action_base_t*` pointer. The cast could be done by macros in reaction_macros.h, but unlike
@@ -164,7 +165,7 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
 
 /**
  * @brief Schedule the specified trigger to execute in the specified environment with given delay and token.
- * @ingroup API
+ * @ingroup Internal
  *
  * This is the most flexible version of the schedule functions and is used in the implementation
  * of many of the others. End users would rarely use it.

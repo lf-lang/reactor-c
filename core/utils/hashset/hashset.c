@@ -1,5 +1,11 @@
-/* -*- Mode: C; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*- */
-/*
+/**
+ * @file hashset.c
+ * @brief A C hashset implementation.
+ * @ingroup Utilities
+ * 
+ * This is a simple hashset implementation. It is not thread-safe.
+ * 
+ * ## License
  *     Copyright 2012 Couchbase, Inc.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
