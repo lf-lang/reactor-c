@@ -59,9 +59,14 @@ The documentation conventions are:
 
 When a function's doc includes an `@ingroup` tag, then it will be listed the "Topics" section of the documentation. Otherwise, it will only appear in the "Files" section (which is harder to navigate).  The defined topics are:
 
-* API: For macros and functions that are used in reaction bodies and require no `#include`.
-* Types: Basic type and struct definitions that may be used in reaction bodies.
-* Constants: Macros for constants such as time values.
+* **API**: For macros and functions that are used in reaction bodies and require no `#include`.
+* **Types**: Basic type and struct definitions that may be used in reaction bodies.
+* **Constants**: Macros for constants such as time values.
+* **Utilities**: Utility functions and data types.
+* **Platform**: Functions with platform-specific implementations.
+* **Internal**: Functions used in the runtime system.
+* **IntTypes**: Structs used in the runtime system.
+* **Federated**: Functions used in federated execution.
 
 The groups are defined in the file [docs/doxygen.h](https://github.com/lf-lang/reactor-c/blob/main/docs/doxygen.h).
 

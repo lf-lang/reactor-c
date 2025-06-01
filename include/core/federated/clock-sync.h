@@ -1,6 +1,7 @@
 /**
  * @file clock-sync.h
  * @brief Utility functions for clock synchronization in federated Lingua Franca programs.
+ * @ingroup Federated
  *
  * @author Edward A. Lee (eal@berkeley.edu)
  * @author Soroush Bateni (soroush@utdallas.edu)
@@ -18,44 +19,65 @@
 
 #include "low_level_platform.h"
 
-// Clock synchronization defaults to performing clock synchronization only at initialization.
 #define LF_CLOCK_SYNC_OFF 1
 #define LF_CLOCK_SYNC_INIT 2
 #define LF_CLOCK_SYNC_ON 3
 
 #ifndef LF_CLOCK_SYNC
+/**
+ * @brief Clock synchronization mode.
+ * @ingroup Federated
+ *
+ * This is one of LF_CLOCK_SYNC_OFF, LF_CLOCK_SYNC_INIT, or LF_CLOCK_SYNC_ON.
+ * The default is LF_CLOCK_SYNC_INIT, which indicates that clock synchronization
+ * is performed only at initialization.
+ * @note This is a compile-time option.
+ */
 #define LF_CLOCK_SYNC LF_CLOCK_SYNC_INIT
 #endif
 
 /**
- * Number of required clock sync T4 messages per synchronization
- * interval. The offset to the clock will not be adjusted until
- * this number of T4 clock synchronization messages have been received.
+ * @brief Number of required clock sync T4 messages per synchronization interval.
+ * @ingroup Federated
+ *
+ * The offset to the clock will not be adjusted until this number of T4 clock
+ * synchronization messages have been received.
  */
 #ifndef _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL
 #define _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL 10
 #endif
 
-/** Runtime clock offset updates will be divided by this number. */
+/**
+ * @brief Runtime clock offset updates will be divided by this number.
+ * @ingroup Federated
+ */
 #ifndef _LF_CLOCK_SYNC_ATTENUATION
 #define _LF_CLOCK_SYNC_ATTENUATION 10
 #endif
 
-/** By default, collect statistics on clock synchronization. */
+/**
+ * @brief By default, collect statistics on clock synchronization.
+ * @ingroup Federated
+ */
 #ifndef _LF_CLOCK_SYNC_COLLECT_STATS
 #define _LF_CLOCK_SYNC_COLLECT_STATS true
 #endif
 
 /**
- * Define a guard band to filter clock synchronization
- * messages based on discrepancies in the network delay.
+ * @brief Define a guard band to filter clock synchronization messages based on
+ * discrepancies in the network delay.
+ * @ingroup Federated
+ *
  * @see Coded probes in Geng, Yilong, et al.
- * "Exploiting a natural network effect for scalable, fine-grained clock synchronization."
+ * "Exploiting a natural network effect for scalable, fine-grained clock
+ * synchronization."
  */
 #define CLOCK_SYNC_GUARD_BAND USEC(100)
 
 /**
- * Statistics for a given socket.
+ * @brief Statistics for a given socket.
+ * @ingroup Federated
+ *
  * The RTI initiates a clock synchronization action by sending its
  * current physical time T1 to a federate.  The federate records
  * the local time T2 that it receives T1. It sends a reply at
@@ -93,48 +115,32 @@ typedef struct socket_stat_t {
 } socket_stat_t;
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS
-/**
- * To hold statistics
- */
 struct lf_stat_ll;
-
-/**
- * Update statistics on the socket based on the newly calculated network delay
- * and clock synchronization error
- *
- * @param socket_stat The socket_stat_t struct that  keeps track of stats for a given connection
- * @param network_round_trip_delay The newly calculated round trip delay to the remote federate/RTI
- * @param clock_synchronization_error The newly calculated clock synchronization error relative to
- *  the remote federate/RTI
- */
-void update_socket_stat(struct socket_stat_t* socket_stat, long long network_delay,
-                        long long clock_synchronization_error);
-
-/**
- * Calculate statistics of the socket.
- * The releavent information is returned as a lf_stat_ll struct.
- *
- * @param socket_stat The socket_stat_t struct that  keeps track of stats for a given connection
- * @return An lf_stat_ll struct with relevant information.
- */
-struct lf_stat_ll calculate_socket_stat(struct socket_stat_t* socket_stat);
 #endif // _LF_CLOCK_SYNC_COLLECT_STATS
 
 /**
- * Reset statistics on the socket.
- *  @param socket_stat The socket_stat_t struct that  keeps track of stats for a given connection
+ * @brief Reset statistics on the socket.
+ * @ingroup Federated
+ *
+ * @param socket_stat The socket_stat_t struct that  keeps track of stats for a given connection
  */
 void reset_socket_stat(struct socket_stat_t* socket_stat);
 
 /**
- * Setup necessary functionalities to synchronize clock with the RTI.
+ * @brief Setup necessary functionalities to synchronize clock with the RTI.
+ * @ingroup Federated
  *
- * @return port number to be sent to the RTI
+ * @return port number to be sent to the RTI.
+ *  If clock synchronization is off compeltely, USHRT_MAX is returned.
+ *  If clock synchronization is set to initial, 0 is sent.
+ *  If clock synchronization is set to on, a reserved UDP port number will be sent.
  */
 uint16_t setup_clock_synchronization_with_rti(void);
 
 /**
- * Synchronize the initial physical clock with the RTI.
+ * @brief Synchronize the initial physical clock with the RTI.
+ * @ingroup Federated
+ *
  * A call to this function is inserted into the startup
  * sequence by the code generator if initial clock synchronization
  * is required.
@@ -151,7 +157,9 @@ uint16_t setup_clock_synchronization_with_rti(void);
 void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
 
 /**
- * Handle a clock synchroninzation message T1 coming from the RTI.
+ * @brief Handle a clock synchroninzation message T1 coming from the RTI.
+ * @ingroup Federated
+ *
  * T1 is the first message in a PTP exchange.
  * This replies to the RTI with a T3 message.
  * It also measures the time it takes between when the method is
@@ -164,7 +172,9 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
 int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2);
 
 /**
- * Handle a clock synchronization message T4 coming from the RTI.
+ * @brief Handle a clock synchronization message T4 coming from the RTI.
+ * @ingroup Federated
+ *
  * If the socket is _lf_rti_socket_TCP, then assume we are in the
  * initial clock synchronization phase and set the clock offset
  * based on the estimated clock synchronization error.
@@ -182,14 +192,11 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
 void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r4);
 
 /**
- * Thread that listens for UDP inputs from the RTI.
- */
-void* listen_to_rti_UDP_thread(void* args);
-
-/**
- * Create the thread responsible for handling clock synchronization
+ * @brief Create the thread responsible for handling clock synchronization
  * with the RTI if (runtime) clock synchronization is on.
- * Otherwise, do nothing an return 0.
+ * @ingroup Federated
+ *
+ * Otherwise, do nothing and return 0.
  *
  * @return On success, returns 0; On error, it returns an error number.
  */
@@ -197,18 +204,24 @@ int create_clock_sync_thread(lf_thread_t* thread_id);
 
 /**
  * @brief Add the current clock synchronization offset to a specified timestamp.
+ * @ingroup Federated
+ *
  * @param t Pointer to the timestamp to which to add the offset.
  */
 void clock_sync_add_offset(instant_t* t);
 
 /**
  * @brief Subtract the clock synchronization offset from a timestamp.
+ * @ingroup Federated
+ *
  * @param t The timestamp from which to subtract the current clock sync offset.
  */
 void clock_sync_subtract_offset(instant_t* t);
 
 /**
- * Set a fixed offset to the physical clock.
+ * @brief Set a fixed offset to the physical clock.
+ * @ingroup Federated
+ *
  * After calling this, the value returned by lf_time_physical(void)
  * and get_elpased_physical_time(void) will have this specified offset
  * added to what it would have returned before the call.

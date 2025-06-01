@@ -58,3 +58,11 @@
  *
  * These structs and types are not meant to be used directly by users, but are useful for developers.
  */
+
+/**
+ * @defgroup Federated Federated
+ * @brief Functions for federated execution.
+ *
+ * This group contains functions for federated execution.
+ * The message types and protocols are defined in @ref net_common.h.
+ */

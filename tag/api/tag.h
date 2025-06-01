@@ -1,6 +1,7 @@
 /**
  * @file tag.h
  * @brief Time and tag definitions and functions for Lingua Franca.
+ * @ingroup API
  *
  * @author Edward A. Lee
  * @author Soroush Bateni
