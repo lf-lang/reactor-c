@@ -4,7 +4,7 @@
  * @ingroup Utilities
  *
  * Example usage:
- * 
+ *
  * ```c
  * #include "hashset.h"
  *

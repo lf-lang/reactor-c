@@ -3,7 +3,7 @@
  * @author Peter Donovan (peterdonovan@berkeley.edu)
  * @brief Defines a hashmap type that maps void pointers to integers.
  * @ingroup Utilities
- * 
+ *
  * To use this:
  * ```c
  * #include "core/utils/impl/pointer_hashmap.h"

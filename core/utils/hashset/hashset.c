@@ -2,9 +2,9 @@
  * @file hashset.c
  * @brief A C hashset implementation.
  * @ingroup Utilities
- * 
+ *
  * This is a simple hashset implementation. It is not thread-safe.
- * 
+ *
  * ## License
  *     Copyright 2012 Couchbase, Inc.
  *
