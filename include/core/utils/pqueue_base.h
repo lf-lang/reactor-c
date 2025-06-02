@@ -5,13 +5,13 @@
  * @author Marten Lohstroh
  * @author Byeonggil Jun
  * @ingroup Internal
- * 
+ *
  * ### License
- * 
+ *
  * Copyright (c) 2014, Volkan Yazıcı <volkan.yazici@gmail.com>
  *
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
@@ -54,99 +54,99 @@
 
 #include <stddef.h>
 
-/** 
+/**
  * @brief Priority data type.
  * @ingroup Internal
  */
 typedef unsigned long long pqueue_pri_t;
 
-/** 
+/**
  * @brief Callback to get the priority of an element.
  * @ingroup Internal
  */
 typedef pqueue_pri_t (*pqueue_get_pri_f)(void* a);
 
-/** 
+/**
  * @brief Callback to compare two priorities.
  * @ingroup Internal
  */
 typedef int (*pqueue_cmp_pri_f)(pqueue_pri_t next, pqueue_pri_t curr);
 
-/** 
+/**
  * @brief Callback to determine whether two elements are equivalent.
  * @ingroup Internal
  */
 typedef int (*pqueue_eq_elem_f)(void* next, void* curr);
 
-/** 
+/**
  * @brief Callback functions to get the position of an element.
  * @ingroup Internal
  */
 typedef size_t (*pqueue_get_pos_f)(void* a);
 
-/** 
+/**
  * @brief Callback functions to set the position of an element.
  * @ingroup Internal
  */
 typedef void (*pqueue_set_pos_f)(void* a, size_t pos);
 
-/** 
+/**
  * @brief Debug callback function to print a entry.
  * @ingroup Internal
  */
 typedef void (*pqueue_print_entry_f)(void* a);
 
-/** 
+/**
  * @brief The priority queue struct.
  * @ingroup Internal
  */
 typedef struct pqueue_t {
-  /** 
+  /**
    * @brief Number of elements in this queue plus 1.
    */
   size_t size;
 
-  /** 
+  /**
    * @brief Slots available in this queue.
    */
   size_t avail;
 
-  /** 
+  /**
    * @brief Growth stepping setting.
    */
   size_t step;
 
-  /** 
+  /**
    * @brief Callback to compare priorities.
    */
   pqueue_cmp_pri_f cmppri;
 
-  /** 
+  /**
    * @brief Callback to get priority of a node.
    */
   pqueue_get_pri_f getpri;
 
-  /** 
+  /**
    * @brief Callback to get position of a node.
    */
   pqueue_get_pos_f getpos;
 
-  /** 
+  /**
    * @brief Callback to set position of a node.
    */
   pqueue_set_pos_f setpos;
 
-  /** 
+  /**
    * @brief Callback to compare elements.
    */
   pqueue_eq_elem_f eqelem;
 
-  /** 
+  /**
    * @brief Callback to print elements.
    */
   pqueue_print_entry_f prt;
 
-  /** 
+  /**
    * @brief The actual queue in binary heap form.
    */
   void** d;
@@ -221,7 +221,7 @@ void pqueue_empty_into(pqueue_t** dest, pqueue_t** src);
 void* pqueue_find_same_priority(pqueue_t* q, void* e);
 
 /**
- * @brief Return an entry with the same priority (determined by `cmppri`) that matches the 
+ * @brief Return an entry with the same priority (determined by `cmppri`) that matches the
  * supplied entry (determined by `eqelem`) or `NULL` if there is no such entry.
  * @ingroup Internal
  * @param q The queue

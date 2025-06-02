@@ -53,13 +53,6 @@
  */
 
 /**
- * @defgroup InternalTypes Internal Types
- * @brief Structs and types used internally.
- *
- * These structs and types are not meant to be used directly by users, but are useful for developers.
- */
-
-/**
  * @defgroup Federated Federated
  * @brief Functions for federated execution.
  *

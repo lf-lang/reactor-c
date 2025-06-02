@@ -39,7 +39,7 @@
  * the first field to be a pqueue_tag_element_t.  For example, if you want an
  * element of the queue to include a pointer to your own payload, you can
  * declare the following struct type:
- * 
+ *
  * ```c
  *     typedef struct {
  *         pqueue_tag_element_t base;
@@ -51,35 +51,35 @@
  * simply cast the result to (my_element_type_t*);
  */
 typedef struct {
-    /** 
-     * @brief The tag that determines the element's priority in the queue.
-     * 
-     * The queue is sorted from least tag to largest tag.
-     * This field is used as the actual priority value when the struct
-     * pointer is cast to pqueue_pri_t.
-     */
-    tag_t tag;
+  /**
+   * @brief The tag that determines the element's priority in the queue.
+   *
+   * The queue is sorted from least tag to largest tag.
+   * This field is used as the actual priority value when the struct
+   * pointer is cast to pqueue_pri_t.
+   */
+  tag_t tag;
 
-    /** 
-     * @brief Current position of this element in the priority queue.
-     * 
-     * This field is required by the priority queue implementation
-     * to track the element's position in the heap structure.
-     * It is maintained by the queue operations and should not be
-     * modified directly.
-     */
-    size_t pos;
+  /**
+   * @brief Current position of this element in the priority queue.
+   *
+   * This field is required by the priority queue implementation
+   * to track the element's position in the heap structure.
+   * It is maintained by the queue operations and should not be
+   * modified directly.
+   */
+  size_t pos;
 
-    /** 
-     * @brief Flag indicating whether this element should be freed with the queue.
-     * 
-     * If non-zero, the element's memory will be freed when pqueue_tag_free
-     * is called on the queue. This is useful for dynamically allocated
-     * elements that should be automatically cleaned up.
-     * Set this to non-zero if the element was allocated with malloc or calloc
-     * and should be freed when the queue is freed.
-     */
-    int is_dynamic;
+  /**
+   * @brief Flag indicating whether this element should be freed with the queue.
+   *
+   * If non-zero, the element's memory will be freed when pqueue_tag_free
+   * is called on the queue. This is useful for dynamically allocated
+   * elements that should be automatically cleaned up.
+   * Set this to non-zero if the element was allocated with malloc or calloc
+   * and should be freed when the queue is freed.
+   */
+  int is_dynamic;
 } pqueue_tag_element_t;
 
 /**
@@ -111,15 +111,15 @@ pqueue_tag_t* pqueue_tag_init(size_t initial_size);
 /**
  * @brief Create a priority queue that stores elements with a particular payload.
  * @ingroup Internal
- * 
+ *
  * The elements of the priority queue will be of type pqueue_tag_element_t.
  * The caller should call @ref pqueue_tag_free() when finished with the queue.
- * 
+ *
  * @param initial_size The initial size of the priority queue.
  * @param cmppri The callback function to compare priorities.
  * @param eqelem The callback function to check equivalence of payloads.
  * @param prt The callback function to print elements.
- * 
+ *
  * @return A dynamically allocated priority queue or NULL if memory allocation fails.
  */
 pqueue_tag_t* pqueue_tag_init_customize(size_t initial_size, pqueue_cmp_pri_f cmppri, pqueue_eq_elem_f eqelem,

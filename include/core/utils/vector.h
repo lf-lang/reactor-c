@@ -21,42 +21,42 @@
 /**
  * @brief A vector (resizing array) data type.
  * @ingroup Utilities
- * 
+ *
  * This struct implements a dynamic array that can grow as needed.
  * It is designed to be a simple way of storing a collection of pointers
  * that is frequently filled and then completely emptied.
  */
 typedef struct vector_t {
-  /** 
+  /**
    * @brief The start of the underlying array.
-   * 
+   *
    * Points to the beginning of the dynamically allocated array
    * that stores the vector's elements. This array contains pointers
    * to the actual elements stored in the vector.
    */
   void** start;
 
-  /** 
+  /**
    * @brief The element after the last element in the underlying array.
-   * 
+   *
    * Points to the next available position in the array.
    * The invariant start <= next <= end is maintained.
    * The number of elements in the vector is (next - start).
    */
   void** next;
 
-  /** 
+  /**
    * @brief The end of the underlying array.
-   * 
+   *
    * Points to one past the last allocated position in the array.
    * The total capacity of the vector is (end - start).
    * When next == end, the vector needs to be resized to add more elements.
    */
   void** end;
 
-  /** 
+  /**
    * @brief The number of votes required to shrink this vector.
-   * 
+   *
    * This field is used in conjunction with votes to implement
    * a voting mechanism for vector shrinking. When the number of
    * votes reaches votes_required, the vector may be resized to
@@ -64,9 +64,9 @@ typedef struct vector_t {
    */
   int votes_required;
 
-  /** 
+  /**
    * @brief The number of votes to shrink this vector.
-   * 
+   *
    * This counter is incremented when vector_shrink_vote() is called.
    * When it reaches votes_required, the vector may be resized to
    * a smaller capacity to free up memory.

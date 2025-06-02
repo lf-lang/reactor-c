@@ -2,6 +2,8 @@
  * @file low_level_platform.h
  * @brief Platform API support for the C target of Lingua Franca.
  *
+ * @ingroup Platform
+ *
  * @author Soroush Bateni
  *
  * This file defines functions that need to be implemented for any new platform
@@ -198,7 +200,7 @@ int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number);
  *
  * Priority ranges from @ref LF_SCHED_MIN_PRIORITY to @ref LF_SCHED_MAX_PRIORITY, where a higher
  * number indicates higher priority. Setting the priority of a thread only
- * makes sense if the thread is scheduled with @ref LF_SCHED_TIMESLICE or @ref LF_THREAD_PRIORITY.
+ * makes sense if the thread is scheduled with @ref LF_SCHED_TIMESLICE or @ref LF_SCHED_PRIORITY.
  *
  * @param thread The thread.
  * @param priority The priority.

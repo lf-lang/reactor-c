@@ -12,8 +12,11 @@ INPUT =                 ./doxygen.h \
                         ../include/api/schedule.h \
                         ../include/core/federated/ \
                         ../include/core/utils/ \
+                        ../include/core/clock.h \
                         ../include/core/lf_types.h \
                         ../tag/api/tag.h \
+                        ../platform/ \
+                        ../low_level_platform/api/low_level_platform.h \
 
 USE_MDFILE_AS_MAINPAGE =
 FILE_PATTERNS = *.h *.md
