@@ -371,6 +371,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
   }
 }
 
+#if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
 /**
  * Thread that listens for UDP inputs from the RTI.
  */
@@ -461,6 +462,7 @@ static void* listen_to_rti_UDP_thread(void* args) {
   }
   return NULL;
 }
+#endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
 
 // If clock synchronization is enabled, provide implementations. If not
 // just empty implementations that should be optimized away.
