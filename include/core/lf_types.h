@@ -1,7 +1,7 @@
 /**
  * @file lf_types.h
  * @brief Type definitions that are widely used across different parts of the runtime.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * @author Edward A. Lee
  * @author Marten Lohstroh
@@ -27,7 +27,7 @@
 #ifndef _SYS_TYPES_H
 /**
  * @brief Unsigned short type. Redefine here for portability if sys/types.h is not included.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * @see sys/types.h
  *
@@ -46,44 +46,50 @@ typedef unsigned short int ushort;
 
 /**
  * @brief Experimental adaptive scheduler.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  */
 #define SCHED_ADAPTIVE 1
 
 /**
  * @brief Experimental GEDF-NP scheduler.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  */
 #define SCHED_GEDF_NP 2
 
 /**
  * @brief Default non-preemptive scheduler.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  */
 #define SCHED_NP 3
 
 /**
  * @brief A struct representing a barrier in threaded LF programs.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * This will prevent advancement of the current tag if
  * the number of requestors is larger than 0 or the value of horizon is not (FOREVER, 0).
  */
 typedef struct lf_tag_advancement_barrier_t {
-  int requestors; // Used to indicate the number of
-                  // requestors that have asked
-                  // for a barrier to be raised
-                  // on tag.
-  tag_t horizon;  // If semaphore is larger than 0
-                  // then the runtime should not
-                  // advance its tag beyond the
-                  // horizon.
+    /** 
+     * @brief Number of requestors waiting at the barrier.
+     * Used to track how many threads have requested the barrier to be raised.
+     * The barrier will prevent tag advancement if this value is greater than 0.
+     */
+    int requestors;
+
+    /** 
+     * @brief Tag horizon for barrier advancement.
+     * If this value is not (FOREVER, 0), the runtime will not advance
+     * its tag beyond this horizon.
+     * Used to coordinate tag advancement across multiple threads.
+     */
+    tag_t horizon;
 } lf_tag_advancement_barrier_t;
 
 /**
  * @brief Policy for handling scheduled events that violate the specified
  * minimum interarrival time.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * The default policy is `defer`: adjust the tag to that the minimum
  * interarrival time is satisfied.
@@ -100,7 +106,7 @@ typedef enum { defer, drop, replace, update } lf_spacing_policy_t;
 
 /**
  * @brief Status of a given port at a given logical time.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * If the value is 'present', it is an indicator that the port is present at the given logical time.
  * If the value is 'absent', it is an indicator that the port is absent at the given logical time.
@@ -115,7 +121,7 @@ typedef enum { absent = false, present = true, unknown } port_status_t;
 
 /**
  * @brief Status of a given reaction at a given logical time.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * If a reaction is 'inactive', it is neither running nor queued.
  * If a reaction is 'queued', it is going to be executed at the current logical time,
@@ -130,7 +136,7 @@ typedef enum { inactive = 0, queued, running } reaction_status_t;
 
 /**
  * @brief Handles for scheduled triggers.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * These handles are returned
  * by lf_schedule() functions. The intent is that the handle can be
@@ -153,12 +159,15 @@ typedef char* string;
 #warning "string typedef has been previously given."
 #endif
 
-/** Topological order index for reactions. */
+/**
+ * @brief Topological order index for reactions.
+ * @ingroup InternalTypes
+ */
 typedef pqueue_pri_t index_t;
 
 /**
  * @brief Reaction function type.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * The argument passed to one of
  * these reaction functions is a pointer to the self struct
@@ -173,7 +182,7 @@ typedef struct reaction_t reaction_t;
 
 /**
  * @brief Reaction activation record to push onto the reaction queue.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * Some of the information in this struct is common among all instances
  * of the reactor, and some is specific to each particular instance.
@@ -184,61 +193,200 @@ typedef struct reaction_t reaction_t;
  * Instances of this struct are put onto the reaction queue by the scheduler.
  */
 struct reaction_t {
-  reaction_function_t function; // The reaction function. COMMON.
-  void* self;                   // Pointer to a struct with the reactor's state. INSTANCE.
-  int number;                   // The number of the reaction in the reactor (0 is the first reaction).
-  index_t index;                // Inverse priority determined by dependency analysis. INSTANCE.
-  size_t pos;                   // Current position in the priority queue. RUNTIME.
-  reaction_t*
-      last_enabling_reaction; // The last enabling reaction, or NULL if there is none. Used for optimization. INSTANCE.
-  size_t num_outputs;         // Number of outputs that may possibly be produced by this function. COMMON.
-  bool** output_produced;     // Array of pointers to booleans indicating whether outputs were produced. COMMON.
-  int* triggered_sizes;       // Pointer to array of ints with number of triggers per output. INSTANCE.
-  trigger_t*** triggers;      // Array of pointers to arrays of pointers to triggers triggered by each output. INSTANCE.
-  reaction_status_t status;   // Indicator of whether the reaction is inactive, queued, or running. RUNTIME.
-  interval_t deadline;        // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
-  bool is_STP_violated; // Indicator of STP violation in one of the input triggers to this reaction. default = false.
-                        // Value of True indicates to the runtime that this reaction contains trigger(s)
-                        // that are triggered at a later logical time that was originally anticipated.
-                        // Currently, this is only possible if logical
-                        // connections are used in a decentralized federated
-                        // execution. COMMON.
-  reaction_function_t deadline_violation_handler; // Deadline violation handler. COMMON.
-  reaction_function_t STP_handler;                // STP handler. Invoked when a trigger to this reaction
-                                                  // was triggered at a later logical time than originally
-                                                  // intended. Currently, this is only possible if logical
-                                                  // connections are used in a decentralized federated
-                                                  // execution. COMMON.
-  bool is_an_input_reaction; // Indicates whether this reaction is a network input reaction of a federate. Default is
-                             // false.
-  size_t worker_affinity;    // The worker number of the thread that scheduled this reaction. Used
-                             // as a suggestion to the scheduler.
-  const char* name;          // If logging is set to LOG or higher, then this will
-                             // point to the full name of the reactor followed by
-                             // the reaction number.
-  reactor_mode_t* mode;      // The enclosing mode of this reaction (if exists).
-                             // If enclosed in multiple, this will point to the innermost mode.
+    /** 
+     * @brief The reaction function to be executed.
+     * COMMON: Set during reactor construction.
+     * This is the actual function that implements the reaction's behavior.
+     */
+    reaction_function_t function;
+
+    /** 
+     * @brief Pointer to the reactor's state struct.
+     * INSTANCE: Specific to each reactor instance.
+     * Contains the state variables and other instance-specific data.
+     */
+    void* self;
+
+    /** 
+     * @brief The reaction number within its reactor.
+     * INSTANCE: Specific to each reactor instance.
+     * Zero-based index indicating the reaction's position in the reactor.
+     */
+    int number;
+
+    /** 
+     * @brief Inverse priority determined by dependency analysis.
+     * INSTANCE: Specific to each reactor instance.
+     * Used by the scheduler to determine execution order.
+     */
+    index_t index;
+
+    /** 
+     * @brief Current position in the priority queue.
+     * RUNTIME: Changes during execution.
+     * Used by the scheduler to track the reaction's position in the queue.
+     */
+    size_t pos;
+
+    /** 
+     * @brief Pointer to the last enabling reaction.
+     * INSTANCE: Specific to each reactor instance.
+     * Points to the last reaction that enables this one, or NULL if none.
+     * Used for optimization purposes.
+     */
+    reaction_t* last_enabling_reaction;
+
+    /** 
+     * @brief Number of outputs that may be produced by this reaction.
+     * COMMON: Set during reactor construction.
+     * Defines the size of the output_produced array.
+     */
+    size_t num_outputs;
+
+    /** 
+     * @brief Array of pointers to booleans indicating output production.
+     * COMMON: Set during reactor construction.
+     * Each element indicates whether the corresponding output was produced.
+     */
+    bool** output_produced;
+
+    /** 
+     * @brief Array of trigger counts per output.
+     * INSTANCE: Specific to each reactor instance.
+     * Contains the number of triggers for each output port.
+     */
+    int* triggered_sizes;
+
+    /** 
+     * @brief Array of trigger arrays for each output.
+     * INSTANCE: Specific to each reactor instance.
+     * Three-dimensional array: [output][trigger_count][trigger]
+     * Contains pointers to all triggers that are triggered by each output.
+     */
+    trigger_t*** triggers;
+
+    /** 
+     * @brief Current status of the reaction.
+     * RUNTIME: Changes during execution.
+     * Indicates whether the reaction is inactive, queued, or running.
+     * @see reaction_status_t for possible values.
+     */
+    reaction_status_t status;
+
+    /** 
+     * @brief Deadline relative to the reaction's invocation time.
+     * INSTANCE: Specific to each reactor instance.
+     * Used to detect deadline violations.
+     */
+    interval_t deadline;
+
+    /** 
+     * @brief Flag indicating STP violation in input triggers.
+     * COMMON: Set during reactor construction.
+     * True if any trigger to this reaction was triggered at a later logical time
+     * than originally anticipated. Currently only possible with logical
+     * connections in decentralized federated execution.
+     */
+    bool is_STP_violated;
+
+    /** 
+     * @brief Function to handle deadline violations.
+     * COMMON: Set during reactor construction.
+     * Called when the reaction's deadline is violated.
+     */
+    reaction_function_t deadline_violation_handler;
+
+    /** 
+     * @brief Function to handle STP violations.
+     * COMMON: Set during reactor construction.
+     * Called when a trigger to this reaction was triggered at a later logical time
+     * than originally intended. Currently only possible with logical
+     * connections in decentralized federated execution.
+     */
+    reaction_function_t STP_handler;
+
+    /** 
+     * @brief Flag indicating if this is a network input reaction.
+     * COMMON: Set during reactor construction.
+     * True if this reaction is a network input reaction of a federate.
+     * Default is false.
+     */
+    bool is_an_input_reaction;
+
+    /** 
+     * @brief Worker thread affinity suggestion.
+     * RUNTIME: Changes during execution.
+     * The worker number of the thread that scheduled this reaction.
+     * Used as a suggestion to the scheduler for thread assignment.
+     */
+    size_t worker_affinity;
+
+    /** 
+     * @brief Full name of the reaction for logging purposes.
+     * COMMON: Set during reactor construction.
+     * Points to the full name of the reactor followed by the reaction number.
+     * Only used when logging level is set to LOG or higher.
+     */
+    const char* name;
+
+    /** 
+     * @brief Pointer to the enclosing mode of this reaction.
+     * COMMON: Set during reactor construction.
+     * If the reaction is enclosed in multiple modes, this points to the innermost mode.
+     * Only present when modal reactors are enabled.
+     */
+    reactor_mode_t* mode;
 };
 
-/** Typedef for event_t struct, used for storing activation records. */
+/**
+ * @brief Event activation record for storing event queue entries.
+ * @ingroup InternalTypes
+ * 
+ * This type is used for storing activation records in the event queue.
+ * Each event represents a scheduled trigger with its associated data.
+ */
 typedef struct event_t event_t;
 
 /**
  * @brief Event activation record to push onto the event queue.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  */
 struct event_t {
-  pqueue_tag_element_t base; // Elements of pqueue_tag. It contains tag of release and position in the priority queue.
-  trigger_t* trigger;        // Associated trigger, NULL if this is a dummy event.
-  lf_token_t* token;         // Pointer to the token wrapping the value.
+    /** 
+     * @brief Base priority queue element containing tag and position.
+     * Contains the tag of release and position in the priority queue.
+     * Used by the priority queue implementation for ordering and management.
+     */
+    pqueue_tag_element_t base;
+
+    /** 
+     * @brief Pointer to the associated trigger.
+     * Points to the trigger that generated this event.
+     * NULL if this is a dummy event.
+     */
+    trigger_t* trigger;
+
+    /** 
+     * @brief Pointer to the token wrapping the event's value.
+     * Contains the actual data associated with this event.
+     * The token provides type information and value storage.
+     */
+    lf_token_t* token;
+
 #ifdef FEDERATED
-  tag_t intended_tag; // The intended tag.
+    /** 
+     * @brief The intended tag for this event.
+     * Used in federated execution to track the original intended
+     * logical time of the event.
+     * @note Only present when federated execution is enabled.
+     */
+    tag_t intended_tag;
 #endif
 };
 
 /**
  * @brief Trigger struct representing an output, timer, action, or input.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  */
 struct trigger_t {
   /**
@@ -340,7 +488,7 @@ struct trigger_t {
 
 /**
  * @brief Allocation record to keep track of dynamically-allocated memory.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * An allocation record that is used by a destructor for a reactor
  * to free memory that has been dynamically allocated for the particular
@@ -357,7 +505,7 @@ typedef struct environment_t environment_t;
 
 /**
  * @brief The base type for all reactor self structs.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * The first element of every self struct defined in generated code
  * will be a pointer to an allocation record, which is either NULL
@@ -425,7 +573,7 @@ typedef struct self_base_t {
 
 /**
  * @brief Base type for actions.
- * @ingroup IntTypes
+ * @ingroup InternalTypes
  *
  * Action structs are customized types because their payloads are type
  * specific. This struct represents their common features. Given any

@@ -65,7 +65,7 @@ When a function's doc includes an `@ingroup` tag, then it will be listed the "To
 * **Utilities**: Utility functions and data types.
 * **Platform**: Functions with platform-specific implementations.
 * **Internal**: Functions used in the runtime system.
-* **IntTypes**: Structs used in the runtime system.
+* **InternalTypes**: Structs used in the runtime system.
 * **Federated**: Functions used in federated execution.
 
 The groups are defined in the file [docs/doxygen.h](https://github.com/lf-lang/reactor-c/blob/main/docs/doxygen.h).

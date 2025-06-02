@@ -75,48 +75,121 @@
 #define CLOCK_SYNC_GUARD_BAND USEC(100)
 
 /**
- * @brief Statistics for a given socket.
+ * @brief Statistics and state for clock synchronization over a socket connection.
  * @ingroup Federated
- *
- * The RTI initiates a clock synchronization action by sending its
- * current physical time T1 to a federate.  The federate records
- * the local time T2 that it receives T1. It sends a reply at
- * local time T3, which the RTI receives at its time T4. The RTI
- * sends back T4.  The round trip delay on the socket is therefore
- * estimated as:  (T4 - T1) - (T3 - T2).
+ * 
+ * This struct maintains the state and statistics needed for clock synchronization
+ * between a federate and the RTI using a variant of the Precision Time Protocol (PTP).
+ * The synchronization process involves four timestamps (T1-T4) to estimate network
+ * delays and clock offsets:
+ * 
+ * 1. T1: RTI's physical time when sending sync message
+ * 2. T2: Federate's physical time when receiving T1
+ * 3. T3: Federate's physical time when sending reply
+ * 4. T4: RTI's physical time when receiving reply
+ * 
+ * The round trip delay is estimated as: (T4 - T1) - (T3 - T2)
+ * The clock offset can be estimated as: ((T2 - T1) + (T3 - T4)) / 2
  */
 typedef struct socket_stat_t {
-  instant_t remote_physical_clock_snapshot_T1;     // T1 in PTP. The first snapshot of the physical
-                                                   // clock of the remote device (the RTI).
-  instant_t local_physical_clock_snapshot_T2;      // T2 in PTP. The first snapshot of the physical
-                                                   // clock of the local device (the federate).
-  interval_t local_delay;                          // T3 - T2. Estimated delay between a consecutive
-                                                   // receive and send on the socket for one byte.
-  int received_T4_messages_in_current_sync_window; // Checked against _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL
-                                                   // Must be reset to 0 every time it reaches the threshold.
-  interval_t history;                              // A history of clock synchronization data. For AVG
-                                                   // strategy, this is a running partially computed average.
+  /** 
+   * @brief Remote (RTI) physical time when sending sync message (T1).
+   * 
+   * This is the first timestamp in the PTP exchange, recorded by the RTI
+   * when it initiates a clock synchronization round. Used to calculate
+   * network delays and clock offsets.
+   */
+  instant_t remote_physical_clock_snapshot_T1;
 
-  /***** The following stats can be used to calculate an automated STP offset **************/
-  /** FIXME: TODO: A federate should create a socket_stat_t for every federate it is connected to and keep record
-                   of the following stats **/
-  /*** Network stats ****/
-  interval_t network_stat_round_trip_delay_max; // Maximum estimated delay between the local socket and the
-                                                // remote socket.
-  int network_stat_sample_index;                // Current index of network_stat_samples
-  /*** Clock sync stats ***/
-  interval_t clock_synchronization_error_bound; // A bound on the differences between this federate's clock and
-                                                // the remote clock.
-  // Note: The following array should come last because g++ will not allow
-  // designated initialization (e.g., .network_stat_sample_index = 0) out of
-  // order and we do not want to (and cannot) initialize this array statically
-  interval_t network_stat_samples[_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL]; // Samples gathered during a clock sync
-                                                                          // period
+  /** 
+   * @brief Local (federate) physical time when receiving T1 (T2).
+   * 
+   * Recorded by the federate when it receives the RTI's sync message.
+   * Used in conjunction with T1 to estimate the one-way network delay
+   * and clock offset.
+   */
+  instant_t local_physical_clock_snapshot_T2;
+
+  /** 
+   * @brief Estimated local processing delay (T3 - T2).
+   * 
+   * Measures the time taken by the federate to process the sync message
+   * and prepare a reply. This is subtracted from the total round-trip
+   * time to get a more accurate network delay estimate.
+   */
+  interval_t local_delay;
+
+  /** 
+   * @brief Counter for T4 messages received in current sync window.
+   * 
+   * Tracks the number of T4 messages received in the current synchronization
+   * interval. Must be reset to 0 when it reaches _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL.
+   * Used to determine when enough samples have been collected to update
+   * the clock offset.
+   */
+  int received_T4_messages_in_current_sync_window;
+
+  /** 
+   * @brief Running history of clock synchronization data.
+   * 
+   * Maintains a history of clock synchronization measurements.
+   * For the AVG strategy, this stores a partially computed average
+   * of the clock offset measurements.
+   */
+  interval_t history;
+
+  /** 
+   * @brief Maximum observed round-trip network delay.
+   * 
+   * Tracks the highest estimated delay between the local socket and
+   * the remote socket. Used to establish bounds on clock synchronization
+   * accuracy and to detect network anomalies.
+   */
+  interval_t network_stat_round_trip_delay_max;
+
+  /** 
+   * @brief Current index in the network statistics samples array.
+   * 
+   * Points to the next position in network_stat_samples where a new
+   * measurement should be stored. Used to maintain a circular buffer
+   * of recent network delay measurements.
+   */
+  int network_stat_sample_index;
+
+  /** 
+   * @brief Bound on clock synchronization error.
+   * 
+   * Represents the maximum expected difference between this federate's
+   * clock and the remote clock. This bound is used to ensure the
+   * reliability of clock synchronization and to detect potential
+   * synchronization failures.
+   */
+  interval_t clock_synchronization_error_bound;
+
+  /** 
+   * @brief Array of network delay samples.
+   * 
+   * Stores the most recent _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL
+   * network delay measurements. These samples are used to calculate
+   * statistics about network performance and to detect anomalies
+   * in clock synchronization.
+   * 
+   * @note This array must be the last field in the struct due to
+   * C++ restrictions on designated initializers.
+   */
+  interval_t network_stat_samples[_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL];
 } socket_stat_t;
 
-#ifdef _LF_CLOCK_SYNC_COLLECT_STATS
-struct lf_stat_ll;
-#endif // _LF_CLOCK_SYNC_COLLECT_STATS
+/**
+ * @brief Holds generic statistical data
+ * @ingroup Federated
+ */
+typedef struct lf_stat_ll {
+  int64_t average;
+  int64_t standard_deviation;
+  int64_t variance;
+  int64_t max;
+} lf_stat_ll;
 
 /**
  * @brief Reset statistics on the socket.

@@ -3,24 +3,17 @@ PROJECT_BRIEF          = "C Runtime for Lingua Franca"
 PROJECT_NUMBER = 1.0
 PROJECT_LOGO           = ../docs/logo.png
 PROJECT_ICON           = ../docs/favicon.ico
+PREDEFINED             = FEDERATED
 
 OUTPUT_DIRECTORY = _build
 INPUT =                 ./doxygen.h \
                         ./markdown/ \
                         ../include/api/reaction_macros.h \
-                        ../tag/api/tag.h \
                         ../include/api/schedule.h \
-                        ../include/core/utils/hashset/hashset.h \
-                        ../include/core/utils/hashset/hashset_itr.h \
-                        ../include/core/utils/impl/hashmap.h \
-                        ../include/core/utils/impl/pointer_hashmap.h \
-                        ../include/core/utils/lf_semaphore.h \
+                        ../include/core/federated/ \
+                        ../include/core/utils/ \
                         ../include/core/lf_types.h \
-                        ../include/core/federated/federate.h \
-                        ../include/core/federated/network/net_common.h \
-                        ../include/core/federated/network/net_util.h \
-                        ../include/core/federated/network/socket_common.h \
-                        ../include/core/federated/clock-sync.h \
+                        ../tag/api/tag.h \
 
 USE_MDFILE_AS_MAINPAGE =
 FILE_PATTERNS = *.h *.md

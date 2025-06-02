@@ -18,12 +18,34 @@
 
 /**
  * @brief A semaphore.
- * @ingroup Internal
+ * @ingroup InternalTypes
+ * 
+ * A semaphore is a synchronization primitive that maintains a count.
+ * The count is decremented by acquire operations and incremented by release operations.
+ * If the count would become negative, the acquire operation blocks until the count
+ * becomes positive again.
  */
 typedef struct {
-  size_t count;
-  lf_mutex_t mutex;
-  lf_cond_t cond;
+    /** 
+     * @brief The current count of the semaphore.
+     * This value is protected by the mutex and can be modified
+     * only while holding the mutex lock.
+     */
+    size_t count;
+
+    /** 
+     * @brief Mutex used to protect access to the count.
+     * Ensures that count modifications are atomic and
+     * coordinates access between multiple threads.
+     */
+    lf_mutex_t mutex;
+
+    /** 
+     * @brief Condition variable used for blocking operations.
+     * Threads waiting for the semaphore to become available
+     * block on this condition variable.
+     */
+    lf_cond_t cond;
 } lf_semaphore_t;
 
 /**

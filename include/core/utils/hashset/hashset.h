@@ -1,7 +1,10 @@
 /**
  * @file hashset.h
- * @brief A modified hash set implementation in C from: https://github.com/avsej/hashset.c
+ * @brief A hash set implementation in C.
  * @ingroup Utilities
+ *
+ * This is a modified version of the hash set implementation in C from:
+ * https://github.com/avsej/hashset.c.
  *
  * Example usage:
  *

@@ -158,6 +158,7 @@ uint16_t extract_uint16(unsigned char* bytes);
  *
  * The core header information is two bytes with the ID of the destination port,
  * two bytes with the ID of the destination federate, and four bytes with the length of the message.
+ * @note Only present when federated execution is enabled.
  * @param buffer The buffer to read from.
  * @param port_id The place to put the port ID.
  * @param federate_id The place to put the federate ID.
@@ -203,6 +204,7 @@ void encode_tag(unsigned char* buffer, tag_t tag);
 /**
  * @brief A helper struct for passing rti_addr information between lf_parse_rti_addr and extract_rti_addr_info
  * @ingroup Federated
+ *
  */
 typedef struct rti_addr_info_t {
   char rti_host_str[256];
@@ -287,7 +289,7 @@ bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti
  * @ingroup Federated
  *
  * @param rti_addr The rti_addr to extract from.
- * @param rti_addr_info The rti_addr_info to
+ * @param rti_addr_info The rti_addr_info into which to store the extracted information.
  */
 void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info);
 
