@@ -94,7 +94,7 @@
 
 /**
  * @brief Time instant.
- * @ingroup Types
+ * @ingroup API
  *
  * Both physical and logical times are represented using this typedef.
  */
@@ -102,19 +102,19 @@ typedef int64_t instant_t;
 
 /**
  * @brief Interval of time.
- * @ingroup Types
+ * @ingroup API
  */
 typedef int64_t interval_t;
 
 /**
  * @brief Microstep.
- * @ingroup Types
+ * @ingroup API
  */
 typedef uint32_t microstep_t;
 
 /**
  * @brief A tag is a time, microstep pair.
- * @ingroup Types
+ * @ingroup API
  */
 typedef struct {
   instant_t time;

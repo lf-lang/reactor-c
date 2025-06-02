@@ -148,7 +148,7 @@ typedef int trigger_handle_t;
 #ifndef string
 /**
  * @brief String type so that we don't have to use {= char* =}.
- * @ingroup Types
+ * @ingroup API
  *
  * Use this as the type for ports sending and receiving strings that are not dynamically allocated.
  * For dynamically allocated strings that have to be freed after

@@ -1,7 +1,7 @@
 /**
  * @file mixed_radix.h
  * @brief Header file for permuted mixed-radix numbers used in Lingua Franca programs.
- *
+ * @ingroup Internal
  * @author Edward A. Lee
  *
  * A mixed radix number is a number representation where each digit can have
@@ -70,7 +70,8 @@
 #define MIXED_RADIX_H
 
 /**
- * Representation of a permuted mixed radix integer.
+ * @brief Representation of a permuted mixed radix integer.
+ * @ingroup Internal
  * The three arrays (digits, radixes, and permutation) are all
  * assumed to have the same size as given by the size field.
  */
@@ -82,23 +83,26 @@ typedef struct mixed_radix_int_t {
 } mixed_radix_int_t;
 
 /**
- * Increment the mixed radix number by one according to the permutation matrix.
+ * @brief Increment the mixed radix number by one according to the permutation matrix.
+ * @ingroup Internal
  * @param mixed A pointer to the mixed-radix number.
  */
 void mixed_radix_incr(mixed_radix_int_t* mixed);
 
 /**
- * Return the int value of a mixed-radix number after dropping
- * the first n digits. If n is larger than or equal to the size
- * of the mixed-radix number, then return 0.
+ * @brief Return the int value of a mixed-radix number after dropping the first n digits.
+ * @ingroup Internal
+ *
+ * If n is larger than or equal to the size of the mixed-radix number, then return 0.
  * @param mixed A pointer to the mixed-radix number.
- * @param n The number of digits to drop, which is assumed to
- *  be greater than or equal to 0.
+ * @param n The number of digits to drop, which is assumed to be greater than or equal to 0.
  */
 int mixed_radix_parent(mixed_radix_int_t* mixed, int n);
 
 /**
- * Return the int value of a mixed-radix number.
+ * @brief Return the int value of a mixed-radix number.
+ * @ingroup Internal
+ *
  * @param mixed A pointer to the mixed-radix number.
  */
 int mixed_radix_to_int(mixed_radix_int_t* mixed);

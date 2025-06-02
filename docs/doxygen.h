@@ -16,14 +16,6 @@
  */
 
 /**
- * @defgroup Types Basic Types
- * @brief Types and structs.
- *
- * These types and structs are automatically available in any reaction body that is inlined
- * inside the `.lf` file; there is no need to add any `#include`.
- */
-
-/**
  * @defgroup Constants Constants
  * @brief Constants provided for convenience and readability.
  *
@@ -50,6 +42,14 @@
  * @brief API mainly used internally, but occasionally useful for users.
  *
  * These functions and types are not meant to be used directly by users, but are useful for developers.
+ */
+
+/**
+ * @defgroup Modal Modal
+ * @brief API used internally to support modal reactors.
+ *
+ * These functions and types are not meant to be used directly by users, but are useful for developers.
+ * @note Only used in modal reactor execution.
  */
 
 /**

@@ -1,7 +1,7 @@
 /**
  * @file lf_token.h
  * @brief Definitions for token objects, reference-counted wrappers around dynamically-allocated messages.
- *
+ * @ingroup Internal
  * @author Edward A. Lee
  *
  * This header file supports token objects, which are reference-counted wrappers
@@ -39,7 +39,8 @@
 #ifndef LF_TOKEN_H
 #define LF_TOKEN_H
 
-#include <stdlib.h> // Defines size_t
+#include <stdlib.h>  // Defines size_t
+#include <stdbool.h> // Defines bool type
 
 // Forward declarations
 struct environment_t;
@@ -47,7 +48,10 @@ struct environment_t;
 //////////////////////////////////////////////////////////
 //// Constants and enums
 
-/** Possible return values for _lf_done_using and _lf_free_token. */
+/**
+ * @brief Possible return values for @ref _lf_done_using and @ref _lf_free_token.
+ * @ingroup Internal
+ */
 typedef enum token_freed {
   NOT_FREED = 0,        // Nothing was freed.
   VALUE_FREED,          // The value (payload) was freed.
@@ -60,20 +64,22 @@ typedef enum token_freed {
 
 /**
  * @brief Type information for tokens.
+ * @ingroup Internal
  * Specifically, this struct contains the fields needed to support
  * token types, which carry dynamically allocated data.
  */
 typedef struct token_type_t {
-  /** Size of the struct or array element. */
+  /** @brief Size of the struct or array element. */
   size_t element_size;
-  /** The destructor or NULL to use the default free(). */
+  /** @brief The destructor or NULL to use the default free(). */
   void (*destructor)(void* value);
-  /** The copy constructor or NULL to use memcpy. */
+  /** @brief The copy constructor or NULL to use memcpy. */
   void* (*copy_constructor)(void* value);
 } token_type_t;
 
 /**
- * Token type for dynamically allocated arrays and structs sent as messages.
+ * @brief Token type for dynamically allocated arrays and structs sent as messages.
+ * @ingroup API
  *
  * This struct is the wrapper around the dynamically allocated memory
  * that carries the message.  The message can be an array of values,
@@ -91,37 +97,91 @@ typedef struct token_type_t {
  * in the preamble that masks the trailing *.
  */
 typedef struct lf_token_t {
-  /** Pointer to dynamically allocated memory containing a message. */
+  /** @brief Pointer to dynamically allocated memory containing a message. */
   void* value;
-  /** Length of the array or 1 for a non-array. */
+  /** @brief Length of the array or 1 for a non-array. */
   size_t length;
-  /** Pointer to the port or action defining the type of the data carried. */
+  /** @brief Pointer to the port or action defining the type of the data carried. */
   token_type_t* type;
-  /** The number of times this token is on the event queue. */
+  /** @brief The number of times this token is on the event queue. */
   size_t ref_count;
-  /** Convenience for constructing a temporary list of tokens. */
+  /** @brief Convenience for constructing a temporary list of tokens. */
   struct lf_token_t* next;
 } lf_token_t;
 
 /**
- * A record of the subset of channels of a multiport that have present inputs.
+ * @brief A record of the subset of channels of a multiport that have present inputs.
+ * @ingroup Internal
+ *
+ * This struct is used to efficiently track which channels of a multiport
+ * have present inputs, particularly useful for sparse I/O operations where
+ * only a small subset of channels are active.
  */
 typedef struct lf_sparse_io_record_t {
-  int size;                 // -1 if overflowed. 0 if empty.
-  size_t capacity;          // Max number of writes to be considered sparse.
-  size_t* present_channels; // Array of channel indices that are present.
+  /**
+   * @brief Number of present channels or status indicator.
+   *
+   * -1 indicates the record has overflowed (too many present channels),
+   * 0 indicates no channels are present,
+   * positive values indicate the number of present channels.
+   */
+  int size;
+
+  /**
+   * @brief Maximum number of channels that can be tracked before overflow.
+   *
+   * When the number of present channels exceeds this capacity,
+   * the record is considered overflowed and size is set to -1.
+   */
+  size_t capacity;
+
+  /**
+   * @brief Array of channel indices that have present inputs.
+   *
+   * Stores the indices of channels that have present inputs.
+   * Only valid when size > 0. The array size is determined by capacity.
+   */
+  size_t* present_channels;
 } lf_sparse_io_record_t;
 
 /**
  * @brief Base type for ports (lf_port_base_t) and actions (trigger_t), which can carry tokens.
+ * @ingroup Internal
+ *
  * The structs lf_port_base_t and trigger_t should start with an instance of this struct
  * so that they can be cast to this struct to access these fields in a uniform way.
+ * This template provides the common structure for handling tokens in both ports and actions,
+ * ensuring consistent token management across different types of connections.
  */
 typedef struct token_template_t {
-  /** Instances of this struct can be cast to token_type_t. */
+  /**
+   * @brief Type information for the token.
+   *
+   * This field means a token_template_tcan be cast to token_type_t to access type-specific
+   * information such as element size, destructor, and copy constructor. This allows for
+   * uniform handling of different token types while maintaining type safety.
+   */
   token_type_t type;
+
+  /**
+   * @brief Pointer to the current token.
+   *
+   * Points to the token currently associated with this template.
+   * May be NULL if no token is currently assigned. The token's
+   * reference count is managed by the runtime system to ensure
+   * proper memory management.
+   */
   lf_token_t* token;
-  size_t length; // The token's length, for convenient access in reactions.
+
+  /**
+   * @brief Length of the token's value array.
+   *
+   * Provides convenient access to the token's length in reactions.
+   * For non-array values, this will be 1. For arrays, this indicates
+   * the number of elements in the array. This field is cached here
+   * to avoid repeated dereferencing of the token structure.
+   */
+  size_t length;
 } token_template_t;
 
 // Forward declaration for self_base_t
@@ -129,33 +189,83 @@ typedef struct self_base_t self_base_t;
 
 /**
  * @brief Base type for ports.
+ * @ingroup Internal
+ *
  * Port structs are customized types because their payloads are type
  * specific. This struct represents their common features. Given any
  * pointer to a port struct, it can be cast to lf_port_base_t and then
  * these common fields can be accessed.
+ *
  * IMPORTANT: If this is changed, it must also be changed in
  * CPortGenerator.java generateAuxiliaryStruct().
  */
 typedef struct lf_port_base_t {
-  token_template_t tmplt; // Type and token information (template is a C++ keyword).
+  /**
+   * @brief Template containing type and token information.
+   *
+   * This field contains the common token handling structure that
+   * allows the port to carry typed values. The template provides
+   * type information and manages the token's lifecycle.
+   * @note 'template' is a C++ keyword, hence the abbreviated name.
+   */
+  token_template_t tmplt;
+
+  /**
+   * @brief Indicates whether the port has a present value.
+   *
+   * Set to true when the port has a value present at the current tag.
+   * This flag is used to determine whether the port's value should be
+   * considered in reactions.
+   */
   bool is_present;
-  lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
-  int destination_channel;              // -1 if there is no destination.
-  int num_destinations;                 // The number of destination reactors this port writes to.
-  self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
-                                        // If this is an input, that reactor will normally be the container of the
-                                        // output port that sends it data.
+
+  /**
+   * @brief Record of present channels for sparse I/O.
+   *
+   * Points to a record that tracks which channels of a multiport
+   * have present inputs. NULL if this port is not using sparse I/O
+   * or if it's not a multiport.
+   */
+  lf_sparse_io_record_t* sparse_record;
+
+  /**
+   * @brief Channel index for the destination port.
+   *
+   * Indicates which channel this port writes to in its destination
+   * reactor. Set to -1 if there is no destination or if this is
+   * not a multiport connection.
+   */
+  int destination_channel;
+
+  /**
+   * @brief Number of destination reactors.
+   *
+   * Indicates how many reactors this port writes to. For simple
+   * connections, this will be 1. For multiport connections, this
+   * may be greater than 1.
+   */
+  int num_destinations;
+
+  /**
+   * @brief Pointer to the source reactor.
+   *
+   * Points to the self struct of the reactor that provides data
+   * to this port. For input ports, this typically points to the
+   * container of the output port that sends data to this port.
+   */
+  self_base_t* source_reactor;
 } lf_port_base_t;
 
 //////////////////////////////////////////////////////////
 //// Global variables
 
 /**
- * Counter used to issue a warning if memory is
- * allocated for tokens and never freed. Note that
- * every trigger will have one token allocated for
- * it. That token is not counted because it is not
- * expected to be freed.
+ * @brief Counter used to issue a warning if memory is
+ * allocated for tokens and never freed.
+ * @ingroup Internal
+ *
+ * Note that every trigger will have one token allocated for it.
+ * That token is not counted because it is not expected to be freed.
  */
 extern int _lf_count_token_allocations;
 
@@ -165,7 +275,10 @@ extern int _lf_count_token_allocations;
 /**
  * @brief Return a new disassociated token with type matching
  * the specified port or action and containing the specified
- * value and length. The value is assumed to point to dynamically
+ * value and length.
+ * @ingroup API
+ *
+ * The value is assumed to point to dynamically
  * allocated memory that will be automatically freed. The length is 1
  * unless the type of the port is an array, in which case the
  * value points to an array of the specified length.
@@ -183,7 +296,9 @@ extern int _lf_count_token_allocations;
 lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
 
 /**
- * Return a writable copy of the token in the specified template.
+ * @brief Return a writable copy of the token in the specified template.
+ * @ingroup API
+ *
  * If the reference count is 1, this returns the template's token
  * rather than a copy. The reference count will be 1.
  * Otherwise, if the size of the token payload is zero, this also
@@ -193,6 +308,7 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
  * be decremented at the start of the next tag.
  * If the template has no token (it has a primitive type), then there
  * is no need for a writable copy. Return NULL.
+ *
  * @param port An input port, cast to (lf_port_base_t*).
  * @return A pointer to a writable copy of the token, or NULL if the type is primitive.
  */
@@ -203,6 +319,8 @@ lf_token_t* lf_writable_copy(lf_port_base_t* port);
 
 /**
  * @brief Free the specified token, if appropriate.
+ * @ingroup Internal
+ *
  * If the reference count is greater than 0, then do not free
  * anything. Otherwise, the token value (payload) will be freed,
  * if there is one. Then the token itself will be freed.
@@ -219,6 +337,8 @@ token_freed _lf_free_token(lf_token_t* token);
 
 /**
  * @brief Return a new token with the specified type, value, and length.
+ * @ingroup Internal
+ *
  * This will attempt to get one from the recyling bin, and, if the
  * recycling bin is empty, will allocate a new token using calloc
  * and set its type to point to the specified type. The returned token
@@ -233,31 +353,39 @@ token_freed _lf_free_token(lf_token_t* token);
 lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length);
 
 /**
- * Get a token for the specified template.
+ * @brief Get a token for the specified template.
+ * @ingroup Internal
+ *
  * If the template already has a token and the reference count is 1,
  * then return that token. Otherwise, create a new token,
  * make it the new template, and dissociate or free the
  * previous template token.
+ *
  * @param tmplt The template. // template is a C++ keyword.
  * @return A new or recycled lf_token_t struct.
  */
 lf_token_t* _lf_get_token(token_template_t* tmplt);
 
 /**
- * Initialize the specified template to contain a token that is an
+ * @brief Initialize the specified template to contain a token that is an
+ * @ingroup Internal
+ *
  * array with the specified element size. If the template already has
  * a token with a reference count greater than 1 or a non-matching type,
  * it will be replaced and that token will be freed. The length of the
  * returned token will be 0, its value will be NULL, and its reference count
  * will be 1.
+ *
  * @param tmplt The template. // template is a C++ keyword.
  * @param element_size The element size.
  */
 void _lf_initialize_template(token_template_t* tmplt, size_t element_size);
 
 /**
- * Return a token storing the specified value, which is assumed to
+ * @brief Return a token storing the specified value, which is assumed to
  * be either a scalar (if length is 1) or an array of the specified length.
+ * @ingroup Internal
+ *
  * If the token in the specified template is available (it non-null and its
  * reference count is 1), then return it. Otherwise, create a new token
  * and replace the template token with the new one, freeing the
@@ -274,10 +402,12 @@ void _lf_initialize_template(token_template_t* tmplt, size_t element_size);
 lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value, size_t length);
 
 /**
- * Return a token for storing an array of the specified length
- * with new memory allocated (using calloc, so initialize to zero)
- * for storing that array. If the template's token is available
- * (it is non-null and its reference count is 1), then reuse it.
+ * @brief Return a token for storing an array of the specified length
+ * with new memory allocated (using calloc, so initialize to zero) for storing that array.
+ * @ingroup Internal
+ *
+ * If the template's token is available (it is non-null and its reference count is 1),
+ * then reuse it.
  * Otherwise, create a new token and replace the template token
  * with the new one, freeing the previous token from its template
  * association. The element_size for elements
@@ -294,25 +424,33 @@ lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length);
 
 /**
  * @brief Free all tokens.
- * Free tokens on the _lf_token_recycling_bin hashset and all
- * template tokens.
+ * @ingroup Internal
+ *
+ * Free tokens on the _lf_token_recycling_bin hashset and all template tokens.
  */
 void _lf_free_all_tokens();
 
 /**
  * @brief Replace the token in the specified template, if there is one,
- * with a new one. If the new token is the same as the token in the template,
+ * with a new one.
+ * @ingroup Internal
+ *
+ * If the new token is the same as the token in the template,
  * then this does nothing. Otherwise, it frees the previous template token.
+ *
  * @param tmplt Pointer to a template. // template is a C++ keyword.
  * @param newtoken The replacement token.
  */
 void _lf_replace_template_token(token_template_t* tmplt, lf_token_t* newtoken);
 
 /**
- * Decrement the reference count of the specified token.
+ * @brief Decrement the reference count of the specified token.
+ * @ingroup Internal
+ *
  * If the reference count hits 0, free the memory for the value
  * carried by the token, and, if the token is not also the template
  * token of its trigger, free the token.
+ *
  * @param token Pointer to a token.
  * @return NOT_FREED if nothing was freed, VALUE_FREED if the value
  *  was freed, TOKEN_FREED if only the token was freed, and
@@ -322,9 +460,9 @@ token_freed _lf_done_using(lf_token_t* token);
 
 /**
  * @brief Free token copies made for mutable inputs.
- * This function should be called at the beginning of each time step
- * to avoid memory leaks.
- * @param env Environment in which we are executing.
+ * @ingroup Internal
+ *
+ * This function should be called at the beginning of each time step to avoid memory leaks.
  */
 void _lf_free_token_copies(void);
 

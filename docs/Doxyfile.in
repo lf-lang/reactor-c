@@ -3,7 +3,7 @@ PROJECT_BRIEF          = "C Runtime for Lingua Franca"
 PROJECT_NUMBER = 1.0
 PROJECT_LOGO           = ../docs/logo.png
 PROJECT_ICON           = ../docs/favicon.ico
-PREDEFINED             = FEDERATED
+PREDEFINED             = FEDERATED MODAL_REACTORS LF_ENCLAVES
 
 OUTPUT_DIRECTORY = _build
 INPUT =                 ./doxygen.h \
@@ -13,7 +13,11 @@ INPUT =                 ./doxygen.h \
                         ../include/core/federated/ \
                         ../include/core/utils/ \
                         ../include/core/clock.h \
+                        ../include/core/environment.h \
+                        ../include/core/lf_token.h \
                         ../include/core/lf_types.h \
+                        ../include/core/mixed_radix.h \
+                        ../include/core/port.h \
                         ../tag/api/tag.h \
                         ../platform/ \
                         ../low_level_platform/api/low_level_platform.h \
