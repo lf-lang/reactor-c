@@ -192,10 +192,14 @@ void _lf_initialize_modes(environment_t* env);
  * @param env The environment to handle the mode changes in.
  */
 void _lf_handle_mode_changes(environment_t* env);
-/
-    ***@brief Handle the mode triggered reactions in the
-           environment.* @ingroup Modal** @param env The environment to handle the mode triggered reactions in.* /
-    void _lf_handle_mode_triggered_reactions(environment_t* env);
+
+/**
+ * @brief Handle the mode triggered reactions in the environment.
+ * @ingroup Modal
+ *
+ * @param env The environment to handle the mode triggered reactions in.
+ */
+void _lf_handle_mode_triggered_reactions(environment_t* env);
 
 /**
  * @brief Check whether a mode is active.
