@@ -38,11 +38,12 @@ var searchData=
   ['destroy_5faction_5fcapsule_35',['destroy_action_capsule',['../db/df4/pythontarget_8c.html#ad52c5f970c1f6a4dde6f3457c92402ae',1,'pythontarget.c']]],
   ['destructor_36',['destructor',['../db/d12/structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c',1,'token_type_t::destructor'],['../da/dc0/structgeneric__port__instance__struct.html#a26752c879bfe4b2fbbf8cd9cd632e216',1,'generic_port_instance_struct::destructor']]],
   ['determine_5fnumber_5fof_5fworkers_37',['determine_number_of_workers',['../d5/dbc/reactor__threaded_8c.html#aff80c9b69d76f5dc1fb6c7c671de9708',1,'reactor_threaded.c']]],
-  ['digits_38',['digits',['../d6/da6/structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
-  ['do_5fconvert_39',['DO_CONVERT',['../dd/d77/type__converter_8h.html#a9cbcaad341a5b5a807196f116619b9c0',1,'type_converter.h']]],
-  ['do_5ffor_5feach_5fcamelcase_40',['do_for_each_camelcase',['../d1/de2/tracepoint__to__rs_8c.html#a92bfb0efdf6ff4d47cd9694517acfcec',1,'tracepoint_to_rs.c']]],
-  ['documentation_41',['Documentation',['../d3/dcc/md__r_e_a_d_m_e.html#autotoc_md5',1,'']]],
-  ['drop_42',['drop',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]],
-  ['dst_5fid_43',['dst_id',['../d0/d8d/structtrace__record__nodeps__t.html#a594dcef3f6fe657e8c1c45dbac60e821',1,'trace_record_nodeps_t']]],
-  ['duration_44',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c']]]
+  ['diagram_20visualizer_38',['Trace sequence diagram visualizer',['..//Users/runner/work/reactor-c/reactor-c/util/tracing/visualization/README.md#autotoc_md14',1,'']]],
+  ['digits_39',['digits',['../d6/da6/structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
+  ['do_5fconvert_40',['DO_CONVERT',['../dd/d77/type__converter_8h.html#a9cbcaad341a5b5a807196f116619b9c0',1,'type_converter.h']]],
+  ['do_5ffor_5feach_5fcamelcase_41',['do_for_each_camelcase',['../d1/de2/tracepoint__to__rs_8c.html#a92bfb0efdf6ff4d47cd9694517acfcec',1,'tracepoint_to_rs.c']]],
+  ['documentation_42',['Documentation',['../d3/dcc/md__r_e_a_d_m_e.html#autotoc_md5',1,'']]],
+  ['drop_43',['drop',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]],
+  ['dst_5fid_44',['dst_id',['../d0/d8d/structtrace__record__nodeps__t.html#a594dcef3f6fe657e8c1c45dbac60e821',1,'trace_record_nodeps_t']]],
+  ['duration_45',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.c']]]
 ];
