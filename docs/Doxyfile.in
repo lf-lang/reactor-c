@@ -11,6 +11,7 @@ INPUT =                 ./doxygen.h \
                         ../include/api/reaction_macros.h \
                         ../include/api/schedule.h \
                         ../include/core/ \
+                        ../logging/api/ \
                         ../tag/api/tag.h \
                         ../platform/ \
                         ../low_level_platform/api/low_level_platform.h \
