@@ -86,22 +86,22 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
 
 /**
  * Check the deadline of the currently executing reaction against the
- * current physical time. If the deadline has passed, invoke the deadline
- * handler (if invoke_deadline_handler parameter is set true) and return true.
+ * current physical time. If the deadline has passed, invoke_deadline_handler parameter is set true,
+ * and there is a deadline handler, invoke the deadline handler and return true.
  * Otherwise, return false.
  *
  * @param self The self struct of the reactor.
  * @param invoke_deadline_handler When this is set true, also invoke deadline
- *  handler if the deadline has passed.
+ *  handler if the deadline has passed and there is a deadline handler.
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
   reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
   if (lf_time_physical() > (lf_time_logical(((self_base_t*)self)->environment) + reaction->deadline)) {
-    if (invoke_deadline_handler) {
+    if (invoke_deadline_handler && reaction->deadline_violation_handler != NULL) {
       reaction->deadline_violation_handler(self);
+      return true;
     }
-    return true;
   }
   return false;
 }
