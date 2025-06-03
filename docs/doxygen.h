@@ -59,3 +59,11 @@
  * This group contains functions for federated execution.
  * The message types and protocols are defined in @ref net_common.h.
  */
+
+/**
+ * @defgroup RTI RTI
+ * @brief Functions for the runtime infrastructure for federated execution.
+ *
+ * This group contains functions for the runtime infrastructure for federated execution.
+ * The message types and protocols are defined in @ref net_common.h.
+ */
