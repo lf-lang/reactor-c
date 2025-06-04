@@ -3,7 +3,7 @@ PROJECT_BRIEF          = "C Runtime for Lingua Franca"
 PROJECT_NUMBER = 1.0
 PROJECT_LOGO           = ../docs/logo.png
 PROJECT_ICON           = ../docs/favicon.ico
-PREDEFINED             = FEDERATED MODAL_REACTORS LF_ENCLAVES LF_TRACE RTI_TRACE
+PREDEFINED             = FEDERATED MODAL_REACTORS LF_ENCLAVES LF_TRACE RTI_TRACE __has_builtin
 
 OUTPUT_DIRECTORY = _build
 INPUT =                 ./doxygen.h \
@@ -12,9 +12,11 @@ INPUT =                 ./doxygen.h \
                         ../include/api/schedule.h \
                         ../include/core/ \
                         ../logging/api/ \
-                        ../tag/api/tag.h \
-                        ../platform/ \
                         ../low_level_platform/api/low_level_platform.h \
+                        ../platform/ \
+                        ../tag/ \
+                        ../trace/api/ \
+                        ../util/ \
 
 USE_MDFILE_AS_MAINPAGE =
 FILE_PATTERNS = *.h *.md

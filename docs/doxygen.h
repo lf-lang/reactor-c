@@ -61,6 +61,14 @@
  */
 
 /**
+ * @defgroup Tracing Tracing
+ * @brief Functions for tracing.
+ *
+ * This group contains functions for tracing.
+ * Tracing is described in the [Lingua Franca handbook](https://www.lf-lang.org/docs/next/reference/tracing).
+ */
+
+/**
  * @defgroup RTI RTI
  * @brief Functions for the runtime infrastructure for federated execution.
  *

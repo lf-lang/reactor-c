@@ -1,6 +1,7 @@
 /**
  * @file influxdb.h
  * @brief Structures and functions supporting interaction with InfluxDB.
+ * @ingroup Tracing
  *
  *  Usage:
  * ```
@@ -41,6 +42,10 @@
 #define INFLUX_TS(ts) IF_TYPE_TIMESTAMP, (long long)(ts)
 #define INFLUX_END IF_TYPE_ARG_END
 
+/**
+ * @brief InfluxDB client.
+ * @ingroup Tracing
+ */
 typedef struct influx_client_t {
   char* host;
   int port;
@@ -50,6 +55,10 @@ typedef struct influx_client_t {
   char* token; // http only
 } influx_client_t;
 
+/**
+ * @brief InfluxDB v2 client.
+ * @ingroup Tracing
+ */
 typedef struct influx_v2_client_t {
   char* host;
   int port;
@@ -61,9 +70,46 @@ typedef struct influx_v2_client_t {
   char* token; // http only
 } influx_v2_client_t;
 
+/**
+ * @brief Format a line for InfluxDB.
+ * @ingroup Tracing
+ *
+ * @param buf Returned pointer to the formatted line.
+ * @param len Returned length of the formatted line.
+ * @param used Number of bytes used in the formatted line.
+ * @param ... Formatting arguments.
+ * @return int 0 on success, -1 on failure.
+ */
 int format_line(char** buf, int* len, size_t used, ...);
+
+/**
+ * @brief Post a line to InfluxDB via HTTP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB client.
+ * @param ... Formatting arguments.
+ * @return int 0 on success, -1 on failure.
+ */
 int post_http(influx_client_t* c, ...);
+
+/**
+ * @brief Send a line to InfluxDB via UDP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB client.
+ * @param ... Formatting arguments.
+ * @return int 0 on success, -1 on failure.
+ */
 int send_udp(influx_client_t* c, ...);
+
+/**
+ * @brief Post a line to InfluxDB via HTTP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB v2 client.
+ * @param ... Formatting arguments.
+ * @return int 0 on success, -1 on failure.
+ */
 int post_curl(influx_v2_client_t* c, ...);
 
 #define IF_TYPE_ARG_END 0
@@ -79,7 +125,27 @@ int _escaped_append(char** dest, size_t* len, size_t* used, const char* src, con
 int _begin_line(char** buf);
 int _format_line(char** buf, va_list ap);
 int _format_line2(char** buf, va_list ap, size_t*, size_t);
+
+/**
+ * @brief Post a line to InfluxDB via HTTP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB client.
+ * @param buf Pointer to the line to post.
+ * @param len Length of the line to post.
+ * @return int 0 on success, -1 on failure.
+ */
 int post_http_send_line(influx_client_t* c, char* buf, int len);
+
+/**
+ * @brief Send a line to InfluxDB via UDP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB client.
+ * @param line Pointer to the line to send.
+ * @param len Length of the line to send.
+ * @return int 0 on success, -1 on failure.
+ */
 int send_udp_line(influx_client_t* c, char* line, int len);
 
 int post_http_send_line(influx_client_t* c, char* buf, int len) {

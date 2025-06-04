@@ -28,7 +28,7 @@ static const bool _lf_log_level_is_debug = LOG_LEVEL >= LOG_LEVEL_DEBUG;
  * @ingroup API
  *
  * In contrast to the function @ref lf_print_log, this macro avoids the overhead if logging is disabled.
- * 
+ *
  * It can be enabled by setting the target property 'logging' to 'LOG' or
  * by defining LOG_LEVEL to LOG_LEVEL_LOG or LOG_LEVEL_DEBUG in the top-level preamble.
  * The input to this macro is exactly like printf: (format, ...).
@@ -54,7 +54,7 @@ static const bool _lf_log_level_is_debug = LOG_LEVEL >= LOG_LEVEL_DEBUG;
  * @ingroup API
  *
  * In contrast to the function @ref lf_print_debug, this macro avoids the overhead if logging is disabled.
- * 
+ *
  * It can be enabled by setting the target property 'logging' to 'DEBUG' or
  * by defining LOG_LEVEL to LOG_LEVEL_DEBUG in the top-level preamble.
  * The input to this macro is exactly like printf: (format, ...).

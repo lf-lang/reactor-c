@@ -1,8 +1,9 @@
 /**
- * @file
+ * @file wave_file_reader.h
  * @author Edward A. Lee
  *
  * @brief Utility function for reading WAV audio files.
+ * @ingroup Utilities
  *
  * This defines functions and data types for importing audio files with the
  * wave audio format. The main function is read_wave_file(), which, given
@@ -39,11 +40,12 @@
 #define WAVE_FILE_READER_H
 
 /**
- * Waveform in 16-bit linear-PCM format.
+ * @brief Waveform in 16-bit linear-PCM format.
+ * @ingroup Utilities
+ *
  * The waveform element is an array containing audio samples.
- * If there are two channels, then they are interleaved
- * left and right channel. The length is the total number
- * of samples, a multiple of the number of channels.
+ * If there are two channels, then they are interleaved left and right channel.
+ * The length is the total number of samples, a multiple of the number of channels.
  */
 typedef struct lf_waveform_t {
   uint32_t length;
@@ -52,14 +54,14 @@ typedef struct lf_waveform_t {
 } lf_waveform_t;
 
 /**
- * Open a wave file, check that the format is supported,
- * allocate memory for the sample data, and fill the memory
- * with the sample data. It is up to the caller to free the
- * memory when done with it. That code should first free the
- * waveform element of the returned struct, then the struct itself.
+ * @brief Open a wave file, check that the format is supported, allocate memory for the sample data,
+ * and fill the memory with the sample data.
+ * @ingroup Utilities
+ *
+ * It is up to the caller to free the memory when done with it.
+ * That code should first free the waveform element of the returned struct, then the struct itself.
  * This implementation supports only 16-bit linear PCM files.
- * On a Mac, you can convert audio files into this format
- * using the afconvert utility.
+ * On a Mac, you can convert audio files into this format using the afconvert utility.
  *
  * @param path The path to the file.
  * @return An array of sample data or NULL if the file can't be opened
