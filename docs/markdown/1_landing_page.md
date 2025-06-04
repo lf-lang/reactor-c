@@ -1,6 +1,7 @@
 \mainpage
 
 \note The reactor-c runtime system for Lingua Franca is the system used when you specify as your target `C`, `CCpp`, or `Python`. While it is theoretically possible to use reactor-c alone by writing applications in C, it is meant to be used via the [Lingua Franca coordination language](https://lf-lang.org) together with its code generator, `lfc`.
+
 The [documentation here](https://lf-lang.org/reactor-c) is generated automatically from the C source code using [Doxygen](https://doxygen.nl).
 Higher-level user documentation and getting-started information can be found on the
 [lf-lang.org website](https://lf-lang.org/docs/next?target-languages=c),
@@ -8,6 +9,9 @@ with details about the C runtime on the
 [target language details](https://lf-lang.org/docs/next/reference/target-language-details?target-languages=c)
 page.
 
+\note The most useful entry point to this documentation is likely the [topics page](topics.html). The [API](group__API.html) subpage describes the API used in writing reactors. The [Utilities](group__Utilities.html) subpage describes various utilities that may help with writing reactors.
+
+## Overview
 
 When you specify
 
