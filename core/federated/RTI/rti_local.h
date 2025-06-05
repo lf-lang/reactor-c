@@ -1,13 +1,12 @@
 /**
- * @file
- * @author Erling Jellum (erling.r.jellum@ntnu.no)
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @copyright (c) 2020-2024, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * @file rti_local.h
+ * @author Erling Jellum
+ * @author Edward A. Lee
+ * @author Chadlia Jerad
+ * @author Soroush Bateni
  *
  * @brief This file declares functions used to implement scheduling enclaves.
+ * @ingroup RTI
  *
  * A scheduling enclave is portion of the runtime system that maintains its own event
  * and reaction queues and has its own scheduler. It uses a local runtime infrastructure (RTI)
@@ -24,18 +23,23 @@
 
 /**
  * @brief Structure holding information about each enclave in the program.
+ * @ingroup RTI
  *
- * The first field is the generic scheduling_node_info struct
+ * The first field is the generic scheduling_node_info struct.
  */
 typedef struct enclave_info_t {
+  /** @brief The base scheduling node information for this enclave. */
   scheduling_node_t base;
-  environment_t* env;             // A pointer to the environment of the enclave
-  lf_cond_t next_event_condition; // Condition variable used by scheduling_nodes to notify an enclave
-                                  // that it's call to next_event_tag() should unblock.
+  /** @brief Pointer to the environment of the enclave. */
+  environment_t* env;
+  /** @brief Condition variable used by scheduling_nodes to notify an enclave that its call to next_event_tag() should
+   * unblock. */
+  lf_cond_t next_event_condition;
 } enclave_info_t;
 
 /**
- * @brief Structure holding information about the local RTI
+ * @brief Structure holding information about the local RTI.
+ * @ingroup RTI
  */
 typedef struct {
   rti_common_t base;
@@ -43,6 +47,8 @@ typedef struct {
 
 /**
  * @brief Dynamically create and initialize the local RTI.
+ * @ingroup RTI
+ *
  * @param envs Array of environments.
  * @param num_envs Number of environments.
  */
@@ -50,11 +56,14 @@ void initialize_local_rti(environment_t* envs, int num_envs);
 
 /**
  * @brief Free memory associated with the local the RTI and the local RTI iself.
+ * @ingroup RTI
  */
 void free_local_rti();
 
 /**
  * @brief Initialize the enclave object.
+ * @ingroup RTI
+ *
  * @param enclave The enclave object to initialize.
  * @param idx The index of the enclave.
  * @param env The environment of the enclave.
@@ -63,6 +72,7 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t* en
 
 /**
  * @brief Notify the local RTI of a next event tag (NET).
+ * @ingroup RTI
  *
  * This function call may block. A call to this function serves two purposes.
  * 1) It is a promise that, unless receiving events from other enclaves, this
@@ -84,6 +94,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* enclave, tag_t next_event_tag);
 
 /**
  * @brief Inform the local RTI that `enclave` has completed tag `completed`.
+ * @ingroup RTI
  *
  * This will update the data structures and can release other
  * enclaves waiting on a TAG.
@@ -97,6 +108,7 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed);
 
 /**
  * @brief Notify the local RTI to update the next event tag (NET) of a target enclave.
+ * @ingroup RTI
  *
  * This function is called after scheduling an event onto the event queue of another enclave.
  * The source enclave must call this function to potentially update
@@ -112,6 +124,7 @@ void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t* target, ta
 
 /**
  * @brief Get the array of ids of enclaves directly upstream of the specified enclave.
+ * @ingroup RTI
  *
  * This updates the specified result pointer to point to a statically allocated array of IDs
  * and returns the length of the array. The implementation is code-generated.
@@ -124,6 +137,7 @@ int lf_get_upstream_of(int enclave_id, int** result);
 
 /**
  * @brief Get the array of ids of enclaves directly downstream of the specified enclave.
+ * @ingroup RTI
  *
  * This updates the specified result pointer to point to a statically allocated array of IDs
  * and returns the length of the array. The implementation is code-generated.
@@ -136,6 +150,7 @@ int lf_get_downstream_of(int enclave_id, int** result);
 
 /**
  * @brief Retrieve the delays on the connections to direct upstream enclaves.
+ * @ingroup RTI
  *
  * This updates the result pointer to point to a statically allocated array of delays.
  * The implementation is code-generated.

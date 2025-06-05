@@ -1,19 +1,21 @@
 /**
- * @file trace-types.h
- * @author Peter Donovan <peter@xronos.com>
+ * @file trace_types.h
+ * @author Peter Donovan
+ *
  * @brief Definitions that are needed by both implementors and callers of the
  * trace API regardless of whether tracing is enabled at compile time.
- *
- * @copyright Copyright (c) 2024
+ * @ingroup Tracing
  */
 
 #ifndef TRACE_TYPES_H
 #define TRACE_TYPES_H
 
 /**
- * Trace event types. If you update this, be sure to update the
- * string representation below. Also, create a tracepoint function
- * for each event type.
+ * @brief Trace event types.
+ * @ingroup Tracing
+ *
+ * If you update this, be sure to update the string representation below.
+ * Also, create a tracepoint function for each event type.
  */
 typedef enum {
   reaction_starts,
@@ -78,7 +80,8 @@ typedef enum {
 } trace_event_t;
 
 /**
- * String description of event types.
+ * @brief String description of event types.
+ * @ingroup Tracing
  */
 static const char* trace_event_names[] = {
     "Reaction starts",

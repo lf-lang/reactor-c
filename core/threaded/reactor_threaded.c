@@ -3,8 +3,7 @@
  * @author Edward A. Lee
  * @author Marten Lohstroh
  * @author Soroush Bateni
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief  Runtime infrastructure for the threaded version of the C target of Lingua Franca.
  */
 #if !defined LF_SINGLE_THREADED
@@ -114,28 +113,6 @@ void _lf_decrement_tag_barrier_locked(environment_t* env) {
   LF_PRINT_DEBUG("Barrier is at tag " PRINTF_TAG ".", env->barrier.horizon.time, env->barrier.horizon.microstep);
 }
 
-/**
- * If the proposed_tag is greater than or equal to a barrier tag that has been
- * set by a call to _lf_increment_tag_barrier or
- * _lf_increment_tag_barrier_locked, and if there are requestors
- * still pending on that barrier, then wait until all requestors have been
- * satisfied. This is used in federated execution when an incoming timed
- * message has been partially read so that we know its tag, but the rest of
- * message has not yet been read and hence the event has not yet appeared
- * on the event queue.  To prevent tardiness, this function blocks the
- * advancement of time until to the proposed tag until the message has
- * been put onto the event queue.
- *
- * If the proposed_tag is greater than the stop tag, then use the stop tag instead.
- *
- * This function assumes the mutex is already locked.
- * Thus, it unlocks the mutex while it's waiting to allow
- * the tag barrier to change.
- *
- * @param env Environment within which we are executing.
- * @param proposed_tag The tag that the runtime wants to advance to.
- * @return 0 if no wait was needed and 1 if a wait actually occurred.
- */
 int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
   assert(env != GLOBAL_ENVIRONMENT);
 
@@ -226,12 +203,6 @@ bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
   return true;
 }
 
-/**
- * Return the tag of the next event on the event queue.
- * If the event queue is empty then return either FOREVER_TAG
- * or, is a stop_time (timeout time) has been set, the stop time.
- * @param env Environment within which we are executing.
- */
 tag_t get_next_event_tag(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
 
@@ -260,20 +231,6 @@ tag_t get_next_event_tag(environment_t* env) {
   return next_tag;
 }
 
-/**
- * In a federated execution with centralized coordination, this function returns
- * a tag that is less than or equal to the specified tag when, as far
- * as the federation is concerned, it is safe to commit to advancing
- * to the returned tag. That is, all incoming network messages with
- * tags less than the returned tag have been received.
- * In unfederated execution or in federated execution with decentralized
- * control, this function returns the specified tag immediately.
- *
- * @param env Environment within which we are executing.
- * @param tag The tag to which to advance.
- * @param wait_for_reply If true, wait for the RTI to respond.
- * @return The tag to which it is safe to advance.
- */
 tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
 #if defined(FEDERATED_CENTRALIZED)
   return lf_send_next_event_tag(env, tag, wait_for_reply);
@@ -286,26 +243,6 @@ tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
 #endif
 }
 
-/**
- * If there is at least one event in the event queue, then wait until
- * physical time matches or exceeds the time of the least tag on the event
- * queue; pop the next event(s) from the event queue that all have the same tag;
- * extract from those events the reactions that are to be invoked at this
- * logical time and insert them into the reaction queue. The event queue is
- * sorted by time tag.
- *
- * If there is no event in the queue and the keepalive command-line option was
- * not given, and this is not a federated execution with centralized coordination,
- * set the stop tag to the current tag.
- * If keepalive was given, then wait for either lf_request_stop()
- * to be called or an event appears in the event queue and then return.
- *
- * Every time tag is advanced, it is checked against stop tag and if they are
- * equal, shutdown reactions are triggered.
- *
- * This does not acquire the mutex lock. It assumes the lock is already held.
- * @param env Environment within which we are executing.
- */
 void _lf_next_locked(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
 
@@ -552,7 +489,7 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  * This assumes the mutex lock is held by the caller.
  * @param env Environment within which we are executing.
  */
-void _lf_initialize_start_tag(environment_t* env) {
+static void _lf_initialize_start_tag(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   // Add reactions invoked at tag (0,0) (including startup reactions) to the reaction queue
@@ -685,7 +622,8 @@ int worker_thread_count = 0;
  *
  * @return true if a deadline violation occurred. false otherwise.
  */
-bool _lf_worker_handle_deadline_violation_for_reaction(environment_t* env, int worker_number, reaction_t* reaction) {
+static bool _lf_worker_handle_deadline_violation_for_reaction(environment_t* env, int worker_number,
+                                                              reaction_t* reaction) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   bool violation_occurred = false;
@@ -797,7 +735,7 @@ static bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int
  *
  * @return true if a violation occurred and was handled. false otherwise.
  */
-bool _lf_worker_handle_violations(environment_t* env, int worker_number, reaction_t* reaction) {
+static bool _lf_worker_handle_violations(environment_t* env, int worker_number, reaction_t* reaction) {
   bool violation = false;
 
   violation = _lf_worker_handle_STP_violation_for_reaction(env, worker_number, reaction) ||
@@ -815,7 +753,7 @@ bool _lf_worker_handle_violations(environment_t* env, int worker_number, reactio
  * @param worker_number The ID of the worker.
  * @param reaction The reaction to invoke.
  */
-void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_t* reaction) {
+static void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_t* reaction) {
   LF_PRINT_LOG("Worker %d: Invoking reaction %s at elapsed tag " PRINTF_TAG ".", worker_number, reaction->name,
                env->current_tag.time - start_time, env->current_tag.microstep);
   _lf_invoke_reaction(env, reaction, worker_number);
@@ -838,7 +776,7 @@ void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_
  * @param env Environment within which we are executing.
  * @param worker_number The number assigned to this worker thread
  */
-void _lf_worker_do_work(environment_t* env, int worker_number) {
+static void _lf_worker_do_work(environment_t* env, int worker_number) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   // Keep track of whether we have decremented the idle thread count.
@@ -887,7 +825,7 @@ void _lf_worker_do_work(environment_t* env, int worker_number) {
  * get a PTAG to (0,0) and use network control reactions to handle upstream dependencies
  * @param arg Environment within which the worker should execute.
  */
-void* worker(void* arg) {
+static void* worker(void* arg) {
   initialize_lf_thread_id();
   environment_t* env = (environment_t*)arg;
   LF_MUTEX_LOCK(&env->mutex);
@@ -964,7 +902,7 @@ void lf_print_snapshot(environment_t* env) {
 /**
  * @brief Determine the number of workers.
  */
-void determine_number_of_workers(void) {
+static void determine_number_of_workers(void) {
   // If _lf_number_of_workers is 0, it means that it was not provided on
   // the command-line using the --workers argument.
   if (_lf_number_of_workers == 0u) {
@@ -1152,19 +1090,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   return 0;
 }
 
-/**
- * @brief Notify of new event by broadcasting on a condition variable.
- * @param env Environment within which we are executing.
- */
 int lf_notify_of_event(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
   return lf_cond_broadcast(&env->event_q_changed);
 }
 
-/**
- * @brief Enter critical section by locking the global mutex.
- * @param env Environment within which we are executing or GLOBAL_ENVIRONMENT.
- */
 int lf_critical_section_enter(environment_t* env) {
   if (env == GLOBAL_ENVIRONMENT) {
     return lf_mutex_lock(&global_mutex);
@@ -1173,10 +1103,6 @@ int lf_critical_section_enter(environment_t* env) {
   }
 }
 
-/**
- * @brief Leave a critical section by unlocking the global mutex.
- * @param env Environment within which we are executing or GLOBAL_ENVIRONMENT.
- */
 int lf_critical_section_exit(environment_t* env) {
   if (env == GLOBAL_ENVIRONMENT) {
     return lf_mutex_unlock(&global_mutex);
