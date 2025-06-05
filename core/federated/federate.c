@@ -50,6 +50,7 @@ extern bool _lf_termination_executed;
 
 // Global variables references in federate.h
 lf_mutex_t lf_outbound_socket_mutex;
+
 lf_cond_t lf_port_status_changed;
 
 /**
@@ -261,9 +262,10 @@ static void update_last_known_status_on_input_ports(tag_t tag, environment_t* en
  *
  * @param env The top-level environment, whose mutex is assumed to be held.
  * @param tag The tag on which the latest status of the specified network input port is known.
+ * @param warn If true, print a warning if the tag is less than the last known status tag of the port.
  * @param portID The port ID.
  */
-static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id) {
+static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id, bool warn) {
   if (lf_tag_compare(tag, env->current_tag) < 0)
     tag = env->current_tag;
   trigger_t* input_port_action = action_for_port(port_id)->trigger;
@@ -286,11 +288,13 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
     lf_cond_broadcast(&lf_port_status_changed);
     lf_cond_broadcast(&env->event_q_changed);
-  } else {
+  } else if (warn) {
     // Message arrivals should be monotonic, so this should not occur.
-    lf_print_warning("Attempt to update the last known status tag "
-                     "of network input port %d to an earlier tag was ignored.",
-                     port_id);
+    lf_print_warning("Attempt to update the last known status tag " PRINTF_TAG
+                     " of network input port %d to an earlier tag " PRINTF_TAG " was ignored.",
+                     input_port_action->last_known_status_tag.time - lf_time_start(),
+                     input_port_action->last_known_status_tag.microstep, port_id, tag.time - lf_time_start(),
+                     tag.microstep);
   }
 }
 
@@ -312,7 +316,7 @@ static void mark_inputs_known_absent(int fed_id) {
   for (size_t i = 0; i < _lf_action_table_size; i++) {
     lf_action_base_t* action = _lf_action_table[i];
     if (action->source_id == fed_id) {
-      update_last_known_status_on_input_port(env, FOREVER_TAG, i);
+      update_last_known_status_on_input_port(env, FOREVER_TAG, i, true);
     }
   }
   LF_MUTEX_UNLOCK(&env->mutex);
@@ -408,28 +412,15 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  * Close the socket that receives incoming messages from the
  * specified federate ID. This function should be called when a read
  * of incoming socket fails or when an EOF is received.
- * It can also be called when the receiving end wants to stop communication,
- * in which case, flag should be 1.
+ * It can also be called when the receiving end wants to stop communication.
  *
  * @param fed_id The ID of the peer federate sending messages to this
  *  federate.
- * @param flag 0 if an EOF was received, -1 if a socket error occurred, 1 otherwise.
  */
-static void close_inbound_socket(int fed_id, int flag) {
-  LF_MUTEX_LOCK(&socket_mutex);
+static void close_inbound_socket(int fed_id) {
   if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-    if (flag >= 0) {
-      if (flag > 0) {
-        shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
-      } else {
-        // Have received EOF from the other end. Send EOF to the other end.
-        shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_WR);
-      }
-    }
-    close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
-    _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+    shutdown_socket(&_fed.sockets_for_inbound_p2p_connections[fed_id], false);
   }
-  LF_MUTEX_UNLOCK(&socket_mutex);
 }
 
 /**
@@ -616,7 +607,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
     // Since the message is intended for the current tag and a port absent reaction
     // was waiting for the message, trigger the corresponding reactions for this message.
 
-    update_last_known_status_on_input_port(env, intended_tag, port_id);
+    update_last_known_status_on_input_port(env, intended_tag, port_id, true);
 
     LF_PRINT_LOG("Inserting reactions directly at tag " PRINTF_TAG ". "
                  "Intended tag: " PRINTF_TAG ".",
@@ -657,7 +648,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
 #endif // FEDERATED_DECENTRALIZED
        // The following will update the input_port_action->last_known_status_tag.
        // For decentralized coordination, this is needed to unblock the STAA.
-    update_last_known_status_on_input_port(env, actual_tag, port_id);
+    update_last_known_status_on_input_port(env, actual_tag, port_id, true);
 
     // If the current time >= stop time, discard the message.
     // But only if the stop time is not equal to the start time!
@@ -668,7 +659,9 @@ static int handle_tagged_message(int* socket, int fed_id) {
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
       // Close socket, reading any incoming data and discarding it.
-      close_inbound_socket(fed_id, 1);
+      close_inbound_socket(fed_id);
+      LF_MUTEX_UNLOCK(&env->mutex);
+      return -1;
     } else {
       // Need to use intended_tag here, not actual_tag, so that STP violations are detected.
       // It will become actual_tag (that is when the reactions will be invoked).
@@ -728,7 +721,7 @@ static int handle_port_absent_message(int* socket, int fed_id) {
   _lf_get_environments(&env);
 
   LF_MUTEX_LOCK(&env->mutex);
-  update_last_known_status_on_input_port(env, intended_tag, port_id);
+  update_last_known_status_on_input_port(env, intended_tag, port_id, true);
   LF_MUTEX_UNLOCK(&env->mutex);
 
   return 0;
@@ -830,33 +823,20 @@ static void* listen_to_federates(void* _args) {
  * if _lf_normal_termination is true and otherwise proceeds without the lock.
  * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
- * @param flag 0 if the socket has received EOF, 1 if not, -1 if abnormal termination.
  */
-static void close_outbound_socket(int fed_id, int flag) {
+static void close_outbound_socket(int fed_id) {
   assert(fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
+  // Close outbound connections, in case they have not closed themselves.
+  // This will result in EOF being sent to the remote federate, except for
+  // abnormal termination, in which case it will just close the socket.
   if (_lf_normal_termination) {
-    LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
-  }
-  if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
-    // Close the socket by sending a FIN packet indicating that no further writes
-    // are expected.  Then read until we get an EOF indication.
-    if (flag >= 0) {
-      // SHUT_WR indicates no further outgoing messages.
-      shutdown(_fed.sockets_for_outbound_p2p_connections[fed_id], SHUT_WR);
-      if (flag > 0) {
-        // Have not received EOF yet. read until we get an EOF or error indication.
-        // This compensates for delayed ACKs and disabling of Nagles algorithm
-        // by delaying exiting until the shutdown is complete.
-        unsigned char message[32];
-        while (read(_fed.sockets_for_outbound_p2p_connections[fed_id], &message, 32) > 0)
-          ;
-      }
+    if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
+      // Close the socket by sending a FIN packet indicating that no further writes
+      // are expected.  Then read until we get an EOF indication.
+      shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[fed_id], true);
     }
-    close(_fed.sockets_for_outbound_p2p_connections[fed_id]);
-    _fed.sockets_for_outbound_p2p_connections[fed_id] = -1;
-  }
-  if (_lf_normal_termination) {
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+  } else {
+    shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[fed_id], false);
   }
 }
 
@@ -1113,7 +1093,12 @@ static void* update_ports_from_staa_offsets(void* args) {
       // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
       // The list is sorted in increasing order of adjusted STAA offsets.
       // We need to add the lf_fed_STA_offset to the wait time and guard against overflow.
-      interval_t wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
+      // Skip this if the current tag is the dynamically determined stop time
+      // (due to a call to lf_request_stop()).  This is indicated by a stop_tag with microstep greater than 0.
+      interval_t wait_time = 0;
+      if (lf_tag_compare(env->current_tag, env->stop_tag) != 0 || env->stop_tag.microstep == 0) {
+        wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
+      }
       instant_t wait_until_time = lf_time_add(env->current_tag.time, wait_time);
       LF_PRINT_DEBUG("**** (update thread) wait_until_time: " PRINTF_TIME, wait_until_time - lf_time_start());
 
@@ -1154,7 +1139,7 @@ static void* update_ports_from_staa_offsets(void* args) {
               input_port_action->trigger->status = absent;
               LF_PRINT_DEBUG("**** (update thread) Assuming port absent at tag " PRINTF_TAG,
                              lf_tag(env).time - start_time, lf_tag(env).microstep);
-              update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
+              update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action), false);
               lf_cond_broadcast(&lf_port_status_changed);
             }
           }
@@ -1550,7 +1535,7 @@ static void* listen_to_rti_TCP(void* args) {
         lf_print_error("Socket connection to the RTI was closed by the RTI without"
                        " properly sending an EOF first. Considering this a soft error.");
         // FIXME: If this happens, possibly a new RTI must be elected.
-        _fed.socket_TCP_RTI = -1;
+        shutdown_socket(&_fed.socket_TCP_RTI, false);
         return NULL;
       } else {
         lf_print_error("Socket connection to the RTI has been broken with error %d: %s."
@@ -1558,13 +1543,13 @@ static void* listen_to_rti_TCP(void* args) {
                        " Considering this a soft error.",
                        errno, strerror(errno));
         // FIXME: If this happens, possibly a new RTI must be elected.
-        _fed.socket_TCP_RTI = -1;
+        shutdown_socket(&_fed.socket_TCP_RTI, false);
         return NULL;
       }
     } else if (read_failed > 0) {
       // EOF received.
       lf_print("Connection to the RTI closed with an EOF.");
-      _fed.socket_TCP_RTI = -1;
+      shutdown_socket(&_fed.socket_TCP_RTI, false);
       return NULL;
     }
     switch (buffer[0]) {
@@ -1689,7 +1674,7 @@ void lf_terminate_execution(environment_t* env) {
   LF_PRINT_DEBUG("Closing incoming P2P sockets.");
   // Close any incoming P2P sockets that are still open.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
-    close_inbound_socket(i, 1);
+    close_inbound_socket(i);
     // Ignore errors. Mark the socket closed.
     _fed.sockets_for_inbound_p2p_connections[i] = -1;
   }
@@ -1703,8 +1688,7 @@ void lf_terminate_execution(environment_t* env) {
     // Close outbound connections, in case they have not closed themselves.
     // This will result in EOF being sent to the remote federate, except for
     // abnormal termination, in which case it will just close the socket.
-    int flag = _lf_normal_termination ? 1 : -1;
-    close_outbound_socket(i, flag);
+    close_outbound_socket(i);
   }
 
   LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
@@ -1978,10 +1962,13 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
-  if (create_server(specified_port, &_fed.server_socket, (uint16_t*)&_fed.server_port, TCP, false)) {
+  uint16_t final_port;
+  if (create_server(specified_port, &_fed.server_socket, &final_port, TCP, false)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
-  LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
+
+  LF_PRINT_LOG("Server for communicating with other federates started using port %u.", final_port);
+  _fed.server_port = final_port;
 
   // Send the server port number to the RTI
   // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
@@ -2052,7 +2039,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Ignore errors on this response.
         write_to_socket(socket_id, 2, response);
       }
-      close(socket_id);
+      shutdown_socket(&socket_id, false);
       continue;
     }
 
@@ -2072,7 +2059,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Ignore errors on this response.
         write_to_socket(socket_id, 2, response);
       }
-      close(socket_id);
+      shutdown_socket(&socket_id, false);
       continue;
     }
 
@@ -2108,12 +2095,10 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     int result = lf_thread_create(&_fed.inbound_socket_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
-      LF_MUTEX_LOCK(&socket_mutex);
       if (_fed.sockets_for_inbound_p2p_connections[remote_fed_id] != -1) {
-        close(socket_id);
+        shutdown_socket(&socket_id, false);
         _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = -1;
       }
-      LF_MUTEX_UNLOCK(&socket_mutex);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }

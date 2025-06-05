@@ -53,8 +53,8 @@ extern int _lf_count_payload_allocations;
  * @brief Global STA (safe to advance) offset uniformly applied to advancement of each
  * time step in federated execution.
  *
- * This can be retrieved in user code by calling lf_get_stp_offset() and adjusted by
- * calling lf_set_stp_offset(interval_t offset).
+ * This can be retrieved in user code by calling lf_get_sta() and adjusted by
+ * calling lf_set_sta(interval_t offset).
  */
 interval_t lf_fed_STA_offset = 0LL;
 
@@ -185,11 +185,11 @@ const char* lf_reactor_full_name(self_base_t* self) {
 
 interval_t lf_get_stp_offset() { return lf_fed_STA_offset; }
 
-void lf_set_stp_offset(interval_t offset) {
-  if (offset > 0LL) {
-    lf_fed_STA_offset = offset;
-  }
-}
+interval_t lf_get_sta() { return lf_fed_STA_offset; }
+
+void lf_set_stp_offset(interval_t offset) { lf_set_sta(offset); }
+
+void lf_set_sta(interval_t offset) { lf_fed_STA_offset = offset; }
 
 #endif // FEDERATED_DECENTRALIZED
 
@@ -383,7 +383,8 @@ event_t* lf_get_new_event(environment_t* env) {
   return e;
 }
 
-void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+bool _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   interval_t delay = 0;
 
@@ -397,16 +398,17 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     e->trigger = timer;
     e->base.tag = (tag_t){.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
-    return;
+    return result;
   }
 #endif
   if (timer->offset == 0) {
     for (int i = 0; i < timer->number_of_reactions; i++) {
       _lf_trigger_reaction(env, timer->reactions[i], -1);
+      result = true;
       tracepoint_schedule(env, timer, 0LL); // Trace even though schedule is not called.
     }
     if (timer->period == 0) {
-      return;
+      return result;
     } else {
       // Schedule at t + period.
       delay = timer->period;
@@ -428,13 +430,15 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
     tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
   }
+  return result;
 }
 
-void _lf_initialize_timers(environment_t* env) {
+bool _lf_initialize_timers(environment_t* env) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   for (int i = 0; i < env->timer_triggers_size; i++) {
     if (env->timer_triggers[i] != NULL) {
-      _lf_initialize_timer(env, env->timer_triggers[i]);
+      result = _lf_initialize_timer(env, env->timer_triggers[i]) || result;
     }
   }
 
@@ -444,6 +448,8 @@ void _lf_initialize_timers(environment_t* env) {
     event_t* e = lf_get_new_event(env);
     lf_recycle_event(env, e);
   }
+
+  return result;
 }
 
 void _lf_trigger_startup_reactions(environment_t* env) {

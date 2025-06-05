@@ -20,9 +20,8 @@
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-// Mutex lock held while performing socket close operations.
-// A deadlock can occur if two threads simulataneously attempt to close the same socket.
-lf_mutex_t socket_mutex;
+// Mutex lock held while performing socket shutdown and close operations.
+lf_mutex_t shutdown_mutex;
 
 int create_real_time_tcp_socket_errexit() {
   int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -203,7 +202,7 @@ int accept_socket(int socket, int rti_socket) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
     } else {
       // For the federates, it should check if the rti_socket is still open, before retrying accept().
-      if (rti_socket == -1) {
+      if (rti_socket != -1) {
         if (check_socket_closed(rti_socket)) {
           break;
         }
@@ -305,10 +304,7 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
     // Read failed.
     // Socket has probably been closed from the other side.
     // Shut down and close the socket from this side.
-    shutdown(*socket, SHUT_RDWR);
-    close(*socket);
-    // Mark the socket closed.
-    *socket = -1;
+    shutdown_socket(socket, false);
     return -1;
   }
   return 0;
@@ -375,10 +371,7 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
     // Write failed.
     // Socket has probably been closed from the other side.
     // Shut down and close the socket from this side.
-    shutdown(*socket, SHUT_RDWR);
-    close(*socket);
-    // Mark the socket closed.
-    *socket = -1;
+    shutdown_socket(socket, false);
   }
   return result;
 }
@@ -401,4 +394,55 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
       lf_print_error("Failed to write to socket. Closing it.");
     }
   }
+}
+
+void init_shutdown_mutex(void) { LF_MUTEX_INIT(&shutdown_mutex); }
+
+int shutdown_socket(int* socket, bool read_before_closing) {
+  LF_MUTEX_LOCK(&shutdown_mutex);
+  if (*socket == -1) {
+    lf_print_log("Socket is already closed.");
+    LF_MUTEX_UNLOCK(&shutdown_mutex);
+    return 0;
+  }
+  if (!read_before_closing) {
+    if (shutdown(*socket, SHUT_RDWR)) {
+      lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
+      goto close_socket; // Try closing socket.
+    }
+  } else {
+    // Signal the other side that no further writes are expected by sending a FIN packet.
+    // This indicates the write direction is closed. For more details, refer to:
+    // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
+    if (shutdown(*socket, SHUT_WR)) {
+      lf_print_log("Failed to shutdown socket: %s", strerror(errno));
+      goto close_socket; // Try closing socket.
+    }
+
+    // Wait for the other side to send an EOF or encounter a socket error.
+    // Discard any incoming bytes. Normally, this read should return 0, indicating the peer has also closed the
+    // connection.
+    // This compensates for delayed ACKs and scenarios where Nagle's algorithm is disabled, ensuring the shutdown
+    // completes gracefully.
+    unsigned char buffer[10];
+    while (read(*socket, buffer, 10) > 0)
+      ;
+  }
+  LF_MUTEX_UNLOCK(&shutdown_mutex);
+  return 0;
+
+close_socket: // Label to jump to the closing part of the function
+  // NOTE: In all common TCP/IP stacks, there is a time period,
+  // typically between 30 and 120 seconds, called the TIME_WAIT period,
+  // before the port is released after this close. This is because
+  // the OS is preventing another program from accidentally receiving
+  // duplicated packets intended for this program.
+  if (close(*socket)) {
+    lf_print_log("Error while closing socket: %s\n", strerror(errno));
+    LF_MUTEX_UNLOCK(&shutdown_mutex);
+    return -1;
+  }
+  *socket = -1;
+  LF_MUTEX_UNLOCK(&shutdown_mutex);
+  return 0;
 }

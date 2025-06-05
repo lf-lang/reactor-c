@@ -117,6 +117,8 @@ void termination() {
 
 void usage(int argc, const char* argv[]) {
   lf_print("\nCommand-line arguments: \n");
+  lf_print("  -v, --version");
+  lf_print("   The version of the RTI.\n");
   lf_print("  -i, --id <n>");
   lf_print("   The ID of the federation that this RTI will control.\n");
   lf_print("  -n, --number_of_federates <n>");
@@ -143,6 +145,12 @@ void usage(int argc, const char* argv[]) {
     lf_print("%s ", argv[i]);
   }
   lf_print("\n");
+}
+
+static void print_version_and_exit() {
+  printf("RTI %s %s %s\n", RTI_VERSION, RTI_COMMIT, RTI_BUILD_DATE);
+  normal_termination = true;
+  exit(0);
 }
 
 int process_clock_sync_args(int argc, const char* argv[]) {
@@ -209,7 +217,9 @@ int process_clock_sync_args(int argc, const char* argv[]) {
 
 int process_args(int argc, const char* argv[]) {
   for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
+    if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
+      print_version_and_exit();
+    } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
       if (argc < i + 2) {
         lf_print_error("--id needs a string argument.");
         usage(argc, argv);
