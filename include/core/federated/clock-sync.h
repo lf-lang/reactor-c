@@ -19,10 +19,6 @@
 
 #include "low_level_platform.h"
 
-#define LF_CLOCK_SYNC_OFF 1
-#define LF_CLOCK_SYNC_INIT 2
-#define LF_CLOCK_SYNC_ON 3
-
 #ifndef LF_CLOCK_SYNC
 /**
  * @brief Clock synchronization mode.
@@ -35,6 +31,25 @@
  */
 #define LF_CLOCK_SYNC LF_CLOCK_SYNC_INIT
 #endif
+
+/**
+ * @brief Indicator for clock synchronization to be turned off altogether.
+ * @ingroup Federated
+ */
+#define LF_CLOCK_SYNC_OFF 1
+
+/**
+ * @brief Indicator for clock synchronization to be turned on at initialization.
+ * @ingroup Federated
+ */
+#define LF_CLOCK_SYNC_INIT 2
+
+/**
+ * @brief Indicator for clock synchronization to be turned on at initialization and runtime.
+ * @ingroup Federated
+ */
+#define LF_CLOCK_SYNC_ON 3
+
 
 /**
  * @brief Number of required clock sync T4 messages per synchronization interval.

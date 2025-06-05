@@ -4,7 +4,7 @@
  * @ingroup Utilities
  *
  * This is a modified version of the hash set implementation in C from:
- * https://github.com/avsej/hashset.c.
+ * https://github.com/avsej/hashset.c
  *
  * Example usage:
  *
