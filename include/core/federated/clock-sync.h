@@ -50,7 +50,6 @@
  */
 #define LF_CLOCK_SYNC_ON 3
 
-
 /**
  * @brief Number of required clock sync T4 messages per synchronization interval.
  * @ingroup Federated
