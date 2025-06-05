@@ -11,7 +11,7 @@ jobs:
   run:
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest]
+        platform: [ubuntu-24.04, macos-latest]
     runs-on: ${{ matrix.platform }}
 
     steps:

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(RTI VERSION 1.0.0 LANGUAGES C)
+project(RTI VERSION 0.2.0 LANGUAGES C)
 
 set(CoreLib ../../../core)
 set(LF_ROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
@@ -17,6 +17,7 @@ add_library(${RTI_LIB} STATIC
     ${CoreLib}/tag.c
     ${CoreLib}/clock.c
     ${CoreLib}/federated/network/net_util.c
+    ${CoreLib}/federated/network/socket_common.c
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
@@ -33,7 +34,7 @@ target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/modal_models)
 target_include_directories(${RTI_LIB} PUBLIC ${IncludeDir}/utils)
 
 if (NOT DEFINED LOG_LEVEL)
-    set(LOG_LEVEL 0)
+    set(LOG_LEVEL 2)
 ENDIF(NOT DEFINED LOG_LEVEL)
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
@@ -87,8 +88,11 @@ target_compile_options(${RTI_LIB} PUBLIC -Werror)
 find_package(Threads REQUIRED)
 target_link_libraries(${RTI_LIB} PUBLIC Threads::Threads)
 
-# Option for enabling federate authentication by RTI.
-option(AUTH "Federate authentication by RTI enabled." OFF)
+# If AUTH is defined, then the RTI will be able to authenticate federates. By default, this is off.
+if (NOT DEFINED AUTH)
+    set(AUTH OFF)
+ENDIF()
+
 IF(AUTH MATCHES ON)
   target_compile_definitions(${RTI_LIB} PUBLIC __RTI_AUTH__)
   # Find OpenSSL and link to it
@@ -98,6 +102,30 @@ ENDIF(AUTH MATCHES ON)
 
 # Link the main target with the library.
 target_link_libraries(${RTI_MAIN} PRIVATE ${RTI_LIB})
+
+# Add semantic versioning
+# Get the version from the project definition
+set(RTI_VERSION "${PROJECT_VERSION}")
+
+# Get the current commit hash using git
+find_package(Git REQUIRED)
+execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE RTI_COMMIT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the current build date
+string(TIMESTAMP RTI_BUILD_DATE "%Y-%m-%d")
+
+# Add compile definitions for versioning
+target_compile_definitions(${RTI_LIB} PUBLIC 
+    RTI_VERSION="${RTI_VERSION}"
+    RTI_COMMIT="${RTI_COMMIT}"
+    RTI_BUILD_DATE="${RTI_BUILD_DATE}"
+)
+
 
 install(
     TARGETS RTI

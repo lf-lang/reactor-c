@@ -72,13 +72,15 @@ typedef struct _lf_tag_advancement_barrier {
  * The default policy is `defer`: adjust the tag to that the minimum
  * interarrival time is satisfied.
  * The `drop` policy simply drops events that are scheduled too early.
- * The `replace` policy will attempt to replace the value of the event
- * that it preceded it. Unless the preceding event has already been
- * handled, its gets assigned the value of the new event. If the
+ * The `replace` policy will attempt to replace the payload of
+ * the preceding event. Unless the preceding event has already been
+ * handled, it gets assigned the value of the new event. If the
  * preceding event has already been popped off the event queue, the
  * `defer` policy is fallen back to.
+ * The `update` policy drops the preceding event, if it is still in the event queue, and updates it with
+ * the newly scheduled event.
  */
-typedef enum { defer, drop, replace } lf_spacing_policy_t;
+typedef enum { defer, drop, replace, update } lf_spacing_policy_t;
 
 /**
  * Status of a given port at a given logical time.
@@ -251,8 +253,8 @@ struct trigger_t {
  * An allocation record that is used by a destructor for a reactor
  * to free memory that has been dynamically allocated for the particular
  * instance of the reactor.  This will be an element of linked list.
- * If the indirect field is true, then the allocated pointer points to
- * pointer to allocated memory, rather than directly to the allocated memory.
+ * The `allocated` pointer points to the allocated memory, and the `next`
+ * pointer points to the next allocation record (or NULL if there are no more).
  */
 typedef struct allocation_record_t {
   void* allocated;
@@ -277,6 +279,9 @@ typedef struct self_base_t {
   struct allocation_record_t* allocations;
   struct reaction_t* executing_reaction; // The currently executing reaction of the reactor.
   environment_t* environment;
+  char* name;          // The name of the reactor. If a bank, appended with [index].
+  char* full_name;     // The full name of the reactor or NULL if lf_reactor_full_name() is not called.
+  self_base_t* parent; // The parent of this reactor.
 #if !defined(LF_SINGLE_THREADED)
   void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
                        // It is not declared as such to avoid a dependence on platform.h.

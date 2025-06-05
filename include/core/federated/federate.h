@@ -164,9 +164,24 @@ typedef struct federate_instance_t {
   tag_t last_sent_LTC;
 
   /**
-   * A record of the most recently sent NET (next event tag) message.
+   * A record of the most recently sent NET (next event tag) signal.
    */
   tag_t last_sent_NET;
+
+  /**
+   * A record of the most recently skipped NET (next event tag) signal.
+   */
+  tag_t last_skipped_NET;
+
+  /**
+   * Indicator of whether this federate has received any DNET (downstream next event tag) signal.
+   */
+  bool received_any_DNET;
+
+  /**
+   * A record of the most recent DNET (downstream next event tag) signal.
+   */
+  tag_t last_DNET;
 
   /**
    * For use in federates with centralized coordination, the minimum
@@ -206,7 +221,7 @@ typedef enum parse_rti_code_t { SUCCESS, INVALID_PORT, INVALID_HOST, INVALID_USE
 // Global variables
 
 /**
- * Mutex lock held while performing socket write and close operations.
+ * Mutex lock held while performing outbound socket write and close operations.
  */
 extern lf_mutex_t lf_outbound_socket_mutex;
 

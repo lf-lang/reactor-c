@@ -117,6 +117,8 @@ void termination() {
 
 void usage(int argc, const char* argv[]) {
   lf_print("\nCommand-line arguments: \n");
+  lf_print("  -v, --version");
+  lf_print("   The version of the RTI.\n");
   lf_print("  -i, --id <n>");
   lf_print("   The ID of the federation that this RTI will control.\n");
   lf_print("  -n, --number_of_federates <n>");
@@ -136,12 +138,19 @@ void usage(int argc, const char* argv[]) {
   lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
+  lf_print("  -d, --disable_dnet Turn off the use of DNET signals.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
     lf_print("%s ", argv[i]);
   }
   lf_print("\n");
+}
+
+static void print_version_and_exit() {
+  printf("RTI %s %s %s\n", RTI_VERSION, RTI_COMMIT, RTI_BUILD_DATE);
+  normal_termination = true;
+  exit(0);
 }
 
 int process_clock_sync_args(int argc, const char* argv[]) {
@@ -208,7 +217,9 @@ int process_clock_sync_args(int argc, const char* argv[]) {
 
 int process_args(int argc, const char* argv[]) {
   for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
+    if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
+      print_version_and_exit();
+    } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
       if (argc < i + 2) {
         lf_print_error("--id needs a string argument.");
         usage(argc, argv);
@@ -263,6 +274,8 @@ int process_args(int argc, const char* argv[]) {
       rti.authentication_enabled = true;
     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
       rti.base.tracing_enabled = true;
+    } else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dnet_disabled") == 0) {
+      rti.base.dnet_disabled = true;
     } else if (strcmp(argv[i], " ") == 0) {
       // Tolerate spaces
       continue;
@@ -316,9 +329,9 @@ int main(int argc, const char* argv[]) {
   assert(rti.base.number_of_scheduling_nodes < UINT16_MAX);
 
   // Allocate memory for the federates
-  rti.base.scheduling_nodes =
-      (scheduling_node_t**)calloc(rti.base.number_of_scheduling_nodes, sizeof(scheduling_node_t*));
-  for (uint16_t i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
+  int n = rti.base.number_of_scheduling_nodes;
+  rti.base.scheduling_nodes = (scheduling_node_t**)calloc(n, sizeof(scheduling_node_t*));
+  for (uint16_t i = 0; i < n; i++) {
     federate_info_t* fed_info = (federate_info_t*)calloc(1, sizeof(federate_info_t));
     initialize_federate(fed_info, i);
     rti.base.scheduling_nodes[i] = (scheduling_node_t*)fed_info;

@@ -37,15 +37,12 @@
 #define NEVER_TAG                                                                                                      \
   (tag_t) { .time = NEVER, .microstep = NEVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define NEVER_TAG_INITIALIZER                                                                                          \
-  { NEVER, NEVER_MICROSTEP }
+#define NEVER_TAG_INITIALIZER {NEVER, NEVER_MICROSTEP}
 #define FOREVER_TAG                                                                                                    \
   (tag_t) { .time = FOREVER, .microstep = FOREVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define FOREVER_TAG_INITIALIZER                                                                                        \
-  { FOREVER, FOREVER_MICROSTEP }
-#define ZERO_TAG                                                                                                       \
-  (tag_t) { .time = 0LL, .microstep = 0u }
+#define FOREVER_TAG_INITIALIZER {FOREVER, FOREVER_MICROSTEP}
+#define ZERO_TAG (tag_t){.time = 0LL, .microstep = 0u}
 
 // Returns true if timeout has elapsed.
 #define CHECK_TIMEOUT(start, duration) (lf_time_physical() > ((start) + (duration)))
@@ -114,6 +111,15 @@ tag_t lf_tag_add(tag_t a, tag_t b);
 instant_t lf_time_add(instant_t a, interval_t b);
 
 /**
+ * @brief Return an instant minus an interval, saturating on overflow and underflow.
+ *
+ * @param a
+ * @param b
+ * @return instant_t
+ */
+instant_t lf_time_subtract(instant_t a, interval_t b);
+
+/**
  * Compare two tags. Return -1 if the first is less than
  * the second, 0 if they are equal, and +1 if the first is
  * greater than the second. A tag is greater than another if
@@ -161,6 +167,14 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval);
  * @param interval The time interval.
  */
 tag_t lf_delay_strict(tag_t tag, interval_t interval);
+
+/**
+ * @brief Return the greatest tag earlier than the given tag.
+ *
+ * If the given tag is `FOREVER_TAG` or `NEVER_TAG`, however, just return the given tag.
+ * @param tag The tag.
+ */
+tag_t lf_tag_latest_earlier(tag_t tag);
 
 /**
  * Return the current logical time in nanoseconds.

@@ -56,14 +56,27 @@ void lf_set_stop_tag(environment_t* env, tag_t tag);
 
 /**
  * @brief Return the global STP offset on advancement of logical time for federated execution.
+ * @deprecated Use lf_get_sta() instead.
  */
 interval_t lf_get_stp_offset(void);
 
 /**
+ * @brief Return the global STA (safe to advance) offset for federated execution.
+ */
+interval_t lf_get_sta(void);
+
+/**
  * @brief Set the global STP offset on advancement of logical time for federated execution.
- * @param offset A positive time value to be applied as the STP offset.
+ * @param offset A non-negative time value to be applied as the STP offset.
+ * @deprecated Use lf_set_sta() instead.
  */
 void lf_set_stp_offset(interval_t offset);
+
+/**
+ * @brief Set the global STA (safe to advance) offset for federated execution.
+ * @param offset A non-negative time value to be applied as the STA offset.
+ */
+void lf_set_sta(interval_t offset);
 
 #endif // FEDERATED_DECENTRALIZED
 
@@ -127,6 +140,27 @@ void lf_free_all_reactors(void);
  * @param self The self struct of the reactor.
  */
 void lf_free_reactor(self_base_t* self);
+
+/**
+ * @brief Return the instance name of the reactor.
+ *
+ * The instance name is the name of given to the instance created by the `new` operator in LF.
+ * If the instance is in a bank, then the name will have a suffix of the form `[bank_index]`.
+ *
+ * @param self The self struct of the reactor.
+ */
+const char* lf_reactor_name(self_base_t* self);
+
+/**
+ * @brief Return the full name of the reactor.
+ *
+ * The fully qualified name of a reactor is the instance name of the reactor concatenated with the names of all
+ * of its parents, separated by dots. If the reactor or any of its parents is a bank, then the name
+ * will have a suffix of the form `[bank_index]`.
+ *
+ * @param self The self struct of the reactor.
+ */
+const char* lf_reactor_full_name(self_base_t* self);
 
 #endif /* REACTOR_H */
 /** @} */

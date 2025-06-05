@@ -56,8 +56,8 @@ extern int _lf_count_payload_allocations;
  * @brief Global STA (safe to advance) offset uniformly applied to advancement of each
  * time step in federated execution.
  *
- * This can be retrieved in user code by calling lf_get_stp_offset() and adjusted by
- * calling lf_set_stp_offset(interval_t offset).
+ * This can be retrieved in user code by calling lf_get_sta() and adjusted by
+ * calling lf_set_sta(interval_t offset).
  */
 interval_t lf_fed_STA_offset = 0LL;
 
@@ -152,15 +152,47 @@ void lf_set_stop_tag(environment_t* env, tag_t tag) {
   }
 }
 
+const char* lf_reactor_name(self_base_t* self) { return self->name; }
+
+const char* lf_reactor_full_name(self_base_t* self) {
+  if (self->full_name != NULL) {
+    return self->full_name;
+  }
+  // First find the length of the full name.
+  size_t name_len = strlen(self->name);
+  size_t len = name_len;
+  self_base_t* parent = self->parent;
+  while (parent != NULL) {
+    len++; // For the dot.
+    len += strlen(parent->name);
+    parent = parent->parent;
+  }
+  self->full_name = (char*)lf_allocate(len + 1, sizeof(char), &self->allocations);
+  self->full_name[len] = '\0'; // Null terminate the string.
+
+  size_t location = len - name_len;
+  memcpy(&self->full_name[location], self->name, name_len);
+  parent = self->parent;
+  while (parent != NULL) {
+    location--;
+    self->full_name[location] = '.';
+    size_t parent_len = strlen(parent->name);
+    location -= parent_len;
+    memcpy(&self->full_name[location], parent->name, parent_len);
+    parent = parent->parent;
+  }
+  return self->full_name;
+}
+
 #ifdef FEDERATED_DECENTRALIZED
 
 interval_t lf_get_stp_offset() { return lf_fed_STA_offset; }
 
-void lf_set_stp_offset(interval_t offset) {
-  if (offset > 0LL) {
-    lf_fed_STA_offset = offset;
-  }
-}
+interval_t lf_get_sta() { return lf_fed_STA_offset; }
+
+void lf_set_stp_offset(interval_t offset) { lf_set_sta(offset); }
+
+void lf_set_sta(interval_t offset) { lf_fed_STA_offset = offset; }
 
 #endif // FEDERATED_DECENTRALIZED
 
@@ -354,7 +386,8 @@ event_t* lf_get_new_event(environment_t* env) {
   return e;
 }
 
-void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+bool _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   interval_t delay = 0;
 
@@ -368,16 +401,17 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     e->trigger = timer;
     e->base.tag = (tag_t){.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
-    return;
+    return result;
   }
 #endif
   if (timer->offset == 0) {
     for (int i = 0; i < timer->number_of_reactions; i++) {
       _lf_trigger_reaction(env, timer->reactions[i], -1);
+      result = true;
       tracepoint_schedule(env, timer, 0LL); // Trace even though schedule is not called.
     }
     if (timer->period == 0) {
-      return;
+      return result;
     } else {
       // Schedule at t + period.
       delay = timer->period;
@@ -399,13 +433,15 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
     tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
   }
+  return result;
 }
 
-void _lf_initialize_timers(environment_t* env) {
+bool _lf_initialize_timers(environment_t* env) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   for (int i = 0; i < env->timer_triggers_size; i++) {
     if (env->timer_triggers[i] != NULL) {
-      _lf_initialize_timer(env, env->timer_triggers[i]);
+      result = _lf_initialize_timer(env, env->timer_triggers[i]) || result;
     }
   }
 
@@ -415,6 +451,8 @@ void _lf_initialize_timers(environment_t* env) {
     event_t* e = lf_get_new_event(env);
     lf_recycle_event(env, e);
   }
+
+  return result;
 }
 
 void _lf_trigger_startup_reactions(environment_t* env) {

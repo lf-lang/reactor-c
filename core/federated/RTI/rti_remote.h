@@ -31,14 +31,13 @@
 
 #include "lf_types.h"
 #include "pqueue_tag.h"
+#include "socket_common.h"
 
 /** Time allowed for federates to reply to stop request. */
 #define MAX_TIME_FOR_REPLY_TO_STOP_REQUEST SEC(30)
 
 /////////////////////////////////////////////
 //// Data structures
-
-typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
 /**
  * Information about a federate known to the RTI, including its runtime state,
@@ -154,6 +153,7 @@ typedef struct rti_remote_t {
    * Boolean indicating that authentication is enabled.
    */
   bool authentication_enabled;
+
   /**
    * Boolean indicating that a stop request is already in progress.
    */
