@@ -13,10 +13,6 @@
 #include "util.h"
 #include "socket_common.h"
 
-#ifndef NUMBER_OF_FEDERATES
-#define NUMBER_OF_FEDERATES 1
-#endif
-
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 

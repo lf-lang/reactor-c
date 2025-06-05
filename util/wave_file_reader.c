@@ -1,8 +1,7 @@
 /**
  * @file
  * @author Edward A. Lee
- * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ *
  * @brief Utility function for reading WAV audio files.
  *
  * See wave_file_reader.h for instructions.

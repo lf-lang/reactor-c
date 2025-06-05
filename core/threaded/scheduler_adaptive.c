@@ -1,8 +1,7 @@
 /**
  * @file
  * @author Peter Donovan
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief This is a non-priority-driven scheduler. See scheduler.h for documentation.
  */
 #include "lf_types.h"

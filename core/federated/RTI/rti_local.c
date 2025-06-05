@@ -1,11 +1,10 @@
 /**
  * @file
- * @author Erling Jellum (erling.r.jellum@ntnu.no)
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * @brief Local RTI implementation.
+ * @author Erling Jellum
+ * @author Edward A. Lee
+ * @author Chadlia Jerad
+ * @author Soroush Bateni
  *
  * This file implements the enclave coordination logic.
  * Here we are dealing with multiple mutexes. To avoid deadlocking we follow the
