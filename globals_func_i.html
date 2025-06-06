@@ -6,6 +6,7 @@
 <meta name="generator" content="Doxygen 1.14.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>reactor-c: Globals</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -18,6 +19,9 @@
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -25,8 +29,9 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign">
-   <div id="projectname">reactor-c
+   <div id="projectname">reactor-c<span id="projectnumber">&#160;1.0</span>
    </div>
    <div id="projectbrief">C Runtime for Lingua Franca</div>
   </td>
@@ -92,15 +97,21 @@ $(function(){initNavTree('globals_func_i.html','',''); });
 <div class="textblock">Here is a list of all functions with links to the files they belong to:</div>
 
 <h3 class="doxsection"><a id="index_i" name="index_i"></a>- i -</h3><ul>
-<li>if()&#160;:&#160;<a class="el" href="d6/df3/hashmap_8h.html#a8e6b2068271907802fcd4b9b567adab1">hashmap.h</a></li>
-<li>in_no_particular_order()&#160;:&#160;<a class="el" href="da/db5/pqueue_8c.html#a987e40d356a70d4799d6fe56920d3b8f">pqueue.c</a>, <a class="el" href="dc/d66/pqueue_8h.html#a987e40d356a70d4799d6fe56920d3b8f">pqueue.h</a></li>
-<li>in_reverse_order()&#160;:&#160;<a class="el" href="da/db5/pqueue_8c.html#a19d650d18c331602f44c642bce2456e8">pqueue.c</a>, <a class="el" href="dc/d66/pqueue_8h.html#a19d650d18c331602f44c642bce2456e8">pqueue.h</a></li>
-<li>init_sched_instance()&#160;:&#160;<a class="el" href="da/d4c/scheduler__instance_8c.html#ae1e2bc9f2178b26c2ac18fe126beaac5">scheduler_instance.c</a>, <a class="el" href="d6/dee/scheduler__instance_8h.html#a763b254fdbe81abb51ce307567969306">scheduler_instance.h</a></li>
-<li>init_shutdown_mutex()&#160;:&#160;<a class="el" href="d6/d63/socket__common_8c.html#adc2dc02aa0e242eab3574240e90984b4">socket_common.c</a>, <a class="el" href="de/dbd/socket__common_8h.html#adc2dc02aa0e242eab3574240e90984b4">socket_common.h</a></li>
-<li>initialize_global()&#160;:&#160;<a class="el" href="dd/d37/reactor__common_8c.html#a4b9fe00b97fa37e9602b85b7086acec1">reactor_common.c</a>, <a class="el" href="d7/d0e/reactor__common_8h.html#a42d0bf55641d6ff4390081175de65496">reactor_common.h</a></li>
-<li>initialize_lf_thread_id()&#160;:&#160;<a class="el" href="da/dfb/low__level__platform_8h.html#a9c1687eb39a627d51c8b28159ce0fb89">low_level_platform.h</a>, <a class="el" href="d0/d31/lf__platform__util_8c.html#a9c1687eb39a627d51c8b28159ce0fb89">lf_platform_util.c</a></li>
-<li>initialize_mode_capsule_t()&#160;:&#160;<a class="el" href="d5/d44/impl_8c.html#ad74ee204e40e6ea89b3a472bf645e848">impl.c</a></li>
-<li>is_alphanumeric()&#160;:&#160;<a class="el" href="d1/de2/tracepoint__to__rs_8c.html#a5e0f13cfdfc4d99fda016a7f9bd8e481">tracepoint_to_rs.c</a></li>
+<li>in_no_particular_order()&#160;:&#160;<a class="el" href="group__Internal.html#ga987e40d356a70d4799d6fe56920d3b8f">pqueue.h</a></li>
+<li>in_reverse_order()&#160;:&#160;<a class="el" href="group__Internal.html#ga19d650d18c331602f44c642bce2456e8">pqueue.h</a></li>
+<li>init_sched_instance()&#160;:&#160;<a class="el" href="scheduler__instance_8h.html#a763b254fdbe81abb51ce307567969306">scheduler_instance.h</a></li>
+<li>init_shutdown_mutex()&#160;:&#160;<a class="el" href="group__Federated.html#gadc2dc02aa0e242eab3574240e90984b4">socket_common.h</a></li>
+<li>initialize_enclave_info()&#160;:&#160;<a class="el" href="group__RTI.html#gaf934cc54979bcf640a7868377daab5e2">rti_local.h</a></li>
+<li>initialize_federate()&#160;:&#160;<a class="el" href="group__RTI.html#gab32a595d53f125832570251023d10c46">rti_remote.h</a></li>
+<li>initialize_global()&#160;:&#160;<a class="el" href="group__Internal.html#ga42d0bf55641d6ff4390081175de65496">reactor_common.h</a></li>
+<li>initialize_lf_thread_id()&#160;:&#160;<a class="el" href="group__Platform.html#ga32bb18b9d9ab98e40bb5bcb57dec682d">low_level_platform.h</a></li>
+<li>initialize_local_rti()&#160;:&#160;<a class="el" href="group__RTI.html#ga167855af2f7fb010609dceda0a59b43d">rti_local.h</a></li>
+<li>initialize_RTI()&#160;:&#160;<a class="el" href="group__RTI.html#ga0aefafd71cb0b057a604a04f1af61174">rti_remote.h</a></li>
+<li>initialize_rti_common()&#160;:&#160;<a class="el" href="group__RTI.html#gadd2a2ad3c8a9f8e6cde5ecbcb83d7e8d">rti_common.h</a></li>
+<li>initialize_scheduling_node()&#160;:&#160;<a class="el" href="group__RTI.html#ga9a27b6186b947cfacb408dc3a0829f6e">rti_common.h</a></li>
+<li>invalidate_min_delays()&#160;:&#160;<a class="el" href="group__RTI.html#ga5f7d50fc74bdc38f889c38109c406468">rti_common.h</a></li>
+<li>is_in_cycle()&#160;:&#160;<a class="el" href="group__RTI.html#gab38455d4faf77b4d86dcd77976afe1f1">rti_common.h</a></li>
+<li>is_in_zero_delay_cycle()&#160;:&#160;<a class="el" href="group__RTI.html#ga94101c5bfb54d670a8f47f448e351a34">rti_common.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -108,7 +119,7 @@ $(function(){initNavTree('globals_func_i.html','',''); });
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.14.0 </li>
+    <li class="footer">Generated on <span class="timestamp"></span> for reactor-c by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.14.0 </li>
   </ul>
 </div>
 </body>

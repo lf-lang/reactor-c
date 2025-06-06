@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['present_0',['present',['../d6/d1d/lf__types_8h.html#a759ba374f75ea0025b9af1bb35f14d7eaaeb73d7cb56b19bff3d9f80426ed3267',1,'lf_types.h']]]
+  ['lf_5fsched_5ffair_0',['LF_SCHED_FAIR',['../group__Platform.html#ggadc74ec49eb5cc6eceda1447090d61ab6aad0c30324e2299f1ab579a9db51ae994',1,'low_level_platform.h']]],
+  ['lf_5fsched_5fpriority_1',['LF_SCHED_PRIORITY',['../group__Platform.html#ggadc74ec49eb5cc6eceda1447090d61ab6a31d917200c3ceb3735770c9acef3eb5e',1,'low_level_platform.h']]],
+  ['lf_5fsched_5ftimeslice_2',['LF_SCHED_TIMESLICE',['../group__Platform.html#ggadc74ec49eb5cc6eceda1447090d61ab6aa94c07b6d2e7cf9564d407bdb0d5eb3f',1,'low_level_platform.h']]]
 ];

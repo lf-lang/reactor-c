@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['hashset_20c_0',['hashset c',['..//Users/runner/work/reactor-c/reactor-c/core/utils/hashset/README.md#autotoc_md0',1,'hashset.c'],['..//Users/runner/work/reactor-c/reactor-c/include/core/utils/hashset/README.md#autotoc_md2',1,'hashset.c']]]
+  ['general_20guidelines_0',['General guidelines',['../contributing.html#autotoc_md10',1,'']]],
+  ['getting_20started_1',['Getting started',['../intro.html#autotoc_md2',1,'']]],
+  ['groups_2',['Groups',['../contributing.html#autotoc_md5',1,'']]],
+  ['guidelines_3',['General guidelines',['../contributing.html#autotoc_md10',1,'']]]
 ];

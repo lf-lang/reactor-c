@@ -6,6 +6,7 @@
 <meta name="generator" content="Doxygen 1.14.0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>reactor-c: Globals</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -18,6 +19,9 @@
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -25,8 +29,9 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign">
-   <div id="projectname">reactor-c
+   <div id="projectname">reactor-c<span id="projectnumber">&#160;1.0</span>
    </div>
    <div id="projectbrief">C Runtime for Lingua Franca</div>
   </td>
@@ -92,21 +97,17 @@ $(function(){initNavTree('globals_func_t.html','',''); });
 <div class="textblock">Here is a list of all functions with links to the files they belong to:</div>
 
 <h3 class="doxsection"><a id="index_t" name="index_t"></a>- t -</h3><ul>
-<li>Tag_str()&#160;:&#160;<a class="el" href="d3/de4/python__tag_8c.html#aef75a24263a58bf77f97b340c475168e">python_tag.c</a></li>
-<li>termination()&#160;:&#160;<a class="el" href="dd/d37/reactor__common_8c.html#aa329f59a16f5617b5195f2c05872c9e9">reactor_common.c</a>, <a class="el" href="d7/d0e/reactor__common_8h.html#aa329f59a16f5617b5195f2c05872c9e9">reactor_common.h</a>, <a class="el" href="d5/df4/trace__util_8c.html#a06d2cf592cdae0fc5924998df16fa6b5">trace_util.c</a></li>
-<li>test_get()&#160;:&#160;<a class="el" href="d7/de8/hashmap__test_8c.html#a9cbf8a60e28ad1f04512b85eacc0d961">hashmap_test.c</a></li>
-<li>test_pop()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#ab99487c8772f0a2352d4fc7c19c852ee">vector_test.c</a></li>
-<li>test_push()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#a33e88bfb6ebc1b959a7b1eccfda7b972">vector_test.c</a></li>
-<li>test_pushall()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#a9df69439a437b74bb3e71fe53a38beff">vector_test.c</a></li>
-<li>test_put()&#160;:&#160;<a class="el" href="d7/de8/hashmap__test_8c.html#a0288244b2ea6b62ea72403eb8f3835bb">hashmap_test.c</a></li>
-<li>test_random_access()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#a2ff1464413a77e8995205324cf6a2841">vector_test.c</a></li>
-<li>test_vote()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#a299e216c88627899d75dc49ec80dc065">vector_test.c</a></li>
-<li>thread_delete()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#a7e13d8cd4be82282f670d872bc95bf81">ThreadWrapper.h</a>, <a class="el" href="d8/d48/_thread_wrapper_8cpp.html#a7e13d8cd4be82282f670d872bc95bf81">ThreadWrapper.cpp</a></li>
-<li>thread_join()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#a55361ff32a457702594486bd3d9a1869">ThreadWrapper.h</a>, <a class="el" href="d8/d48/_thread_wrapper_8cpp.html#a1675b07636fc1e3308831d509960da82">ThreadWrapper.cpp</a></li>
-<li>thread_new()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#a3568e74f6efcbbebd1b84bca88b27846">ThreadWrapper.h</a>, <a class="el" href="d8/d48/_thread_wrapper_8cpp.html#a3568e74f6efcbbebd1b84bca88b27846">ThreadWrapper.cpp</a></li>
-<li>thread_start()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#a4af6feae8070f713ad31b02de0730a71">ThreadWrapper.h</a>, <a class="el" href="d8/d48/_thread_wrapper_8cpp.html#a12a8d463ba0862b019132b3921fe4909">ThreadWrapper.cpp</a></li>
-<li>thread_terminate()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#aaac285a525d959905cd463a3adeb3828">ThreadWrapper.h</a>, <a class="el" href="d8/d48/_thread_wrapper_8cpp.html#aaac285a525d959905cd463a3adeb3828">ThreadWrapper.cpp</a></li>
-<li>to_camel_case()&#160;:&#160;<a class="el" href="d1/de2/tracepoint__to__rs_8c.html#a69397bd7ae776fd351d194d6740fe36f">tracepoint_to_rs.c</a></li>
+<li>tag_advance_grant_if_safe()&#160;:&#160;<a class="el" href="group__RTI.html#gaf849510938f837c74cfe8f843cb7dcb2">rti_common.h</a></li>
+<li>termination()&#160;:&#160;<a class="el" href="group__Internal.html#gaa329f59a16f5617b5195f2c05872c9e9">reactor_common.h</a></li>
+<li>tracepoint_federate_from_federate()&#160;:&#160;<a class="el" href="group__Federated.html#ga43868b9ea442f34eedbfe7052247f0a3">tracepoint.h</a></li>
+<li>tracepoint_federate_from_rti()&#160;:&#160;<a class="el" href="group__Federated.html#gab1bd5a0184ea0773425733fe1d9faa1c">tracepoint.h</a></li>
+<li>tracepoint_federate_to_federate()&#160;:&#160;<a class="el" href="group__Federated.html#ga1307585fa1ca4dc4506f0398842115ee">tracepoint.h</a></li>
+<li>tracepoint_federate_to_rti()&#160;:&#160;<a class="el" href="group__Federated.html#gaa074cf1f2690197f9edfd7a115381d6a">tracepoint.h</a></li>
+<li>tracepoint_rti_from_federate()&#160;:&#160;<a class="el" href="group__RTI.html#ga13560f0cae54155219f4d8d9c487b0ef">tracepoint.h</a></li>
+<li>tracepoint_rti_to_federate()&#160;:&#160;<a class="el" href="group__RTI.html#ga0da8aecc05366988f8d929118be90bbe">tracepoint.h</a></li>
+<li>tracepoint_schedule()&#160;:&#160;<a class="el" href="group__Internal.html#ga896f27619ab0582d5a70d8f613567671">tracepoint.h</a></li>
+<li>tracepoint_user_event()&#160;:&#160;<a class="el" href="group__API.html#gacd97e049ba442bdd90f020c0b7c1a4fa">tracepoint.h</a></li>
+<li>tracepoint_user_value()&#160;:&#160;<a class="el" href="group__API.html#ga064170081cf3de9c123b58bdc51b1d4f">tracepoint.h</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -114,7 +115,7 @@ $(function(){initNavTree('globals_func_t.html','',''); });
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.14.0 </li>
+    <li class="footer">Generated on <span class="timestamp"></span> for reactor-c by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.14.0 </li>
   </ul>
 </div>
 </body>

@@ -518,7 +518,7 @@ function initNavTree(toroot,relpath,allMembersFile) {
 
     function constrainPanelWidths(leftPanelWidth,rightPanelWidth,dragLeft) {
       const contentWidth = container.width()-leftPanelWidth-rightPanelWidth;
-      const minContentWidth = 250;
+      const minContentWidth = 300;
       const minPanelWidth = barWidth;
       if (contentWidth<minContentWidth) // need to shrink panels
       {
@@ -641,8 +641,8 @@ function initNavTree(toroot,relpath,allMembersFile) {
     } else {
       container.css({gridTemplateColumns:'auto'});
     }
-    const width = parseInt(Cookie.readSetting(RESIZE_COOKIE_NAME,250));
-    const pagenavWidth = parseInt(Cookie.readSetting(PAGENAV_COOKIE_NAME,250));
+    const width = parseInt(Cookie.readSetting(RESIZE_COOKIE_NAME,300));
+    const pagenavWidth = parseInt(Cookie.readSetting(PAGENAV_COOKIE_NAME,300));
     if (width) { restoreWidth(width+barWidth,pagenavWidth); } else { resizeWidth(); }
     const url = location.href;
     const i=url.indexOf("#");

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['example_0',['Example',['..//Users/runner/work/reactor-c/reactor-c/core/utils/hashset/README.md#autotoc_md1',1,'Example'],['..//Users/runner/work/reactor-c/reactor-c/include/core/utils/hashset/README.md#autotoc_md3',1,'Example']]]
+  ['establishing_20a_20tcp_20connection_0',['Establishing a TCP connection',['../net__common_8h.html#autotoc_md12',1,'']]]
 ];

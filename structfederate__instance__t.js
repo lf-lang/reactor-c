@@ -1,0 +1,24 @@
+var structfederate__instance__t =
+[
+    [ "has_downstream", "structfederate__instance__t.html#ac130c67ec68fe84d6753a54e6e73d59a", null ],
+    [ "has_upstream", "structfederate__instance__t.html#a603662cf0155920b8a76659e7dacb9ef", null ],
+    [ "inbound_p2p_handling_thread_id", "structfederate__instance__t.html#ab441abf042a2ff79099bdf2860aeb058", null ],
+    [ "inbound_socket_listeners", "structfederate__instance__t.html#ac751250db764f954659deb15f1427044", null ],
+    [ "is_last_TAG_provisional", "structfederate__instance__t.html#a05a9586ad89b82d0bf5f969a194ef69c", null ],
+    [ "last_DNET", "structfederate__instance__t.html#a736230ead584f1e37ae91c5a9c7eef1f", null ],
+    [ "last_sent_LTC", "structfederate__instance__t.html#ae95f54a01b0367048faa6460ff86e987", null ],
+    [ "last_sent_NET", "structfederate__instance__t.html#a42618a45ae75b42e1caec4b373471d96", null ],
+    [ "last_skipped_NET", "structfederate__instance__t.html#aea5dc61da0294f35ff2d233111441822", null ],
+    [ "last_TAG", "structfederate__instance__t.html#aa66a2f08ea9173743106c7ff18f1846a", null ],
+    [ "min_delay_from_physical_action_to_federate_output", "structfederate__instance__t.html#a91a34b0d7f0f604c2f21cf062dbe0314", null ],
+    [ "number_of_inbound_p2p_connections", "structfederate__instance__t.html#a6b728a970ccb1ef778dbb9779582d2f2", null ],
+    [ "number_of_outbound_p2p_connections", "structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c", null ],
+    [ "received_any_DNET", "structfederate__instance__t.html#aacdbed93ccac5ebb5c141d30b20baef4", null ],
+    [ "received_stop_request_from_rti", "structfederate__instance__t.html#ae9ecde30fae3a2487757a7bbb33e918e", null ],
+    [ "RTI_socket_listener", "structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004", null ],
+    [ "server_port", "structfederate__instance__t.html#a309c9672d657f20cd1d3661edc7d5179", null ],
+    [ "server_socket", "structfederate__instance__t.html#a20c5d19d5166ec82a09efe072c2f1b49", null ],
+    [ "socket_TCP_RTI", "structfederate__instance__t.html#aacdc19a638ccdc9fae494ce641f4cb04", null ],
+    [ "sockets_for_inbound_p2p_connections", "structfederate__instance__t.html#ac22a97892260d332da6f05194c280f9c", null ],
+    [ "sockets_for_outbound_p2p_connections", "structfederate__instance__t.html#aa4fcfa96a7c2bfd33cf45ddc43ad3437", null ]
+];

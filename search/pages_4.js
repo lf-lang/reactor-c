@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['formatting_0',['Code-formatting',['../d3/dcc/md__r_e_a_d_m_e.html#autotoc_md6',1,'']]]
+  ['formatting_0',['Code style and formatting',['../contributing.html#autotoc_md9',1,'']]]
 ];

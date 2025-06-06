@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['program_0',['Compiling this Program',['../dd/d03/trace__to__influxdb_8c.html#autotoc_md11',1,'']]]
+  ['neighbor_20structure_0',['Conveying the neighbor structure',['../net__common_8h.html#autotoc_md13',1,'']]]
 ];

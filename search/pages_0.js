@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['a_20reactor_20runtime_20implementation_20in_20c_0',['Reactor-C: A reactor runtime implementation in C',['../d3/dcc/md__r_e_a_d_m_e.html#autotoc_md4',1,'']]]
+  ['a_20stop_0',['Requesting a stop',['../net__common_8h.html#autotoc_md16',1,'']]],
+  ['a_20tcp_20connection_1',['Establishing a TCP connection',['../net__common_8h.html#autotoc_md12',1,'']]],
+  ['and_20formatting_2',['Code style and formatting',['../contributing.html#autotoc_md9',1,'']]]
 ];

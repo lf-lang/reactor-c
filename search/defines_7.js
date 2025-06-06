@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['gen_5fname_0',['GEN_NAME',['../db/dc8/pythontarget_8h.html#a3cd389b61ffd75be923fd4ba3b981b91',1,'pythontarget.h']]],
-  ['global_5fenvironment_1',['GLOBAL_ENVIRONMENT',['../de/d26/environment_8h.html#afaff13b938d14da158c3fa1424358353',1,'environment.h']]]
+  ['msg_5ftype_5fstop_5frequest_0',['MSG_TYPE_STOP_REQUEST',['../net__common_8h.html#a8588a57a3ae81bf33c740dfc57103a23',1,'net_common.h']]],
+  ['msg_5ftype_5fstop_5frequest_5freply_1',['MSG_TYPE_STOP_REQUEST_REPLY',['../net__common_8h.html#adbe10e103635ee7ec4bca3226ccebc56',1,'net_common.h']]]
 ];

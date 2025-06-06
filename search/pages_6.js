@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['implementation_20in_20c_0',['Reactor-C: A reactor runtime implementation in C',['../d3/dcc/md__r_e_a_d_m_e.html#autotoc_md4',1,'']]],
-  ['in_20c_1',['Reactor-C: A reactor runtime implementation in C',['../d3/dcc/md__r_e_a_d_m_e.html#autotoc_md4',1,'']]],
-  ['influxdb_2',['InfluxDB',['../dd/d03/trace__to__influxdb_8c.html#autotoc_md12',1,'Setting up InfluxDB'],['../dd/d03/trace__to__influxdb_8c.html#autotoc_md13',1,'Uploading Trace Data to InfluxDB']]],
-  ['installing_3',['Installing',['..//Users/runner/work/reactor-c/reactor-c/util/tracing/README.md#autotoc_md10',1,'Installing'],['..//Users/runner/work/reactor-c/reactor-c/util/tracing/visualization/README.md#autotoc_md15',1,'Installing']]]
+  ['installation_20instructions_0',['RTI Installation Instructions',['../core_2federated_2RTI_2README_8md.html#autotoc_md26',1,'']]],
+  ['installing_1',['Installing',['..//Users/runner/work/reactor-c/reactor-c/util/tracing/README.md#autotoc_md22',1,'Installing'],['..//Users/runner/work/reactor-c/reactor-c/util/tracing/visualization/README.md#autotoc_md24',1,'Installing']]],
+  ['instructions_2',['RTI Installation Instructions',['../core_2federated_2RTI_2README_8md.html#autotoc_md26',1,'']]],
+  ['introduction_3',['Introduction',['../intro.html',1,'']]]
 ];

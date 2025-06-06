@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['billion_0',['BILLION',['../d2/dcd/tag_8h.html#a31f99d9c502b52b5f36dc7e2028c2e80',1,'tag.h']]],
-  ['buffer_5fduration_5fns_1',['BUFFER_DURATION_NS',['../d1/dcb/audio__loop_8h.html#aaee12bd1b49481f758a5a3cf1876268c',1,'audio_loop.h']]],
-  ['buffer_5fsize_2',['BUFFER_SIZE',['../d9/dc7/trace__util_8h.html#a6b20d41d6252e9871430c242cb1a56e7',1,'trace_util.h']]]
+  ['default_5fmax_5freaction_5flevel_0',['DEFAULT_MAX_REACTION_LEVEL',['../scheduler__instance_8h.html#a7c3f7c6b1c85f7572b42fa34fa853973',1,'scheduler_instance.h']]],
+  ['deprecated_1',['DEPRECATED',['../low__level__platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118',1,'low_level_platform.h']]]
 ];

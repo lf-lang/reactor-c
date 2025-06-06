@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['reaction_5ffunction_5ft_0',['reaction_function_t',['../d6/d1d/lf__types_8h.html#a149e5fee1c1841bcc96c72f200601d90',1,'lf_types.h']]],
-  ['reaction_5fstats_5ft_1',['reaction_stats_t',['../d8/d60/trace__to__csv_8c.html#a0ffac77b479b7e93faf906f50c4b6a95',1,'trace_to_csv.c']]],
-  ['reaction_5ft_2',['reaction_t',['../d6/d1d/lf__types_8h.html#a1f0f71b6c8e0c54c65cbfaa154b40694',1,'lf_types.h']]],
-  ['reactor_5fmode_5ft_3',['reactor_mode_t',['../d9/daa/modes_8h.html#a17df34d9c9d092aa6a399512b6a023e4',1,'modes.h']]]
+  ['scheduling_5fnode_5fstate_5ft_0',['scheduling_node_state_t',['../group__RTI.html#ga991b71a39df8e306998cbc9d15f9e381',1,'rti_common.h']]],
+  ['scheduling_5fnode_5ft_1',['scheduling_node_t',['../group__RTI.html#gad4b7689a045ef99a1c86753731fb8836',1,'rti_common.h']]],
+  ['self_5fbase_5ft_2',['self_base_t',['../lf__token_8h.html#a6202eb05c29c30bfd6a8fc203de6422f',1,'self_base_t:&#160;lf_token.h'],['../group__Internal.html#ga6202eb05c29c30bfd6a8fc203de6422f',1,'self_base_t:&#160;lf_types.h']]],
+  ['socket_5fstat_5ft_3',['socket_stat_t',['../group__Federated.html#ga7e49fed082ec884e26d761e1c4f0d428',1,'clock-sync.h']]],
+  ['socket_5ftype_5ft_4',['socket_type_t',['../group__Federated.html#ga45bb50f52b617bc6a30719cbaafd075d',1,'socket_common.h']]],
+  ['string_5',['string',['../group__API.html#ga4505c08c065b48840a30eedd9845cce2',1,'lf_types.h']]]
 ];

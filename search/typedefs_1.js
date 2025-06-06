@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['allocation_5frecord_5ft_0',['allocation_record_t',['../d6/d1d/lf__types_8h.html#a416845ec4469b3186de047c32402f5e8',1,'lf_types.h']]]
+  ['clock_5fsync_5fstat_0',['clock_sync_stat',['../group__RTI.html#ga39e986990bfc20d1512b61ab119ce628',1,'rti_remote.h']]],
+  ['custom_5fscheduler_5fdata_5ft_1',['custom_scheduler_data_t',['../scheduler__instance_8h.html#a3b87d9f4ab1631bfa6dbea7f81bfdd38',1,'scheduler_instance.h']]]
 ];
