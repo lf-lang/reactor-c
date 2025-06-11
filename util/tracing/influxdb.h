@@ -357,13 +357,12 @@ int post_curl(influx_v2_client_t* c, ...) {
   curl_easy_setopt(curl, CURLOPT_URL, url_string);
   free(url_string);
 
-  char* token_string = (char*)malloc(120 * sizeof(char));
-  sprintf(token_string, "Authorization: Token %s", c->token);
+  char token_string[120];
+  snprintf(token_string, sizeof(token_string), "Authorization: Token %s", c->token);
 
   struct curl_slist* list = NULL;
   list = curl_slist_append(list, token_string);
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
-  free(token_string);
 
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
