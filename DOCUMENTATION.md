@@ -11,25 +11,11 @@ The code in reactor-c is documented with Javadoc-style comments that are automat
 
 ## Building Doc Files Locally
 
-To build the doc files locally in your clone of the reactor-c repo, we use sphinx.
+To clone the repo and build the doc files locally, simply do this:
 
-### Prerequisites
-
-- Install `python3`, `pip3` and `doxygen`
-- Install the required Python modules:
 ```
-  pip3 install sphinx sphinx_sitemap sphinx-rtd-theme breathe exhale
+git clone git@github.com:lf-lang/reactor-c.git
+cd reactor-c/docs
+make docs
+open docs/_build/html/index.html
 ```
-
-### Build Documentation Files
-
-- Check out this repo and build the docs:
-  - `git clone git@github.com:lf-lang/reactor-c.git`
-  - `cd reactor-c/docs`
-  - `make html`
-
-### View Documentation Files
-
-- Point your browser to the generated HTML page:
-  - `firefox _build/html/index.html`
-
