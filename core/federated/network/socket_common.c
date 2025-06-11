@@ -235,7 +235,7 @@ int connect_to_socket(int sock, const char* hostname, int port) {
     }
     // Convert port number to string.
     char str[6];
-    sprintf(str, "%u", used_port);
+    snprintf(str, sizeof(str), "%u", used_port);
 
     // Get address structure matching hostname and hints criteria, and
     // set port to the port number provided in str. There should only

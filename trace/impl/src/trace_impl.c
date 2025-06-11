@@ -261,9 +261,9 @@ void lf_tracing_global_init(char* process_name, char* process_names, int fedid, 
   process_id = fedid;
   char filename[100];
   if (strcmp(process_name, "rti") == 0) {
-    sprintf(filename, "%s.lft", process_name);
+    snprintf(filename, sizeof(filename), "%s.lft", process_name);
   } else {
-    sprintf(filename, "%s_%d.lft", process_name, process_id);
+    snprintf(filename, sizeof(filename), "%s_%d.lft", process_name, process_id);
   }
   trace_new(filename);
   start_trace(&trace, max_num_local_threads);
