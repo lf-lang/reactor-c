@@ -192,7 +192,9 @@ int accept_socket(int socket, int rti_socket) {
       // Got a socket
       break;
     } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
-      lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
+      if (errno != ECONNABORTED) {
+        lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
+      }
       break;
     } else if (errno == EPERM) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
