@@ -1,0 +1,5 @@
+add_library(lf-trace-api INTERFACE)
+add_library(lf::trace-api ALIAS lf-trace-api)
+include(${CMAKE_CURRENT_LIST_DIR}/types/CMakeLists.txt)
+target_link_libraries(lf-trace-api INTERFACE lf::trace-api-types)
+target_include_directories(lf-trace-api INTERFACE ${CMAKE_CURRENT_LIST_DIR})

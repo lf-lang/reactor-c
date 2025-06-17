@@ -1,48 +1,21 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @author Hou Seng Wong (housengw@berkeley.edu)
+ * @author Edward A. Lee
+ * @author Soroush Bateni
+ * @author Hou Seng Wong
  *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-Copyright (c) 2021, The University of Texas at Dallas.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Target-specific runtime functions for the Python target language.
- * This API layer can be used in conjunction with:
- *     target Python;
+ * @brief Target-specific runtime functions for the Python target language.
  *
- * Note for target language developers. This is one way of developing a target language where
+ * Note for target language developers:
+ * This is one way of developing a target language where
  * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
+ * APIs which interact with the lf_set and lf_schedule APIs. This file can act as a
  * template for future runtime developement for target languages.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/PythonGenerator.xtend.
  */
 
 #ifndef PYTHON_TARGET_H
 #define PYTHON_TARGET_H
-
 
 #define PY_SSIZE_T_CLEAN
 
@@ -64,64 +37,96 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "MODULE_NAME is undefined"
 #endif
 
-#define CONCAT(x,y) x##y
-#define GEN_NAME(x,y) CONCAT(x,y)
+#define CONCAT(x, y) x##y
+#define GEN_NAME(x, y) CONCAT(x, y)
 #define STRINGIFY(X) #X
 #define TOSTRING(x) STRINGIFY(x)
 
-
 ////////////// Global variables ///////////////
-extern PyObject *globalPythonModule;
-extern PyObject *globalPythonModuleDict;
+extern PyObject* globalPythonModule;
+extern PyObject* globalPythonModuleDict;
 extern PyObject* global_pickler;
 extern environment_t* top_level_environment;
 
 //////////////////////////////////////////////////////////////
 /////////////  schedule Functions (to schedule an action)
+
 /**
- * Schedule an action to occur with the specified value and time offset
- * with no payload (no value conveyed).
- * See schedule_token(), which this uses, for details.
- * @param self Pointer to the calling object.
+ * @brief Schedule an action to occur with the specified time offset and (optional) value.
+ *
+ * This function is callable in Python by calling action_name.schedule(offset, value).
+ * @param self Pointer to the calling Python object, an action.
  * @param args contains:
- *      - action: Pointer to an action on the self struct.
  *      - offset: The time offset over and above that in the action.
- **/
-PyObject* py_schedule(PyObject *self, PyObject *args);
-
-/**
- * Schedule an action to occur with the specified value and time offset
- * with a copy of the specified value.
- * See reactor.h for documentation.
+ *      - value: Optional value to be conveyed.
  */
-PyObject* py_schedule_copy(PyObject *self, PyObject *args);
-
+PyObject* py_schedule(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 /////////////  Python Helper Functions (called from Python code)
 
 /**
- * Stop execution at the conclusion of the current logical time.
+ * @brief Stop execution at the conclusion of the current logical time.
+ * @param self The calling Python object
+ * @param args Empty
+ * @return Py_None
  */
-PyObject* py_request_stop(PyObject *self, PyObject *args);
+PyObject* py_request_stop(PyObject* self, PyObject* args);
+
+/**
+ * @brief Return the source directory path (where the main .lf file is) as a string.
+ * @param self The lf object.
+ * @param args Empty.
+ * @return PyObject* A Python string.
+ */
+PyObject* py_source_directory(PyObject* self, PyObject* args);
+
+/**
+ * @brief Return the root project directory path as a string.
+ * @param self The lf object.
+ * @param args Empty.
+ * @return PyObject* A Python string.
+ */
+PyObject* py_package_directory(PyObject* self, PyObject* args);
+
+/**
+ * @brief Check whether the deadline of the currently executing reaction has passed.
+ *
+ * If the deadline has passed and invoke_deadline_handler is True,
+ * invoke the deadline handler, if there is one.
+ *
+ * @param self The Python object of the reactor.
+ * @param args contains:
+ *      - invoke_deadline_handler: Whether to invoke the deadline handler if the deadline has passed.
+ * @return True if the deadline has passed and a deadline handler is invoked, False otherwise.
+ */
+PyObject* py_check_deadline(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
-PyObject* py_main(PyObject *self, PyObject *args);
+
+/**
+ * The main function of this Python module.
+ *
+ * @param py_args A single object, which should be a list
+ *  of arguments taken from sys.argv().
+ */
+PyObject* py_main(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 /////////////  Python Helper Functions
 
 /**
- * A function that is called any time a Python reaction is called with
+ * @brief Convert a C port to a Python port capsule.
+ *
+ * This function is called any time a Python reaction is called with
  * ports as inputs and outputs. This function converts ports that are
  * either a multiport or a non-multiport into a port_capsule.
  *
  * First, the void* pointer is stored in a PyCapsule. If the port is not
  * a multiport, the value and is_present fields are copied verbatim. These
  * feilds then can be accessed from the Python code as port.value and
- * port.is_present.
- * If the value is absent, it will be set to None.
+ * port.is_present. If the value is absent, it will be set to None.
  *
  * For multiports, the value of the port_capsule (i.e., port.value) is always
  * set to None and is_present is set to false.
@@ -130,50 +135,89 @@ PyObject* py_main(PyObject *self, PyObject *args);
 PyObject* convert_C_port_to_py(void* port, int width);
 
 /**
- * A helper function to convert C actions to Python action capsules
- * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend for details about C actions
+ * @brief Convert a C action to a Python action capsule.
+ *
  * Python actions have the following fields (for more information @see generic_action_capsule_struct):
- *   PyObject_HEAD
- *   PyObject* action;
- *   PyObject* value;
- *   bool is_present;
+ * *  PyObject* action;
+ * *  PyObject* value;
+ * *  bool is_present;
  *
  * The input to this function is a pointer to a C action, which might or
  * might not contain a value and an is_present field. To simplify the assumptions
- * made by this function, the "value" and "is_present" are passed to the function
+ * made by this function, the "value" and "is_present" fields are passed to the function
  * instead of expecting them to exist.
  *
- * The void* pointer to the C action instance is encapsulated in a PyCapsule instead of passing an exposed pointer through
- * Python. @see https://docs.python.org/3/c-api/capsule.html
- * This encapsulation is done by calling PyCapsule_New(action, "name_of_the_container_in_the_capsule", NULL),
- * where "name_of_the_container_in_the_capsule" is an agreed-upon container name inside the capsule. This
- * capsule can then be treated as a PyObject* and safely passed through Python code. On the other end
- * (which is in schedule functions), PyCapsule_GetPointer(recieved_action,"action") can be called to retrieve
- * the void* pointer into recieved_action.
- **/
+ * The void* pointer to the C action instance is encapsulated in a PyCapsule instead of passing an exposed pointer
+ *through Python. @see https://docs.python.org/3/c-api/capsule.html This encapsulation is done by calling
+ *PyCapsule_New(action, "name_of_the_container_in_the_capsule", NULL), where "name_of_the_container_in_the_capsule" is
+ *an agreed-upon container name inside the capsule. This capsule can then be treated as a PyObject* and safely passed
+ *through Python code. On the other end (which is in schedule functions), PyCapsule_GetPointer(recieved_action,"action")
+ *can be called to retrieve the void* pointer into recieved_action.
+ */
 PyObject* convert_C_action_to_py(void* action);
 
 /**
- * Invoke a Python func in class[instance_id] from module.
- * Class instances in generated Python code are always instantiated in a
- * list of template classs[_class(params), _class(params), ...] (note the extra s) regardless
- * of whether a bank is used or not. If there is no bank, or a bank of width 1, the list will be
- * instantiated as classs[_class(params)].
+ * @brief Get a Python function from a reactor instance.
  *
- * This function would thus call classs[0] to access the first instance in a bank and so on.
- *
- * Possible optimizations include: - Not loading the module each time (by storing it in global memory),
- *                                 - Keeping a persistent argument table
- * @param module The Python module to load the function from. In embedded mode, it should
- *               be set to "__main__"
- * @param class The name of the list of classes in the generated Python code
- * @param instance_id The element number in the list of classes. class[instance_id] points to a class instance
- * @param func The reaction functino to be called
- * @param pArgs the PyList of arguments to be sent to function func()
+ * @param module The Python module name (e.g. "__main__")
+ * @param class The class name
+ * @param instance_id The instance ID
+ * @param func The function name to get
+ * @return The Python function object, or NULL if not found
  */
 PyObject* get_python_function(string module, string class, int instance_id, string func);
 
-/*
+/**
+ * @brief Get a Python reactor instance by its module, class name, and instance ID.
+ *
+ * @param module The Python module name (e.g. "__main__")
+ * @param class The class name
+ * @param instance_id The instance ID
+ * @return The Python reactor instance, or NULL if not found
+ */
+PyObject* get_python_instance(string module, string class, int instance_id);
+
+/**
+ * @brief Set a python field to a hold a C pointer.
+ *
+ * @param module The module name.
+ * @param class The class name of the Python object.
+ * @param instance_id The instance ID of the Python object.
+ * @param field The field name to set.
+ * @param pointer The pointer for the field to hold.
+ * @return int 0 if successful.
+ */
+int set_python_field_to_c_pointer(string module, string class, int instance_id, string field, void* pointer);
+
+/**
+ * @brief Load the Serializer class from package name.
+ *
+ * @param package_name Name of the python package to load
+ * @return Initialized Serializer class
+ */
+PyObject* load_serializer(string package_name);
+
+/**
+ * @brief Serialize Python object to a bytes object using external serializer.
+ *
+ * @param obj The Python object to serialize
+ * @param custom_serializer The custom Serializer class
+ * @return Serialized Python bytes object
+ */
+PyObject* custom_serialize(PyObject* obj, PyObject* custom_serializer);
+
+/**
+ * @brief Deserialize Python object from a bytes object using external serializer.
+ *
+ * @param serialized_pyobject The serialized bytes Python object
+ * @param custom_serializer The custom Serializer class
+ * @return Deserialized Python object
+ */
+PyObject* custom_deserialize(PyObject* serialized_pyobject, PyObject* custom_serializer);
+
+/**
+ * @brief Initialize the Python module.
+ *
  * The Python runtime will call this function to initialize the module.
  * The name of this function is dynamically generated to follow
  * the requirement of PyInit_MODULE_NAME. Since the MODULE_NAME is not
@@ -182,7 +226,6 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
  * For example for a module named LinguaFrancaFoo, this function
  * will be called PyInit_LinguaFrancaFoo
  */
-PyMODINIT_FUNC
-GEN_NAME(PyInit_,MODULE_NAME)(void);
+PyMODINIT_FUNC GEN_NAME(PyInit_, MODULE_NAME)(void);
 
 #endif // PYTHON_TARGET_H

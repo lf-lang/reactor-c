@@ -1,0 +1,18 @@
+---
+BasedOnStyle: LLVM
+Language: C
+IndentWidth: 2
+BreakConstructorInitializersBeforeComma: 'true'
+PointerAlignment: Left
+IncludeBlocks: Preserve
+SortIncludes: false
+ColumnLimit: 120
+---
+BasedOnStyle: LLVM
+Language: Cpp
+IndentWidth: 2
+BreakConstructorInitializersBeforeComma: 'true'
+PointerAlignment: Left
+IncludeBlocks: Preserve
+SortIncludes: false
+ColumnLimit: 120

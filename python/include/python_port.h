@@ -1,34 +1,10 @@
 /**
  * @file
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @autohr Hou Seng Wong (housengw@berkeley.edu)
+ * @author Edward A. Lee
+ * @author Soroush Bateni
+ * @author Hou Seng Wong
  *
- * @section LICENSE
-Copyright (c) 2022, The University of California at Berkeley.
-Copyright (c) 2021, The University of Texas at Dallas.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Implementation of functions defined in @see pythontarget.h
+ * @brief Python port support for Lingua Franca.
  */
 
 #ifndef PYTHON_PORT_H
@@ -55,15 +31,15 @@ extern PyTypeObject py_port_capsule_t;
  * as its first element a token_type_t.
  */
 typedef struct {
-    size_t element_size;                     // token_type_t
-    void (*destructor) (void* value);        // token_type_t
-    void* (*copy_constructor) (void* value); // token_type_t
-    lf_token_t* token;                       // token_template_t
-    size_t length;                           // token_template_t
-    bool is_present;                         // lf_port_base_t
-    lf_port_internal_t _base;                // lf_port_internal_t
-    PyObject* value;
-    FEDERATED_GENERIC_EXTENSION
+  size_t element_size;                    // token_type_t
+  void (*destructor)(void* value);        // token_type_t
+  void* (*copy_constructor)(void* value); // token_type_t
+  lf_token_t* token;                      // token_template_t
+  size_t length;                          // token_template_t
+  bool is_present;                        // lf_port_base_t
+  lf_port_internal_t _base;               // lf_port_internal_t
+  PyObject* value;
+  FEDERATED_GENERIC_EXTENSION
 } generic_port_instance_struct;
 
 /**
@@ -89,13 +65,12 @@ typedef struct {
  * current_index: Used to facilitate iterative functions (@see port_iter)
  **/
 typedef struct {
-    PyObject_HEAD
-    PyObject* port;
-    PyObject* value;
-    bool is_present;
-    int width;
-    long current_index;
-    FEDERATED_CAPSULE_EXTENSION
+  PyObject_HEAD PyObject* port;
+  PyObject* value;
+  bool is_present;
+  int width;
+  long current_index;
+  FEDERATED_CAPSULE_EXTENSION
 } generic_port_capsule_struct;
 
 void python_count_decrement(void* py_object);

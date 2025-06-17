@@ -1,0 +1,19 @@
+name: clang-format-review
+
+# You can be more specific, but it currently only works on pull requests
+on: [pull_request]
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install clang-tidy and clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy
+          sudo apt-get install -y pipx
+          pipx install clang-format
+          clang-format --version
+      - name: Analyze
+        run: make format-check

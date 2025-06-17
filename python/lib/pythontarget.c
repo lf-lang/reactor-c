@@ -1,151 +1,83 @@
 /**
  * @file
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @author Hou Seng Wong (housengw@berkeley.edu)
+ * @author Soroush Bateni
+ * @author Hou Seng Wong
  *
- * @section LICENSE
-Copyright (c) 2022, The University of California at Berkeley.
-Copyright (c) 2021, The University of Texas at Dallas.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Implementation of functions defined in @see pythontarget.h
+ * @brief Implementation of functions defined in @see pythontarget.h
  */
 
 #include "pythontarget.h"
 #include "modal_models/definitions.h"
-#include "platform.h"  // defines MAX_PATH on Windows
+#include "platform.h" // defines MAX_PATH on Windows
 #include "python_action.h"
 #include "python_port.h"
 #include "python_tag.h"
 #include "python_time.h"
-#include "reactor_common.h"
+#include "reactor.h"
 #include "reactor.h"
 #include "tag.h"
 #include "util.h"
+#include "environment.h"
+#include "api/schedule.h"
 
 ////////////// Global variables ///////////////
 // The global Python object that holds the .py module that the
 // C runtime interacts with
-PyObject *globalPythonModule = NULL;
+PyObject* globalPythonModule = NULL;
 
 // The dictionary of the Python module that is used to load
 // class objects from
-PyObject *globalPythonModuleDict = NULL;
-
+PyObject* globalPythonModuleDict = NULL;
 
 // Import pickle to enable native serialization
 PyObject* global_pickler = NULL;
 
 environment_t* top_level_environment = NULL;
 
-
 //////////// schedule Function(s) /////////////
 
-/**
- * Schedule an action to occur with the specified time offset
- * with no payload (no value conveyed). This function is callable
- * in Python by calling action_name.schedule(offset).
- * Some examples include:
- *  action_name.schedule(5)
- *  action_name.schedule(NSEC(5))
- * See schedule_token(), which this uses, for details.
- * @param self Pointer to the calling object.
- * @param args contains:
- *      - action: Pointer to an action on the self struct.
- *      - offset: The time offset over and above that in the action.
- **/
-PyObject* py_schedule(PyObject *self, PyObject *args) {
-    generic_action_capsule_struct* act = (generic_action_capsule_struct*)self;
-    long long offset;
-    PyObject* value = NULL;
+PyObject* py_schedule(PyObject* self, PyObject* args) {
+  generic_action_capsule_struct* act = (generic_action_capsule_struct*)self;
+  long long offset;
+  PyObject* value = NULL;
 
-    if (!PyArg_ParseTuple(args, "L|O", &offset, &value))
-        return NULL;
+  if (!PyArg_ParseTuple(args, "L|O", &offset, &value))
+    return NULL;
 
-    lf_action_base_t* action = (lf_action_base_t*)PyCapsule_GetPointer(act->action,"action");
-    if (action == NULL) {
-        lf_print_error("Null pointer received.");
-        exit(1);
-    }
+  lf_action_base_t* action = (lf_action_base_t*)PyCapsule_GetPointer(act->action, "action");
+  if (action == NULL) {
+    lf_print_error("Null pointer received.");
+    exit(1);
+  }
 
-    trigger_t* trigger = action->trigger;
-    lf_token_t* t = NULL;
+  trigger_t* trigger = action->trigger;
+  lf_token_t* t = NULL;
 
-    // Check to see if value exists and token is not NULL
-    if (value && (trigger->tmplt.token != NULL)) {
-        // DEBUG: adjust the element_size (might not be necessary)
-        trigger->tmplt.token->type->element_size = sizeof(PyObject*);
-        trigger->tmplt.type.element_size = sizeof(PyObject*);
-        t = _lf_initialize_token_with_value(&trigger->tmplt, value, 1);
+  // Check to see if value exists and token is not NULL
+  if (value && (trigger->tmplt.token != NULL)) {
+    // DEBUG: adjust the element_size (might not be necessary)
+    trigger->tmplt.token->type->element_size = sizeof(PyObject*);
+    trigger->tmplt.type.element_size = sizeof(PyObject*);
+    t = _lf_initialize_token_with_value(&trigger->tmplt, value, 1);
 
-        // Also give the new value back to the Python action itself
-        Py_INCREF(value);
-        act->value = value;
-    }
+    // Also give the new value back to the Python action itself
+    Py_INCREF(value);
+    act->value = value;
+  }
 
+  // Pass the token along
+  lf_schedule_token(action, offset, t);
 
-    // Pass the token along
-    _lf_schedule_token(action, offset, t);
+  // FIXME: handle is not passed to the Python side
 
-    // FIXME: handle is not passed to the Python side
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-
-/**
- * Schedule an action to occur with the specified value and time offset
- * with a copy of the specified value.
- * See reactor.h for documentation.
- */
-PyObject* py_schedule_copy(PyObject *self, PyObject *args) {
-    generic_action_capsule_struct* act;
-    long long offset;
-    PyObject* value;
-    int length;
-
-    if (!PyArg_ParseTuple(args, "OLOi" ,&act, &offset, &value, &length))
-        return NULL;
-
-    lf_action_base_t* action = (lf_action_base_t*)PyCapsule_GetPointer(act->action,"action");
-    if (action == NULL) {
-        lf_print_error("Null pointer received.");
-        exit(1);
-    }
-
-    _lf_schedule_copy(action, offset, value, length);
-
-    // FIXME: handle is not passed to the Python side
-
-    Py_INCREF(Py_None);
-    return Py_None;
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 /**
  * Prototype for the main function.
  */
-int lf_reactor_c_main(int argc, const char *argv[]);
+int lf_reactor_c_main(int argc, const char* argv[]);
 
 /**
  * Prototype for lf_request_stop().
@@ -157,11 +89,31 @@ void lf_request_stop(void);
 /**
  * Stop execution at the conclusion of the current logical time.
  */
-PyObject* py_request_stop(PyObject *self, PyObject *args) {
-    lf_request_stop();
+PyObject* py_request_stop(PyObject* self, PyObject* args) {
+  lf_request_stop();
 
-    Py_INCREF(Py_None);
-    return Py_None;
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+PyObject* py_source_directory(PyObject* self, PyObject* args) {
+#ifndef LF_SOURCE_DIRECTORY
+  // This should not occur.
+  PyErr_SetString(PyExc_RuntimeError, "LF_SOURCE_DIRECTORY constant is not defined.");
+  return NULL;
+#else
+  return PyUnicode_DecodeFSDefault(LF_SOURCE_DIRECTORY);
+#endif
+}
+
+PyObject* py_package_directory(PyObject* self, PyObject* args) {
+#ifndef LF_PACKAGE_DIRECTORY
+  // This should not occur.
+  PyErr_SetString(PyExc_RuntimeError, "LF_PACKAGE_DIRECTORY constant is not defined.");
+  return NULL;
+#else
+  return PyUnicode_DecodeFSDefault(LF_PACKAGE_DIRECTORY);
+#endif
 }
 
 /**
@@ -179,59 +131,59 @@ PyObject* py_request_stop(PyObject *self, PyObject *args) {
  *  command-line argument.
  */
 const char** _lf_py_parse_argv_impl(PyObject* py_argv, size_t* argc) {
-    if (argc == NULL) {
-        lf_print_error_and_exit("_lf_py_parse_argv_impl called with an unallocated argc argument.");
-    }
+  if (argc == NULL) {
+    lf_print_error_and_exit("_lf_py_parse_argv_impl called with an unallocated argc argument.");
+  }
 
-    // List of arguments
-    const char** argv;
+  // List of arguments
+  const char** argv;
 
-    // Read the optional argvs
-    PyObject* py_argv_parsed = NULL;
+  // Read the optional argvs
+  PyObject* py_argv_parsed = NULL;
 
-    if (!PyArg_ParseTuple(py_argv, "|O", &py_argv_parsed)) {
-        PyErr_SetString(PyExc_TypeError, "Could not get argvs.");
-        return NULL;
-    }
+  if (!PyArg_ParseTuple(py_argv, "|O", &py_argv_parsed)) {
+    PyErr_SetString(PyExc_TypeError, "Could not get argvs.");
+    return NULL;
+  }
 
-    if (py_argv_parsed == NULL) {
-        // Build a generic argv with just one argument, which
-        // is the module name.
-        *argc = 1;
-        argv = malloc(2 * sizeof(char*));
-        argv[0] = TOSTRING(MODULE_NAME);
-        argv[1] = NULL;
-        return argv;
-    }
-
-    Py_ssize_t argv_size = PyList_Size(py_argv_parsed);
-    argv = malloc(argv_size * sizeof(char *));
-    for (Py_ssize_t i = 0; i < argv_size; i++) {
-        PyObject* list_item = PyList_GetItem(py_argv_parsed, i);
-        if (list_item == NULL) {
-            if (PyErr_Occurred()) {
-                PyErr_Print();
-            }
-            lf_print_error_and_exit("Could not get argv list item %zd.", i);
-        }
-
-        PyObject *encoded_string = PyUnicode_AsEncodedString(list_item, "UTF-8", "strict");
-        if (encoded_string == NULL) {
-            if (PyErr_Occurred()) {
-                PyErr_Print();
-            }
-            lf_print_error_and_exit("Failed to encode argv list item %zd.", i);
-        }
-
-        argv[i] = PyBytes_AsString(encoded_string);
-
-        if (PyErr_Occurred()) {
-            PyErr_Print();
-            lf_print_error_and_exit("Could not convert argv list item %zd to char*.", i);
-        }
-    }
-    *argc = argv_size;
+  if (py_argv_parsed == NULL) {
+    // Build a generic argv with just one argument, which
+    // is the module name.
+    *argc = 1;
+    argv = malloc(2 * sizeof(char*));
+    argv[0] = TOSTRING(MODULE_NAME);
+    argv[1] = NULL;
     return argv;
+  }
+
+  Py_ssize_t argv_size = PyList_Size(py_argv_parsed);
+  argv = malloc(argv_size * sizeof(char*));
+  for (Py_ssize_t i = 0; i < argv_size; i++) {
+    PyObject* list_item = PyList_GetItem(py_argv_parsed, i);
+    if (list_item == NULL) {
+      if (PyErr_Occurred()) {
+        PyErr_Print();
+      }
+      lf_print_error_and_exit("Could not get argv list item %zd.", i);
+    }
+
+    PyObject* encoded_string = PyUnicode_AsEncodedString(list_item, "UTF-8", "strict");
+    if (encoded_string == NULL) {
+      if (PyErr_Occurred()) {
+        PyErr_Print();
+      }
+      lf_print_error_and_exit("Failed to encode argv list item %zd.", i);
+    }
+
+    argv[i] = PyBytes_AsString(encoded_string);
+
+    if (PyErr_Occurred()) {
+      PyErr_Print();
+      lf_print_error_and_exit("Could not convert argv list item %zd to char*.", i);
+    }
+  }
+  *argc = argv_size;
+  return argv;
 }
 
 static bool py_initialized = false;
@@ -240,54 +192,86 @@ static bool py_initialized = false;
  * @brief Initialize the Python interpreter if it hasn't already been.
  */
 void py_initialize_interpreter(void) {
-    if (!py_initialized) {
-        py_initialized = true;
+  if (!py_initialized) {
+    py_initialized = true;
 
-        // Initialize the Python interpreter
-        Py_Initialize();
+    // Initialize the Python interpreter
+    Py_Initialize();
 
-        LF_PRINT_DEBUG("Initialized the Python interpreter.");
-    }
+    LF_PRINT_DEBUG("Initialized the Python interpreter.");
+  }
+}
+
+/**
+ * @brief Get the lf_self pointer from the Python object for a reactor.
+ *
+ * @param self The Python object for the reactor.
+ * @return void* The lf_self pointer or NULL if it is not found.
+ */
+void* get_lf_self_pointer(PyObject* self) {
+  // Get the lf_self pointer from the Python object
+  PyObject* py_lf_self = PyObject_GetAttrString(self, "lf_self");
+  if (py_lf_self == NULL) {
+    PyErr_SetString(PyExc_AttributeError, "lf_self attribute not found");
+    return NULL;
+  }
+  // Convert the Python long to a void pointer
+  void* self_ptr = PyLong_AsVoidPtr(py_lf_self);
+  Py_DECREF(py_lf_self);
+  if (self_ptr == NULL) {
+    PyErr_SetString(PyExc_ValueError, "Invalid lf_self pointer");
+    return NULL;
+  }
+  return self_ptr;
+}
+
+PyObject* py_check_deadline(PyObject* self, PyObject* args) {
+  PyObject* py_self;
+  int invoke_deadline_handler = 1; // Default to True
+
+  if (!PyArg_ParseTuple(args, "O|p", &py_self, &invoke_deadline_handler)) {
+    return NULL;
+  }
+  void* self_ptr = get_lf_self_pointer(py_self);
+  if (self_ptr == NULL) {
+    return NULL;
+  }
+  bool result = lf_check_deadline(self_ptr, invoke_deadline_handler);
+  return PyBool_FromLong(result);
 }
 
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
-/**
- * The main function of this Python module.
- *
- * @param py_args A single object, which should be a list
- *  of arguments taken from sys.argv().
- */
+
 PyObject* py_main(PyObject* self, PyObject* py_args) {
 
-    LF_PRINT_DEBUG("Initializing main.");
+  LF_PRINT_DEBUG("Initializing main.");
 
-    size_t argc;
-    const char** argv = _lf_py_parse_argv_impl(py_args, &argc);
+  size_t argc;
+  const char** argv = _lf_py_parse_argv_impl(py_args, &argc);
 
-    py_initialize_interpreter();
+  py_initialize_interpreter();
 
-    // Load the pickle module
+  // Load the pickle module
+  if (global_pickler == NULL) {
+    global_pickler = PyImport_ImportModule("pickle");
     if (global_pickler == NULL) {
-        global_pickler = PyImport_ImportModule("pickle");
-        if (global_pickler == NULL) {
-            if (PyErr_Occurred()) {
-                PyErr_Print();
-            }
-            lf_print_error_and_exit("Failed to load the module 'pickle'.");
-        }
+      if (PyErr_Occurred()) {
+        PyErr_Print();
+      }
+      lf_print_error_and_exit("Failed to load the module 'pickle'.");
     }
+  }
 
-    // Store a reference to the top-level environment
-    int num_environments = _lf_get_environments(&top_level_environment);
-    lf_assert(num_environments == 1, "Python target only supports programs with a single environment/enclave");
+  // Store a reference to the top-level environment
+  int num_environments = _lf_get_environments(&top_level_environment);
+  LF_ASSERT(num_environments == 1, "Python target only supports programs with a single environment/enclave");
 
-    Py_BEGIN_ALLOW_THREADS
-    lf_reactor_c_main(argc, argv);
-    Py_END_ALLOW_THREADS
+  Py_BEGIN_ALLOW_THREADS lf_reactor_c_main(argc, argv);
+  Py_END_ALLOW_THREADS
 
-    Py_INCREF(Py_None);
-    return Py_None;
+      Py_INCREF(Py_None);
+  return Py_None;
 }
 
 ///// Python Module Built-ins
@@ -299,30 +283,24 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
  * For example, for MODULE_NAME=Foo, this struct will
  * be called Foo_methods.
  * start() initiates the main loop in the C core library
- * @see schedule_copy
- * @see request_stop
  */
-static PyMethodDef GEN_NAME(MODULE_NAME,_methods)[] = {
-  {"start", py_main, METH_VARARGS, NULL},
-  {"schedule_copy", py_schedule_copy, METH_VARARGS, NULL},
-  {"tag", py_lf_tag, METH_NOARGS, NULL},
-  {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
-  {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
-  {NULL, NULL, 0, NULL}
-};
-
+static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
+    {"start", py_main, METH_VARARGS, NULL},
+    {"tag", py_lf_tag, METH_NOARGS, NULL},
+    {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
+    {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
+    {"source_directory", py_source_directory, METH_NOARGS, "Source directory path for .lf file"},
+    {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
+    {"check_deadline", (PyCFunction)py_check_deadline, METH_VARARGS,
+     "Check whether the deadline of the currently executing reaction has passed"},
+    {NULL, NULL, 0, NULL}};
 
 /**
  * Define the Lingua Franca module.
  * The MODULE_NAME is given by the generated code.
  */
-static PyModuleDef MODULE_NAME = {
-    PyModuleDef_HEAD_INIT,
-    TOSTRING(MODULE_NAME),
-    "LinguaFranca Python Module",
-    -1,
-    GEN_NAME(MODULE_NAME,_methods)
-};
+static PyModuleDef MODULE_NAME = {PyModuleDef_HEAD_INIT, TOSTRING(MODULE_NAME), "LinguaFranca Python Module", -1,
+                                  GEN_NAME(MODULE_NAME, _methods)};
 
 //////////////////////////////////////////////////////////////
 /////////////  Module Initialization
@@ -336,75 +314,74 @@ static PyModuleDef MODULE_NAME = {
  * For example for a module named LinguaFrancaFoo, this function
  * will be called PyInit_LinguaFrancaFoo
  */
-PyMODINIT_FUNC
-GEN_NAME(PyInit_,MODULE_NAME)(void) {
+PyMODINIT_FUNC GEN_NAME(PyInit_, MODULE_NAME)(void) {
 
-    PyObject *m;
+  PyObject* m;
 
-    // As of Python 11, this function may be called before py_main, so we need to
-    // initialize the interpreter.
-    py_initialize_interpreter();
+  // As of Python 11, this function may be called before py_main, so we need to
+  // initialize the interpreter.
+  py_initialize_interpreter();
 
-    // Initialize the port_capsule type
-    if (PyType_Ready(&py_port_capsule_t) < 0) {
-        return NULL;
-    }
+  // Initialize the port_capsule type
+  if (PyType_Ready(&py_port_capsule_t) < 0) {
+    return NULL;
+  }
 
-    // Initialize the action_capsule type
-    if (PyType_Ready(&py_action_capsule_t) < 0) {
-        return NULL;
-    }
+  // Initialize the action_capsule type
+  if (PyType_Ready(&py_action_capsule_t) < 0) {
+    return NULL;
+  }
 
-    // Initialize the Tag type
-    if (PyType_Ready(&PyTagType) < 0) {
-        return NULL;
-    }
+  // Initialize the Tag type
+  if (PyType_Ready(&PyTagType) < 0) {
+    return NULL;
+  }
 
-    // Initialize the Time type
-    if (PyType_Ready(&PyTimeType) < 0) {
-        return NULL;
-    }
+  // Initialize the Time type
+  if (PyType_Ready(&PyTimeType) < 0) {
+    return NULL;
+  }
 
-    m = PyModule_Create(&MODULE_NAME);
+  m = PyModule_Create(&MODULE_NAME);
 
-    if (m == NULL) {
-        return NULL;
-    }
+  if (m == NULL) {
+    return NULL;
+  }
 
-    initialize_mode_capsule_t(m);
+  initialize_mode_capsule_t(m);
 
-    // Add the port_capsule type to the module's dictionary
-    Py_INCREF(&py_port_capsule_t);
-    if (PyModule_AddObject(m, "port_capsule", (PyObject *) &py_port_capsule_t) < 0) {
-        Py_DECREF(&py_port_capsule_t);
-        Py_DECREF(m);
-        return NULL;
-    }
+  // Add the port_capsule type to the module's dictionary
+  Py_INCREF(&py_port_capsule_t);
+  if (PyModule_AddObject(m, "port_capsule", (PyObject*)&py_port_capsule_t) < 0) {
+    Py_DECREF(&py_port_capsule_t);
+    Py_DECREF(m);
+    return NULL;
+  }
 
-    // Add the action_capsule type to the module's dictionary
-    Py_INCREF(&py_action_capsule_t);
-    if (PyModule_AddObject(m, "action_capsule_t", (PyObject *) &py_action_capsule_t) < 0) {
-        Py_DECREF(&py_action_capsule_t);
-        Py_DECREF(m);
-        return NULL;
-    }
+  // Add the action_capsule type to the module's dictionary
+  Py_INCREF(&py_action_capsule_t);
+  if (PyModule_AddObject(m, "action_capsule_t", (PyObject*)&py_action_capsule_t) < 0) {
+    Py_DECREF(&py_action_capsule_t);
+    Py_DECREF(m);
+    return NULL;
+  }
 
-    // Add the Tag type to the module's dictionary
-    Py_INCREF(&PyTagType);
-    if (PyModule_AddObject(m, "Tag", (PyObject *) &PyTagType) < 0) {
-        Py_DECREF(&PyTagType);
-        Py_DECREF(m);
-        return NULL;
-    }
+  // Add the Tag type to the module's dictionary
+  Py_INCREF(&PyTagType);
+  if (PyModule_AddObject(m, "Tag", (PyObject*)&PyTagType) < 0) {
+    Py_DECREF(&PyTagType);
+    Py_DECREF(m);
+    return NULL;
+  }
 
-    // Add the Time type to the module's dictionary
-    Py_INCREF(&PyTimeType);
-    if (PyModule_AddObject(m, "time", (PyObject *) &PyTimeType) < 0) {
-        Py_DECREF(&PyTimeType);
-        Py_DECREF(m);
-        return NULL;
-    }
-    return m;
+  // Add the Time type to the module's dictionary
+  Py_INCREF(&PyTimeType);
+  if (PyModule_AddObject(m, "time", (PyObject*)&PyTimeType) < 0) {
+    Py_DECREF(&PyTimeType);
+    Py_DECREF(m);
+    return NULL;
+  }
+  return m;
 }
 
 //////////////////////////////////////////////////////////////
@@ -415,280 +392,311 @@ GEN_NAME(PyInit_,MODULE_NAME)(void) {
 /**
  * A function that destroys action capsules
  **/
-void destroy_action_capsule(PyObject* capsule) {
-    free(PyCapsule_GetPointer(capsule, "action"));
-}
+void destroy_action_capsule(PyObject* capsule) { free(PyCapsule_GetPointer(capsule, "action")); }
 
-/**
- * A function that is called any time a Python reaction is called with
- * ports as inputs and outputs. This function converts ports that are
- * either a multiport or a non-multiport into a port_capsule.
- *
- * First, the void* pointer is stored in a PyCapsule. If the port is not
- * a multiport, the value and is_present fields are copied verbatim. These
- * feilds then can be accessed from the Python code as port.value and
- * port.is_present.
- * If the value is absent, it will be set to None.
- *
- * For multiports, the value of the port_capsule (i.e., port.value) is always
- * set to None and is_present is set to false.
- * Individual ports can then later be accessed in Python code as port[idx].
- */
 PyObject* convert_C_port_to_py(void* port, int width) {
-    // Create the port struct in Python
-    PyObject* cap =
-        (PyObject*)PyObject_New(generic_port_capsule_struct, &py_port_capsule_t);
-    if (cap == NULL) {
-        lf_print_error_and_exit("Failed to convert port.");
+  // Create the port struct in Python
+  PyObject* cap = (PyObject*)PyObject_New(generic_port_capsule_struct, &py_port_capsule_t);
+  if (cap == NULL) {
+    lf_print_error_and_exit("Failed to convert port.");
+  }
+  Py_INCREF(cap);
+
+  // Create the capsule to hold the void* port
+  PyObject* capsule = PyCapsule_New(port, "port", NULL);
+  if (capsule == NULL) {
+    lf_print_error_and_exit("Failed to convert port.");
+  }
+  Py_INCREF(capsule);
+
+  // Fill in the Python port struct
+  ((generic_port_capsule_struct*)cap)->port = capsule;
+  ((generic_port_capsule_struct*)cap)->width = width;
+
+  if (width == -2) {
+    generic_port_instance_struct* cport = (generic_port_instance_struct*)port;
+    FEDERATED_ASSIGN_FIELDS(((generic_port_capsule_struct*)cap), cport);
+
+    ((generic_port_capsule_struct*)cap)->is_present = cport->is_present;
+
+    if (cport->value == NULL) {
+      // Value is absent
+      Py_INCREF(Py_None);
+      ((generic_port_capsule_struct*)cap)->value = Py_None;
+      return cap;
     }
 
-    // Create the capsule to hold the void* port
-    PyObject* capsule = PyCapsule_New(port, "port", NULL);
-    if (capsule == NULL) {
-        lf_print_error_and_exit("Failed to convert port.");
-    }
-
-    // Fill in the Python port struct
-    ((generic_port_capsule_struct*)cap)->port = capsule;
-    ((generic_port_capsule_struct*)cap)->width = width;
-
-    if (width == -2) {
-        generic_port_instance_struct* cport = (generic_port_instance_struct *) port;
-        FEDERATED_ASSIGN_FIELDS(((generic_port_capsule_struct*)cap), cport);
-
-        ((generic_port_capsule_struct*)cap)->is_present =
-            cport->is_present;
-
-        if (cport->value == NULL) {
-            // Value is absent
-            Py_INCREF(Py_None);
-            ((generic_port_capsule_struct*)cap)->value = Py_None;
-            return cap;
-        }
-
-        //Py_INCREF(cport->value);
-        ((generic_port_capsule_struct*)cap)->value = cport->value;
-    } else {
-        // Multiport. Value of the multiport itself cannot be accessed, so we set it to
-        // None.
-        Py_INCREF(Py_None);
-        ((generic_port_capsule_struct*)cap)->value = Py_None;
-        ((generic_port_capsule_struct*)cap)->is_present = false;
-    }
-
-    return cap;
-}
-
-/**
- * A helper function to convert C actions to Python action capsules
- * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend for details about C actions
- * Python actions have the following fields (for more informatino @see generic_action_capsule_struct):
- *   PyObject_HEAD
- *   PyObject* action;
- *   PyObject* value;
- *   bool is_present;
- *
- * The input to this function is a pointer to a C action, which might or
- * might not contain a value and an is_present field. To simplify the assumptions
- * made by this function, the "value" and "is_present" are passed to the function
- * instead of expecting them to exist.
- *
- * The void* pointer to the C action instance is encapsulated in a PyCapsule instead of passing an exposed pointer through
- * Python. @see https://docs.python.org/3/c-api/capsule.html
- * This encapsulation is done by calling PyCapsule_New(action, "name_of_the_container_in_the_capsule", NULL),
- * where "name_of_the_container_in_the_capsule" is an agreed-upon container name inside the capsule. This
- * capsule can then be treated as a PyObject* and safely passed through Python code. On the other end
- * (which is in schedule functions), PyCapsule_GetPointer(received_action,"action") can be called to retrieve
- * the void* pointer into received_action.
- **/
-PyObject* convert_C_action_to_py(void* action) {
-    // Convert to trigger_t
-    trigger_t* trigger = ((lf_action_base_t*)action)->trigger;
-
-    // Create the action struct in Python
-    PyObject* cap = (PyObject*)PyObject_New(generic_action_capsule_struct, &py_action_capsule_t);
-    if (cap == NULL) {
-        lf_print_error_and_exit("Failed to convert action.");
-    }
-
-    // Create the capsule to hold the void* action
-    PyObject* capsule = PyCapsule_New(action, "action", NULL);
-    if (capsule == NULL) {
-        lf_print_error_and_exit("Failed to convert action.");
-    }
-
-    // Fill in the Python action struct
-    ((generic_action_capsule_struct*)cap)->action = capsule;
-    ((generic_action_capsule_struct*)cap)->is_present = trigger->status;
-    FEDERATED_ASSIGN_FIELDS(((generic_port_capsule_struct*)cap), ((generic_action_instance_struct*)action));
-
-    // If token is not initialized, that is all we need to set
-    if (trigger->tmplt.token == NULL) {
-        Py_INCREF(Py_None);
-        ((generic_action_capsule_struct*)cap)->value = Py_None;
-        return cap;
-    }
-
-    // Default value is None
-    if (trigger->tmplt.token->value == NULL) {
-        Py_INCREF(Py_None);
-        trigger->tmplt.token->value = Py_None;
-    }
-
-    // Actions in Python always use token type
-    ((generic_action_capsule_struct*)cap)->value = trigger->tmplt.token->value;
-
-    return cap;
-}
-
-/**
- * Invoke a Python func in class[instance_id] from module.
- * Class instances in generated Python code are always instantiated in a
- * list of template classs[_class(params), _class(params), ...] (note the extra s) regardless
- * of whether a bank is used or not. If there is no bank, or a bank of width 1, the list will be
- * instantiated as classs[_class(params)].
- *
- * This function would thus call classs[0] to access the first instance in a bank and so on.
- *
- * Possible optimizations include: - Not loading the module each time (by storing it in global memory),
- *                                 - Keeping a persistent argument table
- * @param module The Python module to load the function from. In embedded mode, it should
- *               be set to "__main__"
- * @param class The name of the list of classes in the generated Python code
- * @param instance_id The element number in the list of classes. class[instance_id] points to a class instance
- * @param func The reaction functino to be called
- * @param pArgs the PyList of arguments to be sent to function func()
- * @return The function or NULL on error.
- */
-PyObject*
-get_python_function(string module, string class, int instance_id, string func) {
-    LF_PRINT_DEBUG("Starting the function start().");
-
-    // Necessary PyObject variables to load the react() function from test.py
-    PyObject* pFileName = NULL;
-    PyObject* pModule = NULL;
-    PyObject* pDict = NULL;
-    PyObject* pClasses = NULL;
-    PyObject* pClass = NULL;
-    PyObject* pFunc = NULL;
-
-    // According to
-    // https://docs.python.org/3/c-api/init.html#non-python-created-threads
-    // the following code does the following:
-    // - Register this thread with the interpreter
-    // - Acquire the GIL (Global Interpreter Lock)
-    // - Store (return) the thread pointer
-    // When done, we should always call PyGILState_Release(gstate);
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure();
-
-    // If the Python module is already loaded, skip this.
-    if (globalPythonModule == NULL) {
-        // Decode the MODULE name into a filesystem compatible string
-        pFileName = PyUnicode_DecodeFSDefault(module);
-
-        // Set the Python search path to be the current working directory
-        char cwd[PATH_MAX];
-        if ( getcwd(cwd, sizeof(cwd)) == NULL) {
-            lf_print_error_and_exit("Failed to get the current working directory.");
-        }
-
-        wchar_t wcwd[PATH_MAX];
-
-        mbstowcs(wcwd, cwd, PATH_MAX);
-
-        Py_SetPath(wcwd);
-
-        LF_PRINT_DEBUG("Loading module %s in %s.", module, cwd);
-
-        pModule = PyImport_Import(pFileName);
-
-        LF_PRINT_DEBUG("Loaded module %p.", pModule);
-
-        // Free the memory occupied by pFileName
-        Py_DECREF(pFileName);
-
-        // Check if the module was correctly loaded
-        if (pModule != NULL) {
-            // Get contents of module. pDict is a borrowed reference.
-            pDict = PyModule_GetDict(pModule);
-            if (pDict == NULL) {
-                PyErr_Print();
-                lf_print_error("Failed to load contents of module %s.", module);
-                /* Release the thread. No Python API allowed beyond this point. */
-                PyGILState_Release(gstate);
-                return NULL;
-            }
-
-            Py_INCREF(pModule);
-            globalPythonModule = pModule;
-            Py_INCREF(pDict);
-            globalPythonModuleDict = pDict;
-
-        }
-    }
-
-    if (globalPythonModule != NULL && globalPythonModuleDict != NULL) {
-        Py_INCREF(globalPythonModule);
-        // Convert the class name to a PyObject
-        PyObject* list_name = PyUnicode_DecodeFSDefault(class);
-
-        // Get the class list
-        Py_INCREF(globalPythonModuleDict);
-        pClasses = PyDict_GetItem(globalPythonModuleDict, list_name);
-        if (pClasses == NULL){
-            PyErr_Print();
-            lf_print_error("Failed to load class list \"%s\" in module %s.", class, module);
-            /* Release the thread. No Python API allowed beyond this point. */
-            PyGILState_Release(gstate);
-            return NULL;
-        }
-
-        Py_DECREF(globalPythonModuleDict);
-
-        pClass = PyList_GetItem(pClasses, instance_id);
-        if (pClass == NULL) {
-            PyErr_Print();
-            lf_print_error("Failed to load class \"%s[%d]\" in module %s.", class, instance_id, module);
-            /* Release the thread. No Python API allowed beyond this point. */
-            PyGILState_Release(gstate);
-            return NULL;
-        }
-
-        LF_PRINT_DEBUG("Loading function %s.", func);
-
-        // Get the function react from test.py
-        pFunc = PyObject_GetAttrString(pClass, func);
-
-        LF_PRINT_DEBUG("Loaded function %p.", pFunc);
-
-        // Check if the funciton is loaded properly
-        // and if it is callable
-        if (pFunc && PyCallable_Check(pFunc)) {
-            LF_PRINT_DEBUG("Calling function %s from class %s[%d].", func , class, instance_id);
-            Py_INCREF(pFunc);
-            /* Release the thread. No Python API allowed beyond this point. */
-            PyGILState_Release(gstate);
-            return pFunc;
-        }
-        else {
-            // Function is not found or it is not callable
-            if (PyErr_Occurred()) {
-                PyErr_Print();
-            }
-            lf_print_error("Function %s was not found or is not callable.", func);
-        }
-        Py_XDECREF(pFunc);
-        Py_DECREF(globalPythonModule);
-    } else {
-        PyErr_Print();
-        lf_print_error("Failed to load \"%s\".", module);
-    }
-
-    LF_PRINT_DEBUG("Done with start().");
-
+    // Py_INCREF(cport->value);
+    ((generic_port_capsule_struct*)cap)->value = cport->value;
+  } else {
+    // Multiport. Value of the multiport itself cannot be accessed, so we set it to
+    // None.
     Py_INCREF(Py_None);
-    /* Release the thread. No Python API allowed beyond this point. */
+    ((generic_port_capsule_struct*)cap)->value = Py_None;
+    ((generic_port_capsule_struct*)cap)->is_present = false;
+  }
+
+  return cap;
+}
+
+PyObject* convert_C_action_to_py(void* action) {
+  // Convert to trigger_t
+  trigger_t* trigger = ((lf_action_base_t*)action)->trigger;
+
+  // Create the action struct in Python
+  PyObject* cap = (PyObject*)PyObject_New(generic_action_capsule_struct, &py_action_capsule_t);
+  if (cap == NULL) {
+    lf_print_error_and_exit("Failed to convert action.");
+  }
+  Py_INCREF(cap);
+
+  // Create the capsule to hold the void* action
+  PyObject* capsule = PyCapsule_New(action, "action", NULL);
+  if (capsule == NULL) {
+    lf_print_error_and_exit("Failed to convert action.");
+  }
+  Py_INCREF(capsule);
+
+  // Fill in the Python action struct
+  ((generic_action_capsule_struct*)cap)->action = capsule;
+  ((generic_action_capsule_struct*)cap)->is_present = trigger->status;
+  FEDERATED_ASSIGN_FIELDS(((generic_port_capsule_struct*)cap), ((generic_action_instance_struct*)action));
+
+  // If token is not initialized, that is all we need to set
+  if (trigger->tmplt.token == NULL) {
+    Py_INCREF(Py_None);
+    ((generic_action_capsule_struct*)cap)->value = Py_None;
+    return cap;
+  }
+
+  // Default value is None
+  if (trigger->tmplt.token->value == NULL) {
+    Py_INCREF(Py_None);
+    trigger->tmplt.token->value = Py_None;
+  }
+
+  // Actions in Python always use token type
+  if (((generic_action_instance_struct*)action)->token != NULL)
+    ((generic_action_capsule_struct*)cap)->value = ((generic_action_instance_struct*)action)->token->value;
+
+  return cap;
+}
+
+PyObject* get_python_function(string module, string class, int instance_id, string func) {
+  LF_PRINT_DEBUG("Getting Python function %s from %s.%s[%d]", func, module, class, instance_id);
+
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  // Get the Python instance first
+  // NOTE: This also acquires the GIL. OK for this to be nested?
+  PyObject* pInstance = get_python_instance(module, class, instance_id);
+  if (pInstance == NULL) {
     PyGILState_Release(gstate);
-    return Py_None;
+    return NULL;
+  }
+
+  // Get the function from the instance
+  PyObject* pFunc = PyObject_GetAttrString(pInstance, func);
+  Py_DECREF(pInstance); // We don't need the instance anymore
+
+  if (pFunc == NULL) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    lf_print_error("Failed to get function %s from instance.", func);
+    return NULL;
+  }
+
+  // Check if the function is callable
+  if (!PyCallable_Check(pFunc)) {
+    PyErr_Print();
+    lf_print_error("Function %s is not callable.", func);
+    Py_DECREF(pFunc);
+    PyGILState_Release(gstate);
+    return NULL;
+  }
+  Py_INCREF(pFunc);
+  PyGILState_Release(gstate);
+  return pFunc;
+}
+
+PyObject* get_python_instance(string module, string class, int instance_id) {
+  LF_PRINT_DEBUG("Getting Python instance for %s.%s[%d]", module, class, instance_id);
+
+  // Necessary PyObject variables
+  PyObject* pFileName = NULL;
+  PyObject* pModule = NULL;
+  PyObject* pDict = NULL;
+  PyObject* pClasses = NULL;
+  PyObject* pInstance = NULL;
+
+  // Acquire the GIL
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  // If the Python module is already loaded, skip this.
+  if (globalPythonModule == NULL) {
+    // Decode the MODULE name into a filesystem compatible string
+    pFileName = PyUnicode_DecodeFSDefault(module);
+
+    // Set the Python search path to be the current working directory
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+      lf_print_error_and_exit("Failed to get the current working directory.");
+    }
+
+    wchar_t wcwd[PATH_MAX];
+    mbstowcs(wcwd, cwd, PATH_MAX);
+
+    // Initialize Python with custom configuration
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+    // Add paths to the configuration
+    PyWideStringList_Append(&config.module_search_paths, wcwd);
+    // Initialize Python with the custom configuration
+    Py_InitializeFromConfig(&config);
+
+    LF_PRINT_DEBUG("Loading module %s in %s.", module, cwd);
+
+    pModule = PyImport_Import(pFileName);
+    Py_DECREF(pFileName);
+
+    // Check if the module was correctly loaded
+    if (pModule != NULL) {
+      pDict = PyModule_GetDict(pModule);
+      if (pDict == NULL) {
+        PyErr_Print();
+        lf_print_error("Failed to load contents of module %s.", module);
+        PyGILState_Release(gstate);
+        return NULL;
+      }
+
+      Py_INCREF(pModule);
+      globalPythonModule = pModule;
+      Py_INCREF(pDict);
+      globalPythonModuleDict = pDict;
+    }
+  }
+
+  if (globalPythonModuleDict != NULL) {
+    // Convert the class name to a PyObject
+    PyObject* list_name = PyUnicode_DecodeFSDefault(class);
+
+    // Get the class list
+    Py_INCREF(globalPythonModuleDict);
+    pClasses = PyDict_GetItem(globalPythonModuleDict, list_name);
+    if (pClasses == NULL) {
+      PyErr_Print();
+      lf_print_error("Failed to load class list \"%s\" in module %s.", class, module);
+      Py_DECREF(globalPythonModuleDict);
+      PyGILState_Release(gstate);
+      return NULL;
+    }
+
+    Py_DECREF(globalPythonModuleDict);
+
+    // Get the specific instance from the list
+    pInstance = PyList_GetItem(pClasses, instance_id);
+    if (pInstance == NULL) {
+      PyErr_Print();
+      lf_print_error("Failed to load instance \"%s[%d]\" in module %s.", class, instance_id, module);
+      PyGILState_Release(gstate);
+      return NULL;
+    }
+
+    // Increment reference count before returning
+    Py_INCREF(pInstance);
+    PyGILState_Release(gstate);
+    return pInstance;
+  }
+
+  PyErr_Print();
+  lf_print_error("Failed to load \"%s\".", module);
+  PyGILState_Release(gstate);
+  return NULL;
+}
+
+int set_python_field_to_c_pointer(string module, string class, int instance_id, string field, void* pointer) {
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  PyObject* py_instance = get_python_instance(module, class, instance_id);
+  if (py_instance == NULL) {
+    lf_print_error("Could not get Python instance");
+    PyGILState_Release(gstate);
+    return -1;
+  }
+  PyObject* ptr = PyLong_FromVoidPtr(pointer);
+  if (ptr == NULL) {
+    Py_DECREF(py_instance);
+    lf_print_error("Could not create Python long from void pointer");
+    PyGILState_Release(gstate);
+    return -1;
+  }
+  if (PyObject_SetAttrString(py_instance, field, ptr) < 0) {
+    Py_DECREF(ptr);
+    Py_DECREF(py_instance);
+    lf_print_error("Could not set lf_self attribute");
+    PyGILState_Release(gstate);
+    return -1;
+  }
+  Py_DECREF(ptr);
+  Py_DECREF(py_instance);
+  PyGILState_Release(gstate);
+  return 0;
+}
+
+PyObject* load_serializer(string package_name) {
+  // import package_name
+  PyObject* pName = PyUnicode_DecodeFSDefault(package_name);
+  PyObject* pModule = PyImport_Import(pName);
+  Py_DECREF(pName);
+  if (PyErr_Occurred())
+    PyErr_Print();
+  if (pModule == NULL)
+    lf_print_error_and_exit("Could not load the custom serializer package '%s'.", package_name);
+  // Get the Serializer class
+  PyObject* SerializerClass = PyObject_GetAttrString(pModule, "Serializer");
+  if (PyErr_Occurred())
+    PyErr_Print();
+  if (SerializerClass == NULL)
+    lf_print_error_and_exit("Could not find class 'Serializer' in module '%s'.", package_name);
+  // Instanciate and initialize Serializer class
+  PyObject* custom_serializer = PyObject_CallObject(SerializerClass, NULL);
+  if (PyErr_Occurred())
+    PyErr_Print();
+  if (custom_serializer == NULL)
+    lf_print_error_and_exit("Could not instantiate class 'Serializer' in module '%s'.", package_name);
+  lf_print_log("Successfully loaded custom serializer package '%s'.\n", package_name);
+  return custom_serializer;
+}
+
+PyObject* custom_serialize(PyObject* obj, PyObject* custom_serializer) {
+  if (custom_serializer == NULL)
+    lf_print_error_and_exit("Serializer is null.");
+  PyObject* serializer_serialize = PyObject_GetAttrString(custom_serializer, "serialize");
+  PyObject* args = PyTuple_Pack(1, obj);
+  PyObject* serialized_pyobject = PyObject_CallObject(serializer_serialize, args);
+  Py_XDECREF(serializer_serialize);
+  Py_XDECREF(args);
+  if (PyErr_Occurred())
+    PyErr_Print();
+  if (serialized_pyobject == NULL)
+    lf_print_error_and_exit("Could not serialize object.");
+  return serialized_pyobject;
+}
+
+PyObject* custom_deserialize(PyObject* serialized_pyobject, PyObject* custom_serializer) {
+  if (custom_serializer == NULL)
+    lf_print_error_and_exit("Serializer is null.");
+  PyObject* serializer_deserialize = PyObject_GetAttrString(custom_serializer, "deserialize");
+  PyObject* args = PyTuple_Pack(1, serialized_pyobject);
+  PyObject* deserialized_obj = PyObject_CallObject(serializer_deserialize, args);
+  Py_XDECREF(serializer_deserialize);
+  Py_XDECREF(args);
+  if (PyErr_Occurred())
+    PyErr_Print();
+  if (deserialized_obj == NULL)
+    lf_print_error_and_exit("Could not deserialize deserialized_obj.");
+  return deserialized_obj;
 }
