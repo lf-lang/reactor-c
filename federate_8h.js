@@ -4,6 +4,7 @@ var federate_8h =
     [ "federate_instance_t", "group__Federated.html#ga675c841ec6a29e45cacc71b61ef8d270", null ],
     [ "federation_metadata_t", "group__Federated.html#gae335f4cb4e7d5e88ed712be8cf9592ac", null ],
     [ "parse_rti_code_t", "group__Federated.html#ga98d812b2acffbba5c8b1b72913513d19", null ],
+    [ "staa_t", "group__Federated.html#ga0bce8f0d13040846780f5bb02e43e81d", null ],
     [ "parse_rti_code_t", "group__Federated.html#ga9acb70e6b48452bd9d146e35bafc535c", [
       [ "SUCCESS", "group__Federated.html#gga9acb70e6b48452bd9d146e35bafc535cac7f69f7c9e5aea9b8f54cf02870e2bf8", null ],
       [ "INVALID_PORT", "group__Federated.html#gga9acb70e6b48452bd9d146e35bafc535cad65c958d0ccb000b69ef0ef4e3a5bfdf", null ],
@@ -26,10 +27,12 @@ var federate_8h =
     [ "lf_send_stop_request_to_rti", "group__Federated.html#gab4d7e691d4b52f2c0dac90e772d86dd5", null ],
     [ "lf_send_tagged_message", "group__Federated.html#ga0931fe1bb9eac2a9beebe0c0ed03408e", null ],
     [ "lf_set_federation_id", "group__Federated.html#ga032d945ee3fd6995a5f7bb15b57f2ddf", null ],
+    [ "lf_spawn_staa_thread", "group__Federated.html#ga3aff644df1b85540aa6a3d2997f819c5", null ],
     [ "lf_stall_advance_level_federation", "group__Federated.html#ga971322f63f26490a27bdd9006c05b8fe", null ],
     [ "lf_stall_advance_level_federation_locked", "group__Federated.html#gab0f2188d27dfffa9fbbd417bed9305ea", null ],
     [ "lf_synchronize_with_other_federates", "group__Federated.html#ga36681c905141edace5d23ff8d5c8f205", null ],
     [ "lf_update_max_level", "group__Federated.html#ga84e5177d12e705274be1e6652b5d7c01", null ],
+    [ "lf_wait_until_time", "group__Federated.html#gaa0c8d0811c7faae11b9f1a7fcb30f917", null ],
     [ "lf_outbound_socket_mutex", "group__Federated.html#ga1881fdaaffead81a8d2993121d9cd78f", null ],
     [ "lf_port_status_changed", "group__Federated.html#ga4ea10c9ed824595585d91f37dbfd4364", null ]
 ];

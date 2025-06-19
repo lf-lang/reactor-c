@@ -452,6 +452,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>staa_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>cl</Type>
+      <Scope>staa_t</Scope>
+    </TokenIdentifier>
+    <Path>structstaa__t.html</Path>
+    <DeclaredIn>federate.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>tag_advance_grant_t</Name>
       <APILanguage>c</APILanguage>
       <Type>cl</Type>
@@ -677,6 +687,16 @@
     </TokenIdentifier>
     <Path>structenvironment__t.html</Path>
     <Anchor>ac17908a0cfa4fdeeb95ae3f26a73017a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>actions</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>staa_t</Scope>
+    </TokenIdentifier>
+    <Path>structstaa__t.html</Path>
+    <Anchor>aff9c51bd0ac57c405643145f3a79b35a</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2460,6 +2480,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>num_actions</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>staa_t</Scope>
+    </TokenIdentifier>
+    <Path>structstaa__t.html</Path>
+    <Anchor>a87ab8a5a57771449baf84b2961c8a2eb</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>num_channels</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -3447,6 +3477,26 @@
     </TokenIdentifier>
     <Path>structtrace__record__nodeps__t.html</Path>
     <Anchor>a13a0922284065e2870515c920ad13bbc</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>STAA</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>staa_t</Scope>
+    </TokenIdentifier>
+    <Path>structstaa__t.html</Path>
+    <Anchor>a3c2010ee8b29f79a42a20ccd1ddd3041</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>staaSetter</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a80101d5534e5444c0be0e08d4e65aaae</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -7270,6 +7320,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_fed_STA_offset</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>reactor__common_8h.html</Path>
+    <Anchor>a21ebb201d06c3d2e564e7a4867ff3a7d</Anchor>
+    <DeclaredIn>reactor_common.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_free</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -7327,6 +7387,26 @@
     <Path>group__Utilities.html</Path>
     <Anchor>gafe05484f1ece6fa30ba7b3bcf33f03b9</Anchor>
     <DeclaredIn>generics.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_get_sta</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>gae03d197bf8d64f82be4a68c95a940195</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_get_stp_offset</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>reactor_8h.html</Path>
+    <Anchor>a7bca70211dd5f68beea197df4e4a17b8</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -8350,12 +8430,32 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_set_sta</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>gaccbc0981eff8f1f1726075d2ee4ba0ef</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_set_stop_tag</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Internal.html</Path>
     <Anchor>ga07b2e94bcac5d7bcfd47d4eaf35a4977</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_set_stp_offset</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>reactor_8h.html</Path>
+    <Anchor>a7354a8f02313a836f25c9e76168991ab</Anchor>
     <DeclaredIn>reactor.h</DeclaredIn>
   </Token>
   <Token>
@@ -8457,6 +8557,16 @@
     <Path>group__API.html</Path>
     <Anchor>gaafcc3f0b909a44166db182035ca759c6</Anchor>
     <DeclaredIn>port.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_spawn_staa_thread</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>ga3aff644df1b85540aa6a3d2997f819c5</Anchor>
+    <DeclaredIn>federate.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -8937,6 +9047,16 @@
     <Path>group__Internal.html</Path>
     <Anchor>ga47f8c72c1407daae89508da09273d655</Anchor>
     <DeclaredIn>util.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_wait_until_time</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>gaa0c8d0811c7faae11b9f1a7fcb30f917</Anchor>
+    <DeclaredIn>federate.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -11687,6 +11807,16 @@
     <Path>group__Federated.html</Path>
     <Anchor>ga45bb50f52b617bc6a30719cbaafd075d</Anchor>
     <DeclaredIn>socket_common.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>staa_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>ga0bce8f0d13040846780f5bb02e43e81d</Anchor>
+    <DeclaredIn>federate.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>

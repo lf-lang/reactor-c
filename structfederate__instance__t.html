@@ -147,6 +147,8 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:ac22a97892260d332da6f05194c280f9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">An array that holds the socket descriptors for inbound connections from each federate.  <br /></td></tr>
 <tr class="memitem:aa4fcfa96a7c2bfd33cf45ddc43ad3437" id="r_aa4fcfa96a7c2bfd33cf45ddc43ad3437"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa4fcfa96a7c2bfd33cf45ddc43ad3437">sockets_for_outbound_p2p_connections</a> [1]</td></tr>
 <tr class="memdesc:aa4fcfa96a7c2bfd33cf45ddc43ad3437"><td class="mdescLeft">&#160;</td><td class="mdescRight">An array that holds the socket descriptors for outbound direct connections to each remote federate.  <br /></td></tr>
+<tr class="memitem:a80101d5534e5444c0be0e08d4e65aaae" id="r_a80101d5534e5444c0be0e08d4e65aaae"><td class="memItemLeft" align="right" valign="top">lf_thread_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a80101d5534e5444c0be0e08d4e65aaae">staaSetter</a></td></tr>
+<tr class="memdesc:a80101d5534e5444c0be0e08d4e65aaae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Thread responsible for setting ports to absent by an STAA offset if they aren't already known.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Structure that a federate instance uses to keep track of its own state. </p>
@@ -502,6 +504,22 @@ Data Fields</h2></td></tr>
 <p>An array that holds the socket descriptors for outbound direct connections to each remote federate. </p>
 <p>The index will be the federate ID of the remote receiving federate. This is initialized at startup to -1 and is set to a socket ID by <a class="el" href="group__Federated.html#ga26b7c3ab8c2a50f65e53997a6f26a0dc" title="Connect to the federate with the specified id.">lf_connect_to_federate()</a> when the socket is opened.</p>
 <dl class="section note"><dt>Note</dt><dd>This federate will not open an outbound socket unless a physical connection or a p2p logical connection (by setting the coordination target property to "distributed") is specified in the Lingua Franca program where this federate acts as the source. Multiple outgoing p2p connections to the same remote federate will use the same socket. </dd></dl>
+
+</div>
+</div>
+<a id="a80101d5534e5444c0be0e08d4e65aaae" name="a80101d5534e5444c0be0e08d4e65aaae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80101d5534e5444c0be0e08d4e65aaae">&#9670;&#160;</a></span>staaSetter</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">lf_thread_t federate_instance_t::staaSetter</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Thread responsible for setting ports to absent by an STAA offset if they aren't already known. </p>
 
 </div>
 </div>

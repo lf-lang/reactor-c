@@ -20,5 +20,6 @@ var structfederate__instance__t =
     [ "server_socket", "structfederate__instance__t.html#a20c5d19d5166ec82a09efe072c2f1b49", null ],
     [ "socket_TCP_RTI", "structfederate__instance__t.html#aacdc19a638ccdc9fae494ce641f4cb04", null ],
     [ "sockets_for_inbound_p2p_connections", "structfederate__instance__t.html#ac22a97892260d332da6f05194c280f9c", null ],
-    [ "sockets_for_outbound_p2p_connections", "structfederate__instance__t.html#aa4fcfa96a7c2bfd33cf45ddc43ad3437", null ]
+    [ "sockets_for_outbound_p2p_connections", "structfederate__instance__t.html#aa4fcfa96a7c2bfd33cf45ddc43ad3437", null ],
+    [ "staaSetter", "structfederate__instance__t.html#a80101d5534e5444c0be0e08d4e65aaae", null ]
 ];

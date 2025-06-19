@@ -126,6 +126,8 @@ Data Structures</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A helper struct for passing rti_addr information between lf_parse_rti_addr and extract_rti_addr_info.  <a href="structrti__addr__info__t.html#details">More...</a><br /></td></tr>
 <tr class="memitem:socket_5Fstat_5Ft" id="r_socket_5Fstat_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsocket__stat__t.html">socket_stat_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Statistics and state for clock synchronization over a socket connection.  <a href="structsocket__stat__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:staa_5Ft" id="r_staa_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstaa__t.html">staa_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure for STAA (safe to assume absent).  <a href="structstaa__t.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -284,6 +286,8 @@ Typedefs</h2></td></tr>
 <tr class="memdesc:ga7e49fed082ec884e26d761e1c4f0d428"><td class="mdescLeft">&#160;</td><td class="mdescRight">Statistics and state for clock synchronization over a socket connection.  <br /></td></tr>
 <tr class="memitem:ga45bb50f52b617bc6a30719cbaafd075d" id="r_ga45bb50f52b617bc6a30719cbaafd075d"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="#ga54c375e3893ff5969d20df65b90c8335">socket_type_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga45bb50f52b617bc6a30719cbaafd075d">socket_type_t</a></td></tr>
 <tr class="memdesc:ga45bb50f52b617bc6a30719cbaafd075d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type of socket.  <br /></td></tr>
+<tr class="memitem:ga0bce8f0d13040846780f5bb02e43e81d" id="r_ga0bce8f0d13040846780f5bb02e43e81d"><td class="memItemLeft" align="right" valign="top">typedef struct staa_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga0bce8f0d13040846780f5bb02e43e81d">staa_t</a></td></tr>
+<tr class="memdesc:ga0bce8f0d13040846780f5bb02e43e81d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure for STAA (safe to assume absent).  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -364,6 +368,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga926a4fb7f9b045acb13fee6c2b7192dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a server to listen to incoming P2P connections.  <br /></td></tr>
 <tr class="memitem:gae427b4c0340dbe19d46c93708fb6151a" id="r_gae427b4c0340dbe19d46c93708fb6151a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gae427b4c0340dbe19d46c93708fb6151a">lf_enqueue_port_absent_reactions</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="memdesc:gae427b4c0340dbe19d46c93708fb6151a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enqueue port absent reactions.  <br /></td></tr>
+<tr class="memitem:gae03d197bf8d64f82be4a68c95a940195" id="r_gae03d197bf8d64f82be4a68c95a940195"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gae03d197bf8d64f82be4a68c95a940195">lf_get_sta</a> (void)</td></tr>
+<tr class="memdesc:gae03d197bf8d64f82be4a68c95a940195"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the global STA (safe to advance) offset for federated execution.  <br /></td></tr>
 <tr class="memitem:gaf7ba635fb6ffa82e4b05a51d4fc0020f" id="r_gaf7ba635fb6ffa82e4b05a51d4fc0020f"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaf7ba635fb6ffa82e4b05a51d4fc0020f">lf_handle_p2p_connections_from_federates</a> (void *ignored)</td></tr>
 <tr class="memdesc:gaf7ba635fb6ffa82e4b05a51d4fc0020f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Thread to accept connections from other federates.  <br /></td></tr>
 <tr class="memitem:ga80af1b6a9d7200df3d85c534edd8cbbc" id="r_ga80af1b6a9d7200df3d85c534edd8cbbc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga80af1b6a9d7200df3d85c534edd8cbbc">lf_latest_tag_confirmed</a> (<a class="el" href="structtag__t.html">tag_t</a> tag_to_send)</td></tr>
@@ -386,6 +392,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga0931fe1bb9eac2a9beebe0c0ed03408e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a tagged message to the specified port of the specified federate.  <br /></td></tr>
 <tr class="memitem:ga032d945ee3fd6995a5f7bb15b57f2ddf" id="r_ga032d945ee3fd6995a5f7bb15b57f2ddf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga032d945ee3fd6995a5f7bb15b57f2ddf">lf_set_federation_id</a> (const char *fid)</td></tr>
 <tr class="memdesc:ga032d945ee3fd6995a5f7bb15b57f2ddf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the federation_id of this federate.  <br /></td></tr>
+<tr class="memitem:gaccbc0981eff8f1f1726075d2ee4ba0ef" id="r_gaccbc0981eff8f1f1726075d2ee4ba0ef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaccbc0981eff8f1f1726075d2ee4ba0ef">lf_set_sta</a> (<a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> offset)</td></tr>
+<tr class="memdesc:gaccbc0981eff8f1f1726075d2ee4ba0ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the global STA (safe to advance) offset for federated execution.  <br /></td></tr>
+<tr class="memitem:ga3aff644df1b85540aa6a3d2997f819c5" id="r_ga3aff644df1b85540aa6a3d2997f819c5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga3aff644df1b85540aa6a3d2997f819c5">lf_spawn_staa_thread</a> (void)</td></tr>
+<tr class="memdesc:ga3aff644df1b85540aa6a3d2997f819c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spawn a thread to iterate through STAA structs.  <br /></td></tr>
 <tr class="memitem:ga971322f63f26490a27bdd9006c05b8fe" id="r_ga971322f63f26490a27bdd9006c05b8fe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga971322f63f26490a27bdd9006c05b8fe">lf_stall_advance_level_federation</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, size_t level)</td></tr>
 <tr class="memdesc:ga971322f63f26490a27bdd9006c05b8fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait until inputs statuses are known up to and including the specified level.  <br /></td></tr>
 <tr class="memitem:gab0f2188d27dfffa9fbbd417bed9305ea" id="r_gab0f2188d27dfffa9fbbd417bed9305ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gab0f2188d27dfffa9fbbd417bed9305ea">lf_stall_advance_level_federation_locked</a> (size_t level)</td></tr>
@@ -394,6 +404,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga36681c905141edace5d23ff8d5c8f205"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronize the start with other federates via the RTI.  <br /></td></tr>
 <tr class="memitem:ga84e5177d12e705274be1e6652b5d7c01" id="r_ga84e5177d12e705274be1e6652b5d7c01"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga84e5177d12e705274be1e6652b5d7c01">lf_update_max_level</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, bool is_provisional)</td></tr>
 <tr class="memdesc:ga84e5177d12e705274be1e6652b5d7c01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the max level allowed to advance (MLAA).  <br /></td></tr>
+<tr class="memitem:gaa0c8d0811c7faae11b9f1a7fcb30f917" id="r_gaa0c8d0811c7faae11b9f1a7fcb30f917"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaa0c8d0811c7faae11b9f1a7fcb30f917">lf_wait_until_time</a> (<a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
+<tr class="memdesc:gaa0c8d0811c7faae11b9f1a7fcb30f917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the physical time that we should wait until before advancing to the specified tag.  <br /></td></tr>
 <tr class="memitem:ga7a568c79c856e633f5f181dd21700b74" id="r_ga7a568c79c856e633f5f181dd21700b74"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga7a568c79c856e633f5f181dd21700b74">match_regex</a> (const char *str, char *regex)</td></tr>
 <tr class="memdesc:ga7a568c79c856e633f5f181dd21700b74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check whether str matches regex.  <br /></td></tr>
 <tr class="memitem:gae4ba6b1361cd7c47e8a0eb70729d9636" id="r_gae4ba6b1361cd7c47e8a0eb70729d9636"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gae4ba6b1361cd7c47e8a0eb70729d9636">peek_from_socket</a> (int socket, unsigned char *result)</td></tr>
@@ -1977,6 +1989,24 @@ synchronization." </dd></dl>
 
 </div>
 </div>
+<a id="ga0bce8f0d13040846780f5bb02e43e81d" name="ga0bce8f0d13040846780f5bb02e43e81d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0bce8f0d13040846780f5bb02e43e81d">&#9670;&#160;</a></span>staa_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct staa_t staa_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="federate_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/federated/federate.h</a>&gt;</code></p>
+
+<p>Structure for STAA (safe to assume absent). </p>
+
+</div>
+</div>
 <a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
 <a id="ga9acb70e6b48452bd9d146e35bafc535c" name="ga9acb70e6b48452bd9d146e35bafc535c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga9acb70e6b48452bd9d146e35bafc535c">&#9670;&#160;</a></span>parse_rti_code_t</h2>
@@ -3036,6 +3066,27 @@ synchronization." </dd></dl>
 
 </div>
 </div>
+<a id="gae03d197bf8d64f82be4a68c95a940195" name="gae03d197bf8d64f82be4a68c95a940195"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae03d197bf8d64f82be4a68c95a940195">&#9670;&#160;</a></span>lf_get_sta()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> lf_get_sta </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/reactor.h</a>&gt;</code></p>
+
+<p>Return the global STA (safe to advance) offset for federated execution. </p>
+
+</div>
+</div>
 <a id="gaf7ba635fb6ffa82e4b05a51d4fc0020f" name="gaf7ba635fb6ffa82e4b05a51d4fc0020f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gaf7ba635fb6ffa82e4b05a51d4fc0020f">&#9670;&#160;</a></span>lf_handle_p2p_connections_from_federates()</h2>
 
@@ -3437,6 +3488,55 @@ synchronization." </dd></dl>
 
 </div>
 </div>
+<a id="gaccbc0981eff8f1f1726075d2ee4ba0ef" name="gaccbc0981eff8f1f1726075d2ee4ba0ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaccbc0981eff8f1f1726075d2ee4ba0ef">&#9670;&#160;</a></span>lf_set_sta()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void lf_set_sta </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>offset</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/reactor.h</a>&gt;</code></p>
+
+<p>Set the global STA (safe to advance) offset for federated execution. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">offset</td><td>A non-negative time value to be applied as the STA offset. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga3aff644df1b85540aa6a3d2997f819c5" name="ga3aff644df1b85540aa6a3d2997f819c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga3aff644df1b85540aa6a3d2997f819c5">&#9670;&#160;</a></span>lf_spawn_staa_thread()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void lf_spawn_staa_thread </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="federate_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/federated/federate.h</a>&gt;</code></p>
+
+<p>Spawn a thread to iterate through STAA structs. </p>
+<p>This will set their associated ports absent at an offset if the port is not present with a value by a certain physical time. </p>
+
+</div>
+</div>
 <a id="ga971322f63f26490a27bdd9006c05b8fe" name="ga971322f63f26490a27bdd9006c05b8fe"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga971322f63f26490a27bdd9006c05b8fe">&#9670;&#160;</a></span>lf_stall_advance_level_federation()</h2>
 
@@ -3550,6 +3650,34 @@ synchronization." </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the MLAA changed. </dd></dl>
+
+</div>
+</div>
+<a id="gaa0c8d0811c7faae11b9f1a7fcb30f917" name="gaa0c8d0811c7faae11b9f1a7fcb30f917"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa0c8d0811c7faae11b9f1a7fcb30f917">&#9670;&#160;</a></span>lf_wait_until_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> lf_wait_until_time </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="federate_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/federated/federate.h</a>&gt;</code></p>
+
+<p>Return the physical time that we should wait until before advancing to the specified tag. </p>
+<p>This function adds the STA offset (STP_offset parameter) to the time of the specified tag unless the tag is the starting tag (it is always safe to advance to the starting tag). It also avoids adding the STA offset if all network input ports are known at least up to one microstep earlier than the specified tag.</p>
+<p>This function assumes that the caller holds the environment mutex. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">time</td><td>The specified time. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

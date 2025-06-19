@@ -33,5 +33,6 @@ var reactor__common_8h =
     [ "default_argv", "reactor__common_8h.html#ad0fd32b8326e2d630ee8f4a431ea2867", null ],
     [ "duration", "reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77", null ],
     [ "fast", "reactor__common_8h.html#a9c91e5c84c3910df17c909ccdea074db", null ],
-    [ "keepalive_specified", "reactor__common_8h.html#a3e69bf5802b3968ed00af688cc7a8006", null ]
+    [ "keepalive_specified", "reactor__common_8h.html#a3e69bf5802b3968ed00af688cc7a8006", null ],
+    [ "lf_fed_STA_offset", "reactor__common_8h.html#a21ebb201d06c3d2e564e7a4867ff3a7d", null ]
 ];

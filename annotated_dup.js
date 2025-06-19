@@ -45,6 +45,7 @@ var annotated_dup =
     [ "scheduling_node_t", "structscheduling__node__t.html", "structscheduling__node__t" ],
     [ "self_base_t", "structself__base__t.html", "structself__base__t" ],
     [ "socket_stat_t", "structsocket__stat__t.html", "structsocket__stat__t" ],
+    [ "staa_t", "structstaa__t.html", "structstaa__t" ],
     [ "tag_advance_grant_t", "structtag__advance__grant__t.html", "structtag__advance__grant__t" ],
     [ "tag_t", "structtag__t.html", "structtag__t" ],
     [ "token_template_t", "structtoken__template__t.html", "structtoken__template__t" ],

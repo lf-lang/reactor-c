@@ -115,6 +115,8 @@ Data Structures</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure that a federate instance uses to keep track of its own state.  <a href="structfederate__instance__t.html#details">More...</a><br /></td></tr>
 <tr class="memitem:federation_5Fmetadata_5Ft" id="r_federation_5Fmetadata_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structfederation__metadata__t.html">federation_metadata_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure for federation metadata.  <a href="structfederation__metadata__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:staa_5Ft" id="r_staa_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstaa__t.html">staa_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure for STAA (safe to assume absent).  <a href="structstaa__t.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -128,6 +130,8 @@ Typedefs</h2></td></tr>
 <tr class="memdesc:gae335f4cb4e7d5e88ed712be8cf9592ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure for federation metadata.  <br /></td></tr>
 <tr class="memitem:ga98d812b2acffbba5c8b1b72913513d19" id="r_ga98d812b2acffbba5c8b1b72913513d19"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="group__Federated.html#ga9acb70e6b48452bd9d146e35bafc535c">parse_rti_code_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Federated.html#ga98d812b2acffbba5c8b1b72913513d19">parse_rti_code_t</a></td></tr>
 <tr class="memdesc:ga98d812b2acffbba5c8b1b72913513d19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Code returned by <a class="el" href="group__Federated.html#gae612f180643d0436d4496738b957af68">lf_parse_rti_addr()</a>.  <br /></td></tr>
+<tr class="memitem:ga0bce8f0d13040846780f5bb02e43e81d" id="r_ga0bce8f0d13040846780f5bb02e43e81d"><td class="memItemLeft" align="right" valign="top">typedef struct staa_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Federated.html#ga0bce8f0d13040846780f5bb02e43e81d">staa_t</a></td></tr>
+<tr class="memdesc:ga0bce8f0d13040846780f5bb02e43e81d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure for STAA (safe to assume absent).  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -174,6 +178,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga0931fe1bb9eac2a9beebe0c0ed03408e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a tagged message to the specified port of the specified federate.  <br /></td></tr>
 <tr class="memitem:ga032d945ee3fd6995a5f7bb15b57f2ddf" id="r_ga032d945ee3fd6995a5f7bb15b57f2ddf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Federated.html#ga032d945ee3fd6995a5f7bb15b57f2ddf">lf_set_federation_id</a> (const char *fid)</td></tr>
 <tr class="memdesc:ga032d945ee3fd6995a5f7bb15b57f2ddf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the federation_id of this federate.  <br /></td></tr>
+<tr class="memitem:ga3aff644df1b85540aa6a3d2997f819c5" id="r_ga3aff644df1b85540aa6a3d2997f819c5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Federated.html#ga3aff644df1b85540aa6a3d2997f819c5">lf_spawn_staa_thread</a> (void)</td></tr>
+<tr class="memdesc:ga3aff644df1b85540aa6a3d2997f819c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spawn a thread to iterate through STAA structs.  <br /></td></tr>
 <tr class="memitem:ga971322f63f26490a27bdd9006c05b8fe" id="r_ga971322f63f26490a27bdd9006c05b8fe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Federated.html#ga971322f63f26490a27bdd9006c05b8fe">lf_stall_advance_level_federation</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, size_t level)</td></tr>
 <tr class="memdesc:ga971322f63f26490a27bdd9006c05b8fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait until inputs statuses are known up to and including the specified level.  <br /></td></tr>
 <tr class="memitem:gab0f2188d27dfffa9fbbd417bed9305ea" id="r_gab0f2188d27dfffa9fbbd417bed9305ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Federated.html#gab0f2188d27dfffa9fbbd417bed9305ea">lf_stall_advance_level_federation_locked</a> (size_t level)</td></tr>
@@ -182,6 +188,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga36681c905141edace5d23ff8d5c8f205"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronize the start with other federates via the RTI.  <br /></td></tr>
 <tr class="memitem:ga84e5177d12e705274be1e6652b5d7c01" id="r_ga84e5177d12e705274be1e6652b5d7c01"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Federated.html#ga84e5177d12e705274be1e6652b5d7c01">lf_update_max_level</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, bool is_provisional)</td></tr>
 <tr class="memdesc:ga84e5177d12e705274be1e6652b5d7c01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the max level allowed to advance (MLAA).  <br /></td></tr>
+<tr class="memitem:gaa0c8d0811c7faae11b9f1a7fcb30f917" id="r_gaa0c8d0811c7faae11b9f1a7fcb30f917"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__Federated.html#gaa0c8d0811c7faae11b9f1a7fcb30f917">lf_wait_until_time</a> (<a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
+<tr class="memdesc:gaa0c8d0811c7faae11b9f1a7fcb30f917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the physical time that we should wait until before advancing to the specified tag.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>

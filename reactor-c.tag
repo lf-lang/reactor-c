@@ -993,6 +993,7 @@
     <includes id="socket__common_8h" name="socket_common.h" local="yes" import="no" module="no" objc="no">socket_common.h</includes>
     <class kind="struct">federate_instance_t</class>
     <class kind="struct">federation_metadata_t</class>
+    <class kind="struct">staa_t</class>
     <member kind="define">
       <type>#define</type>
       <name>ADVANCE_MESSAGE_INTERVAL</name>
@@ -1019,6 +1020,13 @@
       <name>parse_rti_code_t</name>
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga98d812b2acffbba5c8b1b72913513d19</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>struct staa_t</type>
+      <name>staa_t</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>ga0bce8f0d13040846780f5bb02e43e81d</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -1165,6 +1173,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>lf_spawn_staa_thread</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>ga3aff644df1b85540aa6a3d2997f819c5</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>lf_stall_advance_level_federation</name>
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga971322f63f26490a27bdd9006c05b8fe</anchor>
@@ -1190,6 +1205,13 @@
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga84e5177d12e705274be1e6652b5d7c01</anchor>
       <arglist>(tag_t tag, bool is_provisional)</arglist>
+    </member>
+    <member kind="function">
+      <type>instant_t</type>
+      <name>lf_wait_until_time</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gaa0c8d0811c7faae11b9f1a7fcb30f917</anchor>
+      <arglist>(tag_t tag)</arglist>
     </member>
     <member kind="variable">
       <type>lf_mutex_t</type>
@@ -2595,6 +2617,20 @@
       <arglist>(self_base_t *self)</arglist>
     </member>
     <member kind="function">
+      <type>interval_t</type>
+      <name>lf_get_sta</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gae03d197bf8d64f82be4a68c95a940195</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
+      <type>interval_t</type>
+      <name>lf_get_stp_offset</name>
+      <anchorfile>reactor_8h.html</anchorfile>
+      <anchor>a7bca70211dd5f68beea197df4e4a17b8</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
       <type>bool</type>
       <name>lf_is_tag_after_stop_tag</name>
       <anchorfile>group__API.html</anchorfile>
@@ -2645,10 +2681,24 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>lf_set_sta</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gaccbc0981eff8f1f1726075d2ee4ba0ef</anchor>
+      <arglist>(interval_t offset)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>lf_set_stop_tag</name>
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga07b2e94bcac5d7bcfd47d4eaf35a4977</anchor>
       <arglist>(environment_t *env, tag_t tag)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_set_stp_offset</name>
+      <anchorfile>reactor_8h.html</anchorfile>
+      <anchor>a7354a8f02313a836f25c9e76168991ab</anchor>
+      <arglist>(interval_t offset)</arglist>
     </member>
   </compound>
   <compound kind="file">
@@ -2899,6 +2949,13 @@
       <name>keepalive_specified</name>
       <anchorfile>reactor__common_8h.html</anchorfile>
       <anchor>a3e69bf5802b3968ed00af688cc7a8006</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>interval_t</type>
+      <name>lf_fed_STA_offset</name>
+      <anchorfile>reactor__common_8h.html</anchorfile>
+      <anchor>a21ebb201d06c3d2e564e7a4867ff3a7d</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -6663,6 +6720,13 @@
       <anchor>aa4fcfa96a7c2bfd33cf45ddc43ad3437</anchor>
       <arglist>[1]</arglist>
     </member>
+    <member kind="variable">
+      <type>lf_thread_t</type>
+      <name>staaSetter</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a80101d5534e5444c0be0e08d4e65aaae</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="struct">
     <name>federation_metadata_t</name>
@@ -8269,6 +8333,31 @@
       <name>remote_physical_clock_snapshot_T1</name>
       <anchorfile>structsocket__stat__t.html</anchorfile>
       <anchor>a337626dbaef95e87f6e611219cc445ef</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>staa_t</name>
+    <filename>structstaa__t.html</filename>
+    <member kind="variable">
+      <type>lf_action_base_t **</type>
+      <name>actions</name>
+      <anchorfile>structstaa__t.html</anchorfile>
+      <anchor>aff9c51bd0ac57c405643145f3a79b35a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>size_t</type>
+      <name>num_actions</name>
+      <anchorfile>structstaa__t.html</anchorfile>
+      <anchor>a87ab8a5a57771449baf84b2961c8a2eb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>size_t</type>
+      <name>STAA</name>
+      <anchorfile>structstaa__t.html</anchorfile>
+      <anchor>a3c2010ee8b29f79a42a20ccd1ddd3041</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -11665,6 +11754,7 @@
     <class kind="struct">lf_stat_ll</class>
     <class kind="struct">rti_addr_info_t</class>
     <class kind="struct">socket_stat_t</class>
+    <class kind="struct">staa_t</class>
     <member kind="define">
       <type>#define</type>
       <name>_LF_CLOCK_SYNC_ATTENUATION</name>
@@ -12197,6 +12287,13 @@
       <anchor>ga45bb50f52b617bc6a30719cbaafd075d</anchor>
       <arglist></arglist>
     </member>
+    <member kind="typedef">
+      <type>struct staa_t</type>
+      <name>staa_t</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>ga0bce8f0d13040846780f5bb02e43e81d</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="enumeration">
       <type></type>
       <name>parse_rti_code_t</name>
@@ -12464,6 +12561,13 @@
       <arglist>(environment_t *env)</arglist>
     </member>
     <member kind="function">
+      <type>interval_t</type>
+      <name>lf_get_sta</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gae03d197bf8d64f82be4a68c95a940195</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
       <type>void *</type>
       <name>lf_handle_p2p_connections_from_federates</name>
       <anchorfile>group__Federated.html</anchorfile>
@@ -12542,6 +12646,20 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>lf_set_sta</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gaccbc0981eff8f1f1726075d2ee4ba0ef</anchor>
+      <arglist>(interval_t offset)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_spawn_staa_thread</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>ga3aff644df1b85540aa6a3d2997f819c5</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>lf_stall_advance_level_federation</name>
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga971322f63f26490a27bdd9006c05b8fe</anchor>
@@ -12567,6 +12685,13 @@
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga84e5177d12e705274be1e6652b5d7c01</anchor>
       <arglist>(tag_t tag, bool is_provisional)</arglist>
+    </member>
+    <member kind="function">
+      <type>instant_t</type>
+      <name>lf_wait_until_time</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gaa0c8d0811c7faae11b9f1a7fcb30f917</anchor>
+      <arglist>(tag_t tag)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>

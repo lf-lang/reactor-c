@@ -26,7 +26,8 @@ var group__Federated =
       [ "server_socket", "structfederate__instance__t.html#a20c5d19d5166ec82a09efe072c2f1b49", null ],
       [ "socket_TCP_RTI", "structfederate__instance__t.html#aacdc19a638ccdc9fae494ce641f4cb04", null ],
       [ "sockets_for_inbound_p2p_connections", "structfederate__instance__t.html#ac22a97892260d332da6f05194c280f9c", null ],
-      [ "sockets_for_outbound_p2p_connections", "structfederate__instance__t.html#aa4fcfa96a7c2bfd33cf45ddc43ad3437", null ]
+      [ "sockets_for_outbound_p2p_connections", "structfederate__instance__t.html#aa4fcfa96a7c2bfd33cf45ddc43ad3437", null ],
+      [ "staaSetter", "structfederate__instance__t.html#a80101d5534e5444c0be0e08d4e65aaae", null ]
     ] ],
     [ "federation_metadata_t", "structfederation__metadata__t.html", [
       [ "federation_id", "structfederation__metadata__t.html#a84774d9c9e1d4002221f7a925b40f674", null ],
@@ -58,6 +59,11 @@ var group__Federated =
       [ "network_stat_samples", "structsocket__stat__t.html#a6beb517569df57774d106dab76c55f6c", null ],
       [ "received_T4_messages_in_current_sync_window", "structsocket__stat__t.html#ac7e50f6cbdc0f9709868bca0ec83b177", null ],
       [ "remote_physical_clock_snapshot_T1", "structsocket__stat__t.html#a337626dbaef95e87f6e611219cc445ef", null ]
+    ] ],
+    [ "staa_t", "structstaa__t.html", [
+      [ "actions", "structstaa__t.html#aff9c51bd0ac57c405643145f3a79b35a", null ],
+      [ "num_actions", "structstaa__t.html#a87ab8a5a57771449baf84b2961c8a2eb", null ],
+      [ "STAA", "structstaa__t.html#a3c2010ee8b29f79a42a20ccd1ddd3041", null ]
     ] ],
     [ "_LF_CLOCK_SYNC_ATTENUATION", "group__Federated.html#ga532da6f271eb75c9ac745571b995c404", null ],
     [ "_LF_CLOCK_SYNC_COLLECT_STATS", "group__Federated.html#ga4b9290ecd850995c857e04746aa45d10", null ],
@@ -135,6 +141,7 @@ var group__Federated =
     [ "rti_addr_info_t", "group__Federated.html#gaf820f39ab52ce0a58d7ba739051b8f24", null ],
     [ "socket_stat_t", "group__Federated.html#ga7e49fed082ec884e26d761e1c4f0d428", null ],
     [ "socket_type_t", "group__Federated.html#ga45bb50f52b617bc6a30719cbaafd075d", null ],
+    [ "staa_t", "group__Federated.html#ga0bce8f0d13040846780f5bb02e43e81d", null ],
     [ "parse_rti_code_t", "group__Federated.html#ga9acb70e6b48452bd9d146e35bafc535c", [
       [ "SUCCESS", "group__Federated.html#gga9acb70e6b48452bd9d146e35bafc535cac7f69f7c9e5aea9b8f54cf02870e2bf8", null ],
       [ "INVALID_PORT", "group__Federated.html#gga9acb70e6b48452bd9d146e35bafc535cad65c958d0ccb000b69ef0ef4e3a5bfdf", null ],
@@ -176,6 +183,7 @@ var group__Federated =
     [ "lf_connect_to_rti", "group__Federated.html#ga92e8c30255091911a80601bf341cf0a2", null ],
     [ "lf_create_server", "group__Federated.html#ga926a4fb7f9b045acb13fee6c2b7192dd", null ],
     [ "lf_enqueue_port_absent_reactions", "group__Federated.html#gae427b4c0340dbe19d46c93708fb6151a", null ],
+    [ "lf_get_sta", "group__Federated.html#gae03d197bf8d64f82be4a68c95a940195", null ],
     [ "lf_handle_p2p_connections_from_federates", "group__Federated.html#gaf7ba635fb6ffa82e4b05a51d4fc0020f", null ],
     [ "lf_latest_tag_confirmed", "group__Federated.html#ga80af1b6a9d7200df3d85c534edd8cbbc", null ],
     [ "lf_parse_rti_addr", "group__Federated.html#gae612f180643d0436d4496738b957af68", null ],
@@ -187,10 +195,13 @@ var group__Federated =
     [ "lf_send_stop_request_to_rti", "group__Federated.html#gab4d7e691d4b52f2c0dac90e772d86dd5", null ],
     [ "lf_send_tagged_message", "group__Federated.html#ga0931fe1bb9eac2a9beebe0c0ed03408e", null ],
     [ "lf_set_federation_id", "group__Federated.html#ga032d945ee3fd6995a5f7bb15b57f2ddf", null ],
+    [ "lf_set_sta", "group__Federated.html#gaccbc0981eff8f1f1726075d2ee4ba0ef", null ],
+    [ "lf_spawn_staa_thread", "group__Federated.html#ga3aff644df1b85540aa6a3d2997f819c5", null ],
     [ "lf_stall_advance_level_federation", "group__Federated.html#ga971322f63f26490a27bdd9006c05b8fe", null ],
     [ "lf_stall_advance_level_federation_locked", "group__Federated.html#gab0f2188d27dfffa9fbbd417bed9305ea", null ],
     [ "lf_synchronize_with_other_federates", "group__Federated.html#ga36681c905141edace5d23ff8d5c8f205", null ],
     [ "lf_update_max_level", "group__Federated.html#ga84e5177d12e705274be1e6652b5d7c01", null ],
+    [ "lf_wait_until_time", "group__Federated.html#gaa0c8d0811c7faae11b9f1a7fcb30f917", null ],
     [ "match_regex", "group__Federated.html#ga7a568c79c856e633f5f181dd21700b74", null ],
     [ "peek_from_socket", "group__Federated.html#gae4ba6b1361cd7c47e8a0eb70729d9636", null ],
     [ "read_from_socket", "group__Federated.html#gaa8f7af0d4004aa925499fecefa1ac6b8", null ],

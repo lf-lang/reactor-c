@@ -3724,6 +3724,11 @@
               <Path>structfederate__instance__t.html</Path>
               <Anchor>aa4fcfa96a7c2bfd33cf45ddc43ad3437</Anchor>
              </Node>
+             <Node>
+              <Name>staaSetter</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a80101d5534e5444c0be0e08d4e65aaae</Anchor>
+             </Node>
             </Subnodes>
            </Node>
            <Node>
@@ -3862,6 +3867,27 @@
               <Name>remote_physical_clock_snapshot_T1</Name>
               <Path>structsocket__stat__t.html</Path>
               <Anchor>a337626dbaef95e87f6e611219cc445ef</Anchor>
+             </Node>
+            </Subnodes>
+           </Node>
+           <Node>
+            <Name>staa_t</Name>
+            <Path>structstaa__t.html</Path>
+          <Subnodes>
+             <Node>
+              <Name>actions</Name>
+              <Path>structstaa__t.html</Path>
+              <Anchor>aff9c51bd0ac57c405643145f3a79b35a</Anchor>
+             </Node>
+             <Node>
+              <Name>num_actions</Name>
+              <Path>structstaa__t.html</Path>
+              <Anchor>a87ab8a5a57771449baf84b2961c8a2eb</Anchor>
+             </Node>
+             <Node>
+              <Name>STAA</Name>
+              <Path>structstaa__t.html</Path>
+              <Anchor>a3c2010ee8b29f79a42a20ccd1ddd3041</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -4246,6 +4272,11 @@
             <Anchor>ga45bb50f52b617bc6a30719cbaafd075d</Anchor>
            </Node>
            <Node>
+            <Name>staa_t</Name>
+            <Path>group__Federated.html</Path>
+            <Anchor>ga0bce8f0d13040846780f5bb02e43e81d</Anchor>
+           </Node>
+           <Node>
             <Name>parse_rti_code_t</Name>
             <Path>group__Federated.html</Path>
             <Anchor>ga9acb70e6b48452bd9d146e35bafc535c</Anchor>
@@ -4445,6 +4476,11 @@
             <Anchor>gae427b4c0340dbe19d46c93708fb6151a</Anchor>
            </Node>
            <Node>
+            <Name>lf_get_sta</Name>
+            <Path>group__Federated.html</Path>
+            <Anchor>gae03d197bf8d64f82be4a68c95a940195</Anchor>
+           </Node>
+           <Node>
             <Name>lf_handle_p2p_connections_from_federates</Name>
             <Path>group__Federated.html</Path>
             <Anchor>gaf7ba635fb6ffa82e4b05a51d4fc0020f</Anchor>
@@ -4500,6 +4536,16 @@
             <Anchor>ga032d945ee3fd6995a5f7bb15b57f2ddf</Anchor>
            </Node>
            <Node>
+            <Name>lf_set_sta</Name>
+            <Path>group__Federated.html</Path>
+            <Anchor>gaccbc0981eff8f1f1726075d2ee4ba0ef</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_spawn_staa_thread</Name>
+            <Path>group__Federated.html</Path>
+            <Anchor>ga3aff644df1b85540aa6a3d2997f819c5</Anchor>
+           </Node>
+           <Node>
             <Name>lf_stall_advance_level_federation</Name>
             <Path>group__Federated.html</Path>
             <Anchor>ga971322f63f26490a27bdd9006c05b8fe</Anchor>
@@ -4518,6 +4564,11 @@
             <Name>lf_update_max_level</Name>
             <Path>group__Federated.html</Path>
             <Anchor>ga84e5177d12e705274be1e6652b5d7c01</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_wait_until_time</Name>
+            <Path>group__Federated.html</Path>
+            <Anchor>gaa0c8d0811c7faae11b9f1a7fcb30f917</Anchor>
            </Node>
            <Node>
             <Name>match_regex</Name>
@@ -6405,6 +6456,11 @@
               <Path>structfederate__instance__t.html</Path>
               <Anchor>aa4fcfa96a7c2bfd33cf45ddc43ad3437</Anchor>
              </Node>
+             <Node>
+              <Name>staaSetter</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a80101d5534e5444c0be0e08d4e65aaae</Anchor>
+             </Node>
             </Subnodes>
            </Node>
            <Node>
@@ -7672,6 +7728,27 @@
               <Name>remote_physical_clock_snapshot_T1</Name>
               <Path>structsocket__stat__t.html</Path>
               <Anchor>a337626dbaef95e87f6e611219cc445ef</Anchor>
+             </Node>
+            </Subnodes>
+           </Node>
+           <Node>
+            <Name>staa_t</Name>
+            <Path>structstaa__t.html</Path>
+          <Subnodes>
+             <Node>
+              <Name>actions</Name>
+              <Path>structstaa__t.html</Path>
+              <Anchor>aff9c51bd0ac57c405643145f3a79b35a</Anchor>
+             </Node>
+             <Node>
+              <Name>num_actions</Name>
+              <Path>structstaa__t.html</Path>
+              <Anchor>a87ab8a5a57771449baf84b2961c8a2eb</Anchor>
+             </Node>
+             <Node>
+              <Name>STAA</Name>
+              <Path>structstaa__t.html</Path>
+              <Anchor>a3c2010ee8b29f79a42a20ccd1ddd3041</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -9495,6 +9572,11 @@
                               <Anchor>ga98d812b2acffbba5c8b1b72913513d19</Anchor>
                              </Node>
                              <Node>
+                              <Name>staa_t</Name>
+                              <Path>group__Federated.html</Path>
+                              <Anchor>ga0bce8f0d13040846780f5bb02e43e81d</Anchor>
+                             </Node>
+                             <Node>
                               <Name>parse_rti_code_t</Name>
                               <Path>group__Federated.html</Path>
                               <Anchor>ga9acb70e6b48452bd9d146e35bafc535c</Anchor>
@@ -9602,6 +9684,11 @@
                               <Anchor>ga032d945ee3fd6995a5f7bb15b57f2ddf</Anchor>
                              </Node>
                              <Node>
+                              <Name>lf_spawn_staa_thread</Name>
+                              <Path>group__Federated.html</Path>
+                              <Anchor>ga3aff644df1b85540aa6a3d2997f819c5</Anchor>
+                             </Node>
+                             <Node>
                               <Name>lf_stall_advance_level_federation</Name>
                               <Path>group__Federated.html</Path>
                               <Anchor>ga971322f63f26490a27bdd9006c05b8fe</Anchor>
@@ -9620,6 +9707,11 @@
                               <Name>lf_update_max_level</Name>
                               <Path>group__Federated.html</Path>
                               <Anchor>ga84e5177d12e705274be1e6652b5d7c01</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>lf_wait_until_time</Name>
+                              <Path>group__Federated.html</Path>
+                              <Anchor>gaa0c8d0811c7faae11b9f1a7fcb30f917</Anchor>
                              </Node>
                              <Node>
                               <Name>lf_outbound_socket_mutex</Name>
@@ -11050,6 +11142,16 @@
                             <Anchor>ga2f0b7c8d624c2da93012538bd93568ad</Anchor>
                            </Node>
                            <Node>
+                            <Name>lf_get_sta</Name>
+                            <Path>group__Federated.html</Path>
+                            <Anchor>gae03d197bf8d64f82be4a68c95a940195</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_get_stp_offset</Name>
+                            <Path>reactor_8h.html</Path>
+                            <Anchor>a7bca70211dd5f68beea197df4e4a17b8</Anchor>
+                           </Node>
+                           <Node>
                             <Name>lf_is_tag_after_stop_tag</Name>
                             <Path>group__API.html</Path>
                             <Anchor>gaf4bdd144e6cc65dfa3b996d4bd82f83a</Anchor>
@@ -11085,9 +11187,19 @@
                             <Anchor>gadaa6f5f1a265e7a37aeb3b6a0d101732</Anchor>
                            </Node>
                            <Node>
+                            <Name>lf_set_sta</Name>
+                            <Path>group__Federated.html</Path>
+                            <Anchor>gaccbc0981eff8f1f1726075d2ee4ba0ef</Anchor>
+                           </Node>
+                           <Node>
                             <Name>lf_set_stop_tag</Name>
                             <Path>group__Internal.html</Path>
                             <Anchor>ga07b2e94bcac5d7bcfd47d4eaf35a4977</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_set_stp_offset</Name>
+                            <Path>reactor_8h.html</Path>
+                            <Anchor>a7354a8f02313a836f25c9e76168991ab</Anchor>
                            </Node>
                           </Subnodes>
                          </Node>
@@ -11264,6 +11376,11 @@
                             <Name>keepalive_specified</Name>
                             <Path>reactor__common_8h.html</Path>
                             <Anchor>a3e69bf5802b3968ed00af688cc7a8006</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_fed_STA_offset</Name>
+                            <Path>reactor__common_8h.html</Path>
+                            <Anchor>a21ebb201d06c3d2e564e7a4867ff3a7d</Anchor>
                            </Node>
                           </Subnodes>
                          </Node>
