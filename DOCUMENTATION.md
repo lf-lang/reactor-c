@@ -13,9 +13,18 @@ The code in reactor-c is documented with Javadoc-style comments that are automat
 
 To clone the repo and build the doc files locally, simply do this:
 
-```
-git clone git@github.com:lf-lang/reactor-c.git
-cd reactor-c/docs
-make docs
-open docs/_build/html/index.html
-```
+### Prerequisites
+
+- Install [doxygen](https://www.doxygen.nl)
+
+### Build Documentation Files
+
+- Check out this repo and build the docs:
+  - `git clone git@github.com:lf-lang/reactor-c.git`
+  - `cd reactor-c`
+  - `make docs`
+
+### View Documentation Files
+
+- Point your browser to the generated HTML page:
+  - `firefox docs/_build/html/index.html`
