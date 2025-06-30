@@ -580,7 +580,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
       // intended tag.
       tag.microstep++;
       e->base.tag = tag;
-      if (lf_is_tag_after_stop_tag(env, (tag_t){.time = tag.time, .microstep = tag.microstep})) {
+      if (lf_is_tag_after_stop_tag(env, tag)) {
         // Scheduling e will incur a microstep after the stop tag,
         // which is illegal.
         lf_recycle_event(env, e);

@@ -257,12 +257,13 @@ int connect_to_socket(int sock, const char* hostname, int port) {
       }
       lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds. Connecting to port %d.\n",
                        CONNECT_RETRY_INTERVAL, used_port);
+      freeaddrinfo(result);
       continue;
     } else {
       break;
     }
-    freeaddrinfo(result);
   }
+  freeaddrinfo(result);
   lf_print("Connected to %s:%d.", hostname, used_port);
   return ret;
 }
