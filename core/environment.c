@@ -183,6 +183,12 @@ void environment_free(environment_t* env) {
   free(env->is_present_fields);
   free(env->is_present_fields_abbreviated);
   pqueue_tag_free(env->event_q);
+
+  // Free the recycle queue.
+  while (pqueue_tag_size(env->recycle_q) > 0) {
+    event_t* event = (event_t*)pqueue_tag_pop(env->recycle_q);
+    free(event);
+  }
   pqueue_tag_free(env->recycle_q);
 
   environment_free_threaded(env);
