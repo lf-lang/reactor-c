@@ -208,7 +208,7 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 /**
  * @brief Read the specified number of bytes from the specified socket into the specified buffer.
  * @ingroup Federated
- * 
+ *
  * This uses @ref read_from_socket, but if a failure occurs, it closes the socket using
  * @ref shutdown_socket and returns -1. Otherwise, it returns 0.
  * @param socket Pointer to the socket ID.

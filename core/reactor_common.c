@@ -1209,12 +1209,11 @@ void termination(void) {
       // If the event queue still has events on it, clear them and free their tokens.
       if (env[i].event_q != NULL && pqueue_tag_size(env[i].event_q) > 0) {
         size_t unprocessed_events = pqueue_tag_size(env[i].event_q);
-        lf_print_warning("---- There are %zu unprocessed future events on the event queue.",
-                         unprocessed_events);
+        lf_print_warning("---- There are %zu unprocessed future events on the event queue.", unprocessed_events);
         event_t* event = (event_t*)pqueue_tag_peek(env[i].event_q);
         lf_print_warning("---- The first future event has timestamp " PRINTF_TAG " after start tag.",
                          event->base.tag.time - start_time, event->base.tag.microstep);
-        
+
         // Clear all unprocessed events and free their tokens
         while (pqueue_tag_size(env[i].event_q) > 0) {
           event_t* event = (event_t*)pqueue_tag_pop(env[i].event_q);
