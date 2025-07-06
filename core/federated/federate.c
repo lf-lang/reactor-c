@@ -380,6 +380,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
     // that does not carry a timestamp that is in the future
     // would indicate a critical condition, showing that the
     // time advance mechanism is not working correctly.
+    _lf_done_using(token);
     LF_MUTEX_UNLOCK(&env->mutex);
     lf_print_error_and_exit(
         "Received a message at tag " PRINTF_TAG " that has a tag " PRINTF_TAG " that has violated the STP offset. "
@@ -500,6 +501,7 @@ static int handle_message(int* socket, int fed_id) {
   // Allocate memory for the message contents.
   unsigned char* message_contents = (unsigned char*)malloc(length);
   if (read_from_socket_close_on_error(socket, length, message_contents)) {
+    free(message_contents);
     return -1;
   }
   // Trace the event when tracing is enabled
@@ -589,6 +591,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
 #ifdef FEDERATED_DECENTRALIZED
     _lf_decrement_tag_barrier_locked(env);
 #endif
+    free(message_contents);
     return -1; // Read failed.
   }
 
@@ -657,6 +660,8 @@ static int handle_tagged_message(int* socket, int fed_id) {
                      "    Discarding message and closing the socket.",
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
+      // Free the allocated memory before returning
+      _lf_done_using(message_token);
       // Close socket, reading any incoming data and discarding it.
       close_inbound_socket(fed_id);
       LF_MUTEX_UNLOCK(&env->mutex);
@@ -753,7 +758,7 @@ static void* listen_to_federates(void* _args) {
   unsigned char buffer[FED_COM_BUFFER_SIZE];
 
   // Listen for messages from the federate.
-  while (1) {
+  while (!_lf_termination_executed) {
     bool socket_closed = false;
     // Read one byte to get the message type.
     LF_PRINT_DEBUG("Waiting for a P2P message on socket %d.", *socket_id);
@@ -1520,7 +1525,7 @@ static void* listen_to_rti_TCP(void* args) {
   unsigned char buffer[FED_COM_BUFFER_SIZE];
 
   // Listen for messages from the federate.
-  while (1) {
+  while (!_lf_termination_executed) {
     // Check whether the RTI socket is still valid
     if (_fed.socket_TCP_RTI < 0) {
       lf_print_warning("Socket to the RTI unexpectedly closed.");
