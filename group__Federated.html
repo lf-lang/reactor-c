@@ -413,7 +413,7 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa8f7af0d4004aa925499fecefa1ac6b8" id="r_gaa8f7af0d4004aa925499fecefa1ac6b8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaa8f7af0d4004aa925499fecefa1ac6b8">read_from_socket</a> (int socket, size_t num_bytes, unsigned char *buffer)</td></tr>
 <tr class="memdesc:gaa8f7af0d4004aa925499fecefa1ac6b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the specified number of bytes from the specified socket into the specified buffer.  <br /></td></tr>
 <tr class="memitem:ga941fd71700b7646e6edbbb76db4f7bd2" id="r_ga941fd71700b7646e6edbbb76db4f7bd2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga941fd71700b7646e6edbbb76db4f7bd2">read_from_socket_close_on_error</a> (int *socket, size_t num_bytes, unsigned char *buffer)</td></tr>
-<tr class="memdesc:ga941fd71700b7646e6edbbb76db4f7bd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the specified number of bytes to the specified socket using <a class="el" href="#gaa8f7af0d4004aa925499fecefa1ac6b8">read_from_socket</a>.  <br /></td></tr>
+<tr class="memdesc:ga941fd71700b7646e6edbbb76db4f7bd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the specified number of bytes from the specified socket into the specified buffer.  <br /></td></tr>
 <tr class="memitem:gabcc3776e773dd4bf2a9112024b80706b" id="r_gabcc3776e773dd4bf2a9112024b80706b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gabcc3776e773dd4bf2a9112024b80706b">read_from_socket_fail_on_error</a> (int *socket, size_t num_bytes, unsigned char *buffer, lf_mutex_t *mutex, char *format,...)</td></tr>
 <tr class="memdesc:gabcc3776e773dd4bf2a9112024b80706b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the specified number of bytes from the specified socket into the specified buffer and close the socket if an error occurs.  <br /></td></tr>
 <tr class="memitem:gae267d03a5f2263604459ca4c1aef2c2c" id="r_gae267d03a5f2263604459ca4c1aef2c2c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gae267d03a5f2263604459ca4c1aef2c2c">reset_socket_stat</a> (struct <a class="el" href="structsocket__stat__t.html">socket_stat_t</a> *socket_stat)</td></tr>
@@ -3812,9 +3812,8 @@ synchronization." </dd></dl>
 
 <p><code>#include &lt;<a class="el" href="socket__common_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/federated/network/socket_common.h</a>&gt;</code></p>
 
-<p>Read the specified number of bytes to the specified socket using <a class="el" href="#gaa8f7af0d4004aa925499fecefa1ac6b8">read_from_socket</a>. </p>
-<p>It closes the socket if an error occurs. If an error occurs, this will change the socket ID pointed to by the first argument to -1 and will return -1.</p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Read the specified number of bytes from the specified socket into the specified buffer. </p>
+<p>This uses <a class="el" href="#gaa8f7af0d4004aa925499fecefa1ac6b8">read_from_socket</a>, but if a failure occurs, it closes the socket using <a class="el" href="#ga365eba5b8b3f6445eeaffcb4435165c5">shutdown_socket</a> and returns -1. Otherwise, it returns 0. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">socket</td><td>Pointer to the socket ID. </td></tr>
     <tr><td class="paramname">num_bytes</td><td>The number of bytes to write. </td></tr>
@@ -3952,7 +3951,7 @@ synchronization." </dd></dl>
 <p><code>#include &lt;<a class="el" href="socket__common_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/federated/network/socket_common.h</a>&gt;</code></p>
 
 <p>Shutdown and close the socket. </p>
-<p>If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR and close(). If read_before_closing is true, it calls shutdown with SHUT_WR, only disallowing further writing. Then, it calls read() until EOF is received, and discards all received bytes.</p>
+<p>If <span class="tt">read_before_closing</span> is false, this calls <span class="tt">shutdown</span> with <span class="tt">SHUT_RDWR</span>, shutting down both directions. If this fails, then it calls <span class="tt">close</span>. If read_before_closing is true, this calls <span class="tt">shutdown</span> with <span class="tt">SHUT_WR</span>, only disallowing further writing. If this succeeds, then it calls <span class="tt">read</span> until an <span class="tt">EOF</span> is received and discards all received bytes, otherwise it calls <span class="tt">close</span>. In all cases, the socket ID pointed to by the <span class="tt">socket</span> argument is set to -1.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">socket</td><td>Pointer to the socket descriptor to shutdown and close. </td></tr>
@@ -3960,7 +3959,7 @@ synchronization." </dd></dl>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>int 0 for success and -1 for an error. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>int 0 for success and -1 if either <span class="tt">shutdown</span> or <span class="tt">close</span> returns an error. </dd></dl>
 
 </div>
 </div>
