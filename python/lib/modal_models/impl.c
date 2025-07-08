@@ -1,33 +1,9 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Soroush Bateni (soroush@utdallas.edu)
+ * @author Edward A. Lee
+ * @author Soroush Bateni
  *
- * @section LICENSE
-Copyright (c) 2022, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Implementation of modal models support in the Python target.
+ * @brief Implementation of modal models support in the Python target.
  */
 
 #include "modal_models/definitions.h"
@@ -46,12 +22,14 @@ static PyObject* py_mode_set(PyObject* mode_capsule, PyObject* args) {
     lf_print_error("Null pointer received.");
     exit(1);
   }
+  Py_INCREF(m->mode);
 
   self_base_t* self = PyCapsule_GetPointer(m->lf_self, "lf_self");
   if (self == NULL) {
     lf_print_error("Null pointer received.");
     exit(1);
   }
+  Py_INCREF(m->lf_self);
 
   _LF_SET_MODE_WITH_TYPE(mode, m->change_type);
 
@@ -61,12 +39,61 @@ static PyObject* py_mode_set(PyObject* mode_capsule, PyObject* args) {
 
 //////////// Python Struct /////////////
 
+/**
+ * Called when an mode in Python is to be created. Note that this is not normally
+ * used because modes are not created in Python.
+ *
+ * To initialize the mode_capsule, this function first calls the tp_alloc
+ * method of type mode_capsule_struct_t and then assign default values of NULL, NULL, 0
+ * to the members of the generic_mode_capsule_struct.
+ */
+PyObject* py_mode_capsule_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
+  mode_capsule_struct_t* self = (mode_capsule_struct_t*)type->tp_alloc(type, 0);
+  if (self != NULL) {
+    self->mode = NULL;
+    self->lf_self = NULL;
+    self->change_type = 0;
+  }
+  return (PyObject*)self;
+}
+
 /*
  * The function members of mode_capsule.
  * The set function is used to set a new mode.
  */
 static PyMethodDef mode_capsule_methods[] = {
     {"set", (PyCFunction)py_mode_set, METH_NOARGS, "Set a new mode."}, {NULL} /* Sentinel */
+};
+
+/**
+ * Initialize the mode capsule "self" with NULL pointers and default change_type.
+ */
+static int py_mode_capsule_init(mode_capsule_struct_t* self, PyObject* args, PyObject* kwds) {
+  self->mode = NULL;
+  self->lf_self = NULL;
+  self->change_type = 0;
+  return 0;
+}
+
+/**
+ * Called when an mode capsule in Python is deallocated (generally
+ * called by the Python grabage collector).
+ * @param self
+ */
+void py_mode_capsule_dealloc(mode_capsule_struct_t* self) {
+  Py_XDECREF(self->mode);
+  Py_XDECREF(self->lf_self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+/*
+ * The members of a mode_capsule that are accessible from a Python program, used to define
+ * a native Python type.
+ */
+PyMemberDef py_mode_capsule_members[] = {
+    {"mode", T_OBJECT, offsetof(mode_capsule_struct_t, mode), 0, "The pointer to the C mode struct"},
+    {"lf_self", T_OBJECT, offsetof(mode_capsule_struct_t, lf_self), 0, "Pointer to LF self"},
+    {NULL} /* Sentinel */
 };
 
 /*
@@ -79,7 +106,10 @@ static PyTypeObject mode_capsule_t = {
     .tp_basicsize = sizeof(mode_capsule_struct_t),
     .tp_itemsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_new = PyType_GenericNew,
+    .tp_new = py_mode_capsule_new,
+    .tp_init = (initproc)py_mode_capsule_init,
+    .tp_dealloc = (destructor)py_mode_capsule_dealloc,
+    .tp_members = py_mode_capsule_members,
     .tp_methods = mode_capsule_methods,
 };
 
@@ -100,6 +130,7 @@ void initialize_mode_capsule_t(PyObject* current_module) {
   if (PyModule_AddObject(current_module, "mode_capsule", (PyObject*)&mode_capsule_t) < 0) {
     Py_DECREF(&mode_capsule_t);
     Py_DECREF(current_module);
+    lf_print_error_and_exit("Failed to initialize mode_capsule.");
     return;
   }
 }
@@ -109,16 +140,19 @@ void initialize_mode_capsule_t(PyObject* current_module) {
  */
 PyObject* convert_C_mode_to_py(reactor_mode_t* mode, self_base_t* lf_self, lf_mode_change_type_t change_type) {
   // Create the mode struct in Python
-  mode_capsule_struct_t* cap = (mode_capsule_struct_t*)PyObject_GC_New(mode_capsule_struct_t, &mode_capsule_t);
+  mode_capsule_struct_t* cap = (mode_capsule_struct_t*)PyObject_New(mode_capsule_struct_t, &mode_capsule_t);
+
   if (cap == NULL) {
     lf_print_error_and_exit("Failed to convert mode.");
   }
+  Py_INCREF(cap);
 
   // Create the capsule to hold the reactor_mode_t* mode
   PyObject* capsule = PyCapsule_New(mode, "mode", NULL);
   if (capsule == NULL) {
     lf_print_error_and_exit("Failed to convert mode.");
   }
+  Py_INCREF(capsule);
   // Fill in the Python mode struct.
   cap->mode = capsule;
 
@@ -127,6 +161,7 @@ PyObject* convert_C_mode_to_py(reactor_mode_t* mode, self_base_t* lf_self, lf_mo
   if (self_capsule == NULL) {
     lf_print_error_and_exit("Failed to convert self.");
   }
+  Py_INCREF(self_capsule);
   cap->lf_self = self_capsule;
 
   cap->change_type = change_type;

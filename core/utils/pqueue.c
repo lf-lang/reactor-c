@@ -3,8 +3,6 @@
  * @author Marten Lohstroh
  * @author Edward A. Lee
  * @author Byeonggil Jun
- * @copyright (c) 2020-2023, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  *
  * @brief Priority queue definitions for queues where the priority is a number that can be compared with ordinary
  * numerical comparisons.
@@ -35,5 +33,5 @@ void set_reaction_position(void* reaction, size_t pos) { ((reaction_t*)reaction)
 
 void print_reaction(void* reaction) {
   reaction_t* r = (reaction_t*)reaction;
-  LF_PRINT_DEBUG("%s: chain_id: %llu, index: %llx, reaction: %p", r->name, r->chain_id, r->index, reaction);
+  LF_PRINT_DEBUG("%s: index: %llx, reaction: %p", r->name, r->index, reaction);
 }

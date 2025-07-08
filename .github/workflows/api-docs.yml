@@ -6,23 +6,16 @@ on:
 
 jobs:
   build:
-
     runs-on: macos-latest
-
     steps:
     - name: Requirements
-      run: brew install doxygen
-        && brew install sphinx-doc
-        && pip3 install sphinx-rtd-theme
-        && pip3 install breathe
-        && pip3 install sphinx-sitemap
-        && pip3 install exhale
+      run: |
+        brew install doxygen
     - name: Checkout repo
       uses: actions/checkout@1.0.0
     - name: Build docs
-      run: cd docs
-        && make doxygen
-        && cd _build/html
+      run: make docs
+        && cd docs/_build/html
         && touch .nojekyll
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@releases/v3

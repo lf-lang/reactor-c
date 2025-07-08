@@ -1,34 +1,9 @@
 /**
  * @file
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @autohr Hou Seng Wong (housengw@berkeley.edu)
+ * @author Soroush Bateni
+ * @author Hou Seng Wong
  *
- * @section LICENSE
-Copyright (c) 2022, The University of California at Berkeley.
-Copyright (c) 2021, The University of Texas at Dallas.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Implementation of functions defined in @see pythontarget.h
+ * @brief Implementation of port-related functions.
  */
 
 #include <stddef.h>
@@ -94,14 +69,13 @@ PyObject* py_port_set(PyObject* self, PyObject* args) {
   }
 
   if (val) {
-    LF_PRINT_DEBUG("Setting value %p with reference count %d.", val, (int)Py_REFCNT(val));
-    // Py_INCREF(val);
     // python_count_decrement(port->value);
 
     lf_token_t* token = lf_new_token((void*)port, val, 1);
     lf_set_destructor(port, python_count_decrement);
     lf_set_token(port, token);
     Py_INCREF(val);
+    LF_PRINT_DEBUG("Setting value %p with reference count %d.", val, (int)Py_REFCNT(val));
 
     // Also set the values for the port capsule.
     p->value = val;
@@ -117,9 +91,9 @@ PyObject* py_port_set(PyObject* self, PyObject* args) {
  * garbage collector).
  * @param self An instance of generic_port_instance_struct*
  */
-void py_port_capsule_dealloc(generic_port_capsule_struct* self) {
-  Py_XDECREF(self->port);
-  Py_XDECREF(self->value);
+static void py_port_capsule_dealloc(generic_port_capsule_struct* self) {
+  Py_CLEAR(self->port);
+  Py_CLEAR(self->value);
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -147,7 +121,8 @@ PyObject* py_port_capsule_new(PyTypeObject* type, PyObject* args, PyObject* kwds
   generic_port_capsule_struct* self;
   self = (generic_port_capsule_struct*)type->tp_alloc(type, 0);
   if (self != NULL) {
-    self->port = NULL;
+    Py_INCREF(Py_None);
+    self->port = Py_None;
     Py_INCREF(Py_None);
     self->value = Py_None;
     self->is_present = false;
@@ -325,7 +300,7 @@ PyMappingMethods py_port_as_mapping = {(lenfunc)py_port_length, (binaryfunc)py_p
  */
 int py_port_capsule_init(generic_port_capsule_struct* self, PyObject* args, PyObject* kwds) {
   static char* kwlist[] = {"port", "value", "is_present", "width", "current_index", NULL};
-  PyObject *value = NULL, *tmp, *port = NULL;
+  PyObject *value = NULL, *port = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOp", kwlist, &port, &value, &self->is_present, &self->width,
                                    &self->current_index)) {
@@ -333,14 +308,14 @@ int py_port_capsule_init(generic_port_capsule_struct* self, PyObject* args, PyOb
   }
 
   if (value) {
-    tmp = self->value;
+    PyObject* tmp = self->value;
     Py_INCREF(value);
     self->value = value;
     Py_XDECREF(tmp);
   }
 
   if (port) {
-    tmp = self->port;
+    PyObject* tmp = self->port;
     Py_INCREF(port);
     self->port = port;
     Py_XDECREF(tmp);

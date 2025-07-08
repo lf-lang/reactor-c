@@ -1,33 +1,9 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Soroush Bateni (soroush@utdallas.edu)
+ * @author Edward A. Lee
+ * @author Soroush Bateni
  *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Utility functions for a federate in a federated execution.
+ * @brief Utility functions for a federate in a federated execution.
  */
 
 #include <assert.h>
@@ -44,179 +20,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "net_util.h"
 #include "util.h"
-
-// Define socket functions only for federated execution.
-#ifdef FEDERATED
-#include <unistd.h> // Defines read(), write(), and close()
-
-#ifndef NUMBER_OF_FEDERATES
-#define NUMBER_OF_FEDERATES 1
-#endif
-
-/** Number of nanoseconds to sleep before retrying a socket read. */
-#define SOCKET_READ_RETRY_INTERVAL 1000000
-
-// Mutex lock held while performing socket close operations.
-// A deadlock can occur if two threads simulataneously attempt to close the same socket.
-lf_mutex_t socket_mutex;
-
-int create_real_time_tcp_socket_errexit() {
-  int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  if (sock < 0) {
-    lf_print_error_system_failure("Could not open TCP socket.");
-  }
-  // Disable Nagle's algorithm which bundles together small TCP messages to
-  // reduce network traffic.
-  // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-  // is enough.
-  int flag = 1;
-  int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
-
-  if (result < 0) {
-    lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
-  }
-
-#if defined(PLATFORM_Linux)
-  // Disable delayed ACKs. Only possible on Linux
-  result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
-
-  if (result < 0) {
-    lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
-  }
-#endif // Linux
-
-  return sock;
-}
-
-int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
-  if (socket < 0) {
-    // Socket is not open.
-    errno = EBADF;
-    return -1;
-  }
-  ssize_t bytes_read = 0;
-  int retry_count = 0;
-  while (bytes_read < (ssize_t)num_bytes) {
-    ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-    if (more < 0 && retry_count++ < NUM_SOCKET_RETRIES && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
-      // Those error codes set by the socket indicates
-      // that we should try again (@see man errno).
-      lf_print_warning("Reading from socket failed. Will try again.");
-      lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
-      continue;
-    } else if (more < 0) {
-      // A more serious error occurred.
-      return -1;
-    } else if (more == 0) {
-      // EOF received.
-      return 1;
-    }
-    bytes_read += more;
-  }
-  return 0;
-}
-
-int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
-  assert(socket);
-  int read_failed = read_from_socket(*socket, num_bytes, buffer);
-  if (read_failed) {
-    // Read failed.
-    // Socket has probably been closed from the other side.
-    // Shut down and close the socket from this side.
-    shutdown(*socket, SHUT_RDWR);
-    close(*socket);
-    // Mark the socket closed.
-    *socket = -1;
-    return -1;
-  }
-  return 0;
-}
-
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                    char* format, ...) {
-  va_list args;
-  assert(socket);
-  int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);
-  if (read_failed) {
-    // Read failed.
-    if (mutex != NULL) {
-      LF_MUTEX_UNLOCK(mutex);
-    }
-    if (format != NULL) {
-      lf_print_error_system_failure(format, args);
-    } else {
-      lf_print_error_system_failure("Failed to read from socket.");
-    }
-  }
-}
-
-ssize_t peek_from_socket(int socket, unsigned char* result) {
-  ssize_t bytes_read = recv(socket, result, 1, MSG_DONTWAIT | MSG_PEEK);
-  if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
-    return 0;
-  else
-    return bytes_read;
-}
-
-int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
-  if (socket < 0) {
-    // Socket is not open.
-    errno = EBADF;
-    return -1;
-  }
-  ssize_t bytes_written = 0;
-  while (bytes_written < (ssize_t)num_bytes) {
-    ssize_t more = write(socket, buffer + bytes_written, num_bytes - (size_t)bytes_written);
-    if (more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
-      // The error codes EAGAIN or EWOULDBLOCK indicate
-      // that we should try again (@see man errno).
-      // The error code EINTR means the system call was interrupted before completing.
-      LF_PRINT_DEBUG("Writing to socket was blocked. Will try again.");
-      lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
-      continue;
-    } else if (more < 0) {
-      // A more serious error occurred.
-      return -1;
-    }
-    bytes_written += more;
-  }
-  return 0;
-}
-
-int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
-  assert(socket);
-  int result = write_to_socket(*socket, num_bytes, buffer);
-  if (result) {
-    // Write failed.
-    // Socket has probably been closed from the other side.
-    // Shut down and close the socket from this side.
-    shutdown(*socket, SHUT_RDWR);
-    close(*socket);
-    // Mark the socket closed.
-    *socket = -1;
-  }
-  return result;
-}
-
-void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...) {
-  va_list args;
-  assert(socket);
-  int result = write_to_socket_close_on_error(socket, num_bytes, buffer);
-  if (result) {
-    // Write failed.
-    if (mutex != NULL) {
-      LF_MUTEX_UNLOCK(mutex);
-    }
-    if (format != NULL) {
-      lf_print_error_system_failure(format, args);
-    } else {
-      lf_print_error("Failed to write to socket. Closing it.");
-    }
-  }
-}
-
-#endif // FEDERATED
 
 // Below are more generally useful functions.
 
@@ -515,7 +318,7 @@ bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti
 }
 
 void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info) {
-  const char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9.]{1,255})(:([0-9]{1,5}))?";
+  const char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9._-]{1,255})(:([0-9]{1,5}))?";
   size_t max_groups = 6;
   // The group indices of each field of interest in the regex.
   int user_gid = 2, host_gid = 3, port_gid = 5;

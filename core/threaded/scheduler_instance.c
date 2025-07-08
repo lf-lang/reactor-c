@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @author Soroush Bateni
+ * @author Edward A. Lee
+ *
+ * @brief Common scheduler functions.
+ *
+ * This file defines functions that are common across multiple schedulers.
+ */
+
 #include <assert.h>
 #include "scheduler_instance.h"
 #include "environment.h"
@@ -32,9 +42,7 @@ bool init_sched_instance(environment_t* env, lf_scheduler_t** instance, size_t n
     }
   }
 
-  (*instance)->semaphore = lf_semaphore_new(0);
   (*instance)->number_of_workers = number_of_workers;
-  (*instance)->next_reaction_level = 1;
 
   (*instance)->should_stop = false;
   (*instance)->env = env;

@@ -1,29 +1,6 @@
-/*************
-Copyright (c) 2021, Kiel University.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
-
 /**
- * Runtime infrastructure for modes in the C target of Lingua Franca.
+ * @brief Runtime infrastructure for modes in the C target of Lingua Franca.
+ *
  * This file contains functions that handle the processing of mode transitions.
  * It works together with other changes across the runtime implementation.
  *
@@ -32,8 +9,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * This file is intended for direct include in reactor_common.c.
  *
- * @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
- * @author{Soroush Bateni <soroush@utdallas.edu}
+ * @author Alexander Schulz-Rosengarten
+ * @author Soroush Bateni
  */
 #ifdef MODAL_REACTORS
 
@@ -507,7 +484,7 @@ void _lf_process_mode_changes(environment_t* env, reactor_mode_state_t* states[]
     if (env->modes->triggered_reactions_request) {
       // Insert a dummy event in the event queue for the next microstep to make
       // sure startup/reset reactions (if any) are triggered as soon as possible.
-      tag_t dummy_event_tag = (tag_t){.time = env->current_tag.time, .microstep = 1};
+      tag_t dummy_event_tag = (tag_t){.time = env->current_tag.time, .microstep = env->current_tag.microstep + 1};
       pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)_lf_create_dummy_events(env, dummy_event_tag));
     }
   }

@@ -1,32 +1,10 @@
 /**
  * @file
- * @author Erling R. Jellum (erling.r.jellum@ntnu.no)
+ * @author Erling R. Jellum
  *
- * @section LICENSE
- * Copyright (c) 2023, The Norwegian University of Science and Technology.
+ * @brief Functions for initializing and freeing memory for environments.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * @section DESCRIPTION Functions intitializing and freeing memory for environments.
- *  See environment.h for docs.
+ * See environment.h for docs.
  */
 
 #include "environment.h"
@@ -138,7 +116,10 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
  * @brief Initialize the federation-specific parts of the environment struct.
  */
 static void environment_init_federated(environment_t* env, int num_is_present_fields) {
-#ifdef FEDERATED_DECENTRALIZED
+#if defined(FEDERATED_CENTRALIZED)
+  env->need_to_send_LTC = false;
+  (void)num_is_present_fields;
+#elif defined(FEDERATED_DECENTRALIZED)
   if (num_is_present_fields > 0) {
     env->_lf_intended_tag_fields = (tag_t**)calloc(num_is_present_fields, sizeof(tag_t*));
     LF_ASSERT_NON_NULL(env->_lf_intended_tag_fields);
@@ -202,6 +183,12 @@ void environment_free(environment_t* env) {
   free(env->is_present_fields);
   free(env->is_present_fields_abbreviated);
   pqueue_tag_free(env->event_q);
+
+  // Free the recycle queue.
+  while (pqueue_tag_size(env->recycle_q) > 0) {
+    event_t* event = (event_t*)pqueue_tag_pop(env->recycle_q);
+    free(event);
+  }
   pqueue_tag_free(env->recycle_q);
 
   environment_free_threaded(env);
@@ -231,10 +218,16 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
                      const char* trace_file_name) {
   (void)trace_file_name; // Will be used with future enclave support.
 
-  env->name = malloc(strlen(name) + 1); // +1 for the null terminator
-  LF_ASSERT_NON_NULL(env->name);
-  strcpy(env->name, name);
-
+  // Space for the name string with the null terminator.
+  if (name != NULL) {
+    size_t name_size = strlen(name) + 1; // +1 for the null terminator
+    env->name = (char*)malloc(name_size);
+    LF_ASSERT_NON_NULL(env->name);
+    // Use strncpy rather than strcpy to avoid compiler warnings.
+    strncpy(env->name, name, name_size);
+  } else {
+    env->name = NULL;
+  }
   env->id = id;
   env->stop_tag = FOREVER_TAG;
 
@@ -304,4 +297,10 @@ int environment_init(environment_t* env, const char* name, int id, int num_worke
 
   env->initialized = true;
   return 0;
+}
+
+void environment_verify(environment_t* env) {
+  for (int i = 0; i < env->is_present_fields_size; i++) {
+    LF_ASSERT_NON_NULL(env->is_present_fields[i]);
+  }
 }

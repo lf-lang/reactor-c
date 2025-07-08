@@ -2,32 +2,7 @@
  * @file
  * @author Edward A. Lee
  *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Standalone program to convert a Lingua Franca trace file to a comma-separated values
- * text file.
+ * @brief Utility functions for tracing.
  */
 #define LF_TRACE
 #include <stdio.h>
@@ -61,65 +36,6 @@ typedef struct open_file_t {
   open_file_t* next;
 } open_file_t;
 open_file_t* _open_files = NULL;
-
-const char* trace_event_names[] = {
-    "Reaction starts",
-    "Reaction ends",
-    "Reaction deadline missed",
-    "Schedule called",
-    "User-defined event",
-    "User-defined valued event",
-    "Worker wait starts",
-    "Worker wait ends",
-    "Scheduler advancing time starts",
-    "Scheduler advancing time ends",
-    "Federated marker",
-    // Sending messages
-    "Sending ACK",
-    "Sending FAILED",
-    "Sending TIMESTAMP",
-    "Sending NET",
-    "Sending LTC",
-    "Sending STOP_REQ",
-    "Sending STOP_REQ_REP",
-    "Sending STOP_GRN",
-    "Sending FED_ID",
-    "Sending PTAG",
-    "Sending TAG",
-    "Sending REJECT",
-    "Sending RESIGN",
-    "Sending PORT_ABS",
-    "Sending CLOSE_RQ",
-    "Sending TAGGED_MSG",
-    "Sending P2P_TAGGED_MSG",
-    "Sending MSG",
-    "Sending P2P_MSG",
-    "Sending ADR_AD",
-    "Sending ADR_QR",
-    // Receiving messages
-    "Receiving ACK",
-    "Receiving FAILED",
-    "Receiving TIMESTAMP",
-    "Receiving NET",
-    "Receiving LTC",
-    "Receiving STOP_REQ",
-    "Receiving STOP_REQ_REP",
-    "Receiving STOP_GRN",
-    "Receiving FED_ID",
-    "Receiving PTAG",
-    "Receiving TAG",
-    "Receiving REJECT",
-    "Receiving RESIGN",
-    "Receiving PORT_ABS",
-    "Receiving CLOSE_RQ",
-    "Receiving TAGGED_MSG",
-    "Receiving P2P_TAGGED_MSG",
-    "Receiving MSG",
-    "Receiving P2P_MSG",
-    "Receiving ADR_AD",
-    "Receiving ADR_QR",
-    "Receiving UNIDENTIFIED",
-};
 
 /**
  * Function to be invoked upon exiting.

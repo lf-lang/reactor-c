@@ -1,9 +1,8 @@
 /**
- * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @file reaction_macros.h
+ * @author Edward A. Lee
  * @brief Macros providing an API for use in inline reaction bodies.
+ * @ingroup API
  *
  * This set of macros is defined prior to each reaction body and undefined after the reaction body
  * using the set_undef.h header file.  If you wish to use these macros in external code, such as
@@ -37,6 +36,7 @@
 
 /**
  * @brief Mark a port present.
+ * @ingroup API
  *
  * This sets the is_present field of the specified output to true.
  *
@@ -49,6 +49,7 @@
 
 /**
  * @brief Set the specified output (or input of a contained reactor) to the specified value.
+ * @ingroup API
  *
  * If the value argument is a primitive type such as int,
  * double, etc. as well as the built-in types bool and string,
@@ -67,7 +68,7 @@
  *
  * @param out The output port (by name) or input of a contained
  *  reactor in form input_name.port_name.
- * @param value The value to insert into the self struct.
+ * @param val The value to insert into the self struct.
  */
 #define lf_set(out, val)                                                                                               \
   do {                                                                                                                 \
@@ -77,12 +78,14 @@
       /* The cast "*((void**) &out->value)" is a hack to make the code */                                              \
       /* compile with non-token types where value is not a pointer. */                                                 \
       lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**)&out->value), 1);          \
+      out->token = token;                                                                                              \
     }                                                                                                                  \
   } while (0)
 
 /**
  * @brief Set the specified output (or input of a contained reactor)
  * to the specified array with the given length.
+ * @ingroup API
  *
  * The array is assumed to be in dynamically allocated memory.
  * The deallocation is delegated to downstream reactors, which
@@ -90,13 +93,14 @@
  *
  * @param out The output port (by name).
  * @param val The array to send (a pointer to the first element).
- * @param length The length of the array to send.
+ * @param len The length of the array to send.
  */
 #ifndef __cplusplus
 #define lf_set_array(out, val, len)                                                                                    \
   do {                                                                                                                 \
     lf_set_present(out);                                                                                               \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len);                             \
+    out->token = token;                                                                                                \
     out->value = token->value;                                                                                         \
     out->length = len;                                                                                                 \
   } while (0)
@@ -105,6 +109,7 @@
   do {                                                                                                                 \
     lf_set_present(out);                                                                                               \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, len);                             \
+    out->token = token;                                                                                                \
     out->value = static_cast<decltype(out->value)>(token->value);                                                      \
     out->length = len;                                                                                                 \
   } while (0)
@@ -113,12 +118,13 @@
 /**
  * @brief Set the specified output (or input of a contained reactor)
  * to the specified token value.
+ * @ingroup API
  *
  * Tokens in the C runtime wrap messages that are in dynamically allocated memory and
  * perform reference counting to ensure that memory is not freed prematurely.
  *
  * @param out The output port (by name).
- * @param token A pointer to token obtained from an input, an action, or from `lf_new_token()`.
+ * @param newtoken A pointer to token obtained from an input, an action, or from `lf_new_token()`.
  */
 #ifndef __cplusplus
 #define lf_set_token(out, newtoken)                                                                                    \
@@ -140,6 +146,7 @@
 
 /**
  * @brief Set the destructor associated with the specified port.
+ * @ingroup API
  *
  * The destructor will be used to free any value sent through the specified port when all
  * downstream users of the value are finished with it.
@@ -152,12 +159,13 @@
 
 /**
  * @brief Set the copy constructor associated with the specified port.
+ * @ingroup API
  *
  * The copy constructor will be used to copy any value sent through the specified port whenever
  * a downstream user of the value declares a mutable input port or calls `lf_writable_copy()`.
  *
  * @param out The output port (by name) or input of a contained reactor in form reactor.port_name.
- * @param dtor A pointer to a void function that takes a pointer argument
+ * @param cpy_ctor A pointer to a void function that takes a pointer argument
  * (or NULL to use the default void `memcpy()` function.
  */
 #define lf_set_copy_constructor(out, cpy_ctor) ((token_type_t*)out)->copy_constructor = cpy_ctor
@@ -165,7 +173,10 @@
 #ifdef MODAL_REACTORS
 
 /**
- * Sets the next mode of a modal reactor. As with `lf_set` for outputs, only
+ * @brief Set the next mode of a modal reactor.
+ * @ingroup API
+ *
+ * As with `lf_set` for outputs, only
  * the last value will have effect if invoked multiple times at any given tag.
  * This works only in reactions with the target mode declared as effect.
  *
@@ -181,19 +192,45 @@
 // of the current reactor.
 
 /**
- * Return the current tag of the environment invoking this reaction.
+ * @brief Return the current tag of the environment invoking this reaction.
+ * @ingroup API
  */
 #define lf_tag() lf_tag(self->base.environment)
 
 /**
- * Return the current logical time in nanoseconds of the environment invoking this reaction.
+ * @brief Return the current logical time in nanoseconds of the environment invoking this reaction.
+ * @ingroup API
  */
 #define lf_time_logical() lf_time_logical(self->base.environment)
 
 /**
- * Return the current logical time of the environment invoking this reaction relative to the
+ * @brief Return the current logical time of the environment invoking this reaction relative to the
  * start time in nanoseconds.
+ * @ingroup API
  */
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
+
+/**
+ * @brief Return the instance name of the reactor.
+ * @ingroup API
+ *
+ * The instance name is the name of given to the instance created by the `new` operator in LF.
+ * If the instance is in a bank, then the name will have a suffix of the form `[bank_index]`.
+ *
+ * @param reactor The reactor to get the name of.
+ */
+#define lf_reactor_name(reactor) lf_reactor_name(&reactor->base)
+
+/**
+ * @brief Return the fully qualified name of the reactor.
+ * @ingroup API
+ *
+ * The fully qualified name of a reactor is the instance name of the reactor concatenated with the names of all
+ * of its parents, separated by dots. If the reactor or any of its parents is a bank, then the name
+ * will have a suffix of the form `[bank_index]`.
+ *
+ * @param reactor The reactor to get the name of.
+ */
+#define lf_reactor_full_name(reactor) lf_reactor_full_name(&reactor->base)
 
 #endif // REACTION_MACROS_H

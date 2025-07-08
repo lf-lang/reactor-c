@@ -1,11 +1,28 @@
+\file README.md
+\ingroup RTI
+# RTI Installation Instructions
+
 This folder contains the source code for the Run-Time Infrastructure (RTI) that
-is necessary for federated Lingua Franca programs. To compile and install, do:
+is necessary for federated Lingua Franca programs.
+
+By default, as of version 1.0, when you run `lfc` on a federated Lingua Franca program, a copy of
+the RTI code will be included in the generated code, compiled, and invoked by the
+launch scripts.  This mechanism ensures that you always get the version of the
+RTI that matches your version of lfc.
+
+Here, we provide instructions to manually compile and install the RTI.
+For example, in the directory `core/federated/RTI` of the `reactor-c` repository, do:
 
 ```bash
 mkdir build && cd build
 cmake ../
 make
 sudo make install
+```
+
+To run the unit tests
+```bash
+make test
 ```
 
 **Note:** To enable DEBUG messages, use the following build commands instead:
@@ -47,3 +64,4 @@ docker login -u [username]
 ```
 
 To authenticate, request a PAT on [DockerHub](https://hub.docker.com/settings/security).
+

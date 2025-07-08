@@ -1,31 +1,9 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Edward A. Lee
  *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
+ * @brief Utility functions for managing output of messages.
+ *
  * Utility functions for managing output the user, error and warning
  * messages, logging, and debug messages. Outputs are filtered based on
  * the target "logging" parameter.
@@ -33,12 +11,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util.h"
 
+#include <stdio.h>
+
 #ifndef STANDALONE_RTI
 #include "environment.h"
 #endif
 
 #include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h> // Defines memcpy()
@@ -57,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The ID of this federate. For a non-federated execution, this will be -1.
  * For a federated execution, it will be assigned in the generated code.
  */
-int _lf_my_fed_id = -1;
+uint16_t _lf_my_fed_id = UINT16_MAX; // Federate IDs are counted up from 0. If we hit this, we have too many.
 
 /**
  * If non-null, this function will be used instead of the printf to
@@ -68,7 +47,7 @@ print_message_function_t* print_message_function = NULL;
 /** The level of messages to redirect to print_message_function. */
 int print_message_level = -1;
 
-int lf_fed_id() { return _lf_my_fed_id; }
+uint16_t lf_fed_id() { return _lf_my_fed_id; }
 
 // Declaration needed to attach attributes to suppress warnings of the form:
 // "warning: function '_lf_message_print' might be a candidate for 'gnu_printf'
@@ -111,7 +90,7 @@ void _lf_message_print(const char* prefix, const char* format, va_list args,
     // interleaved between threads.
     // vprintf() is a version that takes an arg list rather than multiple args.
     char* message;
-    if (_lf_my_fed_id < 0) {
+    if (_lf_my_fed_id == UINT16_MAX) {
       size_t length = strlen(prefix) + strlen(format) + 32;
       message = (char*)malloc(length + 1);
       snprintf(message, length, "%s%s\n", prefix, format);
@@ -205,6 +184,8 @@ void lf_print_error_system_failure(const char* format, ...) {
   va_start(args, format);
   lf_vprint_error(format, args);
   va_end(args);
+  // Windows warns that strerror is deprecated but doesn't define strerror_r.
+  // There seems to be no portable replacement.
   lf_print_error_and_exit("Error %d: %s", errno, strerror(errno));
   exit(EXIT_FAILURE);
 }
