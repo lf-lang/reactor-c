@@ -454,38 +454,38 @@ bool _lf_initialize_timers(environment_t* env) {
   return result;
 }
 
-  void _lf_initialize_timers(environment_t * env) {
-    assert(env != GLOBAL_ENVIRONMENT);
-    for (int i = 0; i < env->timer_triggers_size; i++) {
-      if (env->timer_triggers[i] != NULL) {
-        _lf_initialize_timer(env, env->timer_triggers[i]);
-      }
-    }
-
-    // To avoid runtime memory allocations for timer-driven programs
-    // the recycle queue is initialized with a single event.
-    if (env->timer_triggers_size > 0) {
-      event_t* e = lf_get_new_event(env);
-      lf_recycle_event(env, e);
+void _lf_initialize_timers(environment_t* env) {
+  assert(env != GLOBAL_ENVIRONMENT);
+  for (int i = 0; i < env->timer_triggers_size; i++) {
+    if (env->timer_triggers[i] != NULL) {
+      _lf_initialize_timer(env, env->timer_triggers[i]);
     }
   }
 
-  void _lf_trigger_startup_reactions(environment_t * env) {
-    assert(env != GLOBAL_ENVIRONMENT);
-    for (int i = 0; i < env->startup_reactions_size; i++) {
-      if (env->startup_reactions[i] != NULL) {
-        if (env->startup_reactions[i]->mode != NULL) {
-          // Skip reactions in modes
-          continue;
-        }
-        _lf_trigger_reaction(env, env->startup_reactions[i], -1);
+  // To avoid runtime memory allocations for timer-driven programs
+  // the recycle queue is initialized with a single event.
+  if (env->timer_triggers_size > 0) {
+    event_t* e = lf_get_new_event(env);
+    lf_recycle_event(env, e);
+  }
+}
+
+void _lf_trigger_startup_reactions(environment_t* env) {
+  assert(env != GLOBAL_ENVIRONMENT);
+  for (int i = 0; i < env->startup_reactions_size; i++) {
+    if (env->startup_reactions[i] != NULL) {
+      if (env->startup_reactions[i]->mode != NULL) {
+        // Skip reactions in modes
+        continue;
       }
+      _lf_trigger_reaction(env, env->startup_reactions[i], -1);
     }
+  }
 #ifdef MODAL_REACTORS
-    if (env->modes) {
-      _lf_handle_mode_startup_reset_reactions(env, env->startup_reactions, env->startup_reactions_size, NULL, 0,
-                                              env->modes->modal_reactor_states, env->modes->modal_reactor_states_size);
-    }
+  if (env->modes) {
+    _lf_handle_mode_startup_reset_reactions(env, env->startup_reactions, env->startup_reactions_size, NULL, 0,
+                                            env->modes->modal_reactor_states, env->modes->modal_reactor_states_size);
+  }
 #endif
 }
 
@@ -605,7 +605,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
   return return_value;
 }
 
-trigger_handle_t _lf_insert_reactions_for_trigger(environment_t * env, trigger_t * trigger, lf_token_t * token) {
+trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t* trigger, lf_token_t* token) {
   assert(env != GLOBAL_ENVIRONMENT);
   // The trigger argument could be null, meaning that nothing is triggered.
   // Doing this after incrementing the reference count ensures that the
@@ -645,8 +645,8 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t * env, trigger_t
   if (is_STP_violated) {
     lf_print_error_and_exit(
         "Attempted to insert reactions for a trigger that had an intended tag that was in the past. "
-        "This should not happen under centralized coordination. Intended tag: " PRINTF_TAG
-        ". Current tag: " PRINTF_TAG ").",
+        "This should not happen under centralized coordination. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG
+        ").",
         trigger->intended_tag.time - lf_time_start(), trigger->intended_tag.microstep, lf_time_logical_elapsed(env),
         env->current_tag.microstep);
   }
@@ -718,17 +718,17 @@ void _lf_advance_tag(environment_t* env, tag_t next_tag) {
                             env->current_tag.microstep);
   }
   LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG " at physical time " PRINTF_TIME, next_tag.time - start_time,
-                env->current_tag.microstep, lf_time_physical_elapsed());
+               env->current_tag.microstep, lf_time_physical_elapsed());
 }
 
 /**
-  * Invoke the given reaction
-  *
-  * @param env Environment in which we are executing.
-  * @param reaction The reaction that has just executed.
-  * @param worker The thread number of the worker thread or 0 for single-threaded execution (for tracing).
-  */
-void _lf_invoke_reaction(environment_t * env, reaction_t * reaction, int worker) {
+ * Invoke the given reaction
+ *
+ * @param env Environment in which we are executing.
+ * @param reaction The reaction that has just executed.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution (for tracing).
+ */
+void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
   assert(env != GLOBAL_ENVIRONMENT);
 
 #if !defined(LF_SINGLE_THREADED)
@@ -759,7 +759,7 @@ void _lf_invoke_reaction(environment_t * env, reaction_t * reaction, int worker)
  * @param reaction The reaction that has just executed.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution (for tracing).
  */
-void schedule_output_reactions(environment_t * env, reaction_t * reaction, int worker) {
+void schedule_output_reactions(environment_t* env, reaction_t* reaction, int worker) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   // If the reaction produced outputs, put the resulting triggered
@@ -792,7 +792,7 @@ void schedule_output_reactions(environment_t * env, reaction_t * reaction, int w
             if (downstream_reaction != NULL) {
               downstream_reaction->is_STP_violated = inherited_STP_violation;
               LF_PRINT_DEBUG("Passing is_STP_violated of %d to the downstream reaction: %s",
-                              downstream_reaction->is_STP_violated, downstream_reaction->name);
+                             downstream_reaction->is_STP_violated, downstream_reaction->name);
             }
 #endif
             if (downstream_reaction != NULL && downstream_reaction != downstream_to_execute_now) {
@@ -830,7 +830,7 @@ void schedule_output_reactions(environment_t * env, reaction_t * reaction, int w
   }
   if (downstream_to_execute_now != NULL) {
     LF_PRINT_LOG("Worker %d: Optimizing and executing downstream reaction now: %s", worker,
-                  downstream_to_execute_now->name);
+                 downstream_to_execute_now->name);
     bool violation = false;
 #ifdef FEDERATED_DECENTRALIZED // Only use the STP handler for federated programs that use decentralized coordination
     // If the is_STP_violated for the reaction is true,
