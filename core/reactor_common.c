@@ -454,22 +454,6 @@ bool _lf_initialize_timers(environment_t* env) {
   return result;
 }
 
-void _lf_initialize_timers(environment_t* env) {
-  assert(env != GLOBAL_ENVIRONMENT);
-  for (int i = 0; i < env->timer_triggers_size; i++) {
-    if (env->timer_triggers[i] != NULL) {
-      _lf_initialize_timer(env, env->timer_triggers[i]);
-    }
-  }
-
-  // To avoid runtime memory allocations for timer-driven programs
-  // the recycle queue is initialized with a single event.
-  if (env->timer_triggers_size > 0) {
-    event_t* e = lf_get_new_event(env);
-    lf_recycle_event(env, e);
-  }
-}
-
 void _lf_trigger_startup_reactions(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
   for (int i = 0; i < env->startup_reactions_size; i++) {

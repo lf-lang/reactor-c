@@ -261,7 +261,7 @@ void _lf_handle_mode_startup_reset_reactions(environment_t* env, reaction_t** st
  * Shutdown reactions are triggered at program's end for those modes that had a
  * startup and will bypass mode inactivity.
  *
- * This function is supposed to be call from the generated function:
+ * This function is supposed to be called from the generated function:
  * - _lf_trigger_shutdown_reactions()
  *
  * The generated functions must handle all shutdown reactions outside
