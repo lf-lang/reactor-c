@@ -37,15 +37,12 @@
 #define NEVER_TAG                                                                                                      \
   (tag_t) { .time = NEVER, .microstep = NEVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define NEVER_TAG_INITIALIZER                                                                                          \
-  { NEVER, NEVER_MICROSTEP }
+#define NEVER_TAG_INITIALIZER {NEVER, NEVER_MICROSTEP}
 #define FOREVER_TAG                                                                                                    \
   (tag_t) { .time = FOREVER, .microstep = FOREVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define FOREVER_TAG_INITIALIZER                                                                                        \
-  { FOREVER, FOREVER_MICROSTEP }
-#define ZERO_TAG                                                                                                       \
-  (tag_t) { .time = 0LL, .microstep = 0u }
+#define FOREVER_TAG_INITIALIZER {FOREVER, FOREVER_MICROSTEP}
+#define ZERO_TAG (tag_t){.time = 0LL, .microstep = 0u}
 
 // Returns true if timeout has elapsed.
 #define CHECK_TIMEOUT(start, duration) (lf_time_physical() > ((start) + (duration)))
@@ -118,19 +115,19 @@ int lf_tag_compare(tag_t tag1, tag_t tag2);
 
 /**
  * @brief Return the lesser out of two tags
- * 
- * @param tag1 
- * @param tag2 
- * @return tag_t 
+ *
+ * @param tag1
+ * @param tag2
+ * @return tag_t
  */
 tag_t lf_tag_min(tag_t tag1, tag_t tag2);
 
 /**
  * @brief Return the greater out of two tags
- * 
- * @param tag1 
- * @param tag2 
- * @return tag_t 
+ *
+ * @param tag1
+ * @param tag2
+ * @return tag_t
  */
 tag_t lf_tag_max(tag_t tag1, tag_t tag2);
 /**
