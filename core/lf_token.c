@@ -305,6 +305,9 @@ lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length) {
 }
 
 void _lf_free_all_tokens() {
+  // Free tokens allocated in reactions first
+  _lf_free_token_copies();
+
   // Free template tokens.
   LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
   // It is possible for a token to be a template token for more than one port
@@ -365,7 +368,8 @@ token_freed _lf_done_using(lf_token_t* token) {
 
 void _lf_free_token_copies() {
   while (_lf_tokens_allocated_in_reactions != NULL) {
-    _lf_done_using(_lf_tokens_allocated_in_reactions);
+    lf_token_t* current = _lf_tokens_allocated_in_reactions;
     _lf_tokens_allocated_in_reactions = _lf_tokens_allocated_in_reactions->next;
+    _lf_done_using(current);
   }
 }

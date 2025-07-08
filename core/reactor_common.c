@@ -378,6 +378,9 @@ event_t* lf_get_new_event(environment_t* env) {
 #ifdef FEDERATED_DECENTRALIZED
     e->intended_tag = (tag_t){.time = NEVER, .microstep = 0u};
 #endif
+    LF_PRINT_DEBUG("lf_get_new_event: Allocated event: %p", (void*)e);
+  } else {
+    LF_PRINT_DEBUG("lf_get_new_event: Retrieved event from the recycle queue: %p", (void*)e);
   }
   return e;
 }
@@ -524,6 +527,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
                  tag.microstep, current_logical_tag.time - start_time, current_logical_tag.microstep);
   if (lf_tag_compare(tag, current_logical_tag) <= 0 && env->execution_started) {
     lf_print_warning("_lf_schedule_at_tag(): requested to schedule an event at the current or past tag.");
+    _lf_done_using(token);
     return -1;
   }
 
@@ -580,9 +584,10 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
       // intended tag.
       tag.microstep++;
       e->base.tag = tag;
-      if (lf_is_tag_after_stop_tag(env, (tag_t){.time = tag.time, .microstep = tag.microstep})) {
+      if (lf_is_tag_after_stop_tag(env, tag)) {
         // Scheduling e will incur a microstep after the stop tag,
         // which is illegal.
+        _lf_done_using(token);
         lf_recycle_event(env, e);
         return 0;
       }
@@ -611,6 +616,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // and not a physical action
   if (trigger->is_timer || trigger->is_physical) {
     lf_print_warning("_lf_schedule_init_reactions() called on a timer or physical action.");
+    _lf_done_using(token);
     return 0;
   }
 
@@ -618,6 +624,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // If this trigger is associated with an inactive mode, it should not trigger any reaction.
   if (!_lf_mode_is_active(trigger->mode)) {
     LF_PRINT_DEBUG("Suppressing reactions of trigger due inactivity of mode %s.", trigger->mode->name);
+    _lf_done_using(token);
     return 1;
   }
 #endif
@@ -632,6 +639,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // Check for STP violation in the centralized coordination, which is a
   // critical error.
   if (is_STP_violated) {
+    _lf_done_using(token);
     lf_print_error_and_exit(
         "Attempted to insert reactions for a trigger that had an intended tag that was in the past. "
         "This should not happen under centralized coordination. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG
@@ -1198,13 +1206,23 @@ void termination(void) {
       // Free events and tokens suspended by modal reactors.
       _lf_terminate_modal_reactors(&env[i]);
 #endif
-      // If the event queue still has events on it, report that.
+      // If the event queue still has events on it, clear them and free their tokens.
       if (env[i].event_q != NULL && pqueue_tag_size(env[i].event_q) > 0) {
-        lf_print_warning("---- There are %zu unprocessed future events on the event queue.",
-                         pqueue_tag_size(env[i].event_q));
+        size_t unprocessed_events = pqueue_tag_size(env[i].event_q);
+        lf_print_warning("---- There are %zu unprocessed future events on the event queue.", unprocessed_events);
         event_t* event = (event_t*)pqueue_tag_peek(env[i].event_q);
         lf_print_warning("---- The first future event has timestamp " PRINTF_TAG " after start tag.",
                          event->base.tag.time - start_time, event->base.tag.microstep);
+
+        // Clear all unprocessed events and free their tokens
+        while (pqueue_tag_size(env[i].event_q) > 0) {
+          event_t* event = (event_t*)pqueue_tag_pop(env[i].event_q);
+          if (event->token != NULL) {
+            _lf_done_using(event->token);
+          }
+          lf_recycle_event(&env[i], event);
+        }
+        lf_print_warning("---- Cleared %zu unprocessed events from the event queue.", unprocessed_events);
       }
       // Print elapsed times.
       // If these are negative, then the program failed to start up.

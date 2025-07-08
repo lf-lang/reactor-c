@@ -3,7 +3,16 @@ PROJECT_BRIEF          = "C Runtime for Lingua Franca"
 PROJECT_NUMBER = 1.0
 PROJECT_LOGO           = ../docs/logo.png
 PROJECT_ICON           = ../docs/favicon.ico
-PREDEFINED             = FEDERATED MODAL_REACTORS LF_ENCLAVES LF_TRACE RTI_TRACE __has_builtin STANDALONE_RTI
+PREDEFINED             = MODAL_REACTORS \
+                         LF_ENCLAVES \
+                         LF_TRACE \
+                         RTI_TRACE \
+                         __has_builtin \
+                         STANDALONE_RTI \
+                         FEDERATED \
+                         FEDERATED_AUTHENTICATED \
+                         FEDERATED_DECENTRALIZED \
+                         FEDERATED_CENTRALIZED \
 
 OUTPUT_DIRECTORY = _build
 INPUT =                 ./doxygen.h \

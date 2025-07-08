@@ -13,6 +13,9 @@
 #include <assert.h>
 #include <string.h> // Defines memcpy.
 
+// Global variable defined in reactor_common.c:
+extern bool _lf_termination_executed;
+
 trigger_handle_t lf_schedule(void* action, interval_t offset) {
   return lf_schedule_token((lf_action_base_t*)action, offset, NULL);
 }
@@ -67,21 +70,28 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
 }
 
 trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length) {
+  int result = 0;
   if (length < 0) {
     lf_print_error("schedule_value():"
                    " Ignoring request to schedule an action with a value that has a negative length (%d).",
                    length);
-    return -1;
+    result = -1;
+  } else {
+    token_template_t* template = (token_template_t*)action;
+    environment_t* env = ((lf_action_base_t*)action)->parent->environment;
+    LF_CRITICAL_SECTION_ENTER(env);
+    if (_lf_termination_executed) {
+      free(value);
+      result = 0;
+    } else {
+      lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
+      result = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, extra_delay, token);
+      // Notify the main thread in case it is waiting for physical time to elapse.
+      lf_notify_of_event(env);
+    }
+    LF_CRITICAL_SECTION_EXIT(env);
   }
-  token_template_t* template = (token_template_t*)action;
-  environment_t* env = ((lf_action_base_t*)action)->parent->environment;
-  LF_CRITICAL_SECTION_ENTER(env);
-  lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
-  int return_value = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, extra_delay, token);
-  // Notify the main thread in case it is waiting for physical time to elapse.
-  lf_notify_of_event(env);
-  LF_CRITICAL_SECTION_EXIT(env);
-  return return_value;
+  return result;
 }
 
 /**
@@ -211,6 +221,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         LF_PRINT_DEBUG("Attempt to schedule an event after stop_tag was rejected.");
         // Scheduling an event will incur a microstep
         // after the stop tag.
+        _lf_done_using(token);
         lf_recycle_event(env, e);
         return 0;
       }

@@ -192,7 +192,9 @@ int accept_socket(int socket, int rti_socket) {
       // Got a socket
       break;
     } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
-      lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
+      if (errno != ECONNABORTED) {
+        lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
+      }
       break;
     } else if (errno == EPERM) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
@@ -235,7 +237,7 @@ int connect_to_socket(int sock, const char* hostname, int port) {
     }
     // Convert port number to string.
     char str[6];
-    sprintf(str, "%u", used_port);
+    snprintf(str, sizeof(str), "%u", used_port);
 
     // Get address structure matching hostname and hints criteria, and
     // set port to the port number provided in str. There should only
@@ -255,12 +257,13 @@ int connect_to_socket(int sock, const char* hostname, int port) {
       }
       lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds. Connecting to port %d.\n",
                        CONNECT_RETRY_INTERVAL, used_port);
+      freeaddrinfo(result);
       continue;
     } else {
       break;
     }
-    freeaddrinfo(result);
   }
+  freeaddrinfo(result);
   lf_print("Connected to %s:%d.", hostname, used_port);
   return ret;
 }
@@ -396,49 +399,47 @@ void init_shutdown_mutex(void) { LF_MUTEX_INIT(&shutdown_mutex); }
 
 int shutdown_socket(int* socket, bool read_before_closing) {
   LF_MUTEX_LOCK(&shutdown_mutex);
-  if (*socket == -1) {
+  int result = 0;
+  if (*socket < 0) {
     lf_print_log("Socket is already closed.");
-    LF_MUTEX_UNLOCK(&shutdown_mutex);
-    return 0;
-  }
-  if (!read_before_closing) {
-    if (shutdown(*socket, SHUT_RDWR)) {
-      lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
-      goto close_socket; // Try closing socket.
-    }
   } else {
-    // Signal the other side that no further writes are expected by sending a FIN packet.
-    // This indicates the write direction is closed. For more details, refer to:
-    // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
-    if (shutdown(*socket, SHUT_WR)) {
-      lf_print_log("Failed to shutdown socket: %s", strerror(errno));
-      goto close_socket; // Try closing socket.
+    if (!read_before_closing) {
+      if (shutdown(*socket, SHUT_RDWR)) {
+        lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
+        result = -1;
+      } // else shutdown reads and writes succeeded.
+    } else {
+      // Signal the other side that no further writes are expected by sending a FIN packet.
+      // This indicates the write direction is closed. For more details, refer to:
+      // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
+      if (shutdown(*socket, SHUT_WR)) {
+        lf_print_log("Failed to shutdown socket: %s", strerror(errno));
+        result = -1;
+      } else {
+        // Shutdown writes succeeded.
+        // Read any remaining bytes coming in on the socket until an EOF or socket error occurs.
+        // Discard any incoming bytes. Normally, this read should return 0, indicating an EOF,
+        // meaning that the peer has also closed the connection.
+        // This compensates for delayed ACKs and scenarios where Nagle's algorithm is disabled,
+        // ensuring the shutdown completes gracefully.
+        unsigned char buffer[10];
+        while (read(*socket, buffer, 10) > 0)
+          ;
+      }
     }
-
-    // Wait for the other side to send an EOF or encounter a socket error.
-    // Discard any incoming bytes. Normally, this read should return 0, indicating the peer has also closed the
-    // connection.
-    // This compensates for delayed ACKs and scenarios where Nagle's algorithm is disabled, ensuring the shutdown
-    // completes gracefully.
-    unsigned char buffer[10];
-    while (read(*socket, buffer, 10) > 0)
-      ;
+    // Attempt to close the socket.
+    // NOTE: In all common TCP/IP stacks, there is a time period,
+    // typically between 30 and 120 seconds, called the TIME_WAIT period,
+    // before the port is released after this close. This is because
+    // the OS is preventing another program from accidentally receiving
+    // duplicated packets intended for this program.
+    if (result != 0 && close(*socket)) {
+      // Close failed.
+      lf_print_log("Error while closing socket: %s\n", strerror(errno));
+      result = -1;
+    }
+    *socket = -1;
   }
   LF_MUTEX_UNLOCK(&shutdown_mutex);
-  return 0;
-
-close_socket: // Label to jump to the closing part of the function
-  // NOTE: In all common TCP/IP stacks, there is a time period,
-  // typically between 30 and 120 seconds, called the TIME_WAIT period,
-  // before the port is released after this close. This is because
-  // the OS is preventing another program from accidentally receiving
-  // duplicated packets intended for this program.
-  if (close(*socket)) {
-    lf_print_log("Error while closing socket: %s\n", strerror(errno));
-    LF_MUTEX_UNLOCK(&shutdown_mutex);
-    return -1;
-  }
-  *socket = -1;
-  LF_MUTEX_UNLOCK(&shutdown_mutex);
-  return 0;
+  return result;
 }
