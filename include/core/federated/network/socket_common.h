@@ -206,12 +206,11 @@ int connect_to_socket(int sock, const char* hostname, int port);
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
 /**
- * @brief Read the specified number of bytes to the specified socket using @ref read_from_socket.
+ * @brief Read the specified number of bytes from the specified socket into the specified buffer.
  * @ingroup Federated
  *
- * It closes the socket if an error occurs. If an error occurs, this will change the
- * socket ID pointed to by the first argument to -1 and will return -1.
- *
+ * This uses @ref read_from_socket, but if a failure occurs, it closes the socket using
+ * @ref shutdown_socket and returns -1. Otherwise, it returns 0.
  * @param socket Pointer to the socket ID.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
@@ -317,13 +316,16 @@ void init_shutdown_mutex(void);
  * @brief Shutdown and close the socket.
  * @ingroup Federated
  *
- * If read_before_closing is false, it just immediately calls shutdown() with SHUT_RDWR and close().
- * If read_before_closing is true, it calls shutdown with SHUT_WR, only disallowing further writing.
- * Then, it calls read() until EOF is received, and discards all received bytes.
+ * If `read_before_closing` is false, this calls `shutdown` with `SHUT_RDWR`, shutting down both directions.
+ * If this fails, then it calls `close`.
+ * If read_before_closing is true, this calls `shutdown` with `SHUT_WR`, only disallowing further writing.
+ * If this succeeds, then it calls `read` until an `EOF` is received and discards all received bytes,
+ * otherwise it calls `close`.
+ * In all cases, the socket ID pointed to by the `socket` argument is set to -1.
  *
  * @param socket Pointer to the socket descriptor to shutdown and close.
  * @param read_before_closing If true, read until EOF before closing the socket.
- * @return int 0 for success and -1 for an error.
+ * @return int 0 for success and -1 if either `shutdown` or `close` returns an error.
  */
 int shutdown_socket(int* socket, bool read_before_closing);
 
