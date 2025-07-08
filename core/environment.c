@@ -205,7 +205,7 @@ void environment_init_tags(environment_t* env, instant_t start_time, interval_t 
 
   if (duration >= 0LL) {
     // A duration has been specified. Calculate the stop time.
-    env->stop_tag.time = env->start_tag.time + env->duration;
+    env->stop_tag.time = lf_time_add(env->start_tag.time, env->duration);
     env->stop_tag.microstep = 0;
   } else {
     env->stop_tag = (tag_t)FOREVER_TAG_INITIALIZER;

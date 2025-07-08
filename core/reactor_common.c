@@ -473,6 +473,24 @@ void _lf_trigger_startup_reactions(environment_t* env) {
 #endif
 }
 
+void _lf_trigger_shutdown_reactions(environment_t* env) {
+  assert(env != GLOBAL_ENVIRONMENT);
+  for (int i = 0; i < env->shutdown_reactions_size; i++) {
+    if (env->shutdown_reactions[i] != NULL) {
+      if (env->shutdown_reactions[i]->mode != NULL) {
+        // Skip reactions in modes
+        continue;
+      }
+      _lf_trigger_reaction(env, env->shutdown_reactions[i], -1);
+    }
+  }
+#ifdef MODAL_REACTORS
+  if (env->modes) {
+    _lf_handle_mode_shutdown_reactions(env, env->shutdown_reactions, env->shutdown_reactions_size);
+  }
+#endif
+}
+
 void lf_recycle_event(environment_t* env, event_t* e) {
   assert(env != GLOBAL_ENVIRONMENT);
   e->base.tag = (tag_t){.time = 0LL, .microstep = 0};
@@ -519,12 +537,6 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
     LF_PRINT_DEBUG("_lf_schedule_at_tag: Incremented ref_count of %p to %zu.", (void*)token, token->ref_count);
   }
 
-  // Increment the reference count of the token.
-  if (token != NULL) {
-    token->ref_count++;
-    LF_PRINT_DEBUG("_lf_schedule_at_tag: Incremented ref_count of %p to %zu.", (void*)token, token->ref_count);
-  }
-
   // Do not schedule events if the tag is after the stop tag
   if (lf_is_tag_after_stop_tag(env, tag)) {
     lf_print_warning("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
@@ -558,14 +570,14 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
         _lf_done_using(token);
       }
       lf_recycle_event(env, e);
-      return (0);
+      return 0;
       break;
     case replace:
       // Replace the payload of the event at the head with our
       // current payload.
       lf_replace_token(found, token);
       lf_recycle_event(env, e);
-      return (0);
+      return 0;
       break;
     default:
       // Adding a microstep to the original
@@ -627,6 +639,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // Check for STP violation in the centralized coordination, which is a
   // critical error.
   if (is_STP_violated) {
+    _lf_done_using(token);
     lf_print_error_and_exit(
         "Attempted to insert reactions for a trigger that had an intended tag that was in the past. "
         "This should not happen under centralized coordination. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG
@@ -642,7 +655,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // for which we decrement the reference count.
   _lf_replace_template_token((token_template_t*)trigger, token);
 
-  // Mark the trigger present.
+  // Mark the trigger present and store a pointer to it for marking it as absent later.
   trigger->status = present;
   int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
   if (ipfas < env->is_present_fields_size) {

@@ -333,25 +333,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 #ifndef FEDERATED
     lf_tracing_set_start_time(start_time);
 #endif
-    // Create and initialize the environment
-    _lf_create_environments(); // code-generated function
-    environment_t* env;
-    int num_environments = _lf_get_environments(&env);
-    LF_ASSERT(num_environments == 1, "Found %d environments. Only 1 can be used with the single-threaded runtime",
-              num_environments);
-
-    LF_PRINT_DEBUG("Initializing.");
-    initialize_global();
-    // Set start time
-    start_time = lf_time_physical();
 
     LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
                    FOREVER_TAG.time - start_time, FOREVER_TAG.microstep, NEVER_TAG.time - start_time, 0);
 
     environment_init_tags(env, start_time, duration);
-    env->current_tag = env->start_tag;
-    // Start tracing if enalbed
-    start_trace(env->trace);
 #ifdef MODAL_REACTORS
     // Set up modal infrastructure
     _lf_initialize_modes(env);
