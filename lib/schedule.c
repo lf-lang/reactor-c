@@ -206,7 +206,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
 #endif
 
   // Check for conflicts (a queued event with the same trigger and tag).
-  if (min_spacing <= 0) {
+  if (min_spacing < 0) {
     // No minimum spacing defined.
     e->base.tag = intended_tag;
     event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)e);
@@ -242,7 +242,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
                    "with min spacing: " PRINTF_TIME,
                    earliest_time);
     // If the event is early, see which policy applies.
-    if (earliest_time > intended_tag.time) {
+    if (earliest_time > intended_tag.time || (earliest_time == intended_tag.time && min_spacing == 0)) {
       LF_PRINT_DEBUG("Event is early.");
       event_t *dummy, *found;
       switch (trigger->policy) {
