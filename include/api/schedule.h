@@ -70,12 +70,12 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * to the current time, then the tag will be one microstep beyond the current tag.
  * If the action is physical, the time will be the current physical time plus the extra delay,
  * and the microstep will be zero.
- * 
+ *
  * In both cases, if the resulting tag of the event conincides with a previously scheduled event
  * for the same action, then, by default, a microstep will be added to the tag until there is no
  * colliding event. This behavior can be changed by specifying a minimum spacing and a policy,
  * as explained below.
- * 
+ *
  * An action will trigger at a logical time that depends on the `extra_delay` argument given to
  * this schedule function, the `<min_delay>`, `<min_spacing>`, and `<policy>` arguments in the
  * action declaration, and whether the action is physical or logical.
@@ -103,7 +103,7 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * the previously scheduled event, then the time will be modified to enforce
  * the minimum spacing. The `<policy>` argument (if supported by the target)
  * determines how the minimum spacing constraint is enforced.
- * 
+ *
  * Note that "previously scheduled" here means specifically the tag resulting from
  * the most recent call to the schedule function for the same action.
  *
@@ -122,7 +122,7 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * Note that while the `"defer"` policy is conservative in the sense that it does not discard events,
  * it could potentially cause an unbounded growth of the event queue.
  *
- * For example, suppose the minimum spacing of a logical action is 10 ms and the policy is `"defer"`. 
+ * For example, suppose the minimum spacing of a logical action is 10 ms and the policy is `"defer"`.
  * Suppose that in a reaction to `startup`, the logical action is scheduled with a delay of
  * 100 ms, then again with a delay of 99 ms, and a third time with a delay of 101 ms.
  * The logical action will trigger at elapsed times 100 ms, 110 ms, and 120 ms.
