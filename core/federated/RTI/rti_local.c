@@ -43,9 +43,9 @@ void initialize_local_rti(environment_t* envs, int num_envs) {
   rti_local->base.mutex = &rti_mutex;
   rti_local->base.number_of_scheduling_nodes = num_envs;
 #ifdef LF_TRACE
-    rti_local->base.tracing_enabled = true;
+  rti_local->base.tracing_enabled = true;
 #else
-    rti_local->base.tracing_enabled = false;
+  rti_local->base.tracing_enabled = false;
 #endif
 
   // Allocate memory for the enclave_info objects
