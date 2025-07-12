@@ -133,7 +133,7 @@ void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t* target, ta
  * @param result The pointer to dereference and update to point to the resulting array.
  * @return The number of direct upstream enclaves.
  */
-int lf_get_upstream_of(int enclave_id, int** result);
+int lf_get_upstream_of(int enclave_id, uint16_t** result);
 
 /**
  * @brief Get the array of ids of enclaves directly downstream of the specified enclave.
@@ -146,7 +146,7 @@ int lf_get_upstream_of(int enclave_id, int** result);
  * @param result The pointer to dereference and update to point to the resulting array.
  * @return The number of direct downstream enclaves.
  */
-int lf_get_downstream_of(int enclave_id, int** result);
+int lf_get_downstream_of(int enclave_id, uint16_t** result);
 
 /**
  * @brief Retrieve the delays on the connections to direct upstream enclaves.

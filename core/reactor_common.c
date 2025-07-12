@@ -38,6 +38,10 @@
 #include "watchdog.h"
 #endif
 
+#ifdef LF_ENCLAVES
+#include "rti_local.h"
+#endif
+
 // Global variable defined in tag.c:
 extern instant_t start_time;
 

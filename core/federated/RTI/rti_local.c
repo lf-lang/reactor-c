@@ -42,7 +42,11 @@ void initialize_local_rti(environment_t* envs, int num_envs) {
   LF_MUTEX_INIT(&rti_mutex);
   rti_local->base.mutex = &rti_mutex;
   rti_local->base.number_of_scheduling_nodes = num_envs;
-  rti_local->base.tracing_enabled = (envs[0].trace != NULL);
+#ifdef LF_TRACE
+    rti_local->base.tracing_enabled = true;
+#else
+    rti_local->base.tracing_enabled = false;
+#endif
 
   // Allocate memory for the enclave_info objects
   rti_local->base.scheduling_nodes = (scheduling_node_t**)calloc(num_envs, sizeof(scheduling_node_t*));
@@ -52,9 +56,9 @@ void initialize_local_rti(environment_t* envs, int num_envs) {
     rti_local->base.scheduling_nodes[i] = (scheduling_node_t*)enclave_info;
 
     // Encode the connection topology into the enclave_info object.
-    enclave_info->base.num_immediate_downstreams = _lf_get_downstream_of(i, &enclave_info->base.immediate_downstreams);
-    enclave_info->base.num_immediate_upstreams = _lf_get_upstream_of(i, &enclave_info->base.immediate_upstreams);
-    _lf_get_upstream_delay_of(i, &enclave_info->base.immediate_upstream_delays);
+    enclave_info->base.num_immediate_downstreams = lf_get_downstream_of(i, &enclave_info->base.immediate_downstreams);
+    enclave_info->base.num_immediate_upstreams = lf_get_upstream_of(i, &enclave_info->base.immediate_upstreams);
+    lf_get_upstream_delay_of(i, &enclave_info->base.immediate_upstream_delays);
 
     enclave_info->base.state = GRANTED;
   }
@@ -93,7 +97,6 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
   tag_advance_grant_t result;
 
   tag_t previous_tag = e->base.last_granted;
-  tag_t previous_ptag = e->base.last_provisionally_granted;
 
   update_scheduling_node_next_event_tag_locked(&e->base, next_event_tag);
 
