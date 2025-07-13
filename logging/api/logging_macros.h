@@ -148,4 +148,25 @@ static const bool _lf_log_level_is_debug = LOG_LEVEL >= LOG_LEVEL_DEBUG;
     }                                                                                                                  \
   } while (0)
 #endif // NDEBUG
+
+/**
+ * @brief Check that a condition is true.
+ * @ingroup API
+ *
+ * This will verify that the condition is true and call @ref lf_print_error_and_exit if it is not true.
+ * The remaining arguments are passed to @ref lf_print_error_and_exit as the format string and arguments.
+ * This is just like `LF_ASSERT`, except that it is not optimized away when the `NDEBUG` flag is defined.
+ *
+ * @param condition The condition to verify.
+ * @param format The format string to pass to @ref lf_print_error_and_exit.
+ * @param ... The arguments to pass to @ref lf_print_error_and_exit.
+ */
+#define LF_TEST(condition, format, ...)                                                                              \
+  do {                                                                                                                 \
+    if (!(condition)) {                                                                                                \
+      lf_print_error_and_exit("`" format "`. Failed assertion in %s:%d(%s):(" #condition ") != true`", ##__VA_ARGS__,  \
+                              __FILE__, __LINE__, __func__);                                                           \
+    }                                                                                                                  \
+  } while (0)
+
 #endif // LOGGING_MACROS_H

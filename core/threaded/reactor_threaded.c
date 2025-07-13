@@ -840,10 +840,12 @@ static void* worker(void* arg) {
 #if defined LF_ENCLAVES
   if (worker_number == 0) {
     // If we have scheduling enclaves. We must get a TAG to the start tag.
-    LF_PRINT_LOG("Environment %u: Worker thread %d waits for TAG to (0,0).", env->id, worker_number);
+    LF_PRINT_LOG("Environment %u: Worker thread %d waits for the first TAG.", env->id, worker_number);
 
     tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
-    LF_ASSERT(lf_tag_compare(tag_granted, env->current_tag) == 0, "We did not receive a TAG to the start tag.");
+    // NOTE: This used to test that the tag was the start tag, but that is not
+    // guaranteed to be the case since the DNET optimization.
+    LF_PRINT_LOG("Environment %u: Worker thread %d received the first TAG: " PRINTF_TAG, env->id, worker_number, tag_granted.time - start_time, tag_granted.microstep);
   }
 #endif
 
