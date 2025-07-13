@@ -247,8 +247,8 @@ event_t* _lf_create_dummy_events(environment_t* env, tag_t tag);
  * relative to the current tag (or the environment has not started executing). Also, it must be called
  * with tags that are in order for a given trigger. This means that the following order is illegal:
  * ```
- * _lf_schedule_at_tag(trigger1, bigger_tag, ...);
- * _lf_schedule_at_tag(trigger1, smaller_tag, ...);
+ * _lf_schedule_at_tag(env, trigger1, bigger_tag, ...);
+ * _lf_schedule_at_tag(env, trigger1, smaller_tag, ...);
  * ```
  * where `bigger_tag > smaller_tag`. This function is primarily
  * used for network communication (which is assumed to be in order).
