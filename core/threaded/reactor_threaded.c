@@ -845,7 +845,8 @@ static void* worker(void* arg) {
     tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
     // NOTE: This used to test that the tag was the start tag, but that is not
     // guaranteed to be the case since the DNET optimization.
-    LF_PRINT_LOG("Environment %u: Worker thread %d received the first TAG: " PRINTF_TAG, env->id, worker_number, tag_granted.time - start_time, tag_granted.microstep);
+    LF_PRINT_LOG("Environment %u: Worker thread %d received the first TAG: " PRINTF_TAG, env->id, worker_number,
+                 tag_granted.time - start_time, tag_granted.microstep);
   }
 #endif
 

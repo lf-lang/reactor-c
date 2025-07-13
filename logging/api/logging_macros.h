@@ -161,7 +161,7 @@ static const bool _lf_log_level_is_debug = LOG_LEVEL >= LOG_LEVEL_DEBUG;
  * @param format The format string to pass to @ref lf_print_error_and_exit.
  * @param ... The arguments to pass to @ref lf_print_error_and_exit.
  */
-#define LF_TEST(condition, format, ...)                                                                              \
+#define LF_TEST(condition, format, ...)                                                                                \
   do {                                                                                                                 \
     if (!(condition)) {                                                                                                \
       lf_print_error_and_exit("`" format "`. Failed assertion in %s:%d(%s):(" #condition ") != true`", ##__VA_ARGS__,  \
