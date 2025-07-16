@@ -186,7 +186,7 @@ token_freed _lf_free_token(lf_token_t* token) {
     // Recycle instead of freeing.
     LF_PRINT_DEBUG("_lf_free_token: Putting token on the recycling bin: %p", (void*)token);
     if (!hashset_add(_lf_token_recycling_bin, token)) {
-      lf_print_warning("Putting token %p on the recycling bin, but it is already there!", (void*)token);
+      lf_print_error_and_exit("Putting token %p on the recycling bin, but it is already there!", (void*)token);
     }
   } else {
     // Recycling bin is full.
@@ -360,8 +360,7 @@ token_freed _lf_done_using(lf_token_t* token) {
   }
   LF_PRINT_DEBUG("_lf_done_using: token = %p, ref_count = %zu.", (void*)token, token->ref_count);
   if (token->ref_count == 0) {
-    lf_print_warning("Token being freed that has already been freed: %p", (void*)token);
-    return NOT_FREED;
+    lf_print_error_and_exit("Token being freed that has already been freed: %p", (void*)token);
   }
   token->ref_count--;
   return _lf_free_token(token);
