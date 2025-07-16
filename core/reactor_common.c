@@ -38,6 +38,10 @@
 #include "watchdog.h"
 #endif
 
+#ifdef LF_ENCLAVES
+#include "rti_local.h"
+#endif
+
 // Global variable defined in tag.c:
 extern instant_t start_time;
 
@@ -570,7 +574,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
         _lf_done_using(token);
       }
       lf_recycle_event(env, e);
-      return (0);
+      return 0;
       break;
     case replace:
       // Replace the payload of the event at the head with our
@@ -719,7 +723,6 @@ void _lf_advance_tag(environment_t* env, tag_t next_tag) {
 }
 
 /**
-
  * Invoke the given reaction
  *
  * @param env Environment in which we are executing.
