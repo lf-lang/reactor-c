@@ -400,7 +400,7 @@ void update_min_delays() {
             lf_print_error_and_exit("Internal error! Count of upstream nodes %zu for node %d is wrong!", count, i);
           }
           // N^2 debug statement could be a problem with large benchmarks.
-          LF_PRINT_DEBUG("++++    Node %hu is upstream with delay" PRINTF_TAG "\n", i, path_delays[i].time,
+          LF_PRINT_DEBUG("++++    Node %hu is upstream with delay " PRINTF_TAG, i, path_delays[i].time,
                          path_delays[i].microstep);
         }
       }

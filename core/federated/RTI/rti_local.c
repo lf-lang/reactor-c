@@ -102,7 +102,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
 
   // Return early if we already have been granted past the NET.
   if (lf_tag_compare(e->base.last_granted, next_event_tag) >= 0) {
-    LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to" PRINTF_TAG ". Returning with a TAG to" PRINTF_TAG
+    LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to " PRINTF_TAG ". Returning with a TAG to " PRINTF_TAG
                  " ",
                  e->base.id, e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep,
                  next_event_tag.time - lf_time_start(), next_event_tag.microstep);
@@ -129,7 +129,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
       break;
     }
     // If not, block.
-    LF_PRINT_LOG("RTI: enclave %u sleeps waiting for TAG to" PRINTF_TAG " ", e->base.id,
+    LF_PRINT_LOG("RTI: enclave %u sleeps waiting for TAG to " PRINTF_TAG " ", e->base.id,
                  e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
     LF_ASSERT(lf_cond_wait(&e->next_event_condition) == 0, "Could not wait for cond var");
   }
