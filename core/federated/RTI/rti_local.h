@@ -88,7 +88,7 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t* en
  * @param enclave The enclave requesting to advance to the NET.
  * @param next_event_tag The tag of the next event in the enclave
  * @return tag_t A tag which the enclave can safely advance its time to. It
- * might be smaller than the requested tag.
+ * might be smaller or larger than the requested tag.
  */
 tag_t rti_next_event_tag_locked(enclave_info_t* enclave, tag_t next_event_tag);
 

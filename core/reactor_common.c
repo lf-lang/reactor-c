@@ -203,7 +203,7 @@ void _lf_start_time_step(environment_t* env) {
     // due to an error.
     return;
   }
-  LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", env->current_tag.time - start_time,
+  LF_PRINT_LOG("--------- Env: %u Start time step at tag " PRINTF_TAG ".", env->id, env->current_tag.time - start_time,
                env->current_tag.microstep);
   // Handle dynamically created tokens for mutable inputs.
   _lf_free_token_copies();
@@ -776,23 +776,25 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
   bool inherited_STP_violation = reaction->is_STP_violated;
   LF_PRINT_DEBUG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
-  LF_PRINT_DEBUG("There are %zu outputs from reaction %s.", reaction->num_outputs, reaction->name);
+  LF_PRINT_DEBUG("Env %u: There are %zu outputs from reaction %s.", env->id, reaction->num_outputs, reaction->name);
   for (size_t i = 0; i < reaction->num_outputs; i++) {
     if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
-      LF_PRINT_DEBUG("Output %zu has been produced.", i);
+      LF_PRINT_DEBUG("Env %u: Output %zu has been produced.", env->id, i);
       trigger_t** triggerArray = (reaction->triggers)[i];
-      LF_PRINT_DEBUG("There are %d trigger arrays associated with output %zu.", reaction->triggered_sizes[i], i);
+      LF_PRINT_DEBUG("Env %u: There are %d trigger arrays associated with output %zu.", env->id,
+                     reaction->triggered_sizes[i], i);
       for (int j = 0; j < reaction->triggered_sizes[i]; j++) {
         trigger_t* trigger = triggerArray[j];
         if (trigger != NULL) {
-          LF_PRINT_DEBUG("Trigger %p lists %d reactions.", (void*)trigger, trigger->number_of_reactions);
+          LF_PRINT_DEBUG("Env %u: Trigger %p lists %d reactions.", env->id, (void*)trigger,
+                         trigger->number_of_reactions);
           for (int k = 0; k < trigger->number_of_reactions; k++) {
             reaction_t* downstream_reaction = trigger->reactions[k];
 #ifdef FEDERATED_DECENTRALIZED // Only pass down tardiness for federated LF programs
             // Set the is_STP_violated for the downstream reaction
             if (downstream_reaction != NULL) {
               downstream_reaction->is_STP_violated = inherited_STP_violation;
-              LF_PRINT_DEBUG("Passing is_STP_violated of %d to the downstream reaction: %s",
+              LF_PRINT_DEBUG("Env %u: Passing is_STP_violated of %d to the downstream reaction: %s", env->id,
                              downstream_reaction->is_STP_violated, downstream_reaction->name);
             }
 #endif
@@ -830,7 +832,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     }
   }
   if (downstream_to_execute_now != NULL) {
-    LF_PRINT_LOG("Worker %d: Optimizing and executing downstream reaction now: %s", worker,
+    LF_PRINT_LOG("Env %u: Worker %d: Optimizing and executing downstream reaction now: %s", env->id, worker,
                  downstream_to_execute_now->name);
     bool violation = false;
 #ifdef FEDERATED_DECENTRALIZED // Only use the STP handler for federated programs that use decentralized coordination
@@ -852,7 +854,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     //  chain until it is dealt with in a downstream STP handler.
     if (downstream_to_execute_now->is_STP_violated == true) {
       // Tardiness has occurred
-      LF_PRINT_LOG("Event has STP violation.");
+      LF_PRINT_LOG("Env %u: Event has STP violation.", env->id);
       reaction_function_t handler = downstream_to_execute_now->STP_handler;
       // Invoke the STP handler if there is one.
       if (handler != NULL) {
@@ -860,7 +862,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         // If there is no STP handler, pass the is_STP_violated
         // to downstream reactions.
         violation = true;
-        LF_PRINT_LOG("Invoke tardiness handler.");
+        LF_PRINT_LOG("Env %u: Invoke tardiness handler.", env->id);
         (*handler)(downstream_to_execute_now->self);
 
         // If the reaction produced outputs, put the resulting
@@ -870,7 +872,8 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         // Reset the tardiness because it has been dealt with in the
         // STP handler
         downstream_to_execute_now->is_STP_violated = false;
-        LF_PRINT_DEBUG("Reset reaction's is_STP_violated field to false: %s", downstream_to_execute_now->name);
+        LF_PRINT_DEBUG("Env %u: Reset reaction's is_STP_violated field to false: %s", env->id,
+                       downstream_to_execute_now->name);
       }
     }
 #endif
@@ -909,7 +912,8 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     // Reset the is_STP_violated because it has been passed
     // down the chain
     downstream_to_execute_now->is_STP_violated = false;
-    LF_PRINT_DEBUG("Finally, reset reaction's is_STP_violated field to false: %s", downstream_to_execute_now->name);
+    LF_PRINT_DEBUG("Env %u: Finally, reset reaction's is_STP_violated field to false: %s", env->id,
+                   downstream_to_execute_now->name);
   }
 }
 
@@ -1191,10 +1195,10 @@ void termination(void) {
   // In order to free tokens, we perform the same actions we would have for a new time step.
   for (int i = 0; i < num_envs; i++) {
     if (!env[i].initialized) {
-      lf_print_warning("---- Environment %u was never initialized", env[i].id);
+      lf_print_warning("---- Env %u was never initialized", env[i].id);
       continue;
     }
-    LF_PRINT_LOG("---- Terminating environment %u, normal termination: %d", env[i].id, _lf_normal_termination);
+    LF_PRINT_LOG("---- Terminating Env %u, normal termination: %d", env[i].id, _lf_normal_termination);
 
 #if !defined(LF_SINGLE_THREADED)
     // Make sure all watchdog threads have stopped

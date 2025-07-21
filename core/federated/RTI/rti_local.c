@@ -100,23 +100,23 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
 
   update_scheduling_node_next_event_tag_locked(&e->base, next_event_tag);
 
+  // If this enclave has no upstream, then we give a TAG till forever straight away.
+  if (e->base.num_immediate_upstreams == 0) {
+    LF_PRINT_LOG("RTI: enclave %u has no upstream. Giving it a TAG to FOREVER", e->base.id);
+    e->base.last_granted = FOREVER_TAG;
+  }
+
   // Return early if we already have been granted past the NET.
   if (lf_tag_compare(e->base.last_granted, next_event_tag) >= 0) {
     LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to " PRINTF_TAG ". Returning with a TAG to " PRINTF_TAG
                  " ",
                  e->base.id, e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep,
-                 next_event_tag.time - lf_time_start(), next_event_tag.microstep);
-    tracepoint_federate_from_rti(receive_TAG, e->base.id, &next_event_tag);
+                 e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep);
+    tracepoint_federate_from_rti(receive_TAG, e->base.id, &e->base.last_granted);
     // Release RTI mutex and re-enter the critical section of the source enclave before returning.
     LF_MUTEX_UNLOCK(rti_local->base.mutex);
     LF_MUTEX_LOCK(&e->env->mutex);
-    return next_event_tag;
-  }
-
-  // If this enclave has no upstream, then we give a TAG till forever straight away.
-  if (e->base.num_immediate_upstreams == 0) {
-    LF_PRINT_LOG("RTI: enclave %u has no upstream. Giving it a to the NET", e->base.id);
-    e->base.last_granted = next_event_tag;
+    return e->base.last_granted;
   }
 
   while (true) {

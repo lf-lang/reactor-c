@@ -232,7 +232,7 @@ static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_num
 void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t* params) {
   assert(env != GLOBAL_ENVIRONMENT);
 
-  LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
+  LF_PRINT_DEBUG("Env %u: Scheduler: Initializing with %zu workers", env->id, number_of_workers);
 
   // This scheduler is unique in that it requires `num_reactions_per_level` to
   // work correctly.
