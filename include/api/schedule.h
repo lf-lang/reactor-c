@@ -259,4 +259,6 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler);
 
+void lf_set_deadline(void* self, interval_t updated_deadline);
+
 #endif // API_H

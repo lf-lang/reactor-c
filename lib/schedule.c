@@ -116,6 +116,11 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
   return false;
 }
 
+void lf_set_deadline(void* self, interval_t updated_deadline){
+  reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
+  reaction->deadline = updated_deadline;
+}
+
 trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, interval_t extra_delay,
                                      lf_token_t* token) {
   assert(env != GLOBAL_ENVIRONMENT);
