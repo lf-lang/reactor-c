@@ -259,6 +259,16 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler);
 
+
+/**
+ * @brief Set the deadline of the currently executing reaction. 
+ * @ingroup API
+ * 
+ * This function is intended to be used to dynamically update the deadline of the reaction. lf_check_deadline() can be called right after this function is called.
+ * 
+ * @param self The self struct of the reactor.
+ * @param updated_deadline The updated deadline.
+ */
 void lf_set_deadline(void* self, interval_t updated_deadline);
 
 #endif // API_H
