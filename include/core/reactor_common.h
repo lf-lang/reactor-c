@@ -247,8 +247,8 @@ event_t* _lf_create_dummy_events(environment_t* env, tag_t tag);
  * relative to the current tag (or the environment has not started executing). Also, it must be called
  * with tags that are in order for a given trigger. This means that the following order is illegal:
  * ```
- * _lf_schedule_at_tag(trigger1, bigger_tag, ...);
- * _lf_schedule_at_tag(trigger1, smaller_tag, ...);
+ * _lf_schedule_at_tag(env, trigger1, bigger_tag, ...);
+ * _lf_schedule_at_tag(env, trigger1, smaller_tag, ...);
  * ```
  * where `bigger_tag > smaller_tag`. This function is primarily
  * used for network communication (which is assumed to be in order).
@@ -265,6 +265,39 @@ event_t* _lf_create_dummy_events(environment_t* env, tag_t tag);
  *  than the current tag).
  */
 trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token);
+
+/**
+ * @brief Schedule the specified action at a later tag with the specified token as a payload.
+ * @ingroup Internal
+ *
+ * This is an internal API that is identical to `lf_schedule_token` except that it takes
+ * an environment as an argument.
+ *
+ * @param env Environment in which we are executing.
+ * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
+ * @param extra_delay Extra offset of the event release above that in the action.
+ * @param token The token to carry the payload or null for no payload.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ */
+trigger_handle_t _lf_schedule_token(environment_t* env, void* action, interval_t extra_delay, lf_token_t* token);
+
+/**
+ * @brief Schedule an action to occur with the specified value and time offset with a
+ * copy of the specified value.
+ * @ingroup Internal
+ *
+ * This is an internal API that is identical to `lf_schedule_copy` except that it takes
+ * an environment as an argument.
+ *
+ * @param env Environment in which we are executing.
+ * @param action The action to be triggered (a pointer to an `lf_action_base_t`).
+ * @param offset The time offset over and above that in the action.
+ * @param value A pointer to the value to copy.
+ * @param length The length, if an array, 1 if a scalar, and 0 if value is NULL.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ *  error.
+ */
+trigger_handle_t _lf_schedule_copy(environment_t* env, void* action, interval_t offset, void* value, size_t length);
 
 /**
  * @brief Insert reactions triggered by trigger to the reaction queue.

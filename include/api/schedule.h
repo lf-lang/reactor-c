@@ -15,8 +15,8 @@
  * The compiler will not check this.
  */
 
-#ifndef API_H
-#define API_H
+#ifndef SCHEDULE_H
+#define SCHEDULE_H
 
 #include "lf_types.h"
 #include "tag.h"
@@ -259,4 +259,4 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler);
 
-#endif // API_H
+#endif // SCHEDULE_H

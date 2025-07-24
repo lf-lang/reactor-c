@@ -36,37 +36,11 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
 }
 
 trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-  environment_t* env = ((lf_action_base_t*)action)->parent->environment;
-
-  LF_CRITICAL_SECTION_ENTER(env);
-  int return_value = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, extra_delay, token);
-  // Notify the main thread in case it is waiting for physical time to elapse.
-  lf_notify_of_event(env);
-  LF_CRITICAL_SECTION_EXIT(env);
-  return return_value;
+  return _lf_schedule_token(((lf_action_base_t*)action)->parent->environment, action, extra_delay, token);
 }
 
 trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
-  if (value == NULL) {
-    return lf_schedule_token(action, offset, NULL);
-  }
-  environment_t* env = ((lf_action_base_t*)action)->parent->environment;
-  token_template_t* template = (token_template_t*)action;
-  if (action == NULL || template->type.element_size <= 0) {
-    lf_print_error("schedule: Invalid element size.");
-    return -1;
-  }
-  LF_CRITICAL_SECTION_ENTER(env);
-  // Initialize token with an array size of length and a reference count of 0.
-  lf_token_t* token = _lf_initialize_token(template, length);
-  // Copy the value into the newly allocated memory.
-  memcpy(token->value, value, template->type.element_size * length);
-  // The schedule function will increment the reference count.
-  trigger_handle_t result = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, offset, token);
-  // Notify the main thread in case it is waiting for physical time to elapse.
-  lf_notify_of_event(env);
-  LF_CRITICAL_SECTION_EXIT(env);
-  return result;
+  return _lf_schedule_copy(((lf_action_base_t*)action)->parent->environment, action, offset, value, length);
 }
 
 trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length) {

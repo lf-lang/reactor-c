@@ -91,12 +91,22 @@ typedef struct environment_t {
   tag_t current_tag;
 
   /**
+   * @brief The start tag of the environment.
+   */
+  tag_t start_tag;
+
+  /**
    * @brief The tag at which execution should stop.
    *
    * When current_tag reaches this value, execution will
    * terminate after processing all events at this tag.
    */
   tag_t stop_tag;
+
+  /**
+   * @brief The duration of the environment, which is the time interval between the start tag and the stop tag.
+   */
+  interval_t duration;
 
   /**
    * @brief Priority queue for pending events.

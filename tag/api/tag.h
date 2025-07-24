@@ -183,6 +183,26 @@ instant_t lf_time_subtract(instant_t a, interval_t b);
 int lf_tag_compare(tag_t tag1, tag_t tag2);
 
 /**
+ * @brief Return the lesser out of two tags
+ * @ingroup API
+ *
+ * @param tag1
+ * @param tag2
+ * @return tag_t
+ */
+tag_t lf_tag_min(tag_t tag1, tag_t tag2);
+
+/**
+ * @brief Return the greater out of two tags
+ * @ingroup API
+ *
+ * @param tag1
+ * @param tag2
+ * @return tag_t
+ */
+tag_t lf_tag_max(tag_t tag1, tag_t tag2);
+
+/**
  * @brief Delay a tag by the specified time interval to realize the "after" keyword.
  * @ingroup API
  *
