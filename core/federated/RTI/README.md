@@ -5,7 +5,7 @@
 This folder contains the source code for the Run-Time Infrastructure (RTI) that
 is necessary for federated Lingua Franca programs.
 
-By default, as of version 1.0, when you run `lfc` on a federated Lingua Franca program, a copy of
+By default, as of version 0.10.0, when you run `lfc` on a federated Lingua Franca program, a copy of
 the RTI code will be included in the generated code, compiled, and invoked by the
 launch scripts.  This mechanism ensures that you always get the version of the
 RTI that matches your version of lfc.
