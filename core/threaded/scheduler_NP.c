@@ -287,15 +287,17 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
  * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free(lf_scheduler_t* scheduler) {
-  if (scheduler->custom_data->triggered_reactions) {
-    for (size_t j = 0; j <= scheduler->max_reaction_level; j++) {
-      free(scheduler->custom_data->triggered_reactions[j]);
+  if (scheduler->custom_data != NULL) {
+    if (scheduler->custom_data->triggered_reactions) {
+      for (size_t j = 0; j <= scheduler->max_reaction_level; j++) {
+        free(scheduler->custom_data->triggered_reactions[j]);
+      }
+      free(scheduler->custom_data->triggered_reactions);
     }
-    free(scheduler->custom_data->triggered_reactions);
+    free(scheduler->custom_data->array_of_mutexes);
+    lf_semaphore_destroy(scheduler->custom_data->semaphore);
+    free(scheduler->custom_data);
   }
-  free(scheduler->custom_data->array_of_mutexes);
-  lf_semaphore_destroy(scheduler->custom_data->semaphore);
-  free(scheduler->custom_data);
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
@@ -311,6 +313,9 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
  * worker thread should exit.
  */
 reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number) {
+  // If the enclave has no reactions, return NULL.
+  if (scheduler->custom_data == NULL) return NULL;
+
   // Iterate until the stop tag is reached or reaction vectors are empty
   while (!scheduler->should_stop) {
     // Calculate the current level of reactions to execute
