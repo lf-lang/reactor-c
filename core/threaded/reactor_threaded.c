@@ -235,6 +235,7 @@ tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
 #if defined(FEDERATED_CENTRALIZED)
   return lf_send_next_event_tag(env, tag, wait_for_reply);
 #elif defined(LF_ENCLAVES)
+  (void)wait_for_reply;
   return rti_next_event_tag_locked(env->enclave_info, tag);
 #else
   (void)env;
