@@ -314,7 +314,8 @@ void lf_sched_free(lf_scheduler_t* scheduler) {
  */
 reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number) {
   // If the enclave has no reactions, return NULL.
-  if (scheduler->custom_data == NULL) return NULL;
+  if (scheduler->custom_data == NULL)
+    return NULL;
 
   // Iterate until the stop tag is reached or reaction vectors are empty
   while (!scheduler->should_stop) {
