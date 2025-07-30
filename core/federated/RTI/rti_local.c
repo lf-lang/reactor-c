@@ -195,10 +195,14 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
 
 void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
   // Nothing to do here.
+  SUPPRESS_UNUSED_WARNING(e);
+  SUPPRESS_UNUSED_WARNING(tag);
 }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   // Nothing to do here.
+  SUPPRESS_UNUSED_WARNING(scheduling_nodes);
+  SUPPRESS_UNUSED_WARNING(number_of_scheduling_nodes);
 }
 
 #endif // LF_ENCLAVES
