@@ -981,7 +981,22 @@ static void* initialize_environments(void* arg) {
   LF_MUTEX_UNLOCK(&env->mutex);
 
   // Become a worker thread.
-  return worker(env);
+  void* ret = worker(env);
+
+  // Join the other worker threads.
+  for (int j = 1; j < env->num_workers; j++) {
+    void* worker_exit_status = NULL;
+    int failure = lf_thread_join(env->thread_ids[j], &worker_exit_status);
+    if (failure) {
+      lf_print_error_and_exit("Env %u: Failed to join worker thread %d. Error code %d: %s", env->id, j, failure,
+                              strerror(failure));
+    }
+    if (worker_exit_status != NULL) {
+      lf_print_error("Env %u: Worker %d reports error code %p", env->id, j, worker_exit_status);
+      ret = worker_exit_status;
+    }
+  }
+  return ret;
 }
 
 /**
@@ -1068,16 +1083,19 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
   // Do environment-specific setup. Except for environment 0, this will be done
   // in a separate thread for each environment because it may block waiting for the
-  // first TAG.
+  // first TAG. Also, it will block waiting for its worker threads to exit.
+  lf_thread_t* env_init_threads = (lf_thread_t*)malloc((num_envs - 1) * sizeof(lf_thread_t));
+  int env_init_thread_count = 0;
+
   for (int i = num_envs - 1; i >= 1; i--) {
     environment_t* env = &envs[i];
 
-    // No need to store the thread ID because it will become the first worker thread.
+    // Store the thread ID so we can join it later.
     LF_PRINT_LOG("Spawning Env %u initialization thread.", i);
-    lf_thread_t thread_id;
-    if (lf_thread_create(&thread_id, initialize_environments, env) != 0) {
+    if (lf_thread_create(&env_init_threads[env_init_thread_count], initialize_environments, env) != 0) {
       lf_print_error_and_exit("Could not start environment intialization thread for Env %u", i);
     }
+    env_init_thread_count++;
   }
   // For environment 0, we do the initialization here.
   // This will turn this thread into a worker thread.
@@ -1085,29 +1103,27 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   void* main_thread_exit_status = initialize_environments(envs);
 
   LF_PRINT_LOG("Env 0: Main thread has finished. Waiting for other worker and environment threads to exit.");
-  int ret = 0;
-  for (int i = 0; i < num_envs; i++) {
-    // Wait for the worker threads to exit.
-    environment_t* env = &envs[i];
-    void* worker_thread_exit_status = NULL;
-    for (int j = 0; j < env->num_workers; j++) {
-      if (i == 0 && j == 0) {
-        // Don't join this thread.
-        worker_thread_exit_status = main_thread_exit_status;
-      } else {
-        int failure = lf_thread_join(env->thread_ids[j], &worker_thread_exit_status);
-        if (failure) {
-          // Windows warns that strerror is deprecated but doesn't define strerror_r.
-          // There seems to be no portable replacement.
-          lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
-        }
-      }
-      if (worker_thread_exit_status != NULL) {
-        lf_print_error("---- Worker %d reports error code %p", j, worker_thread_exit_status);
-        ret = 1;
-      }
+
+  int ret = main_thread_exit_status == NULL ? 0 : 1;
+
+  // Wait for environment initialization threads to complete.
+  LF_PRINT_LOG("Waiting for environment initialization threads to complete.");
+  for (int i = 0; i < env_init_thread_count; i++) {
+    void* env_init_exit_status = NULL;
+    int failure = lf_thread_join(env_init_threads[i], &env_init_exit_status);
+    if (failure) {
+      lf_print_error("Failed to join environment %d initialization thread. Error code %d: %s", num_envs - 1 - i,
+                     failure, strerror(failure));
+      ret = 2;
+    }
+    if (env_init_exit_status != NULL) {
+      lf_print_error("---- Environment %d initialization thread  reports error code %p", num_envs - 1 - i,
+                     env_init_exit_status);
+      ret = 1;
     }
   }
+  free(env_init_threads);
+
   if (ret == 0) {
     LF_PRINT_LOG("---- All environment worker threads exited successfully.");
   }

@@ -393,7 +393,8 @@ void update_min_delays() {
       LF_PRINT_DEBUG("++++ Node %hu is in ZDC: %d", node->id, is_in_zero_delay_cycle(node));
       for (int i = 0; i < n; i++) {
         rti_common->min_delays[i * n + j] = path_delays[i];
-        // The following might be useful for debugging, but N^2 debug statements are a problem with large benchmarks, so this is commented out.
+        // The following might be useful for debugging, but N^2 debug statements are a problem with large benchmarks, so
+        // this is commented out.
         /*
         if (lf_tag_compare(path_delays[i], FOREVER_TAG) < 0) {
           // Node i is upstream.
