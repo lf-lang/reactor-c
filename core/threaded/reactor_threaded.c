@@ -934,9 +934,10 @@ static void determine_number_of_workers(void) {
 /**
  * @brief Initialize the environment.
  *
- * This function is called by the main thread for each environment.
- * The calling thread will become a worker thread, so this returns
- * only when the worker thread exits.
+ * This function is the main thread for each environment.
+ * It will spawn worker threads (if there is more than one worker)
+ * and then become the first worker thread. It will return only
+ * when all worker threads have exited.
  *
  * @param arg The environment to initialize.
  * @return NULL.
