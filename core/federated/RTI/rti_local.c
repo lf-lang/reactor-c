@@ -42,7 +42,11 @@ void initialize_local_rti(environment_t* envs, int num_envs) {
   LF_MUTEX_INIT(&rti_mutex);
   rti_local->base.mutex = &rti_mutex;
   rti_local->base.number_of_scheduling_nodes = num_envs;
-  rti_local->base.tracing_enabled = (envs[0].trace != NULL);
+#ifdef LF_TRACE
+  rti_local->base.tracing_enabled = true;
+#else
+  rti_local->base.tracing_enabled = false;
+#endif
 
   // Allocate memory for the enclave_info objects
   rti_local->base.scheduling_nodes = (scheduling_node_t**)calloc(num_envs, sizeof(scheduling_node_t*));
@@ -52,9 +56,9 @@ void initialize_local_rti(environment_t* envs, int num_envs) {
     rti_local->base.scheduling_nodes[i] = (scheduling_node_t*)enclave_info;
 
     // Encode the connection topology into the enclave_info object.
-    enclave_info->base.num_immediate_downstreams = _lf_get_downstream_of(i, &enclave_info->base.immediate_downstreams);
-    enclave_info->base.num_immediate_upstreams = _lf_get_upstream_of(i, &enclave_info->base.immediate_upstreams);
-    _lf_get_upstream_delay_of(i, &enclave_info->base.immediate_upstream_delays);
+    enclave_info->base.num_immediate_downstreams = lf_get_downstream_of(i, &enclave_info->base.immediate_downstreams);
+    enclave_info->base.num_immediate_upstreams = lf_get_upstream_of(i, &enclave_info->base.immediate_upstreams);
+    lf_get_upstream_delay_of(i, &enclave_info->base.immediate_upstream_delays);
 
     enclave_info->base.state = GRANTED;
   }
@@ -93,27 +97,26 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
   tag_advance_grant_t result;
 
   tag_t previous_tag = e->base.last_granted;
-  tag_t previous_ptag = e->base.last_provisionally_granted;
 
   update_scheduling_node_next_event_tag_locked(&e->base, next_event_tag);
 
+  // If this enclave has no upstream, then we give a TAG until forever straight away.
+  if (e->base.num_immediate_upstreams == 0) {
+    LF_PRINT_LOG("RTI: enclave %u has no upstream. Giving it a TAG to FOREVER", e->base.id);
+    e->base.last_granted = FOREVER_TAG;
+  }
+
   // Return early if we already have been granted past the NET.
   if (lf_tag_compare(e->base.last_granted, next_event_tag) >= 0) {
-    LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to" PRINTF_TAG ". Returning with a TAG to" PRINTF_TAG
+    LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to " PRINTF_TAG ". Returning with a TAG to " PRINTF_TAG
                  " ",
                  e->base.id, e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep,
-                 next_event_tag.time - lf_time_start(), next_event_tag.microstep);
-    tracepoint_federate_from_rti(receive_TAG, e->base.id, &next_event_tag);
+                 e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep);
+    tracepoint_federate_from_rti(receive_TAG, e->base.id, &e->base.last_granted);
     // Release RTI mutex and re-enter the critical section of the source enclave before returning.
     LF_MUTEX_UNLOCK(rti_local->base.mutex);
     LF_MUTEX_LOCK(&e->env->mutex);
-    return next_event_tag;
-  }
-
-  // If this enclave has no upstream, then we give a TAG till forever straight away.
-  if (e->base.num_immediate_upstreams == 0) {
-    LF_PRINT_LOG("RTI: enclave %u has no upstream. Giving it a to the NET", e->base.id);
-    e->base.last_granted = next_event_tag;
+    return e->base.last_granted;
   }
 
   while (true) {
@@ -126,7 +129,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
       break;
     }
     // If not, block.
-    LF_PRINT_LOG("RTI: enclave %u sleeps waiting for TAG to" PRINTF_TAG " ", e->base.id,
+    LF_PRINT_LOG("RTI: enclave %u sleeps waiting for TAG to " PRINTF_TAG " ", e->base.id,
                  e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
     LF_ASSERT(lf_cond_wait(&e->next_event_condition) == 0, "Could not wait for cond var");
   }
@@ -192,10 +195,14 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
 
 void notify_downstream_next_event_tag(scheduling_node_t* e, tag_t tag) {
   // Nothing to do here.
+  SUPPRESS_UNUSED_WARNING(e);
+  SUPPRESS_UNUSED_WARNING(tag);
 }
 
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   // Nothing to do here.
+  SUPPRESS_UNUSED_WARNING(scheduling_nodes);
+  SUPPRESS_UNUSED_WARNING(number_of_scheduling_nodes);
 }
 
 #endif // LF_ENCLAVES
