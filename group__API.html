@@ -165,6 +165,8 @@ Macros</h2></td></tr>
 <tr class="memdesc:gaafcc3f0b909a44166db182035ca759c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Threshold for width of multiport s.t.  <br /></td></tr>
 <tr class="memitem:ga2d81456725407157f9dc521a5e14a679" id="r_ga2d81456725407157f9dc521a5e14a679"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga2d81456725407157f9dc521a5e14a679">lf_tag</a>()</td></tr>
 <tr class="memdesc:ga2d81456725407157f9dc521a5e14a679"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current tag of the environment invoking this reaction.  <br /></td></tr>
+<tr class="memitem:ga9af561423d4c16fd397d48ab37edfcff" id="r_ga9af561423d4c16fd397d48ab37edfcff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga9af561423d4c16fd397d48ab37edfcff">LF_TEST</a>(condition,  format, ...)</td></tr>
+<tr class="memdesc:ga9af561423d4c16fd397d48ab37edfcff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check that a condition is true.  <br /></td></tr>
 <tr class="memitem:gacc2b8ac5ac3020137e71dfcdbaedf335" id="r_gacc2b8ac5ac3020137e71dfcdbaedf335"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gacc2b8ac5ac3020137e71dfcdbaedf335">LF_TIME_BUFFER_LENGTH</a>&#160;&#160;&#160;64</td></tr>
 <tr class="memdesc:gacc2b8ac5ac3020137e71dfcdbaedf335"><td class="mdescLeft">&#160;</td><td class="mdescRight">For user-friendly reporting of time values, the buffer length required.  <br /></td></tr>
 <tr class="memitem:ga4fe4453dda4223671dc90fa1ecbcac85" id="r_ga4fe4453dda4223671dc90fa1ecbcac85"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga4fe4453dda4223671dc90fa1ecbcac85">lf_time_logical</a>()</td></tr>
@@ -257,6 +259,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaa1186f7e330ecbfd20a4dd90b97439e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add two tags.  <br /></td></tr>
 <tr class="memitem:ga596d8734432616c9c7847283fde63cfa" id="r_ga596d8734432616c9c7847283fde63cfa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga596d8734432616c9c7847283fde63cfa">lf_tag_compare</a> (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</td></tr>
 <tr class="memdesc:ga596d8734432616c9c7847283fde63cfa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare two tags.  <br /></td></tr>
+<tr class="memitem:ga4c39037bf099ff2c31a71fe96ac59a61" id="r_ga4c39037bf099ff2c31a71fe96ac59a61"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga4c39037bf099ff2c31a71fe96ac59a61">lf_tag_max</a> (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</td></tr>
+<tr class="memdesc:ga4c39037bf099ff2c31a71fe96ac59a61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the greater out of two tags.  <br /></td></tr>
+<tr class="memitem:ga80abd9981c0375a0abbe47591204f18b" id="r_ga80abd9981c0375a0abbe47591204f18b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga80abd9981c0375a0abbe47591204f18b">lf_tag_min</a> (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</td></tr>
+<tr class="memdesc:ga80abd9981c0375a0abbe47591204f18b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the lesser out of two tags.  <br /></td></tr>
 <tr class="memitem:ga1789de56286aa33c086b194b544c2d91" id="r_ga1789de56286aa33c086b194b544c2d91"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga1789de56286aa33c086b194b544c2d91">lf_time_add</a> (<a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> a, <a class="el" href="#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> b)</td></tr>
 <tr class="memdesc:ga1789de56286aa33c086b194b544c2d91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sum of an interval and an instant, saturating on overflow and underflow.  <br /></td></tr>
 <tr class="memitem:ga7538766a655ba2e60ddde55f2e020e58" id="r_ga7538766a655ba2e60ddde55f2e020e58"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga7538766a655ba2e60ddde55f2e020e58">lf_time_physical</a> (void)</td></tr>
@@ -927,6 +933,51 @@ Functions</h2></td></tr>
 <div class="ttc" id="agroup__API_html_ga2d81456725407157f9dc521a5e14a679"><div class="ttname"><a href="#ga2d81456725407157f9dc521a5e14a679">lf_tag</a></div><div class="ttdeci">#define lf_tag()</div><div class="ttdoc">Return the current tag of the environment invoking this reaction.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:198</div></div>
 </div><!-- fragment -->
 <p>Return the current tag of the environment invoking this reaction. </p>
+
+</div>
+</div>
+<a id="ga9af561423d4c16fd397d48ab37edfcff" name="ga9af561423d4c16fd397d48ab37edfcff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9af561423d4c16fd397d48ab37edfcff">&#9670;&#160;</a></span>LF_TEST</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LF_TEST</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>condition</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>format</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em></em></span>...&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="logging__macros_8h.html">/Users/runner/work/reactor-c/reactor-c/logging/api/logging_macros.h</a>&gt;</code></p>
+<b>Value:</b><div class="fragment"><div class="line">  <span class="keywordflow">do</span> {                                                                                                                 \</div>
+<div class="line">    if (!(condition)) {                                                                                                \</div>
+<div class="line">      lf_print_error_and_exit(<span class="stringliteral">&quot;`&quot;</span> format <span class="stringliteral">&quot;`. Failed assertion in %s:%d(%s):(&quot;</span> #condition <span class="stringliteral">&quot;) != true`&quot;</span>, ##__VA_ARGS__,  \</div>
+<div class="line">                              __FILE__, __LINE__, __func__);                                                           \</div>
+<div class="line">    }                                                                                                                  \</div>
+<div class="line">  } <span class="keywordflow">while</span> (0)</div>
+</div><!-- fragment -->
+<p>Check that a condition is true. </p>
+<p>This will verify that the condition is true and call <a class="el" href="#gabf2630e80adfec45b8b4a2782a0767a7">lf_print_error_and_exit</a> if it is not true. The remaining arguments are passed to <a class="el" href="#gabf2630e80adfec45b8b4a2782a0767a7">lf_print_error_and_exit</a> as the format string and arguments. This is just like <span class="tt">LF_ASSERT</span>, except that it is not optimized away when the <span class="tt">NDEBUG</span> flag is defined.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">condition</td><td>The condition to verify. </td></tr>
+    <tr><td class="paramname">format</td><td>The format string to pass to <a class="el" href="#gabf2630e80adfec45b8b4a2782a0767a7">lf_print_error_and_exit</a>. </td></tr>
+    <tr><td class="paramname">...</td><td>The arguments to pass to <a class="el" href="#gabf2630e80adfec45b8b4a2782a0767a7">lf_print_error_and_exit</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -2169,6 +2220,72 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>-1, 0, or 1 depending on the relation. </dd></dl>
+
+</div>
+</div>
+<a id="ga4c39037bf099ff2c31a71fe96ac59a61" name="ga4c39037bf099ff2c31a71fe96ac59a61"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4c39037bf099ff2c31a71fe96ac59a61">&#9670;&#160;</a></span>lf_tag_max()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> lf_tag_max </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag1</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag2</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="tag_8h.html">/Users/runner/work/reactor-c/reactor-c/tag/api/tag.h</a>&gt;</code></p>
+
+<p>Return the greater out of two tags. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tag1</td><td></td></tr>
+    <tr><td class="paramname">tag2</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structtag__t.html" title="A tag is a time, microstep pair.">tag_t</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga80abd9981c0375a0abbe47591204f18b" name="ga80abd9981c0375a0abbe47591204f18b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga80abd9981c0375a0abbe47591204f18b">&#9670;&#160;</a></span>lf_tag_min()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> lf_tag_min </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag1</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>tag2</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="tag_8h.html">/Users/runner/work/reactor-c/reactor-c/tag/api/tag.h</a>&gt;</code></p>
+
+<p>Return the lesser out of two tags. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tag1</td><td></td></tr>
+    <tr><td class="paramname">tag2</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structtag__t.html" title="A tag is a time, microstep pair.">tag_t</a> </dd></dl>
 
 </div>
 </div>

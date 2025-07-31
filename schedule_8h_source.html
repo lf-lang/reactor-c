@@ -99,8 +99,8 @@ $(function(){initNavTree('schedule_8h_source.html','',''); });
 <div class="contents">
 <a href="schedule_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span></div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#ifndef API_H</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#define API_H</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#ifndef SCHEDULE_H</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#define SCHEDULE_H</span></div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &quot;<a class="code" href="lf__types_8h.html">lf_types.h</a>&quot;</span></div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &quot;<a class="code" href="tag_8h.html">tag.h</a>&quot;</span></div>
@@ -119,7 +119,7 @@ $(function(){initNavTree('schedule_8h_source.html','',''); });
 <div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span></div>
 <div class="line"><a id="l00260" name="l00260"></a><span class="lineno"><a class="line" href="group__API.html#gab3a04dd0a1581844829b28686b6b3c53">  260</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="group__API.html#gab3a04dd0a1581844829b28686b6b3c53">lf_check_deadline</a>(<span class="keywordtype">void</span>* self, <span class="keywordtype">bool</span> invoke_deadline_handler);</div>
 <div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span> </div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span><span class="preprocessor">#endif </span><span class="comment">// API_H</span></div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span><span class="preprocessor">#endif </span><span class="comment">// SCHEDULE_H</span></div>
 <div class="ttc" id="agroup__API_html_ga073ea4406a084a24e71b65936ba39e36"><div class="ttname"><a href="group__API.html#ga073ea4406a084a24e71b65936ba39e36">lf_schedule_int</a></div><div class="ttdeci">trigger_handle_t lf_schedule_int(void *action, interval_t extra_delay, int value)</div><div class="ttdoc">Schedule the specified action with an integer value at a later logical time.</div></div>
 <div class="ttc" id="agroup__API_html_ga6778eef97447cf0ba1f0afa8ba3a8dca"><div class="ttname"><a href="group__API.html#ga6778eef97447cf0ba1f0afa8ba3a8dca">lf_schedule</a></div><div class="ttdeci">trigger_handle_t lf_schedule(void *action, interval_t offset)</div><div class="ttdoc">Schedule an action to occur with the specified time offset with no payload (no value conveyed).</div></div>
 <div class="ttc" id="agroup__API_html_ga747594e2d7264ae8b044a095eb92ba27"><div class="ttname"><a href="group__API.html#ga747594e2d7264ae8b044a095eb92ba27">lf_schedule_copy</a></div><div class="ttdeci">trigger_handle_t lf_schedule_copy(void *action, interval_t offset, void *value, size_t length)</div><div class="ttdoc">Schedule an action to occur with the specified value and time offset with a copy of the specified val...</div></div>

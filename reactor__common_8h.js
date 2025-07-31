@@ -10,6 +10,8 @@ var reactor__common_8h =
     [ "_lf_invoke_reaction", "group__Internal.html#ga7fe988f0eee005defaa2ad2c9f1f2fd8", null ],
     [ "_lf_pop_events", "group__Internal.html#ga41e1c14ed7c1ab5ab19b8b98d84006b6", null ],
     [ "_lf_schedule_at_tag", "group__Internal.html#ga9d2634d70492498740984f320dffe8f0", null ],
+    [ "_lf_schedule_copy", "group__Internal.html#gaf31c25686db5996e9f3493745e63856a", null ],
+    [ "_lf_schedule_token", "group__Internal.html#ga6d8b49ac9cf089b35a5d2df6a9209255", null ],
     [ "_lf_start_time_step", "group__Internal.html#gab5d69d8631d56d64fb90547a8d6b10cd", null ],
     [ "_lf_trigger_reaction", "group__Internal.html#gaf31f8aca1b004a6e5e0e695063de1b47", null ],
     [ "_lf_trigger_shutdown_reactions", "group__Internal.html#ga282a342efac4fc3e198fb9656f0a9adc", null ],

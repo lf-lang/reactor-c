@@ -39,5 +39,5 @@ var searchData=
   ['doxygen_2eh_36',['doxygen.h',['../doxygen_8h.html',1,'']]],
   ['drop_37',['drop',['../group__Internal.html#gga0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]],
   ['dst_5fid_38',['dst_id',['../structtrace__record__t.html#a5a8dc061d005024c8e16b97c5e1aeb2d',1,'trace_record_t::dst_id'],['../structtrace__record__nodeps__t.html#a594dcef3f6fe657e8c1c45dbac60e821',1,'trace_record_nodeps_t::dst_id']]],
-  ['duration_39',['duration',['../reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'reactor_common.h']]]
+  ['duration_39',['duration',['../structenvironment__t.html#ac03164e9ec8a8779c00c8986dcaa874f',1,'environment_t::duration'],['../reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration:&#160;reactor_common.h']]]
 ];

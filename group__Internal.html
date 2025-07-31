@@ -374,6 +374,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaf2c6b4fac0a87c3cc914c713714e1fca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance the tag to the next tag on the event queue.  <br /></td></tr>
 <tr class="memitem:ga9d2634d70492498740984f320dffe8f0" id="r_ga9d2634d70492498740984f320dffe8f0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ga3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="memdesc:ga9d2634d70492498740984f320dffe8f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule an event at a specific tag (time, microstep).  <br /></td></tr>
+<tr class="memitem:gaf31c25686db5996e9f3493745e63856a" id="r_gaf31c25686db5996e9f3493745e63856a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ga3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaf31c25686db5996e9f3493745e63856a">_lf_schedule_copy</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, void *action, <a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> offset, void *value, size_t length)</td></tr>
+<tr class="memdesc:gaf31c25686db5996e9f3493745e63856a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule an action to occur with the specified value and time offset with a copy of the specified value.  <br /></td></tr>
+<tr class="memitem:ga6d8b49ac9cf089b35a5d2df6a9209255" id="r_ga6d8b49ac9cf089b35a5d2df6a9209255"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ga3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga6d8b49ac9cf089b35a5d2df6a9209255">_lf_schedule_token</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, void *action, <a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="memdesc:ga6d8b49ac9cf089b35a5d2df6a9209255"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule the specified action at a later tag with the specified token as a payload.  <br /></td></tr>
 <tr class="memitem:gab5d69d8631d56d64fb90547a8d6b10cd" id="r_gab5d69d8631d56d64fb90547a8d6b10cd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gab5d69d8631d56d64fb90547a8d6b10cd">_lf_start_time_step</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="memdesc:gab5d69d8631d56d64fb90547a8d6b10cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform whatever is needed to start a time step.  <br /></td></tr>
 <tr class="memitem:gaf31f8aca1b004a6e5e0e695063de1b47" id="r_gaf31f8aca1b004a6e5e0e695063de1b47"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaf31f8aca1b004a6e5e0e695063de1b47">_lf_trigger_reaction</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int worker_number)</td></tr>
@@ -2812,8 +2816,8 @@ The running state does not seem to be read. </dd></dl>
 
 <p>Schedule an event at a specific tag (time, microstep). </p>
 <p>If there is an event found at the requested tag, the payload is replaced and 0 is returned.</p>
-<p>Note that this function is an internal API that must be called with a tag that is in the future relative to the current tag (or the environment has not started executing). Also, it must be called with tags that are in order for a given trigger. This means that the following order is illegal: </p><div class="fragment"><div class="line"><a class="code hl_function" href="#ga9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(trigger1, bigger_tag, ...);</div>
-<div class="line"><a class="code hl_function" href="#ga9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(trigger1, smaller_tag, ...);</div>
+<p>Note that this function is an internal API that must be called with a tag that is in the future relative to the current tag (or the environment has not started executing). Also, it must be called with tags that are in order for a given trigger. This means that the following order is illegal: </p><div class="fragment"><div class="line"><a class="code hl_function" href="#ga9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(env, trigger1, bigger_tag, ...);</div>
+<div class="line"><a class="code hl_function" href="#ga9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a>(env, trigger1, smaller_tag, ...);</div>
 <div class="ttc" id="agroup__Internal_html_ga9d2634d70492498740984f320dffe8f0"><div class="ttname"><a href="#ga9d2634d70492498740984f320dffe8f0">_lf_schedule_at_tag</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_at_tag(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdoc">Schedule an event at a specific tag (time, microstep).</div></div>
 </div><!-- fragment --><p> where <span class="tt">bigger_tag &gt; smaller_tag</span>. This function is primarily used for network communication (which is assumed to be in order).</p>
 <p>This function assumes the caller holds the mutex lock.</p>
@@ -2827,6 +2831,104 @@ The running state does not seem to be read. </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A positive trigger handle for success, 0 if no new event was scheduled (instead, the payload was updated), or -1 for error (the tag is equal to or less than the current tag). </dd></dl>
+
+</div>
+</div>
+<a id="gaf31c25686db5996e9f3493745e63856a" name="gaf31c25686db5996e9f3493745e63856a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf31c25686db5996e9f3493745e63856a">&#9670;&#160;</a></span>_lf_schedule_copy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#ga3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_copy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>offset</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>value</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>length</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor__common_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/reactor_common.h</a>&gt;</code></p>
+
+<p>Schedule an action to occur with the specified value and time offset with a copy of the specified value. </p>
+<p>This is an internal API that is identical to <span class="tt">lf_schedule_copy</span> except that it takes an environment as an argument.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
+    <tr><td class="paramname">action</td><td>The action to be triggered (a pointer to an <span class="tt"><a class="el" href="structlf__action__base__t.html" title="Base type for actions.">lf_action_base_t</a></span>). </td></tr>
+    <tr><td class="paramname">offset</td><td>The time offset over and above that in the action. </td></tr>
+    <tr><td class="paramname">value</td><td>A pointer to the value to copy. </td></tr>
+    <tr><td class="paramname">length</td><td>The length, if an array, 1 if a scalar, and 0 if value is NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error. </dd></dl>
+
+</div>
+</div>
+<a id="ga6d8b49ac9cf089b35a5d2df6a9209255" name="ga6d8b49ac9cf089b35a5d2df6a9209255"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6d8b49ac9cf089b35a5d2df6a9209255">&#9670;&#160;</a></span>_lf_schedule_token()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#ga3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_token </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>extra_delay</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structlf__token__t.html">lf_token_t</a> *</td>          <td class="paramname"><span class="paramname"><em>token</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor__common_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/reactor_common.h</a>&gt;</code></p>
+
+<p>Schedule the specified action at a later tag with the specified token as a payload. </p>
+<p>This is an internal API that is identical to <span class="tt">lf_schedule_token</span> except that it takes an environment as an argument.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
+    <tr><td class="paramname">action</td><td>The action to be triggered (a pointer to an <span class="tt"><a class="el" href="structlf__action__base__t.html" title="Base type for actions.">lf_action_base_t</a></span>). </td></tr>
+    <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>
+    <tr><td class="paramname">token</td><td>The token to carry the payload or null for no payload. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error. </dd></dl>
 
 </div>
 </div>

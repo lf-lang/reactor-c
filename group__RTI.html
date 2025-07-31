@@ -231,12 +231,12 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga94101c5bfb54d670a8f47f448e351a34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the node is in a zero-delay cycle.  <br /></td></tr>
 <tr class="memitem:ga52a9225745a4b229aee86fcc4617b904" id="r_ga52a9225745a4b229aee86fcc4617b904"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga52a9225745a4b229aee86fcc4617b904">lf_connect_to_federates</a> (int socket_descriptor)</td></tr>
 <tr class="memdesc:ga52a9225745a4b229aee86fcc4617b904"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for one incoming connection request from each federate, and, upon receiving it, create a thread to communicate with that federate.  <br /></td></tr>
-<tr class="memitem:gae174e0f4961d083d699d2368e8b01f88" id="r_gae174e0f4961d083d699d2368e8b01f88"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gae174e0f4961d083d699d2368e8b01f88">lf_get_downstream_of</a> (int enclave_id, int **result)</td></tr>
-<tr class="memdesc:gae174e0f4961d083d699d2368e8b01f88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the array of ids of enclaves directly downstream of the specified enclave.  <br /></td></tr>
+<tr class="memitem:ga06003604b6defab443bdfe34f3ab17ee" id="r_ga06003604b6defab443bdfe34f3ab17ee"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga06003604b6defab443bdfe34f3ab17ee">lf_get_downstream_of</a> (int enclave_id, uint16_t **result)</td></tr>
+<tr class="memdesc:ga06003604b6defab443bdfe34f3ab17ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the array of ids of enclaves directly downstream of the specified enclave.  <br /></td></tr>
 <tr class="memitem:gaaba4ae9dd32581f9f34a7a81d9c7791c" id="r_gaaba4ae9dd32581f9f34a7a81d9c7791c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaaba4ae9dd32581f9f34a7a81d9c7791c">lf_get_upstream_delay_of</a> (int enclave_id, <a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> **result)</td></tr>
 <tr class="memdesc:gaaba4ae9dd32581f9f34a7a81d9c7791c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the delays on the connections to direct upstream enclaves.  <br /></td></tr>
-<tr class="memitem:ga73eeca1b4db7128c718d901252257789" id="r_ga73eeca1b4db7128c718d901252257789"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga73eeca1b4db7128c718d901252257789">lf_get_upstream_of</a> (int enclave_id, int **result)</td></tr>
-<tr class="memdesc:ga73eeca1b4db7128c718d901252257789"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the array of ids of enclaves directly upstream of the specified enclave.  <br /></td></tr>
+<tr class="memitem:ga8f432bb04e691f66f4f81cbbecb741ed" id="r_ga8f432bb04e691f66f4f81cbbecb741ed"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga8f432bb04e691f66f4f81cbbecb741ed">lf_get_upstream_of</a> (int enclave_id, uint16_t **result)</td></tr>
+<tr class="memdesc:ga8f432bb04e691f66f4f81cbbecb741ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the array of ids of enclaves directly upstream of the specified enclave.  <br /></td></tr>
 <tr class="memitem:gaa057279652cc77f238cc73d0fc0e705e" id="r_gaa057279652cc77f238cc73d0fc0e705e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaa057279652cc77f238cc73d0fc0e705e">notify_advance_grant_if_safe</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *e)</td></tr>
 <tr class="memdesc:gaa057279652cc77f238cc73d0fc0e705e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Either send to a federate or unblock an enclave to give it a tag.  <br /></td></tr>
 <tr class="memitem:ga0903cfa1c0fa064824b445c099cd2aa6" id="r_ga0903cfa1c0fa064824b445c099cd2aa6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga0903cfa1c0fa064824b445c099cd2aa6">notify_downstream_advance_grant_if_safe</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *e, bool visited[])</td></tr>
@@ -1403,8 +1403,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="gae174e0f4961d083d699d2368e8b01f88" name="gae174e0f4961d083d699d2368e8b01f88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae174e0f4961d083d699d2368e8b01f88">&#9670;&#160;</a></span>lf_get_downstream_of()</h2>
+<a id="ga06003604b6defab443bdfe34f3ab17ee" name="ga06003604b6defab443bdfe34f3ab17ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga06003604b6defab443bdfe34f3ab17ee">&#9670;&#160;</a></span>lf_get_downstream_of()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1417,7 +1417,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int **</td>          <td class="paramname"><span class="paramname"><em>result</em></span>&#160;)</td>
+          <td class="paramtype">uint16_t **</td>          <td class="paramname"><span class="paramname"><em>result</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1471,8 +1471,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ga73eeca1b4db7128c718d901252257789" name="ga73eeca1b4db7128c718d901252257789"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga73eeca1b4db7128c718d901252257789">&#9670;&#160;</a></span>lf_get_upstream_of()</h2>
+<a id="ga8f432bb04e691f66f4f81cbbecb741ed" name="ga8f432bb04e691f66f4f81cbbecb741ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8f432bb04e691f66f4f81cbbecb741ed">&#9670;&#160;</a></span>lf_get_upstream_of()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1485,7 +1485,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int **</td>          <td class="paramname"><span class="paramname"><em>result</em></span>&#160;)</td>
+          <td class="paramtype">uint16_t **</td>          <td class="paramname"><span class="paramname"><em>result</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1824,7 +1824,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structtag__t.html" title="A tag is a time, microstep pair.">tag_t</a> A tag which the enclave can safely advance its time to. It might be smaller than the requested tag. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structtag__t.html" title="A tag is a time, microstep pair.">tag_t</a> A tag which the enclave can safely advance its time to. It might be smaller or larger than the requested tag. </dd></dl>
 
 </div>
 </div>

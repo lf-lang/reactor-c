@@ -293,6 +293,11 @@
             <Anchor>ga2d81456725407157f9dc521a5e14a679</Anchor>
            </Node>
            <Node>
+            <Name>LF_TEST</Name>
+            <Path>group__API.html</Path>
+            <Anchor>ga9af561423d4c16fd397d48ab37edfcff</Anchor>
+           </Node>
+           <Node>
             <Name>LF_TIME_BUFFER_LENGTH</Name>
             <Path>group__API.html</Path>
             <Anchor>gacc2b8ac5ac3020137e71dfcdbaedf335</Anchor>
@@ -506,6 +511,16 @@
             <Name>lf_tag_compare</Name>
             <Path>group__API.html</Path>
             <Anchor>ga596d8734432616c9c7847283fde63cfa</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_tag_max</Name>
+            <Path>group__API.html</Path>
+            <Anchor>ga4c39037bf099ff2c31a71fe96ac59a61</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_tag_min</Name>
+            <Path>group__API.html</Path>
+            <Anchor>ga80abd9981c0375a0abbe47591204f18b</Anchor>
            </Node>
            <Node>
             <Name>lf_time_add</Name>
@@ -1567,6 +1582,11 @@
               <Anchor>ac86519935540bf879f60baba5424bc0c</Anchor>
              </Node>
              <Node>
+              <Name>duration</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>ac03164e9ec8a8779c00c8986dcaa874f</Anchor>
+             </Node>
+             <Node>
               <Name>enclave_info</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>a7efb23f2e28e89e501b4021f423adc3c</Anchor>
@@ -1680,6 +1700,11 @@
               <Name>sparse_io_record_sizes</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>ad471293c8b58079a698cbb110981ba09</Anchor>
+             </Node>
+             <Node>
+              <Name>start_tag</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>aef9e3dec590f00ca3bbd0e9d7a50bcac</Anchor>
              </Node>
              <Node>
               <Name>startup_reactions</Name>
@@ -2897,6 +2922,16 @@
             <Name>_lf_schedule_at_tag</Name>
             <Path>group__Internal.html</Path>
             <Anchor>ga9d2634d70492498740984f320dffe8f0</Anchor>
+           </Node>
+           <Node>
+            <Name>_lf_schedule_copy</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>gaf31c25686db5996e9f3493745e63856a</Anchor>
+           </Node>
+           <Node>
+            <Name>_lf_schedule_token</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga6d8b49ac9cf089b35a5d2df6a9209255</Anchor>
            </Node>
            <Node>
             <Name>_lf_start_time_step</Name>
@@ -5882,7 +5917,7 @@
            <Node>
             <Name>lf_get_downstream_of</Name>
             <Path>group__RTI.html</Path>
-            <Anchor>gae174e0f4961d083d699d2368e8b01f88</Anchor>
+            <Anchor>ga06003604b6defab443bdfe34f3ab17ee</Anchor>
            </Node>
            <Node>
             <Name>lf_get_upstream_delay_of</Name>
@@ -5892,7 +5927,7 @@
            <Node>
             <Name>lf_get_upstream_of</Name>
             <Path>group__RTI.html</Path>
-            <Anchor>ga73eeca1b4db7128c718d901252257789</Anchor>
+            <Anchor>ga8f432bb04e691f66f4f81cbbecb741ed</Anchor>
            </Node>
            <Node>
             <Name>notify_advance_grant_if_safe</Name>
@@ -6104,6 +6139,11 @@
               <Anchor>ac86519935540bf879f60baba5424bc0c</Anchor>
              </Node>
              <Node>
+              <Name>duration</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>ac03164e9ec8a8779c00c8986dcaa874f</Anchor>
+             </Node>
+             <Node>
               <Name>enclave_info</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>a7efb23f2e28e89e501b4021f423adc3c</Anchor>
@@ -6217,6 +6257,11 @@
               <Name>sparse_io_record_sizes</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>ad471293c8b58079a698cbb110981ba09</Anchor>
+             </Node>
+             <Node>
+              <Name>start_tag</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>aef9e3dec590f00ca3bbd0e9d7a50bcac</Anchor>
              </Node>
              <Node>
               <Name>startup_reactions</Name>
@@ -8536,7 +8581,7 @@
                              <Node>
                               <Name>lf_get_downstream_of</Name>
                               <Path>group__RTI.html</Path>
-                              <Anchor>gae174e0f4961d083d699d2368e8b01f88</Anchor>
+                              <Anchor>ga06003604b6defab443bdfe34f3ab17ee</Anchor>
                              </Node>
                              <Node>
                               <Name>lf_get_upstream_delay_of</Name>
@@ -8546,7 +8591,7 @@
                              <Node>
                               <Name>lf_get_upstream_of</Name>
                               <Path>group__RTI.html</Path>
-                              <Anchor>ga73eeca1b4db7128c718d901252257789</Anchor>
+                              <Anchor>ga8f432bb04e691f66f4f81cbbecb741ed</Anchor>
                              </Node>
                              <Node>
                               <Name>rti_logical_tag_complete_locked</Name>
@@ -11258,6 +11303,16 @@
                             <Anchor>ga9d2634d70492498740984f320dffe8f0</Anchor>
                            </Node>
                            <Node>
+                            <Name>_lf_schedule_copy</Name>
+                            <Path>group__Internal.html</Path>
+                            <Anchor>gaf31c25686db5996e9f3493745e63856a</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>_lf_schedule_token</Name>
+                            <Path>group__Internal.html</Path>
+                            <Anchor>ga6d8b49ac9cf089b35a5d2df6a9209255</Anchor>
+                           </Node>
+                           <Node>
                             <Name>_lf_start_time_step</Name>
                             <Path>group__Internal.html</Path>
                             <Anchor>gab5d69d8631d56d64fb90547a8d6b10cd</Anchor>
@@ -11616,6 +11671,11 @@
                             <Name>LF_PRINT_LOG</Name>
                             <Path>group__API.html</Path>
                             <Anchor>ga2a7110df48e8f74b05fd4a8f7581b1da</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>LF_TEST</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>ga9af561423d4c16fd397d48ab37edfcff</Anchor>
                            </Node>
                            <Node>
                             <Name>LOG_LEVEL</Name>
@@ -12082,6 +12142,16 @@
                             <Name>lf_tag_latest_earlier</Name>
                             <Path>group__Internal.html</Path>
                             <Anchor>ga1e92870e0258c83da4c541e4ec48169b</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_tag_max</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>ga4c39037bf099ff2c31a71fe96ac59a61</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_tag_min</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>ga80abd9981c0375a0abbe47591204f18b</Anchor>
                            </Node>
                            <Node>
                             <Name>lf_time_add</Name>

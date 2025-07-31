@@ -115,6 +115,8 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:a5573749a4205b81f375cecc34c9891cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Barrier for tag advancement.  <br /></td></tr>
 <tr class="memitem:ac86519935540bf879f60baba5424bc0c" id="r_ac86519935540bf879f60baba5424bc0c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac86519935540bf879f60baba5424bc0c">current_tag</a></td></tr>
 <tr class="memdesc:ac86519935540bf879f60baba5424bc0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The current logical tag being processed.  <br /></td></tr>
+<tr class="memitem:ac03164e9ec8a8779c00c8986dcaa874f" id="r_ac03164e9ec8a8779c00c8986dcaa874f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac03164e9ec8a8779c00c8986dcaa874f">duration</a></td></tr>
+<tr class="memdesc:ac03164e9ec8a8779c00c8986dcaa874f"><td class="mdescLeft">&#160;</td><td class="mdescRight">The duration of the environment, which is the time interval between the start tag and the stop tag.  <br /></td></tr>
 <tr class="memitem:a7efb23f2e28e89e501b4021f423adc3c" id="r_a7efb23f2e28e89e501b4021f423adc3c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7efb23f2e28e89e501b4021f423adc3c">enclave_info</a></td></tr>
 <tr class="memdesc:a7efb23f2e28e89e501b4021f423adc3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Information about the scheduling enclave.  <br /></td></tr>
 <tr class="memitem:adf63684f53f2eb88c73eceb38480f714" id="r_adf63684f53f2eb88c73eceb38480f714"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__Internal.html#gac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adf63684f53f2eb88c73eceb38480f714">event_q</a></td></tr>
@@ -161,6 +163,8 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:a9f2dfc6abece8574368c7c204dca0707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of shutdown reactions allocated.  <br /></td></tr>
 <tr class="memitem:ad471293c8b58079a698cbb110981ba09" id="r_ad471293c8b58079a698cbb110981ba09"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structvector__t.html">vector_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad471293c8b58079a698cbb110981ba09">sparse_io_record_sizes</a></td></tr>
 <tr class="memdesc:ad471293c8b58079a698cbb110981ba09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector storing sizes of sparse I/O records.  <br /></td></tr>
+<tr class="memitem:aef9e3dec590f00ca3bbd0e9d7a50bcac" id="r_aef9e3dec590f00ca3bbd0e9d7a50bcac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aef9e3dec590f00ca3bbd0e9d7a50bcac">start_tag</a></td></tr>
+<tr class="memdesc:aef9e3dec590f00ca3bbd0e9d7a50bcac"><td class="mdescLeft">&#160;</td><td class="mdescRight">The start tag of the environment.  <br /></td></tr>
 <tr class="memitem:a6661236ece5a440dfe22d23bb08625f2" id="r_a6661236ece5a440dfe22d23bb08625f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structreaction__t.html">reaction_t</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6661236ece5a440dfe22d23bb08625f2">startup_reactions</a></td></tr>
 <tr class="memdesc:a6661236ece5a440dfe22d23bb08625f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array of startup reactions.  <br /></td></tr>
 <tr class="memitem:a7d5df5e3bcfbb8a9d2146ca0cb7fd940" id="r_a7d5df5e3bcfbb8a9d2146ca0cb7fd940"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7d5df5e3bcfbb8a9d2146ca0cb7fd940">startup_reactions_size</a></td></tr>
@@ -266,6 +270,22 @@ Data Fields</h2></td></tr>
 
 <p>The current logical tag being processed. </p>
 <p>Represents the current logical time and microstep being executed in this environment. </p>
+
+</div>
+</div>
+<a id="ac03164e9ec8a8779c00c8986dcaa874f" name="ac03164e9ec8a8779c00c8986dcaa874f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac03164e9ec8a8779c00c8986dcaa874f">&#9670;&#160;</a></span>duration</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> environment_t::duration</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The duration of the environment, which is the time interval between the start tag and the stop tag. </p>
 
 </div>
 </div>
@@ -657,6 +677,22 @@ Data Fields</h2></td></tr>
 
 <p>Vector storing sizes of sparse I/O records. </p>
 <p>Used to track the size of I/O records for each port in sparse I/O mode. </p>
+
+</div>
+</div>
+<a id="aef9e3dec590f00ca3bbd0e9d7a50bcac" name="aef9e3dec590f00ca3bbd0e9d7a50bcac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef9e3dec590f00ca3bbd0e9d7a50bcac">&#9670;&#160;</a></span>start_tag</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> environment_t::start_tag</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The start tag of the environment. </p>
 
 </div>
 </div>

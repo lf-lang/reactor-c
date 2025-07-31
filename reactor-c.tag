@@ -265,8 +265,8 @@
       <type>int</type>
       <name>lf_get_downstream_of</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>gae174e0f4961d083d699d2368e8b01f88</anchor>
-      <arglist>(int enclave_id, int **result)</arglist>
+      <anchor>ga06003604b6defab443bdfe34f3ab17ee</anchor>
+      <arglist>(int enclave_id, uint16_t **result)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -279,8 +279,8 @@
       <type>int</type>
       <name>lf_get_upstream_of</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga73eeca1b4db7128c718d901252257789</anchor>
-      <arglist>(int enclave_id, int **result)</arglist>
+      <anchor>ga8f432bb04e691f66f4f81cbbecb741ed</anchor>
+      <arglist>(int enclave_id, uint16_t **result)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2784,6 +2784,20 @@
       <arglist>(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</arglist>
     </member>
     <member kind="function">
+      <type>trigger_handle_t</type>
+      <name>_lf_schedule_copy</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gaf31c25686db5996e9f3493745e63856a</anchor>
+      <arglist>(environment_t *env, void *action, interval_t offset, void *value, size_t length)</arglist>
+    </member>
+    <member kind="function">
+      <type>trigger_handle_t</type>
+      <name>_lf_schedule_token</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga6d8b49ac9cf089b35a5d2df6a9209255</anchor>
+      <arglist>(environment_t *env, void *action, interval_t extra_delay, lf_token_t *token)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>_lf_start_time_step</name>
       <anchorfile>group__Internal.html</anchorfile>
@@ -4335,6 +4349,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>LF_TEST</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga9af561423d4c16fd397d48ab37edfcff</anchor>
+      <arglist>(condition, format,...)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>LOG_LEVEL</name>
       <anchorfile>logging__macros_8h.html</anchorfile>
       <anchor>a0b87e0d3bf5853bcbb0b66a7c48fdc05</anchor>
@@ -4921,6 +4942,20 @@
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga1e92870e0258c83da4c541e4ec48169b</anchor>
       <arglist>(tag_t tag)</arglist>
+    </member>
+    <member kind="function">
+      <type>tag_t</type>
+      <name>lf_tag_max</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga4c39037bf099ff2c31a71fe96ac59a61</anchor>
+      <arglist>(tag_t tag1, tag_t tag2)</arglist>
+    </member>
+    <member kind="function">
+      <type>tag_t</type>
+      <name>lf_tag_min</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga80abd9981c0375a0abbe47591204f18b</anchor>
+      <arglist>(tag_t tag1, tag_t tag2)</arglist>
     </member>
     <member kind="function">
       <type>instant_t</type>
@@ -6240,6 +6275,13 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>interval_t</type>
+      <name>duration</name>
+      <anchorfile>structenvironment__t.html</anchorfile>
+      <anchor>ac03164e9ec8a8779c00c8986dcaa874f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>enclave_info_t *</type>
       <name>enclave_info</name>
       <anchorfile>structenvironment__t.html</anchorfile>
@@ -6398,6 +6440,13 @@
       <name>sparse_io_record_sizes</name>
       <anchorfile>structenvironment__t.html</anchorfile>
       <anchor>ad471293c8b58079a698cbb110981ba09</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>tag_t</type>
+      <name>start_tag</name>
+      <anchorfile>structenvironment__t.html</anchorfile>
+      <anchor>aef9e3dec590f00ca3bbd0e9d7a50bcac</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -8937,6 +8986,13 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>LF_TEST</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga9af561423d4c16fd397d48ab37edfcff</anchor>
+      <arglist>(condition, format,...)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>LF_TIME_BUFFER_LENGTH</name>
       <anchorfile>group__API.html</anchorfile>
       <anchor>gacc2b8ac5ac3020137e71dfcdbaedf335</anchor>
@@ -9234,6 +9290,20 @@
       <name>lf_tag_compare</name>
       <anchorfile>group__API.html</anchorfile>
       <anchor>ga596d8734432616c9c7847283fde63cfa</anchor>
+      <arglist>(tag_t tag1, tag_t tag2)</arglist>
+    </member>
+    <member kind="function">
+      <type>tag_t</type>
+      <name>lf_tag_max</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga4c39037bf099ff2c31a71fe96ac59a61</anchor>
+      <arglist>(tag_t tag1, tag_t tag2)</arglist>
+    </member>
+    <member kind="function">
+      <type>tag_t</type>
+      <name>lf_tag_min</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga80abd9981c0375a0abbe47591204f18b</anchor>
       <arglist>(tag_t tag1, tag_t tag2)</arglist>
     </member>
     <member kind="function">
@@ -10940,6 +11010,20 @@
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga9d2634d70492498740984f320dffe8f0</anchor>
       <arglist>(environment_t *env, trigger_t *trigger, tag_t tag, lf_token_t *token)</arglist>
+    </member>
+    <member kind="function">
+      <type>trigger_handle_t</type>
+      <name>_lf_schedule_copy</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gaf31c25686db5996e9f3493745e63856a</anchor>
+      <arglist>(environment_t *env, void *action, interval_t offset, void *value, size_t length)</arglist>
+    </member>
+    <member kind="function">
+      <type>trigger_handle_t</type>
+      <name>_lf_schedule_token</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga6d8b49ac9cf089b35a5d2df6a9209255</anchor>
+      <arglist>(environment_t *env, void *action, interval_t extra_delay, lf_token_t *token)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -13791,8 +13875,8 @@
       <type>int</type>
       <name>lf_get_downstream_of</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>gae174e0f4961d083d699d2368e8b01f88</anchor>
-      <arglist>(int enclave_id, int **result)</arglist>
+      <anchor>ga06003604b6defab443bdfe34f3ab17ee</anchor>
+      <arglist>(int enclave_id, uint16_t **result)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -13805,8 +13889,8 @@
       <type>int</type>
       <name>lf_get_upstream_of</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga73eeca1b4db7128c718d901252257789</anchor>
-      <arglist>(int enclave_id, int **result)</arglist>
+      <anchor>ga8f432bb04e691f66f4f81cbbecb741ed</anchor>
+      <arglist>(int enclave_id, uint16_t **result)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

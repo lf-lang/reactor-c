@@ -167,7 +167,18 @@ $(function(){initNavTree('logging__macros_8h_source.html','',''); });
 <div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span><span class="preprocessor">  } while (0)</span></div>
 </div>
 <div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span><span class="preprocessor">#endif </span><span class="comment">// NDEBUG</span></div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span><span class="preprocessor">#endif </span><span class="comment">// LOGGING_MACROS_H</span></div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span></div>
+<div class="foldopen" id="foldopen00164" data-start="" data-end="">
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno"><a class="line" href="group__API.html#ga9af561423d4c16fd397d48ab37edfcff">  164</a></span><span class="preprocessor">#define LF_TEST(condition, format, ...)                                                                                \</span></div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span><span class="preprocessor">  do {                                                                                                                 \</span></div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span><span class="preprocessor">    if (!(condition)) {                                                                                                \</span></div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span><span class="preprocessor">      lf_print_error_and_exit(&quot;`&quot; format &quot;`. Failed assertion in %s:%d(%s):(&quot; #condition &quot;) != true`&quot;, ##__VA_ARGS__,  \</span></div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span><span class="preprocessor">                              __FILE__, __LINE__, __func__);                                                           \</span></div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span><span class="preprocessor">    }                                                                                                                  \</span></div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span><span class="preprocessor">  } while (0)</span></div>
+</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span> </div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span><span class="preprocessor">#endif </span><span class="comment">// LOGGING_MACROS_H</span></div>
 <div class="ttc" id="agroup__API_html_ga130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="group__API.html#ga130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdoc">Debug log level.</div><div class="ttdef"><b>Definition</b> logging.h:77</div></div>
 <div class="ttc" id="agroup__API_html_ga8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="group__API.html#ga8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdoc">Log log level.</div><div class="ttdef"><b>Definition</b> logging.h:69</div></div>
 <div class="ttc" id="alogging_8h_html"><div class="ttname"><a href="logging_8h.html">logging.h</a></div><div class="ttdoc">Logging API for the C target of Lingua Franca.</div></div>

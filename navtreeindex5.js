@@ -1,5 +1,12 @@
 var NAVTREEINDEX5 =
 {
+"structrti__remote__t.html#ae82c97407ee17f16cd9e95cc4fade654":[4,8,9,6],
+"structrti__remote__t.html#af398be0ec31a58806d978a0670b59fac":[4,8,9,8],
+"structrti__remote__t.html#af8774b865d79565eff6296da5459ac83":[4,8,9,10],
+"structsched__params__t.html":[4,4,29],
+"structsched__params__t.html#a15d5c083329a86fde98d5990c21e43a4":[4,4,29,1],
+"structsched__params__t.html#a826bb0752d0c9e915bf5abdefe9ee62d":[4,4,29,0],
+"structscheduling__node__t.html":[4,8,10],
 "structscheduling__node__t.html#a6397a26be230f2c07d88dd291e8f5f37":[4,8,10,13],
 "structscheduling__node__t.html#a648268bb3cc4c6f98c214d550b9ebc9e":[4,8,10,1],
 "structscheduling__node__t.html#a79c9c4d1de81e3d6f5ab40bb7197f623":[4,8,10,5],

@@ -1160,6 +1160,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>duration</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>environment_t</Scope>
+    </TokenIdentifier>
+    <Path>structenvironment__t.html</Path>
+    <Anchor>ac03164e9ec8a8779c00c8986dcaa874f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>element_size</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -3520,6 +3530,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>start_tag</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>environment_t</Scope>
+    </TokenIdentifier>
+    <Path>structenvironment__t.html</Path>
+    <Anchor>aef9e3dec590f00ca3bbd0e9d7a50bcac</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>startup_reactions</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -4726,6 +4746,26 @@
     </TokenIdentifier>
     <Path>group__Internal.html</Path>
     <Anchor>ga9d2634d70492498740984f320dffe8f0</Anchor>
+    <DeclaredIn>reactor_common.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>_lf_schedule_copy</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>gaf31c25686db5996e9f3493745e63856a</Anchor>
+    <DeclaredIn>reactor_common.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>_lf_schedule_token</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga6d8b49ac9cf089b35a5d2df6a9209255</Anchor>
     <DeclaredIn>reactor_common.h</DeclaredIn>
   </Token>
   <Token>
@@ -7365,7 +7405,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__RTI.html</Path>
-    <Anchor>gae174e0f4961d083d699d2368e8b01f88</Anchor>
+    <Anchor>ga06003604b6defab443bdfe34f3ab17ee</Anchor>
     <DeclaredIn>rti_local.h</DeclaredIn>
   </Token>
   <Token>
@@ -7425,7 +7465,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__RTI.html</Path>
-    <Anchor>ga73eeca1b4db7128c718d901252257789</Anchor>
+    <Anchor>ga8f432bb04e691f66f4f81cbbecb741ed</Anchor>
     <DeclaredIn>rti_local.h</DeclaredIn>
   </Token>
   <Token>
@@ -8690,6 +8730,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_tag_max</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>ga4c39037bf099ff2c31a71fe96ac59a61</Anchor>
+    <DeclaredIn>tag.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_tag_min</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>ga80abd9981c0375a0abbe47591204f18b</Anchor>
+    <DeclaredIn>tag.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_terminate_execution</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -8697,6 +8757,16 @@
     <Path>group__Internal.html</Path>
     <Anchor>gad149603053631bf4d6236426ddae2bde</Anchor>
     <DeclaredIn>reactor_common.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>LF_TEST</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>ga9af561423d4c16fd397d48ab37edfcff</Anchor>
+    <DeclaredIn>logging_macros.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>

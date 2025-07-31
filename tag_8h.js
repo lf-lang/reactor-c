@@ -41,6 +41,8 @@ var tag_8h =
     [ "lf_tag_add", "group__API.html#gaa1186f7e330ecbfd20a4dd90b97439e6", null ],
     [ "lf_tag_compare", "group__API.html#ga596d8734432616c9c7847283fde63cfa", null ],
     [ "lf_tag_latest_earlier", "group__Internal.html#ga1e92870e0258c83da4c541e4ec48169b", null ],
+    [ "lf_tag_max", "group__API.html#ga4c39037bf099ff2c31a71fe96ac59a61", null ],
+    [ "lf_tag_min", "group__API.html#ga80abd9981c0375a0abbe47591204f18b", null ],
     [ "lf_time_add", "group__API.html#ga1789de56286aa33c086b194b544c2d91", null ],
     [ "lf_time_logical", "group__Internal.html#ga751c9fce12510f5bb98d862f57077396", null ],
     [ "lf_time_logical_elapsed", "group__Internal.html#ga6faad0d905f7135352f511bc235425e1", null ],
