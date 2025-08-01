@@ -232,11 +232,10 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
  * @param socket The socket ID.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to put the bytes.
- * @param mutex If non-NULL, the mutex to unlock before exiting.
  * @param format A printf-style format string, followed by arguments to
  *  fill the string, or NULL to not exit with an error message.
  */
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer,
                                     char* format, ...);
 
 /**
