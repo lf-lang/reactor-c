@@ -314,8 +314,7 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
   return -1;
 }
 
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer,
-                                    char* format, ...) {
+void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, char* format, ...) {
   va_list args;
   assert(socket);
   int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);

@@ -235,8 +235,7 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
  * @param format A printf-style format string, followed by arguments to
  *  fill the string, or NULL to not exit with an error message.
  */
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer,
-                                    char* format, ...);
+void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, char* format, ...);
 
 /**
  * @brief Without blocking, peek at the specified socket.

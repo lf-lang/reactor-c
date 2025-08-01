@@ -1311,8 +1311,7 @@ static void handle_stop_granted_message() {
 
   size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
   unsigned char buffer[bytes_to_read];
-  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer,
-                                 "Failed to read stop granted from RTI.");
+  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, "Failed to read stop granted from RTI.");
 
   tag_t received_stop_tag = extract_tag(buffer);
 
@@ -1355,8 +1354,7 @@ static void handle_stop_granted_message() {
 static void handle_stop_request_message() {
   size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
   unsigned char buffer[bytes_to_read];
-  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer,
-                                 "Failed to read stop request from RTI.");
+  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, "Failed to read stop request from RTI.");
   tag_t tag_to_stop = extract_tag(buffer);
 
   // Trace the event when tracing is enabled
