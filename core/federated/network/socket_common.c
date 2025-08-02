@@ -298,27 +298,28 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
 
 int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
   assert(socket);
-  int read_failed = read_from_socket(*socket, num_bytes, buffer);
-  if (read_failed) {
-    // Read failed.
-    // Socket has probably been closed from the other side.
-    // Shut down and close the socket from this side.
-    shutdown_socket(socket, false);
-    return -1;
+  int socket_id = *socket; // Assume atomic read so we don't pass -1 to read_from_socket.
+  if (socket_id >= 0) {
+    int read_failed = read_from_socket(socket_id, num_bytes, buffer);
+    if (read_failed) {
+      // Read failed.
+      // Socket has probably been closed from the other side.
+      // Shut down and close the socket from this side.
+      shutdown_socket(socket, false);
+      return -1;
+    }
+    return 0;
   }
-  return 0;
+  lf_print_warning("Socket is no longer connected. Read failed.");
+  return -1;
 }
 
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                    char* format, ...) {
+void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, char* format, ...) {
   va_list args;
   assert(socket);
   int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
-    if (mutex != NULL) {
-      LF_MUTEX_UNLOCK(mutex);
-    }
     if (format != NULL) {
       va_start(args, format);
       lf_print_error_system_failure(format, args);
@@ -365,14 +366,20 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
 
 int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
   assert(socket);
-  int result = write_to_socket(*socket, num_bytes, buffer);
-  if (result) {
-    // Write failed.
-    // Socket has probably been closed from the other side.
-    // Shut down and close the socket from this side.
-    shutdown_socket(socket, false);
+  int socket_id = *socket; // Assume atomic read so we don't pass -1 to write_to_socket.
+  if (socket_id >= 0) {
+    int result = write_to_socket(socket_id, num_bytes, buffer);
+    if (result) {
+      // Write failed.
+      // Socket has probably been closed from the other side.
+      // Shut down and close the socket from this side.
+      shutdown_socket(socket, false);
+      return -1;
+    }
+    return result;
   }
-  return result;
+  lf_print_warning("Socket is no longer connected. Write failed.");
+  return -1;
 }
 
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
@@ -390,7 +397,7 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
       lf_print_error_system_failure(format, args);
       va_end(args);
     } else {
-      lf_print_error("Failed to write to socket. Closing it.");
+      lf_print_error_and_exit("Failed to write to socket. Shutting down.");
     }
   }
 }
