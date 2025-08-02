@@ -4628,7 +4628,7 @@
            <Node>
             <Name>read_from_socket_fail_on_error</Name>
             <Path>group__Federated.html</Path>
-            <Anchor>gabcc3776e773dd4bf2a9112024b80706b</Anchor>
+            <Anchor>ga46a44d92c24d3caadec0bc9e59a26361</Anchor>
            </Node>
            <Node>
             <Name>reset_socket_stat</Name>
@@ -9465,7 +9465,7 @@
                                <Node>
                                 <Name>read_from_socket_fail_on_error</Name>
                                 <Path>group__Federated.html</Path>
-                                <Anchor>gabcc3776e773dd4bf2a9112024b80706b</Anchor>
+                                <Anchor>ga46a44d92c24d3caadec0bc9e59a26361</Anchor>
                                </Node>
                                <Node>
                                 <Name>shutdown_socket</Name>

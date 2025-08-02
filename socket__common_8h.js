@@ -24,7 +24,7 @@ var socket__common_8h =
     [ "peek_from_socket", "group__Federated.html#gae4ba6b1361cd7c47e8a0eb70729d9636", null ],
     [ "read_from_socket", "group__Federated.html#gaa8f7af0d4004aa925499fecefa1ac6b8", null ],
     [ "read_from_socket_close_on_error", "group__Federated.html#ga941fd71700b7646e6edbbb76db4f7bd2", null ],
-    [ "read_from_socket_fail_on_error", "group__Federated.html#gabcc3776e773dd4bf2a9112024b80706b", null ],
+    [ "read_from_socket_fail_on_error", "group__Federated.html#ga46a44d92c24d3caadec0bc9e59a26361", null ],
     [ "shutdown_socket", "group__Federated.html#ga365eba5b8b3f6445eeaffcb4435165c5", null ],
     [ "write_to_socket", "group__Federated.html#gae8d4b83faeac37f665666429742813f9", null ],
     [ "write_to_socket_close_on_error", "group__Federated.html#gaf88884c303b81143ef5ab7af4683a66c", null ],

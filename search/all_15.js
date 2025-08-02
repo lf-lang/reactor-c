@@ -20,7 +20,7 @@ var searchData=
   ['reactor_5fthreaded_2eh_17',['reactor_threaded.h',['../reactor__threaded_8h.html',1,'']]],
   ['read_5ffrom_5fsocket_18',['read_from_socket',['../group__Federated.html#gaa8f7af0d4004aa925499fecefa1ac6b8',1,'socket_common.h']]],
   ['read_5ffrom_5fsocket_5fclose_5fon_5ferror_19',['read_from_socket_close_on_error',['../group__Federated.html#ga941fd71700b7646e6edbbb76db4f7bd2',1,'socket_common.h']]],
-  ['read_5ffrom_5fsocket_5ffail_5fon_5ferror_20',['read_from_socket_fail_on_error',['../group__Federated.html#gabcc3776e773dd4bf2a9112024b80706b',1,'socket_common.h']]],
+  ['read_5ffrom_5fsocket_5ffail_5fon_5ferror_20',['read_from_socket_fail_on_error',['../group__Federated.html#ga46a44d92c24d3caadec0bc9e59a26361',1,'socket_common.h']]],
   ['read_5fheader_21',['read_header',['../group__Tracing.html#ga5cdbb52a1460ec9538f305d12fb4dd2a',1,'trace_util.h']]],
   ['read_5ftrace_22',['read_trace',['../group__Tracing.html#ga496d96019ddbb0d38380191c3042d6b7',1,'trace_util.h']]],
   ['read_5fwave_5ffile_23',['read_wave_file',['../group__Utilities.html#ga149d009d65a3c20d73bcf2ae7c9d6814',1,'wave_file_reader.h']]],

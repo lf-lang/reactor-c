@@ -414,8 +414,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaa8f7af0d4004aa925499fecefa1ac6b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the specified number of bytes from the specified socket into the specified buffer.  <br /></td></tr>
 <tr class="memitem:ga941fd71700b7646e6edbbb76db4f7bd2" id="r_ga941fd71700b7646e6edbbb76db4f7bd2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga941fd71700b7646e6edbbb76db4f7bd2">read_from_socket_close_on_error</a> (int *socket, size_t num_bytes, unsigned char *buffer)</td></tr>
 <tr class="memdesc:ga941fd71700b7646e6edbbb76db4f7bd2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the specified number of bytes from the specified socket into the specified buffer.  <br /></td></tr>
-<tr class="memitem:gabcc3776e773dd4bf2a9112024b80706b" id="r_gabcc3776e773dd4bf2a9112024b80706b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gabcc3776e773dd4bf2a9112024b80706b">read_from_socket_fail_on_error</a> (int *socket, size_t num_bytes, unsigned char *buffer, lf_mutex_t *mutex, char *format,...)</td></tr>
-<tr class="memdesc:gabcc3776e773dd4bf2a9112024b80706b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the specified number of bytes from the specified socket into the specified buffer and close the socket if an error occurs.  <br /></td></tr>
+<tr class="memitem:ga46a44d92c24d3caadec0bc9e59a26361" id="r_ga46a44d92c24d3caadec0bc9e59a26361"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga46a44d92c24d3caadec0bc9e59a26361">read_from_socket_fail_on_error</a> (int *socket, size_t num_bytes, unsigned char *buffer, char *format,...)</td></tr>
+<tr class="memdesc:ga46a44d92c24d3caadec0bc9e59a26361"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the specified number of bytes from the specified socket into the specified buffer and close the socket if an error occurs.  <br /></td></tr>
 <tr class="memitem:gae267d03a5f2263604459ca4c1aef2c2c" id="r_gae267d03a5f2263604459ca4c1aef2c2c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gae267d03a5f2263604459ca4c1aef2c2c">reset_socket_stat</a> (struct <a class="el" href="structsocket__stat__t.html">socket_stat_t</a> *socket_stat)</td></tr>
 <tr class="memdesc:gae267d03a5f2263604459ca4c1aef2c2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset statistics on the socket.  <br /></td></tr>
 <tr class="memitem:ga834b31e00e677a23b6a86119b7a2fe59" id="r_ga834b31e00e677a23b6a86119b7a2fe59"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga834b31e00e677a23b6a86119b7a2fe59">setup_clock_synchronization_with_rti</a> (void)</td></tr>
@@ -3559,7 +3559,7 @@ synchronization." </dd></dl>
 <p><code>#include &lt;<a class="el" href="federate_8h.html">/Users/runner/work/reactor-c/reactor-c/include/core/federated/federate.h</a>&gt;</code></p>
 
 <p>Wait until inputs statuses are known up to and including the specified level. </p>
-<p>Specifically, wait until the specified level is less that the max level allowed to advance (MLAA). </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Specifically, wait until the specified level is less that the max level allowed to advance (MLAA). This function does nothing if the environment is not the top-level environment. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>The environment (which should always be the top-level environment). </td></tr>
     <tr><td class="paramname">level</td><td>The level to which we would like to advance. </td></tr>
@@ -3825,8 +3825,8 @@ synchronization." </dd></dl>
 
 </div>
 </div>
-<a id="gabcc3776e773dd4bf2a9112024b80706b" name="gabcc3776e773dd4bf2a9112024b80706b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gabcc3776e773dd4bf2a9112024b80706b">&#9670;&#160;</a></span>read_from_socket_fail_on_error()</h2>
+<a id="ga46a44d92c24d3caadec0bc9e59a26361" name="ga46a44d92c24d3caadec0bc9e59a26361"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga46a44d92c24d3caadec0bc9e59a26361">&#9670;&#160;</a></span>read_from_socket_fail_on_error()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -3849,11 +3849,6 @@ synchronization." </dd></dl>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">lf_mutex_t *</td>          <td class="paramname"><span class="paramname"><em>mutex</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">char *</td>          <td class="paramname"><span class="paramname"><em>format</em></span>, </td>
         </tr>
         <tr>
@@ -3872,7 +3867,6 @@ synchronization." </dd></dl>
     <tr><td class="paramname">socket</td><td>The socket ID. </td></tr>
     <tr><td class="paramname">num_bytes</td><td>The number of bytes to read. </td></tr>
     <tr><td class="paramname">buffer</td><td>The buffer into which to put the bytes. </td></tr>
-    <tr><td class="paramname">mutex</td><td>If non-NULL, the mutex to unlock before exiting. </td></tr>
     <tr><td class="paramname">format</td><td>A printf-style format string, followed by arguments to fill the string, or NULL to not exit with an error message. </td></tr>
   </table>
   </dd>

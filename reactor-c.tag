@@ -1949,8 +1949,8 @@
       <type>void</type>
       <name>read_from_socket_fail_on_error</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gabcc3776e773dd4bf2a9112024b80706b</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer, lf_mutex_t *mutex, char *format,...)</arglist>
+      <anchor>ga46a44d92c24d3caadec0bc9e59a26361</anchor>
+      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer, char *format,...)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -12809,8 +12809,8 @@
       <type>void</type>
       <name>read_from_socket_fail_on_error</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gabcc3776e773dd4bf2a9112024b80706b</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer, lf_mutex_t *mutex, char *format,...)</arglist>
+      <anchor>ga46a44d92c24d3caadec0bc9e59a26361</anchor>
+      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer, char *format,...)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

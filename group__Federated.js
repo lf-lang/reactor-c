@@ -206,7 +206,7 @@ var group__Federated =
     [ "peek_from_socket", "group__Federated.html#gae4ba6b1361cd7c47e8a0eb70729d9636", null ],
     [ "read_from_socket", "group__Federated.html#gaa8f7af0d4004aa925499fecefa1ac6b8", null ],
     [ "read_from_socket_close_on_error", "group__Federated.html#ga941fd71700b7646e6edbbb76db4f7bd2", null ],
-    [ "read_from_socket_fail_on_error", "group__Federated.html#gabcc3776e773dd4bf2a9112024b80706b", null ],
+    [ "read_from_socket_fail_on_error", "group__Federated.html#ga46a44d92c24d3caadec0bc9e59a26361", null ],
     [ "reset_socket_stat", "group__Federated.html#gae267d03a5f2263604459ca4c1aef2c2c", null ],
     [ "setup_clock_synchronization_with_rti", "group__Federated.html#ga834b31e00e677a23b6a86119b7a2fe59", null ],
     [ "shutdown_socket", "group__Federated.html#ga365eba5b8b3f6445eeaffcb4435165c5", null ],
