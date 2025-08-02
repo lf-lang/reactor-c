@@ -1079,7 +1079,7 @@ static void* update_ports_from_staa_offsets(void* args) {
   environment_t* env;
   _lf_get_environments(&env);
   LF_MUTEX_LOCK(&env->mutex);
-  while (1) {
+  while (!_lf_termination_executed) {
     LF_PRINT_DEBUG("**** (update thread) starting");
     tag_t tag_when_started_waiting = lf_tag(env);
     for (size_t i = 0; i < staa_lst_size; ++i) {
@@ -1110,7 +1110,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       if (wait_time < 5 * MIN_SLEEP_DURATION) {
         wait_until_time += 5 * MIN_SLEEP_DURATION;
       }
-      while (a_port_is_unknown(staa_elem)) {
+      while (!_lf_termination_executed && a_port_is_unknown(staa_elem)) {
         LF_PRINT_DEBUG("**** (update thread) waiting until: " PRINTF_TIME, wait_until_time - lf_time_start());
         if (wait_until(wait_until_time, &lf_port_status_changed)) {
           // Specified timeout time was reached.
@@ -1143,11 +1143,11 @@ static void* update_ports_from_staa_offsets(void* args) {
           break;
       }
       // If the tag has advanced, start over.
-      if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0)
+      if (_lf_termination_executed || lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0)
         break;
     }
     // If the tag has advanced, start over.
-    if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0)
+    if (_lf_termination_executed || lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0)
       continue;
 
     // At this point, the current tag is the same as when we started waiting
@@ -2551,13 +2551,21 @@ void lf_stall_advance_level_federation_locked(size_t level) {
 }
 
 void lf_stall_advance_level_federation(environment_t* env, size_t level) {
-  LF_PRINT_DEBUG("Acquiring the environment mutex.");
-  LF_MUTEX_LOCK(&env->mutex);
-  lf_stall_advance_level_federation_locked(level);
-  LF_MUTEX_UNLOCK(&env->mutex);
+  // If this is not the top-level environment, then we should not do anything here.
+  environment_t* top_level_env;
+  _lf_get_environments(&top_level_env);
+  if (env == top_level_env) {
+    LF_MUTEX_LOCK(&env->mutex);
+    lf_stall_advance_level_federation_locked(level);
+    LF_MUTEX_UNLOCK(&env->mutex);
+  }
 }
 
 void lf_synchronize_with_other_federates(void) {
+
+  environment_t* top_level_env;
+  _lf_get_environments(&top_level_env);
+  LF_COND_INIT(&lf_port_status_changed, &top_level_env->mutex);
 
   LF_PRINT_DEBUG("Synchronizing with other federates.");
 
