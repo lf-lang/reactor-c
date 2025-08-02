@@ -1196,6 +1196,7 @@ static void* update_ports_from_staa_offsets(void* args) {
                    tag_when_started_waiting.time - lf_time_start(), tag_when_started_waiting.microstep);
   }
   LF_MUTEX_UNLOCK(&env->mutex);
+  return NULL;
 }
 #endif // FEDERATED_DECENTRALIZED
 
