@@ -658,7 +658,7 @@ static bool _lf_worker_handle_deadline_violation_for_reaction(environment_t* env
     // Get the current physical time.
     instant_t physical_time = lf_time_physical();
     // Check for deadline violation.
-    if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
+    if (reaction->deadline == 0 || physical_time > lf_time_add(env->current_tag.time, reaction->deadline)) {
       // Deadline violation has occurred.
       tracepoint_reaction_deadline_missed(env, reaction, worker_number);
       violation_occurred = true;

@@ -913,7 +913,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
       instant_t physical_time = lf_time_physical();
       // Check for deadline violation.
       if (downstream_to_execute_now->deadline == 0 ||
-          physical_time > env->current_tag.time + downstream_to_execute_now->deadline) {
+          physical_time > lf_time_add(env->current_tag.time, downstream_to_execute_now->deadline)) {
         // Deadline violation has occurred.
         tracepoint_reaction_deadline_missed(env, downstream_to_execute_now, worker);
         violation = true;
