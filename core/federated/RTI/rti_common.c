@@ -380,7 +380,7 @@ void update_min_delays() {
 
       scheduling_node_t* node = rti_common->scheduling_nodes[j];
       // Array of results on the stack:
-      tag_t path_delays = (tag_t*)calloc(n, sizeof(tag_t));
+      tag_t* path_delays = (tag_t*)calloc(n, sizeof(tag_t));
       // This will be the number of non-FOREVER entries put into path_delays.
       size_t count = 0;
 
