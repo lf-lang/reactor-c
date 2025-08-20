@@ -1046,7 +1046,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
   // Initialize the clock through the platform API. No reading of physical time before this.
   _lf_initialize_clock();
-  start_time = lf_time_physical();
+  // Set the start time of the program (if it is not set from the command line). Possibly wait for
+  // it to arrive also.
+  _lf_set_and_wait_for_start_time();
 #ifndef FEDERATED
   lf_tracing_set_start_time(start_time);
 #endif
