@@ -89,10 +89,6 @@
         <Path>license.html</Path>
        </Node>
        <Node>
-        <Name>Deprecated List</Name>
-        <Path>deprecated.html</Path>
-       </Node>
-       <Node>
         <Name>Topics</Name>
         <Path>topics.html</Path>
       <Subnodes>

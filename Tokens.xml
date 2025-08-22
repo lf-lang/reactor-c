@@ -636,13 +636,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>deprecated</Name>
-      <APILanguage>unknown</APILanguage>
-    </TokenIdentifier>
-    <Path>deprecated.html</Path>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>index</Name>
       <APILanguage>unknown</APILanguage>
     </TokenIdentifier>
