@@ -166,20 +166,18 @@ static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* schedul
   scheduler->indexes[scheduler->custom_data->next_reaction_level - 1] = 0;
 
   // Loop until it's time to stop or work has been distributed
+  LF_MUTEX_LOCK(&env->mutex);
   while (true) {
     if (scheduler->custom_data->next_reaction_level == (scheduler->max_reaction_level + 1)) {
       scheduler->custom_data->next_reaction_level = 0;
-      LF_MUTEX_LOCK(&env->mutex);
       // Nothing more happening at this tag.
       LF_PRINT_DEBUG("Scheduler: Advancing tag.");
       // This worker thread will take charge of advancing tag.
       if (_lf_sched_advance_tag_locked(scheduler)) {
         LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
         _lf_sched_signal_stop(scheduler);
-        LF_MUTEX_UNLOCK(&env->mutex);
         break;
       }
-      LF_MUTEX_UNLOCK(&env->mutex);
     }
 
     if (_lf_sched_distribute_ready_reactions(scheduler) > 0) {
@@ -187,6 +185,7 @@ static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* schedul
       break;
     }
   }
+  LF_MUTEX_UNLOCK(&env->mutex);
 }
 
 /**
