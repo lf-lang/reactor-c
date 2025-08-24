@@ -163,10 +163,9 @@ static void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
 static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
   // Reset the index
   environment_t* env = scheduler->env;
-  scheduler->indexes[scheduler->custom_data->next_reaction_level - 1] = 0;
-
-  // Loop until it's time to stop or work has been distributed
   LF_MUTEX_LOCK(&env->mutex);
+  scheduler->indexes[scheduler->custom_data->next_reaction_level - 1] = 0;
+  // Loop until it's time to stop or work has been distributed
   while (true) {
     if (scheduler->custom_data->next_reaction_level == (scheduler->max_reaction_level + 1)) {
       scheduler->custom_data->next_reaction_level = 0;
