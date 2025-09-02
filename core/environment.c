@@ -198,15 +198,18 @@ void environment_free(environment_t* env) {
 }
 
 void environment_init_tags(environment_t* env, instant_t start_time, interval_t duration) {
-  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+  // Current tag and start tag of the environment is initialized.
+  env->current_tag = (tag_t){.time = start_time, .microstep = 0};
+  env->start_tag = (tag_t){.time = start_time, .microstep = 0};
+  env->duration = duration;
 
-  tag_t stop_tag = FOREVER_TAG_INITIALIZER;
   if (duration >= 0LL) {
     // A duration has been specified. Calculate the stop time.
-    stop_tag.time = env->current_tag.time + duration;
-    stop_tag.microstep = 0;
+    env->stop_tag.time = lf_time_add(env->start_tag.time, env->duration);
+    env->stop_tag.microstep = 0;
+  } else {
+    env->stop_tag = (tag_t)FOREVER_TAG_INITIALIZER;
   }
-  env->stop_tag = stop_tag;
 }
 
 int environment_init(environment_t* env, const char* name, int id, int num_workers, int num_timers,

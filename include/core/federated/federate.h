@@ -545,7 +545,7 @@ void lf_spawn_staa_thread(void);
  * @ingroup Federated
  *
  * Specifically, wait until the specified level is less that the max level allowed to
- * advance (MLAA).
+ * advance (MLAA). This function does nothing if the environment is not the top-level environment.
  * @param env The environment (which should always be the top-level environment).
  * @param level The level to which we would like to advance.
  */

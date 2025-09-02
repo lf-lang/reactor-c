@@ -178,7 +178,7 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
 
   for (int i = 0; i < _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL; i++) {
     // The first message expected from the RTI is MSG_TYPE_CLOCK_SYNC_T1
-    read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
+    read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer,
                                    "Federate %d did not get the initial clock synchronization message T1 from the RTI.",
                                    _lf_my_fed_id);
 
@@ -197,7 +197,7 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
     }
 
     // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-    read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
+    read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer,
                                    "Federate %d did not get the clock synchronization message T4 from the RTI.",
                                    _lf_my_fed_id);
 

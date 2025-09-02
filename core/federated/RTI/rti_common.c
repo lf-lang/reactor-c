@@ -380,7 +380,7 @@ void update_min_delays() {
 
       scheduling_node_t* node = rti_common->scheduling_nodes[j];
       // Array of results on the stack:
-      tag_t path_delays[n];
+      tag_t* path_delays = (tag_t*)calloc(n, sizeof(tag_t));
       // This will be the number of non-FOREVER entries put into path_delays.
       size_t count = 0;
 
@@ -391,19 +391,19 @@ void update_min_delays() {
 
       // Put the results onto the matrix.
       LF_PRINT_DEBUG("++++ Node %hu is in ZDC: %d", node->id, is_in_zero_delay_cycle(node));
-      int k = 0;
       for (int i = 0; i < n; i++) {
         rti_common->min_delays[i * n + j] = path_delays[i];
+        // The following might be useful for debugging, but N^2 debug statements are a problem with large benchmarks, so
+        // this is commented out.
+        /*
         if (lf_tag_compare(path_delays[i], FOREVER_TAG) < 0) {
           // Node i is upstream.
-          if (k >= count) {
-            lf_print_error_and_exit("Internal error! Count of upstream nodes %zu for node %d is wrong!", count, i);
-          }
-          // N^2 debug statement could be a problem with large benchmarks.
-          LF_PRINT_DEBUG("++++    Node %hu is upstream with delay" PRINTF_TAG "\n", i, path_delays[i].time,
+          LF_PRINT_DEBUG("++++    Node %hu is upstream with delay " PRINTF_TAG, i, path_delays[i].time,
                          path_delays[i].microstep);
         }
+        */
       }
+      free(path_delays);
     }
   }
 }

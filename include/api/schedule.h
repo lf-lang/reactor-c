@@ -15,8 +15,8 @@
  * The compiler will not check this.
  */
 
-#ifndef API_H
-#define API_H
+#ifndef SCHEDULE_H
+#define SCHEDULE_H
 
 #include "lf_types.h"
 #include "tag.h"
@@ -271,4 +271,16 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler);
  */
 void lf_set_deadline(void* self, interval_t updated_deadline);
 
-#endif // API_H
+/**
+ * @brief Set the deadline of the currently executing reaction.
+ * @ingroup API
+ *
+ * This function is intended to be used to dynamically update the deadline of the reaction. lf_check_deadline() can be
+ * called right after this function is called.
+ *
+ * @param self The self struct of the reactor.
+ * @param updated_deadline The updated deadline.
+ */
+void lf_set_deadline(void* self, interval_t updated_deadline);
+
+#endif // SCHEDULE_H

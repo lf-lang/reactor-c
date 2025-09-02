@@ -235,6 +235,7 @@ tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
 #if defined(FEDERATED_CENTRALIZED)
   return lf_send_next_event_tag(env, tag, wait_for_reply);
 #elif defined(LF_ENCLAVES)
+  (void)wait_for_reply;
   return rti_next_event_tag_locked(env->enclave_info, tag);
 #else
   (void)env;
@@ -378,7 +379,12 @@ void _lf_next_locked(environment_t* env) {
   }
 
   // At this point, finally, we have an event to process.
-  _lf_advance_tag(env, next_tag);
+  // Do not advance the tag if we are at startup because events may have been
+  // put on the event queue before this environment was initialized.
+  tag_t start_tag = {.time = start_time, .microstep = 0};
+  if (lf_tag_compare(env->current_tag, next_tag) < 0 || lf_tag_compare(next_tag, start_tag) > 0) {
+    _lf_advance_tag(env, next_tag);
+  }
 
   _lf_start_time_step(env);
 
@@ -603,8 +609,23 @@ static void _lf_initialize_start_tag(environment_t* env) {
   }
 #endif // NOT FEDERATED
 
+// If we have scheduling enclaves. Block here until the first TAG is received.
+// In federated scheduling we use PTAGs to get things started on tag (0,0) but
+// those are not used with enclaves.
+#if defined LF_ENCLAVES
+  // If we have scheduling enclaves. We must get a TAG to the start tag.
+  LF_PRINT_LOG("Env %u: Wait for the first TAG.", env->id);
+
+  tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
+
+  // NOTE: This used to test that the tag was the start tag, but that is not
+  // guaranteed to be the case since the DNET optimization.
+  LF_PRINT_LOG("Env %u: Received the first TAG: " PRINTF_TAG, env->id, tag_granted.time - start_time,
+               tag_granted.microstep);
+#endif
+
   // Set the following boolean so that other thread(s), including federated threads,
-  // know that the execution has started
+  // know that the execution has started.
   env->execution_started = true;
 }
 
@@ -637,7 +658,7 @@ static bool _lf_worker_handle_deadline_violation_for_reaction(environment_t* env
     // Get the current physical time.
     instant_t physical_time = lf_time_physical();
     // Check for deadline violation.
-    if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
+    if (reaction->deadline == 0 || physical_time > lf_time_add(env->current_tag.time, reaction->deadline)) {
       // Deadline violation has occurred.
       tracepoint_reaction_deadline_missed(env, reaction, worker_number);
       violation_occurred = true;
@@ -754,8 +775,8 @@ static bool _lf_worker_handle_violations(environment_t* env, int worker_number, 
  * @param reaction The reaction to invoke.
  */
 static void _lf_worker_invoke_reaction(environment_t* env, int worker_number, reaction_t* reaction) {
-  LF_PRINT_LOG("Worker %d: Invoking reaction %s at elapsed tag " PRINTF_TAG ".", worker_number, reaction->name,
-               env->current_tag.time - start_time, env->current_tag.microstep);
+  LF_PRINT_LOG("Env %u: Worker %d: Invoking reaction %s at elapsed tag " PRINTF_TAG ".", env->id, worker_number,
+               reaction->name, env->current_tag.time - start_time, env->current_tag.microstep);
   _lf_invoke_reaction(env, reaction, worker_number);
 
   // If the reaction produced outputs, put the resulting triggered
@@ -831,21 +852,7 @@ static void* worker(void* arg) {
   LF_MUTEX_LOCK(&env->mutex);
 
   int worker_number = env->worker_thread_count++;
-  LF_PRINT_LOG("Environment %u: Worker thread %d started.", env->id, worker_number);
-
-// If we have scheduling enclaves. The first worker will block here until
-// it receives a TAG for tag (0,0) from the local RTI. In federated scheduling
-// we use PTAGs to get things started on tag (0,0) but those are not used
-// with enclaves.
-#if defined LF_ENCLAVES
-  if (worker_number == 0) {
-    // If we have scheduling enclaves. We must get a TAG to the start tag.
-    LF_PRINT_LOG("Environment %u: Worker thread %d waits for TAG to (0,0).", env->id, worker_number);
-
-    tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
-    LF_ASSERT(lf_tag_compare(tag_granted, env->current_tag) == 0, "We did not receive a TAG to the start tag.");
-  }
-#endif
+  LF_PRINT_LOG("Env %u: Worker thread %d started.", env->id, worker_number);
 
   // Release mutex and start working.
   LF_MUTEX_UNLOCK(&env->mutex);
@@ -922,6 +929,75 @@ static void determine_number_of_workers(void) {
     _lf_number_of_workers = NUMBER_OF_WORKERS;
 #endif
   }
+}
+
+/**
+ * @brief Initialize the environment.
+ *
+ * This function is the main thread for each environment.
+ * It will spawn worker threads (if there is more than one worker)
+ * and then become the first worker thread. It will return only
+ * when all worker threads have exited.
+ *
+ * @param arg The environment to initialize.
+ * @return NULL.
+ */
+static void* initialize_environments(void* arg) {
+  environment_t* env = (environment_t*)arg;
+
+  // Initialize the watchdogs on this environment.
+  _lf_initialize_watchdogs(env);
+
+  // Initialize the start and stop tags of the environment
+  environment_init_tags(env, start_time, duration);
+#ifdef MODAL_REACTORS
+  // Set up modal infrastructure
+  _lf_initialize_modes(env);
+#endif
+
+  // Lock mutex and spawn threads. This must be done before `_lf_initialize_start_tag` since it is using
+  //  a cond var
+  LF_MUTEX_LOCK(&env->mutex);
+
+  // Initialize start tag
+  _lf_initialize_start_tag(env);
+
+  LF_PRINT_LOG("Env %u: ---- Spawning %d workers.", env->id, env->num_workers);
+
+  // The first worker thread of the environment will be
+  // run on this thread, rather than creating a new thread.
+  // This is important for bare-metal platforms, who can't
+  // afford to have the main thread sit idle.
+  env->thread_ids[0] = lf_thread_self();
+  LF_PRINT_LOG("Env %u: Worker thread 0 is the main thread.", env->id);
+
+  for (int j = 1; j < env->num_workers; j++) {
+    LF_PRINT_LOG("Env %u: Spawning worker thread %d.", env->id, j);
+    if (lf_thread_create(&env->thread_ids[j], worker, env) != 0) {
+      lf_print_error_and_exit("Could not start thread-%u", j);
+    }
+  }
+
+  // Unlock mutex and allow threads to proceed
+  LF_MUTEX_UNLOCK(&env->mutex);
+
+  // Become a worker thread.
+  void* ret = worker(env);
+
+  // Join the other worker threads.
+  for (int j = 1; j < env->num_workers; j++) {
+    void* worker_exit_status = NULL;
+    int failure = lf_thread_join(env->thread_ids[j], &worker_exit_status);
+    if (failure) {
+      lf_print_error_and_exit("Env %u: Failed to join worker thread %d. Error code %d: %s", env->id, j, failure,
+                              strerror(failure));
+    }
+    if (worker_exit_status != NULL) {
+      lf_print_error("Env %u: Worker %d reports error code %p", env->id, j, worker_exit_status);
+      ret = worker_exit_status;
+    }
+  }
+  return ret;
 }
 
 /**
@@ -1006,88 +1082,54 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   initialize_local_rti(envs, num_envs);
 #endif
 
-  // Do environment-specific setup
-  for (int i = 0; i < num_envs; i++) {
+  // Do environment-specific setup. Except for environment 0, this will be done
+  // in a separate thread for each environment because it may block waiting for the
+  // first TAG. Also, it will block waiting for its worker threads to exit.
+  lf_thread_t* env_init_threads = (lf_thread_t*)malloc((num_envs - 1) * sizeof(lf_thread_t));
+  int env_init_thread_count = 0;
+
+  for (int i = num_envs - 1; i >= 1; i--) {
     environment_t* env = &envs[i];
 
-    // Initialize the watchdogs on this environment.
-    _lf_initialize_watchdogs(env);
-
-    // Initialize the start and stop tags of the environment
-    environment_init_tags(env, start_time, duration);
-#ifdef MODAL_REACTORS
-    // Set up modal infrastructure
-    _lf_initialize_modes(env);
-#endif
-
-    // Initialize the scheduler
-    // FIXME: Why is this called here and in `_lf_initialize_trigger objects`?
-    lf_sched_init(env, (size_t)env->num_workers, NULL);
-
-    // Lock mutex and spawn threads. This must be done before `_lf_initialize_start_tag` since it is using
-    //  a cond var
-    LF_MUTEX_LOCK(&env->mutex);
-
-    // Initialize start tag
-    lf_print("Environment %u: ---- Intializing start tag", env->id);
-    _lf_initialize_start_tag(env);
-
-    lf_print("Environment %u: ---- Spawning %d workers.", env->id, env->num_workers);
-
-    for (int j = 0; j < env->num_workers; j++) {
-      if (i == 0 && j == 0) {
-        // The first worker thread of the first environment will be
-        // run on the main thread, rather than creating a new thread.
-        // This is important for bare-metal platforms, who can't
-        // afford to have the main thread sit idle.
-        env->thread_ids[j] = lf_thread_self();
-        continue;
-      }
-      if (lf_thread_create(&env->thread_ids[j], worker, env) != 0) {
-        lf_print_error_and_exit("Could not start thread-%u", j);
-      }
+    // Store the thread ID so we can join it later.
+    LF_PRINT_LOG("Spawning Env %u initialization thread.", i);
+    if (lf_thread_create(&env_init_threads[env_init_thread_count], initialize_environments, env) != 0) {
+      lf_print_error_and_exit("Could not start environment intialization thread for Env %u", i);
     }
-
-    // Unlock mutex and allow threads proceed
-    LF_MUTEX_UNLOCK(&env->mutex);
+    env_init_thread_count++;
   }
+  // For environment 0, we do the initialization here.
+  // This will turn this thread into a worker thread.
+  LF_PRINT_LOG("Initializing environment 0.");
+  void* main_thread_exit_status = initialize_environments(envs);
 
-  // main thread worker (first worker thread of first environment)
-  void* main_thread_exit_status = NULL;
-  if (num_envs > 0 && envs[0].num_workers > 0) {
-    environment_t* env = &envs[0];
-    main_thread_exit_status = worker(env);
+  LF_PRINT_LOG("Env 0: Main thread has finished. Waiting for other worker and environment threads to exit.");
+
+  int ret = main_thread_exit_status == NULL ? 0 : 1;
+
+  // Wait for environment initialization threads to complete.
+  LF_PRINT_LOG("Waiting for environment initialization threads to complete.");
+  for (int i = 0; i < env_init_thread_count; i++) {
+    void* env_init_exit_status = NULL;
+    int failure = lf_thread_join(env_init_threads[i], &env_init_exit_status);
+    if (failure) {
+      lf_print_error("Failed to join environment %d initialization thread. Error code %d: %s", num_envs - 1 - i,
+                     failure, strerror(failure));
+      ret = 2;
+    }
+    if (env_init_exit_status != NULL) {
+      lf_print_error("---- Environment %d initialization thread  reports error code %p", num_envs - 1 - i,
+                     env_init_exit_status);
+      ret = 1;
+    }
   }
+  free(env_init_threads);
 
-  for (int i = 0; i < num_envs; i++) {
-    // Wait for the worker threads to exit.
-    environment_t* env = &envs[i];
-    void* worker_thread_exit_status = NULL;
-    int ret = 0;
-    for (int j = 0; j < env->num_workers; j++) {
-      if (i == 0 && j == 0) {
-        // main thread worker
-        worker_thread_exit_status = main_thread_exit_status;
-      } else {
-        int failure = lf_thread_join(env->thread_ids[j], &worker_thread_exit_status);
-        if (failure) {
-          // Windows warns that strerror is deprecated but doesn't define strerror_r.
-          // There seems to be no portable replacement.
-          lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
-        }
-      }
-      if (worker_thread_exit_status != NULL) {
-        lf_print_error("---- Worker %d reports error code %p", j, worker_thread_exit_status);
-        ret = 1;
-      }
-    }
-
-    if (ret == 0) {
-      LF_PRINT_LOG("---- All worker threads exited successfully.");
-    }
+  if (ret == 0) {
+    LF_PRINT_LOG("---- All environment worker threads exited successfully.");
   }
   _lf_normal_termination = true;
-  return 0;
+  return ret;
 }
 
 int lf_notify_of_event(environment_t* env) {
