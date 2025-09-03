@@ -260,27 +260,20 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
 bool lf_check_deadline(void* self, bool invoke_deadline_handler);
 
 /**
- * @brief Set the deadline of the currently executing reaction.
+ * @brief Update the deadline of the currently executing reaction.
  * @ingroup API
  *
- * This function is intended to be used to dynamically update the deadline of the reaction. lf_check_deadline() can be
- * called right after this function is called.
+ * This function allows the deadline of the current reaction to be adjusted dynamically at runtime.
+ * It can be useful in scenarios where timing requirements change depending on system conditions.
+ *
+ * Updating the deadline with this function does not affect the deadline check that was performed
+ * when the reaction started. Lingua Franca checks deadlines only at the beginning of each reaction.
+ * Therefore, if you need to immediately determine whether the newly updated deadline has been violated
+ * during the current execution, you should call lf_check_deadline() right after invoking this function.
  *
  * @param self The self struct of the reactor.
  * @param updated_deadline The updated deadline.
  */
-void lf_set_deadline(void* self, interval_t updated_deadline);
-
-/**
- * @brief Set the deadline of the currently executing reaction.
- * @ingroup API
- *
- * This function is intended to be used to dynamically update the deadline of the reaction. lf_check_deadline() can be
- * called right after this function is called.
- *
- * @param self The self struct of the reactor.
- * @param updated_deadline The updated deadline.
- */
-void lf_set_deadline(void* self, interval_t updated_deadline);
+void lf_update_deadline(void* self, interval_t updated_deadline);
 
 #endif // SCHEDULE_H
