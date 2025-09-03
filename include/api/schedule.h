@@ -268,8 +268,8 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler);
  *
  * Updating the deadline with this function does not affect the deadline check that was performed
  * when the reaction started. Lingua Franca checks deadlines only at the beginning of each reaction.
- * Therefore, if you need to immediately determine whether the newly updated deadline has been violated
- * during the current execution, you should call lf_check_deadline() right after invoking this function.
+ * Therefore, if you need to confirm whether the newly updated deadline has been violated during the current execution,
+ * this can be done by invoking lf_check_deadline() immediately after this function.
  *
  * @param self The self struct of the reactor.
  * @param updated_deadline The updated deadline.
