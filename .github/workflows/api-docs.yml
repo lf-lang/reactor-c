@@ -15,9 +15,6 @@ jobs:
     - name: Requirements
       run: |
         brew install doxygen
-    - name: Remove stale Git lock files
-      run: |
-        find .git -name '*.lock' -type f -delete || true
     - name: Checkout repo
       uses: actions/checkout@1.0.0
     - name: Build docs
