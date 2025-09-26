@@ -13,10 +13,11 @@
 #include "logging.h"
 #include <stdbool.h>
 #include "tag.h"
+#include "low_level_platform.h"
 
 /** Default log level. */
 #ifndef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_DEBUG
+#define LOG_LEVEL LOG_LEVEL_INFO
 #endif
 
 // To prevent warnings "conditional expression is constant", we define static booleans
@@ -73,21 +74,7 @@ static const bool _lf_log_level_is_debug = LOG_LEVEL >= LOG_LEVEL_DEBUG;
 #define LF_PRINT_DEBUG(format, ...)                                                                                    \
   do {                                                                                                                 \
     if (_lf_log_level_is_debug) {                                                                                      \
-      lf_print_debug(format, ##__VA_ARGS__);                                                                           \
-    }                                                                                                                  \
-  } while (0)
-
-/**
- * @brief A macro used to print timestamped(physical time) debug information.
- * @ingroup API
- *
- * @note This macro is functionally same as @ref LF_PRINT_DEBUG but with added timestamp for physical time.
- * This is to check physical time of debug logs. It uses @ref lf_time_physical to get the physical time.
- */
-#define LF_TIMESTAMP_PRINT_DEBUG(format, ...)                                                                          \
-  do {                                                                                                                 \
-    if (_lf_log_level_is_debug) {                                                                                      \
-      lf_print_debug("[%ld] " format, lf_time_physical_elapsed(), ##__VA_ARGS__);                                             \
+      lf_print_debug("["PRINTF_TIME"]"format,lf_time_physical_elapsed(), ##__VA_ARGS__);                               \
     }                                                                                                                  \
   } while (0)
 
