@@ -273,6 +273,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga8da2172c41ab13ff4748994a62ae34b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the physical and logical time of the start of execution in nanoseconds.  <br /></td></tr>
 <tr class="memitem:ga9107f7f62874fa972f7a31f9c277b8fc" id="r_ga9107f7f62874fa972f7a31f9c277b8fc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga9107f7f62874fa972f7a31f9c277b8fc">lf_time_subtract</a> (<a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> a, <a class="el" href="#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> b)</td></tr>
 <tr class="memdesc:ga9107f7f62874fa972f7a31f9c277b8fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return an instant minus an interval, saturating on overflow and underflow.  <br /></td></tr>
+<tr class="memitem:gabfa0f55472fb5745e5683094a6e0143f" id="r_gabfa0f55472fb5745e5683094a6e0143f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gabfa0f55472fb5745e5683094a6e0143f">lf_update_deadline</a> (void *self, <a class="el" href="#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> updated_deadline)</td></tr>
+<tr class="memdesc:gabfa0f55472fb5745e5683094a6e0143f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the deadline of the currently executing reaction.  <br /></td></tr>
 <tr class="memitem:ga82bf2c7bd91fdf03b357914cf875dbb9" id="r_ga82bf2c7bd91fdf03b357914cf875dbb9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga82bf2c7bd91fdf03b357914cf875dbb9">lf_watchdog_start</a> (<a class="el" href="structwatchdog__t.html">watchdog_t</a> *watchdog, <a class="el" href="#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> additional_timeout)</td></tr>
 <tr class="memdesc:ga82bf2c7bd91fdf03b357914cf875dbb9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start or restart the watchdog timer.  <br /></td></tr>
 <tr class="memitem:gaa27ad22f94bbdaa33b99fe6cd81f1bdc" id="r_gaa27ad22f94bbdaa33b99fe6cd81f1bdc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaa27ad22f94bbdaa33b99fe6cd81f1bdc">lf_watchdog_stop</a> (<a class="el" href="structwatchdog__t.html">watchdog_t</a> *watchdog)</td></tr>
@@ -2420,6 +2422,40 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="#ga827080fd3c574bad5a32db9f7c367587" title="Time instant.">instant_t</a> </dd></dl>
+
+</div>
+</div>
+<a id="gabfa0f55472fb5745e5683094a6e0143f" name="gabfa0f55472fb5745e5683094a6e0143f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabfa0f55472fb5745e5683094a6e0143f">&#9670;&#160;</a></span>lf_update_deadline()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void lf_update_deadline </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#gaf5b4e62d03782997d813be6145316f4b">interval_t</a></td>          <td class="paramname"><span class="paramname"><em>updated_deadline</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="schedule_8h.html">/Users/runner/work/reactor-c/reactor-c/include/api/schedule.h</a>&gt;</code></p>
+
+<p>Update the deadline of the currently executing reaction. </p>
+<p>This function allows the deadline of the current reaction to be adjusted dynamically at runtime. It can be useful in scenarios where timing requirements change depending on system conditions.</p>
+<p>Updating the deadline with this function does not affect the deadline check that was performed when the reaction started. Lingua Franca checks deadlines only at the beginning of each reaction. Therefore, if you need to confirm whether the newly updated deadline has been violated during the current execution, this can be done by invoking <a class="el" href="#gab3a04dd0a1581844829b28686b6b3c53" title="Check the deadline of the currently executing reaction against the current physical time.">lf_check_deadline()</a> immediately after this function.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The self struct of the reactor. </td></tr>
+    <tr><td class="paramname">updated_deadline</td><td>The updated deadline. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

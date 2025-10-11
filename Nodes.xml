@@ -544,6 +544,11 @@
             <Anchor>ga9107f7f62874fa972f7a31f9c277b8fc</Anchor>
            </Node>
            <Node>
+            <Name>lf_update_deadline</Name>
+            <Path>group__API.html</Path>
+            <Anchor>gabfa0f55472fb5745e5683094a6e0143f</Anchor>
+           </Node>
+           <Node>
             <Name>lf_watchdog_start</Name>
             <Path>group__API.html</Path>
             <Anchor>ga82bf2c7bd91fdf03b357914cf875dbb9</Anchor>
@@ -8923,6 +8928,11 @@
                             <Name>lf_schedule_value</Name>
                             <Path>group__API.html</Path>
                             <Anchor>ga986bb1be3a9e4f71e5b5dde30d9dc6ad</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_update_deadline</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>gabfa0f55472fb5745e5683094a6e0143f</Anchor>
                            </Node>
                           </Subnodes>
                          </Node>

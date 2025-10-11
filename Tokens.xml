@@ -9033,6 +9033,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_update_deadline</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>gabfa0f55472fb5745e5683094a6e0143f</Anchor>
+    <DeclaredIn>schedule.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_update_max_level</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>

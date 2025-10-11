@@ -726,6 +726,13 @@
       <anchor>ga986bb1be3a9e4f71e5b5dde30d9dc6ad</anchor>
       <arglist>(void *action, interval_t extra_delay, void *value, int length)</arglist>
     </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_update_deadline</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gabfa0f55472fb5745e5683094a6e0143f</anchor>
+      <arglist>(void *self, interval_t updated_deadline)</arglist>
+    </member>
   </compound>
   <compound kind="file">
     <name>clock.h</name>
@@ -9340,6 +9347,13 @@
       <anchorfile>group__API.html</anchorfile>
       <anchor>ga9107f7f62874fa972f7a31f9c277b8fc</anchor>
       <arglist>(instant_t a, interval_t b)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_update_deadline</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gabfa0f55472fb5745e5683094a6e0143f</anchor>
+      <arglist>(void *self, interval_t updated_deadline)</arglist>
     </member>
     <member kind="function">
       <type>void</type>

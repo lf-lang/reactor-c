@@ -93,6 +93,7 @@ var group__API =
     [ "lf_time_physical_elapsed", "group__API.html#ga98468f1c5132e3aa18d77f85d65bb6ec", null ],
     [ "lf_time_start", "group__API.html#ga8da2172c41ab13ff4748994a62ae34b5", null ],
     [ "lf_time_subtract", "group__API.html#ga9107f7f62874fa972f7a31f9c277b8fc", null ],
+    [ "lf_update_deadline", "group__API.html#gabfa0f55472fb5745e5683094a6e0143f", null ],
     [ "lf_watchdog_start", "group__API.html#ga82bf2c7bd91fdf03b357914cf875dbb9", null ],
     [ "lf_watchdog_stop", "group__API.html#gaa27ad22f94bbdaa33b99fe6cd81f1bdc", null ],
     [ "lf_writable_copy", "group__API.html#gaaf8e6f18b021d0b8ece7e1b64280432f", null ],
