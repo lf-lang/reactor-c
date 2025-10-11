@@ -90,18 +90,9 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
   return false;
 }
 
-/**
- * Updates the deadline of the currently executing reaction. This can be used to dynamically update
- * the deadline of the reaction. However, this does not update the deadline of the currently invoked
- * reaction due to LF's deadline is checked in the start time of the reaction. To immediately check
- * the deadline of the current running reaction, lf_check_deadline() can be called together with this function.
- *
- * @param self The self struct of the reactor.
- * @param updated_deadline The updated deadline.
- */
 void lf_update_deadline(void* self, interval_t updated_deadline) {
   reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
-  reaction->deadline = updated_deadline;
+  if (reaction != NULL)  reaction->deadline = updated_deadline;
 }
 
 trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, interval_t extra_delay,
