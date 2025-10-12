@@ -100,11 +100,6 @@ void lf_update_deadline(void* self, interval_t updated_deadline) {
 trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, interval_t extra_delay,
                                      lf_token_t* token) {
   assert(env != GLOBAL_ENVIRONMENT);
-  if (!env->execution_started) {
-    _lf_done_using(token);
-    lf_print_warning("lf_schedule() called before execution has started.");
-    return 0;
-  }
   if (lf_is_tag_after_stop_tag(env, env->current_tag)) {
     // If schedule is called after stop_tag
     // This is a critical condition.
@@ -165,6 +160,10 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   if (trigger->is_physical) {
     // Get the current physical time and assign it as the intended time.
     intended_tag.time = lf_time_physical() + delay;
+    if (intended_tag.time < env->start_tag.time) {
+      // A physical action should never be assigned a time earlier than the start time.
+      intended_tag.time = env->start_tag.time;
+    }
     intended_tag.microstep = 0;
   } else {
 // FIXME: We need to verify that we are executing within a reaction?
