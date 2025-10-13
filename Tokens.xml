@@ -7403,6 +7403,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_get_fed_maxwait</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>gab4b57d55b69a4864eb694ed080b84d0e</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_get_new_event</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -8420,6 +8430,16 @@
     <Path>group__API.html</Path>
     <Anchor>gaf4b2874af3da2bb85edfb3f0a57028a1</Anchor>
     <DeclaredIn>reaction_macros.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_set_fed_maxwait</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>ga952c8552f9e327a465f3db2f72d8415e</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
