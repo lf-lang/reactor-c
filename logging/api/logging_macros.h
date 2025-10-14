@@ -74,7 +74,7 @@ static const bool _lf_log_level_is_debug = LOG_LEVEL >= LOG_LEVEL_DEBUG;
 #define LF_PRINT_DEBUG(format, ...)                                                                                    \
   do {                                                                                                                 \
     if (_lf_log_level_is_debug) {                                                                                      \
-      lf_print_debug("["PRINTF_TIME"]"format,lf_time_physical_elapsed(), ##__VA_ARGS__);                               \
+      lf_print_debug("[" PRINTF_TIME "]" format, lf_time_physical_elapsed(), ##__VA_ARGS__);                           \
     }                                                                                                                  \
   } while (0)
 
