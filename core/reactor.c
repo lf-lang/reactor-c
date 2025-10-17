@@ -158,7 +158,7 @@ int _lf_do_step(environment_t* env) {
       // container deadlines are defined in the container.
       // They can have different deadlines, so we have to check both.
       // Handle the local deadline first.
-      if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
+      if (reaction->deadline == 0 || physical_time > lf_time_add(env->current_tag.time, reaction->deadline)) {
         LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
         tracepoint_reaction_deadline_missed(env, reaction, 0);
         // Deadline violation has occurred.

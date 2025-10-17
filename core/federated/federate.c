@@ -4,8 +4,7 @@
  * @author Peter Donovan
  * @author Edward A. Lee
  * @author Anirudh Rengarajsm
- * @copyright (c) 2020-2023, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief Utility functions for a federate in a federated execution.
  */
 
@@ -130,15 +129,15 @@ static void send_tag(unsigned char type, tag_t tag) {
   buffer[0] = type;
   encode_tag(&(buffer[1]), tag);
 
+  trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
+  // Trace the event when tracing is enabled
+  tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
   LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
   if (_fed.netchan_to_RTI == NULL) {
     lf_print_warning("RTI is no longer connected. Dropping message.");
     LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
     return;
   }
-  trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
-  // Trace the event when tracing is enabled
-  tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, buffer, &lf_outbound_netchan_mutex,
                                 "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
   LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
@@ -248,9 +247,10 @@ static void update_last_known_status_on_input_ports(tag_t tag, environment_t* en
  *
  * @param env The top-level environment, whose mutex is assumed to be held.
  * @param tag The tag on which the latest status of the specified network input port is known.
+ * @param warn If true, print a warning if the tag is less than the last known status tag of the port.
  * @param portID The port ID.
  */
-static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id) {
+static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id, bool warn) {
   if (lf_tag_compare(tag, env->current_tag) < 0)
     tag = env->current_tag;
   trigger_t* input_port_action = action_for_port(port_id)->trigger;
@@ -273,11 +273,13 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
     lf_cond_broadcast(&lf_port_status_changed);
     lf_cond_broadcast(&env->event_q_changed);
-  } else {
+  } else if (warn) {
     // Message arrivals should be monotonic, so this should not occur.
-    lf_print_warning("Attempt to update the last known status tag "
-                     "of network input port %d to an earlier tag was ignored.",
-                     port_id);
+    lf_print_warning("Attempt to update the last known status tag " PRINTF_TAG
+                     " of network input port %d to an earlier tag " PRINTF_TAG " was ignored.",
+                     input_port_action->last_known_status_tag.time - lf_time_start(),
+                     input_port_action->last_known_status_tag.microstep, port_id, tag.time - lf_time_start(),
+                     tag.microstep);
   }
 }
 
@@ -299,7 +301,7 @@ static void mark_inputs_known_absent(int fed_id) {
   for (size_t i = 0; i < _lf_action_table_size; i++) {
     lf_action_base_t* action = _lf_action_table[i];
     if (action->source_id == fed_id) {
-      update_last_known_status_on_input_port(env, FOREVER_TAG, i);
+      update_last_known_status_on_input_port(env, FOREVER_TAG, i, true);
     }
   }
   LF_MUTEX_UNLOCK(&env->mutex);
@@ -364,6 +366,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
     // that does not carry a timestamp that is in the future
     // would indicate a critical condition, showing that the
     // time advance mechanism is not working correctly.
+    _lf_done_using(token);
     LF_MUTEX_UNLOCK(&env->mutex);
     lf_print_error_and_exit(
         "Received a message at tag " PRINTF_TAG " that has a tag " PRINTF_TAG " that has violated the STP offset. "
@@ -573,6 +576,7 @@ static int handle_tagged_message(netchan_t netchan, int fed_id) {
 #ifdef FEDERATED_DECENTRALIZED
     _lf_decrement_tag_barrier_locked(env);
 #endif
+    free(message_contents);
     return -1; // Read failed.
   }
 
@@ -590,7 +594,7 @@ static int handle_tagged_message(netchan_t netchan, int fed_id) {
     // Since the message is intended for the current tag and a port absent reaction
     // was waiting for the message, trigger the corresponding reactions for this message.
 
-    update_last_known_status_on_input_port(env, intended_tag, port_id);
+    update_last_known_status_on_input_port(env, intended_tag, port_id, true);
 
     LF_PRINT_LOG("Inserting reactions directly at tag " PRINTF_TAG ". "
                  "Intended tag: " PRINTF_TAG ".",
@@ -631,7 +635,7 @@ static int handle_tagged_message(netchan_t netchan, int fed_id) {
 #endif // FEDERATED_DECENTRALIZED
        // The following will update the input_port_action->last_known_status_tag.
        // For decentralized coordination, this is needed to unblock the STAA.
-    update_last_known_status_on_input_port(env, actual_tag, port_id);
+    update_last_known_status_on_input_port(env, actual_tag, port_id, true);
 
     // If the current time >= stop time, discard the message.
     // But only if the stop time is not equal to the start time!
@@ -641,6 +645,8 @@ static int handle_tagged_message(netchan_t netchan, int fed_id) {
                      "    Discarding message and closing the network channel.",
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
+      // Free the allocated memory before returning
+      _lf_done_using(message_token);
       // Close network channel, reading any incoming data and discarding it.
       close_inbound_netchan(fed_id);
       LF_MUTEX_UNLOCK(&env->mutex);
@@ -704,7 +710,7 @@ static int handle_port_absent_message(netchan_t netchan, int fed_id) {
   _lf_get_environments(&env);
 
   LF_MUTEX_LOCK(&env->mutex);
-  update_last_known_status_on_input_port(env, intended_tag, port_id);
+  update_last_known_status_on_input_port(env, intended_tag, port_id, true);
   LF_MUTEX_UNLOCK(&env->mutex);
 
   return 0;
@@ -737,7 +743,7 @@ static void* listen_to_federates(void* _args) {
   unsigned char buffer[FED_COM_BUFFER_SIZE];
 
   // Listen for messages from the federate.
-  while (1) {
+  while (!_lf_termination_executed) {
     bool netchan_closed = false;
     // Read one byte to get the message type.
     LF_PRINT_DEBUG("Waiting for a P2P message.");
@@ -843,6 +849,7 @@ static int perform_hmac_authentication() {
   RAND_bytes(fed_nonce, NONCE_LENGTH);
   memcpy(&fed_hello_buf[1 + fed_id_length], fed_nonce, NONCE_LENGTH);
 
+  // No mutex needed during startup, hence the NULL argument.
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, message_length, fed_hello_buf, NULL, "Failed to write nonce.");
 
   // Check HMAC of received FED_RESPONSE message.
@@ -1070,7 +1077,7 @@ static void* update_ports_from_staa_offsets(void* args) {
   environment_t* env;
   _lf_get_environments(&env);
   LF_MUTEX_LOCK(&env->mutex);
-  while (1) {
+  while (!_lf_termination_executed) {
     LF_PRINT_DEBUG("**** (update thread) starting");
     tag_t tag_when_started_waiting = lf_tag(env);
     for (size_t i = 0; i < staa_lst_size; ++i) {
@@ -1078,7 +1085,12 @@ static void* update_ports_from_staa_offsets(void* args) {
       // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
       // The list is sorted in increasing order of adjusted STAA offsets.
       // We need to add the lf_fed_STA_offset to the wait time and guard against overflow.
-      interval_t wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
+      // Skip this if the current tag is the dynamically determined stop time
+      // (due to a call to lf_request_stop()).  This is indicated by a stop_tag with microstep greater than 0.
+      interval_t wait_time = 0;
+      if (lf_tag_compare(env->current_tag, env->stop_tag) != 0 || env->stop_tag.microstep == 0) {
+        wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
+      }
       instant_t wait_until_time = lf_time_add(env->current_tag.time, wait_time);
       LF_PRINT_DEBUG("**** (update thread) wait_until_time: " PRINTF_TIME, wait_until_time - lf_time_start());
 
@@ -1096,7 +1108,7 @@ static void* update_ports_from_staa_offsets(void* args) {
       if (wait_time < 5 * MIN_SLEEP_DURATION) {
         wait_until_time += 5 * MIN_SLEEP_DURATION;
       }
-      while (a_port_is_unknown(staa_elem)) {
+      while (!_lf_termination_executed && a_port_is_unknown(staa_elem)) {
         LF_PRINT_DEBUG("**** (update thread) waiting until: " PRINTF_TIME, wait_until_time - lf_time_start());
         if (wait_until(wait_until_time, &lf_port_status_changed)) {
           // Specified timeout time was reached.
@@ -1119,7 +1131,7 @@ static void* update_ports_from_staa_offsets(void* args) {
               input_port_action->trigger->status = absent;
               LF_PRINT_DEBUG("**** (update thread) Assuming port absent at tag " PRINTF_TAG,
                              lf_tag(env).time - start_time, lf_tag(env).microstep);
-              update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
+              update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action), false);
               lf_cond_broadcast(&lf_port_status_changed);
             }
           }
@@ -1129,11 +1141,11 @@ static void* update_ports_from_staa_offsets(void* args) {
           break;
       }
       // If the tag has advanced, start over.
-      if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0)
+      if (_lf_termination_executed || lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0)
         break;
     }
     // If the tag has advanced, start over.
-    if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0)
+    if (_lf_termination_executed || lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0)
       continue;
 
     // At this point, the current tag is the same as when we started waiting
@@ -1182,6 +1194,7 @@ static void* update_ports_from_staa_offsets(void* args) {
                    tag_when_started_waiting.time - lf_time_start(), tag_when_started_waiting.microstep);
   }
   LF_MUTEX_UNLOCK(&env->mutex);
+  return NULL;
 }
 #endif // FEDERATED_DECENTRALIZED
 
@@ -1501,7 +1514,7 @@ static void* listen_to_rti_netchan(void* args) {
   unsigned char buffer[FED_COM_BUFFER_SIZE];
 
   // Listen for messages from the federate.
-  while (1) {
+  while (!_lf_termination_executed) {
     // Check whether the RTI network channel is still valid
     if (_fed.netchan_to_RTI == NULL) {
       lf_print_warning("network channel to the RTI unexpectedly closed.");
@@ -2089,6 +2102,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }
+    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
 
     received_federates++;
   }
@@ -2393,9 +2407,11 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
 #ifdef FEDERATED_CENTRALIZED
   // Send the absent message through the RTI
   netchan_t netchan = _fed.netchan_to_RTI;
+  tracepoint_federate_to_rti(send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
 #else
   // Send the absent message directly to the federate
   netchan_t netchan = _fed.netchans_for_outbound_p2p_connections[fed_ID];
+  tracepoint_federate_to_federate(send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
 #endif
 
   if (netchan == _fed.netchan_to_RTI) {
@@ -2552,13 +2568,21 @@ void lf_stall_advance_level_federation_locked(size_t level) {
 }
 
 void lf_stall_advance_level_federation(environment_t* env, size_t level) {
-  LF_PRINT_DEBUG("Acquiring the environment mutex.");
-  LF_MUTEX_LOCK(&env->mutex);
-  lf_stall_advance_level_federation_locked(level);
-  LF_MUTEX_UNLOCK(&env->mutex);
+  // If this is not the top-level environment, then we should not do anything here.
+  environment_t* top_level_env;
+  _lf_get_environments(&top_level_env);
+  if (env == top_level_env) {
+    LF_MUTEX_LOCK(&env->mutex);
+    lf_stall_advance_level_federation_locked(level);
+    LF_MUTEX_UNLOCK(&env->mutex);
+  }
 }
 
 void lf_synchronize_with_other_federates(void) {
+
+  environment_t* top_level_env;
+  _lf_get_environments(&top_level_env);
+  LF_COND_INIT(&lf_port_status_changed, &top_level_env->mutex);
 
   LF_PRINT_DEBUG("Synchronizing with other federates.");
 

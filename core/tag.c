@@ -3,8 +3,7 @@
  * @author Edward A. Lee
  * @author Soroush Bateni
  * @author Hou Seng (Steven) Wong
- * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ *
  * @brief Implementation of time and tag functions for Lingua Franca programs.
  */
 
@@ -112,6 +111,22 @@ int lf_tag_compare(tag_t tag1, tag_t tag2) {
     return 1;
   } else {
     return 0;
+  }
+}
+
+tag_t lf_tag_max(tag_t tag1, tag_t tag2) {
+  if (lf_tag_compare(tag1, tag2) < 0) {
+    return tag2;
+  } else {
+    return tag1;
+  }
+}
+
+tag_t lf_tag_min(tag_t tag1, tag_t tag2) {
+  if (lf_tag_compare(tag1, tag2) < 0) {
+    return tag1;
+  } else {
+    return tag2;
   }
 }
 

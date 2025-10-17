@@ -1,34 +1,9 @@
 /**
  * @file
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @author Hou Seng Wong (housengw@berkeley.edu)
+ * @author Soroush Bateni
+ * @author Hou Seng Wong
  *
- * @section LICENSE
-Copyright (c) 2022, The University of California at Berkeley.
-Copyright (c) 2021, The University of Texas at Dallas.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Implementation of functions defined in @see pythontarget.h
+ * @brief Implementation of functions defined in @see pythontarget.h
  */
 
 #include "pythontarget.h"
@@ -61,19 +36,6 @@ environment_t* top_level_environment = NULL;
 
 //////////// schedule Function(s) /////////////
 
-/**
- * Schedule an action to occur with the specified time offset
- * with no payload (no value conveyed). This function is callable
- * in Python by calling action_name.schedule(offset).
- * Some examples include:
- *  action_name.schedule(5)
- *  action_name.schedule(NSEC(5))
- * See schedule_token(), which this uses, for details.
- * @param self Pointer to the calling object.
- * @param args contains:
- *      - action: Pointer to an action on the self struct.
- *      - offset: The time offset over and above that in the action.
- **/
 PyObject* py_schedule(PyObject* self, PyObject* args) {
   generic_action_capsule_struct* act = (generic_action_capsule_struct*)self;
   long long offset;
@@ -105,34 +67,6 @@ PyObject* py_schedule(PyObject* self, PyObject* args) {
 
   // Pass the token along
   lf_schedule_token(action, offset, t);
-
-  // FIXME: handle is not passed to the Python side
-
-  Py_INCREF(Py_None);
-  return Py_None;
-}
-
-/**
- * Schedule an action to occur with the specified value and time offset
- * with a copy of the specified value.
- * See reactor.h for documentation.
- */
-PyObject* py_schedule_copy(PyObject* self, PyObject* args) {
-  generic_action_capsule_struct* act;
-  long long offset;
-  PyObject* value;
-  int length;
-
-  if (!PyArg_ParseTuple(args, "OLOi", &act, &offset, &value, &length))
-    return NULL;
-
-  lf_action_base_t* action = (lf_action_base_t*)PyCapsule_GetPointer(act->action, "action");
-  if (action == NULL) {
-    lf_print_error("Null pointer received.");
-    exit(1);
-  }
-
-  lf_schedule_copy(action, offset, value, length);
 
   // FIXME: handle is not passed to the Python side
 
@@ -268,14 +202,47 @@ void py_initialize_interpreter(void) {
   }
 }
 
+/**
+ * @brief Get the lf_self pointer from the Python object for a reactor.
+ *
+ * @param self The Python object for the reactor.
+ * @return void* The lf_self pointer or NULL if it is not found.
+ */
+void* get_lf_self_pointer(PyObject* self) {
+  // Get the lf_self pointer from the Python object
+  PyObject* py_lf_self = PyObject_GetAttrString(self, "lf_self");
+  if (py_lf_self == NULL) {
+    PyErr_SetString(PyExc_AttributeError, "lf_self attribute not found");
+    return NULL;
+  }
+  // Convert the Python long to a void pointer
+  void* self_ptr = PyLong_AsVoidPtr(py_lf_self);
+  Py_DECREF(py_lf_self);
+  if (self_ptr == NULL) {
+    PyErr_SetString(PyExc_ValueError, "Invalid lf_self pointer");
+    return NULL;
+  }
+  return self_ptr;
+}
+
+PyObject* py_check_deadline(PyObject* self, PyObject* args) {
+  PyObject* py_self;
+  int invoke_deadline_handler = 1; // Default to True
+
+  if (!PyArg_ParseTuple(args, "O|p", &py_self, &invoke_deadline_handler)) {
+    return NULL;
+  }
+  void* self_ptr = get_lf_self_pointer(py_self);
+  if (self_ptr == NULL) {
+    return NULL;
+  }
+  bool result = lf_check_deadline(self_ptr, invoke_deadline_handler);
+  return PyBool_FromLong(result);
+}
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
-/**
- * The main function of this Python module.
- *
- * @param py_args A single object, which should be a list
- *  of arguments taken from sys.argv().
- */
+
 PyObject* py_main(PyObject* self, PyObject* py_args) {
 
   LF_PRINT_DEBUG("Initializing main.");
@@ -316,17 +283,16 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
  * For example, for MODULE_NAME=Foo, this struct will
  * be called Foo_methods.
  * start() initiates the main loop in the C core library
- * @see schedule_copy
- * @see request_stop
  */
 static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"start", py_main, METH_VARARGS, NULL},
-    {"schedule_copy", py_schedule_copy, METH_VARARGS, NULL},
     {"tag", py_lf_tag, METH_NOARGS, NULL},
     {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
     {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
     {"source_directory", py_source_directory, METH_NOARGS, "Source directory path for .lf file"},
     {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
+    {"check_deadline", (PyCFunction)py_check_deadline, METH_VARARGS,
+     "Check whether the deadline of the currently executing reaction has passed"},
     {NULL, NULL, 0, NULL}};
 
 /**
@@ -428,21 +394,6 @@ PyMODINIT_FUNC GEN_NAME(PyInit_, MODULE_NAME)(void) {
  **/
 void destroy_action_capsule(PyObject* capsule) { free(PyCapsule_GetPointer(capsule, "action")); }
 
-/**
- * A function that is called any time a Python reaction is called with
- * ports as inputs and outputs. This function converts ports that are
- * either a multiport or a non-multiport into a port_capsule.
- *
- * First, the void* pointer is stored in a PyCapsule. If the port is not
- * a multiport, the value and is_present fields are copied verbatim. These
- * feilds then can be accessed from the Python code as port.value and
- * port.is_present.
- * If the value is absent, it will be set to None.
- *
- * For multiports, the value of the port_capsule (i.e., port.value) is always
- * set to None and is_present is set to false.
- * Individual ports can then later be accessed in Python code as port[idx].
- */
 PyObject* convert_C_port_to_py(void* port, int width) {
   // Create the port struct in Python
   PyObject* cap = (PyObject*)PyObject_New(generic_port_capsule_struct, &py_port_capsule_t);
@@ -488,27 +439,6 @@ PyObject* convert_C_port_to_py(void* port, int width) {
   return cap;
 }
 
-/**
- * A helper function to convert C actions to Python action capsules
- * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend for details about C actions
- * Python actions have the following fields (for more informatino @see generic_action_capsule_struct):
- *   PyObject_HEAD
- *   PyObject* action;
- *   PyObject* value;
- *   bool is_present;
- *
- * The input to this function is a pointer to a C action, which might or
- * might not contain a value and an is_present field. To simplify the assumptions
- * made by this function, the "value" and "is_present" are passed to the function
- * instead of expecting them to exist.
- *
- * The void* pointer to the C action instance is encapsulated in a PyCapsule instead of passing an exposed pointer
- *through Python. @see https://docs.python.org/3/c-api/capsule.html This encapsulation is done by calling
- *PyCapsule_New(action, "name_of_the_container_in_the_capsule", NULL), where "name_of_the_container_in_the_capsule" is
- *an agreed-upon container name inside the capsule. This capsule can then be treated as a PyObject* and safely passed
- *through Python code. On the other end (which is in schedule functions), PyCapsule_GetPointer(received_action,"action")
- *can be called to retrieve the void* pointer into received_action.
- **/
 PyObject* convert_C_action_to_py(void* action) {
   // Convert to trigger_t
   trigger_t* trigger = ((lf_action_base_t*)action)->trigger;
@@ -552,43 +482,55 @@ PyObject* convert_C_action_to_py(void* action) {
   return cap;
 }
 
-/**
- * Invoke a Python func in class[instance_id] from module.
- * Class instances in generated Python code are always instantiated in a
- * list of template classs[_class(params), _class(params), ...] (note the extra s) regardless
- * of whether a bank is used or not. If there is no bank, or a bank of width 1, the list will be
- * instantiated as classs[_class(params)].
- *
- * This function would thus call classs[0] to access the first instance in a bank and so on.
- *
- * Possible optimizations include: - Not loading the module each time (by storing it in global memory),
- *                                 - Keeping a persistent argument table
- * @param module The Python module to load the function from. In embedded mode, it should
- *               be set to "__main__"
- * @param class The name of the list of classes in the generated Python code
- * @param instance_id The element number in the list of classes. class[instance_id] points to a class instance
- * @param func The reaction functino to be called
- * @param pArgs the PyList of arguments to be sent to function func()
- * @return The function or NULL on error.
- */
 PyObject* get_python_function(string module, string class, int instance_id, string func) {
-  LF_PRINT_DEBUG("Starting the function start().");
+  LF_PRINT_DEBUG("Getting Python function %s from %s.%s[%d]", func, module, class, instance_id);
 
-  // Necessary PyObject variables to load the react() function from test.py
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  // Get the Python instance first
+  // NOTE: This also acquires the GIL. OK for this to be nested?
+  PyObject* pInstance = get_python_instance(module, class, instance_id);
+  if (pInstance == NULL) {
+    PyGILState_Release(gstate);
+    return NULL;
+  }
+
+  // Get the function from the instance
+  PyObject* pFunc = PyObject_GetAttrString(pInstance, func);
+  Py_DECREF(pInstance); // We don't need the instance anymore
+
+  if (pFunc == NULL) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    lf_print_error("Failed to get function %s from instance.", func);
+    return NULL;
+  }
+
+  // Check if the function is callable
+  if (!PyCallable_Check(pFunc)) {
+    PyErr_Print();
+    lf_print_error("Function %s is not callable.", func);
+    Py_DECREF(pFunc);
+    PyGILState_Release(gstate);
+    return NULL;
+  }
+  Py_INCREF(pFunc);
+  PyGILState_Release(gstate);
+  return pFunc;
+}
+
+PyObject* get_python_instance(string module, string class, int instance_id) {
+  LF_PRINT_DEBUG("Getting Python instance for %s.%s[%d]", module, class, instance_id);
+
+  // Necessary PyObject variables
   PyObject* pFileName = NULL;
   PyObject* pModule = NULL;
   PyObject* pDict = NULL;
   PyObject* pClasses = NULL;
-  PyObject* pClass = NULL;
-  PyObject* pFunc = NULL;
+  PyObject* pInstance = NULL;
 
-  // According to
-  // https://docs.python.org/3/c-api/init.html#non-python-created-threads
-  // the following code does the following:
-  // - Register this thread with the interpreter
-  // - Acquire the GIL (Global Interpreter Lock)
-  // - Store (return) the thread pointer
-  // When done, we should always call PyGILState_Release(gstate);
+  // Acquire the GIL
   PyGILState_STATE gstate;
   gstate = PyGILState_Ensure();
 
@@ -604,11 +546,9 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
     }
 
     wchar_t wcwd[PATH_MAX];
-
     mbstowcs(wcwd, cwd, PATH_MAX);
 
-    // Deprecated: Py_SetPath(wcwd);
-    // Replace with the following more verbose version:
+    // Initialize Python with custom configuration
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
     // Add paths to the configuration
@@ -619,20 +559,14 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
     LF_PRINT_DEBUG("Loading module %s in %s.", module, cwd);
 
     pModule = PyImport_Import(pFileName);
-
-    LF_PRINT_DEBUG("Loaded module %p.", pModule);
-
-    // Free the memory occupied by pFileName
     Py_DECREF(pFileName);
 
     // Check if the module was correctly loaded
     if (pModule != NULL) {
-      // Get contents of module. pDict is a borrowed reference.
       pDict = PyModule_GetDict(pModule);
       if (pDict == NULL) {
         PyErr_Print();
         lf_print_error("Failed to load contents of module %s.", module);
-        /* Release the thread. No Python API allowed beyond this point. */
         PyGILState_Release(gstate);
         return NULL;
       }
@@ -644,8 +578,7 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
     }
   }
 
-  if (globalPythonModule != NULL && globalPythonModuleDict != NULL) {
-    Py_INCREF(globalPythonModule);
+  if (globalPythonModuleDict != NULL) {
     // Convert the class name to a PyObject
     PyObject* list_name = PyUnicode_DecodeFSDefault(class);
 
@@ -655,57 +588,62 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
     if (pClasses == NULL) {
       PyErr_Print();
       lf_print_error("Failed to load class list \"%s\" in module %s.", class, module);
-      /* Release the thread. No Python API allowed beyond this point. */
+      Py_DECREF(globalPythonModuleDict);
       PyGILState_Release(gstate);
       return NULL;
     }
 
     Py_DECREF(globalPythonModuleDict);
 
-    pClass = PyList_GetItem(pClasses, instance_id);
-    if (pClass == NULL) {
+    // Get the specific instance from the list
+    pInstance = PyList_GetItem(pClasses, instance_id);
+    if (pInstance == NULL) {
       PyErr_Print();
-      lf_print_error("Failed to load class \"%s[%d]\" in module %s.", class, instance_id, module);
-      /* Release the thread. No Python API allowed beyond this point. */
+      lf_print_error("Failed to load instance \"%s[%d]\" in module %s.", class, instance_id, module);
       PyGILState_Release(gstate);
       return NULL;
     }
 
-    LF_PRINT_DEBUG("Loading function %s.", func);
-
-    // Get the function react from test.py
-    pFunc = PyObject_GetAttrString(pClass, func);
-
-    LF_PRINT_DEBUG("Loaded function %p.", pFunc);
-
-    // Check if the funciton is loaded properly
-    // and if it is callable
-    if (pFunc && PyCallable_Check(pFunc)) {
-      LF_PRINT_DEBUG("Calling function %s from class %s[%d].", func, class, instance_id);
-      Py_INCREF(pFunc);
-      /* Release the thread. No Python API allowed beyond this point. */
-      PyGILState_Release(gstate);
-      return pFunc;
-    } else {
-      // Function is not found or it is not callable
-      if (PyErr_Occurred()) {
-        PyErr_Print();
-      }
-      lf_print_error("Function %s was not found or is not callable.", func);
-    }
-    Py_XDECREF(pFunc);
-    Py_DECREF(globalPythonModule);
-  } else {
-    PyErr_Print();
-    lf_print_error("Failed to load \"%s\".", module);
+    // Increment reference count before returning
+    Py_INCREF(pInstance);
+    PyGILState_Release(gstate);
+    return pInstance;
   }
 
-  LF_PRINT_DEBUG("Done with start().");
-
-  Py_INCREF(Py_None);
-  /* Release the thread. No Python API allowed beyond this point. */
+  PyErr_Print();
+  lf_print_error("Failed to load \"%s\".", module);
   PyGILState_Release(gstate);
-  return Py_None;
+  return NULL;
+}
+
+int set_python_field_to_c_pointer(string module, string class, int instance_id, string field, void* pointer) {
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+
+  PyObject* py_instance = get_python_instance(module, class, instance_id);
+  if (py_instance == NULL) {
+    lf_print_error("Could not get Python instance");
+    PyGILState_Release(gstate);
+    return -1;
+  }
+  PyObject* ptr = PyLong_FromVoidPtr(pointer);
+  if (ptr == NULL) {
+    Py_DECREF(py_instance);
+    lf_print_error("Could not create Python long from void pointer");
+    PyGILState_Release(gstate);
+    return -1;
+  }
+  if (PyObject_SetAttrString(py_instance, field, ptr) < 0) {
+    Py_DECREF(ptr);
+    Py_DECREF(py_instance);
+    lf_print_error("Could not set lf_self attribute");
+    PyGILState_Release(gstate);
+    return -1;
+  }
+  Py_DECREF(ptr);
+  Py_DECREF(py_instance);
+  PyGILState_Release(gstate);
+  return 0;
 }
 
 PyObject* load_serializer(string package_name) {

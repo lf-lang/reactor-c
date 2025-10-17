@@ -1,34 +1,10 @@
 #if defined STANDALONE_RTI
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Edward A. Lee
  * @author Soroush Bateni
  *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Runtime infrastructure for distributed Lingua Franca programs.
+ * @brief Runtime infrastructure for distributed Lingua Franca programs.
  *
  * This implementation creates one thread per federate so as to be able
  * to take advantage of multiple cores. It may be more efficient, however,
@@ -117,6 +93,8 @@ void termination() {
 
 void usage(int argc, const char* argv[]) {
   lf_print("\nCommand-line arguments: \n");
+  lf_print("  -v, --version");
+  lf_print("   The version of the RTI.\n");
   lf_print("  -i, --id <n>");
   lf_print("   The ID of the federation that this RTI will control.\n");
   lf_print("  -n, --number_of_federates <n>");
@@ -143,6 +121,12 @@ void usage(int argc, const char* argv[]) {
     lf_print("%s ", argv[i]);
   }
   lf_print("\n");
+}
+
+static void print_version_and_exit() {
+  printf("RTI %s %s %s\n", RTI_VERSION, RTI_COMMIT, RTI_BUILD_DATE);
+  normal_termination = true;
+  exit(0);
 }
 
 int process_clock_sync_args(int argc, const char* argv[]) {
@@ -209,7 +193,9 @@ int process_clock_sync_args(int argc, const char* argv[]) {
 
 int process_args(int argc, const char* argv[]) {
   for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
+    if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
+      print_version_and_exit();
+    } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
       if (argc < i + 2) {
         lf_print_error("--id needs a string argument.");
         usage(argc, argv);

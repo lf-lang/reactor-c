@@ -1,38 +1,18 @@
-#if defined(PLATFORM_ZEPHYR)
-#include "platform/lf_zephyr_board_support.h"
-#if defined(LF_ZEPHYR_CLOCK_COUNTER)
-/*************
-Copyright (c) 2023, Norwegian University of Science and Technology.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
 /**
- * @brief This implements the timing-related platform API ontop of the Zephyr
- * Counter API. The Counter API is a generic interface to a timer peripheral. It
+ * @file
+ * @brief Implementation of the timing-related platform API ontop of the Zephyr Counter API.
+ *
+ * The Counter API is a generic interface to a timer peripheral. It
  * gives the best timing performance and allows actual sleeping rather than
  * busy-waiting which is performed with the Kernel API.
  *
- * @author{Erling Jellum <erling.r.jellum@ntnu.no>}
- * @author{Marten Lohstroh <marten@berkeley.edu>}
+ * @author Erling Jellum
+ * @author Marten Lohstroh
  */
+#if defined(PLATFORM_ZEPHYR)
+#include "platform/lf_zephyr_board_support.h"
+#if defined(LF_ZEPHYR_CLOCK_COUNTER)
+
 #include <zephyr/drivers/counter.h>
 #include <zephyr/kernel.h>
 

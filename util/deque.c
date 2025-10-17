@@ -1,61 +1,37 @@
 /**
-@file
-@author Arthur Deng
-@author Edward A. Lee
-
-@section LICENSE
-Copyright (c) 2021, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-@section DESCRIPTION
-
-This provides an implementation of a double-ended queue.
-Each node contains a void* pointer.
-
-To use this, include the following in your target properties:
-To use this, include the following in your target properties:
-<pre>
-target C {
-    cmake-include: "/lib/c/reactor-c/util/deque.cmake"
-    files: ["/lib/c/reactor-c/util/deque.c", "/lib/c/reactor-c/util/deque.h"]
-};
-</pre>
-In addition, you need this in your Lingua Franca file:
-<pre>
-preamble {=
-    #include "deque.h"
-=}
-</pre>
-To create a deque, use calloc to ensure that it gets initialized
-with null pointers and zero size:
-<pre>
-    deque_t* my_deque = (deque_t*) calloc(1, sizeof(deque_t));
-</pre>
-Alternatively, you can call initialize:
-<pre>
-    deque my_deque;
-    deque_initialize(&my_deque);
-</pre>
-*/
+ * @file
+ * @author Arthur Deng
+ * @author Edward A. Lee
+ *
+ * @brief Implementation of a double-ended queue.
+ *
+ * Each node contains a void* pointer.
+ *
+ * To use this, include the following in your target properties:
+ * To use this, include the following in your target properties:
+ * <pre>
+ * target C {
+ *     cmake-include: "/lib/c/reactor-c/util/deque.cmake"
+ *     files: ["/lib/c/reactor-c/util/deque.c", "/lib/c/reactor-c/util/deque.h"]
+ * };
+ * </pre>
+ * In addition, you need this in your Lingua Franca file:
+ * <pre>
+ * preamble {=
+ *     #include "deque.h"
+ * =}
+ * </pre>
+ * To create a deque, use calloc to ensure that it gets initialized
+ * with null pointers and zero size:
+ * <pre>
+ *     deque_t* my_deque = (deque_t*) calloc(1, sizeof(deque_t));
+ * </pre>
+ * Alternatively, you can call initialize:
+ * <pre>
+ *     deque my_deque;
+ *     deque_initialize(&my_deque);
+ * </pre>
+ */
 
 #include "deque.h"
 
