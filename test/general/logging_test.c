@@ -20,7 +20,7 @@ void test_logging_macro(const char* expected, int st_len) {
   regex_t re;
   int result;
 
-  // strlen("DEBUG: ") + null character + new line character + some extra space
+  // Computing the buffer size based on strlen("DEBUG: ") + \0 + \n + extra space
   int buffer_size = st_len + TIMEED_DEBUG_CHAR_LEN + SOME_EXTRA_SPACE;
 
   if (!tmp) {
