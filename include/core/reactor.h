@@ -62,30 +62,44 @@ void lf_set_stop_tag(environment_t* env, tag_t tag);
 
 /**
  * @brief Return the global STP offset on advancement of logical time for federated execution.
- * @deprecated Use lf_get_sta() instead.
+ * @deprecated Use lf_get_fed_maxwait() instead.
  */
 interval_t lf_get_stp_offset(void);
 
 /**
  * @brief Return the global STA (safe to advance) offset for federated execution.
  * @ingroup Federated
+ * @deprecated Use lf_get_fed_maxwait() instead.
  */
 interval_t lf_get_sta(void);
 
 /**
+ * @brief Return the global maxwait for the current federate.
+ * @ingroup Federated
+ */
+interval_t lf_get_fed_maxwait(void);
+
+/**
  * @brief Set the global STP offset on advancement of logical time for federated execution.
  * @param offset A non-negative time value to be applied as the STP offset.
- * @deprecated Use lf_set_sta() instead.
+ * @deprecated Use lf_set_fed_maxwait() instead.
  */
 void lf_set_stp_offset(interval_t offset);
 
 /**
  * @brief Set the global STA (safe to advance) offset for federated execution.
  * @ingroup Federated
- *
  * @param offset A non-negative time value to be applied as the STA offset.
+ * @deprecated Use lf_set_fed_maxwait() instead.
  */
 void lf_set_sta(interval_t offset);
+
+/**
+ * @brief Set the global maxwait for the current federate.
+ * @ingroup Federated
+ * @param offset A non-negative time value to be applied as the maxwait.
+ */
+void lf_set_fed_maxwait(interval_t offset);
 
 #endif // FEDERATED_DECENTRALIZED
 
