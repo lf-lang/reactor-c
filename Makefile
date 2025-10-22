@@ -29,7 +29,7 @@ clean:
 .PHONY: unit-tests
 unit-tests: clean
 	# In case NUMBER_OF_WORKERS has been set, unset it.
-	cmake -B build -UNUMBER_OF_WORKERS
+	cmake -B build -UNUMBER_OF_WORKERS -DLOG_LEVEL=4
 	cmake --build build
 	cd build && make test
 
