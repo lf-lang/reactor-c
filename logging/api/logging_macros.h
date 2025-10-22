@@ -12,7 +12,6 @@
 #define LOGGING_MACROS_H
 #include "logging.h"
 #include <stdbool.h>
-#include "tag.h"
 #include "low_level_platform.h"
 
 /** Default log level. */
