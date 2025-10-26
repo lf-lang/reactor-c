@@ -190,9 +190,13 @@ interval_t lf_get_stp_offset() { return lf_fed_STA_offset; }
 
 interval_t lf_get_sta() { return lf_fed_STA_offset; }
 
+interval_t lf_get_fed_maxwait() { return lf_fed_STA_offset; }
+
 void lf_set_stp_offset(interval_t offset) { lf_set_sta(offset); }
 
-void lf_set_sta(interval_t offset) { lf_fed_STA_offset = offset; }
+void lf_set_sta(interval_t offset) { lf_set_fed_maxwait(offset); }
+
+void lf_set_fed_maxwait(interval_t offset) { lf_fed_STA_offset = offset; }
 
 #endif // FEDERATED_DECENTRALIZED
 
