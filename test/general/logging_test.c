@@ -10,7 +10,7 @@
 #define SOME_EXTRA_SPACE 10
 /**
  * @brief unit for LF_PRINT_DEBUG macro
- * must be in LOG_LEVEL LOG_LEVEL_DEBUG
+ * LOG_LEVEL must be in LOG_LEVEL_DEBUG
  */
 void test_logging_macro(const char* expected, int st_len) {
 
