@@ -44,18 +44,6 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 target_compile_definitions(${RTI_LIB} PUBLIC LOG_LEVEL=${LOG_LEVEL})
 
-include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
-target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-impl)
-
-include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
-target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-api)
-
-include(${LF_ROOT}/platform/api/CMakeLists.txt)
-target_link_libraries(${RTI_LIB} PUBLIC lf::platform-api)
-
-include(${LF_ROOT}/platform/impl/CMakeLists.txt)
-target_link_libraries(${RTI_LIB} PUBLIC lf::platform-impl)
-
 include(${LF_ROOT}/version/api/CMakeLists.txt)
 target_link_libraries(${RTI_LIB} PUBLIC lf::version-api)
 
@@ -65,11 +53,23 @@ target_link_libraries(${RTI_LIB} PUBLIC lf::logging-api)
 include(${LF_ROOT}/tag/api/CMakeLists.txt)
 target_link_libraries(${RTI_LIB} PUBLIC lf::tag-api)
 
+include(${LF_ROOT}/platform/api/CMakeLists.txt)
+target_link_libraries(${RTI_LIB} PUBLIC lf::platform-api)
+
+include(${LF_ROOT}/platform/impl/CMakeLists.txt)
+target_link_libraries(${RTI_LIB} PUBLIC lf::platform-impl)
+
 include(${LF_ROOT}/trace/api/CMakeLists.txt)
 target_link_libraries(${RTI_LIB} PUBLIC lf::trace-api)
 
 include(${LF_ROOT}/trace/impl/CMakeLists.txt)
 target_link_libraries(${RTI_LIB} PUBLIC  lf::trace-impl)
+
+include(${LF_ROOT}/low_level_platform/impl/CMakeLists.txt)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-impl)
+
+include(${LF_ROOT}/low_level_platform/api/CMakeLists.txt)
+target_link_libraries(${RTI_LIB} PUBLIC  lf::low-level-platform-api)
 
 # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
 target_compile_definitions(${RTI_LIB} PUBLIC STANDALONE_RTI=1)
