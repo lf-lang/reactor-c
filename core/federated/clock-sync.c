@@ -178,9 +178,9 @@ void synchronize_initial_physical_clock_with_rti(netchan_t rti_netchan) {
 
   for (int i = 0; i < _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL; i++) {
     // The first message expected from the RTI is MSG_TYPE_CLOCK_SYNC_T1
-    read_from_netchan_fail_on_error(rti_netchan, message_size, buffer, NULL,
-                                   "Federate %d did not get the initial clock synchronization message T1 from the RTI.",
-                                   _lf_my_fed_id);
+    read_from_netchan_fail_on_error(
+        rti_netchan, message_size, buffer,
+        "Federate %d did not get the initial clock synchronization message T1 from the RTI.", _lf_my_fed_id);
 
     // Get local physical time before doing anything else.
     instant_t receive_time = lf_time_physical();
@@ -197,9 +197,9 @@ void synchronize_initial_physical_clock_with_rti(netchan_t rti_netchan) {
     }
 
     // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-    read_from_netchan_fail_on_error(rti_netchan, message_size, buffer, NULL,
-                                   "Federate %d did not get the clock synchronization message T4 from the RTI.",
-                                   _lf_my_fed_id);
+    read_from_netchan_fail_on_error(rti_netchan, message_size, buffer,
+                                    "Federate %d did not get the clock synchronization message T4 from the RTI.",
+                                    _lf_my_fed_id);
 
     // Check that this is the T4 message.
     if (buffer[0] != MSG_TYPE_CLOCK_SYNC_T4) {

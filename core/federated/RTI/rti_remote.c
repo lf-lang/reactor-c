@@ -185,9 +185,9 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 void handle_port_absent_message(federate_info_t* sending_federate, unsigned char* buffer) {
   size_t message_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
 
-  read_from_netchan_fail_on_error(sending_federate->fed_netchan, message_size, &(buffer[1]), NULL,
-                                 " RTI failed to read port absent message from federate %u.",
-                                 sending_federate->enclave.id);
+  read_from_netchan_fail_on_error(sending_federate->fed_netchan, message_size, &(buffer[1]),
+                                  " RTI failed to read port absent message from federate %u.",
+                                  sending_federate->enclave.id);
 
   uint16_t reactor_port_id = extract_uint16(&(buffer[1]));
   uint16_t federate_id = extract_uint16(&(buffer[1 + sizeof(uint16_t)]));
@@ -235,7 +235,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
 
   // Forward the message.
   write_to_netchan_fail_on_error(fed->fed_netchan, message_size + 1, buffer, &rti_mutex,
-                                "RTI failed to forward message to federate %d.", federate_id);
+                                 "RTI failed to forward message to federate %d.", federate_id);
 
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -243,8 +243,8 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
 void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer) {
   size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(int64_t) + sizeof(uint32_t);
   // Read the header, minus the first byte which has already been read.
-  read_from_netchan_fail_on_error(sending_federate->fed_netchan, header_size - 1, &(buffer[1]), NULL,
-                                 "RTI failed to read the timed message header from remote federate.");
+  read_from_netchan_fail_on_error(sending_federate->fed_netchan, header_size - 1, &(buffer[1]),
+                                  "RTI failed to read the timed message header from remote federate.");
   // Extract the header information. of the sender
   uint16_t reactor_port_id;
   uint16_t federate_id;
@@ -272,8 +272,8 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                sending_federate->enclave.id, federate_id, reactor_port_id, intended_tag.time - lf_time_start(),
                intended_tag.microstep);
 
-  read_from_netchan_fail_on_error(sending_federate->fed_netchan, bytes_to_read, &(buffer[header_size]), NULL,
-                                 "RTI failed to read timed message from federate %d.", federate_id);
+  read_from_netchan_fail_on_error(sending_federate->fed_netchan, bytes_to_read, &(buffer[header_size]),
+                                  "RTI failed to read timed message from federate %d.", federate_id);
   size_t bytes_read = bytes_to_read + header_size;
   // Following only works for string messages.
   // LF_PRINT_DEBUG("Message received by RTI: %s.", buffer + header_size);
@@ -308,8 +308,8 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
       if (bytes_to_read > FED_COM_BUFFER_SIZE) {
         bytes_to_read = FED_COM_BUFFER_SIZE;
       }
-      read_from_netchan_fail_on_error(sending_federate->fed_netchan, bytes_to_read, buffer, NULL,
-                                     "RTI failed to clear message chunks.");
+      read_from_netchan_fail_on_error(sending_federate->fed_netchan, bytes_to_read, buffer,
+                                      "RTI failed to clear message chunks.");
       total_bytes_read += bytes_to_read;
     }
     LF_MUTEX_UNLOCK(&rti_mutex);
@@ -331,7 +331,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   }
 
   write_to_netchan_fail_on_error(fed->fed_netchan, bytes_read, buffer, &rti_mutex,
-                                "RTI failed to forward message to federate %d.", federate_id);
+                                 "RTI failed to forward message to federate %d.", federate_id);
 
   // The message length may be longer than the buffer,
   // in which case we have to handle it in chunks.
@@ -342,8 +342,8 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     if (bytes_to_read > FED_COM_BUFFER_SIZE) {
       bytes_to_read = FED_COM_BUFFER_SIZE;
     }
-    read_from_netchan_fail_on_error(sending_federate->fed_netchan, bytes_to_read, buffer, NULL,
-                                   "RTI failed to read message chunks.");
+    read_from_netchan_fail_on_error(sending_federate->fed_netchan, bytes_to_read, buffer,
+                                    "RTI failed to read message chunks.");
     total_bytes_read += bytes_to_read;
 
     // FIXME: a mutex needs to be held for this so that other threads
@@ -351,7 +351,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     // holding the rti_mutex might be very expensive. Instead, each outgoing
     // network channel should probably have its own mutex.
     write_to_netchan_fail_on_error(fed->fed_netchan, bytes_to_read, buffer, &rti_mutex,
-                                  "RTI failed to send message chunks.");
+                                   "RTI failed to send message chunks.");
   }
 
   // Record this in-transit message in federate's in-transit message queue.
@@ -380,9 +380,9 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
 
 void handle_latest_tag_confirmed(federate_info_t* fed) {
   unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
-  read_from_netchan_fail_on_error(fed->fed_netchan, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-                                 "RTI failed to read the content of the logical tag complete from federate %d.",
-                                 fed->enclave.id);
+  read_from_netchan_fail_on_error(fed->fed_netchan, sizeof(int64_t) + sizeof(uint32_t), buffer,
+                                  "RTI failed to read the content of the logical tag complete from federate %d.",
+                                  fed->enclave.id);
   tag_t completed = extract_tag(buffer);
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_from_federate(receive_LTC, fed->enclave.id, &completed);
@@ -398,9 +398,9 @@ void handle_latest_tag_confirmed(federate_info_t* fed) {
 
 void handle_next_event_tag(federate_info_t* fed) {
   unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
-  read_from_netchan_fail_on_error(fed->fed_netchan, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-                                 "RTI failed to read the content of the next event tag from federate %d.",
-                                 fed->enclave.id);
+  read_from_netchan_fail_on_error(fed->fed_netchan, sizeof(int64_t) + sizeof(uint32_t), buffer,
+                                  "RTI failed to read the content of the next event tag from federate %d.",
+                                  fed->enclave.id);
 
   // Acquire a mutex lock to ensure that this state does not change while a
   // message is in transport or being used to determine a TAG.
@@ -457,7 +457,7 @@ static void broadcast_stop_time_to_federates_locked() {
       tracepoint_rti_to_federate(send_STOP_GRN, fed->enclave.id, &rti_remote->base.max_stop_tag);
     }
     write_to_netchan_fail_on_error(fed->fed_netchan, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer, &rti_mutex,
-                                  "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", fed->enclave.id);
+                                   "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", fed->enclave.id);
   }
 
   LF_PRINT_LOG("RTI sent to federates MSG_TYPE_STOP_GRANTED with tag " PRINTF_TAG,
@@ -509,9 +509,9 @@ void handle_stop_request_message(federate_info_t* fed) {
 
   size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(fed->fed_netchan, bytes_to_read, buffer, NULL,
-                                 "RTI failed to read the MSG_TYPE_STOP_REQUEST payload from federate %d.",
-                                 fed->enclave.id);
+  read_from_netchan_fail_on_error(fed->fed_netchan, bytes_to_read, buffer,
+                                  "RTI failed to read the MSG_TYPE_STOP_REQUEST payload from federate %d.",
+                                  fed->enclave.id);
 
   // Extract the proposed stop tag for the federate
   tag_t proposed_stop_tag = extract_tag(buffer);
@@ -577,8 +577,8 @@ void handle_stop_request_message(federate_info_t* fed) {
         tracepoint_rti_to_federate(send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
       }
       write_to_netchan_fail_on_error(f->fed_netchan, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
-                                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.",
-                                    f->enclave.id);
+                                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.",
+                                     f->enclave.id);
     }
   }
   LF_PRINT_LOG("RTI forwarded to federates MSG_TYPE_STOP_REQUEST with tag (" PRINTF_TIME ", %u).",
@@ -589,9 +589,9 @@ void handle_stop_request_message(federate_info_t* fed) {
 void handle_stop_request_reply(federate_info_t* fed) {
   size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
   unsigned char buffer_stop_time[bytes_to_read];
-  read_from_netchan_fail_on_error(fed->fed_netchan, bytes_to_read, buffer_stop_time, NULL,
-                                 "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message from federate %d.",
-                                 fed->enclave.id);
+  read_from_netchan_fail_on_error(fed->fed_netchan, bytes_to_read, buffer_stop_time,
+                                  "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message from federate %d.",
+                                  fed->enclave.id);
 
   tag_t federate_stop_tag = extract_tag(buffer_stop_time);
 
@@ -619,8 +619,8 @@ void handle_address_query(uint16_t fed_id) {
   // Use buffer both for reading and constructing the reply.
   // The length is what is needed for the reply.
   unsigned char buffer[1 + sizeof(int32_t)];
-  read_from_netchan_fail_on_error(fed->fed_netchan, sizeof(uint16_t), (unsigned char*)buffer, NULL,
-                                 "Failed to read address query.");
+  read_from_netchan_fail_on_error(fed->fed_netchan, sizeof(uint16_t), (unsigned char*)buffer,
+                                  "Failed to read address query.");
   uint16_t remote_fed_id = extract_uint16(buffer);
 
   if (rti_remote->base.tracing_enabled) {
@@ -664,10 +664,10 @@ void handle_address_query(uint16_t fed_id) {
 
   // Send the port number (which could be -1) and the server IP address to federate.
   write_to_netchan_fail_on_error(fed->fed_netchan, 1 + sizeof(int32_t), (unsigned char*)buffer, &rti_mutex,
-                                "Failed to write port number to network channel of federate %d.", fed_id);
+                                 "Failed to write port number to network channel of federate %d.", fed_id);
 
   write_to_netchan_fail_on_error(fed->fed_netchan, sizeof(uint32_t), (unsigned char*)ip_address, &rti_mutex,
-                                "Failed to write ip address to network channel of federate %d.", fed_id);
+                                 "Failed to write ip address to network channel of federate %d.", fed_id);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id, server_host_name,
@@ -680,8 +680,8 @@ void handle_address_ad(uint16_t federate_id) {
   // connections to other federates
   int32_t server_port = -1;
   unsigned char buffer[sizeof(int32_t)];
-  read_from_netchan_fail_on_error(fed->fed_netchan, sizeof(int32_t), (unsigned char*)buffer, NULL,
-                                 "Error reading port data from federate %d.", federate_id);
+  read_from_netchan_fail_on_error(fed->fed_netchan, sizeof(int32_t), (unsigned char*)buffer,
+                                  "Error reading port data from federate %d.", federate_id);
 
   server_port = extract_int32(buffer);
 
@@ -700,8 +700,8 @@ void handle_address_ad(uint16_t federate_id) {
 void handle_timestamp(federate_info_t* my_fed) {
   unsigned char buffer[sizeof(int64_t)];
   // Read bytes from the network channel. We need 8 bytes.
-  read_from_netchan_fail_on_error(my_fed->fed_netchan, sizeof(int64_t), (unsigned char*)&buffer, NULL,
-                                 "ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
+  read_from_netchan_fail_on_error(my_fed->fed_netchan, sizeof(int64_t), (unsigned char*)&buffer,
+                                  "ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
 
   int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t*)(&buffer)));
   if (rti_remote->base.tracing_enabled) {
@@ -782,7 +782,7 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool 
     LF_PRINT_DEBUG("Clock sync: RTI sending message type %u.", buffer[0]);
     LF_MUTEX_LOCK(&rti_mutex);
     write_to_netchan_fail_on_error(fed->fed_netchan, 1 + sizeof(int64_t), buffer, &rti_mutex,
-                                  "Clock sync: RTI failed to send physical time to federate %d.", fed->enclave.id);
+                                   "Clock sync: RTI failed to send physical time to federate %d.", fed->enclave.id);
     LF_MUTEX_UNLOCK(&rti_mutex);
   }
   LF_PRINT_DEBUG("Clock sync: RTI sent PHYSICAL_TIME_SYNC_MESSAGE with timestamp " PRINTF_TIME " to federate %d.",
@@ -1190,9 +1190,9 @@ static int32_t receive_and_check_fed_id_message(netchan_t fed_netchan) {
 static int receive_connection_information(netchan_t fed_netchan, uint16_t fed_id) {
   LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
   unsigned char connection_info_header[MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE];
-  read_from_netchan_fail_on_error(fed_netchan, MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE, connection_info_header, NULL,
-                                 "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message header from federate %d.",
-                                 fed_id);
+  read_from_netchan_fail_on_error(fed_netchan, MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE, connection_info_header,
+                                  "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message header from federate %d.",
+                                  fed_id);
 
   if (connection_info_header[0] != MSG_TYPE_NEIGHBOR_STRUCTURE) {
     lf_print_error("RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
@@ -1230,9 +1230,9 @@ static int receive_connection_information(netchan_t fed_netchan, uint16_t fed_id
     if (connections_info_body_size > 0) {
       connections_info_body = (unsigned char*)malloc(connections_info_body_size);
       LF_ASSERT_NON_NULL(connections_info_body);
-      read_from_netchan_fail_on_error(fed_netchan, connections_info_body_size, connections_info_body, NULL,
-                                     "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
-                                     fed_id);
+      read_from_netchan_fail_on_error(fed_netchan, connections_info_body_size, connections_info_body,
+                                      "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
+                                      fed_id);
       // Keep track of where we are in the buffer
       size_t message_head = 0;
       // First, read the info about upstream federates
@@ -1274,8 +1274,8 @@ static int receive_udp_message_and_set_up_clock_sync(netchan_t fed_netchan, uint
   // is doing clock synchronization, and if it is, what port to use for UDP.
   LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_UDP_PORT from federate %d.", fed_id);
   unsigned char response[1 + sizeof(uint16_t)];
-  read_from_netchan_fail_on_error(fed_netchan, 1 + sizeof(uint16_t), response, NULL,
-                                 "RTI failed to read MSG_TYPE_UDP_PORT message from federate %d.", fed_id);
+  read_from_netchan_fail_on_error(fed_netchan, 1 + sizeof(uint16_t), response,
+                                  "RTI failed to read MSG_TYPE_UDP_PORT message from federate %d.", fed_id);
   if (response[0] != MSG_TYPE_UDP_PORT) {
     lf_print_error("RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
                    "Rejecting federate.",
@@ -1301,8 +1301,8 @@ static int receive_udp_message_and_set_up_clock_sync(netchan_t fed_netchan, uint
           // Listen for reply message, which should be T3.
           size_t message_size = 1 + sizeof(uint16_t);
           unsigned char buffer[message_size];
-          read_from_netchan_fail_on_error(fed_netchan, message_size, buffer, NULL,
-                                         "network channel to federate %d unexpectedly closed.", fed_id);
+          read_from_netchan_fail_on_error(fed_netchan, message_size, buffer,
+                                          "network channel to federate %d unexpectedly closed.", fed_id);
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
             uint16_t fed_id = extract_uint16(&(buffer[1]));
             LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
@@ -1351,8 +1351,8 @@ static bool authenticate_federate(netchan_t fed_netchan) {
   // Wait for MSG_TYPE_FED_NONCE from federate.
   size_t fed_id_length = sizeof(uint16_t);
   unsigned char buffer[1 + fed_id_length + NONCE_LENGTH];
-  read_from_netchan_fail_on_error(fed_netchan, 1 + fed_id_length + NONCE_LENGTH, buffer, NULL,
-                                 "Failed to read MSG_TYPE_FED_NONCE");
+  read_from_netchan_fail_on_error(fed_netchan, 1 + fed_id_length + NONCE_LENGTH, buffer,
+                                  "Failed to read MSG_TYPE_FED_NONCE");
   if (buffer[0] != MSG_TYPE_FED_NONCE) {
     lf_print_error_and_exit("Received unexpected response %u from the FED (see net_common.h).", buffer[0]);
   }
@@ -1382,7 +1382,7 @@ static bool authenticate_federate(netchan_t fed_netchan) {
 
   // Wait for MSG_TYPE_FED_RESPONSE
   unsigned char received[1 + hmac_length];
-  read_from_netchan_fail_on_error(fed_netchan, 1 + hmac_length, received, NULL, "Failed to read federate response.");
+  read_from_netchan_fail_on_error(fed_netchan, 1 + hmac_length, received, "Failed to read federate response.");
   if (received[0] != MSG_TYPE_FED_RESPONSE) {
     lf_print_error_and_exit("Received unexpected response %u from the federate (see net_common.h).", received[0]);
     return false;

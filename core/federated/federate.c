@@ -112,7 +112,7 @@ static void send_time(unsigned char type, instant_t time) {
 
   LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, buffer, &lf_outbound_netchan_mutex,
-                                "Failed to send time " PRINTF_TIME " to the RTI.", time - start_time);
+                                 "Failed to send time " PRINTF_TIME " to the RTI.", time - start_time);
   LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
 }
 
@@ -139,7 +139,7 @@ static void send_tag(unsigned char type, tag_t tag) {
     return;
   }
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, buffer, &lf_outbound_netchan_mutex,
-                                "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
+                                 "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
   LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
 }
 
@@ -929,8 +929,8 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   size_t buffer_length = 1 + sizeof(instant_t);
   unsigned char buffer[buffer_length];
 
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, buffer_length, buffer, NULL,
-                                 "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
+  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, buffer_length, buffer,
+                                  "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
   LF_PRINT_DEBUG("Read 9 bytes.");
 
   // First byte received is the message ID.
@@ -973,8 +973,8 @@ static void handle_tag_advance_grant(void) {
 
   size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer, NULL,
-                                 "Failed to read tag advance grant from RTI.");
+  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer,
+                                  "Failed to read tag advance grant from RTI.");
   tag_t TAG = extract_tag(buffer);
 
   // Trace the event when tracing is enabled
@@ -1220,8 +1220,8 @@ static void handle_provisional_tag_advance_grant() {
 
   size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer, NULL,
-                                 "Failed to read provisional tag advance grant from RTI.");
+  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer,
+                                  "Failed to read provisional tag advance grant from RTI.");
   tag_t PTAG = extract_tag(buffer);
 
   // Trace the event when tracing is enabled
@@ -1310,8 +1310,7 @@ static void handle_stop_granted_message() {
 
   size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer, NULL,
-                                 "Failed to read stop granted from RTI.");
+  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer, "Failed to read stop granted from RTI.");
 
   tag_t received_stop_tag = extract_tag(buffer);
 
@@ -1354,8 +1353,7 @@ static void handle_stop_granted_message() {
 static void handle_stop_request_message() {
   size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer, NULL,
-                                 "Failed to read stop request from RTI.");
+  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer, "Failed to read stop request from RTI.");
   tag_t tag_to_stop = extract_tag(buffer);
 
   // Trace the event when tracing is enabled
@@ -1428,8 +1426,8 @@ static void handle_stop_request_message() {
   // Send the current logical time to the RTI.
   LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer,
-                                &lf_outbound_netchan_mutex,
-                                "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
+                                 &lf_outbound_netchan_mutex,
+                                 "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
   LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
 
   LF_PRINT_DEBUG("Sent MSG_TYPE_STOP_REQUEST_REPLY to RTI with tag " PRINTF_TAG, tag_to_stop.time,
@@ -1442,8 +1440,8 @@ static void handle_stop_request_message() {
 static void handle_downstream_next_event_tag() {
   size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer, NULL,
-                                 "Failed to read downstream next event tag from RTI.");
+  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer,
+                                  "Failed to read downstream next event tag from RTI.");
   tag_t DNET = extract_tag(buffer);
 
   // Trace the event when tracing is enabled
@@ -1475,7 +1473,7 @@ static void send_resign_signal() {
   buffer[0] = MSG_TYPE_RESIGN;
   LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_netchan_mutex,
-                                "Failed to send MSG_TYPE_RESIGN.");
+                                 "Failed to send MSG_TYPE_RESIGN.");
   LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
   LF_PRINT_LOG("Resigned.");
 }
@@ -1488,7 +1486,7 @@ static void send_failed_signal() {
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_FAILED;
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, &(buffer[0]), NULL,
-                                "Failed to send MSG_TYPE_FAILED.");
+                                 "Failed to send MSG_TYPE_FAILED.");
   LF_PRINT_LOG("Failed.");
 }
 
@@ -1721,13 +1719,13 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
     LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
     write_to_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(uint16_t) + 1, buffer, &lf_outbound_netchan_mutex,
-                                  "Failed to send address query for federate %d to RTI.", remote_federate_id);
+                                   "Failed to send address query for federate %d to RTI.", remote_federate_id);
     LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
 
     // Read RTI's response.
-    read_from_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(int32_t) + 1, buffer, NULL,
-                                   "Failed to read the requested port number for federate %d from RTI.",
-                                   remote_federate_id);
+    read_from_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(int32_t) + 1, buffer,
+                                    "Failed to read the requested port number for federate %d from RTI.",
+                                    remote_federate_id);
 
     if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
       // Unexpected reply. Could be that RTI has failed and sent a resignation.
@@ -1739,8 +1737,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     }
     port = extract_int32(&buffer[1]);
 
-    read_from_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(host_ip_addr), (unsigned char*)&host_ip_addr, NULL,
-                                   "Failed to read the IP address for federate %d from RTI.", remote_federate_id);
+    read_from_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(host_ip_addr), (unsigned char*)&host_ip_addr,
+                                    "Failed to read the IP address for federate %d from RTI.", remote_federate_id);
 
     // A reply of -1 for the port means that the RTI does not know
     // the port number of the remote federate, presumably because the
@@ -1806,18 +1804,18 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
     // No need for a mutex because we have the only handle on the network channel.
     write_to_netchan_fail_on_error(netchan, buffer_length, buffer, NULL, "Failed to send fed_id to federate %d.",
-                                  remote_federate_id);
-    write_to_netchan_fail_on_error(netchan, federation_id_length, (unsigned char*)federation_metadata.federation_id, NULL,
-                                  "Failed to send federation id to federate %d.", remote_federate_id);
-
-    read_from_netchan_fail_on_error(netchan, 1, (unsigned char*)buffer, NULL,
-                                   "Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.",
                                    remote_federate_id);
+    write_to_netchan_fail_on_error(netchan, federation_id_length, (unsigned char*)federation_metadata.federation_id,
+                                   NULL, "Failed to send federation id to federate %d.", remote_federate_id);
+
+    read_from_netchan_fail_on_error(netchan, 1, (unsigned char*)buffer,
+                                    "Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.",
+                                    remote_federate_id);
     if (buffer[0] != MSG_TYPE_ACK) {
       // Get the error code.
-      read_from_netchan_fail_on_error(netchan, 1, (unsigned char*)buffer, NULL,
-                                     "Failed to read error code from federate %d in response to sending fed_id.",
-                                     remote_federate_id);
+      read_from_netchan_fail_on_error(netchan, 1, (unsigned char*)buffer,
+                                      "Failed to read error code from federate %d in response to sending fed_id.",
+                                      remote_federate_id);
       lf_print_error("Received MSG_TYPE_REJECT message from remote federate (%d).", buffer[0]);
       result = -1;
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
@@ -1899,7 +1897,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
     }
 
     // Next send the federation ID itself.
-    if (write_to_netchan(_fed.netchan_to_RTI, federation_id_length, (unsigned char*)federation_metadata.federation_id)) {
+    if (write_to_netchan(_fed.netchan_to_RTI, federation_id_length,
+                         (unsigned char*)federation_metadata.federation_id)) {
       continue; // Try again.
     }
 
@@ -1919,8 +1918,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
       tracepoint_federate_from_rti(receive_REJECT, _lf_my_fed_id, NULL);
       // Read one more byte to determine the cause of rejection.
       unsigned char cause;
-      read_from_netchan_fail_on_error(_fed.netchan_to_RTI, 1, &cause, NULL,
-                                     "Failed to read the cause of rejection by the RTI.");
+      read_from_netchan_fail_on_error(_fed.netchan_to_RTI, 1, &cause,
+                                      "Failed to read the cause of rejection by the RTI.");
       if (cause == FEDERATION_ID_DOES_NOT_MATCH || cause == WRONG_SERVER) {
         lf_print_warning("Connected to the wrong RTI. Will try again");
         continue;
@@ -1952,7 +1951,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   UDP_port_number[0] = MSG_TYPE_UDP_PORT;
   encode_uint16(udp_port, &(UDP_port_number[1]));
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, 1 + sizeof(uint16_t), UDP_port_number, NULL,
-                                "Failed to send the UDP port number to the RTI.");
+                                 "Failed to send the UDP port number to the RTI.");
 }
 
 void lf_create_server(int specified_port) {
@@ -1981,7 +1980,7 @@ void lf_create_server(int specified_port) {
 
   // No need for a mutex because we have the only handle on this network driver.
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
-                                "Failed to send address advertisement.");
+                                 "Failed to send address advertisement.");
 
   LF_PRINT_DEBUG("Sent port %d to the RTI.", server_port);
 }
@@ -2084,9 +2083,9 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
 
     LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
-    write_to_netchan_fail_on_error(_fed.netchans_for_inbound_p2p_connections[remote_fed_id], 1, (unsigned char*)&response,
-                                  &lf_outbound_netchan_mutex, "Failed to write MSG_TYPE_ACK in response to federate %d.",
-                                  remote_fed_id);
+    write_to_netchan_fail_on_error(_fed.netchans_for_inbound_p2p_connections[remote_fed_id], 1,
+                                   (unsigned char*)&response, &lf_outbound_netchan_mutex,
+                                   "Failed to write MSG_TYPE_ACK in response to federate %d.", remote_fed_id);
     LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
 
     // Start a thread to listen for incoming messages from other federates.
@@ -2459,8 +2458,9 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_STOP_REQ, _lf_my_fed_id, &stop_tag);
 
-    write_to_netchan_fail_on_error(_fed.netchan_to_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, buffer, &lf_outbound_netchan_mutex,
-                                  "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
+    write_to_netchan_fail_on_error(_fed.netchan_to_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, buffer,
+                                   &lf_outbound_netchan_mutex, "Failed to send stop time " PRINTF_TIME " to the RTI.",
+                                   stop_tag.time - start_time);
 
     // Treat this sending  as equivalent to having received a stop request from the RTI.
     _fed.received_stop_request_from_rti = true;

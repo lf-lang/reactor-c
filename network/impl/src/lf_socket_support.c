@@ -102,15 +102,11 @@ int read_from_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned 
   return 0;
 }
 
-void read_from_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                     char* format, ...) {
+void read_from_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, char* format, ...) {
   va_list args;
   int read_failed = read_from_netchan_close_on_error(chan, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
-    if (mutex != NULL) {
-      LF_MUTEX_UNLOCK(mutex);
-    }
     if (format != NULL) {
       va_start(args, format);
       lf_print_error_system_failure(format, args);

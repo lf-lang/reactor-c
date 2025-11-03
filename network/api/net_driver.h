@@ -89,8 +89,7 @@ int read_from_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned 
  * @return The number of bytes read, or 0 if an EOF is received, or
  *  a negative number for an error.
  */
-void read_from_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                     char* format, ...);
+void read_from_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, char* format, ...);
 
 /**
  * Write the specified number of bytes to the specified network channel from the
