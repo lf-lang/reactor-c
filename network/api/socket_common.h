@@ -128,20 +128,22 @@
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
 typedef struct socket_priv_t {
+  /** @brief The TCP socket descriptor for the socket server. */
   int socket_descriptor;
-  uint16_t port;                // The port number. //
-  uint16_t user_specified_port; // Default as 0 for both RTI and federate.
+  /** @brief The final port number that the TCP socket server ends up using. */
+  uint16_t port;
+  /** @brief The desired port specified by the user on the command line. */
+  uint16_t user_specified_port;
 
-  // The connected other side's info. The
+  /** @brief Human-readable IP address of the federate's socket server. */
   char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
-  int32_t server_port;                   // port number of the socket server of the federate
-                                         // if it has any incoming direct connections from other federates.
-                                         // The port number will be -1 if there is no server or if the
-                                         // RTI has not been informed of the port number.
-  struct in_addr server_ip_addr;         // Information about the IP address of the socket
-                                         // server of the federate.
-
-  struct sockaddr_in UDP_addr; // The UDP address for the federate.
+  /** @brief Port number of the socket server of the federate. The port number will be -1 if there is no server or if
+   * the RTI has not been informed of the port number. */
+  int32_t server_port;
+  /** @brief Information about the IP address of the socket server of the federate. */
+  struct in_addr server_ip_addr;
+  /** @brief The UDP address for the federate. */
+  struct sockaddr_in UDP_addr;
 } socket_priv_t;
 
 /**
@@ -292,8 +294,6 @@ bool check_socket_closed(int socket);
  * @return 0 for success, -1 for failure.
  */
 int get_peer_address(socket_priv_t* priv);
-
-
 
 /**
  * @brief Write the specified number of bytes to the specified socket from the specified buffer.

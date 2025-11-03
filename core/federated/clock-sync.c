@@ -213,18 +213,6 @@ void synchronize_initial_physical_clock_with_rti(netchan_t rti_netchan) {
   LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
 }
 
-/**
- * Handle a clock synchroninzation message T1 coming from the RTI.
- * T1 is the first message in a PTP exchange.
- * This replies to the RTI with a T3 message.
- * It also measures the time it takes between when the method is
- * called and the reply has been sent.
- * @param buffer The buffer containing the message, including the message type.
- * @param socket_or_netchan The pointer of either UDP socket or the network channel.
- * @param t2 The physical time at which the T1 message was received.
- * @param use_UDP Boolean to use UDP or the network channel.
- * @return 0 if T3 reply is successfully sent, -1 otherwise.
- */
 int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netchan, instant_t t2, bool use_udp) {
   // Extract the payload
   instant_t t1 = extract_int64(&(buffer[1]));
@@ -260,23 +248,6 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netchan,
   return 0;
 }
 
-/**
- * Handle a clock synchronization message T4 coming from the RTI.
- * If using the network channel, then assume we are in the
- * initial clock synchronization phase and set the clock offset
- * based on the estimated clock synchronization error.
- * Otherwise, if using the UDP socket, then this looks also for a
- * subsequent "coded probe" message on the socket. If the delay between
- * the T4 and the coded probe message is not as expected, then reject
- * this clock synchronization round. If it is not rejected, then make
- * an adjustment to the clock offset based on the estimated error.
- * This function does not acquire the netchan_mutex lock.
- * The caller should acquire it unless it is sure there is only one thread running.
- * @param buffer The buffer containing the message, including the message type.
- * @param socket_or_netchan The pointer of either UDP socket or the network channel.
- * @param r4 The physical time at which this T4 message was received.
- * @param use_UDP Boolean to use UDP or the network channel.
- */
 void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_netchan, instant_t r4, bool use_udp) {
   // Increment the number of received T4 messages
   _lf_rti_socket_stat.received_T4_messages_in_current_sync_window++;
