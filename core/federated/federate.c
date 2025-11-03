@@ -2086,7 +2086,6 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     write_to_netchan_fail_on_error(_fed.netchans_for_inbound_p2p_connections[remote_fed_id], 1,
                                    (unsigned char*)&response, &lf_outbound_netchan_mutex,
                                    "Failed to write MSG_TYPE_ACK in response to federate %d.", remote_fed_id);
-    LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
 
     // Start a thread to listen for incoming messages from other federates.
     // The fed_id is a uint16_t, which we assume can be safely cast to and from void*.
@@ -2101,7 +2100,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
 
     received_federates++;
   }
