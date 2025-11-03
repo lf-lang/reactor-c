@@ -144,23 +144,6 @@ typedef struct socket_priv_t {
   struct sockaddr_in UDP_addr; // The UDP address for the federate.
 } socket_priv_t;
 
-typedef struct socket_priv_t {
-  int socket_descriptor;
-  uint16_t port;                // The port number. //
-  uint16_t user_specified_port; // Default as 0 for both RTI and federate.
-
-  // The connected other side's info. The
-  char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
-  int32_t server_port;                   // port number of the socket server of the federate
-                                         // if it has any incoming direct connections from other federates.
-                                         // The port number will be -1 if there is no server or if the
-                                         // RTI has not been informed of the port number.
-  struct in_addr server_ip_addr;         // Information about the IP address of the socket
-                                         // server of the federate.
-
-  struct sockaddr_in UDP_addr; // The UDP address for the federate.
-} socket_priv_t;
-
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled.
  * @ingroup Federated
