@@ -164,7 +164,7 @@ int shutdown_netchan(netchan_t chan, bool read_before_closing) {
     return 0;
   }
   socket_priv_t* priv = get_socket_priv_t(chan);
-  shutdown_socket(&priv->socket_descriptor, read_before_closing);
+  int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
   free_netchan(chan);
   return ret;
 }
