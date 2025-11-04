@@ -133,11 +133,6 @@ static void send_tag(unsigned char type, tag_t tag) {
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
   LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
-  if (_fed.netchan_to_RTI == NULL) {
-    lf_print_warning("RTI is no longer connected. Dropping message.");
-    LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
-    return;
-  }
   write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, buffer, &lf_outbound_netchan_mutex,
                                  "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
   LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
