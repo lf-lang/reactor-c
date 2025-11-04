@@ -282,11 +282,6 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netchan,
 void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_netchan, instant_t r4, bool use_udp);
 
 /**
- * Thread that listens for UDP inputs from the RTI.
- */
- void* listen_to_rti_UDP_thread(void* args);
-
-/**
  * @brief Create the thread responsible for handling clock synchronization
  * with the RTI if (runtime) clock synchronization is on.
  * @ingroup Federated
