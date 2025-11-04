@@ -280,7 +280,6 @@ int connect_to_socket(int sock, const char* hostname, int port) {
       freeaddrinfo(result);
       continue;
     } else {
-      freeaddrinfo(result);
       break;
     }
   }
@@ -429,11 +428,11 @@ int shutdown_socket(int* socket, bool read_before_closing) {
   LF_MUTEX_LOCK(&shutdown_mutex);
   int result = 0;
   if (*socket < 0) {
-    lf_print_log("Socket is already closed.");
+    LF_PRINT_LOG("Socket is already closed.");
   } else {
     if (!read_before_closing) {
       if (shutdown(*socket, SHUT_RDWR)) {
-        lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
+        LF_PRINT_LOG("On shutdown socket, received reply: %s", strerror(errno));
         result = -1;
       } // else shutdown reads and writes succeeded.
     } else {
@@ -441,7 +440,7 @@ int shutdown_socket(int* socket, bool read_before_closing) {
       // This indicates the write direction is closed. For more details, refer to:
       // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
       if (shutdown(*socket, SHUT_WR)) {
-        lf_print_log("Failed to shutdown socket: %s", strerror(errno));
+        LF_PRINT_LOG("Failed to shutdown socket: %s", strerror(errno));
         result = -1;
       } else {
         // Shutdown writes succeeded.
@@ -463,7 +462,7 @@ int shutdown_socket(int* socket, bool read_before_closing) {
     // duplicated packets intended for this program.
     if (result != 0 && close(*socket)) {
       // Close failed.
-      lf_print_log("Error while closing socket: %s\n", strerror(errno));
+      LF_PRINT_LOG("Error while closing socket: %s\n", strerror(errno));
       result = -1;
     }
     *socket = -1;
