@@ -148,7 +148,7 @@ void write_to_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned c
       lf_print_error_system_failure(format, args);
       va_end(args);
     } else {
-      lf_print_error("Failed to write to socket. Closing it.");
+      lf_print_error_and_exit("Failed to write to socket. Shutting down.");
     }
   }
 }
@@ -160,14 +160,11 @@ bool check_netchan_closed(netchan_t chan) {
 
 int shutdown_netchan(netchan_t chan, bool read_before_closing) {
   if (chan == NULL) {
-    lf_print("Socket already closed.");
+    LF_PRINT_LOG("Socket already closed.");
     return 0;
   }
   socket_priv_t* priv = get_socket_priv_t(chan);
-  int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
-  if (ret != 0) {
-    lf_print_error("Failed to shutdown socket.");
-  }
+  shutdown_socket(&priv->socket_descriptor, read_before_closing);
   free_netchan(chan);
   return ret;
 }

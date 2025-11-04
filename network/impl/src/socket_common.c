@@ -169,11 +169,15 @@ int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port,
 bool check_socket_closed(int socket) {
   unsigned char first_byte;
   ssize_t bytes = peek_from_socket(socket, &first_byte);
-  if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {
-    return true;
-  } else {
-    return false;
+  if (socket > 0) {
+    if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {
+      return true;
+    } else {
+      return false;
+    }
   }
+  lf_print_warning("Socket is no longer connected.");
+  return true;
 }
 
 int get_peer_address(socket_priv_t* priv) {
@@ -314,40 +318,6 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
     bytes_read += more;
   }
   return 0;
-}
-
-int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
-  assert(socket);
-  int socket_id = *socket; // Assume atomic read so we don't pass -1 to read_from_socket.
-  if (socket_id >= 0) {
-    int read_failed = read_from_socket(socket_id, num_bytes, buffer);
-    if (read_failed) {
-      // Read failed.
-      // Socket has probably been closed from the other side.
-      // Shut down and close the socket from this side.
-      shutdown_socket(socket, false);
-      return -1;
-    }
-    return 0;
-  }
-  lf_print_warning("Socket is no longer connected. Read failed.");
-  return -1;
-}
-
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, char* format, ...) {
-  va_list args;
-  assert(socket);
-  int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);
-  if (read_failed) {
-    // Read failed.
-    if (format != NULL) {
-      va_start(args, format);
-      lf_print_error_system_failure(format, args);
-      va_end(args);
-    } else {
-      lf_print_error_system_failure("Failed to read from socket.");
-    }
-  }
 }
 
 ssize_t peek_from_socket(int socket, unsigned char* result) {

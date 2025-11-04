@@ -390,21 +390,6 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
 }
 
 /**
- * Close the network channel that receives incoming messages from the
- * specified federate ID. This function should be called when a read
- * of incoming network channel fails or when an EOF is received.
- * It can also be called when the receiving end wants to stop communication.
- *
- * @param fed_id The ID of the peer federate sending messages to this
- *  federate.
- */
-static void close_inbound_netchan(int fed_id) {
-  if (_fed.netchans_for_inbound_p2p_connections[fed_id] >= 0) {
-    shutdown_netchan(&_fed.netchans_for_inbound_p2p_connections[fed_id], false);
-  }
-}
-
-/**
  * Return true if reactions need to be inserted directly into the reaction queue and
  * false if a call to schedule is needed (the normal case). This function handles zero-delay
  * cycles, where processing at a tag must be able to begin before all messages have arrived
@@ -643,7 +628,7 @@ static int handle_tagged_message(netchan_t netchan, int fed_id) {
       // Free the allocated memory before returning
       _lf_done_using(message_token);
       // Close network channel, reading any incoming data and discarding it.
-      close_inbound_netchan(fed_id);
+      shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[fed_id], false);
       LF_MUTEX_UNLOCK(&env->mutex);
       return -1;
     } else {
@@ -1648,7 +1633,7 @@ void lf_terminate_execution(environment_t* env) {
   LF_PRINT_DEBUG("Closing incoming P2P network channels.");
   // Close any incoming P2P network channels that are still open.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
-    close_inbound_netchan(i);
+    shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[i], false);
     // Ignore errors. Mark the network channel closed.
     _fed.netchans_for_inbound_p2p_connections[i] = NULL;
   }
@@ -2088,10 +2073,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     int result = lf_thread_create(&_fed.inbound_netchan_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
-      if (_fed.netchans_for_inbound_p2p_connections[remote_fed_id] != NULL) {
-        shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[remote_fed_id], false);
-        _fed.netchans_for_inbound_p2p_connections[remote_fed_id] = NULL;
-      }
+      shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[remote_fed_id], false);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }
@@ -2406,12 +2388,6 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   netchan_t netchan = _fed.netchans_for_outbound_p2p_connections[fed_ID];
   tracepoint_federate_to_federate(send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
 #endif
-
-  if (netchan == _fed.netchan_to_RTI) {
-    tracepoint_federate_to_rti(send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
-  } else {
-    tracepoint_federate_to_federate(send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
-  }
 
   LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
   int result = write_to_netchan_close_on_error(netchan, message_length, buffer);
