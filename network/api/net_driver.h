@@ -175,7 +175,7 @@ int32_t get_server_port(netchan_t chan);
  * Get the IP address of the connected peer.
  *
  * @param chan The network channel.
- * @return Pointer to the server IP address
+ * @return Pointer to the server IP address.
  */
 struct in_addr* get_ip_addr(netchan_t chan);
 
@@ -183,7 +183,7 @@ struct in_addr* get_ip_addr(netchan_t chan);
  * Get the hostname of the connected peer.
  *
  * @param chan The network channel.
- * @return Pointer to the server hostname
+ * @return Pointer to the server hostname.
  */
 char* get_server_hostname(netchan_t chan);
 
@@ -191,7 +191,7 @@ char* get_server_hostname(netchan_t chan);
  * Set the user specified port to the created network channel.
  *
  * @param chan The network channel.
- * @param port The user specified port
+ * @param port The user specified port.
  */
 void set_my_port(netchan_t chan, int32_t port);
 
@@ -202,7 +202,7 @@ void set_my_port(netchan_t chan, int32_t port);
  * This function is used to set the network channel's target server port number.
  *
  * @param chan The network channel.
- * @param port The target server's port
+ * @param port The target server's port.
  */
 void set_server_port(netchan_t chan, int32_t port);
 
@@ -210,7 +210,7 @@ void set_server_port(netchan_t chan, int32_t port);
  * Set the target server's hostname to the network channel.
  *
  * @param chan The network channel.
- * @param hostname The target server's hostname
+ * @param hostname The target server's hostname.
  */
 void set_server_hostname(netchan_t chan, const char* hostname);
 
