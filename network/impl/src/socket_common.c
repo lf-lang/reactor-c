@@ -1,3 +1,13 @@
+/**
+ * @file
+ * @author Edward A. Lee
+ * @author Soroush Bateni
+ * @author Peter Donovan
+ * @author Dongha Kim
+ *
+ * @brief Common socket operations and utilities for federated Lingua Franca programs.
+ */
+
 #include <unistd.h>      // Defines read(), write(), and close()
 #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
 #include <netinet/tcp.h> // TCP_NODELAY

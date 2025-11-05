@@ -1,3 +1,11 @@
+/**
+ * @file
+ * @author Edward A. Lee
+ * @author Dongha Kim
+ *
+ * @brief Implementation of socket interface for federated Lingua Franca programs.
+ */
+
 #include <stdlib.h>    // malloc()
 #include <string.h>    // strerror()
 #include <errno.h>     // errno
