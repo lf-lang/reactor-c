@@ -123,7 +123,6 @@ typedef struct rti_remote_t {
   /** @brief The UDP socket descriptor for the socket server. */
   int socket_descriptor_UDP;
 
-
   /**
    * The rti's network channel.
    */
