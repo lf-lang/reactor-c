@@ -47,7 +47,7 @@ void create_client(netchan_t chan);
  * such as the port and address should be set before calling this function.
  *
  * @param chan network channel to connect.
- * @return int 0 on success, -1 on failure, and `errno` is set to indicate the specific error.
+ * @return 0 for success, -1 on failure, and `errno` is set to indicate the specific error.
  */
 int connect_to_netchan(netchan_t chan);
 
