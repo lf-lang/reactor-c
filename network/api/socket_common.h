@@ -1,7 +1,7 @@
 /**
  * @file socket_common.h
  * @brief Common socket operations and utilities for federated Lingua Franca programs.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @author Edward A. Lee
  * @author Soroush Bateni
@@ -22,7 +22,7 @@
 
 /**
  * @brief The number of federates.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This defaults to 1.
  */
@@ -32,7 +32,7 @@
 
 /**
  * @brief The amount of time to wait after a failed socket read or write before trying again.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This defaults to 100 ms.
  */
@@ -40,7 +40,7 @@
 
 /**
  * @brief The timeout time in ns for TCP operations.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Default value is 10 secs.
  */
@@ -48,7 +48,7 @@
 
 /**
  * @brief The timeout time in ns for UDP operations.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Default value is 1 sec.
  */
@@ -56,13 +56,13 @@
 
 /**
  * @brief Time between a federate's attempts to connect to the RTI.
- * @ingroup Federated
+ * @ingroup Network
  */
 #define CONNECT_RETRY_INTERVAL MSEC(500)
 
 /**
  * @brief Bound on the number of retries to connect to the RTI.
- * @ingroup Federated
+ * @ingroup Network
  *
  * A federate will retry every CONNECT_RETRY_INTERVAL nanoseconds until
  * CONNECTION_TIMEOUT expires.
@@ -71,7 +71,7 @@
 
 /**
  * @brief Maximum number of port addresses that a federate will try to connect to the RTI on.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
  * on the number of RTIs that can be running on the same host.
@@ -80,7 +80,7 @@
 
 /**
  * @brief Time to wait before re-attempting to bind to a port.
- * @ingroup Federated
+ * @ingroup Network
  *
  * When a process closes, the network stack typically waits between 30 and 120
  * seconds before releasing the port.  This is to allow for delayed packets so
@@ -91,13 +91,13 @@
 
 /**
  * @brief Number of attempts to bind to a port before giving up.
- * @ingroup Federated
+ * @ingroup Network
  */
 #define PORT_BIND_RETRY_LIMIT 60
 
 /**
  * @brief Default port number for the RTI.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Unless a specific port has been specified by the LF program in the "at"
  * for the RTI or on the command line, when the RTI starts up, it will attempt
@@ -112,13 +112,13 @@
 
 /**
  * @brief Byte identifying that the federate or the RTI has failed.
- * @ingroup Federated
+ * @ingroup Network
  */
 #define MSG_TYPE_FAILED 25
 
 /**
  * @brief Type of socket.
- * @ingroup Federated
+ * @ingroup Network
  */
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
@@ -142,7 +142,7 @@ typedef struct socket_priv_t {
 
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This uses TCP_NODELAY and Delayed ACKs disabled with TCP_QUICKACK.
  * It exits application on any error.
@@ -153,7 +153,7 @@ int create_real_time_tcp_socket_errexit(void);
 
 /**
  * @brief Create a TCP server that listens for socket connections.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If the specified port number is greater than zero, this function will attempt to acquire that port.
  * If the specified port number is zero, and the increment_port_on_retry is true, it will attempt to acquire
@@ -177,7 +177,7 @@ int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port,
 
 /**
  * @brief Wait for an incoming connection request on the specified server socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This blocks until a connection is successfully accepted. If an error occurs that is not
  * temporary (e.g., `EAGAIN` or `EWOULDBLOCK`), it reports the error and exits. Temporary
@@ -197,7 +197,7 @@ int accept_socket(int socket, int rti_socket);
 
 /**
  * @brief Attempt to establish a TCP connection to the specified hostname and port.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Attempt to establish a TCP connection to the specified hostname
  * and port. This function uses `getaddrinfo` to resolve the hostname and retries the connection
@@ -214,7 +214,7 @@ int connect_to_socket(int sock, const char* hostname, int port);
 
 /**
  * @brief Read the specified number of bytes from the specified socket into the specified buffer.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If an error occurs during this reading, return -1 and set errno to indicate
  * the cause of the error. If the read succeeds in reading the specified number of bytes,
@@ -232,7 +232,7 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
 /**
  * @brief Read the specified number of bytes from the specified socket into the specified buffer.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This uses @ref read_from_socket, but if a failure occurs, it closes the socket using
  * @ref shutdown_socket and returns -1. Otherwise, it returns 0.
@@ -246,7 +246,7 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
 /**
  * @brief Read the specified number of bytes from the specified socket into the specified
  * buffer and close the socket if an error occurs.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If a disconnect or an EOF occurs during this reading, then if format is non-null,
  * report an error and exit.
@@ -264,7 +264,7 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
 
 /**
  * @brief Without blocking, peek at the specified socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If there is anything on the queue, put its first byte at the specified address and return 1.
  * If there is nothing on the queue, return 0, and if an error occurs, return -1.
@@ -276,7 +276,7 @@ ssize_t peek_from_socket(int socket, unsigned char* result);
 
 /**
  * @brief Check if the socket is closed.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Return true if either the socket to the RTI is broken or the socket is
  * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
@@ -286,7 +286,7 @@ ssize_t peek_from_socket(int socket, unsigned char* result);
 bool check_socket_closed(int socket);
 /**
  * @brief Get the connected peer address.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Get the connected peer name from the connected socket.
  * Set it to the server_ip_addr. Also, set server_hostname if LOG_LEVEL is higher than LOG_LEVEL_DEBUG.
@@ -298,7 +298,7 @@ int get_peer_address(socket_priv_t* priv);
 
 /**
  * @brief Write the specified number of bytes to the specified socket from the specified buffer.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If an error occurs, return -1 and set errno to indicate the cause of the error.
  * If the write succeeds, return 0.
@@ -316,7 +316,7 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
 /**
  * @brief Write the specified number of bytes to the specified socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This uses @ref write_to_socket and closes the socket if an error occurs.
  * If an error occurs, this will change the socket ID pointed to by the first argument to -1 and will return -1.
@@ -330,7 +330,7 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
 
 /**
  * @brief Write the specified number of bytes to the specified socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This uses @ref write_to_socket_close_on_error and exits with an error code if an error occurs.
  * If the mutex argument is non-NULL, release the mutex before exiting.
@@ -351,7 +351,7 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
 
 /**
  * @brief Initialize shutdown mutex.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This is used to synchronize the shutdown of the federate.
  */
@@ -359,7 +359,7 @@ void init_shutdown_mutex(void);
 
 /**
  * @brief Shutdown and close the socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If `read_before_closing` is false, this calls `shutdown` with `SHUT_RDWR`, shutting down both directions.
  * If this fails, then it calls `close`.
