@@ -1493,7 +1493,7 @@ static void* listen_to_rti_netchan(void* args) {
 
   // Listen for messages from the federate.
   while (!_lf_termination_executed) {
-    // Check whether the RTI network channel is still valid
+    // Check whether the RTI network channel is still valid.
     if (_fed.netchan_to_RTI == NULL) {
       lf_print_warning("network channel to the RTI unexpectedly closed.");
       return NULL;

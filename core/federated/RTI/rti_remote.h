@@ -393,8 +393,6 @@ void initialize_federate(federate_info_t* fed, uint16_t id);
 int start_rti_server();
 
 /**
- * Start the runtime infrastructure (RTI) interaction with the federates
- * and wait for the federates to exit.
  * @brief Start the runtime infrastructure (RTI) interaction with the federates and wait for the federates to exit.
  * @ingroup RTI
  *

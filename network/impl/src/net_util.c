@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
-#include <math.h>   // For sqrtl() and powl
 #include <stdarg.h> // Defines va_list
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +16,7 @@
 #include <time.h>   // Defines nanosleep()
 
 #include "net_util.h"
-#include "util.h"
+#include "logging_macros.h"
 
 // Below are more generally useful functions.
 

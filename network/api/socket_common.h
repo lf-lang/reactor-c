@@ -111,11 +111,6 @@
 #define DEFAULT_UDP_PORT 15061u
 
 /**
- * Default port number for the RTI's clock server.
- */
-#define DEFAULT_UDP_PORT 15061u
-
-/**
  * @brief Byte identifying that the federate or the RTI has failed.
  * @ingroup Federated
  */
@@ -134,9 +129,8 @@ typedef struct socket_priv_t {
   uint16_t port;
   /** @brief The desired port specified by the user on the command line. */
   uint16_t user_specified_port;
-
   /** @brief Human-readable IP address of the federate's socket server. */
-  char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
+  char server_hostname[INET_ADDRSTRLEN];
   /** @brief Port number of the socket server of the federate. The port number will be -1 if there is no server or if
    * the RTI has not been informed of the port number. */
   int32_t server_port;
@@ -174,6 +168,7 @@ int create_real_time_tcp_socket_errexit(void);
  * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
+ * @param sock_type Type of the socket, TCP or UDP.
  * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
@@ -280,6 +275,9 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
 ssize_t peek_from_socket(int socket, unsigned char* result);
 
 /**
+ * @brief Check if the socket is closed.
+ * @ingroup Federated
+ *
  * Return true if either the socket to the RTI is broken or the socket is
  * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
  * @param socket Socket to check.
@@ -287,6 +285,9 @@ ssize_t peek_from_socket(int socket, unsigned char* result);
  */
 bool check_socket_closed(int socket);
 /**
+ * @brief Get the connected peer address.
+ * @ingroup Federated
+ *
  * Get the connected peer name from the connected socket.
  * Set it to the server_ip_addr. Also, set server_hostname if LOG_LEVEL is higher than LOG_LEVEL_DEBUG.
  *
