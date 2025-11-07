@@ -13,7 +13,7 @@
  * and performing read/write operations with proper error handling and retry mechanisms.
  * The file also defines various constants for timeouts, retry intervals, and port configurations.
  */
- 
+
 #ifndef SOCKET_COMMON_H
 #define SOCKET_COMMON_H
 
