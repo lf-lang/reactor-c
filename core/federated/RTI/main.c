@@ -56,7 +56,7 @@ static void send_failed_signal(federate_info_t* fed) {
   if (rti.base.tracing_enabled) {
     tracepoint_rti_to_federate(send_FAILED, fed->enclave.id, NULL);
   }
-  int failed = write_to_netchan(fed->fed_netchan, bytes_to_write, &(buffer[0]));
+  int failed = write_to_net_abstraction(fed->fed_net_abstraction, bytes_to_write, &(buffer[0]));
   if (failed == 0) {
     LF_PRINT_LOG("RTI has sent failed signal to federate %d due to abnormal termination.", fed->enclave.id);
   } else {

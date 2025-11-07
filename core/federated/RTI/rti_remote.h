@@ -24,7 +24,7 @@
 
 #include "lf_types.h"
 #include "pqueue_tag.h"
-#include "net_driver.h"
+#include "net_abstraction.h"
 
 /**
  * @brief Time allowed for federates to reply to stop request.
@@ -53,8 +53,8 @@ typedef struct federate_info_t {
   bool requested_stop;
   /** @brief The ID of the thread handling communication with this federate. */
   lf_thread_t thread_id;
-  /** @brief The network channel for communicating with this federate. */
-  netchan_t fed_netchan;
+  /** @brief The network abstraction for communicating with this federate. */
+  net_abstraction_t fed_net_abstraction;
   /** @brief The UDP address for the federate. */
   struct sockaddr_in UDP_addr;
   /** @brief Indicates the status of clock synchronization for this federate. Enabled by default. */
@@ -113,7 +113,7 @@ typedef struct rti_remote_t {
   const char* federation_id;
 
   /** @brief The desired port specified by the user on the command line.
-   * This should be not moved to the net_driver, because the user can configure this as -p or --port.
+   * This should be not moved to the net_abstraction, because the user can configure this as -p or --port.
    */
   uint16_t user_specified_port;
 
@@ -124,9 +124,9 @@ typedef struct rti_remote_t {
   int socket_descriptor_UDP;
 
   /**
-   * The rti's network channel.
+   * The rti's network abstraction.
    */
-  netchan_t rti_netchan;
+  net_abstraction_t rti_net_abstraction;
 
   /** @brief Thread performing PTP clock sync sessions periodically. */
   lf_thread_t clock_thread;
@@ -297,7 +297,7 @@ void handle_timestamp(federate_info_t* my_fed);
  *
  * @param message_type The type of the clock sync message (see @ref net_common.h).
  * @param fed The federate to send the physical time to.
- * @param use_UDP Boolean to use UDP or the network channel.
+ * @param use_UDP Boolean to use UDP or the network abstraction.
  */
 void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool use_UDP);
 
@@ -349,10 +349,10 @@ void* federate_info_thread_TCP(void* fed);
  * @brief Send a MSG_TYPE_REJECT message to the specified channel and close the channel.
  * @ingroup RTI
  *
- * @param chan Pointer to the network channel.
+ * @param net_abs Pointer to the network abstraction.
  * @param error_code An error code.
  */
-void send_reject(netchan_t chan, unsigned char error_code);
+void send_reject(net_abstraction_t net_abs, unsigned char error_code);
 
 /**
  * @brief Wait for one incoming connection request from each federate,
@@ -361,9 +361,9 @@ void send_reject(netchan_t chan, unsigned char error_code);
  *
  * Return when all federates have connected.
  *
- * @param rti_netchan The rti's network channel on which to accept connections.
+ * @param rti_net_abstraction The rti's network abstraction on which to accept connections.
  */
-void lf_connect_to_federates(netchan_t rti_netchan);
+void lf_connect_to_federates(net_abstraction_t rti_net_abstraction);
 
 /**
  * @brief Thread to respond to new connections, which could be federates of other federations

@@ -24,7 +24,7 @@
 #include "federate.h"
 #include "net_common.h"
 #include "net_util.h"
-#include "net_driver.h"
+#include "net_abstraction.h"
 #include "reactor.h"
 #include "reactor_common.h"
 #include "reactor_threaded.h"
@@ -44,7 +44,7 @@ extern instant_t start_time;
 extern bool _lf_termination_executed;
 
 // Global variables references in federate.h
-lf_mutex_t lf_outbound_netchan_mutex;
+lf_mutex_t lf_outbound_net_abstraction_mutex;
 
 lf_cond_t lf_port_status_changed;
 
@@ -72,7 +72,7 @@ int max_level_allowed_to_advance;
  * and the _fed global variable refers to that instance.
  */
 federate_instance_t _fed = {.number_of_inbound_p2p_connections = 0,
-                            .inbound_netchan_listeners = NULL,
+                            .inbound_net_abstraction_listeners = NULL,
                             .number_of_outbound_p2p_connections = 0,
                             .inbound_p2p_handling_thread_id = 0,
                             .last_TAG = {.time = NEVER, .microstep = 0u},
@@ -95,7 +95,7 @@ federation_metadata_t federation_metadata = {
 // Static functions (used only internally)
 
 /**
- * Send a time to the RTI. This acquires the lf_outbound_netchan_mutex.
+ * Send a time to the RTI. This acquires the lf_outbound_net_abstraction_mutex.
  * @param type The message type (MSG_TYPE_TIMESTAMP).
  * @param time The time.
  */
@@ -110,15 +110,16 @@ static void send_time(unsigned char type, instant_t time) {
   tag_t tag = {.time = time, .microstep = 0};
   tracepoint_federate_to_rti(send_TIMESTAMP, _lf_my_fed_id, &tag);
 
-  LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
-  write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, buffer, &lf_outbound_netchan_mutex,
-                                 "Failed to send time " PRINTF_TIME " to the RTI.", time - start_time);
-  LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
+  write_to_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, bytes_to_write, buffer,
+                                         &lf_outbound_net_abstraction_mutex,
+                                         "Failed to send time " PRINTF_TIME " to the RTI.", time - start_time);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
 }
 
 /**
  * Send a tag to the RTI.
- * This function acquires the lf_outbound_netchan_mutex.
+ * This function acquires the lf_outbound_net_abstraction_mutex.
  * @param type The message type (MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LATEST_TAG_CONFIRMED).
  * @param tag The tag.
  */
@@ -132,17 +133,18 @@ static void send_tag(unsigned char type, tag_t tag) {
   trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
-  LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
-  write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, buffer, &lf_outbound_netchan_mutex,
-                                 "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
-  LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
+  write_to_net_abstraction_fail_on_error(
+      _fed.net_abstraction_to_RTI, bytes_to_write, buffer, &lf_outbound_net_abstraction_mutex,
+      "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
 }
 
 /**
- * Return true if either the network channel to the RTI is broken or the network channel is
- * alive and the first unread byte on the network channel's queue is MSG_TYPE_FAILED.
+ * Return true if either the network abstraction to the RTI is broken or the network abstraction is
+ * alive and the first unread byte on the network abstraction's queue is MSG_TYPE_FAILED.
  */
-static bool rti_failed() { return check_netchan_closed(_fed.netchan_to_RTI); }
+static bool rti_failed() { return check_net_abstraction_closed(_fed.net_abstraction_to_RTI); }
 
 //////////////////////////////// Port Status Handling ///////////////////////////////////////
 
@@ -436,17 +438,17 @@ static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t int
  * Handle a message being received from a remote federate.
  *
  * This function assumes the caller does not hold the mutex lock.
- * @param netchan Pointer to the network channel to read the message from.
+ * @param net_abstraction Pointer to the network abstraction to read the message from.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure.
  */
-static int handle_message(netchan_t netchan, int fed_id) {
+static int handle_message(net_abstraction_t net_abstraction, int fed_id) {
   (void)fed_id;
   // Read the header.
   size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t);
   unsigned char buffer[bytes_to_read];
-  if (read_from_netchan_close_on_error(netchan, bytes_to_read, buffer)) {
-    // Read failed, which means the network channel has been closed between reading the
+  if (read_from_net_abstraction_close_on_error(net_abstraction, bytes_to_read, buffer)) {
+    // Read failed, which means the network abstraction has been closed between reading the
     // message ID byte and here.
     return -1;
   }
@@ -466,7 +468,7 @@ static int handle_message(netchan_t netchan, int fed_id) {
   // Read the payload.
   // Allocate memory for the message contents.
   unsigned char* message_contents = (unsigned char*)malloc(length);
-  if (read_from_netchan_close_on_error(netchan, length, message_contents)) {
+  if (read_from_net_abstraction_close_on_error(net_abstraction, length, message_contents)) {
     return -1;
   }
   // Trace the event when tracing is enabled
@@ -490,11 +492,11 @@ static int handle_message(netchan_t netchan, int fed_id) {
  * will not advance to the tag of the message if it is in the future, or
  * the tag will not advance at all if the tag of the message is
  * now or in the past.
- * @param netchan Pointer to the network channel to read the message from.
+ * @param net_abstraction Pointer to the network abstraction to read the message from.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
- * @return 0 on successfully reading the message, -1 on failure (e.g. due to network channel closed).
+ * @return 0 on successfully reading the message, -1 on failure (e.g. due to network abstraction closed).
  */
-static int handle_tagged_message(netchan_t netchan, int fed_id) {
+static int handle_tagged_message(net_abstraction_t net_abstraction, int fed_id) {
   // Environment is always the one corresponding to the top-level scheduling enclave.
   environment_t* env;
   _lf_get_environments(&env);
@@ -503,7 +505,7 @@ static int handle_tagged_message(netchan_t netchan, int fed_id) {
   size_t bytes_to_read =
       sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t) + sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
-  if (read_from_netchan_close_on_error(netchan, bytes_to_read, buffer)) {
+  if (read_from_net_abstraction_close_on_error(net_abstraction, bytes_to_read, buffer)) {
     return -1; // Read failed.
   }
 
@@ -552,7 +554,7 @@ static int handle_tagged_message(netchan_t netchan, int fed_id) {
   // Read the payload.
   // Allocate memory for the message contents.
   unsigned char* message_contents = (unsigned char*)malloc(length);
-  if (read_from_netchan_close_on_error(netchan, length, message_contents)) {
+  if (read_from_net_abstraction_close_on_error(net_abstraction, length, message_contents)) {
 #ifdef FEDERATED_DECENTRALIZED
     _lf_decrement_tag_barrier_locked(env);
 #endif
@@ -622,13 +624,13 @@ static int handle_tagged_message(netchan_t netchan, int fed_id) {
     if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0 && env->execution_started) {
       lf_print_error("Received message too late. Already at stop tag.\n"
                      "    Current tag is " PRINTF_TAG " and intended tag is " PRINTF_TAG ".\n"
-                     "    Discarding message and closing the network channel.",
+                     "    Discarding message and closing the network abstraction.",
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
       // Free the allocated memory before returning
       _lf_done_using(message_token);
-      // Close network channel, reading any incoming data and discarding it.
-      shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[fed_id], false);
+      // Close network abstraction, reading any incoming data and discarding it.
+      shutdown_net_abstraction(_fed.net_abstractions_for_inbound_p2p_connections[fed_id], false);
       LF_MUTEX_UNLOCK(&env->mutex);
       return -1;
     } else {
@@ -659,14 +661,14 @@ static int handle_tagged_message(netchan_t netchan, int fed_id) {
  * This just sets the last known status tag of the port specified
  * in the message.
  *
- * @param netchan Pointer to the network channel to read the message from
+ * @param net_abstraction Pointer to the network abstraction to read the message from
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure to complete the read.
  */
-static int handle_port_absent_message(netchan_t netchan, int fed_id) {
+static int handle_port_absent_message(net_abstraction_t net_abstraction, int fed_id) {
   size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
-  if (read_from_netchan_close_on_error(netchan, bytes_to_read, buffer)) {
+  if (read_from_net_abstraction_close_on_error(net_abstraction, bytes_to_read, buffer)) {
     return -1;
   }
 
@@ -703,7 +705,7 @@ static int handle_port_absent_message(netchan_t netchan, int fed_id) {
  * peer federate and calls the appropriate handling function for
  * each message type. If an error occurs or an EOF is received
  * from the peer, then this procedure sets the corresponding
- * network channel in _fed.netchans_for_inbound_p2p_connections
+ * network abstraction in _fed.net_abstractions_for_inbound_p2p_connections
  * to -1 and returns, terminating the thread.
  * @param _args The remote federate ID (cast to void*).
  * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
@@ -715,7 +717,7 @@ static void* listen_to_federates(void* _args) {
 
   LF_PRINT_LOG("Listening to federate %d.", fed_id);
 
-  netchan_t netchan = _fed.netchans_for_inbound_p2p_connections[fed_id];
+  net_abstraction_t net_abstraction = _fed.net_abstractions_for_inbound_p2p_connections[fed_id];
 
   // Buffer for incoming messages.
   // This does not constrain the message size
@@ -724,44 +726,44 @@ static void* listen_to_federates(void* _args) {
 
   // Listen for messages from the federate.
   while (!_lf_termination_executed) {
-    bool netchan_closed = false;
+    bool net_abstraction_closed = false;
     // Read one byte to get the message type.
     LF_PRINT_DEBUG("Waiting for a P2P message.");
     bool bad_message = false;
-    if (read_from_netchan_close_on_error(netchan, 1, buffer)) {
-      // network channel has been closed.
-      lf_print("network channel from federate %d is closed.", fed_id);
+    if (read_from_net_abstraction_close_on_error(net_abstraction, 1, buffer)) {
+      // network abstraction has been closed.
+      lf_print("network abstraction from federate %d is closed.", fed_id);
       // Stop listening to this federate.
-      netchan_closed = true;
+      net_abstraction_closed = true;
     } else {
       LF_PRINT_DEBUG("Received a P2P message of type %d.", buffer[0]);
       switch (buffer[0]) {
       case MSG_TYPE_P2P_MESSAGE:
         LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
-        if (handle_message(netchan, fed_id)) {
+        if (handle_message(net_abstraction, fed_id)) {
           // Failed to complete the reading of a message on a physical connection.
           lf_print_warning("Failed to complete reading of message on physical connection.");
-          netchan_closed = true;
+          net_abstraction_closed = true;
         }
         break;
       case MSG_TYPE_P2P_TAGGED_MESSAGE:
         LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
-        if (handle_tagged_message(netchan, fed_id)) {
+        if (handle_tagged_message(net_abstraction, fed_id)) {
           // P2P tagged messages are only used in decentralized coordination, and
-          // it is not a fatal error if the network channel is closed before the whole message is read.
+          // it is not a fatal error if the network abstraction is closed before the whole message is read.
           // But this thread should exit.
           lf_print_warning("Failed to complete reading of tagged message.");
-          netchan_closed = true;
+          net_abstraction_closed = true;
         }
         break;
       case MSG_TYPE_PORT_ABSENT:
         LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
-        if (handle_port_absent_message(netchan, fed_id)) {
+        if (handle_port_absent_message(net_abstraction, fed_id)) {
           // P2P tagged messages are only used in decentralized coordination, and
-          // it is not a fatal error if the network channel is closed before the whole message is read.
+          // it is not a fatal error if the network abstraction is closed before the whole message is read.
           // But this thread should exit.
           lf_print_warning("Failed to complete reading of tagged message.");
-          netchan_closed = true;
+          net_abstraction_closed = true;
         }
         break;
       default:
@@ -769,13 +771,13 @@ static void* listen_to_federates(void* _args) {
       }
     }
     if (bad_message) {
-      lf_print_error("Received erroneous message type: %d. Closing the network channel.", buffer[0]);
+      lf_print_error("Received erroneous message type: %d. Closing the network abstraction.", buffer[0]);
       // Trace the event when tracing is enabled
       tracepoint_federate_from_federate(receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
       break; // while loop
     }
-    if (netchan_closed) {
-      // For decentralized execution, once this network channel is closed, we
+    if (net_abstraction_closed) {
+      // For decentralized execution, once this network abstraction is closed, we
       // update last known tags of all ports connected to the specified federate to FOREVER_TAG,
       // which would eliminate the need to wait for STAA to assume an input is absent.
       mark_inputs_known_absent(fed_id);
@@ -787,27 +789,27 @@ static void* listen_to_federates(void* _args) {
 }
 
 /**
- * Close the network channel that sends outgoing messages to the
- * specified federate ID. This function acquires the lf_outbound_netchan_mutex mutex lock
+ * Close the network abstraction that sends outgoing messages to the
+ * specified federate ID. This function acquires the lf_outbound_net_abstraction_mutex mutex lock
  * if _lf_normal_termination is true and otherwise proceeds without the lock.
  * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
  */
-static void close_outbound_netchan(int fed_id) {
+static void close_outbound_net_abstraction(int fed_id) {
   assert(fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
   // Close outbound connections, in case they have not closed themselves.
   // This will result in EOF being sent to the remote federate, except for
-  // abnormal termination, in which case it will just close the network channel.
+  // abnormal termination, in which case it will just close the network abstraction.
   if (_lf_normal_termination) {
-    if (_fed.netchans_for_outbound_p2p_connections[fed_id] != NULL) {
-      // Close the network channel by sending a FIN packet indicating that no further writes
+    if (_fed.net_abstractions_for_outbound_p2p_connections[fed_id] != NULL) {
+      // Close the network abstraction by sending a FIN packet indicating that no further writes
       // are expected.  Then read until we get an EOF indication.
-      shutdown_netchan(_fed.netchans_for_outbound_p2p_connections[fed_id], true);
-      _fed.netchans_for_outbound_p2p_connections[fed_id] = NULL;
+      shutdown_net_abstraction(_fed.net_abstractions_for_outbound_p2p_connections[fed_id], true);
+      _fed.net_abstractions_for_outbound_p2p_connections[fed_id] = NULL;
     }
   } else {
-    shutdown_netchan(_fed.netchans_for_outbound_p2p_connections[fed_id], false);
-    _fed.netchans_for_outbound_p2p_connections[fed_id] = NULL;
+    shutdown_net_abstraction(_fed.net_abstractions_for_outbound_p2p_connections[fed_id], false);
+    _fed.net_abstractions_for_outbound_p2p_connections[fed_id] = NULL;
   }
 }
 
@@ -830,14 +832,15 @@ static int perform_hmac_authentication() {
   memcpy(&fed_hello_buf[1 + fed_id_length], fed_nonce, NONCE_LENGTH);
 
   // No mutex needed during startup, hence the NULL argument.
-  write_to_netchan_fail_on_error(_fed.netchan_to_RTI, message_length, fed_hello_buf, NULL, "Failed to write nonce.");
+  write_to_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, message_length, fed_hello_buf, NULL,
+                                         "Failed to write nonce.");
 
   // Check HMAC of received FED_RESPONSE message.
   unsigned int hmac_length = SHA256_HMAC_LENGTH;
   size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
 
   unsigned char received[1 + NONCE_LENGTH + hmac_length];
-  if (read_from_netchan_close_on_error(_fed.netchan_to_RTI, 1 + NONCE_LENGTH + hmac_length, received)) {
+  if (read_from_net_abstraction_close_on_error(_fed.net_abstraction_to_RTI, 1 + NONCE_LENGTH + hmac_length, received)) {
     lf_print_warning("Failed to read RTI response.");
     return -1;
   }
@@ -871,7 +874,7 @@ static int perform_hmac_authentication() {
     response[1] = HMAC_DOES_NOT_MATCH;
 
     // Ignore errors on writing back.
-    write_to_netchan(_fed.netchan_to_RTI, 2, response);
+    write_to_net_abstraction(_fed.net_abstraction_to_RTI, 2, response);
     return -1;
   } else {
     LF_PRINT_LOG("HMAC verified.");
@@ -885,7 +888,8 @@ static int perform_hmac_authentication() {
     HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH, &sender[1],
          &hmac_length);
 
-    write_to_netchan_fail_on_error(_fed.netchan_to_RTI, 1 + hmac_length, sender, NULL, "Failed to write fed response.");
+    write_to_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, 1 + hmac_length, sender, NULL,
+                                           "Failed to write fed response.");
   }
   return 0;
 }
@@ -904,13 +908,13 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // Send the timestamp marker first.
   send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
 
-  // Read bytes from the network channel. We need 9 bytes.
+  // Read bytes from the network abstraction. We need 9 bytes.
   // Buffer for message ID plus timestamp.
   size_t buffer_length = 1 + sizeof(instant_t);
   unsigned char buffer[buffer_length];
 
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, buffer_length, buffer,
-                                  "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
+  read_from_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, buffer_length, buffer,
+                                          "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
   LF_PRINT_DEBUG("Read 9 bytes.");
 
   // First byte received is the message ID.
@@ -953,8 +957,8 @@ static void handle_tag_advance_grant(void) {
 
   size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer,
-                                  "Failed to read tag advance grant from RTI.");
+  read_from_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, bytes_to_read, buffer,
+                                          "Failed to read tag advance grant from RTI.");
   tag_t TAG = extract_tag(buffer);
 
   // Trace the event when tracing is enabled
@@ -1200,8 +1204,8 @@ static void handle_provisional_tag_advance_grant() {
 
   size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer,
-                                  "Failed to read provisional tag advance grant from RTI.");
+  read_from_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, bytes_to_read, buffer,
+                                          "Failed to read provisional tag advance grant from RTI.");
   tag_t PTAG = extract_tag(buffer);
 
   // Trace the event when tracing is enabled
@@ -1290,7 +1294,8 @@ static void handle_stop_granted_message() {
 
   size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer, "Failed to read stop granted from RTI.");
+  read_from_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, bytes_to_read, buffer,
+                                          "Failed to read stop granted from RTI.");
 
   tag_t received_stop_tag = extract_tag(buffer);
 
@@ -1333,7 +1338,8 @@ static void handle_stop_granted_message() {
 static void handle_stop_request_message() {
   size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer, "Failed to read stop request from RTI.");
+  read_from_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, bytes_to_read, buffer,
+                                          "Failed to read stop request from RTI.");
   tag_t tag_to_stop = extract_tag(buffer);
 
   // Trace the event when tracing is enabled
@@ -1358,10 +1364,10 @@ static void handle_stop_request_message() {
   // or we have previously sent a stop request to the RTI,
   // then we have already blocked tag advance in enclaves.
   // Do not do this twice. The record of whether the first has occurred
-  // is guarded by the outbound network channel mutex.
+  // is guarded by the outbound network abstraction mutex.
   // The second is guarded by the global mutex.
   // Note that the RTI should not send stop requests more than once to federates.
-  LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
   if (_fed.received_stop_request_from_rti) {
     LF_PRINT_LOG("Redundant MSG_TYPE_STOP_REQUEST from RTI. Ignoring it.");
     already_blocked = true;
@@ -1370,7 +1376,7 @@ static void handle_stop_request_message() {
     // prevent lf_request_stop from sending.
     _fed.received_stop_request_from_rti = true;
   }
-  LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
 
   if (already_blocked) {
     // Either we have sent a stop request to the RTI ourselves,
@@ -1404,11 +1410,11 @@ static void handle_stop_request_message() {
   tracepoint_federate_to_rti(send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
 
   // Send the current logical time to the RTI.
-  LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
-  write_to_netchan_fail_on_error(_fed.netchan_to_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer,
-                                 &lf_outbound_netchan_mutex,
-                                 "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
-  LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
+  write_to_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH,
+                                         outgoing_buffer, &lf_outbound_net_abstraction_mutex,
+                                         "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
+  LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
 
   LF_PRINT_DEBUG("Sent MSG_TYPE_STOP_REQUEST_REPLY to RTI with tag " PRINTF_TAG, tag_to_stop.time,
                  tag_to_stop.microstep);
@@ -1420,8 +1426,8 @@ static void handle_stop_request_message() {
 static void handle_downstream_next_event_tag() {
   size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_read];
-  read_from_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_read, buffer,
-                                  "Failed to read downstream next event tag from RTI.");
+  read_from_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, bytes_to_read, buffer,
+                                          "Failed to read downstream next event tag from RTI.");
   tag_t DNET = extract_tag(buffer);
 
   // Trace the event when tracing is enabled
@@ -1451,10 +1457,10 @@ static void send_resign_signal() {
   size_t bytes_to_write = 1;
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_RESIGN;
-  LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
-  write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_netchan_mutex,
-                                 "Failed to send MSG_TYPE_RESIGN.");
-  LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
+  write_to_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, bytes_to_write, &(buffer[0]),
+                                         &lf_outbound_net_abstraction_mutex, "Failed to send MSG_TYPE_RESIGN.");
+  LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
   LF_PRINT_LOG("Resigned.");
 }
 
@@ -1465,8 +1471,8 @@ static void send_failed_signal() {
   size_t bytes_to_write = 1;
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_FAILED;
-  write_to_netchan_fail_on_error(_fed.netchan_to_RTI, bytes_to_write, &(buffer[0]), NULL,
-                                 "Failed to send MSG_TYPE_FAILED.");
+  write_to_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, bytes_to_write, &(buffer[0]), NULL,
+                                         "Failed to send MSG_TYPE_FAILED.");
   LF_PRINT_LOG("Failed.");
 }
 
@@ -1479,11 +1485,11 @@ static void send_failed_signal() {
 static void handle_rti_failed_message(void) { exit(1); }
 
 /**
- * Thread that listens for network channel inputs from the RTI.
+ * Thread that listens for network abstraction inputs from the RTI.
  * When messages arrive, this calls the appropriate handler.
  * @param args Ignored
  */
-static void* listen_to_rti_netchan(void* args) {
+static void* listen_to_rti_net_abstraction(void* args) {
   (void)args;
   initialize_lf_thread_id();
   // Buffer for incoming messages.
@@ -1493,27 +1499,27 @@ static void* listen_to_rti_netchan(void* args) {
 
   // Listen for messages from the federate.
   while (!_lf_termination_executed) {
-    // Check whether the RTI network channel is still valid.
-    if (_fed.netchan_to_RTI == NULL) {
-      lf_print_warning("network channel to the RTI unexpectedly closed.");
+    // Check whether the RTI network abstraction is still valid.
+    if (_fed.net_abstraction_to_RTI == NULL) {
+      lf_print_warning("network abstraction to the RTI unexpectedly closed.");
       return NULL;
     }
     // Read one byte to get the message type.
     // This will exit if the read fails.
-    int read_failed = read_from_netchan(_fed.netchan_to_RTI, 1, buffer);
+    int read_failed = read_from_net_abstraction(_fed.net_abstraction_to_RTI, 1, buffer);
     if (read_failed < 0) {
       lf_print_error("Connection to the RTI was closed by the RTI with an error. Considering this a soft error.");
-      shutdown_netchan(_fed.netchan_to_RTI, false);
+      shutdown_net_abstraction(_fed.net_abstraction_to_RTI, false);
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
       lf_print("Connection to the RTI closed with an EOF.");
-      shutdown_netchan(_fed.netchan_to_RTI, false);
+      shutdown_net_abstraction(_fed.net_abstraction_to_RTI, false);
       return NULL;
     }
     switch (buffer[0]) {
     case MSG_TYPE_TAGGED_MESSAGE:
-      if (handle_tagged_message(_fed.netchan_to_RTI, -1)) {
+      if (handle_tagged_message(_fed.net_abstraction_to_RTI, -1)) {
         // Failures to complete the read of messages from the RTI are fatal.
         lf_print_error_and_exit("Failed to complete the reading of a message from the RTI.");
       }
@@ -1531,7 +1537,7 @@ static void* listen_to_rti_netchan(void* args) {
       handle_stop_granted_message();
       break;
     case MSG_TYPE_PORT_ABSENT:
-      if (handle_port_absent_message(_fed.netchan_to_RTI, -1)) {
+      if (handle_port_absent_message(_fed.net_abstraction_to_RTI, -1)) {
         // Failures to complete the read of absent messages from the RTI are fatal.
         lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
       }
@@ -1609,7 +1615,7 @@ static bool bounded_NET(tag_t* tag) {
 // An empty version of this function is code generated for unfederated execution.
 
 /**
- * Close network channels used to communicate with other federates, if they are open,
+ * Close network abstractions used to communicate with other federates, if they are open,
  * and send a MSG_TYPE_RESIGN message to the RTI. This implements the function
  * defined in reactor.h. For unfederated execution, the code generator
  * generates an empty implementation.
@@ -1620,7 +1626,7 @@ void lf_terminate_execution(environment_t* env) {
 
   // For an abnormal termination (e.g. a SIGINT), we need to send a
   // MSG_TYPE_FAILED message to the RTI, but we should not acquire a mutex.
-  if (_fed.netchan_to_RTI != NULL) {
+  if (_fed.net_abstraction_to_RTI != NULL) {
     if (_lf_normal_termination) {
       tracepoint_federate_to_rti(send_RESIGN, _lf_my_fed_id, &env->current_tag);
       send_resign_signal();
@@ -1630,45 +1636,45 @@ void lf_terminate_execution(environment_t* env) {
     }
   }
 
-  LF_PRINT_DEBUG("Closing incoming P2P network channels.");
-  // Close any incoming P2P network channels that are still open.
+  LF_PRINT_DEBUG("Closing incoming P2P network abstractions.");
+  // Close any incoming P2P network abstractions that are still open.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
-    shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[i], false);
-    // Ignore errors. Mark the network channel closed.
-    _fed.netchans_for_inbound_p2p_connections[i] = NULL;
+    shutdown_net_abstraction(_fed.net_abstractions_for_inbound_p2p_connections[i], false);
+    // Ignore errors. Mark the network abstraction closed.
+    _fed.net_abstractions_for_inbound_p2p_connections[i] = NULL;
   }
 
   // Check for all outgoing physical connections in
-  // _fed.netchans_for_outbound_p2p_connections and
-  // if the network channel ID is not NULL, the connection is still open.
-  // Send an EOF by closing the network channel here.
+  // _fed.net_abstractions_for_outbound_p2p_connections and
+  // if the network abstraction ID is not NULL, the connection is still open.
+  // Send an EOF by closing the network abstraction here.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
 
     // Close outbound connections, in case they have not closed themselves.
     // This will result in EOF being sent to the remote federate, except for
-    // abnormal termination, in which case it will just close the network channel.
-    close_outbound_netchan(i);
+    // abnormal termination, in which case it will just close the network abstraction.
+    close_outbound_net_abstraction(i);
   }
 
-  LF_PRINT_DEBUG("Waiting for inbound p2p network channel listener threads.");
-  // Wait for each inbound network channel listener thread to close.
-  if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_netchan_listeners != NULL) {
+  LF_PRINT_DEBUG("Waiting for inbound p2p network abstraction listener threads.");
+  // Wait for each inbound network abstraction listener thread to close.
+  if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_net_abstraction_listeners != NULL) {
     LF_PRINT_LOG("Waiting for %zu threads listening for incoming messages to exit.",
                  _fed.number_of_inbound_p2p_connections);
     for (size_t i = 0; i < _fed.number_of_inbound_p2p_connections; i++) {
       // Ignoring errors here.
-      lf_thread_join(_fed.inbound_netchan_listeners[i], NULL);
+      lf_thread_join(_fed.inbound_net_abstraction_listeners[i], NULL);
     }
   }
 
-  LF_PRINT_DEBUG("Waiting for RTI's network channel listener threads.");
+  LF_PRINT_DEBUG("Waiting for RTI's network abstraction listener threads.");
   // Wait for the thread listening for messages from the RTI to close.
-  lf_thread_join(_fed.RTI_netchan_listener, NULL);
+  lf_thread_join(_fed.RTI_net_abstraction_listener, NULL);
 
   // For abnormal termination, there is no need to free memory.
   if (_lf_normal_termination) {
     LF_PRINT_DEBUG("Freeing memory occupied by the federate.");
-    free(_fed.inbound_netchan_listeners);
+    free(_fed.inbound_net_abstraction_listeners);
     free(federation_metadata.rti_host);
     free(federation_metadata.rti_user);
   }
@@ -1697,15 +1703,16 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_ADR_QR, _lf_my_fed_id, NULL);
 
-    LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
-    write_to_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(uint16_t) + 1, buffer, &lf_outbound_netchan_mutex,
-                                   "Failed to send address query for federate %d to RTI.", remote_federate_id);
-    LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+    LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
+    write_to_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, sizeof(uint16_t) + 1, buffer,
+                                           &lf_outbound_net_abstraction_mutex,
+                                           "Failed to send address query for federate %d to RTI.", remote_federate_id);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
 
     // Read RTI's response.
-    read_from_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(int32_t) + 1, buffer,
-                                    "Failed to read the requested port number for federate %d from RTI.",
-                                    remote_federate_id);
+    read_from_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, sizeof(int32_t) + 1, buffer,
+                                            "Failed to read the requested port number for federate %d from RTI.",
+                                            remote_federate_id);
 
     if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
       // Unexpected reply. Could be that RTI has failed and sent a resignation.
@@ -1717,8 +1724,9 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     }
     port = extract_int32(&buffer[1]);
 
-    read_from_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(host_ip_addr), (unsigned char*)&host_ip_addr,
-                                    "Failed to read the IP address for federate %d from RTI.", remote_federate_id);
+    read_from_net_abstraction_fail_on_error(
+        _fed.net_abstraction_to_RTI, sizeof(host_ip_addr), (unsigned char*)&host_ip_addr,
+        "Failed to read the IP address for federate %d from RTI.", remote_federate_id);
 
     // A reply of -1 for the port means that the RTI does not know
     // the port number of the remote federate, presumably because the
@@ -1739,14 +1747,14 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
 
-  // Create a network channel.
-  netchan_t netchan = initialize_netchan();
-  // Set the received host name and port to the network channel.
-  set_server_port(netchan, uport);
-  set_server_hostname(netchan, hostname);
-  // Create the client network channel.
-  create_client(netchan);
-  if (connect_to_netchan(netchan) < 0) {
+  // Create a network abstraction.
+  net_abstraction_t net_abstraction = initialize_net_abstraction();
+  // Set the received host name and port to the network abstraction.
+  set_server_port(net_abstraction, uport);
+  set_server_hostname(net_abstraction, hostname);
+  // Create the client network abstraction.
+  create_client(net_abstraction);
+  if (connect_to_net_abstraction(net_abstraction) < 0) {
     lf_print_error_and_exit("Failed to connect to federate.");
   }
 
@@ -1782,20 +1790,21 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
 
-    // No need for a mutex because we have the only handle on the network channel.
-    write_to_netchan_fail_on_error(netchan, buffer_length, buffer, NULL, "Failed to send fed_id to federate %d.",
-                                   remote_federate_id);
-    write_to_netchan_fail_on_error(netchan, federation_id_length, (unsigned char*)federation_metadata.federation_id,
-                                   NULL, "Failed to send federation id to federate %d.", remote_federate_id);
+    // No need for a mutex because we have the only handle on the network abstraction.
+    write_to_net_abstraction_fail_on_error(net_abstraction, buffer_length, buffer, NULL,
+                                           "Failed to send fed_id to federate %d.", remote_federate_id);
+    write_to_net_abstraction_fail_on_error(net_abstraction, federation_id_length,
+                                           (unsigned char*)federation_metadata.federation_id, NULL,
+                                           "Failed to send federation id to federate %d.", remote_federate_id);
 
-    read_from_netchan_fail_on_error(netchan, 1, (unsigned char*)buffer,
-                                    "Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.",
-                                    remote_federate_id);
+    read_from_net_abstraction_fail_on_error(
+        net_abstraction, 1, (unsigned char*)buffer,
+        "Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.", remote_federate_id);
     if (buffer[0] != MSG_TYPE_ACK) {
       // Get the error code.
-      read_from_netchan_fail_on_error(netchan, 1, (unsigned char*)buffer,
-                                      "Failed to read error code from federate %d in response to sending fed_id.",
-                                      remote_federate_id);
+      read_from_net_abstraction_fail_on_error(
+          net_abstraction, 1, (unsigned char*)buffer,
+          "Failed to read error code from federate %d in response to sending fed_id.", remote_federate_id);
       lf_print_error("Received MSG_TYPE_REJECT message from remote federate (%d).", buffer[0]);
       result = -1;
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
@@ -1811,8 +1820,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     }
   }
   // Once we set this variable, then all future calls to close() on this
-  // network channel should reset it to NULL within a critical section.
-  _fed.netchans_for_outbound_p2p_connections[remote_federate_id] = netchan;
+  // network abstraction should reset it to NULL within a critical section.
+  _fed.net_abstractions_for_outbound_p2p_connections[remote_federate_id] = net_abstraction;
 }
 
 void lf_connect_to_rti(const char* hostname, int port) {
@@ -1822,15 +1831,15 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
-  // Create a network channel.
-  _fed.netchan_to_RTI = initialize_netchan();
-  // Set the user specified host name and port to the network channel.
-  set_server_port(_fed.netchan_to_RTI, port);
-  set_server_hostname(_fed.netchan_to_RTI, hostname);
+  // Create a network abstraction.
+  _fed.net_abstraction_to_RTI = initialize_net_abstraction();
+  // Set the user specified host name and port to the network abstraction.
+  set_server_port(_fed.net_abstraction_to_RTI, port);
+  set_server_hostname(_fed.net_abstraction_to_RTI, hostname);
 
-  // Create the client network channel.
-  create_client(_fed.netchan_to_RTI);
-  if (connect_to_netchan(_fed.netchan_to_RTI) < 0) {
+  // Create the client network abstraction.
+  create_client(_fed.net_abstraction_to_RTI);
+  if (connect_to_net_abstraction(_fed.net_abstraction_to_RTI) < 0) {
     lf_print_error_and_exit("Failed to connect to RTI.");
   }
 
@@ -1871,14 +1880,14 @@ void lf_connect_to_rti(const char* hostname, int port) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_FED_ID, _lf_my_fed_id, NULL);
 
-    // No need for a mutex here because no other threads are writing to this network channel.
-    if (write_to_netchan(_fed.netchan_to_RTI, 2 + sizeof(uint16_t), buffer)) {
+    // No need for a mutex here because no other threads are writing to this network abstraction.
+    if (write_to_net_abstraction(_fed.net_abstraction_to_RTI, 2 + sizeof(uint16_t), buffer)) {
       continue; // Try again, possibly on a new port.
     }
 
     // Next send the federation ID itself.
-    if (write_to_netchan(_fed.netchan_to_RTI, federation_id_length,
-                         (unsigned char*)federation_metadata.federation_id)) {
+    if (write_to_net_abstraction(_fed.net_abstraction_to_RTI, federation_id_length,
+                                 (unsigned char*)federation_metadata.federation_id)) {
       continue; // Try again.
     }
 
@@ -1890,7 +1899,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
     LF_PRINT_DEBUG("Waiting for response to federation ID from the RTI.");
 
-    if (read_from_netchan(_fed.netchan_to_RTI, 1, &response)) {
+    if (read_from_net_abstraction(_fed.net_abstraction_to_RTI, 1, &response)) {
       continue; // Try again.
     }
     if (response == MSG_TYPE_REJECT) {
@@ -1898,8 +1907,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
       tracepoint_federate_from_rti(receive_REJECT, _lf_my_fed_id, NULL);
       // Read one more byte to determine the cause of rejection.
       unsigned char cause;
-      read_from_netchan_fail_on_error(_fed.netchan_to_RTI, 1, &cause,
-                                      "Failed to read the cause of rejection by the RTI.");
+      read_from_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, 1, &cause,
+                                              "Failed to read the cause of rejection by the RTI.");
       if (cause == FEDERATION_ID_DOES_NOT_MATCH || cause == WRONG_SERVER) {
         lf_print_warning("Connected to the wrong RTI. Will try again");
         continue;
@@ -1922,7 +1931,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   // about connections between this federate and other federates
   // where messages are routed through the RTI.
   // @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
-  lf_send_neighbor_structure_to_RTI(_fed.netchan_to_RTI);
+  lf_send_neighbor_structure_to_RTI(_fed.net_abstraction_to_RTI);
 
   uint16_t udp_port = setup_clock_synchronization_with_rti();
 
@@ -1930,22 +1939,22 @@ void lf_connect_to_rti(const char* hostname, int port) {
   unsigned char UDP_port_number[1 + sizeof(uint16_t)];
   UDP_port_number[0] = MSG_TYPE_UDP_PORT;
   encode_uint16(udp_port, &(UDP_port_number[1]));
-  write_to_netchan_fail_on_error(_fed.netchan_to_RTI, 1 + sizeof(uint16_t), UDP_port_number, NULL,
-                                 "Failed to send the UDP port number to the RTI.");
+  write_to_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, 1 + sizeof(uint16_t), UDP_port_number, NULL,
+                                         "Failed to send the UDP port number to the RTI.");
 }
 
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
-  netchan_t* server_netchan = initialize_netchan();
-  set_my_port(server_netchan, specified_port);
+  net_abstraction_t* server_net_abstraction = initialize_net_abstraction();
+  set_my_port(server_net_abstraction, specified_port);
 
-  if (create_server(server_netchan, false)) {
+  if (create_server(server_net_abstraction, false)) {
     lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
   };
-  _fed.server_netchan = server_netchan;
+  _fed.server_net_abstraction = server_net_abstraction;
   // Get the final server port to send to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message.
-  int32_t server_port = get_my_port(server_netchan);
+  int32_t server_port = get_my_port(server_net_abstraction);
 
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", server_port);
 
@@ -1958,9 +1967,9 @@ void lf_create_server(int specified_port) {
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(send_ADR_AD, _lf_my_fed_id, NULL);
 
-  // No need for a mutex because we have the only handle on this network driver.
-  write_to_netchan_fail_on_error(_fed.netchan_to_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
-                                 "Failed to send address advertisement.");
+  // No need for a mutex because we have the only handle on this network abstraction.
+  write_to_net_abstraction_fail_on_error(_fed.net_abstraction_to_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer, NULL,
+                                         "Failed to send address advertisement.");
 
   LF_PRINT_DEBUG("Sent port %d to the RTI.", server_port);
 }
@@ -1993,21 +2002,24 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   LF_ASSERT_NON_NULL(env_arg);
   size_t received_federates = 0;
   // Allocate memory to store thread IDs.
-  _fed.inbound_netchan_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
+  _fed.inbound_net_abstraction_listeners =
+      (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
     // Wait for an incoming connection request.
-    netchan_t netchan = accept_netchan(_fed.server_netchan, _fed.netchan_to_RTI);
-    if (netchan == NULL) {
-      lf_print_warning("Federate failed to accept the network channel.");
+    net_abstraction_t net_abstraction =
+        accept_net_abstraction(_fed.server_net_abstraction, _fed.net_abstraction_to_RTI);
+    if (net_abstraction == NULL) {
+      lf_print_warning("Federate failed to accept the network abstraction.");
       return NULL;
     }
     LF_PRINT_LOG("Accepted new connection from remote federate.");
 
     size_t header_length = 1 + sizeof(uint16_t) + 1;
     unsigned char buffer[header_length];
-    int read_failed = read_from_netchan(netchan, header_length, (unsigned char*)&buffer);
+    int read_failed = read_from_net_abstraction(net_abstraction, header_length, (unsigned char*)&buffer);
     if (read_failed || buffer[0] != MSG_TYPE_P2P_SENDING_FED_ID) {
-      lf_print_warning("Federate received invalid first message on P2P network channel. Closing network channel.");
+      lf_print_warning(
+          "Federate received invalid first message on P2P network abstraction. Closing network abstraction.");
       if (read_failed == 0) {
         // Wrong message received.
         unsigned char response[2];
@@ -2016,19 +2028,20 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Trace the event when tracing is enabled
         tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
         // Ignore errors on this response.
-        write_to_netchan(netchan, 2, response);
+        write_to_net_abstraction(net_abstraction, 2, response);
       }
-      shutdown_netchan(netchan, false);
+      shutdown_net_abstraction(net_abstraction, false);
       continue;
     }
 
     // Get the federation ID and check it.
     unsigned char federation_id_length = buffer[header_length - 1];
     char remote_federation_id[federation_id_length];
-    read_failed = read_from_netchan(netchan, federation_id_length, (unsigned char*)remote_federation_id);
+    read_failed =
+        read_from_net_abstraction(net_abstraction, federation_id_length, (unsigned char*)remote_federation_id);
     if (read_failed || (strncmp(federation_metadata.federation_id, remote_federation_id,
                                 strnlen(federation_metadata.federation_id, 255)) != 0)) {
-      lf_print_warning("Received invalid federation ID. Closing network channel.");
+      lf_print_warning("Received invalid federation ID. Closing network abstraction.");
       if (read_failed == 0) {
         unsigned char response[2];
         response[0] = MSG_TYPE_REJECT;
@@ -2036,9 +2049,9 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Trace the event when tracing is enabled
         tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
         // Ignore errors on this response.
-        write_to_netchan(netchan, 2, response);
+        write_to_net_abstraction(net_abstraction, 2, response);
       }
-      shutdown_netchan(netchan, false);
+      shutdown_net_abstraction(net_abstraction, false);
       continue;
     }
 
@@ -2049,12 +2062,12 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
 
-    // Once we record the network channel here, all future calls to close() on
-    // the network channel should be done while holding the netchan_mutex, and this array
+    // Once we record the network abstraction here, all future calls to close() on
+    // the network abstraction should be done while holding the net_abstraction_mutex, and this array
     // element should be reset to NULL during that critical section.
     // Otherwise, there can be race condition where, during termination,
-    // two threads attempt to simultaneously close the network channel.
-    _fed.netchans_for_inbound_p2p_connections[remote_fed_id] = netchan;
+    // two threads attempt to simultaneously close the network abstraction.
+    _fed.net_abstractions_for_inbound_p2p_connections[remote_fed_id] = net_abstraction;
 
     // Send an MSG_TYPE_ACK message.
     unsigned char response = MSG_TYPE_ACK;
@@ -2062,22 +2075,23 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
 
-    LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
-    write_to_netchan_fail_on_error(_fed.netchans_for_inbound_p2p_connections[remote_fed_id], 1,
-                                   (unsigned char*)&response, &lf_outbound_netchan_mutex,
-                                   "Failed to write MSG_TYPE_ACK in response to federate %d.", remote_fed_id);
+    LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
+    write_to_net_abstraction_fail_on_error(_fed.net_abstractions_for_inbound_p2p_connections[remote_fed_id], 1,
+                                           (unsigned char*)&response, &lf_outbound_net_abstraction_mutex,
+                                           "Failed to write MSG_TYPE_ACK in response to federate %d.", remote_fed_id);
 
     // Start a thread to listen for incoming messages from other federates.
     // The fed_id is a uint16_t, which we assume can be safely cast to and from void*.
     void* fed_id_arg = (void*)(uintptr_t)remote_fed_id;
-    int result = lf_thread_create(&_fed.inbound_netchan_listeners[received_federates], listen_to_federates, fed_id_arg);
+    int result =
+        lf_thread_create(&_fed.inbound_net_abstraction_listeners[received_federates], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
-      shutdown_netchan(_fed.netchans_for_inbound_p2p_connections[remote_fed_id], false);
+      shutdown_net_abstraction(_fed.net_abstractions_for_inbound_p2p_connections[remote_fed_id], false);
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }
-    LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
 
     received_federates++;
   }
@@ -2179,23 +2193,23 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   const int header_length = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t);
 
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
-  LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
 
-  netchan_t netchan = _fed.netchans_for_outbound_p2p_connections[federate];
+  net_abstraction_t net_abstraction = _fed.net_abstractions_for_outbound_p2p_connections[federate];
 
   // Trace the event when tracing is enabled
   tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
 
-  int result = write_to_netchan_close_on_error(netchan, header_length, header_buffer);
+  int result = write_to_net_abstraction_close_on_error(net_abstraction, header_length, header_buffer);
   if (result == 0) {
     // Header sent successfully. Send the body.
-    result = write_to_netchan_close_on_error(netchan, length, message);
+    result = write_to_net_abstraction_close_on_error(net_abstraction, length, message);
   }
   if (result != 0) {
     // Message did not send. Since this is used for physical connections, this is not critical.
     lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
   }
-  LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
   return result;
 }
 
@@ -2381,21 +2395,21 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
 
 #ifdef FEDERATED_CENTRALIZED
   // Send the absent message through the RTI
-  netchan_t netchan = _fed.netchan_to_RTI;
+  net_abstraction_t net_abstraction = _fed.net_abstraction_to_RTI;
   tracepoint_federate_to_rti(send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
 #else
   // Send the absent message directly to the federate
-  netchan_t netchan = _fed.netchans_for_outbound_p2p_connections[fed_ID];
+  net_abstraction_t net_abstraction = _fed.net_abstractions_for_outbound_p2p_connections[fed_ID];
   tracepoint_federate_to_federate(send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
 #endif
 
-  LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
-  int result = write_to_netchan_close_on_error(netchan, message_length, buffer);
-  LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
+  int result = write_to_net_abstraction_close_on_error(net_abstraction, message_length, buffer);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
 
   if (result != 0) {
     // Write failed. Response depends on whether coordination is centralized.
-    if (netchan == _fed.netchan_to_RTI) {
+    if (net_abstraction == _fed.net_abstraction_to_RTI) {
       // Centralized coordination. This is a critical error.
       lf_print_error_system_failure("Failed to send port absent message for port %hu to federate %hu.", port_ID,
                                     fed_ID);
@@ -2414,30 +2428,30 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
   stop_tag.microstep++;
   ENCODE_STOP_REQUEST(buffer, stop_tag.time, stop_tag.microstep);
 
-  LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
   // Do not send a stop request if a stop request has been previously received from the RTI.
   if (!_fed.received_stop_request_from_rti) {
     LF_PRINT_LOG("Sending to RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".", stop_tag.time - start_time,
                  stop_tag.microstep);
 
-    if (_fed.netchan_to_RTI == NULL) {
+    if (_fed.net_abstraction_to_RTI == NULL) {
       lf_print_warning("RTI is no longer connected. Dropping message.");
-      LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+      LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
       return -1;
     }
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_STOP_REQ, _lf_my_fed_id, &stop_tag);
 
-    write_to_netchan_fail_on_error(_fed.netchan_to_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, buffer,
-                                   &lf_outbound_netchan_mutex, "Failed to send stop time " PRINTF_TIME " to the RTI.",
-                                   stop_tag.time - start_time);
+    write_to_net_abstraction_fail_on_error(
+        _fed.net_abstraction_to_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, buffer, &lf_outbound_net_abstraction_mutex,
+        "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
 
     // Treat this sending  as equivalent to having received a stop request from the RTI.
     _fed.received_stop_request_from_rti = true;
-    LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
     return 0;
   } else {
-    LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
     return 1;
   }
 }
@@ -2490,14 +2504,14 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
                current_message_intended_tag.microstep, next_destination_str);
 
   // Use a mutex lock to prevent multiple threads from simultaneously sending.
-  LF_MUTEX_LOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_LOCK(&lf_outbound_net_abstraction_mutex);
 
-  netchan_t netchan;
+  net_abstraction_t net_abstraction;
   if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
-    netchan = _fed.netchans_for_outbound_p2p_connections[federate];
+    net_abstraction = _fed.net_abstractions_for_outbound_p2p_connections[federate];
     tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
   } else {
-    netchan = _fed.netchan_to_RTI;
+    net_abstraction = _fed.net_abstraction_to_RTI;
     tracepoint_federate_to_rti(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
   }
 
@@ -2505,10 +2519,10 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     _fed.last_DNET = current_message_intended_tag;
   }
 
-  int result = write_to_netchan_close_on_error(netchan, header_length, header_buffer);
+  int result = write_to_net_abstraction_close_on_error(net_abstraction, header_length, header_buffer);
   if (result == 0) {
     // Header sent successfully. Send the body.
-    result = write_to_netchan_close_on_error(netchan, length, message);
+    result = write_to_net_abstraction_close_on_error(net_abstraction, length, message);
   }
   if (result != 0) {
     // Message did not send. Handling depends on message type.
@@ -2519,7 +2533,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
                                     next_destination_str, errno, strerror(errno));
     }
   }
-  LF_MUTEX_UNLOCK(&lf_outbound_netchan_mutex);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_abstraction_mutex);
   return result;
 }
 
@@ -2565,7 +2579,7 @@ void lf_synchronize_with_other_federates(void) {
   // @note Up until this point, the federate has been listening for messages
   //  from the RTI in a sequential manner in the main thread. From now on, a
   //  separate thread is created to allow for asynchronous communication.
-  lf_thread_create(&_fed.RTI_netchan_listener, listen_to_rti_netchan, NULL);
+  lf_thread_create(&_fed.RTI_net_abstraction_listener, listen_to_rti_net_abstraction, NULL);
   lf_thread_t thread_id;
   if (create_clock_sync_thread(&thread_id)) {
     lf_print_warning("Failed to create thread to handle clock synchronization.");

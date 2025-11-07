@@ -12,19 +12,19 @@
 #include <unistd.h>    // read() write()
 #include <arpa/inet.h> // inet_ntop
 
-#include "net_driver.h"
+#include "net_abstraction.h"
 #include "socket_common.h"
 #include "util.h" // LF_MUTEX_UNLOCK, "logging.h"
 
-static socket_priv_t* get_socket_priv_t(netchan_t chan) {
-  if (chan == NULL) {
-    lf_print_error("Network channel is already closed.");
+static socket_priv_t* get_socket_priv_t(net_abstraction_t net_abs) {
+  if (net_abs == NULL) {
+    lf_print_error("Network abstraction is already closed.");
     return NULL;
   }
-  return (socket_priv_t*)chan;
+  return (socket_priv_t*)net_abs;
 }
 
-netchan_t initialize_netchan() {
+net_abstraction_t initialize_net_abstraction() {
   // Initialize priv.
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));
   if (priv == NULL) {
@@ -41,37 +41,37 @@ netchan_t initialize_netchan() {
   priv->server_ip_addr.s_addr = 0;
   priv->server_port = -1;
 
-  return (netchan_t)priv;
+  return (net_abstraction_t)priv;
 }
 
-void free_netchan(netchan_t chan) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+void free_net_abstraction(net_abstraction_t net_abs) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   free(priv);
 }
 
-int create_server(netchan_t chan, bool increment_port_on_retry) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+int create_server(net_abstraction_t net_abs, bool increment_port_on_retry) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   return create_socket_server(priv->user_specified_port, &priv->socket_descriptor, &priv->port, TCP,
                               increment_port_on_retry);
 }
 
-netchan_t accept_netchan(netchan_t server_chan, netchan_t rti_chan) {
+net_abstraction_t accept_net_abstraction(net_abstraction_t server_chan, net_abstraction_t rti_chan) {
   socket_priv_t* serv_priv = get_socket_priv_t(server_chan);
   int rti_socket;
   if (rti_chan == NULL) {
-    // Set to -1, to indicate that this accept_netchan() call is not trying to check if the rti_chan is available,
-    // inside the accept_socket() function.
+    // Set to -1, to indicate that this accept_net_abstraction() call is not trying to check if the rti_chan is
+    // available, inside the accept_socket() function.
     rti_socket = -1;
   } else {
     socket_priv_t* rti_priv = get_socket_priv_t(rti_chan);
     rti_socket = rti_priv->socket_descriptor;
   }
-  netchan_t fed_netchan = initialize_netchan();
-  socket_priv_t* fed_priv = get_socket_priv_t(fed_netchan);
+  net_abstraction_t fed_net_abstraction = initialize_net_abstraction();
+  socket_priv_t* fed_priv = get_socket_priv_t(fed_net_abstraction);
 
   int sock = accept_socket(serv_priv->socket_descriptor, rti_socket);
   if (sock == -1) {
-    free_netchan(fed_netchan);
+    free_net_abstraction(fed_net_abstraction);
     return NULL;
   }
   fed_priv->socket_descriptor = sock;
@@ -79,27 +79,27 @@ netchan_t accept_netchan(netchan_t server_chan, netchan_t rti_chan) {
   if (get_peer_address(fed_priv) != 0) {
     lf_print_error("RTI failed to get peer address.");
   };
-  return fed_netchan;
+  return fed_net_abstraction;
 }
 
-void create_client(netchan_t chan) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+void create_client(net_abstraction_t net_abs) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   priv->socket_descriptor = create_real_time_tcp_socket_errexit();
 }
 
-int connect_to_netchan(netchan_t chan) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+int connect_to_net_abstraction(net_abstraction_t net_abs) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   return connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port);
 }
 
-int read_from_netchan(netchan_t chan, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+int read_from_net_abstraction(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   return read_from_socket(priv->socket_descriptor, num_bytes, buffer);
 }
 
-int read_from_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
-  int read_failed = read_from_netchan(chan, num_bytes, buffer);
+int read_from_net_abstraction_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  int read_failed = read_from_net_abstraction(net_abs, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
     // Socket has probably been closed from the other side.
@@ -110,9 +110,10 @@ int read_from_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned 
   return 0;
 }
 
-void read_from_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, char* format, ...) {
+void read_from_net_abstraction_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer,
+                                             char* format, ...) {
   va_list args;
-  int read_failed = read_from_netchan_close_on_error(chan, num_bytes, buffer);
+  int read_failed = read_from_net_abstraction_close_on_error(net_abs, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
     if (format != NULL) {
@@ -125,14 +126,14 @@ void read_from_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned 
   }
 }
 
-int write_to_netchan(netchan_t chan, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+int write_to_net_abstraction(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   return write_to_socket(priv->socket_descriptor, num_bytes, buffer);
 }
 
-int write_to_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
-  int result = write_to_netchan(chan, num_bytes, buffer);
+int write_to_net_abstraction_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  int result = write_to_net_abstraction(net_abs, num_bytes, buffer);
   if (result) {
     // Write failed.
     // Socket has probably been closed from the other side.
@@ -142,10 +143,10 @@ int write_to_netchan_close_on_error(netchan_t chan, size_t num_bytes, unsigned c
   return result;
 }
 
-void write_to_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                    char* format, ...) {
+void write_to_net_abstraction_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer,
+                                            lf_mutex_t* mutex, char* format, ...) {
   va_list args;
-  int result = write_to_netchan_close_on_error(chan, num_bytes, buffer);
+  int result = write_to_net_abstraction_close_on_error(net_abs, num_bytes, buffer);
   if (result) {
     // Write failed.
     if (mutex != NULL) {
@@ -161,53 +162,53 @@ void write_to_netchan_fail_on_error(netchan_t chan, size_t num_bytes, unsigned c
   }
 }
 
-bool check_netchan_closed(netchan_t chan) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+bool check_net_abstraction_closed(net_abstraction_t net_abs) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   return check_socket_closed(priv->socket_descriptor);
 }
 
-int shutdown_netchan(netchan_t chan, bool read_before_closing) {
-  if (chan == NULL) {
+int shutdown_net_abstraction(net_abstraction_t net_abs, bool read_before_closing) {
+  if (net_abs == NULL) {
     LF_PRINT_LOG("Socket already closed.");
     return 0;
   }
-  socket_priv_t* priv = get_socket_priv_t(chan);
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
-  free_netchan(chan);
+  free_net_abstraction(net_abs);
   return ret;
 }
 
-int32_t get_my_port(netchan_t chan) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+int32_t get_my_port(net_abstraction_t net_abs) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   return priv->port;
 }
 
-int32_t get_server_port(netchan_t chan) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+int32_t get_server_port(net_abstraction_t net_abs) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   return priv->server_port;
 }
 
-struct in_addr* get_ip_addr(netchan_t chan) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+struct in_addr* get_ip_addr(net_abstraction_t net_abs) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   return &priv->server_ip_addr;
 }
 
-char* get_server_hostname(netchan_t chan) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+char* get_server_hostname(net_abstraction_t net_abs) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   return priv->server_hostname;
 }
 
-void set_my_port(netchan_t chan, int32_t port) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+void set_my_port(net_abstraction_t net_abs, int32_t port) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   priv->port = port;
 }
 
-void set_server_port(netchan_t chan, int32_t port) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+void set_server_port(net_abstraction_t net_abs, int32_t port) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   priv->server_port = port;
 }
 
-void set_server_hostname(netchan_t chan, const char* hostname) {
-  socket_priv_t* priv = get_socket_priv_t(chan);
+void set_server_hostname(net_abstraction_t net_abs, const char* hostname) {
+  socket_priv_t* priv = get_socket_priv_t(net_abs);
   memcpy(priv->server_hostname, hostname, INET_ADDRSTRLEN);
 }

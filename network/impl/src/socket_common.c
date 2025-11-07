@@ -22,12 +22,12 @@
 #include <string.h> // strerror
 
 #include "util.h" // LF_MUTEX_UNLOCK(), logging.h
-#include "net_driver.h"
+#include "net_abstraction.h"
 
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-// Mutex lock held while performing network channel shutdown and close operations.
+// Mutex lock held while performing network abstraction shutdown and close operations.
 lf_mutex_t shutdown_mutex;
 
 int create_real_time_tcp_socket_errexit(void) {
