@@ -16,6 +16,9 @@
 #define NET_ABSTRACTION_H
 
 #include "socket_common.h"
+#if defined(COMM_TYPE_SST)
+#include "lf_sst_support.h"
+#endif
 
 typedef void* net_abstraction_t;
 // net_abstraction_t
