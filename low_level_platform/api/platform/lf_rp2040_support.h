@@ -1,4 +1,14 @@
-/* RP2040 API support for the C target of Lingua Franca */
+/**
+ * @file lf_rp2040_support.h
+ * @brief Platform-specific support for Raspberry Pi Pico (RP2040) in the Lingua Franca C runtime.
+ *
+ * @author Edward A. Lee
+ *
+ * This header file provides platform-specific definitions and implementations
+ * for running Lingua Franca programs on the Raspberry Pi Pico (RP2040) microcontroller.
+ * It includes type definitions, platform-specific constants, and synchronization
+ * primitives needed for the runtime.
+ */
 
 /**
  * @brief pico support for reactor-c

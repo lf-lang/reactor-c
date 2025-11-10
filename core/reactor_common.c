@@ -6,8 +6,7 @@
  * @author Mehrdad Niknami
  * @author Alexander Schulz-Rosengarten
  * @author Erling Rennemo Jellum
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief Runtime infrastructure common to the threaded and single-threaded versions of the C runtime.
  */
 #include <assert.h>
@@ -39,6 +38,10 @@
 #include "watchdog.h"
 #endif
 
+#ifdef LF_ENCLAVES
+#include "rti_local.h"
+#endif
+
 // Global variable defined in tag.c:
 extern instant_t start_time;
 
@@ -53,8 +56,8 @@ extern int _lf_count_payload_allocations;
  * @brief Global STA (safe to advance) offset uniformly applied to advancement of each
  * time step in federated execution.
  *
- * This can be retrieved in user code by calling lf_get_stp_offset() and adjusted by
- * calling lf_set_stp_offset(interval_t offset).
+ * This can be retrieved in user code by calling lf_get_sta() and adjusted by
+ * calling lf_set_sta(interval_t offset).
  */
 interval_t lf_fed_STA_offset = 0LL;
 
@@ -185,11 +188,15 @@ const char* lf_reactor_full_name(self_base_t* self) {
 
 interval_t lf_get_stp_offset() { return lf_fed_STA_offset; }
 
-void lf_set_stp_offset(interval_t offset) {
-  if (offset > 0LL) {
-    lf_fed_STA_offset = offset;
-  }
-}
+interval_t lf_get_sta() { return lf_fed_STA_offset; }
+
+interval_t lf_get_fed_maxwait() { return lf_fed_STA_offset; }
+
+void lf_set_stp_offset(interval_t offset) { lf_set_sta(offset); }
+
+void lf_set_sta(interval_t offset) { lf_set_fed_maxwait(offset); }
+
+void lf_set_fed_maxwait(interval_t offset) { lf_fed_STA_offset = offset; }
 
 #endif // FEDERATED_DECENTRALIZED
 
@@ -200,7 +207,7 @@ void _lf_start_time_step(environment_t* env) {
     // due to an error.
     return;
   }
-  LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", env->current_tag.time - start_time,
+  LF_PRINT_LOG("--------- Env: %u Start time step at tag " PRINTF_TAG ".", env->id, env->current_tag.time - start_time,
                env->current_tag.microstep);
   // Handle dynamically created tokens for mutable inputs.
   _lf_free_token_copies();
@@ -379,11 +386,15 @@ event_t* lf_get_new_event(environment_t* env) {
 #ifdef FEDERATED_DECENTRALIZED
     e->intended_tag = (tag_t){.time = NEVER, .microstep = 0u};
 #endif
+    LF_PRINT_DEBUG("lf_get_new_event: Allocated event: %p", (void*)e);
+  } else {
+    LF_PRINT_DEBUG("lf_get_new_event: Retrieved event from the recycle queue: %p", (void*)e);
   }
   return e;
 }
 
-void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+bool _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   interval_t delay = 0;
 
@@ -397,16 +408,17 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     e->trigger = timer;
     e->base.tag = (tag_t){.time = lf_time_logical(env) + timer->offset, .microstep = 0};
     _lf_add_suspended_event(e);
-    return;
+    return result;
   }
 #endif
   if (timer->offset == 0) {
     for (int i = 0; i < timer->number_of_reactions; i++) {
       _lf_trigger_reaction(env, timer->reactions[i], -1);
+      result = true;
       tracepoint_schedule(env, timer, 0LL); // Trace even though schedule is not called.
     }
     if (timer->period == 0) {
-      return;
+      return result;
     } else {
       // Schedule at t + period.
       delay = timer->period;
@@ -428,13 +440,15 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)e);
     tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
   }
+  return result;
 }
 
-void _lf_initialize_timers(environment_t* env) {
+bool _lf_initialize_timers(environment_t* env) {
+  bool result = false;
   assert(env != GLOBAL_ENVIRONMENT);
   for (int i = 0; i < env->timer_triggers_size; i++) {
     if (env->timer_triggers[i] != NULL) {
-      _lf_initialize_timer(env, env->timer_triggers[i]);
+      result = _lf_initialize_timer(env, env->timer_triggers[i]) || result;
     }
   }
 
@@ -444,6 +458,8 @@ void _lf_initialize_timers(environment_t* env) {
     event_t* e = lf_get_new_event(env);
     lf_recycle_event(env, e);
   }
+
+  return result;
 }
 
 void _lf_trigger_startup_reactions(environment_t* env) {
@@ -519,6 +535,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
                  tag.microstep, current_logical_tag.time - start_time, current_logical_tag.microstep);
   if (lf_tag_compare(tag, current_logical_tag) <= 0 && env->execution_started) {
     lf_print_warning("_lf_schedule_at_tag(): requested to schedule an event at the current or past tag.");
+    _lf_done_using(token);
     return -1;
   }
 
@@ -561,7 +578,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
         _lf_done_using(token);
       }
       lf_recycle_event(env, e);
-      return (0);
+      return 0;
       break;
     case replace:
       // Replace the payload of the event at the head with our
@@ -575,9 +592,10 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
       // intended tag.
       tag.microstep++;
       e->base.tag = tag;
-      if (lf_is_tag_after_stop_tag(env, (tag_t){.time = tag.time, .microstep = tag.microstep})) {
+      if (lf_is_tag_after_stop_tag(env, tag)) {
         // Scheduling e will incur a microstep after the stop tag,
         // which is illegal.
+        _lf_done_using(token);
         lf_recycle_event(env, e);
         return 0;
       }
@@ -589,6 +607,37 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
     env->_lf_handle = 1;
   }
   return return_value;
+}
+
+trigger_handle_t _lf_schedule_token(environment_t* env, void* action, interval_t extra_delay, lf_token_t* token) {
+  LF_CRITICAL_SECTION_ENTER(env);
+  int return_value = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, extra_delay, token);
+  // Notify the main thread in case it is waiting for physical time to elapse.
+  lf_notify_of_event(env);
+  LF_CRITICAL_SECTION_EXIT(env);
+  return return_value;
+}
+
+trigger_handle_t _lf_schedule_copy(environment_t* env, void* action, interval_t offset, void* value, size_t length) {
+  if (value == NULL) {
+    return _lf_schedule_token(env, action, offset, NULL);
+  }
+  token_template_t* template = (token_template_t*)action;
+  if (action == NULL || template->type.element_size <= 0) {
+    lf_print_error("schedule: Invalid element size.");
+    return -1;
+  }
+  LF_CRITICAL_SECTION_ENTER(env);
+  // Initialize token with an array size of length and a reference count of 0.
+  lf_token_t* token = _lf_initialize_token(template, length);
+  // Copy the value into the newly allocated memory.
+  memcpy(token->value, value, template->type.element_size * length);
+  // The schedule function will increment the reference count.
+  trigger_handle_t result = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, offset, token);
+  // Notify the main thread in case it is waiting for physical time to elapse.
+  lf_notify_of_event(env);
+  LF_CRITICAL_SECTION_EXIT(env);
+  return result;
 }
 
 trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t* trigger, lf_token_t* token) {
@@ -606,6 +655,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // and not a physical action
   if (trigger->is_timer || trigger->is_physical) {
     lf_print_warning("_lf_schedule_init_reactions() called on a timer or physical action.");
+    _lf_done_using(token);
     return 0;
   }
 
@@ -613,6 +663,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // If this trigger is associated with an inactive mode, it should not trigger any reaction.
   if (!_lf_mode_is_active(trigger->mode)) {
     LF_PRINT_DEBUG("Suppressing reactions of trigger due inactivity of mode %s.", trigger->mode->name);
+    _lf_done_using(token);
     return 1;
   }
 #endif
@@ -627,6 +678,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
   // Check for STP violation in the centralized coordination, which is a
   // critical error.
   if (is_STP_violated) {
+    _lf_done_using(token);
     lf_print_error_and_exit(
         "Attempted to insert reactions for a trigger that had an intended tag that was in the past. "
         "This should not happen under centralized coordination. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG
@@ -706,7 +758,6 @@ void _lf_advance_tag(environment_t* env, tag_t next_tag) {
 }
 
 /**
-
  * Invoke the given reaction
  *
  * @param env Environment in which we are executing.
@@ -760,23 +811,25 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
   bool inherited_STP_violation = reaction->is_STP_violated;
   LF_PRINT_DEBUG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
-  LF_PRINT_DEBUG("There are %zu outputs from reaction %s.", reaction->num_outputs, reaction->name);
+  LF_PRINT_DEBUG("Env %u: There are %zu outputs from reaction %s.", env->id, reaction->num_outputs, reaction->name);
   for (size_t i = 0; i < reaction->num_outputs; i++) {
     if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
-      LF_PRINT_DEBUG("Output %zu has been produced.", i);
+      LF_PRINT_DEBUG("Env %u: Output %zu has been produced.", env->id, i);
       trigger_t** triggerArray = (reaction->triggers)[i];
-      LF_PRINT_DEBUG("There are %d trigger arrays associated with output %zu.", reaction->triggered_sizes[i], i);
+      LF_PRINT_DEBUG("Env %u: There are %d trigger arrays associated with output %zu.", env->id,
+                     reaction->triggered_sizes[i], i);
       for (int j = 0; j < reaction->triggered_sizes[i]; j++) {
         trigger_t* trigger = triggerArray[j];
         if (trigger != NULL) {
-          LF_PRINT_DEBUG("Trigger %p lists %d reactions.", (void*)trigger, trigger->number_of_reactions);
+          LF_PRINT_DEBUG("Env %u: Trigger %p lists %d reactions.", env->id, (void*)trigger,
+                         trigger->number_of_reactions);
           for (int k = 0; k < trigger->number_of_reactions; k++) {
             reaction_t* downstream_reaction = trigger->reactions[k];
 #ifdef FEDERATED_DECENTRALIZED // Only pass down tardiness for federated LF programs
             // Set the is_STP_violated for the downstream reaction
             if (downstream_reaction != NULL) {
               downstream_reaction->is_STP_violated = inherited_STP_violation;
-              LF_PRINT_DEBUG("Passing is_STP_violated of %d to the downstream reaction: %s",
+              LF_PRINT_DEBUG("Env %u: Passing is_STP_violated of %d to the downstream reaction: %s", env->id,
                              downstream_reaction->is_STP_violated, downstream_reaction->name);
             }
 #endif
@@ -814,7 +867,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     }
   }
   if (downstream_to_execute_now != NULL) {
-    LF_PRINT_LOG("Worker %d: Optimizing and executing downstream reaction now: %s", worker,
+    LF_PRINT_LOG("Env %u: Worker %d: Optimizing and executing downstream reaction now: %s", env->id, worker,
                  downstream_to_execute_now->name);
     bool violation = false;
 #ifdef FEDERATED_DECENTRALIZED // Only use the STP handler for federated programs that use decentralized coordination
@@ -836,7 +889,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     //  chain until it is dealt with in a downstream STP handler.
     if (downstream_to_execute_now->is_STP_violated == true) {
       // Tardiness has occurred
-      LF_PRINT_LOG("Event has STP violation.");
+      LF_PRINT_LOG("Env %u: Event has STP violation.", env->id);
       reaction_function_t handler = downstream_to_execute_now->STP_handler;
       // Invoke the STP handler if there is one.
       if (handler != NULL) {
@@ -844,7 +897,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         // If there is no STP handler, pass the is_STP_violated
         // to downstream reactions.
         violation = true;
-        LF_PRINT_LOG("Invoke tardiness handler.");
+        LF_PRINT_LOG("Env %u: Invoke tardiness handler.", env->id);
         (*handler)(downstream_to_execute_now->self);
 
         // If the reaction produced outputs, put the resulting
@@ -854,7 +907,8 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         // Reset the tardiness because it has been dealt with in the
         // STP handler
         downstream_to_execute_now->is_STP_violated = false;
-        LF_PRINT_DEBUG("Reset reaction's is_STP_violated field to false: %s", downstream_to_execute_now->name);
+        LF_PRINT_DEBUG("Env %u: Reset reaction's is_STP_violated field to false: %s", env->id,
+                       downstream_to_execute_now->name);
       }
     }
 #endif
@@ -863,7 +917,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
       instant_t physical_time = lf_time_physical();
       // Check for deadline violation.
       if (downstream_to_execute_now->deadline == 0 ||
-          physical_time > env->current_tag.time + downstream_to_execute_now->deadline) {
+          physical_time > lf_time_add(env->current_tag.time, downstream_to_execute_now->deadline)) {
         // Deadline violation has occurred.
         tracepoint_reaction_deadline_missed(env, downstream_to_execute_now, worker);
         violation = true;
@@ -893,7 +947,8 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     // Reset the is_STP_violated because it has been passed
     // down the chain
     downstream_to_execute_now->is_STP_violated = false;
-    LF_PRINT_DEBUG("Finally, reset reaction's is_STP_violated field to false: %s", downstream_to_execute_now->name);
+    LF_PRINT_DEBUG("Env %u: Finally, reset reaction's is_STP_violated field to false: %s", env->id,
+                   downstream_to_execute_now->name);
   }
 }
 
@@ -1189,10 +1244,10 @@ void termination(void) {
   // In order to free tokens, we perform the same actions we would have for a new time step.
   for (int i = 0; i < num_envs; i++) {
     if (!env[i].initialized) {
-      lf_print_warning("---- Environment %u was never initialized", env[i].id);
+      lf_print_warning("---- Env %u was never initialized", env[i].id);
       continue;
     }
-    LF_PRINT_LOG("---- Terminating environment %u, normal termination: %d", env[i].id, _lf_normal_termination);
+    LF_PRINT_LOG("---- Terminating Env %u, normal termination: %d", env[i].id, _lf_normal_termination);
 
 #if !defined(LF_SINGLE_THREADED)
     // Make sure all watchdog threads have stopped
@@ -1207,13 +1262,23 @@ void termination(void) {
       // Free events and tokens suspended by modal reactors.
       _lf_terminate_modal_reactors(&env[i]);
 #endif
-      // If the event queue still has events on it, report that.
+      // If the event queue still has events on it, clear them and free their tokens.
       if (env[i].event_q != NULL && pqueue_tag_size(env[i].event_q) > 0) {
-        lf_print_warning("---- There are %zu unprocessed future events on the event queue.",
-                         pqueue_tag_size(env[i].event_q));
+        size_t unprocessed_events = pqueue_tag_size(env[i].event_q);
+        lf_print_warning("---- There are %zu unprocessed future events on the event queue.", unprocessed_events);
         event_t* event = (event_t*)pqueue_tag_peek(env[i].event_q);
         lf_print_warning("---- The first future event has timestamp " PRINTF_TAG " after start tag.",
                          event->base.tag.time - start_time, event->base.tag.microstep);
+
+        // Clear all unprocessed events and free their tokens
+        while (pqueue_tag_size(env[i].event_q) > 0) {
+          event_t* event = (event_t*)pqueue_tag_pop(env[i].event_q);
+          if (event->token != NULL) {
+            _lf_done_using(event->token);
+          }
+          lf_recycle_event(&env[i], event);
+        }
+        lf_print_warning("---- Cleared %zu unprocessed events from the event queue.", unprocessed_events);
       }
       // Print elapsed times.
       // If these are negative, then the program failed to start up.

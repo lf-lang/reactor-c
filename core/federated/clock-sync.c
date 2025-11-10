@@ -1,33 +1,9 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Soroush Bateni (soroush@utdallas.edu)
+ * @author Edward A. Lee
+ * @author Soroush Bateni
  *
- * @section LICENSE
-Copyright (c) 2020-21, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Utility functions for clock synchronization.
+ * @brief Utility functions for clock synchronization.
  */
 
 #ifdef FEDERATED
@@ -98,8 +74,8 @@ static void adjust_lf_clock_sync_offset(interval_t adjustment) {
  * @param clock_synchronization_error The newly calculated clock synchronization error relative to
  *  the remote federate/RTI
  */
-void update_socket_stat(socket_stat_t* socket_stat, long long network_round_trip_delay,
-                        long long clock_synchronization_error) {
+static void update_socket_stat(socket_stat_t* socket_stat, long long network_round_trip_delay,
+                               long long clock_synchronization_error) {
   // Add the data point
   socket_stat->network_stat_samples[socket_stat->network_stat_sample_index] = network_round_trip_delay;
   socket_stat->network_stat_sample_index++;
@@ -120,7 +96,7 @@ void update_socket_stat(socket_stat_t* socket_stat, long long network_round_trip
  *
  * @param socket_stat The socket_stat_t struct that  keeps track of stats for a given connection
  */
-lf_stat_ll calculate_socket_stat(struct socket_stat_t* socket_stat) {
+static lf_stat_ll calculate_socket_stat(struct socket_stat_t* socket_stat) {
   // Initialize the stat struct
   lf_stat_ll stats = {0, 0, 0, 0};
   // Calculate the average and max
@@ -141,26 +117,12 @@ lf_stat_ll calculate_socket_stat(struct socket_stat_t* socket_stat) {
 }
 #endif // _LF_CLOCK_SYNC_COLLECT_STATS
 
-/**
- * Reset statistics on the socket.
- *
- * @param socket_stat The socket_stat_t struct that  keeps track of stats for a given connection
- */
 void reset_socket_stat(struct socket_stat_t* socket_stat) {
   socket_stat->received_T4_messages_in_current_sync_window = 0;
   socket_stat->history = 0LL;
   socket_stat->network_stat_sample_index = 0;
 }
 
-/**
- * Setup necessary functionalities to synchronize clock with the RTI.
- *
- * @return port number to be sent to the RTI
- *  If clock synchronization is off compeltely, USHRT_MAX is returned.
- *  If clock synchronization is set to initial, 0 is sent.
- *  If clock synchronization is set to on, a reserved UDP port number
- *   will be sent.
- */
 uint16_t setup_clock_synchronization_with_rti() {
   uint16_t port_to_return = UINT16_MAX; // Default if clock sync is off.
 #if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
@@ -208,7 +170,7 @@ uint16_t setup_clock_synchronization_with_rti() {
   return port_to_return;
 }
 
-void synchronize_initial_physical_clock_with_rti(netchan_t rti_netchan) {
+void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net_abstraction) {
   LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
   size_t message_size = 1 + sizeof(instant_t);
@@ -216,9 +178,9 @@ void synchronize_initial_physical_clock_with_rti(netchan_t rti_netchan) {
 
   for (int i = 0; i < _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL; i++) {
     // The first message expected from the RTI is MSG_TYPE_CLOCK_SYNC_T1
-    read_from_netchan_fail_on_error(rti_netchan, message_size, buffer, NULL,
-                                   "Federate %d did not get the initial clock synchronization message T1 from the RTI.",
-                                   _lf_my_fed_id);
+    read_from_net_abstraction_fail_on_error(
+        rti_net_abstraction, message_size, buffer,
+        "Federate %d did not get the initial clock synchronization message T1 from the RTI.", _lf_my_fed_id);
 
     // Get local physical time before doing anything else.
     instant_t receive_time = lf_time_physical();
@@ -230,14 +192,14 @@ void synchronize_initial_physical_clock_with_rti(netchan_t rti_netchan) {
     // Handle the message and send a reply T3 message.
     // NOTE: No need to acquire the mutex lock during initialization because only
     // one thread is running.
-    if (handle_T1_clock_sync_message(buffer, (void*)rti_netchan, receive_time, false) != 0) {
+    if (handle_T1_clock_sync_message(buffer, (void*)rti_net_abstraction, receive_time, false) != 0) {
       lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
     }
 
     // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-    read_from_netchan_fail_on_error(rti_netchan, message_size, buffer, NULL,
-                                   "Federate %d did not get the clock synchronization message T4 from the RTI.",
-                                   _lf_my_fed_id);
+    read_from_net_abstraction_fail_on_error(
+        rti_net_abstraction, message_size, buffer,
+        "Federate %d did not get the clock synchronization message T4 from the RTI.", _lf_my_fed_id);
 
     // Check that this is the T4 message.
     if (buffer[0] != MSG_TYPE_CLOCK_SYNC_T4) {
@@ -245,25 +207,13 @@ void synchronize_initial_physical_clock_with_rti(netchan_t rti_netchan) {
     }
 
     // Handle the message.
-    handle_T4_clock_sync_message(buffer, (void*)rti_netchan, receive_time, false);
+    handle_T4_clock_sync_message(buffer, (void*)rti_net_abstraction, receive_time, false);
   }
 
   LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
 }
 
-/**
- * Handle a clock synchroninzation message T1 coming from the RTI.
- * T1 is the first message in a PTP exchange.
- * This replies to the RTI with a T3 message.
- * It also measures the time it takes between when the method is
- * called and the reply has been sent.
- * @param buffer The buffer containing the message, including the message type.
- * @param socket_or_netchan The pointer of either UDP socket or the network channel.
- * @param t2 The physical time at which the T1 message was received.
- * @param use_UDP Boolean to use UDP or the network channel.
- * @return 0 if T3 reply is successfully sent, -1 otherwise.
- */
-int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netchan, instant_t t2, bool use_udp) {
+int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net_abstraction, instant_t t2, bool use_udp) {
   // Extract the payload
   instant_t t1 = extract_int64(&(buffer[1]));
 
@@ -283,8 +233,9 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netchan,
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
-  int result = use_udp ? write_to_socket(*(int*)socket_or_netchan, 1 + sizeof(uint16_t), reply_buffer)
-                       : write_to_netchan((netchan_t)socket_or_netchan, 1 + sizeof(uint16_t), reply_buffer);
+  int result = use_udp ? write_to_socket(*(int*)socket_or_net_abstraction, 1 + sizeof(uint16_t), reply_buffer)
+                       : write_to_net_abstraction((net_abstraction_t)socket_or_net_abstraction, 1 + sizeof(uint16_t),
+                                                  reply_buffer);
 
   if (result) {
     lf_print_error("Clock sync: Failed to send T3 message to RTI.");
@@ -298,24 +249,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_netchan,
   return 0;
 }
 
-/**
- * Handle a clock synchronization message T4 coming from the RTI.
- * If using the network channel, then assume we are in the
- * initial clock synchronization phase and set the clock offset
- * based on the estimated clock synchronization error.
- * Otherwise, if using the UDP socket, then this looks also for a
- * subsequent "coded probe" message on the socket. If the delay between
- * the T4 and the coded probe message is not as expected, then reject
- * this clock synchronization round. If it is not rejected, then make
- * an adjustment to the clock offset based on the estimated error.
- * This function does not acquire the netchan_mutex lock.
- * The caller should acquire it unless it is sure there is only one thread running.
- * @param buffer The buffer containing the message, including the message type.
- * @param socket_or_netchan The pointer of either UDP socket or the network channel.
- * @param r4 The physical time at which this T4 message was received.
- * @param use_UDP Boolean to use UDP or the network channel.
- */
-void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_netchan, instant_t r4, bool use_udp) {
+void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net_abstraction, instant_t r4, bool use_udp) {
   // Increment the number of received T4 messages
   _lf_rti_socket_stat.received_T4_messages_in_current_sync_window++;
 
@@ -350,7 +284,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_netchan
   if (use_udp) {
     // Read the coded probe message.
     // We can reuse the same buffer.
-    int read_failed = read_from_socket(*(int*)socket_or_netchan, 1 + sizeof(instant_t), buffer);
+    int read_failed = read_from_socket(*(int*)socket_or_net_abstraction, 1 + sizeof(instant_t), buffer);
 
     instant_t r5 = lf_time_physical();
 
@@ -439,10 +373,11 @@ void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_netchan
   }
 }
 
+#if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
 /**
  * Thread that listens for UDP inputs from the RTI.
  */
-void* listen_to_rti_UDP_thread(void* args) {
+static void* listen_to_rti_UDP_thread(void* args) {
   (void)args;
   initialize_lf_thread_id();
   // Listen for UDP messages from the RTI.
@@ -529,6 +464,7 @@ void* listen_to_rti_UDP_thread(void* args) {
   }
   return NULL;
 }
+#endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
 
 // If clock synchronization is enabled, provide implementations. If not
 // just empty implementations that should be optimized away.
@@ -548,14 +484,6 @@ void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 void clock_sync_set_constant_bias(interval_t offset) { (void)offset; }
 #endif // (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_INIT)
 
-/**
- * Create the thread responsible for handling clock synchronization
- * with the RTI if (runtime) clock synchronization is on.
- * Otherwise, do nothing an return 0.
- *
- * @return On success, returns 0; On error, it returns an error number.
- * \ingroup agroup
- */
 int create_clock_sync_thread(lf_thread_t* thread_id) {
 #if (LF_CLOCK_SYNC >= LF_CLOCK_SYNC_ON)
   // One for UDP messages if clock synchronization is enabled for this federate

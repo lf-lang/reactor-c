@@ -1,39 +1,18 @@
 /**
- * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Soroush Bateni (soroush@utdallas.edu)
+ * @file net_common.h
+ * @brief Common message types and definitions for federated Lingua Franca programs.
+ * @ingroup Network
  *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-/**
- * @section DESCRIPTION
- * Header file for common message types and definitions for federated Lingua Franca programs.
+ * @author Edward A. Lee
+ * @author Soroush Bateni
  *
  * This file defines the message types for the federate to communicate with the RTI.
  * Each message type has a unique one-byte ID.
  *
+ * ## Startup sequence
  * The startup sequence is as follows:
+ *
+ * ### Establishing a TCP connection
  *
  * Each federate attempts to connect with an RTI at the IP address
  * put into its code by the code generator (i.e., it attempts to
@@ -42,7 +21,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * use DEFAULT_PORT.
  *
  * When it has successfully opened a TCP connection, the first message it sends
- * to the RTI is a MSG_TYPE_FED_IDS message, which contains the ID of this federate
+ * to the RTI is a @ref MSG_TYPE_FED_IDS message, which contains the ID of this federate
  * within the federation, contained in the global variable _lf_my_fed_id
  * in the federate code
  * (which is initialized by the code generator) and the unique ID of
@@ -55,21 +34,23 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * its command line. If no ID is given on the command line, then the
  * default ID "Unidentified Federation" will be used.
  *
- * The RTI will respond with a MSG_TYPE_REJECT message if the federation IDs
+ * The RTI will respond with a @ref MSG_TYPE_REJECT message if the federation IDs
  * do not match and close the connection. At this point the federate
  * will increment the port number and try again to find an RTI that matches.
  *
  * When the federation IDs match, the RTI will respond with an
  * MSG_TYPE_ACK.
  *
- * The next message to the RTI will be a MSG_TYPE_NEIGHBOR_STRUCTURE message
+ * ### Conveying the neighbor structure
+ *
+ * The next message to the RTI will be a @ref MSG_TYPE_NEIGHBOR_STRUCTURE message
  * that informs the RTI about connections between this federate and other
  * federates where messages are routed through the RTI. Currently, this only
  * includes logical connections when the coordination is centralized. This
  * information is needed for the RTI to perform the centralized coordination.
  * The burden is on the federates to inform the RTI about relevant connections.
  *
- * The next message to the RTI will be a MSG_TYPE_UDP_PORT message, which has
+ * The next message to the RTI will be a @ref MSG_TYPE_UDP_PORT message, which has
  * payload USHRT_MAX if clock synchronization is disabled altogether, 0 if
  * only initial clock synchronization is enabled, and a port number for
  * UDP communication if runtime clock synchronization is enabled.
@@ -81,20 +62,22 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * property of the target to off. To turn on runtime clock synchronization,
  * set it to on. The default value is initial.
  *
+ * ### Clock synchronization
+ *
  * If initial clock sync is enabled, the next step is to perform the initial
  * clock synchronization (using the TCP connection), which attempts
  * to find an initial offset to the physical clock of the federate to make it
  * better match the physical clock at the RTI.
  *
  * Clock synchronization is initiated by the RTI by sending a message
- * of type MSG_TYPE_CLOCK_SYNC_T1, the payload of which is the
+ * of type @ref MSG_TYPE_CLOCK_SYNC_T1, the payload of which is the
  * current physical clock reading at the RTI. The federate records
  * the physical time when it receives this message (T2) and sends
- * a reply message of type MSG_TYPE_CLOCK_SYNC_T3 to the RTI.
+ * a reply message of type @ref MSG_TYPE_CLOCK_SYNC_T3 to the RTI.
  * It records the time (T3) at which this message has gone out.
- * The payload of the MSG_TYPE_CLOCK_SYNC_T3 message is the
+ * The payload of the @ref MSG_TYPE_CLOCK_SYNC_T3 message is the
  * federate ID.  The RTI responds to the T3 message with a message
- * of type MSG_TYPE_CLOCK_SYNC_T4, which has as a payload
+ * of type @ref MSG_TYPE_CLOCK_SYNC_T4, which has as a payload
  * the physical time at which that response was sent. This cycle will happen
  * _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL times at startup to account for network delay variations
  * (see below).
@@ -113,7 +96,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * start a thread to listen for incoming UDP messages from the RTI.
  * With period given by the `-c on period <n>` command-line argument, the RTI
  * will initiate a clock synchronization round by sending to the
- * federate a MSG_TYPE_CLOCK_SYNC_T1 message. A similar
+ * federate a @ref MSG_TYPE_CLOCK_SYNC_T1 message. A similar
  * protocol to that above is followed to estimate the average clock
  * synchronization error E, with two exceptions. First, a fraction
  * of E (given by _LF_CLOCK_SYNC_ATTENUATION) is used to adjust the
@@ -128,7 +111,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * and no adjustment is made. The round will also be skipped if
  * any of the expected UDP messages fails to arrive.
  *
- * FIXME: Citation needed here.
+ * See: Geng, Y., et al. (2018). Exploiting a Natural Network Effect
+ * for Scalable, Fine-grained Clock Synchronization.
+ * USENIX Symposium on Networked Systems Design and Implementation (NSDI),
+ * Renton, WA, USA.
+ *
+ * ### Setting up coordination
  *
  * The next step depends on the coordination mode. If the coordination
  * parameter of the target is "decentralized" and the federate has
@@ -140,7 +128,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * If the federate has outbound connections to other federates, then it
  * establishes a socket connection to those federates.  It does this by
- * first sending to the RTI an MSG_TYPE_ADDRESS_QUERY message with the payload
+ * first sending to the RTI an @ref MSG_TYPE_ADDRESS_QUERY message with the payload
  * being the ID of the federate it wishes to connect to. If the RTI
  * responds with a -1, then the RTI does not (yet) know the remote federate's
  * port number and IP address, so the local federate will try again
@@ -174,33 +162,54 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * FIXME: Expand this. Explain port absent reactions.
  *
+ * ### Requesting a stop
+ * Overview of the algorithm:
+ *  When any federate calls lf_request_stop(), it will
+ *  send a MSG_TYPE_STOP_REQUEST message to the RTI, which will then
+ *  forward a MSG_TYPE_STOP_REQUEST message
+ *  to any federate that has not yet provided a stop time to the RTI. The federates will reply
+ *  with a MSG_TYPE_STOP_REQUEST_REPLY and a stop tag (which shall be the
+ *  maximum of their current logical tag
+ *  at the time they receive the MSG_TYPE_STOP_REQUEST and the tag of the stop
+ *  request). When the RTI has gathered all the stop tags
+ *  from federates (that are still connected), it will decide on a common stop tag
+ *  which is the maximum of the seen stop tag and answer with a MSG_TYPE_STOP_GRANTED. The federate
+ *  sending the MSG_TYPE_STOP_REQUEST and federates sending the MSG_TYPE_STOP_REQUEST_REPLY will freeze
+ *  the advancement of tag until they receive the MSG_TYPE_STOP_GRANTED message, in which
+ *  case they might continue their execution until the stop tag has been reached.
+ *
  */
 
 #ifndef NET_COMMON_H
 #define NET_COMMON_H
 
 /**
- * Size of the buffer used for messages sent between federates.
- * This is used by both the federates and the rti, so message lengths
+ * @brief Size of the buffer used for messages sent between federates.
+ * @ingroup Network
+ *
+ * This is used by both the federates and the RTI, so message lengths
  * should generally match.
  */
 #define FED_COM_BUFFER_SIZE 256u
 
 /**
- * Time that a federate waits before asking
- * the RTI again for the port and IP address of a federate
- * (an MSG_TYPE_ADDRESS_QUERY message) after the RTI responds that it
- * does not know.  This allows time for federates to start separately.
+ * @brief Time that a federate waits before asking the RTI again for the port and IP address of a federate.
+ * @ingroup Network
+ *
+ * The federate repeatedly sends an MSG_TYPE_ADDRESS_QUERY message after the RTI responds that it
+ * does not know to previous such messages.  This allows time for federates to start separately.
  */
 #define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)
 
 /**
- * Delay the start of all federates by this amount.
+ * @brief Delay the start of all federates by this amount.
+ * @ingroup Network
+ *
  * This helps ensure that the federates do not start at the same time.
  * Each federate has provided its current physical time to the RTI, and
  * the RTI has picked the largest of these.  It will add this quantity
  * and declare that to be the start time.
- * FIXME: This could use the latency estimates that were
+ * @note This could use the latency estimates that were
  * acquired during initial clock synchronization.
  */
 #define DELAY_START SEC(1)
@@ -215,31 +224,39 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // can be listed in a logical order here even as the design evolves).
 
 /**
- * Byte identifying a rejection of the previously received message.
+ * @brief Byte identifying a rejection of the previously received message.
+ * @ingroup Network
+ *
  * The reason for the rejection is included as an additional byte
  * (uchar) (see below for encodings of rejection reasons).
  */
 #define MSG_TYPE_REJECT 0
 
 /**
- * Byte identifying an acknowledgment of the previously received message.
+ * @brief Byte identifying an acknowledgment of the previously received message.
+ * @ingroup Network
+ *
  * This message carries no payload.
  */
 #define MSG_TYPE_ACK 255
 
 /**
- * Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS message
- * sent by the RTI to the federate
- * with a payload indicating the UDP port to use for clock synchronization.
- * The next four bytes will be the port number for the UDP server, or
+ * @brief Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS message.
+ * @ingroup Network
+ *
+ * This message is sent by the RTI to the federate with a payload indicating the UDP port to use
+ * for clock synchronization. The next four bytes will be the port number for the UDP server, or
  * 0 or USHRT_MAX if there is no UDP server.  0 means that initial clock synchronization
  * is enabled, whereas USHRT_MAX mean that no synchronization should be performed at all.
  */
 #define MSG_TYPE_UDP_PORT 254
 
-/** Byte identifying a message from a federate to an RTI containing
- *  the federation ID and the federate ID. The message contains, in
- *  this order:
+/**
+ * @brief Byte identifying a message from a federate to an RTI containing
+ * the federation ID and the federate ID.
+ * @ingroup Network
+ *
+ * The message contains, in this order:
  *  * One byte equal to MSG_TYPE_FED_IDS.
  *  * Two bytes (ushort) giving the federate ID.
  *  * One byte (uchar) giving the length N of the federation ID.
@@ -257,9 +274,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /////////// Messages used for authenticated federation. ///////////////
 /**
- * Byte identifying a message from a federate to an RTI containing
- * federate's 8-byte random nonce for HMAC-based authentication. The federate sends this
- * message to an incoming RTI when TCP connection is established
+ * @brief Byte identifying a message from a federate to an RTI containing
+ * federate's 8-byte random nonce for HMAC-based authentication.
+ * @ingroup Network
+ *
+ * The federate sends this message to an incoming RTI when TCP connection is established
  * between the RTI and the federate.
  * The message contains, in this order:
  * * One byte equal to MSG_TYPE_FED_NONCE.
@@ -269,8 +288,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_FED_NONCE 100
 
 /**
- * Byte identifying a message from RTI to federate as a response to the FED_NONCE
- * message. The RTI sends this message to federate for HMAC-based authentication.
+ * @brief Byte identifying a message from RTI to federate as a response to the FED_NONCE
+ * message.
+ * @ingroup Network
+ *
+ * The RTI sends this message to federate for HMAC-based authentication.
  * The message contains, in this order:
  * * One byte equal to MSG_TYPE_RTI_RESPONSE.
  * * Eight bytes for RTI's nonce.
@@ -283,8 +305,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_RTI_RESPONSE 101
 
 /**
- * Byte identifying a message from federate to RTI as a response to the RTI_RESPONSE
- * message. The federate sends this message to RTI for HMAC-based authentication.
+ * @brief Byte identifying a message from federate to RTI as a response to the RTI_RESPONSE
+ * message.
+ * @ingroup Network
+ *
+ * The federate sends this message to RTI for HMAC-based authentication.
  * The message contains, in this order:
  * * One byte equal to MSG_TYPE_FED_RESPONSE.
  * * 32 bytes for HMAC tag based on SHA256.
@@ -295,42 +320,57 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_FED_RESPONSE 102
 
 /**
- * The randomly created nonce size will be 8 bytes.
+ * @brief The randomly created nonce size will be 8 bytes.
+ * @ingroup Network
  */
 #define NONCE_LENGTH 8
 
 /**
- * The HMAC tag uses the SHA256 hash algorithm, creating a 32 byte length hash tag.
+ * @brief The HMAC tag uses the SHA256 hash algorithm, creating a 32 byte length hash tag.
+ * @ingroup Network
  */
 #define SHA256_HMAC_LENGTH 32
 
 /**
- * Byte identifying a timestamp message, which is 64 bits long.
+ * @brief Byte identifying a timestamp message, which is 64 bits long.
+ * @ingroup Network
+ *
  * Each federate sends its starting physical time as a message of this
  * type, and the RTI broadcasts to all the federates the starting logical
  * time as a message of this type.
- s*/
+ */
 #define MSG_TYPE_TIMESTAMP 2
+
+/**
+ * @brief The length of a timestamp message.
+ * @ingroup Network
+ */
 #define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(int64_t))
 
-/** Byte identifying a message to forward to another federate.
- *  The next two bytes will be the ID of the destination port.
- *  The next two bytes are the destination federate ID.
- *  The four bytes after that will be the length of the message.
- *  The remaining bytes are the message.
- *  NOTE: This is currently not used. All messages are tagged, even
- *  on physical connections, because if "after" is used, the message
- *  may preserve the logical timestamp rather than using the physical time.
+/**
+ * @brief Byte identifying a message to forward to another federate.
+ * @ingroup Network
+ *
+ * The next two bytes will be the ID of the destination port.
+ * The next two bytes are the destination federate ID.
+ * The four bytes after that will be the length of the message.
+ * The remaining bytes are the message.
+ * @note This is currently not used. All messages are tagged, even
+ * on physical connections, because if "after" is used, the message
+ * may preserve the logical timestamp rather than using the physical time.
  */
 #define MSG_TYPE_MESSAGE 3
 
 /**
- * Byte identifying that the federate or the RTI is ending its execution.
+ * @brief Byte identifying that the federate or the RTI is ending its execution.
+ * @ingroup Network
  */
 #define MSG_TYPE_RESIGN 4
 
 /**
- * Byte identifying a timestamped message to forward to another federate.
+ * @brief Byte identifying a timestamped message to forward to another federate.
+ * @ingroup Network
+ *
  * The next two bytes will be the ID of the destination reactor port.
  * The next two bytes are the destination federate ID.
  * The four bytes after that will be the length of the message (as an unsigned 32-bit int).
@@ -345,11 +385,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_TAGGED_MESSAGE 5
 
 /**
- * Byte identifying a next event tag (NET) message sent from a federate in
- * centralized coordination. The next eight bytes will be the timestamp. The
- * next four bytes will be the microstep. This message from a federate tells the
- * RTI the tag of the earliest event on that federate's event queue. In other
- * words, absent any further inputs from other federates, this will be the least
+ * @brief Byte identifying a next event tag (NET) message sent from a federate in
+ * centralized coordination.
+ * @ingroup Network
+ *
+ * The next eight bytes will be the timestamp. The next four bytes will be the microstep.
+ * This message from a federate tells the RTI the tag of the earliest event on that
+ * federate's event queue. In other words, absent any further inputs from other federates,
+ * this will be the least tag of the next set of reactions on that federate.
  * tag of the next set of reactions on that federate. If the event queue is
  * empty and a timeout time has been specified, then the timeout time will be
  * sent. If there is no timeout time, then FOREVER will be sent. Note that if
@@ -361,48 +404,40 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_NEXT_EVENT_TAG 6
 
 /**
- * Byte identifying a time advance grant (TAG) sent by the RTI to a federate
- * in centralized coordination. This message is a promise by the RTI to the federate
- * that no later message sent to the federate will have a tag earlier than or
- * equal to the tag carried by this TAG message.
+ * @brief Byte identifying a time advance grant (TAG) sent by the RTI to a federate
+ * in centralized coordination.
+ * @ingroup Network
+ *
+ * This message is a promise by the RTI to the federate that no later message sent to the
+ * federate will have a tag earlier than or equal to the tag carried by this TAG message.
  * The next eight bytes will be the timestamp.
  * The next four bytes will be the microstep.
  */
 #define MSG_TYPE_TAG_ADVANCE_GRANT 7
 
 /**
- * Byte identifying a provisional time advance grant (PTAG) sent by the RTI to a federate
- * in centralized coordination. This message is a promise by the RTI to the federate
- * that no later message sent to the federate will have a tag earlier than the tag
- * carried by this PTAG message.
+ * @brief Byte identifying a provisional time advance grant (PTAG) sent by the RTI to a federate
+ * in centralized coordination.
+ * @ingroup Network
+ *
+ * This message is a promise by the RTI to the federate that no later message sent to the
+ * federate will have a tag earlier than the tag carried by this PTAG message.
  * The next eight bytes will be the timestamp.
  * The next four bytes will be the microstep.
  */
 #define MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT 8
 
 /**
- * Byte identifying a latest tag confirmed (LTC) message sent by a federate
+ * @brief Byte identifying a latest tag confirmed (LTC) message sent by a federate
  * to the RTI.
+ * @ingroup Network
+ *
  * The next eight bytes will be the timestep of the completed tag.
  * The next four bytes will be the microsteps of the completed tag.
  */
 #define MSG_TYPE_LATEST_TAG_CONFIRMED 9
 
 /////////// Messages used in lf_request_stop() ///////////////
-//// Overview of the algorithm:
-////  When any federate calls lf_request_stop(), it will
-////  send a MSG_TYPE_STOP_REQUEST message to the RTI, which will then
-////  forward a MSG_TYPE_STOP_REQUEST message
-////  to any federate that has not yet provided a stop time to the RTI. The federates will reply
-////  with a MSG_TYPE_STOP_REQUEST_REPLY and a stop tag (which shall be the
-////  maximum of their current logical tag
-////  at the time they receive the MSG_TYPE_STOP_REQUEST and the tag of the stop
-////  request). When the RTI has gathered all the stop tags
-////  from federates (that are still connected), it will decide on a common stop tag
-////  which is the maximum of the seen stop tag and answer with a MSG_TYPE_STOP_GRANTED. The federate
-////  sending the MSG_TYPE_STOP_REQUEST and federates sending the MSG_TYPE_STOP_REQUEST_REPLY will freeze
-////  the advancement of tag until they receive the MSG_TYPE_STOP_GRANTED message, in which
-////  case they might continue their execution until the stop tag has been reached.
 
 /**
  * Byte identifying a stop request. This message is first sent to the RTI by a federate
@@ -425,7 +460,21 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * other federate, then it should be possible to respect its requested stop tag.
  */
 #define MSG_TYPE_STOP_REQUEST 10
+
+/**
+ * @brief The length of a stop request message.
+ * @ingroup Network
+ */
 #define MSG_TYPE_STOP_REQUEST_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
+
+/**
+ * @brief Encode a stop request message.
+ * @ingroup Network
+ *
+ * @param buffer The buffer to encode the message into.
+ * @param time The time at which the federates will stop.
+ * @param microstep The microstep at which the federates will stop.
+ */
 #define ENCODE_STOP_REQUEST(buffer, time, microstep)                                                                   \
   do {                                                                                                                 \
     buffer[0] = MSG_TYPE_STOP_REQUEST;                                                                                 \
@@ -442,7 +491,21 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The next 4 bytes will be the microstep.
  */
 #define MSG_TYPE_STOP_REQUEST_REPLY 11
+
+/**
+ * @brief The length of a stop request reply message.
+ * @ingroup Network
+ */
 #define MSG_TYPE_STOP_REQUEST_REPLY_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
+
+/**
+ * @brief Encode a stop request reply message.
+ * @ingroup Network
+ *
+ * @param buffer The buffer to encode the message into.
+ * @param time The time at which the federates will stop.
+ * @param microstep The microstep at which the federates will stop.
+ */
 #define ENCODE_STOP_REQUEST_REPLY(buffer, time, microstep)                                                             \
   do {                                                                                                                 \
     buffer[0] = MSG_TYPE_STOP_REQUEST_REPLY;                                                                           \
@@ -451,14 +514,30 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   } while (0)
 
 /**
- * Byte sent by the RTI indicating that the stop request from some federate
- * has been granted. The payload is the tag at which all federates have
- * agreed that they can stop.
- * The next 8 bytes will be the time at which the federates will stop. *
- * The next 4 bytes will be the microstep at which the federates will stop..
+ * @brief Byte sent by the RTI indicating that the stop request from some federate
+ * has been granted.
+ * @ingroup Network
+ *
+ * The payload is the tag at which all federates have agreed that they can stop.
+ * The next 8 bytes will be the time at which the federates will stop.
+ * The next 4 bytes will be the microstep at which the federates will stop.
  */
 #define MSG_TYPE_STOP_GRANTED 12
+
+/**
+ * @brief The length of a stop granted message.
+ * @ingroup Network
+ */
 #define MSG_TYPE_STOP_GRANTED_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
+
+/**
+ * @brief Encode a stop granted message.
+ * @ingroup Network
+ *
+ * @param buffer The buffer to encode the message into.
+ * @param time The time at which the federates will stop.
+ * @param microstep The microstep at which the federates will stop.
+ */
 #define ENCODE_STOP_GRANTED(buffer, time, microstep)                                                                   \
   do {                                                                                                                 \
     buffer[0] = MSG_TYPE_STOP_GRANTED;                                                                                 \
@@ -469,15 +548,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /////////// End of lf_request_stop() messages ////////////////
 
 /**
- * Byte identifying a address query message, sent by a federate to RTI
+ * @brief Byte identifying a address query message, sent by a federate to RTI
  * to ask for another federate's address and port number.
+ * @ingroup Network
+ *
  * The next two bytes are the other federate's ID.
  */
 #define MSG_TYPE_ADDRESS_QUERY 13
 
 /**
- * Byte identifying a address query message reply, sent by a RTI to a federate
+ * @brief Byte identifying a address query message reply, sent by a RTI to a federate
  * to reply with a remote federate's address and port number.
+ * @ingroup Network
+ *
  * The reply from the RTI will be a port number (an int32_t), which is -1
  * if the RTI does not know yet (it has not received MSG_TYPE_ADDRESS_ADVERTISEMENT from
  * the other federate), followed by the IP address of the other
@@ -488,8 +571,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_ADDRESS_QUERY_REPLY 14
 
 /**
- * Byte identifying a message advertising the port for the TCP connection server
- * of a federate. This is utilized in decentralized coordination as well as for physical
+ * @brief Byte identifying a message advertising the port for the TCP connection server
+ * of a federate.
+ * @ingroup Network
+ *
+ * This is utilized in decentralized coordination as well as for physical
  * connections in centralized coordination.
  * The next four bytes (or sizeof(int32_t)) will be the port number.
  * The sending federate will not wait for a response from the RTI and assumes its
@@ -498,8 +584,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_ADDRESS_ADVERTISEMENT 15
 
 /**
- * Byte identifying a first message that is sent by a federate directly to another federate
- * after establishing a socket connection to send messages directly to the federate. This
+ * @brief Byte identifying a first message that is sent by a federate directly to another federate
+ * after establishing a socket connection to send messages directly to the federate.
+ * @ingroup Network
+ *
+ * This
  * first message contains two bytes identifying the sending federate (its ID), a byte
  * giving the length of the federation ID, followed by the federation ID (a string).
  * The response from the remote federate is expected to be MSG_TYPE_ACK, but if the remote
@@ -509,7 +598,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_P2P_SENDING_FED_ID 16
 
 /**
- * Byte identifying a message to send directly to another federate.
+ * @brief Byte identifying a message to send directly to another federate.
+ * @ingroup Network
  *
  * The next two bytes will be the ID of the destination port.
  * The next two bytes are the destination federate ID. This is checked against
@@ -520,7 +610,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_P2P_MESSAGE 17
 
 /**
- * Byte identifying a timestamped message to send directly to another federate.
+ * @brief Byte identifying a timestamped message to send directly to another federate.
+ * @ingroup Network
+ *
  * This is a variant of @see MSG_TYPE_TAGGED_MESSAGE that is used in P2P connections between
  * federates. Having a separate message type for P2P connections between federates
  * will be useful in preventing crosstalk.
@@ -538,29 +630,33 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ////////////////////////////////////////////////
 /**
- * Physical clock synchronization messages according to PTP.
- */
-
-/*
- * The next 8 bytes will be a timestamp sent according to
- * PTP.
+ * @brief Physical clock synchronization messages according to PTP.
+ * @ingroup Network
+ *
+ * The next 8 bytes will be a timestamp sent according to PTP.
  */
 #define MSG_TYPE_CLOCK_SYNC_T1 19
 
-/*
- * Prompts the master to send a T4.
- * The next four bytes will be the sendin federate's id
+/**
+ * @brief Prompt the master to send a T4.
+ * @ingroup Network
+ *
+ * The next four bytes will be the sending federate's id.
  */
 #define MSG_TYPE_CLOCK_SYNC_T3 20
 
-/*
- * The next 8 bytes will be a timestamp sent according to
- * PTP.
+/**
+ * @brief Physical clock synchronization message according to PTP.
+ * @ingroup Network
+ *
+ * The next 8 bytes will be a timestamp sent according to PTP.
  */
 #define MSG_TYPE_CLOCK_SYNC_T4 21
 
 /**
- * Coded probe message.
+ * @brief Coded probe message.
+ * @ingroup Network
+ *
  * This messages is sent by the server (master)
  * right after MSG_TYPE_CLOCK_SYNC_T4(t1) with a new physical clock snapshot t2.
  * At the receiver, the previous MSG_TYPE_CLOCK_SYNC_T4 message and this message
@@ -572,8 +668,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_CLOCK_SYNC_CODED_PROBE 22
 
 /**
- * A port absent message, informing the receiver that a given port
+ * @brief A port absent message, informing the receiver that a given port
  * will not have event for the current logical time.
+ * @ingroup Network
  *
  * The next 2 bytes is the port id.
  * The next 2 bytes will be the federate id of the destination federate.
@@ -585,10 +682,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_PORT_ABSENT 23
 
 /**
- * A message that informs the RTI about connections between this federate and
- * other federates where messages are routed through the RTI. Currently, this
- * only includes logical connections when the coordination is centralized. This
- * information is needed for the RTI to perform the centralized coordination.
+ * @brief A message that informs the RTI about connections between this federate and
+ * other federates where messages are routed through the RTI.
+ * @ingroup Network
+ *
+ * Currently, this only includes logical connections when the coordination is centralized.
+ * This information is needed for the RTI to perform the centralized coordination.
  *
  * @note Only information about the immediate neighbors is required. The RTI can
  * transitively obtain the structure of the federation based on each federate's
@@ -610,16 +709,24 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  information about one, but not the other (which is a critical error).
  */
 #define MSG_TYPE_NEIGHBOR_STRUCTURE 24
+
+/**
+ * @brief The size of the header of a neighbor structure message.
+ * @ingroup Network
+ */
 #define MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE 9
 
 /**
- * Byte identifying that the federate or the RTI has failed.
+ * @brief Byte identifying that the federate or the RTI has failed.
+ * @ingroup Network
  */
 #define MSG_TYPE_FAILED 25
 
 /**
- * Byte identifying a downstream next event tag (DNET) message sent
+ * @brief Byte identifying a downstream next event tag (DNET) message sent
  * from the RTI in centralized coordination.
+ * @ingroup Network
+ *
  * The next eight bytes will be the timestamp.
  * The next four bytes will be the microstep.
  * This signal from the RTI tells the destination federate that downstream
@@ -633,29 +740,52 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //// Rejection codes
 
 /**
- * These codes are sent in a MSG_TYPE_REJECT message.
- * They are limited to one byte (uchar).
+ * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
+ * federation ID does not match.
+ * @ingroup Network
  */
-
-/** Federation ID does not match. */
 #define FEDERATION_ID_DOES_NOT_MATCH 1
 
-/** Federate with the specified ID has already joined. */
+/**
+ * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
+ * federate ID is already in use.
+ * @ingroup Network
+ */
 #define FEDERATE_ID_IN_USE 2
 
-/** Federate ID out of range. */
+/**
+ * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
+ * federate ID is out of range.
+ * @ingroup Network
+ */
 #define FEDERATE_ID_OUT_OF_RANGE 3
 
-/** Incoming message is not expected. */
+/**
+ * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
+ * incoming message is not expected.
+ * @ingroup Network
+ */
 #define UNEXPECTED_MESSAGE 4
 
-/** Connected to the wrong server. */
+/**
+ * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
+ * connected to the wrong server.
+ * @ingroup Network
+ */
 #define WRONG_SERVER 5
 
-/** HMAC authentication failed. */
+/**
+ * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
+ * HMAC authentication failed.
+ * @ingroup Network
+ */
 #define HMAC_DOES_NOT_MATCH 6
 
-/** RTI not executed using -a or --auth option. */
+/**
+ * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
+ * RTI was not executed using the -a or --auth option.
+ * @ingroup Network
+ */
 #define RTI_NOT_EXECUTED_WITH_AUTH 7
 
 #endif /* NET_COMMON_H */
