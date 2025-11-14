@@ -54,7 +54,7 @@ typedef struct federate_info_t {
   /** @brief The ID of the thread handling communication with this federate. */
   lf_thread_t thread_id;
   /** @brief The network abstraction for communicating with this federate. */
-  net_abstraction_t fed_net_abstraction;
+  net_abstraction_t net;
   /** @brief The UDP address for the federate. */
   struct sockaddr_in UDP_addr;
   /** @brief Indicates the status of clock synchronization for this federate. Enabled by default. */
@@ -113,7 +113,7 @@ typedef struct rti_remote_t {
   const char* federation_id;
 
   /** @brief The desired port specified by the user on the command line.
-   * This should be not moved to the net_abstraction, because the user can configure this as -p or --port.
+   * This should be not moved to the net_abstraction_t, because the user can configure this as -p or --port.
    */
   uint16_t user_specified_port;
 
@@ -126,7 +126,7 @@ typedef struct rti_remote_t {
   /**
    * The rti's network abstraction.
    */
-  net_abstraction_t rti_net_abstraction;
+  net_abstraction_t rti_net;
 
   /** @brief Thread performing PTP clock sync sessions periodically. */
   lf_thread_t clock_thread;
@@ -361,9 +361,9 @@ void send_reject(net_abstraction_t net_abs, unsigned char error_code);
  *
  * Return when all federates have connected.
  *
- * @param rti_net_abstraction The rti's network abstraction on which to accept connections.
+ * @param rti_net The rti's network abstraction on which to accept connections.
  */
-void lf_connect_to_federates(net_abstraction_t rti_net_abstraction);
+void lf_connect_to_federates(net_abstraction_t rti_net);
 
 /**
  * @brief Thread to respond to new connections, which could be federates of other federations

@@ -240,9 +240,9 @@ uint16_t setup_clock_synchronization_with_rti(void);
  * Failing to complete this protocol is treated as a catastrophic
  * error that causes the federate to exit.
  *
- * @param rti_net_abstraction Pointer to the RTI's network abstraction.
+ * @param rti_net Pointer to the RTI's network abstraction.
  */
-void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net_abstraction);
+void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net);
 
 /**
  * @brief Handle a clock synchroninzation message T1 coming from the RTI.
@@ -258,28 +258,28 @@ void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net_abstr
  * @param use_UDP Boolean to use UDP or the network abstraction.
  * @return 0 if T3 reply is successfully sent, -1 otherwise.
  */
-int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net_abstraction, instant_t t2, bool use_udp);
+int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t t2, bool use_udp);
 
 /**
  * @brief Handle a clock synchronization message T4 coming from the RTI.
  * @ingroup Federated
  *
- * If the socket_or_net_abstraction is a network abstraction, then assume we are in the
+ * If the socket_or_net is a network abstraction, then assume we are in the
  * initial clock synchronization phase and set the clock offset
  * based on the estimated clock synchronization error.
- * Otherwise, if the socket_or_net_abstraction is UDP socket, then this looks also for a
+ * Otherwise, if the socket_or_net is UDP socket, then this looks also for a
  * subsequent "coded probe" message on the socket. If the delay between
  * the T4 and the coded probe message is not as expected, then reject
  * this clock synchronization round. If it is not rejected, then make
  * an adjustment to the clock offset based on the estimated error.
- * This function does not acquire the net_abstraction_mutex lock.
+ * This function does not acquire the net_mutex lock.
  * The caller should acquire it unless it is sure there is only one thread running.
  * @param buffer The buffer containing the message, including the message type.
  * @param net_abstraction_t The pointer to the network abstraction.
  * @param r4 The physical time at which this T4 message was received.\
  * @param use_UDP Boolean to use UDP or the network abstraction.
  */
-void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net_abstraction, instant_t r4, bool use_udp);
+void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t r4, bool use_udp);
 
 /**
  * @brief Create the thread responsible for handling clock synchronization

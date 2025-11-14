@@ -43,12 +43,12 @@ typedef struct federate_instance_t {
    * This is set by lf_connect_to_rti(), which must be called before other
    * functions that communicate with the rti are called.
    */
-  net_abstraction_t net_abstraction_to_RTI;
+  net_abstraction_t net_to_RTI;
 
   /**
    * Thread listening for incoming messages from the RTI.
    */
-  lf_thread_t RTI_net_abstraction_listener;
+  lf_thread_t RTI_net_listener;
 
   /**
    * Number of inbound physical connections to the federate.
@@ -62,7 +62,7 @@ typedef struct federate_instance_t {
    * This is NULL if there are none and otherwise has size given by
    * number_of_inbound_p2p_connections.
    */
-  lf_thread_t* inbound_net_abstraction_listeners;
+  lf_thread_t* inbound_net_listeners;
 
   /**
    * Number of outbound peer-to-peer connections from the federate.
@@ -84,7 +84,7 @@ typedef struct federate_instance_t {
    * federate is the destination. Multiple incoming p2p connections from the
    * same remote federate will use the same network abstraction.
    */
-  net_abstraction_t net_abstractions_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+  net_abstraction_t net_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
    * An array that holds the network abstractions for outbound direct
@@ -99,7 +99,7 @@ typedef struct federate_instance_t {
    * program where this federate acts as the source. Multiple outgoing p2p
    * connections to the same remote federate will use the same network abstractions.
    */
-  net_abstraction_t net_abstractions_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+  net_abstraction_t net_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
    * Thread ID for a thread that accepts network abstractions and then supervises
@@ -113,9 +113,9 @@ typedef struct federate_instance_t {
    * This network abstraction is used to listen to incoming physical connections from
    * remote federates. Once an incoming connection is accepted, the
    * opened network abstraction will be stored in
-   * federate_net_abstractions_for_inbound_p2p_connections.
+   * federate_net_for_inbound_p2p_connections.
    */
-  net_abstraction_t server_net_abstraction;
+  net_abstraction_t server_net;
 
   /**
    * Most recent tag advance grant (TAG) received from the RTI, or NEVER if none
@@ -237,7 +237,7 @@ typedef enum parse_rti_code_t { SUCCESS, INVALID_PORT, INVALID_HOST, INVALID_USE
  * @brief Mutex lock held while performing outbound network abstraction write and close operations.
  * @ingroup Federated
  */
-extern lf_mutex_t lf_outbound_net_abstraction_mutex;
+extern lf_mutex_t lf_outbound_net_mutex;
 
 /**
  * @brief Condition variable for blocking on unkonwn federate input ports.
@@ -258,7 +258,7 @@ extern lf_cond_t lf_port_status_changed;
  * the IP address and port number of the specified federate. It then attempts
  * to establish a network abstraction connection to the specified federate.
  * If this fails, the program exits. If it succeeds, it sets element [id] of
- * the _fed.net_abstractions_for_outbound_p2p_connections global array to
+ * the _fed.net_for_outbound_p2p_connections global array to
  * refer to the network abstraction for communicating directly with the federate.
  *
  * @param remote_federate_id The ID of the remote federate.
@@ -273,7 +273,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id);
  * If port_number is 0, then start at DEFAULT_PORT and increment
  * the port number on each attempt. If an attempt fails, wait CONNECT_RETRY_INTERVAL
  * and try again.  If it fails after CONNECT_TIMEOUT, the program exits.
- * If it succeeds, it sets the _fed.net_abstraction_to_RTI global variable to refer to
+ * If it succeeds, it sets the _fed.net_to_RTI global variable to refer to
  * the network abstraction for communicating with the RTI.
  *
  * @param hostname A hostname, such as "localhost".
@@ -365,7 +365,7 @@ void lf_reset_status_fields_on_input_port_triggers(void);
  * between federates. If the connection to the remote federate or the RTI has been broken,
  * then this returns -1 without sending. Otherwise, it returns 0.
  *
- * This method assumes that the caller does not hold the lf_outbound_net_abstraction_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_net_mutex lock,
  * which it acquires to perform the send.
  *
  * @param message_type The type of the message being sent (currently only MSG_TYPE_P2P_MESSAGE).
@@ -494,7 +494,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  * to believe that there were no messages forthcoming.  In this case, on failure to send
  * the message, this function returns -11.
  *
- * This method assumes that the caller does not hold the lf_outbound_net_abstraction_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_net_mutex lock,
  * which it acquires to perform the send.
  *
  * @param env The environment from which to get the current tag.
@@ -557,7 +557,7 @@ void lf_stall_advance_level_federation_locked(size_t level);
  * @ingroup Federated
  *
  * This assumes that a connection to the RTI is already made
- * and net_abstraction_to_RTI is valid. It then sends the current logical
+ * and net_to_RTI is valid. It then sends the current logical
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
  */

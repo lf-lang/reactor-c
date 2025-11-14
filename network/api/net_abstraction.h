@@ -26,7 +26,7 @@ typedef void* net_abstraction_t;
  * Allocate memory for the network abstraction.
  * @return net_abstraction_t Initialized network abstraction.
  */
-net_abstraction_t initialize_net_abstraction();
+net_abstraction_t initialize_net();
 
 /**
  * @brief Create a server network abstraction that will accept incoming connections.
@@ -56,7 +56,7 @@ int create_server(net_abstraction_t net_abs, bool increment_port_on_retry);
  * @param rti_chan The rti's network abstraction to check if it is still open.
  * @return net_abstraction_t The network abstraction for the newly accepted connection on success, or NULL on failure
  */
-net_abstraction_t accept_net_abstraction(net_abstraction_t server_chan, net_abstraction_t rti_chan);
+net_abstraction_t accept_net(net_abstraction_t server_chan, net_abstraction_t rti_chan);
 
 /**
  * @brief Initialize a client network abstraction for connecting to a server.
@@ -78,7 +78,7 @@ void create_client(net_abstraction_t net_abs);
  * @param net_abs network abstraction to connect.
  * @return 0 for success, -1 on failure, and `errno` is set to indicate the specific error.
  */
-int connect_to_net_abstraction(net_abstraction_t net_abs);
+int connect_to_net(net_abstraction_t net_abs);
 
 /**
  * @brief Read a fixed number of bytes from a network abstraction.
@@ -94,20 +94,20 @@ int connect_to_net_abstraction(net_abstraction_t net_abs);
  * @param buffer The buffer into which to put the bytes.
  * @return 0 for success, 1 for EOF, and -1 for an error.
  */
-int read_from_net_abstraction(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer);
+int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer);
 
 /**
  * @brief Read bytes and close the network abstraction on error.
  * @ingroup Network
  *
- * Uses read_from_net_abstraction and closes the channel if an error occurs.
+ * Uses read_from_net and closes the channel if an error occurs.
  *
  * @param net_abs The network abstraction.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int read_from_net_abstraction_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer);
+int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer);
 
 /**
  * @brief Read bytes from a network abstraction and fail (exit) on error.
@@ -126,14 +126,13 @@ int read_from_net_abstraction_close_on_error(net_abstraction_t net_abs, size_t n
  * @param format A printf-style format string, followed by arguments to
  *  fill the string, or NULL to not exit with an error message.
  */
-void read_from_net_abstraction_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer,
-                                             char* format, ...);
+void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer, char* format, ...);
 
 /**
  * @brief Write a fixed number of bytes to a network abstraction.
  * @ingroup Network
  *
- * Write the specified number of bytes to the specified network abstraction using write_to_net_abstraction
+ * Write the specified number of bytes to the specified network abstraction using write_to_net
  * and close the network abstraction if an error occurs.
  * If an error occurs, return -1 and set errno to indicate the cause. If the write succeeds, return 0.
  * This function retries until the specified number of bytes have been written or an error occurs.
@@ -143,27 +142,27 @@ void read_from_net_abstraction_fail_on_error(net_abstraction_t net_abs, size_t n
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int write_to_net_abstraction(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer);
+int write_to_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer);
 
 /**
  * @brief Write bytes to a network abstraction and close on error.
  * @ingroup Network
  *
- * Uses write_to_net_abstraction and closes the channel if an error occurs.
+ * Uses write_to_net and closes the channel if an error occurs.
  *
  * @param net_abs The network abstraction.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
  * @return 0 for success, -1 for failure.
  */
-int write_to_net_abstraction_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer);
+int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer);
 
 /**
  * @brief Write bytes to a network abstraction and fail (exit) on error.
  * @ingroup Network
  *
  * Write the specified number of bytes to the specified network abstraction using
- * write_to_net_abstraction_close_on_error and exit with an error code if an error occurs.
+ * write_to_net_close_on_error and exit with an error code if an error occurs.
  * If the mutex argument is non-NULL, release the mutex before exiting.  If the
  * format argument is non-null, then use it an any additional arguments to form
  * the error message using printf conventions. Otherwise, print a generic error
@@ -176,8 +175,8 @@ int write_to_net_abstraction_close_on_error(net_abstraction_t net_abs, size_t nu
  *  fields that will be used to fill the format string as in printf, or NULL
  *  to print a generic error message.
  */
-void write_to_net_abstraction_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer,
-                                            lf_mutex_t* mutex, char* format, ...);
+void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+                                char* format, ...);
 
 /**
  * @brief Check whether the network abstraction is closed.
@@ -188,7 +187,7 @@ void write_to_net_abstraction_fail_on_error(net_abstraction_t net_abs, size_t nu
  * @param net_abs The network abstraction.
  * @return true if closed, false if still open.
  */
-bool check_net_abstraction_closed(net_abstraction_t net_abs);
+bool check_net_closed(net_abstraction_t net_abs);
 
 /**
  * @brief Gracefully shut down and close a network abstraction.
@@ -202,7 +201,7 @@ bool check_net_abstraction_closed(net_abstraction_t net_abs);
  * @param read_before_closing If true, read until EOF before closing the network abstraction.
  * @return int Returns 0 on success, -1 on failure (errno will indicate the error).
  */
-int shutdown_net_abstraction(net_abstraction_t net_abs, bool read_before_closing);
+int shutdown_net(net_abstraction_t net_abs, bool read_before_closing);
 
 /**
  * @brief Get the server port number of this network abstraction.

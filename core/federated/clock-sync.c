@@ -170,7 +170,7 @@ uint16_t setup_clock_synchronization_with_rti() {
   return port_to_return;
 }
 
-void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net_abstraction) {
+void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net) {
   LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
   size_t message_size = 1 + sizeof(instant_t);
@@ -178,9 +178,9 @@ void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net_abstr
 
   for (int i = 0; i < _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL; i++) {
     // The first message expected from the RTI is MSG_TYPE_CLOCK_SYNC_T1
-    read_from_net_abstraction_fail_on_error(
-        rti_net_abstraction, message_size, buffer,
-        "Federate %d did not get the initial clock synchronization message T1 from the RTI.", _lf_my_fed_id);
+    read_from_net_fail_on_error(rti_net, message_size, buffer,
+                                "Federate %d did not get the initial clock synchronization message T1 from the RTI.",
+                                _lf_my_fed_id);
 
     // Get local physical time before doing anything else.
     instant_t receive_time = lf_time_physical();
@@ -192,14 +192,14 @@ void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net_abstr
     // Handle the message and send a reply T3 message.
     // NOTE: No need to acquire the mutex lock during initialization because only
     // one thread is running.
-    if (handle_T1_clock_sync_message(buffer, (void*)rti_net_abstraction, receive_time, false) != 0) {
+    if (handle_T1_clock_sync_message(buffer, (void*)rti_net, receive_time, false) != 0) {
       lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
     }
 
     // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-    read_from_net_abstraction_fail_on_error(
-        rti_net_abstraction, message_size, buffer,
-        "Federate %d did not get the clock synchronization message T4 from the RTI.", _lf_my_fed_id);
+    read_from_net_fail_on_error(rti_net, message_size, buffer,
+                                "Federate %d did not get the clock synchronization message T4 from the RTI.",
+                                _lf_my_fed_id);
 
     // Check that this is the T4 message.
     if (buffer[0] != MSG_TYPE_CLOCK_SYNC_T4) {
@@ -207,13 +207,13 @@ void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net_abstr
     }
 
     // Handle the message.
-    handle_T4_clock_sync_message(buffer, (void*)rti_net_abstraction, receive_time, false);
+    handle_T4_clock_sync_message(buffer, (void*)rti_net, receive_time, false);
   }
 
   LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
 }
 
-int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net_abstraction, instant_t t2, bool use_udp) {
+int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t t2, bool use_udp) {
   // Extract the payload
   instant_t t1 = extract_int64(&(buffer[1]));
 
@@ -233,9 +233,8 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net_abst
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
-  int result = use_udp ? write_to_socket(*(int*)socket_or_net_abstraction, 1 + sizeof(uint16_t), reply_buffer)
-                       : write_to_net_abstraction((net_abstraction_t)socket_or_net_abstraction, 1 + sizeof(uint16_t),
-                                                  reply_buffer);
+  int result = use_udp ? write_to_socket(*(int*)socket_or_net, 1 + sizeof(uint16_t), reply_buffer)
+                       : write_to_net((net_abstraction_t)socket_or_net, 1 + sizeof(uint16_t), reply_buffer);
 
   if (result) {
     lf_print_error("Clock sync: Failed to send T3 message to RTI.");
@@ -249,7 +248,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net_abst
   return 0;
 }
 
-void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net_abstraction, instant_t r4, bool use_udp) {
+void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t r4, bool use_udp) {
   // Increment the number of received T4 messages
   _lf_rti_socket_stat.received_T4_messages_in_current_sync_window++;
 
@@ -284,7 +283,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net_abs
   if (use_udp) {
     // Read the coded probe message.
     // We can reuse the same buffer.
-    int read_failed = read_from_socket(*(int*)socket_or_net_abstraction, 1 + sizeof(instant_t), buffer);
+    int read_failed = read_from_socket(*(int*)socket_or_net, 1 + sizeof(instant_t), buffer);
 
     instant_t r5 = lf_time_physical();
 
