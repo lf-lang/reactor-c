@@ -21,7 +21,8 @@
 #include <stdarg.h> //va_list
 #include <string.h> // strerror
 
-#include "util.h" // LF_MUTEX_UNLOCK(), logging.h
+#include "util.h" // LF_MUTEX_UNLOCK()
+#include "logging.h"
 #include "net_abstraction.h"
 
 /** Number of nanoseconds to sleep before retrying a socket read. */
