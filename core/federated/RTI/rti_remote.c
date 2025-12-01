@@ -751,7 +751,7 @@ void handle_timestamp(federate_info_t* my_fed) {
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
-void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool use_UDP) {
+void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type) {
   if (fed->enclave.state == NOT_CONNECTED) {
     lf_print_warning(
         "Clock sync: RTI failed to send physical time to federate %d. network abstraction not connected.\n",
@@ -763,7 +763,7 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool 
   int64_t current_physical_time = lf_time_physical();
   encode_int64(current_physical_time, &(buffer[1]));
 
-  if (use_UDP) {
+  if (socket_type == UDP) {
     // Send using UDP
     LF_PRINT_DEBUG("Clock sync: RTI sending UDP message type %u.", buffer[0]);
     ssize_t bytes_written = sendto(rti_remote->socket_descriptor_UDP, buffer, 1 + sizeof(int64_t), 0,
@@ -785,18 +785,18 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool 
                  current_physical_time, fed->enclave.id);
 }
 
-void handle_physical_clock_sync_message(federate_info_t* my_fed, bool use_UDP) {
+void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t socket_type) {
   // Lock the mutex to prevent interference between sending the two
   // coded probe messages.
   LF_MUTEX_LOCK(&rti_mutex);
-  if (!use_UDP) {
+  if (socket_type == TCP) {
     // Reply with a T4 type message
-    send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed, false);
+    send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed, TCP);
     // Send the corresponding coded probe immediately after,
     // but only if this is a UDP channel.
   } else {
-    send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed, true);
-    send_physical_clock(MSG_TYPE_CLOCK_SYNC_CODED_PROBE, my_fed, true);
+    send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed, UDP);
+    send_physical_clock(MSG_TYPE_CLOCK_SYNC_CODED_PROBE, my_fed, UDP);
   }
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -838,7 +838,7 @@ void* clock_synchronization_thread(void* noargs) {
       // Send the RTI's current physical time to the federate
       // Send on UDP.
       LF_PRINT_DEBUG("RTI sending T1 message to initiate clock sync round.");
-      send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, true);
+      send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
 
       // Listen for reply message, which should be T3.
       size_t message_size = 1 + sizeof(uint16_t);
@@ -863,7 +863,7 @@ void* clock_synchronization_thread(void* noargs) {
               continue;
             }
             LF_PRINT_DEBUG("Clock sync: RTI received T3 message from federate %d.", fed_id_2);
-            handle_physical_clock_sync_message(GET_FED_INFO(fed_id_2), true);
+            handle_physical_clock_sync_message(GET_FED_INFO(fed_id_2), UDP);
             break;
           } else {
             // The message is not a T3 message. Discard the message and
@@ -1292,7 +1292,7 @@ static int receive_udp_message_and_set_up_clock_sync(net_abstraction_t fed_net, 
         // Send the required number of messages for clock synchronization
         for (int i = 0; i < rti_remote->clock_sync_exchanges_per_interval; i++) {
           // Send the RTI's current physical time T1 to the federate.
-          send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, false);
+          send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, UDP);
 
           // Listen for reply message, which should be T3.
           size_t message_size = 1 + sizeof(uint16_t);
@@ -1302,7 +1302,7 @@ static int receive_udp_message_and_set_up_clock_sync(net_abstraction_t fed_net, 
           if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
             uint16_t fed_id = extract_uint16(&(buffer[1]));
             LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
-            handle_physical_clock_sync_message(fed, false);
+            handle_physical_clock_sync_message(fed, TCP);
           } else {
             lf_print_error("Unexpected message %u from federate %d.", buffer[0], fed_id);
             send_reject(fed_net, UNEXPECTED_MESSAGE);

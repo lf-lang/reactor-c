@@ -297,9 +297,9 @@ void handle_timestamp(federate_info_t* my_fed);
  *
  * @param message_type The type of the clock sync message (see @ref net_common.h).
  * @param fed The federate to send the physical time to.
- * @param use_UDP Boolean to use UDP or the network abstraction.
+ * @param socket_type The socket type (TCP or UDP).
  */
-void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool use_UDP);
+void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type);
 
 /**
  * @brief Handle clock synchronization T3 messages from federates.
@@ -314,9 +314,9 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, bool 
  * clock synchronization round.
  *
  * @param my_fed The sending federate.
- * @param use_UDP Boolean to send a coded probe message (for UDP only).
+ * @param socket_type The RTI's socket type used for the communication (TCP or UDP)
  */
-void handle_physical_clock_sync_message(federate_info_t* my_fed, bool use_UDP);
+void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t socket_type);
 
 /**
  * @brief A (quasi-)periodic thread that performs clock synchronization with each federate.
