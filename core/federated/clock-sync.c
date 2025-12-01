@@ -213,7 +213,8 @@ void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net) {
   LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
 }
 
-int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t t2, bool use_UDP) {
+int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t t2, socket_type_t socket_type) {
+  if
   // Extract the payload
   instant_t t1 = extract_int64(&(buffer[1]));
 
@@ -233,7 +234,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, ins
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
-  int result = use_UDP ? write_to_socket(*(int*)socket_or_net, 1 + sizeof(uint16_t), reply_buffer)
+  int result = (socket_type == UDP) ? write_to_socket(*(int*)socket_or_net, 1 + sizeof(uint16_t), reply_buffer)
                        : write_to_net((net_abstraction_t)socket_or_net, 1 + sizeof(uint16_t), reply_buffer);
 
   if (result) {
@@ -248,7 +249,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, ins
   return 0;
 }
 
-void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t r4, bool use_UDP) {
+void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t r4, socket_type_t socket_type) {
   // Increment the number of received T4 messages
   _lf_rti_socket_stat.received_T4_messages_in_current_sync_window++;
 
@@ -280,7 +281,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, in
   // If the socket is _lf_rti_socket_UDP, then
   // after sending T4, the RTI sends a "coded probe" message,
   // which can be used to filter out noise.
-  if (use_UDP) {
+  if (socket_type == UDP) {
     // Read the coded probe message.
     // We can reuse the same buffer.
     int read_failed = read_from_socket(*(int*)socket_or_net, 1 + sizeof(instant_t), buffer);
@@ -322,7 +323,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, in
   // Use of TCP socket means we are in the startup phase, so
   // rather than adjust the clock offset, we simply set it to the
   // estimated error.
-  adjustment = use_UDP ? estimated_clock_error / _LF_CLOCK_SYNC_ATTENUATION : estimated_clock_error;
+  adjustment = (socket_type == UDP) ? estimated_clock_error / _LF_CLOCK_SYNC_ATTENUATION : estimated_clock_error;
 
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS // Enabled by default
   // Update RTI's socket stats

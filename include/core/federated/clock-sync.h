@@ -255,10 +255,10 @@ void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net);
  * @param buffer The buffer containing the message, including the message type.
  * @param net_abstraction_t The pointer to the network abstraction.
  * @param t2 The physical time at which the T1 message was received.
- * @param use_UDP Boolean to use UDP or the network abstraction.
+ * @param socket_type The socket type (TCP or UDP).
  * @return 0 if T3 reply is successfully sent, -1 otherwise.
  */
-int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t t2, bool use_UDP);
+int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t t2, socket_type_t socket_type);
 
 /**
  * @brief Handle a clock synchronization message T4 coming from the RTI.
@@ -277,9 +277,9 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, ins
  * @param buffer The buffer containing the message, including the message type.
  * @param net_abstraction_t The pointer to the network abstraction.
  * @param r4 The physical time at which this T4 message was received.\
- * @param use_UDP Boolean to use UDP or the network abstraction.
+ * @param socket_type The socket type (TCP or UDP).
  */
-void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t r4, bool use_UDP);
+void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t r4, socket_type_t socket_type);
 
 /**
  * @brief Create the thread responsible for handling clock synchronization
