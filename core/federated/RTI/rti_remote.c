@@ -1292,7 +1292,7 @@ static int receive_udp_message_and_set_up_clock_sync(net_abstraction_t fed_net, 
         // Send the required number of messages for clock synchronization
         for (int i = 0; i < rti_remote->clock_sync_exchanges_per_interval; i++) {
           // Send the RTI's current physical time T1 to the federate.
-          send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, UDP);
+          send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
 
           // Listen for reply message, which should be T3.
           size_t message_size = 1 + sizeof(uint16_t);
