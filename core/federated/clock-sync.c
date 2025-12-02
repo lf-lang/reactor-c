@@ -214,7 +214,6 @@ void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net) {
 }
 
 int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t t2, socket_type_t socket_type) {
-  if
   // Extract the payload
   instant_t t1 = extract_int64(&(buffer[1]));
 
