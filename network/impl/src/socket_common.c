@@ -136,7 +136,7 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   if (result != 0) {
     lf_print_error_and_exit("Failed to bind the socket. Port %d is not available. ", used_port);
   }
-  lf_print_debug("Socket is binded to port %d.", used_port);
+  lf_print_debug("Socket is bound to port %d.", used_port);
   return used_port;
 }
 

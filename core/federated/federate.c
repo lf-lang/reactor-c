@@ -622,7 +622,7 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
     if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0 && env->execution_started) {
       lf_print_error("Received message too late. Already at stop tag.\n"
                      "    Current tag is " PRINTF_TAG " and intended tag is " PRINTF_TAG ".\n"
-                     "    Discarding message and closing the network abstraction.",
+                     "    Discarding message and closing the network connection.",
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
       // Free the allocated memory before returning
