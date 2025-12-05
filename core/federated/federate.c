@@ -2070,6 +2070,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     if (result != 0) {
       // Failed to create a listening thread.
       shutdown_net(_fed.net_for_inbound_p2p_connections[remote_fed_id], false);
+      _fed.net_for_inbound_p2p_connections[remote_fed_id] = NULL;
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }
