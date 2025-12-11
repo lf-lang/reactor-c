@@ -23,6 +23,10 @@ jobs:
     steps:
       - name: Check out reactor-c repository
         uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm, arm64, riscv64
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build Docker image
