@@ -19,8 +19,8 @@ var searchData=
   ['user_5fvalue_16',['user_value',['../group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1',1,'trace_types.h']]],
   ['ushort_17',['ushort',['../group__Internal.html#ga3fa7784c89589b49764048e9909d0e07',1,'lf_types.h']]],
   ['usr_18',['usr',['../structinflux__client__t.html#ae561f821063f0808c914f93ae6ad1452',1,'influx_client_t::usr'],['../structinflux__v2__client__t.html#a6296ea8ebcc673915d41519ec69d4677',1,'influx_v2_client_t::usr']]],
-  ['util_19',['/lib/C/util/',['..//Users/runner/work/reactor-c/reactor-c/util/README.md#autotoc_md20',1,'']]],
-  ['util_20tracing_20',['util/tracing',['..//Users/runner/work/reactor-c/reactor-c/util/tracing/README.md#autotoc_md21',1,'']]],
+  ['util_19',['/lib/C/util/',['../dir_b678eaba3b8dfcb4861ec903b7dd977f.html#autotoc_md20',1,'']]],
+  ['util_20tracing_20',['util/tracing',['../dir_53a6a24996274aaee671356227f4d951.html#autotoc_md21',1,'']]],
   ['util_2eh_21',['util.h',['../util_8h.html',1,'']]],
   ['utilities_22',['Utilities',['../group__Utilities.html',1,'']]]
 ];

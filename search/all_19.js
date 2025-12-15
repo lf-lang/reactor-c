@@ -18,7 +18,7 @@ var searchData=
   ['vector_5fsize_15',['vector_size',['../group__Utilities.html#gaaa8f4318bf03a7886169e85c151b6903',1,'vector.h']]],
   ['vector_5ft_16',['vector_t',['../structvector__t.html',1,'vector_t'],['../group__Utilities.html#gac6a5b15223a2905669f2ee7377fd3dbd',1,'vector_t:&#160;vector.h']]],
   ['vector_5fvote_17',['vector_vote',['../group__Utilities.html#ga41e7b0b4a43deefd94df37fd128de0bb',1,'vector.h']]],
-  ['visualizer_18',['Trace sequence diagram visualizer',['..//Users/runner/work/reactor-c/reactor-c/util/tracing/visualization/README.md#autotoc_md23',1,'']]],
+  ['visualizer_18',['Trace sequence diagram visualizer',['../dir_8eb20451329ba806a1d422bd038b0865.html#autotoc_md23',1,'']]],
   ['votes_19',['votes',['../structvector__t.html#a2dd65528257b283111eadc0500b93464',1,'vector_t']]],
   ['votes_5frequired_20',['votes_required',['../structvector__t.html#a4b68f14d631f8f4a8d16bd1aa36b3011',1,'vector_t']]]
 ];

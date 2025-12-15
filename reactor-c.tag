@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile doxygen_version="1.14.0">
+<tagfile doxygen_version="1.15.0">
   <compound kind="file">
     <name>rti_common.h</name>
     <path>/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/</path>
@@ -14107,6 +14107,260 @@
     <name>license</name>
     <title>License</title>
     <filename>license.html</filename>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include/api</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/api/</path>
+    <filename>dir_97b1d9385189e1f922e76be6e7f26b81.html</filename>
+    <file>reaction_macros.h</file>
+    <file>schedule.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/logging/api</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/logging/api/</path>
+    <filename>dir_1af348834f1a14cee2c7fdde8406576f.html</filename>
+    <file>logging.h</file>
+    <file>logging_macros.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/low_level_platform/api</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/low_level_platform/api/</path>
+    <filename>dir_9942a4f291928d8b888d9a397e51426a.html</filename>
+    <file>low_level_platform.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/platform/api</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/platform/api/</path>
+    <filename>dir_5080d1684b839dd2760f8f9986f89d66.html</filename>
+    <file>platform.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/tag/api</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/tag/api/</path>
+    <filename>dir_6cebb1232fab9c98db2781d3ce490614.html</filename>
+    <file>tag.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/trace/api</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/trace/api/</path>
+    <filename>dir_2d7d0b712869f79afe9ea2425eca0800.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/trace/api/types</dir>
+    <file>trace.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/core</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/core/</path>
+    <filename>dir_57ce40a6caf39b6237d8be69a7f34728.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/core/federated</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include/core</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/core/</path>
+    <filename>dir_26ddd9272df60b6031e319f70270bd7f.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include/core/federated</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include/core/modal_models</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include/core/threaded</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include/core/utils</dir>
+    <file>clock.h</file>
+    <file>environment.h</file>
+    <file>lf_token.h</file>
+    <file>lf_types.h</file>
+    <file>mixed_radix.h</file>
+    <file>port.h</file>
+    <file>reactor.h</file>
+    <file>reactor_common.h</file>
+    <file>tracepoint.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/docs</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/docs/</path>
+    <filename>dir_354d2afda7d2097d343b9465dca4b373.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/docs/markdown</dir>
+    <file>doxygen.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/core/federated</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/core/federated/</path>
+    <filename>dir_644dfcfcde09816b5fa6c1f0a0d522e6.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/core/federated/RTI</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include/core/federated</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/core/federated/</path>
+    <filename>dir_e0b79ab85e892bf9453f746580791e50.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include/core/federated/network</dir>
+    <file>clock-sync.h</file>
+    <file>federate.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include/core/utils/hashset</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/core/utils/hashset/</path>
+    <filename>dir_36cdd5bed33f1d0a1677482acbba9d49.html</filename>
+    <file>hashset.h</file>
+    <file>hashset_itr.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include/core/utils/impl</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/core/utils/impl/</path>
+    <filename>dir_bb336a893f64acc0a67c313d187248cb.html</filename>
+    <file>hashmap.h</file>
+    <file>pointer_hashmap.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/</path>
+    <filename>dir_c9cd8ac8edbc816f956bbae22744abc5.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include/api</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include/core</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/logging</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/logging/</path>
+    <filename>dir_d017d171d20df485b424880f1b06ccac.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/logging/api</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/low_level_platform</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/low_level_platform/</path>
+    <filename>dir_aa551976d5c98fa032594a461f6f96aa.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/low_level_platform/api</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/docs/markdown</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/docs/markdown/</path>
+    <filename>dir_20b1895f1583dec4c0b8cc1fbd23488d.html</filename>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include/core/modal_models</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/core/modal_models/</path>
+    <filename>dir_22c9e7958acfc976c9adbaa7ba7fed24.html</filename>
+    <file>modes.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include/core/federated/network</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/core/federated/network/</path>
+    <filename>dir_923a8cfe9e7422391fb9e4b64cd33eea.html</filename>
+    <file>net_common.h</file>
+    <file>net_util.h</file>
+    <file>socket_common.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/platform</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/platform/</path>
+    <filename>dir_a0f44c63d11b6855a2d51240352a8528.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/platform/api</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c</name>
+    <path>/Users/runner/work/reactor-c/</path>
+    <filename>dir_f3821db21fac557b6b84e126be960f00.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/</path>
+    <filename>dir_ac1783de82f42168f79d5e66bc78eb8b.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/core</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/docs</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/logging</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/low_level_platform</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/platform</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/tag</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/trace</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/util</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/core/federated/RTI</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/</path>
+    <filename>dir_c2cf38ff80fb18a71f3aa3cbba92f6ed.html</filename>
+    <file>rti_common.h</file>
+    <file>rti_local.h</file>
+    <file>rti_remote.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner</name>
+    <path>/Users/runner/</path>
+    <filename>dir_308bc1499b5f97ed0ba0865f54916185.html</filename>
+    <dir>/Users/runner/work</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/tag</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/tag/</path>
+    <filename>dir_796692615e682aac2c0b2859528af25d.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/tag/api</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include/core/threaded</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/core/threaded/</path>
+    <filename>dir_aa63dc72fa9f3eb6583e680e2fd0ab73.html</filename>
+    <file>reactor_threaded.h</file>
+    <file>scheduler.h</file>
+    <file>scheduler_instance.h</file>
+    <file>scheduler_sync_tag_advance.h</file>
+    <file>watchdog.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/trace</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/trace/</path>
+    <filename>dir_ea33cd6d4e907e3d4fc430db8ba6b3c1.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/trace/api</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/util/tracing</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/util/tracing/</path>
+    <filename>dir_53a6a24996274aaee671356227f4d951.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/util/tracing/visualization</dir>
+    <file>influxdb.h</file>
+    <file>trace_util.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/trace/api/types</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/trace/api/types/</path>
+    <filename>dir_86b3fa25cadbe3c6b1af0da4a51785e2.html</filename>
+    <file>trace_types.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users</name>
+    <path>/Users/</path>
+    <filename>dir_d522931ffa1371640980b621734a4381.html</filename>
+    <dir>/Users/runner</dir>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/util</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/util/</path>
+    <filename>dir_b678eaba3b8dfcb4861ec903b7dd977f.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/util/tracing</dir>
+    <file>audio_loop.h</file>
+    <file>deque.h</file>
+    <file>generics.h</file>
+    <file>sensor_simulator.h</file>
+    <file>type_converter.h</file>
+    <file>wave_file_reader.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/include/core/utils</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/include/core/utils/</path>
+    <filename>dir_40d4fbc35f96bd61315fbbcd50b26210.html</filename>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include/core/utils/hashset</dir>
+    <dir>/Users/runner/work/reactor-c/reactor-c/include/core/utils/impl</dir>
+    <file>lf_semaphore.h</file>
+    <file>pqueue.h</file>
+    <file>pqueue_base.h</file>
+    <file>pqueue_tag.h</file>
+    <file>util.h</file>
+    <file>vector.h</file>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work/reactor-c/reactor-c/util/tracing/visualization</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/util/tracing/visualization/</path>
+    <filename>dir_8eb20451329ba806a1d422bd038b0865.html</filename>
+  </compound>
+  <compound kind="dir">
+    <name>/Users/runner/work</name>
+    <path>/Users/runner/work/</path>
+    <filename>dir_61c33e2faf3f402353c3e4f8a1de3ade.html</filename>
+    <dir>/Users/runner/work/reactor-c</dir>
   </compound>
   <compound kind="page">
     <name>index</name>
