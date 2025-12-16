@@ -233,8 +233,9 @@ int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, ins
 
   // Write the reply to the socket.
   LF_PRINT_DEBUG("Sending T3 message to RTI.");
-  int result = (socket_type == UDP) ? write_to_socket(*(int*)socket_or_net, 1 + sizeof(uint16_t), reply_buffer)
-                       : write_to_net((net_abstraction_t)socket_or_net, 1 + sizeof(uint16_t), reply_buffer);
+  int result = (socket_type == UDP)
+                   ? write_to_socket(*(int*)socket_or_net, 1 + sizeof(uint16_t), reply_buffer)
+                   : write_to_net((net_abstraction_t)socket_or_net, 1 + sizeof(uint16_t), reply_buffer);
 
   if (result) {
     lf_print_error("Clock sync: Failed to send T3 message to RTI.");
