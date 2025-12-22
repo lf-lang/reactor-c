@@ -14,7 +14,8 @@
 
 #include "net_abstraction.h"
 #include "socket_common.h"
-#include "util.h" // LF_MUTEX_UNLOCK, "logging.h"
+#include "util.h" // LF_MUTEX_UNLOCK
+#include "logging.h"
 
 static socket_priv_t* get_socket_priv_t(net_abstraction_t net_abs) {
   if (net_abs == NULL) {
