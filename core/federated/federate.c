@@ -629,6 +629,7 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
       _lf_done_using(message_token);
       // Close network abstraction, reading any incoming data and discarding it.
       shutdown_net(_fed.net_for_inbound_p2p_connections[fed_id], false);
+      _fed.net_for_inbound_p2p_connections[fed_id] = NULL;
       LF_MUTEX_UNLOCK(&env->mutex);
       return -1;
     } else {
