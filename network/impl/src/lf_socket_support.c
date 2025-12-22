@@ -47,7 +47,9 @@ net_abstraction_t initialize_net() {
 
 void free_net(net_abstraction_t net_abs) {
   socket_priv_t* priv = get_socket_priv_t(net_abs);
-  free(priv);
+  if (priv != NULL) {
+    free(priv);
+  }
 }
 
 int create_server(net_abstraction_t net_abs, bool increment_port_on_retry) {
