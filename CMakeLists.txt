@@ -41,4 +41,10 @@ enable_testing()
 add_subdirectory(${Lib})
 add_subdirectory(${CoreLibPath})
 
-include(test/Tests.cmake)
+
+# for unit-test and unit-test-debug
+if(DEBUG_TESTS)
+    include(test/debug_tests/debug_tests.cmake)
+else()
+    include(test/Tests.cmake)
+endif()
