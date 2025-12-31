@@ -56,16 +56,11 @@ lf_enable_compiler_warnings(reactor-c)
 if(DEFINED LF_TRACE)
     include(${LF_ROOT}/trace/api/CMakeLists.txt)
     target_link_libraries(reactor-c PUBLIC lf::trace-api)
-    # If the user specified an external trace plugin. Find it and link with it
+    # If trace plugin is set to TRUE, skip linking the default trace implementation here.
+    # The user must supply a cmake-include file to link against the custom trace plugin
+    # and its dependencies (e.g., target_link_libraries(reactor-c PRIVATE <plugin-lib>)).
     if (LF_TRACE_PLUGIN)
-        message(STATUS "Linking trace plugin library ${LF_TRACE_PLUGIN}")
-        find_library(TRACE_LIB NAMES ${LF_TRACE_PLUGIN} HINTS "${LF_ROOT}")
-        if (NOT TRACE_LIB)
-            message(FATAL_ERROR "The trace plugin library ${LF_TRACE_PLUGIN} not found")
-        endif()
-        # We also link with libdl because it is needed for some platforms.
-        # TODO: Figure out why this is the case and how to avoid it.
-        target_link_libraries(reactor-c PRIVATE ${TRACE_LIB} dl)
+        message(STATUS "Trace plugin is set to TRUE. Expecting a cmake file for linking against the plugin via the `cmake-include` target property.")
     else()
     # If not, use the default implementation
         message(STATUS "Linking with default trace implementation")
