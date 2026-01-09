@@ -18,7 +18,6 @@
 #include "socket_common.h"
 
 typedef void* net_abstraction_t;
-// net_abstraction_t
 /**
  * @brief Allocate and initialize a network abstraction handle.
  * @ingroup Network
@@ -35,7 +34,7 @@ net_abstraction_t initialize_net();
  * Create a network abstraction server. This is such as a server socket which accepts connections.
  * However this is only the creation of the server network abstraction.
  *
- * @param net_abs Server's network abstraction.
+ * @param net_abs Server's network abstraction as returned by `initialize_net`.
  * @param increment_port_on_retry Whether to increment the port on retry if binding fails.
  * @return int 0 for success, -1 for failure.
  */
@@ -64,7 +63,7 @@ net_abstraction_t accept_net(net_abstraction_t server_chan, net_abstraction_t rt
  *
  * Using the initialized network abstraction, create a client network abstraction ready to connect to a server.
  *
- * @param net_abs The initialized network abstraction.
+ * @param net_abs The initialized network abstraction as returned by `initialize_net`.
  */
 void create_client(net_abstraction_t net_abs);
 

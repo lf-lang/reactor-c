@@ -981,7 +981,7 @@ void* federate_info_thread_TCP(void* fed) {
     int read_failed = read_from_net(my_fed->net, 1, buffer);
     if (read_failed) {
       // network abstraction is closed
-      lf_print_error("RTI: network abstraction to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
+      lf_print_error("RTI: Connection to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
       // Nothing more to do. Close the network abstraction and exit.
       // Prevent multiple threads from closing the same network abstraction at the same time.
@@ -1068,7 +1068,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
 
   // Read bytes from the network abstraction. We need 4 bytes.
   if (read_from_net_close_on_error(fed_net, length, buffer)) {
-    lf_print_error("RTI failed to read from accepted network abstraction.");
+    lf_print_error("RTI failed to read from accepted connection.");
     return -1;
   }
 
