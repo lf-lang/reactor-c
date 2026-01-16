@@ -185,17 +185,11 @@ int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port,
  * temporary (e.g., `EAGAIN` or `EWOULDBLOCK`), it reports the error and exits. Temporary
  * errors cause the function to retry accepting the connection.
  *
- * If the `rti_socket` is not -1, this function checks whether the specified socket is still open.
- * If it is not open, then this function returns -1.
- * This is useful for federates to determine whether they are still connected to the federation
- * and to stop waiting when they are not.
- *
  * @param socket The server socket file descriptor that is listening for incoming connections.
- * @param rti_socket The rti socket for the federate to check if it is still open.
  * @return The file descriptor for the newly accepted socket on success, or -1 on failure
  *             (with an appropriate error message printed).
  */
-int accept_socket(int socket, int rti_socket);
+int accept_socket(int socket);
 
 /**
  * @brief Attempt to establish a TCP connection to the specified hostname and port.

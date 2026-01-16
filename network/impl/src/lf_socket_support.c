@@ -62,7 +62,7 @@ net_abstraction_t accept_net(net_abstraction_t server_chan) {
   int sock = accept_socket(serv_priv->socket_descriptor);
   if (sock != -1) {
     net_abstraction_t client_net = initialize_net();
-    socket_priv_t* client_priv = get_socket_priv_t(fed_net);
+    socket_priv_t* client_priv = get_socket_priv_t(client_net);
     client_priv->socket_descriptor = sock;
     // Get the peer address from the connected socket_id. Saving this for the address query.
     if (get_peer_address(client_priv) != 0) {
