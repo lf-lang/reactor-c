@@ -1991,8 +1991,11 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   // Allocate memory to store thread IDs.
   _fed.inbound_net_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
+    if (rti_failed()) {
+      break;
+    }
     // Wait for an incoming connection request.
-    net_abstraction_t net = accept_net(_fed.server_net, _fed.net_to_RTI);
+    net_abstraction_t net = accept_net(_fed.server_net);
     if (net == NULL) {
       lf_print_warning("Federate failed to accept the network abstraction.");
       return NULL;

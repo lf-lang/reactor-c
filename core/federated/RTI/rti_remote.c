@@ -1407,7 +1407,7 @@ static bool authenticate_federate(net_abstraction_t fed_net) {
 
 void lf_connect_to_federates(net_abstraction_t rti_net) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-    net_abstraction_t fed_net = accept_net(rti_net, NULL);
+    net_abstraction_t fed_net = accept_net(rti_net);
     if (fed_net == NULL) {
       lf_print_warning("RTI failed to accept the federate.");
       return;
@@ -1469,7 +1469,7 @@ void* respond_to_erroneous_connections(void* nothing) {
     // Wait for an incoming connection request.
     // The following will block until either a federate attempts to connect
     // or shutdown_net(rti->rti_net) is called.
-    net_abstraction_t fed_net = accept_net(rti_remote->rti_net, NULL);
+    net_abstraction_t fed_net = accept_net(rti_remote->rti_net);
     if (fed_net == NULL) {
       return NULL;
     }

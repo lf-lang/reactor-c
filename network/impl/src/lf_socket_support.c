@@ -56,31 +56,22 @@ int create_server(net_abstraction_t net_abs, bool increment_port_on_retry) {
                               increment_port_on_retry);
 }
 
-net_abstraction_t accept_net(net_abstraction_t server_chan, net_abstraction_t rti_chan) {
+net_abstraction_t accept_net(net_abstraction_t server_chan) {
   socket_priv_t* serv_priv = get_socket_priv_t(server_chan);
-  int rti_socket;
-  if (rti_chan == NULL) {
-    // Set to -1, to indicate that this accept_net() call is not trying to check if the rti_chan is
-    // available, inside the accept_socket() function.
-    rti_socket = -1;
-  } else {
-    socket_priv_t* rti_priv = get_socket_priv_t(rti_chan);
-    rti_socket = rti_priv->socket_descriptor;
-  }
-  net_abstraction_t fed_net = initialize_net();
-  socket_priv_t* fed_priv = get_socket_priv_t(fed_net);
 
-  int sock = accept_socket(serv_priv->socket_descriptor, rti_socket);
-  if (sock == -1) {
-    free_net(fed_net);
+  int sock = accept_socket(serv_priv->socket_descriptor);
+  if (sock != -1) {
+    net_abstraction_t client_net = initialize_net();
+    socket_priv_t* client_priv = get_socket_priv_t(fed_net);
+    client_priv->socket_descriptor = sock;
+    // Get the peer address from the connected socket_id. Saving this for the address query.
+    if (get_peer_address(client_priv) != 0) {
+      lf_print_error("Failed to save peer address.");
+    }
+    return client_net;
+  } else {
     return NULL;
   }
-  fed_priv->socket_descriptor = sock;
-  // Get the peer address from the connected socket_id. Saving this for the address query.
-  if (get_peer_address(fed_priv) != 0) {
-    lf_print_error("RTI failed to get peer address.");
-  };
-  return fed_net;
 }
 
 void create_client(net_abstraction_t net_abs) {

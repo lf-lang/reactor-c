@@ -213,7 +213,7 @@ int get_peer_address(socket_priv_t* priv) {
   return 0;
 }
 
-int accept_socket(int socket, int rti_socket) {
+int accept_socket(int socket) {
   struct sockaddr client_fd;
   // Wait for an incoming connection request.
   uint32_t client_length = sizeof(client_fd);
@@ -234,12 +234,6 @@ int accept_socket(int socket, int rti_socket) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
       return -1;
     } else {
-      // For the federates, it should check if the rti_socket is still open, before retrying accept().
-      if (rti_socket != -1) {
-        if (check_socket_closed(rti_socket)) {
-          return -1;
-        }
-      }
       // Try again
       lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
       continue;

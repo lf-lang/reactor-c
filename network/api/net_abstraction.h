@@ -53,16 +53,15 @@ int create_server(net_abstraction_t net_abs, bool increment_port_on_retry);
  *
  * Wait for an incoming connection request on the specified server network abstraction.
  * The implementation should include three steps.
- * 1. Initialize the network abstraction of the connected federate.
- * 2. Wait for the incoming connection request. This should block until the connection is successfully accepted.
+ * 1. Wait for the incoming connection request. This should block until the connection is successfully accepted.
+ * 2. Initialize a new network abstraction and link it with the accepted connection.
  * 3. Save the information in the connected network abstraction, such as the address of the connected peer, for future
  * querying address.
  *
  * @param server_chan The server network abstraction that is listening for incoming connections.
- * @param rti_chan The rti's network abstraction to check if it is still open.
  * @return net_abstraction_t The network abstraction for the newly accepted connection on success, or NULL on failure
  */
-net_abstraction_t accept_net(net_abstraction_t server_chan, net_abstraction_t rti_chan);
+net_abstraction_t accept_net(net_abstraction_t server_chan);
 
 /**
  * @brief Initialize a client network abstraction for connecting to a server.
