@@ -31,8 +31,7 @@ net_abstraction_t initialize_net();
  * @brief Create a server network abstraction that will accept incoming connections.
  * @ingroup Network
  *
- * Create a network abstraction server. This is such as a server socket which accepts connections.
- * However this is only the creation of the server network abstraction.
+ * Create a network abstraction server. For example, this might be a server socket that accepts connections.
  *
  * @param net_abs Server's network abstraction as returned by `initialize_net`.
  * @param increment_port_on_retry Whether to increment the port on retry if binding fails.
