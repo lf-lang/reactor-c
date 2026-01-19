@@ -1192,7 +1192,7 @@ static int receive_connection_information(int* socket_id, uint16_t fed_id) {
                                  fed_id);
 
   if (connection_info_header[0] != MSG_TYPE_NEIGHBOR_STRUCTURE) {
-    lf_print_error("RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
+    lf_print_error("RTI was expecting a MSG_TYPE_NEIGHBOR_STRUCTURE message from federate %d. Got %u instead. "
                    "Rejecting federate.",
                    fed_id, connection_info_header[0]);
     send_reject(socket_id, UNEXPECTED_MESSAGE);
