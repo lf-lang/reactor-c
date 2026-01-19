@@ -124,6 +124,13 @@
  */
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
+/**
+ * @brief Structure holding information about socket-based network abstraction.
+ * @ingroup network.
+ *
+ * Holds socket descriptors, port configuration, and addressing information
+ * required to manage TCP and UDP communication for a network channel.
+ */
 typedef struct socket_priv_t {
   /** @brief The TCP socket descriptor for the socket server. */
   int socket_descriptor;
