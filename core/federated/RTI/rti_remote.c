@@ -650,9 +650,9 @@ void handle_address_query(uint16_t fed_id) {
     // The network abstraction is initialized, but the RTI might still not know the port number. This can happen if the
     // RTI has not yet received a MSG_TYPE_ADDRESS_ADVERTISEMENT message from the remote federate. In such cases, the
     // returned port number might still be -1.
-    server_port = get_server_port(remote_fed->net);
-    ip_address = (uint32_t*)get_ip_addr(remote_fed->net);
-    server_host_name = get_server_hostname(remote_fed->net);
+    server_port = ((socket_priv_t*)remote_fed->net)->server_port;
+    ip_address = (uint32_t*)&((socket_priv_t*)remote_fed->net)->server_ip_addr;
+    server_host_name = ((socket_priv_t*)remote_fed->net)->server_hostname;
   }
 
   encode_int32(server_port, (unsigned char*)&buffer[1]);
@@ -683,7 +683,7 @@ void handle_address_ad(uint16_t federate_id) {
   assert(server_port < 65536);
 
   LF_MUTEX_LOCK(&rti_mutex);
-  set_server_port(fed->net, server_port);
+  ((socket_priv_t*)fed->net)->server_port = server_port;
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);
@@ -1317,7 +1317,7 @@ static int receive_udp_message_and_set_up_clock_sync(net_abstraction_t fed_net, 
           // Initialize the UDP_addr field of the federate struct
           fed->UDP_addr.sin_family = AF_INET;
           fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
-          fed->UDP_addr.sin_addr = *get_ip_addr(fed_net);
+          fed->UDP_addr.sin_addr = ((socket_priv_t*)fed_net)->server_ip_addr;
         }
       } else {
         // Disable clock sync after initial round.
@@ -1503,7 +1503,7 @@ int start_rti_server() {
   // Initialize RTI's network abstraction.
   rti_remote->rti_net = initialize_net();
   // Set the user specified port to the network abstraction.
-  set_my_port(rti_remote->rti_net, rti_remote->user_specified_port);
+  ((socket_priv_t*)rti_remote->rti_net)->port = rti_remote->user_specified_port;
   // Create the server
   if (create_server(rti_remote->rti_net, true)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
