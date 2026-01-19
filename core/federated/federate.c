@@ -142,7 +142,7 @@ static void send_tag(unsigned char type, tag_t tag) {
  * Return true if either the network abstraction to the RTI is broken or the network abstraction is
  * alive and the first unread byte on the network abstraction's queue is MSG_TYPE_FAILED.
  */
-static bool rti_failed() { return check_net_closed(_fed.net_to_RTI); }
+static bool rti_failed() { return !is_net_open(_fed.net_to_RTI); }
 
 //////////////////////////////// Port Status Handling ///////////////////////////////////////
 

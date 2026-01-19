@@ -289,15 +289,14 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
 ssize_t peek_from_socket(int socket, unsigned char* result);
 
 /**
- * @brief Check if the socket is closed.
+ * @brief Check whether a socket is still open and usable.
  * @ingroup Network
  *
- * Return true if either the socket to the RTI is broken or the socket is
- * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
- * @param socket Socket to check.
- * @return True if closed, false if still connected.
+ * @param socket Socket descriptor.
+ * @return true if the socket is open, false otherwise.
  */
-bool check_socket_closed(int socket);
+bool is_socket_open(int socket);
+
 /**
  * @brief Get the connected peer address.
  * @ingroup Network

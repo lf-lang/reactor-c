@@ -169,10 +169,10 @@ void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, uns
   }
 }
 
-bool check_net_closed(net_abstraction_t net_abs) {
+bool is_net_open(net_abstraction_t net_abs) {
   LF_ASSERT_NON_NULL(net_abs);
   socket_priv_t* priv = (socket_priv_t*)net_abs;
-  return check_socket_closed(priv->socket_descriptor);
+  return is_socket_open(priv->socket_descriptor);
 }
 
 int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {

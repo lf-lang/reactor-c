@@ -194,15 +194,17 @@ void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, uns
                                 char* format, ...);
 
 /**
- * @brief Check whether the network abstraction is closed.
+ * @brief Check whether a network connection is open.
  * @ingroup Network
  *
- * Checks if the network abstraction is still connected to the peer.
+ * Returns true if the network abstraction represents an active, open
+ * connection. Returns false if the connection has not been opened,
+ * has been closed, or has encountered an error.
  *
- * @param net_abs The network abstraction.
- * @return true if closed, false if still open.
+ * @param net_abs Network abstraction.
+ * @return true if the connection is open, false otherwise.
  */
-bool check_net_closed(net_abstraction_t net_abs);
+bool is_net_open(net_abstraction_t net_abs);
 
 /**
  * @brief Gracefully shut down and close a network abstraction.

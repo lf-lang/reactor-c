@@ -177,17 +177,18 @@ int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port,
   return 0;
 }
 
-bool check_socket_closed(int socket) {
+bool is_socket_open(int socket) {
+  if (socket < 0) {
+    return false;
+  }
   unsigned char first_byte;
   ssize_t bytes = peek_from_socket(socket, &first_byte);
-  if (socket > 0) {
-    if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {
-      return true;
-    } else {
-      return false;
-    }
+  if (bytes < 0) {
+    return false;
   }
-  lf_print_warning("Socket is no longer connected.");
+  if (bytes == 1 && first_byte == MSG_TYPE_FAILED) {
+    return false;
+  }
   return true;
 }
 
