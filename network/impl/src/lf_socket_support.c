@@ -79,9 +79,21 @@ void create_client(net_abstraction_t net_abs) {
   priv->socket_descriptor = create_real_time_tcp_socket_errexit();
 }
 
-int connect_to_net(net_abstraction_t net_abs) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
-  return connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port);
+net_abstraction_t connect_to_net(net_params_t* params) {
+  // Create a network abstraction.
+  net_abstraction_t net = initialize_net();
+  socket_priv_t* priv = get_socket_priv_t(net);
+  socket_connection_parameters_t* sock_params = (socket_connection_parameters_t*)params;
+  priv->server_port = sock_params->port;
+  memcpy(priv->server_hostname, sock_params->server_hostname, INET_ADDRSTRLEN);
+  // Create the client network abstraction.
+  create_client(net);
+  // Connect to the target server.
+  if (connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port) != 0) {
+    lf_print_error("Failed to connect to socket.");
+    return NULL;
+  }
+  return net;
 }
 
 int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {

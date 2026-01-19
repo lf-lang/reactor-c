@@ -124,6 +124,17 @@
  */
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
+typedef struct socket_connection_parameters_t {
+  /** @brief Socket type (TCP or UDP). */
+  socket_type_t type;
+
+  /** @brief Port number to connect to or listen on. */
+  uint16_t port;
+
+  /** @brief Hostname of the remote server. */
+  const char* server_hostname;
+} socket_connection_parameters_t;
+
 /**
  * @brief Structure holding information about socket-based network abstraction.
  * @ingroup network.

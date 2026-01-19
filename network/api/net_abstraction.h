@@ -27,6 +27,17 @@
 typedef void* net_abstraction_t;
 
 /**
+ * @brief Pointer to a data structure containing parameters for establishing a network connection or service.
+ * @ingroup Network
+ *
+ * This type is an void pointer used to pass implementation-specific
+ * connection parameters to the network abstraction layer.
+ * For example, it may point to a socket_connection_parameters_t structure
+ * when using a socket-based network implementation.
+ */
+typedef void* net_params_t;
+
+/**
  * @brief Allocate and initialize a network abstraction handle.
  * @ingroup Network
  *
@@ -74,16 +85,15 @@ net_abstraction_t accept_net(net_abstraction_t server_chan);
 void create_client(net_abstraction_t net_abs);
 
 /**
- * @brief Connect a client network abstraction to its configured server.
+ * @brief Create and connect a client network abstraction.
  * @ingroup Network
  *
- * Connect to the server network abstraction. The server's connection information,
- * such as the port and address should be set before calling this function.
+ * Create a new network abstraction and establish a client-side connection to the specified server.
  *
- * @param net_abs network abstraction to connect.
- * @return 0 for success, -1 on failure, and `errno` is set to indicate the specific error.
+ * @param params Pointer to implementation-specific connection parameters.
+ * @return A connected network abstraction on success, or NULL on failure.
  */
-int connect_to_net(net_abstraction_t net_abs);
+net_abstraction_t connect_to_net(net_params_t* params);
 
 /**
  * @brief Read a fixed number of bytes from a network abstraction.

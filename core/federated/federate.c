@@ -1737,14 +1737,12 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
 
-  // Create a network abstraction.
-  net_abstraction_t net = initialize_net();
-  // Set the received host name and port to the network abstraction.
-  set_server_port(net, uport);
-  set_server_hostname(net, hostname);
-  // Create the client network abstraction.
-  create_client(net);
-  if (connect_to_net(net) < 0) {
+  socket_connection_parameters_t params;
+  params.type = TCP;
+  params.port = uport;
+  params.server_hostname = hostname;
+  net_abstraction_t net = connect_to_net((net_params_t*)&params);
+  if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to federate.");
   }
 
@@ -1820,15 +1818,12 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
-  // Create a network abstraction.
-  _fed.net_to_RTI = initialize_net();
-  // Set the user specified host name and port to the network abstraction.
-  set_server_port(_fed.net_to_RTI, port);
-  set_server_hostname(_fed.net_to_RTI, hostname);
-
-  // Create the client network abstraction.
-  create_client(_fed.net_to_RTI);
-  if (connect_to_net(_fed.net_to_RTI) < 0) {
+  socket_connection_parameters_t params;
+  params.type = TCP;
+  params.port = port;
+  params.server_hostname = hostname;
+  net_abstraction_t net = connect_to_net((net_params_t*)&params);
+  if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to RTI.");
   }
 
