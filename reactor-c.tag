@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile doxygen_version="1.15.0">
+<tagfile doxygen_version="1.16.1">
   <compound kind="file">
     <name>rti_common.h</name>
     <path>/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/</path>
