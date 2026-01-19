@@ -17,14 +17,6 @@
 #include "util.h" // LF_MUTEX_UNLOCK
 #include "logging.h"
 
-static socket_priv_t* get_socket_priv_t(net_abstraction_t net_abs) {
-  if (net_abs == NULL) {
-    lf_print_error("Network abstraction is already closed.");
-    return NULL;
-  }
-  return (socket_priv_t*)net_abs;
-}
-
 net_abstraction_t initialize_net() {
   // Initialize priv.
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));
@@ -46,23 +38,29 @@ net_abstraction_t initialize_net() {
 }
 
 void free_net(net_abstraction_t net_abs) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  if (net_abs == NULL) {
+    LF_PRINT_LOG("Socket already closed.");
+    return;
+  }
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   free(priv);
 }
 
 int create_server(net_abstraction_t net_abs, bool increment_port_on_retry) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   return create_socket_server(priv->user_specified_port, &priv->socket_descriptor, &priv->port, TCP,
                               increment_port_on_retry);
 }
 
 net_abstraction_t accept_net(net_abstraction_t server_chan) {
-  socket_priv_t* serv_priv = get_socket_priv_t(server_chan);
+  LF_ASSERT_NON_NULL(server_chan);
+  socket_priv_t* serv_priv = (socket_priv_t*)server_chan;
 
   int sock = accept_socket(serv_priv->socket_descriptor);
   if (sock != -1) {
     net_abstraction_t client_net = initialize_net();
-    socket_priv_t* client_priv = get_socket_priv_t(client_net);
+    socket_priv_t* client_priv = (socket_priv_t*)client_net;
     client_priv->socket_descriptor = sock;
     // Get the peer address from the connected socket_id. Saving this for the address query.
     if (get_peer_address(client_priv) != 0) {
@@ -75,14 +73,15 @@ net_abstraction_t accept_net(net_abstraction_t server_chan) {
 }
 
 void create_client(net_abstraction_t net_abs) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   priv->socket_descriptor = create_real_time_tcp_socket_errexit();
 }
 
 net_abstraction_t connect_to_net(net_params_t* params) {
   // Create a network abstraction.
   net_abstraction_t net = initialize_net();
-  socket_priv_t* priv = get_socket_priv_t(net);
+  socket_priv_t* priv = (socket_priv_t*)net;
   socket_connection_parameters_t* sock_params = (socket_connection_parameters_t*)params;
   priv->server_port = sock_params->port;
   memcpy(priv->server_hostname, sock_params->server_hostname, INET_ADDRSTRLEN);
@@ -97,12 +96,14 @@ net_abstraction_t connect_to_net(net_params_t* params) {
 }
 
 int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   return read_from_socket(priv->socket_descriptor, num_bytes, buffer);
 }
 
 int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   int read_failed = read_from_net(net_abs, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
@@ -131,12 +132,14 @@ void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, un
 }
 
 int write_to_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   return write_to_socket(priv->socket_descriptor, num_bytes, buffer);
 }
 
 int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   int result = write_to_net(net_abs, num_bytes, buffer);
   if (result) {
     // Write failed.
@@ -167,7 +170,8 @@ void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, uns
 }
 
 bool check_net_closed(net_abstraction_t net_abs) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   return check_socket_closed(priv->socket_descriptor);
 }
 
@@ -176,43 +180,50 @@ int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
     LF_PRINT_LOG("Socket already closed.");
     return 0;
   }
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
   free_net(net_abs);
   return ret;
 }
 
 int32_t get_my_port(net_abstraction_t net_abs) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   return priv->port;
 }
 
 int32_t get_server_port(net_abstraction_t net_abs) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   return priv->server_port;
 }
 
 struct in_addr* get_ip_addr(net_abstraction_t net_abs) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   return &priv->server_ip_addr;
 }
 
 char* get_server_hostname(net_abstraction_t net_abs) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   return priv->server_hostname;
 }
 
 void set_my_port(net_abstraction_t net_abs, int32_t port) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   priv->port = port;
 }
 
 void set_server_port(net_abstraction_t net_abs, int32_t port) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   priv->server_port = port;
 }
 
 void set_server_hostname(net_abstraction_t net_abs, const char* hostname) {
-  socket_priv_t* priv = get_socket_priv_t(net_abs);
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
   memcpy(priv->server_hostname, hostname, INET_ADDRSTRLEN);
 }
