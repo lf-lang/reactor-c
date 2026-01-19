@@ -1822,8 +1822,8 @@ void lf_connect_to_rti(const char* hostname, int port) {
   params.type = TCP;
   params.port = port;
   params.server_hostname = hostname;
-  net_abstraction_t net = connect_to_net((net_params_t*)&params);
-  if (net == NULL) {
+  net_abstraction_t _fed.net_to_RTI = connect_to_net((net_params_t*)&params);
+  if (_fed.net_to_RTI == NULL) {
     lf_print_error_and_exit("Failed to connect to RTI.");
   }
 
