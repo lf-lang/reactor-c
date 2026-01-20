@@ -328,8 +328,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
     LF_PRINT_DEBUG("Initializing.");
     initialize_global();
-    // Set start time
-    start_time = lf_time_physical();
+    // Set the start time of the program (if it is not set from the command line). Possibly wait for
+    // it to arrive also.
+    _lf_set_and_wait_for_start_time();
 #ifndef FEDERATED
     lf_tracing_set_start_time(start_time);
 #endif

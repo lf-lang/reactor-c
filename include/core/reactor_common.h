@@ -54,6 +54,7 @@ extern unsigned int _lf_number_of_workers;
 extern int default_argc;
 extern const char** default_argv;
 extern instant_t duration;
+extern bool start_time_specified;
 extern bool fast;
 extern bool keepalive_specified;
 
@@ -65,6 +66,11 @@ extern interval_t lf_fed_STA_offset;
 extern struct allocation_record_t* _lf_reactors_to_free;
 
 //////////////////////  Functions  //////////////////////
+
+/**
+ * @brief Set the start time of the program and possibly wait for it to arrive.
+ */
+void _lf_set_and_wait_for_start_time();
 
 /**
  * @brief Combine a deadline and a level into a single index for sorting in the reaction queue.
