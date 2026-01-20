@@ -1,0 +1,96 @@
+name: Visualize, Save, and Upload Benchmark Results
+
+inputs:
+  csv-files:
+    type: string
+    required: true
+  token:
+    type: string
+    description: Personal access token
+    required: true
+  id:
+    type: string
+    description: String that can be used in a file name to distinguish this from other similar runs.
+    required: true
+  finalize:
+    description: Whether this is the last run of this workflow to edit the same comment.
+    type: boolean
+    default: false
+  repo-for-saving-data:
+    description: |
+      The directory name of the repository where graphs and CSVs from benchmarks should be saved.
+    type: string
+    default: benchmarks-lingua-franca
+
+runs:
+  using: "composite"
+  steps:
+    - name: Make figure
+      run: |
+        OUTPUT_DIR=images/$(date -I)
+        echo "Figure will be created in $OUTPUT_DIR"
+        SHA=${{ github.sha }}
+        OUTPUT_FILE=$OUTPUT_DIR/$SCHEDULER-$FEATURE_BRANCH-${{ inputs.id }}-${SHA:0:7}.png
+        echo "Figure will be named $OUTPUT_FILE"
+        mkdir -p ${{ inputs.repo-for-saving-data }}/$OUTPUT_DIR
+        cd ${{ inputs.repo-for-saving-data }}
+        ../runner/make-graphics.py ${{ inputs.csv-files }} $OUTPUT_FILE
+        cd ..
+        echo "::set-output name=output-file::$OUTPUT_FILE"
+      shell: bash
+      id: figure
+
+    - name: Commit figure and output files
+      run: |
+        cd ${{ inputs.repo-for-saving-data }}
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+        git fetch
+        git add -f ${{ inputs.csv-files }} ${{ steps.figure.outputs.output-file }}
+        if [[ $(git status) != *"nothing to commit"* ]]; then
+          git commit -m "benchmark ${{ github.sha }}"
+          git push https://token:${{ inputs.token }}@github.com/lf-lang/${{ inputs.repo-for-saving-data }}.git
+        fi
+        cd ..
+      shell: bash
+
+    - name: Compute error messages
+      id: compute-error-messages
+      run: |
+        echo $(ls)
+        if [ -f errors.txt ]; then
+          ERROR_MESSAGES="The benchmark runner reported the following errors:"$'\n'"$(cat errors.txt)"
+          echo "$ERROR_MESSAGES"
+          echo 'ERROR_MESSAGES<<EOF' >> $GITHUB_ENV
+          echo "$ERROR_MESSAGES" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+        fi
+      shell: bash
+
+    - name: Comment PR
+      uses: thollander/actions-comment-pull-request@v1
+      with:
+        message: |
+          Running benchmarks from commit ${{ github.sha }}...
+          ${{ env.ERROR_MESSAGES }}
+
+          Results so far:
+
+          ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/${{ inputs.repo-for-saving-data }}/saved-benchmark-results/${{ steps.figure.outputs.output-file }})
+        comment_includes: ${{ github.sha }}
+        pr_number: ${{ env.PR_NUMBER }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+      if: ${{ inputs.finalize == 'false' }}
+
+    - name: Finalize Comment
+      uses: thollander/actions-comment-pull-request@v1
+      with:
+        message: |
+          :heavy_check_mark: Finished running benchmarks from ${{ github.sha }}.
+          ${{ env.ERROR_MESSAGES }}
+
+          ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/${{ inputs.repo-for-saving-data }}/saved-benchmark-results/${{ steps.figure.outputs.output-file }})
+        comment_includes: ${{ github.sha }}
+        pr_number: ${{ env.PR_NUMBER }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+      if: ${{ inputs.finalize == 'true' }}
