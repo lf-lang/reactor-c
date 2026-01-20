@@ -622,7 +622,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
 #ifdef FEDERATED_DECENTRALIZED
     // For tardy messages in decentralized coordination, we need to figure out what the actual tag will be.
     // (Centralized coordination errors out with tardy messages).
-    if (lf_tag_compare(intended_tag, env->current_tag) <= 0) {
+    if (lf_tag_compare(intended_tag, env->current_tag) <= 0 && env->execution_started) {
       // Message is tardy.
       actual_tag = env->current_tag;
       actual_tag.microstep++;
