@@ -974,6 +974,9 @@ void usage(int argc, const char* argv[]) {
   printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
   printf("  -l\n");
   printf("   Send stdout to individual log files for each federate.\n\n");
+#ifdef COMM_TYPE_SST
+  printf("  -sst, --sst <n>\n");
+#endif
 #endif
 
   printf("Command given:\n");
@@ -1122,6 +1125,17 @@ int process_args(int argc, const char* argv[]) {
         usage(argc, argv);
         return 0;
       }
+    }
+#endif
+#ifdef COMM_TYPE_SST
+    else if (strcmp(arg, "-sst") == 0 || strcmp(arg, "--sst") == 0) {
+      if (argc < i + 1) {
+        lf_print_error("--sst needs a string argument.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* fid = argv[i++];
+      lf_set_sst_config_path(fid);
     }
 #endif
     else if (strcmp(arg, "--ros-args") == 0) {
