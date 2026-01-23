@@ -176,24 +176,18 @@ int create_real_time_tcp_socket_errexit(void);
  * @ingroup Network
  *
  * If the specified port number is greater than zero, this function will attempt to acquire that port.
- * If the specified port number is zero, and the increment_port_on_retry is true, it will attempt to acquire
- * DEFAULT_PORT. If it fails to acquire DEFAULT_PORT, then it will increment the port number from DEFAULT_PORT on each
- * attempt until it has incremented MAX_NUM_PORT_ADDRESSES times, at which point it will cycle around and begin again
- * with DEFAULT_PORT.
- * If the port number is zero, and the increment_port_on_retry is false, it delegates to the operating system to provide
+ * If the port number is zero, the operating system provides
  * an available port number.
  * If acquiring the port fails, then this function will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with a
  * delay of PORT_BIND_RETRY_INTERVAL in between each try.
  *
- * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
+ * @param port The port number to use or 0 to let the OS pick.
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
  * @param sock_type Type of the socket, TCP or UDP.
- * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
-int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
-                         bool increment_port_on_retry);
+int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type);
 
 /**
  * @brief Wait for an incoming connection request on the specified server socket.

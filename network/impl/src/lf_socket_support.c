@@ -46,11 +46,10 @@ void free_net(net_abstraction_t net_abs) {
   free(priv);
 }
 
-int create_server(net_abstraction_t net_abs, bool increment_port_on_retry) {
+int create_server(net_abstraction_t net_abs) {
   LF_ASSERT_NON_NULL(net_abs);
   socket_priv_t* priv = (socket_priv_t*)net_abs;
-  return create_socket_server(priv->user_specified_port, &priv->socket_descriptor, &priv->port, TCP,
-                              increment_port_on_retry);
+  return create_socket_server(priv->user_specified_port, &priv->socket_descriptor, &priv->port, TCP);
 }
 
 net_abstraction_t accept_net(net_abstraction_t server_chan) {

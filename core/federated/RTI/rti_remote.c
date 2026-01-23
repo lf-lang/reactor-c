@@ -1505,15 +1505,14 @@ int start_rti_server() {
   // Set the user specified port to the network abstraction.
   ((socket_priv_t*)rti_remote->rti_net)->port = rti_remote->user_specified_port;
   // Create the server
-  if (create_server(rti_remote->rti_net, true)) {
+  if (create_server(rti_remote->rti_net)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
     return -1;
   };
   lf_print("RTI: Listening for federates.");
   // Create the UDP socket server
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-    if (create_socket_server(DEFAULT_UDP_PORT, &rti_remote->socket_descriptor_UDP, &rti_remote->final_port_UDP, UDP,
-                             false)) {
+    if (create_socket_server(DEFAULT_UDP_PORT, &rti_remote->socket_descriptor_UDP, &rti_remote->final_port_UDP, UDP)) {
       lf_print_error_system_failure("RTI failed to create UDP server: %s.", strerror(errno));
       return -1;
     }
@@ -1575,7 +1574,7 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->num_feds_proposed_start = 0;
   rti_remote->all_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";
-  rti_remote->user_specified_port = 0;
+  rti_remote->user_specified_port = DEFAULT_PORT;
   rti_remote->final_port_UDP = UINT16_MAX;
   rti_remote->socket_descriptor_UDP = -1;
   rti_remote->clock_sync_global_status = clock_sync_init;

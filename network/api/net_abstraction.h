@@ -53,10 +53,9 @@ net_abstraction_t initialize_net();
  * Create a network abstraction server. For example, this might be a server socket that accepts connections.
  *
  * @param net_abs Server's network abstraction as returned by `initialize_net`.
- * @param increment_port_on_retry Whether to increment the port on retry if binding fails.
  * @return int 0 for success, -1 for failure.
  */
-int create_server(net_abstraction_t net_abs, bool increment_port_on_retry);
+int create_server(net_abstraction_t net_abs);
 
 /**
  * @brief Accept an incoming connection on a server network abstraction.
