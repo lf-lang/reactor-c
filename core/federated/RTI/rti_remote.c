@@ -1503,7 +1503,7 @@ int start_rti_server() {
   // Initialize RTI's network abstraction.
   rti_remote->rti_net = initialize_net();
   // Set the user specified port to the network abstraction.
-  ((socket_priv_t*)rti_remote->rti_net)->port = rti_remote->user_specified_port;
+  ((socket_priv_t*)rti_remote->rti_net)->user_specified_port = rti_remote->user_specified_port;
   // Create the server
   if (create_server(rti_remote->rti_net)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
