@@ -28,8 +28,10 @@ if(DEFINED LF_TRACE)
             message(STATUS "Package ${LF_TRACE_PLUGIN} found. Linking trace plugin target: ${LF_TRACE_PLUGIN_LIBRARY}")
             target_link_libraries(reactor-c PRIVATE "${LF_TRACE_PLUGIN_LIBRARY}")
         else()
-            # Case C: Neither LF_TRACE_PLUGIN_LIBRARY nor LF_TRACE_PLUGIN_PATHS is set. LF_TRACE_PLUGIN is set via cmake-args.
-            # This case happens when the user does not use "trace-plugin" but proceeds with a custom integration via cmake-include and cmake-args.
+            # Case C: LF_TRACE_PLUGIN is set but the specified trace plugin library target is not available
+            # (LF_TRACE_PLUGIN_LIBRARY is undefined, empty, or does not name an existing target, e.g., package not found).
+            # This case covers when the user either does not use "trace-plugin" or the package/library cannot be resolved,
+            # and instead proceeds with a custom integration via cmake-include and cmake-args.
             # Example: See https://github.com/lf-lang/lf-trace-xronos/blob/53e77a6b072f6b25d4fdfd53a4a3700fc199f938/tests/src/TracePluginCustomCmake.lf
             message(STATUS "Trace plugin package or library not found. Expecting user cmake-include to link the plugin.")
         endif()
