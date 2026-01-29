@@ -21,7 +21,8 @@
 #include <stdarg.h> //va_list
 #include <string.h> // strerror
 
-#include "util.h" // LF_MUTEX_UNLOCK(), logging.h
+#include "util.h" // LF_MUTEX_UNLOCK()
+#include "logging.h"
 #include "net_abstraction.h"
 
 /** Number of nanoseconds to sleep before retrying a socket read. */
@@ -84,18 +85,14 @@ static void set_socket_timeout_option(int socket_descriptor, struct timeval* tim
  *
  * @param socket_descriptor The file descriptor of the socket to be bound to an address and port.
  * @param specified_port The port number to bind the socket to.
- * @param increment_port_on_retry Boolean to retry port increment.
  * @return The final port number used.
  */
-static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool increment_port_on_retry) {
+static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.
   bzero((char*)&server_fd, sizeof(server_fd));
   uint16_t used_port = specified_port;
-  if (specified_port == 0 && increment_port_on_retry == true) {
-    used_port = DEFAULT_PORT;
-  }
   server_fd.sin_family = AF_INET;         // IPv4
   server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
   server_fd.sin_port = htons(used_port);  // Convert the port number from host byte order to network byte order.
@@ -103,27 +100,9 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   int result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
 
   // Try repeatedly to bind to a port.
-  int count = 1;
-  while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-    if (specified_port == 0 && increment_port_on_retry == true) {
-      //  If the specified port number is zero, and the increment_port_on_retry is true, increment the port number each
-      //  time.
-      lf_print_warning("RTI failed to get port %d.", used_port);
-      used_port++;
-      if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
-        used_port = DEFAULT_PORT;
-      lf_print_warning("RTI will try again with port %d.", used_port);
-      server_fd.sin_port = htons(used_port);
-      // Do not sleep.
-    } else {
-      lf_print("Failed to bind socket on port %d. Will try again.", used_port);
-      lf_sleep(PORT_BIND_RETRY_INTERVAL);
-    }
-    result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  }
 
   // Set the global server port.
-  if (specified_port == 0 && increment_port_on_retry == false) {
+  if (specified_port == 0) {
     // Need to retrieve the port number assigned by the OS.
     struct sockaddr_in assigned;
     socklen_t addr_len = sizeof(assigned);
@@ -135,12 +114,11 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   if (result != 0) {
     lf_print_error_and_exit("Failed to bind the socket. Port %d is not available. ", used_port);
   }
-  lf_print_debug("Socket is binded to port %d.", used_port);
+  lf_print_debug("Socket is bound to port %d.", used_port);
   return used_port;
 }
 
-int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
-                         bool increment_port_on_retry) {
+int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type) {
   int socket_descriptor;
   struct timeval timeout_time;
   if (sock_type == TCP) {
@@ -161,7 +139,7 @@ int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port,
     return -1;
   }
   set_socket_timeout_option(socket_descriptor, &timeout_time);
-  int used_port = set_socket_bind_option(socket_descriptor, port, increment_port_on_retry);
+  int used_port = set_socket_bind_option(socket_descriptor, port);
   if (sock_type == TCP) {
     // Enable listening for socket connections.
     // The second argument is the maximum number of queued socket requests,
@@ -176,17 +154,18 @@ int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port,
   return 0;
 }
 
-bool check_socket_closed(int socket) {
+bool is_socket_open(int socket) {
+  if (socket < 0) {
+    return false;
+  }
   unsigned char first_byte;
   ssize_t bytes = peek_from_socket(socket, &first_byte);
-  if (socket > 0) {
-    if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {
-      return true;
-    } else {
-      return false;
-    }
+  if (bytes < 0) {
+    return false;
   }
-  lf_print_warning("Socket is no longer connected.");
+  if (bytes == 1 && first_byte == MSG_TYPE_FAILED) {
+    return false;
+  }
   return true;
 }
 
@@ -212,7 +191,7 @@ int get_peer_address(socket_priv_t* priv) {
   return 0;
 }
 
-int accept_socket(int socket, int rti_socket) {
+int accept_socket(int socket) {
   struct sockaddr client_fd;
   // Wait for an incoming connection request.
   uint32_t client_length = sizeof(client_fd);
@@ -233,12 +212,6 @@ int accept_socket(int socket, int rti_socket) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
       return -1;
     } else {
-      // For the federates, it should check if the rti_socket is still open, before retrying accept().
-      if (rti_socket != -1) {
-        if (check_socket_closed(rti_socket)) {
-          return -1;
-        }
-      }
       // Try again
       lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
       continue;
@@ -283,12 +256,6 @@ int connect_to_socket(int sock, const char* hostname, int port) {
     ret = connect(sock, result->ai_addr, result->ai_addrlen);
     if (ret < 0) {
       lf_sleep(CONNECT_RETRY_INTERVAL);
-      if (port == 0) {
-        used_port++;
-        if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) {
-          used_port = DEFAULT_PORT;
-        }
-      }
       lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds. Connecting to port %d.\n",
                        CONNECT_RETRY_INTERVAL, used_port);
       freeaddrinfo(result);

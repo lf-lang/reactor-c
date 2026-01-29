@@ -124,6 +124,24 @@
  */
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
+typedef struct socket_connection_parameters_t {
+  /** @brief Socket type (TCP or UDP). */
+  socket_type_t type;
+
+  /** @brief Port number to connect to or listen on. */
+  uint16_t port;
+
+  /** @brief Hostname of the remote server. */
+  const char* server_hostname;
+} socket_connection_parameters_t;
+
+/**
+ * @brief Structure holding information about socket-based network abstraction.
+ * @ingroup network.
+ *
+ * Holds socket descriptors, port configuration, and addressing information
+ * required to manage TCP and UDP communication for a network channel.
+ */
 typedef struct socket_priv_t {
   /** @brief The TCP socket descriptor for the socket server. */
   int socket_descriptor;
@@ -158,24 +176,18 @@ int create_real_time_tcp_socket_errexit(void);
  * @ingroup Network
  *
  * If the specified port number is greater than zero, this function will attempt to acquire that port.
- * If the specified port number is zero, and the increment_port_on_retry is true, it will attempt to acquire
- * DEFAULT_PORT. If it fails to acquire DEFAULT_PORT, then it will increment the port number from DEFAULT_PORT on each
- * attempt until it has incremented MAX_NUM_PORT_ADDRESSES times, at which point it will cycle around and begin again
- * with DEFAULT_PORT.
- * If the port number is zero, and the increment_port_on_retry is false, it delegates to the operating system to provide
+ * If the port number is zero, the operating system provides
  * an available port number.
  * If acquiring the port fails, then this function will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with a
  * delay of PORT_BIND_RETRY_INTERVAL in between each try.
  *
- * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
+ * @param port The port number to use or 0 to let the OS pick.
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
  * @param sock_type Type of the socket, TCP or UDP.
- * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
-int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
-                         bool increment_port_on_retry);
+int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type);
 
 /**
  * @brief Wait for an incoming connection request on the specified server socket.
@@ -185,17 +197,11 @@ int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port,
  * temporary (e.g., `EAGAIN` or `EWOULDBLOCK`), it reports the error and exits. Temporary
  * errors cause the function to retry accepting the connection.
  *
- * If the `rti_socket` is not -1, this function checks whether the specified socket is still open.
- * If it is not open, then this function returns -1.
- * This is useful for federates to determine whether they are still connected to the federation
- * and to stop waiting when they are not.
- *
  * @param socket The server socket file descriptor that is listening for incoming connections.
- * @param rti_socket The rti socket for the federate to check if it is still open.
  * @return The file descriptor for the newly accepted socket on success, or -1 on failure
  *             (with an appropriate error message printed).
  */
-int accept_socket(int socket, int rti_socket);
+int accept_socket(int socket);
 
 /**
  * @brief Attempt to establish a TCP connection to the specified hostname and port.
@@ -277,15 +283,14 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
 ssize_t peek_from_socket(int socket, unsigned char* result);
 
 /**
- * @brief Check if the socket is closed.
+ * @brief Check whether a socket is still open and usable.
  * @ingroup Network
  *
- * Return true if either the socket to the RTI is broken or the socket is
- * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
- * @param socket Socket to check.
- * @return True if closed, false if still connected.
+ * @param socket Socket descriptor.
+ * @return true if the socket is open, false otherwise.
  */
-bool check_socket_closed(int socket);
+bool is_socket_open(int socket);
+
 /**
  * @brief Get the connected peer address.
  * @ingroup Network
