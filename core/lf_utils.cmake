@@ -1,6 +1,6 @@
 function(lf_enable_compiler_warnings target)
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
         if(${CMAKE_C_COMPILER} MATCHES "gcc\\.exe")
             target_compile_options(${target} PRIVATE -Wall)

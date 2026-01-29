@@ -19,6 +19,14 @@
 #include <stdbool.h>
 #include <stddef.h> // for size_t
 
+#if SCHEDULER == SCHED_STATIC
+// Forward declaration so that lf_scheduler_t is visible in
+// scheduler_instructions.h
+typedef struct lf_scheduler_t lf_scheduler_t;
+#include "lf_types.h"
+#include "scheduler_instructions.h"
+#endif
+
 #define DEFAULT_MAX_REACTION_LEVEL 100
 
 // Forward declarations
@@ -73,6 +81,40 @@ typedef struct lf_scheduler_t {
    */
   volatile size_t number_of_idle_workers;
 
+#if SCHEDULER == SCHED_STATIC
+
+  /**
+   * @brief Points to an array of program counters for each worker.
+   */
+  size_t* pc;
+
+  /**
+   * @brief Points to a read-only array of static schedules.
+   */
+  const inst_t** static_schedules;
+
+  /**
+   * @brief Points to an array of pointers to reactor self instances.
+   */
+  self_base_t** reactor_self_instances;
+
+  /**
+   * @brief The total number of reactor self instances.
+   */
+  size_t num_reactor_self_instances;
+
+  /**
+   * @brief Points to an array of pointers to reaction instances.
+   */
+  reaction_t** reaction_instances;
+
+  /**
+   * @brief Points to an array of integer counters.
+   */
+  volatile uint32_t* counters;
+
+#endif
+
   /**
    * @brief Pointer to an optional custom data structure that each scheduler can define.
    *
@@ -123,5 +165,13 @@ typedef struct {
  */
 bool init_sched_instance(struct environment_t* env, lf_scheduler_t** instance, size_t number_of_workers,
                          sched_params_t* params);
+
+#if SCHEDULER == SCHED_STATIC
+/**
+ * @brief Initialize the static schedule by filling in placeholders which are
+ * not considered "compile-time constants" by the compiler.
+ */
+void initialize_static_schedule();
+#endif
 
 #endif // LF_SCHEDULER_PARAMS_H
