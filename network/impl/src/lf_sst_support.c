@@ -7,14 +7,6 @@
 
 const char* sst_config_path; // The SST's configuration file path.
 
-static sst_priv_t* get_sst_priv_t(net_abstraction_t net_abs) {
-  if (net_abs == NULL) {
-    lf_print_error("Network abstraction is already closed.");
-    return NULL;
-  }
-  return (sst_priv_t*)net_abs;
-}
-
 net_abstraction_t initialize_net() {
   // Initialize sst_priv.
   sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
@@ -47,83 +39,89 @@ net_abstraction_t initialize_net() {
 }
 
 void free_net(net_abstraction_t net_abs) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
+  if (net_abs == NULL) {
+    LF_PRINT_LOG("Socket already closed.");
+    return;
+  }
+  sst_priv_t* priv = (sst_priv_t*)net_abs;
   free(priv->socket_priv);
   free(priv);
 }
 
-int create_server(net_abstraction_t net_abs, bool increment_port_on_retry) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
+int create_server(net_abstraction_t net_abs) {
+  sst_priv_t* priv = (sst_priv_t*)net_abs;
   SST_ctx_t* ctx = init_SST(sst_config_path);
   priv->sst_ctx = ctx;
   return create_socket_server(priv->socket_priv->user_specified_port, &priv->socket_priv->socket_descriptor,
-                              &priv->socket_priv->port, TCP, increment_port_on_retry);
+                              &priv->socket_priv->port, TCP);
 }
 
-net_abstraction_t accept_net(net_abstraction_t server_chan, net_abstraction_t rti_chan) {
-  sst_priv_t* serv_priv = get_sst_priv_t(server_chan);
-  int rti_socket;
-  if (rti_chan == NULL) {
-    // Set to -1, to indicate that this accept_net() call is not trying to check if the rti_chan is
-    // available, inside the accept_socket() function.
-    rti_socket = -1;
-  } else {
-    sst_priv_t* rti_priv = get_sst_priv_t(rti_chan);
-    rti_socket = rti_priv->socket_priv->socket_descriptor;
-  }
-  net_abstraction_t fed_net = initialize_net();
-  sst_priv_t* fed_priv = get_sst_priv_t(fed_net);
+// TODO: check new implementation.
+net_abstraction_t accept_net(net_abstraction_t server_chan) {
 
-  int sock = accept_socket(serv_priv->socket_priv->socket_descriptor, rti_socket);
-  if (sock == -1) {
-    free_net(fed_net);
+  LF_ASSERT_NON_NULL(server_chan);
+  sst_priv_t* serv_priv = (sst_priv_t*)server_chan;
+
+  int sock = accept_socket(serv_priv->socket_priv->socket_descriptor);
+  if (sock != -1) {
+    net_abstraction_t client_net = initialize_net();
+    sst_priv_t* client_priv = (sst_priv_t*)client_net;
+    client_priv->socket_priv->socket_descriptor = sock;
+    // Get the peer address from the connected socket_id. Saving this for the address query.
+    if (get_peer_address(client_priv->socket_priv) != 0) {
+      lf_print_error("Failed to save peer address.");
+    }
+
+    // TODO: Do we need to copy sst_ctx form server_chan to fed_chan?
+    session_key_list_t* s_key_list = init_empty_session_key_list();
+    SST_session_ctx_t* session_ctx =
+        server_secure_comm_setup(serv_priv->sst_ctx, client_priv->socket_priv->socket_descriptor, s_key_list);
+    // Session key used is copied to the session_ctx.
+    free_session_key_list_t(s_key_list);
+    client_priv->session_ctx = session_ctx;
+
+    return client_net;
+  } else {
     return NULL;
   }
-  fed_priv->socket_priv->socket_descriptor = sock;
-  // Get the peer address from the connected socket_id. Saving this for the address query.
-  if (get_peer_address(fed_priv->socket_priv) != 0) {
-    lf_print_error("RTI failed to get peer address.");
-  };
-
-  // TODO: Do we need to copy sst_ctx form server_chan to fed_chan?
-  session_key_list_t* s_key_list = init_empty_session_key_list();
-  SST_session_ctx_t* session_ctx =
-      server_secure_comm_setup(serv_priv->sst_ctx, fed_priv->socket_priv->socket_descriptor, s_key_list);
-  // Session key used is copied to the session_ctx.
-  free_session_key_list_t(s_key_list);
-  fed_priv->session_ctx = session_ctx;
-  return fed_net;
 }
 
 void create_client(net_abstraction_t net_abs) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
+  sst_priv_t* priv = (sst_priv_t*)net_abs;
   priv->socket_priv->socket_descriptor = create_real_time_tcp_socket_errexit();
   SST_ctx_t* ctx = init_SST(sst_config_path);
   priv->sst_ctx = ctx;
 }
 
-int connect_to_net(net_abstraction_t net_abs) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  int ret = connect_to_socket(priv->socket_priv->socket_descriptor, priv->socket_priv->server_hostname,
-                              priv->socket_priv->server_port);
-  if (ret != 0) {
-    return ret;
+net_abstraction_t connect_to_net(net_params_t* params) {
+  // Create a network abstraction.
+  net_abstraction_t net = initialize_net();
+  sst_priv_t* priv = (sst_priv_t*)net;
+  socket_connection_parameters_t* sock_params = (socket_connection_parameters_t*)params;
+  priv->socket_priv->server_port = sock_params->port;
+  memcpy(priv->socket_priv->server_hostname, sock_params->server_hostname, INET_ADDRSTRLEN);
+  // Create the client network abstraction.
+  create_client(net);
+  // Connect to the target server.
+  if (connect_to_socket(priv->socket_priv->socket_descriptor, priv->socket_priv->server_hostname, priv->socket_priv->server_port) != 0) {
+    lf_print_error("Failed to connect to socket.");
+    return NULL;
   }
   session_key_list_t* s_key_list = get_session_key(priv->sst_ctx, NULL);
   SST_session_ctx_t* session_ctx =
       secure_connect_to_server_with_socket(&s_key_list->s_key[0], priv->socket_priv->socket_descriptor);
   priv->session_ctx = session_ctx;
-  return 0;
+  return net;
 }
 
 // TODO: Still need to fix...
 int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
+  sst_priv_t* priv = (sst_priv_t*)net_abs;
   return read_from_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
 }
 
 int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
+  sst_priv_t* priv = (sst_priv_t*)net_abs;
   int read_failed = read_from_net(net_abs, num_bytes, buffer);
   if (read_failed) {
     // Read failed.
@@ -135,8 +133,8 @@ int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, un
   return 0;
 }
 
-void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer,
-                                             char* format, ...) {
+void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer, char* format,
+                                 ...) {
   va_list args;
   int read_failed = read_from_net_close_on_error(net_abs, num_bytes, buffer);
   if (read_failed) {
@@ -152,12 +150,12 @@ void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, un
 }
 
 int write_to_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
+  sst_priv_t* priv = (sst_priv_t*)net_abs;
   return write_to_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
 }
 
 int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
+  sst_priv_t* priv = (sst_priv_t*)net_abs;
   int result = write_to_net(net_abs, num_bytes, buffer);
   if (result) {
     // Write failed.
@@ -168,8 +166,8 @@ int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, uns
   return result;
 }
 
-void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer,
-                                            lf_mutex_t* mutex, char* format, ...) {
+void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
+                                char* format, ...) {
   va_list args;
   int result = write_to_net_close_on_error(net_abs, num_bytes, buffer);
   if (result) {
@@ -187,61 +185,23 @@ void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, uns
   }
 }
 
-bool check_net_closed(net_abstraction_t net_abs) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  return check_socket_closed(priv->socket_priv->socket_descriptor);
+bool is_net_open(net_abstraction_t net_abs) {
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
+  return is_socket_open(priv->socket_descriptor);
 }
 
 int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
   if (net_abs == NULL) {
-    lf_print("Socket already closed.");
+    LF_PRINT_LOG("Socket already closed.");
     return 0;
   }
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  int ret = shutdown_socket(&priv->socket_priv->socket_descriptor, read_before_closing);
-  if (ret != 0) {
-    lf_print_error("Failed to shutdown socket.");
-  }
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
+  int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
   free_net(net_abs);
   return ret;
 }
 // END of TODO:
-
-// Get/set functions.
-int32_t get_my_port(net_abstraction_t net_abs) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  return priv->socket_priv->port;
-}
-
-int32_t get_server_port(net_abstraction_t net_abs) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  return priv->socket_priv->server_port;
-}
-
-struct in_addr* get_ip_addr(net_abstraction_t net_abs) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  return &priv->socket_priv->server_ip_addr;
-}
-
-char* get_server_hostname(net_abstraction_t net_abs) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  return priv->socket_priv->server_hostname;
-}
-
-void set_my_port(net_abstraction_t net_abs, int32_t port) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  priv->socket_priv->port = port;
-}
-
-void set_server_port(net_abstraction_t net_abs, int32_t port) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  priv->socket_priv->server_port = port;
-}
-
-void set_server_hostname(net_abstraction_t net_abs, const char* hostname) {
-  sst_priv_t* priv = get_sst_priv_t(net_abs);
-  memcpy(priv->socket_priv->server_hostname, hostname, INET_ADDRSTRLEN);
-}
 
 // Helper function.
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
