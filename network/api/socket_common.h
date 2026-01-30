@@ -1,25 +1,30 @@
 /**
  * @file socket_common.h
  * @brief Common socket operations and utilities for federated Lingua Franca programs.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @author Edward A. Lee
  * @author Soroush Bateni
  * @author Peter Donovan
+ * @author Dongha Kim
  *
  * This file provides common socket operations and utilities used in federated Lingua Franca programs.
  * It includes functions for creating and managing TCP/UDP sockets, handling connections,
  * and performing read/write operations with proper error handling and retry mechanisms.
  * The file also defines various constants for timeouts, retry intervals, and port configurations.
  */
+
 #ifndef SOCKET_COMMON_H
 #define SOCKET_COMMON_H
 
-#include "low_level_platform.h"
+#include "low_level_platform.h" // lf_mutex_t
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/time.h>
 
 /**
  * @brief The number of federates.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This defaults to 1.
  */
@@ -29,7 +34,7 @@
 
 /**
  * @brief The amount of time to wait after a failed socket read or write before trying again.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This defaults to 100 ms.
  */
@@ -37,7 +42,7 @@
 
 /**
  * @brief The timeout time in ns for TCP operations.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Default value is 10 secs.
  */
@@ -45,7 +50,7 @@
 
 /**
  * @brief The timeout time in ns for UDP operations.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Default value is 1 sec.
  */
@@ -53,13 +58,13 @@
 
 /**
  * @brief Time between a federate's attempts to connect to the RTI.
- * @ingroup Federated
+ * @ingroup Network
  */
 #define CONNECT_RETRY_INTERVAL MSEC(500)
 
 /**
  * @brief Bound on the number of retries to connect to the RTI.
- * @ingroup Federated
+ * @ingroup Network
  *
  * A federate will retry every CONNECT_RETRY_INTERVAL nanoseconds until
  * CONNECTION_TIMEOUT expires.
@@ -68,7 +73,7 @@
 
 /**
  * @brief Maximum number of port addresses that a federate will try to connect to the RTI on.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
  * on the number of RTIs that can be running on the same host.
@@ -77,7 +82,7 @@
 
 /**
  * @brief Time to wait before re-attempting to bind to a port.
- * @ingroup Federated
+ * @ingroup Network
  *
  * When a process closes, the network stack typically waits between 30 and 120
  * seconds before releasing the port.  This is to allow for delayed packets so
@@ -88,13 +93,13 @@
 
 /**
  * @brief Number of attempts to bind to a port before giving up.
- * @ingroup Federated
+ * @ingroup Network
  */
 #define PORT_BIND_RETRY_LIMIT 60
 
 /**
  * @brief Default port number for the RTI.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Unless a specific port has been specified by the LF program in the "at"
  * for the RTI or on the command line, when the RTI starts up, it will attempt
@@ -103,76 +108,104 @@
 #define DEFAULT_PORT 15045u
 
 /**
+ * Default port number for the RTI's clock server.
+ */
+#define DEFAULT_UDP_PORT 15061u
+
+/**
  * @brief Byte identifying that the federate or the RTI has failed.
- * @ingroup Federated
+ * @ingroup Network
  */
 #define MSG_TYPE_FAILED 25
 
 /**
  * @brief Type of socket.
- * @ingroup Federated
+ * @ingroup Network
  */
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
+typedef struct socket_connection_parameters_t {
+  /** @brief Socket type (TCP or UDP). */
+  socket_type_t type;
+
+  /** @brief Port number to connect to or listen on. */
+  uint16_t port;
+
+  /** @brief Hostname of the remote server. */
+  const char* server_hostname;
+} socket_connection_parameters_t;
+
+/**
+ * @brief Structure holding information about socket-based network abstraction.
+ * @ingroup network.
+ *
+ * Holds socket descriptors, port configuration, and addressing information
+ * required to manage TCP and UDP communication for a network channel.
+ */
+typedef struct socket_priv_t {
+  /** @brief The TCP socket descriptor for the socket server. */
+  int socket_descriptor;
+  /** @brief The final port number that the TCP socket server ends up using. */
+  uint16_t port;
+  /** @brief The desired port specified by the user on the command line. */
+  uint16_t user_specified_port;
+  /** @brief Human-readable IP address of the federate's socket server. */
+  char server_hostname[INET_ADDRSTRLEN];
+  /** @brief Port number of the socket server of the federate. The port number will be -1 if there is no server or if
+   * the RTI has not been informed of the port number. */
+  int32_t server_port;
+  /** @brief Information about the IP address of the socket server of the federate. */
+  struct in_addr server_ip_addr;
+  /** @brief The UDP address for the federate. */
+  struct sockaddr_in UDP_addr;
+} socket_priv_t;
+
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This uses TCP_NODELAY and Delayed ACKs disabled with TCP_QUICKACK.
  * It exits application on any error.
  *
  * @return The socket ID (a file descriptor).
  */
-int create_real_time_tcp_socket_errexit();
+int create_real_time_tcp_socket_errexit(void);
 
 /**
  * @brief Create a TCP server that listens for socket connections.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If the specified port number is greater than zero, this function will attempt to acquire that port.
- * If the specified port number is zero, and the increment_port_on_retry is true, it will attempt to acquire
- * DEFAULT_PORT. If it fails to acquire DEFAULT_PORT, then it will increment the port number from DEFAULT_PORT on each
- * attempt until it has incremented MAX_NUM_PORT_ADDRESSES times, at which point it will cycle around and begin again
- * with DEFAULT_PORT.
- * If the port number is zero, and the increment_port_on_retry is false, it delegates to the operating system to provide
+ * If the port number is zero, the operating system provides
  * an available port number.
  * If acquiring the port fails, then this function will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with a
  * delay of PORT_BIND_RETRY_INTERVAL in between each try.
  *
- * @param port The port number to use or 0 to let the OS pick or 1 to start trying at DEFAULT_PORT.
+ * @param port The port number to use or 0 to let the OS pick.
  * @param final_socket Pointer to the returned socket descriptor on which accepting connections will occur.
  * @param final_port Pointer to the final port the server will use.
  * @param sock_type Type of the socket, TCP or UDP.
- * @param increment_port_on_retry Boolean to retry port increment.
  * @return 0 for success, -1 for failure.
  */
-int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
-                  bool increment_port_on_retry);
+int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type);
 
 /**
  * @brief Wait for an incoming connection request on the specified server socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This blocks until a connection is successfully accepted. If an error occurs that is not
  * temporary (e.g., `EAGAIN` or `EWOULDBLOCK`), it reports the error and exits. Temporary
  * errors cause the function to retry accepting the connection.
  *
- * If the `rti_socket` is not -1, this function checks whether the specified socket is still open.
- * If it is not open, then this function returns -1.
- * This is useful for federates to determine whether they are still connected to the federation
- * and to stop waiting when they are not.
- *
  * @param socket The server socket file descriptor that is listening for incoming connections.
- * @param rti_socket The rti socket for the federate to check if it is still open.
  * @return The file descriptor for the newly accepted socket on success, or -1 on failure
  *             (with an appropriate error message printed).
  */
-
-int accept_socket(int socket, int rti_socket);
+int accept_socket(int socket);
 
 /**
  * @brief Attempt to establish a TCP connection to the specified hostname and port.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Attempt to establish a TCP connection to the specified hostname
  * and port. This function uses `getaddrinfo` to resolve the hostname and retries the connection
@@ -189,7 +222,7 @@ int connect_to_socket(int sock, const char* hostname, int port);
 
 /**
  * @brief Read the specified number of bytes from the specified socket into the specified buffer.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If an error occurs during this reading, return -1 and set errno to indicate
  * the cause of the error. If the read succeeds in reading the specified number of bytes,
@@ -207,7 +240,7 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
 /**
  * @brief Read the specified number of bytes from the specified socket into the specified buffer.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This uses @ref read_from_socket, but if a failure occurs, it closes the socket using
  * @ref shutdown_socket and returns -1. Otherwise, it returns 0.
@@ -221,7 +254,7 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
 /**
  * @brief Read the specified number of bytes from the specified socket into the specified
  * buffer and close the socket if an error occurs.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If a disconnect or an EOF occurs during this reading, then if format is non-null,
  * report an error and exit.
@@ -239,7 +272,7 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
 
 /**
  * @brief Without blocking, peek at the specified socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If there is anything on the queue, put its first byte at the specified address and return 1.
  * If there is nothing on the queue, return 0, and if an error occurs, return -1.
@@ -250,8 +283,29 @@ void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char
 ssize_t peek_from_socket(int socket, unsigned char* result);
 
 /**
+ * @brief Check whether a socket is still open and usable.
+ * @ingroup Network
+ *
+ * @param socket Socket descriptor.
+ * @return true if the socket is open, false otherwise.
+ */
+bool is_socket_open(int socket);
+
+/**
+ * @brief Get the connected peer address.
+ * @ingroup Network
+ *
+ * Get the connected peer name from the connected socket.
+ * Set it to the server_ip_addr. Also, set server_hostname if LOG_LEVEL is higher than LOG_LEVEL_DEBUG.
+ *
+ * @param priv The socket_priv struct.
+ * @return 0 for success, -1 for failure.
+ */
+int get_peer_address(socket_priv_t* priv);
+
+/**
  * @brief Write the specified number of bytes to the specified socket from the specified buffer.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If an error occurs, return -1 and set errno to indicate the cause of the error.
  * If the write succeeds, return 0.
@@ -269,7 +323,7 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
 /**
  * @brief Write the specified number of bytes to the specified socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This uses @ref write_to_socket and closes the socket if an error occurs.
  * If an error occurs, this will change the socket ID pointed to by the first argument to -1 and will return -1.
@@ -283,7 +337,7 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
 
 /**
  * @brief Write the specified number of bytes to the specified socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This uses @ref write_to_socket_close_on_error and exits with an error code if an error occurs.
  * If the mutex argument is non-NULL, release the mutex before exiting.
@@ -304,7 +358,7 @@ void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char*
 
 /**
  * @brief Initialize shutdown mutex.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This is used to synchronize the shutdown of the federate.
  */
@@ -312,7 +366,7 @@ void init_shutdown_mutex(void);
 
 /**
  * @brief Shutdown and close the socket.
- * @ingroup Federated
+ * @ingroup Network
  *
  * If `read_before_closing` is false, this calls `shutdown` with `SHUT_RDWR`, shutting down both directions.
  * If this fails, then it calls `close`.

@@ -1,6 +1,17 @@
+/**
+ * @file
+ * @author Edward A. Lee
+ * @author Soroush Bateni
+ * @author Peter Donovan
+ * @author Dongha Kim
+ *
+ * @brief Common socket operations and utilities for federated Lingua Franca programs.
+ */
+
 #include <unistd.h>      // Defines read(), write(), and close()
 #include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
 #include <netinet/tcp.h> // TCP_NODELAY
+#include <arpa/inet.h>   // inet_ntop
 #include <errno.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -10,16 +21,17 @@
 #include <stdarg.h> //va_list
 #include <string.h> // strerror
 
-#include "util.h"
-#include "socket_common.h"
+#include "util.h" // LF_MUTEX_UNLOCK()
+#include "logging.h"
+#include "net_abstraction.h"
 
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-// Mutex lock held while performing socket shutdown and close operations.
+// Mutex lock held while performing network abstraction shutdown and close operations.
 lf_mutex_t shutdown_mutex;
 
-int create_real_time_tcp_socket_errexit() {
+int create_real_time_tcp_socket_errexit(void) {
   int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (sock < 0) {
     lf_print_error_system_failure("Could not open TCP socket.");
@@ -73,18 +85,14 @@ static void set_socket_timeout_option(int socket_descriptor, struct timeval* tim
  *
  * @param socket_descriptor The file descriptor of the socket to be bound to an address and port.
  * @param specified_port The port number to bind the socket to.
- * @param increment_port_on_retry Boolean to retry port increment.
  * @return The final port number used.
  */
-static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port, bool increment_port_on_retry) {
+static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port) {
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.
   bzero((char*)&server_fd, sizeof(server_fd));
   uint16_t used_port = specified_port;
-  if (specified_port == 0 && increment_port_on_retry == true) {
-    used_port = DEFAULT_PORT;
-  }
   server_fd.sin_family = AF_INET;         // IPv4
   server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
   server_fd.sin_port = htons(used_port);  // Convert the port number from host byte order to network byte order.
@@ -92,27 +100,9 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   int result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
 
   // Try repeatedly to bind to a port.
-  int count = 1;
-  while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-    if (specified_port == 0 && increment_port_on_retry == true) {
-      //  If the specified port number is zero, and the increment_port_on_retry is true, increment the port number each
-      //  time.
-      lf_print_warning("RTI failed to get port %d.", used_port);
-      used_port++;
-      if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES)
-        used_port = DEFAULT_PORT;
-      lf_print_warning("RTI will try again with port %d.", used_port);
-      server_fd.sin_port = htons(used_port);
-      // Do not sleep.
-    } else {
-      lf_print("Failed to bind socket on port %d. Will try again.", used_port);
-      lf_sleep(PORT_BIND_RETRY_INTERVAL);
-    }
-    result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
-  }
 
   // Set the global server port.
-  if (specified_port == 0 && increment_port_on_retry == false) {
+  if (specified_port == 0) {
     // Need to retrieve the port number assigned by the OS.
     struct sockaddr_in assigned;
     socklen_t addr_len = sizeof(assigned);
@@ -124,12 +114,11 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   if (result != 0) {
     lf_print_error_and_exit("Failed to bind the socket. Port %d is not available. ", used_port);
   }
-  lf_print_debug("Socket is binded to port %d.", used_port);
+  lf_print_debug("Socket is bound to port %d.", used_port);
   return used_port;
 }
 
-int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type,
-                  bool increment_port_on_retry) {
+int create_socket_server(uint16_t port, int* final_socket, uint16_t* final_port, socket_type_t sock_type) {
   int socket_descriptor;
   struct timeval timeout_time;
   if (sock_type == TCP) {
@@ -150,7 +139,7 @@ int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket
     return -1;
   }
   set_socket_timeout_option(socket_descriptor, &timeout_time);
-  int used_port = set_socket_bind_option(socket_descriptor, port, increment_port_on_retry);
+  int used_port = set_socket_bind_option(socket_descriptor, port);
   if (sock_type == TCP) {
     // Enable listening for socket connections.
     // The second argument is the maximum number of queued socket requests,
@@ -165,21 +154,44 @@ int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket
   return 0;
 }
 
-/**
- * Return true if either the socket to the RTI is broken or the socket is
- * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
- */
-static bool check_socket_closed(int socket) {
-  unsigned char first_byte;
-  ssize_t bytes = peek_from_socket(socket, &first_byte);
-  if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) {
-    return true;
-  } else {
+bool is_socket_open(int socket) {
+  if (socket < 0) {
     return false;
   }
+  unsigned char first_byte;
+  ssize_t bytes = peek_from_socket(socket, &first_byte);
+  if (bytes < 0) {
+    return false;
+  }
+  if (bytes == 1 && first_byte == MSG_TYPE_FAILED) {
+    return false;
+  }
+  return true;
 }
 
-int accept_socket(int socket, int rti_socket) {
+int get_peer_address(socket_priv_t* priv) {
+  struct sockaddr_in peer_addr;
+  socklen_t addr_len = sizeof(peer_addr);
+  if (getpeername(priv->socket_descriptor, (struct sockaddr*)&peer_addr, &addr_len) != 0) {
+    lf_print_error("Failed to get peer address.");
+    return -1;
+  }
+  priv->server_ip_addr = peer_addr.sin_addr;
+
+#if LOG_LEVEL >= LOG_LEVEL_DEBUG
+  // Create the human readable format and copy that into
+  // the .server_hostname field of the federate.
+  char str[INET_ADDRSTRLEN + 1];
+  inet_ntop(AF_INET, &priv->server_ip_addr, str, INET_ADDRSTRLEN);
+  strncpy(priv->server_hostname, str, INET_ADDRSTRLEN - 1); // Copy up to INET_ADDRSTRLEN - 1 characters
+  priv->server_hostname[INET_ADDRSTRLEN - 1] = '\0';        // Null-terminate explicitly
+
+  LF_PRINT_DEBUG("Got address %s", priv->server_hostname);
+#endif
+  return 0;
+}
+
+int accept_socket(int socket) {
   struct sockaddr client_fd;
   // Wait for an incoming connection request.
   uint32_t client_length = sizeof(client_fd);
@@ -198,13 +210,8 @@ int accept_socket(int socket, int rti_socket) {
       break;
     } else if (errno == EPERM) {
       lf_print_error_system_failure("Firewall permissions prohibit connection.");
+      return -1;
     } else {
-      // For the federates, it should check if the rti_socket is still open, before retrying accept().
-      if (rti_socket != -1) {
-        if (check_socket_closed(rti_socket)) {
-          break;
-        }
-      }
       // Try again
       lf_print_warning("Failed to accept the socket. %s. Trying again.", strerror(errno));
       continue;
@@ -249,12 +256,6 @@ int connect_to_socket(int sock, const char* hostname, int port) {
     ret = connect(sock, result->ai_addr, result->ai_addrlen);
     if (ret < 0) {
       lf_sleep(CONNECT_RETRY_INTERVAL);
-      if (port == 0) {
-        used_port++;
-        if (used_port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) {
-          used_port = DEFAULT_PORT;
-        }
-      }
       lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds. Connecting to port %d.\n",
                        CONNECT_RETRY_INTERVAL, used_port);
       freeaddrinfo(result);
@@ -296,40 +297,6 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
   return 0;
 }
 
-int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
-  assert(socket);
-  int socket_id = *socket; // Assume atomic read so we don't pass -1 to read_from_socket.
-  if (socket_id >= 0) {
-    int read_failed = read_from_socket(socket_id, num_bytes, buffer);
-    if (read_failed) {
-      // Read failed.
-      // Socket has probably been closed from the other side.
-      // Shut down and close the socket from this side.
-      shutdown_socket(socket, false);
-      return -1;
-    }
-    return 0;
-  }
-  lf_print_warning("Socket is no longer connected. Read failed.");
-  return -1;
-}
-
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, char* format, ...) {
-  va_list args;
-  assert(socket);
-  int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);
-  if (read_failed) {
-    // Read failed.
-    if (format != NULL) {
-      va_start(args, format);
-      lf_print_error_system_failure(format, args);
-      va_end(args);
-    } else {
-      lf_print_error_system_failure("Failed to read from socket.");
-    }
-  }
-}
-
 ssize_t peek_from_socket(int socket, unsigned char* result) {
   ssize_t bytes_read = recv(socket, result, 1, MSG_DONTWAIT | MSG_PEEK);
   if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))
@@ -364,55 +331,17 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
   return 0;
 }
 
-int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
-  assert(socket);
-  int socket_id = *socket; // Assume atomic read so we don't pass -1 to write_to_socket.
-  if (socket_id >= 0) {
-    int result = write_to_socket(socket_id, num_bytes, buffer);
-    if (result) {
-      // Write failed.
-      // Socket has probably been closed from the other side.
-      // Shut down and close the socket from this side.
-      shutdown_socket(socket, false);
-      return -1;
-    }
-    return result;
-  }
-  lf_print_warning("Socket is no longer connected. Write failed.");
-  return -1;
-}
-
-void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                   char* format, ...) {
-  va_list args;
-  assert(socket);
-  int result = write_to_socket_close_on_error(socket, num_bytes, buffer);
-  if (result) {
-    // Write failed.
-    if (mutex != NULL) {
-      LF_MUTEX_UNLOCK(mutex);
-    }
-    if (format != NULL) {
-      va_start(args, format);
-      lf_print_error_system_failure(format, args);
-      va_end(args);
-    } else {
-      lf_print_error_and_exit("Failed to write to socket. Shutting down.");
-    }
-  }
-}
-
 void init_shutdown_mutex(void) { LF_MUTEX_INIT(&shutdown_mutex); }
 
 int shutdown_socket(int* socket, bool read_before_closing) {
   LF_MUTEX_LOCK(&shutdown_mutex);
   int result = 0;
   if (*socket < 0) {
-    lf_print_log("Socket is already closed.");
+    LF_PRINT_LOG("Socket is already closed.");
   } else {
     if (!read_before_closing) {
       if (shutdown(*socket, SHUT_RDWR)) {
-        lf_print_log("On shutdown socket, received reply: %s", strerror(errno));
+        LF_PRINT_LOG("On shutdown socket, received reply: %s", strerror(errno));
         result = -1;
       } // else shutdown reads and writes succeeded.
     } else {
@@ -420,7 +349,7 @@ int shutdown_socket(int* socket, bool read_before_closing) {
       // This indicates the write direction is closed. For more details, refer to:
       // https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket
       if (shutdown(*socket, SHUT_WR)) {
-        lf_print_log("Failed to shutdown socket: %s", strerror(errno));
+        LF_PRINT_LOG("Failed to shutdown socket: %s", strerror(errno));
         result = -1;
       } else {
         // Shutdown writes succeeded.
@@ -442,7 +371,7 @@ int shutdown_socket(int* socket, bool read_before_closing) {
     // duplicated packets intended for this program.
     if (result != 0 && close(*socket)) {
       // Close failed.
-      lf_print_log("Error while closing socket: %s\n", strerror(errno));
+      LF_PRINT_LOG("Error while closing socket: %s\n", strerror(errno));
       result = -1;
     }
     *socket = -1;
