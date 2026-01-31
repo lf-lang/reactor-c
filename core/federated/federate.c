@@ -707,7 +707,6 @@ static int handle_port_absent_message(net_abstraction_t net, int fed_id) {
  * network abstraction in _fed.net_for_inbound_p2p_connections
  * to -1 and returns, terminating the thread.
  * @param _args The remote federate ID (cast to void*).
- * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
  *  This procedure frees the memory pointed to before returning.
  */
 static void* listen_to_federates(void* _args) {
