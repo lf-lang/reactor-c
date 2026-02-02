@@ -34,7 +34,6 @@ net_abstraction_t initialize_net() {
   // SST initialization. Only set pointers to NULL.
   sst_priv->sst_ctx = NULL;
   sst_priv->session_ctx = NULL;
-
   return (net_abstraction_t)sst_priv;
 }
 
@@ -49,6 +48,7 @@ void free_net(net_abstraction_t net_abs) {
 }
 
 int create_server(net_abstraction_t net_abs) {
+  LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   SST_ctx_t* ctx = init_SST(sst_config_path);
   priv->sst_ctx = ctx;
@@ -58,7 +58,6 @@ int create_server(net_abstraction_t net_abs) {
 
 // TODO: check new implementation.
 net_abstraction_t accept_net(net_abstraction_t server_chan) {
-
   LF_ASSERT_NON_NULL(server_chan);
   sst_priv_t* serv_priv = (sst_priv_t*)server_chan;
 
@@ -87,6 +86,7 @@ net_abstraction_t accept_net(net_abstraction_t server_chan) {
 }
 
 void create_client(net_abstraction_t net_abs) {
+  LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   priv->socket_priv->socket_descriptor = create_real_time_tcp_socket_errexit();
   SST_ctx_t* ctx = init_SST(sst_config_path);
@@ -116,11 +116,13 @@ net_abstraction_t connect_to_net(net_params_t* params) {
 
 // TODO: Still need to fix...
 int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
+  LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   return read_from_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
 }
 
 int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
+  LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   int read_failed = read_from_net(net_abs, num_bytes, buffer);
   if (read_failed) {
@@ -135,6 +137,7 @@ int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, un
 
 void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer, char* format,
                                  ...) {
+  LF_ASSERT_NON_NULL(net_abs);
   va_list args;
   int read_failed = read_from_net_close_on_error(net_abs, num_bytes, buffer);
   if (read_failed) {
@@ -150,11 +153,13 @@ void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, un
 }
 
 int write_to_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
+  LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   return write_to_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
 }
 
 int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
+  LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   int result = write_to_net(net_abs, num_bytes, buffer);
   if (result) {
@@ -168,6 +173,7 @@ int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, uns
 
 void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                 char* format, ...) {
+  LF_ASSERT_NON_NULL(net_abs);
   va_list args;
   int result = write_to_net_close_on_error(net_abs, num_bytes, buffer);
   if (result) {
