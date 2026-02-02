@@ -1929,14 +1929,13 @@ void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
   net_abstraction_t* server_net = initialize_net();
-  ((socket_priv_t*)server_net)->port = (uint16_t)specified_port;
-
+  ((sst_priv_t*)server_net)->socket_priv->port = (uint16_t)specified_port;
   if (create_server(server_net)) {
     lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
   };
   _fed.server_net = server_net;
   // Get the final server port to send to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message.
-  int32_t server_port = ((socket_priv_t*)server_net)->port;
+  int32_t server_port = ((sst_priv_t*)server_net)->socket_priv->port;
 
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", server_port);
 

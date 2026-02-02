@@ -650,9 +650,9 @@ void handle_address_query(uint16_t fed_id) {
     // The network abstraction is initialized, but the RTI might still not know the port number. This can happen if the
     // RTI has not yet received a MSG_TYPE_ADDRESS_ADVERTISEMENT message from the remote federate. In such cases, the
     // returned port number might still be -1.
-    server_port = ((socket_priv_t*)remote_fed->net)->server_port;
-    ip_address = (uint32_t*)&((socket_priv_t*)remote_fed->net)->server_ip_addr;
-    server_host_name = ((socket_priv_t*)remote_fed->net)->server_hostname;
+    server_port = (((sst_priv_t*)remote_fed->net)->socket_priv)->server_port;
+    ip_address = (uint32_t*)&(((sst_priv_t*)remote_fed->net)->socket_priv)->server_ip_addr;
+    server_host_name = (((sst_priv_t*)remote_fed->net)->socket_priv)->server_hostname;
   }
 
   encode_int32(server_port, (unsigned char*)&buffer[1]);
@@ -683,7 +683,7 @@ void handle_address_ad(uint16_t federate_id) {
   assert(server_port < 65536);
 
   LF_MUTEX_LOCK(&rti_mutex);
-  ((socket_priv_t*)fed->net)->server_port = server_port;
+  (((sst_priv_t*)fed->net)->socket_priv)->server_port = server_port;
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);
@@ -1503,7 +1503,7 @@ int start_rti_server() {
   // Initialize RTI's network abstraction.
   rti_remote->rti_net = initialize_net();
   // Set the user specified port to the network abstraction.
-  ((socket_priv_t*)rti_remote->rti_net)->user_specified_port = rti_remote->user_specified_port;
+  (((sst_priv_t*)rti_remote->rti_net)->socket_priv)->user_specified_port = rti_remote->user_specified_port;
   // Create the server
   if (create_server(rti_remote->rti_net)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
