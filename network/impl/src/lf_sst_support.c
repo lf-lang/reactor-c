@@ -193,8 +193,8 @@ void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, uns
 
 bool is_net_open(net_abstraction_t net_abs) {
   LF_ASSERT_NON_NULL(net_abs);
-  socket_priv_t* priv = (socket_priv_t*)net_abs;
-  return is_socket_open(priv->socket_descriptor);
+  sst_priv_t* priv = (sst_priv_t*)net_abs;
+  return is_socket_open(priv->socket_priv->socket_descriptor);
 }
 
 int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
@@ -202,8 +202,8 @@ int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
     LF_PRINT_LOG("Socket already closed.");
     return 0;
   }
-  socket_priv_t* priv = (socket_priv_t*)net_abs;
-  int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
+  sst_priv_t* priv = (sst_priv_t*)net_abs;
+  int ret = shutdown_socket(&priv->socket_priv->socket_descriptor, read_before_closing);
   free_net(net_abs);
   return ret;
 }
