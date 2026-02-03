@@ -77,12 +77,13 @@ static inline void _lf_sched_insert_reaction(lf_scheduler_t* scheduler, reaction
     scheduler->indexes[reaction_level] = 0;
   }
 #endif
-  LF_ASSERT(reaction_level <= scheduler->max_reaction_level,
-            "Reaction level %zu exceeds max %zu", reaction_level, scheduler->max_reaction_level);
+  LF_ASSERT(reaction_level <= scheduler->max_reaction_level, "Reaction level %zu exceeds max %zu", reaction_level,
+            scheduler->max_reaction_level);
 
   int reaction_q_level_index = lf_atomic_fetch_add((int*)&scheduler->indexes[reaction_level], 1);
 
-  LF_ASSERT(reaction_q_level_index >= 0, "Negative queue index %d at level %zu", reaction_q_level_index, reaction_level);
+  LF_ASSERT(reaction_q_level_index >= 0, "Negative queue index %d at level %zu", reaction_q_level_index,
+            reaction_level);
   LF_ASSERT((size_t)reaction_q_level_index < scheduler->custom_data->triggered_reactions_sizes[reaction_level],
             "Queue overflow: index %d >= size %zu at level %zu", reaction_q_level_index,
             scheduler->custom_data->triggered_reactions_sizes[reaction_level], reaction_level);
