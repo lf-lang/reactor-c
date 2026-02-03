@@ -115,6 +115,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
   lf_print("  -d, --disable_dnet Turn off the use of DNET signals.\n");
+  lf_print("  -sst, --sst SST config path for RTI.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
@@ -220,7 +221,7 @@ int process_args(int argc, const char* argv[]) {
       rti.base.number_of_scheduling_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
       lf_print("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
     } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
-#ifdef COMM_TYPE_TCP
+#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
       if (argc < i + 2) {
         lf_print_error("--port needs a short unsigned integer argument ( > 0 and < %d).", UINT16_MAX);
         usage(argc, argv);
@@ -252,6 +253,15 @@ int process_args(int argc, const char* argv[]) {
       return 0;
 #endif
       rti.authentication_enabled = true;
+    } else if (strcmp(argv[i], "-sst") == 0 || strcmp(argv[i], "--sst") == 0) {
+#ifndef COMM_TYPE_SST
+      lf_print_error("--sst requires the RTI to be built with the --DCOMM_TYPE=SST option.");
+      usage(argc, argv);
+      return 0;
+#else
+      i++;
+      lf_set_sst_config_path(argv[i]);
+#endif
     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
       rti.base.tracing_enabled = true;
     } else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dnet_disabled") == 0) {
