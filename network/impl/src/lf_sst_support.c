@@ -30,6 +30,8 @@ net_abstraction_t initialize_net() {
   socket_priv->server_port = -1;
 
   sst_priv->socket_priv = socket_priv;
+  sst_priv->buf_filled = 0;
+  sst_priv->buf_off = 0;
 
   // SST initialization. Only set pointers to NULL.
   sst_priv->sst_ctx = NULL;
@@ -114,11 +116,62 @@ net_abstraction_t connect_to_net(net_params_t* params) {
   return net;
 }
 
-// TODO: Still need to fix...
 int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
   LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
-  return read_from_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
+
+  if (num_bytes > MAX_SECURE_COMM_MSG_LENGTH) {
+      lf_print_error("Unable to handle message. Expected: %zu, Maximum: %d", num_bytes, MAX_SECURE_COMM_MSG_LENGTH);
+      return -1;
+  }
+  int copied = 0;
+  // 1) First use buffered data.
+  if (priv->buf_off < priv->buf_filled) {
+      size_t avail = priv->buf_filled - priv->buf_off;
+      size_t to_copy = (avail < num_bytes) ? avail : num_bytes;
+      memcpy(buffer, priv->buffer + priv->buf_off, to_copy);
+      priv->buf_off += to_copy;
+      copied += to_copy;
+
+      // Reset buffer offset when the buffer is all used.
+      if (priv->buf_off == priv->buf_filled) {
+          priv->buf_off = priv->buf_filled = 0;
+      }
+
+      // Return when the buffered data is enough.
+      if (copied == num_bytes) {
+        return 0;
+      }
+    }
+
+  // 2) Additionally try to read more bytes.
+  while (copied < num_bytes) {
+      int ret = read_secure_message(priv->buffer,  priv->session_ctx);
+      if (ret == 0) {
+        // EOF received.
+        return 1;
+      } else if (ret < 0) {
+          lf_print_error("read_secure_message failed: %d", ret);
+          return -1;
+      }
+
+      // Mark the filled length and reset offset.
+      priv->buf_filled = (size_t)ret;
+      priv->buf_off = 0;
+
+      size_t need = num_bytes - copied;
+      size_t to_copy = (priv->buf_filled < need) ? priv->buf_filled : need;
+      memcpy(buffer + copied, priv->buffer + priv->buf_off, to_copy);
+      priv->buf_off += to_copy;
+      copied += to_copy;
+
+      // Reset buffer offset when meets the end of the filled buffer.
+      if (priv->buf_off == priv->buf_filled) {
+          priv->buf_off = priv->buf_filled = 0;
+      }
+  }
+
+  return 0;
 }
 
 int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
@@ -155,7 +208,8 @@ void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, un
 int write_to_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
   LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
-  return write_to_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
+  return send_secure_message((char *)buffer, (unsigned int) num_bytes, priv->session_ctx);
+  // return write_to_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
 }
 
 int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {

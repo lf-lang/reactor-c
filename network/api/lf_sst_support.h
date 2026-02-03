@@ -8,6 +8,9 @@ typedef struct sst_priv_t {
   socket_priv_t* socket_priv;
   SST_ctx_t* sst_ctx;
   SST_session_ctx_t* session_ctx;
+  unsigned char buffer[MAX_SECURE_COMM_MSG_LENGTH];
+  size_t buf_filled;
+  size_t buf_off; 
 } sst_priv_t;
 
 void lf_set_sst_config_path(const char* config_path);
