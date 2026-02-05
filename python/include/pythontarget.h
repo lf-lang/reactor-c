@@ -105,11 +105,11 @@ PyObject* py_check_deadline(PyObject* self, PyObject* args);
 /**
  * @brief Update the deadline of the currently executing reaction.
  *
- * Updating the deadline with this function does not affect 
+ * Updating the deadline with this function does not affect
  * the deadline check that has been performed (at the beginning
  * of the caller reaction or check_deadline called before).
- * Therefore, you need to invoke check_deadline after 
- * update the deadline through this function to confirm 
+ * Therefore, you need to invoke check_deadline after
+ * update the deadline through this function to confirm
  * whether the newly updated deadline has been violated.
  *
  * @param self The Python object of the reactor.
