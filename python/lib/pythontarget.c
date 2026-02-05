@@ -243,10 +243,22 @@ PyObject* py_check_deadline(PyObject* self, PyObject* args) {
 PyObject* py_update_deadline(PyObject* self, PyObject* args) {
   PyObject* py_self;
   int64_t updated_deadline = 0; // Default to 0
+  double updated_deadline_in_double =
+      0.0; // Deadline may be passed as a floating-point value in nanoseconds, e.g., SEC(0.5) → 0.5 * 1e9.
 
-  if (!PyArg_ParseTuple(args, "O|L", &py_self, &updated_deadline)) {
+  if (!PyArg_ParseTuple(args, "O|d", &py_self, &updated_deadline_in_double)) {
     return NULL;
   }
+
+  // Check overflow before converting a double to int64_t (interval_t).
+  if (updated_deadline_in_double > (double)INT64_MAX || updated_deadline_in_double < (double)INT64_MIN) {
+    PyErr_SetString(PyExc_OverflowError, "The updated deadline value is out of int64 range");
+    return NULL;
+  }
+
+  // Convert double to int64_t
+  updated_deadline = (int64_t)updated_deadline_in_double;
+
   void* self_ptr = get_lf_self_pointer(py_self);
   if (self_ptr == NULL) {
     return NULL;
