@@ -91,6 +91,7 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
 }
 
 void lf_update_deadline(void* self, interval_t updated_deadline) {
+  LF_PRINT_DEBUG("lf_update_deadline: update deadline to %lld.", updated_deadline);
   reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
   if (reaction != NULL) {
     reaction->deadline = updated_deadline;

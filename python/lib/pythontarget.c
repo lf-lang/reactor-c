@@ -240,6 +240,21 @@ PyObject* py_check_deadline(PyObject* self, PyObject* args) {
   return PyBool_FromLong(result);
 }
 
+PyObject* py_update_deadline(PyObject* self, PyObject* args) {
+  PyObject* py_self;
+  int64_t updated_deadline = 0; // Default to 0
+
+  if (!PyArg_ParseTuple(args, "O|L", &py_self, &updated_deadline)) {
+    return NULL;
+  }
+  void* self_ptr = get_lf_self_pointer(py_self);
+  if (self_ptr == NULL) {
+    return NULL;
+  }
+  lf_update_deadline(self_ptr, updated_deadline);
+  return Py_None;
+}
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 
@@ -293,6 +308,8 @@ static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
     {"check_deadline", (PyCFunction)py_check_deadline, METH_VARARGS,
      "Check whether the deadline of the currently executing reaction has passed"},
+    {"update_deadline", (PyCFunction)py_update_deadline, METH_VARARGS,
+     "Update the deadline of the currently executing reaction"},
     {NULL, NULL, 0, NULL}};
 
 /**
