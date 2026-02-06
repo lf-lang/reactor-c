@@ -1736,10 +1736,13 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
 
-  socket_connection_parameters_t params;
-  params.type = TCP;
-  params.port = uport;
-  params.server_hostname = hostname;
+  sst_connection_params_t params;
+  
+  params.socket_params.type = TCP;
+  params.socket_params.port = uport;
+  params.socket_params.server_hostname = hostname;
+  params.target = 1;
+
   net_abstraction_t net = connect_to_net((net_params_t*)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to federate.");
@@ -1817,10 +1820,12 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
-  socket_connection_parameters_t params;
-  params.type = TCP;
-  params.port = port;
-  params.server_hostname = hostname;
+  sst_connection_params_t params;
+  
+  params.socket_params.type = TCP;
+  params.socket_params.port = port;
+  params.socket_params.server_hostname = hostname;
+  params.target = 0;
   net_abstraction_t net = connect_to_net((net_params_t*)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to RTI.");
@@ -1931,7 +1936,7 @@ void lf_create_server(int specified_port) {
   net_abstraction_t* server_net = initialize_net();
   ((sst_priv_t*)server_net)->socket_priv->port = (uint16_t)specified_port;
   if (create_server(server_net)) {
-    lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
+    lf_print_error_system_failure("Failed to create server: %s.", strerror(errno));
   };
   _fed.server_net = server_net;
   // Get the final server port to send to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message.
