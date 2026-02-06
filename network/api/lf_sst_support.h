@@ -13,6 +13,13 @@ typedef struct sst_priv_t {
   size_t buf_off; 
 } sst_priv_t;
 
+typedef struct sst_connection_params_t {
+  socket_connection_params_t socket_params;
+
+  // 0 for RTI, 1 for federates.
+  int target;
+} sst_connection_params_t;
+
 void lf_set_sst_config_path(const char* config_path);
 
 #endif /* LF_SST_SUPPORT_H */
