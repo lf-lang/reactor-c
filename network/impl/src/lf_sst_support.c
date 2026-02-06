@@ -1,11 +1,14 @@
 #include <stdlib.h> // malloc()
 #include <string.h> // strncpy()
+#include <stdio.h>
 
 #include "net_abstraction.h"
 #include "lf_sst_support.h"
 #include "util.h"
 
 const char* sst_config_path; // The SST's configuration file path.
+
+SST_ctx_t* ctx;
 
 net_abstraction_t initialize_net() {
   // Initialize sst_priv.
@@ -52,7 +55,9 @@ void free_net(net_abstraction_t net_abs) {
 int create_server(net_abstraction_t net_abs) {
   LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
-  SST_ctx_t* ctx = init_SST(sst_config_path);
+  if (ctx == NULL) {
+    ctx = init_SST(sst_config_path);
+  }
   priv->sst_ctx = ctx;
   return create_socket_server(priv->socket_priv->user_specified_port, &priv->socket_priv->socket_descriptor,
                               &priv->socket_priv->port, TCP);
@@ -91,7 +96,9 @@ void create_client(net_abstraction_t net_abs) {
   LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   priv->socket_priv->socket_descriptor = create_real_time_tcp_socket_errexit();
-  SST_ctx_t* ctx = init_SST(sst_config_path);
+  if (ctx == NULL) {
+    ctx = init_SST(sst_config_path);
+  }
   priv->sst_ctx = ctx;
 }
 
@@ -99,15 +106,19 @@ net_abstraction_t connect_to_net(net_params_t* params) {
   // Create a network abstraction.
   net_abstraction_t net = initialize_net();
   sst_priv_t* priv = (sst_priv_t*)net;
-  socket_connection_parameters_t* sock_params = (socket_connection_parameters_t*)params;
-  priv->socket_priv->server_port = sock_params->port;
-  memcpy(priv->socket_priv->server_hostname, sock_params->server_hostname, INET_ADDRSTRLEN);
+  sst_connection_params_t* sst_params = (sst_connection_params_t*)params;
+  priv->socket_priv->server_port = sst_params->socket_params.port;
+  memcpy(priv->socket_priv->server_hostname, sst_params->socket_params.server_hostname, INET_ADDRSTRLEN);
   // Create the client network abstraction.
   create_client(net);
   // Connect to the target server.
   if (connect_to_socket(priv->socket_priv->socket_descriptor, priv->socket_priv->server_hostname, priv->socket_priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
     return NULL;
+  }
+  if (sst_params->target == 1) {
+    //Override target group to federates.
+    snprintf(priv->sst_ctx->config.purpose[ctx->config.purpose_index], sizeof(ctx->config.purpose[ctx->config.purpose_index]), "{\"group\":\"Federates\"}");
   }
   session_key_list_t* s_key_list = get_session_key(priv->sst_ctx, NULL);
   SST_session_ctx_t* session_ctx =
