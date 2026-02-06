@@ -32,7 +32,7 @@ typedef void* net_abstraction_t;
  *
  * This type is an void pointer used to pass implementation-specific
  * connection parameters to the network abstraction layer.
- * For example, it may point to a socket_connection_parameters_t structure
+ * For example, it may point to a socket_connection_params_t structure
  * when using a socket-based network implementation.
  */
 typedef void* net_params_t;

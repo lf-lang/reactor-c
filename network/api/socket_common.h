@@ -124,7 +124,7 @@
  */
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
-typedef struct socket_connection_parameters_t {
+typedef struct socket_connection_params_t {
   /** @brief Socket type (TCP or UDP). */
   socket_type_t type;
 
@@ -133,7 +133,7 @@ typedef struct socket_connection_parameters_t {
 
   /** @brief Hostname of the remote server. */
   const char* server_hostname;
-} socket_connection_parameters_t;
+} socket_connection_params_t;
 
 /**
  * @brief Structure holding information about socket-based network abstraction.

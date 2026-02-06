@@ -1737,7 +1737,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
 
-  socket_connection_parameters_t params;
+  socket_connection_pasocket_connection_params_trameters_t params;
   params.type = TCP;
   params.port = uport;
   params.server_hostname = hostname;
@@ -1818,7 +1818,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
-  socket_connection_parameters_t params;
+  socket_connection_params_t params;
   params.type = TCP;
   params.port = port;
   params.server_hostname = hostname;
