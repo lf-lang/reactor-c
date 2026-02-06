@@ -1933,7 +1933,7 @@ void lf_create_server(int specified_port) {
   ((socket_priv_t*)server_net)->port = (uint16_t)specified_port;
 
   if (create_server(server_net)) {
-    lf_print_error_system_failure("RTI failed to create server: %s.", strerror(errno));
+    lf_print_error_system_failure("Failed to create server: %s.", strerror(errno));
   };
   _fed.server_net = server_net;
   // Get the final server port to send to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message.
