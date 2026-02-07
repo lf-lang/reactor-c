@@ -13,9 +13,9 @@
 int main() {
   int res;
 
-  // Set the CPU Set of the current thread.
-  res = lf_thread_set_cpu(lf_thread_self(), lf_available_cores() - 1);
-  if (res != 0) {
+  // Set the CPU affinity using 2 cores
+  res = lf_thread_set_cpu(2);
+  if (res != 0 && res != -1) {
     lf_print_error_and_exit("lf_thread_set_cpu failed with %d", res);
   }
 
@@ -73,13 +73,22 @@ int main() {
     cfg.policy = LF_SCHED_FAIR;
     res = lf_thread_set_scheduling_policy(lf_thread_self(), &cfg);
     if (res != 0) {
-      lf_print_error_and_exit("lf_thread_set_scheduling_policy RR failed with %d", res);
+      lf_print_error_and_exit("lf_thread_set_scheduling_policy FAIR failed with %d", res);
     }
   }
 
-  // Try pinning to non-existant CPU core.
-  res = lf_thread_set_cpu(lf_thread_self(), lf_available_cores());
-  if (res == 0) {
-    lf_print_error_and_exit("lf_thread_set_cpu should fail for too high CPU id");
+  // Try with more cores than available - should return -1
+  res = lf_thread_set_cpu(1000);
+  if (res != -1) {
+    lf_print_error_and_exit("lf_thread_set_cpu should return -1 for too many cores");
   }
+
+  // Try with 0 cores - should return -1 (no pinning)
+  res = lf_thread_set_cpu(0);
+  if (res != -1) {
+    lf_print_error_and_exit("lf_thread_set_cpu should return -1 for 0 cores");
+  }
+
+  printf("All scheduling API tests passed!\n");
+  return 0;
 }

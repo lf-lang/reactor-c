@@ -43,4 +43,9 @@ typedef HANDLE lf_thread_t;
 // Use 64-bit times and 32-bit unsigned microsteps
 #include "lf_tag_64_32.h"
 
+// Priority values for Windows thread scheduling
+// Windows thread priorities range from -15 to 15 (THREAD_PRIORITY_IDLE to THREAD_PRIORITY_TIME_CRITICAL)
+#define LF_SLEEP_PRIORITY 15       // Highest priority when waiting for physical time
+#define LF_NO_DEADLINE_PRIORITY -15 // Lowest priority for reactions without deadlines
+
 #endif // LF_WINDOWS_SUPPORT_H

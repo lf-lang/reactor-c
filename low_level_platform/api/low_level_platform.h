@@ -185,14 +185,18 @@ typedef struct {
 } lf_scheduling_policy_t;
 
 /**
- * @brief Pin a thread to a specific CPU.
+ * @brief Pin the calling thread to a specific set of CPUs.
  * @ingroup Platform
  *
- * @param thread The thread
- * @param cpu_number the CPU ID
- * @return 0 on success, platform-specific error number otherwise.
+ * This function pins the calling thread to one of the `num_cores` CPUs,
+ * starting from the highest numbered CPU. The specific CPU is determined
+ * by: `available_cores - 1 - (thread_id % num_cores)`.
+ *
+ * @param num_cores The number of cores to use for pinning worker threads.
+ *                  If 0 or greater than available cores, no pinning is done.
+ * @return 0 on success, -1 if no pinning needed, platform-specific error otherwise.
  */
-int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number);
+int lf_thread_set_cpu(size_t num_cores);
 
 /**
  * @brief Set the priority of a thread.

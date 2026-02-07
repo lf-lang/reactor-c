@@ -18,4 +18,9 @@ typedef struct {
 } lf_cond_t;
 typedef pthread_t lf_thread_t;
 
+// Priority values for POSIX real-time scheduling (SCHED_FIFO/SCHED_RR)
+// Range is typically 1-99, where 99 is highest priority
+#define LF_SLEEP_PRIORITY 99       // Highest priority when waiting for physical time
+#define LF_NO_DEADLINE_PRIORITY 1  // Lowest priority for reactions without deadlines
+
 #endif

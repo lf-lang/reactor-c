@@ -35,4 +35,9 @@ void _lf_initialize_clock_zephyr_common();
 
 #endif // !LF_SINGLE_THREADED
 
+// Priority values for Zephyr thread scheduling
+// Zephyr uses lower numbers for higher priority (negative for cooperative, positive for preemptive)
+#define LF_SLEEP_PRIORITY -16      // Highest priority when waiting for physical time
+#define LF_NO_DEADLINE_PRIORITY 14 // Lowest priority for reactions without deadlines
+
 #endif // LF_ZEPHYR_SUPPORT_H

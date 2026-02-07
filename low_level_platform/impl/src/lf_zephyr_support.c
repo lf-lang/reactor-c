@@ -147,7 +147,24 @@ int lf_thread_id() { return *((int*)k_thread_custom_data_get()); }
 
 lf_thread_t lf_thread_self() { return k_current_get(); }
 
-int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) { return k_thread_cpu_pin(thread, cpu_number); }
+int lf_thread_set_cpu(size_t num_cores) {
+  if (num_cores == 0) {
+    return -1; // No pinning needed
+  }
+
+  int available_cores = lf_available_cores();
+  if ((int)num_cores > available_cores) {
+    return -1; // Cannot use more cores than available
+  }
+
+  // Pin threads to CPUs starting from the highest numbered CPU
+  int cpu = available_cores - 1 - (lf_thread_id() % (int)num_cores);
+  if (cpu < 0) {
+    return -1;
+  }
+
+  return k_thread_cpu_pin(lf_thread_self(), cpu);
+}
 
 /**
  * Real-time scheduling API
