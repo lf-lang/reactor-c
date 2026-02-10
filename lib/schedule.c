@@ -84,8 +84,8 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
   if (lf_time_physical() > (lf_time_logical(((self_base_t*)self)->environment) + reaction->deadline)) {
     if (invoke_deadline_handler && reaction->deadline_violation_handler != NULL) {
       reaction->deadline_violation_handler(self);
-      return true;
     }
+    return true;
   }
   return false;
 }
