@@ -135,7 +135,7 @@ int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* bu
       lf_print_error("Unable to handle message. Expected: %zu, Maximum: %d", num_bytes, MAX_SECURE_COMM_MSG_LENGTH);
       return -1;
   }
-  int copied = 0;
+  size_t copied = 0;
   // 1) First use buffered data.
   if (priv->buf_off < priv->buf_filled) {
       size_t avail = priv->buf_filled - priv->buf_off;
