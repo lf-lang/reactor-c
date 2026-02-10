@@ -81,7 +81,7 @@ net_abstraction_t connect_to_net(net_params_t* params) {
   // Create a network abstraction.
   net_abstraction_t net = initialize_net();
   socket_priv_t* priv = (socket_priv_t*)net;
-  socket_connection_parameters_t* sock_params = (socket_connection_parameters_t*)params;
+  socket_connection_params_t* sock_params = (socket_connection_params_t*)params;
   priv->server_port = sock_params->port;
   memcpy(priv->server_hostname, sock_params->server_hostname, INET_ADDRSTRLEN);
   // Create the client network abstraction.
