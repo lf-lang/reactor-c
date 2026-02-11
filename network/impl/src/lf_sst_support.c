@@ -66,7 +66,7 @@ int create_server(net_abstraction_t net_abs) {
                               &priv->socket_priv->port, TCP);
 }
 
-// TODO: check new implementation.
+
 net_abstraction_t accept_net(net_abstraction_t server_chan) {
   LF_ASSERT_NON_NULL(server_chan);
   sst_priv_t* serv_priv = (sst_priv_t*)server_chan;
@@ -226,7 +226,6 @@ int write_to_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buf
   LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   return send_secure_message((char *)buffer, (unsigned int) num_bytes, priv->session_ctx);
-  // return write_to_socket(priv->socket_priv->socket_descriptor, num_bytes, buffer);
 }
 
 int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
@@ -278,7 +277,7 @@ int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
   free_net(net_abs);
   return ret;
 }
-// END of TODO:
+
 
 // Helper function.
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
