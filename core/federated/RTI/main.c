@@ -116,6 +116,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("  -t, --tracing Turn on tracing.\n");
   lf_print("  -d, --disable_dnet Turn off the use of DNET signals.\n");
   lf_print("  -sst, --sst SST config path for RTI.\n");
+  lf_print("  -tls, --tls <cert_path> <key_path>   TLS certificate and private key paths.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
@@ -221,7 +222,7 @@ int process_args(int argc, const char* argv[]) {
       rti.base.number_of_scheduling_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
       lf_print("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
     } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
-#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST)
+#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST) || defined(COMM_TYPE_TLS)
       if (argc < i + 2) {
         lf_print_error("--port needs a short unsigned integer argument ( > 0 and < %d).", UINT16_MAX);
         usage(argc, argv);
