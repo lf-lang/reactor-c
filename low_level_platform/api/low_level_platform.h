@@ -185,18 +185,22 @@ typedef struct {
 } lf_scheduling_policy_t;
 
 /**
- * @brief Pin the calling thread to a specific set of CPUs.
+ * @brief Restrict the calling thread to run on the specified set of CPUs.
  * @ingroup Platform
  *
- * This function pins the calling thread to one of the `num_cores` CPUs,
- * starting from the highest numbered CPU. The specific CPU is determined
- * by: `available_cores - 1 - (thread_id % num_cores)`.
+ * On platforms that support CPU affinity (e.g., Linux), the calling thread's
+ * affinity mask is set to include ALL cores listed in `core_ids`. The OS
+ * scheduler then decides which of those cores to run the thread on.
  *
- * @param num_cores The number of cores to use for pinning worker threads.
- *                  If 0 or greater than available cores, no pinning is done.
- * @return 0 on success, -1 if no pinning needed, platform-specific error otherwise.
+ * On platforms that only support pinning to a single core (e.g., Zephyr),
+ * a round-robin selection is used: `core_ids[lf_thread_id() % num_core_ids]`.
+ *
+ * @param core_ids An array of CPU core IDs to allow the thread to run on.
+ * @param num_core_ids The number of entries in the core_ids array.
+ *                     If 0 or core_ids is NULL, no pinning is done.
+ * @return 0 on success, -1 if no pinning needed or invalid, platform-specific error otherwise.
  */
-int lf_thread_set_cpu(size_t num_cores);
+int lf_thread_set_cpu(int* core_ids, size_t num_core_ids);
 
 /**
  * @brief Set the priority of a thread.

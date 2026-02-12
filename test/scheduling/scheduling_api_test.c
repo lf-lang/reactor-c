@@ -13,10 +13,13 @@
 int main() {
   int res;
 
-  // Set the CPU affinity using 2 cores
-  res = lf_thread_set_cpu(2);
-  if (res != 0 && res != -1) {
-    lf_print_error_and_exit("lf_thread_set_cpu failed with %d", res);
+  // Set the CPU affinity using specific core IDs
+  {
+    int core_ids[] = {0, 1};
+    res = lf_thread_set_cpu(core_ids, 2);
+    if (res != 0 && res != -1) {
+      lf_print_error_and_exit("lf_thread_set_cpu failed with %d", res);
+    }
   }
 
   // Configure SCHED_FIFO
@@ -77,16 +80,19 @@ int main() {
     }
   }
 
-  // Try with more cores than available - should return -1
-  res = lf_thread_set_cpu(1000);
-  if (res != -1) {
-    lf_print_error_and_exit("lf_thread_set_cpu should return -1 for too many cores");
+  // Try with an invalid core ID - should return -1
+  {
+    int bad_ids[] = {9999};
+    res = lf_thread_set_cpu(bad_ids, 1);
+    if (res != -1) {
+      lf_print_error_and_exit("lf_thread_set_cpu should return -1 for invalid core ID");
+    }
   }
 
-  // Try with 0 cores - should return -1 (no pinning)
-  res = lf_thread_set_cpu(0);
+  // Try with NULL core_ids - should return -1 (no pinning)
+  res = lf_thread_set_cpu(NULL, 0);
   if (res != -1) {
-    lf_print_error_and_exit("lf_thread_set_cpu should return -1 for 0 cores");
+    lf_print_error_and_exit("lf_thread_set_cpu should return -1 for NULL/0");
   }
 
   printf("All scheduling API tests passed!\n");

@@ -177,8 +177,9 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
 /**
  * Real-time scheduling API not implemented for Windows.
  */
-int lf_thread_set_cpu(size_t num_cores) {
-  (void)num_cores; // Suppress unused variable warning.
+int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
+  (void)core_ids;      // Suppress unused variable warning.
+  (void)num_core_ids;  // Suppress unused variable warning.
   return -1;
 }
 

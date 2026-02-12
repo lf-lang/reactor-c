@@ -23,26 +23,22 @@
 #else
 #include "lf_POSIX_threads_support.c"
 
-int lf_thread_set_cpu(size_t num_cores) {
-  if (num_cores == 0) {
+int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
+  if (core_ids == NULL || num_core_ids == 0) {
     return -1; // No pinning needed
   }
 
-  int available_cores = lf_available_cores();
-  if ((int)num_cores > available_cores) {
-    return -1; // Cannot use more cores than available
-  }
+  int available = lf_available_cores();
 
-  // Pin threads to CPUs starting from the highest numbered CPU
-  int cpu = available_cores - 1 - (lf_thread_id() % (int)num_cores);
-  if (cpu < 0) {
-    return -1;
-  }
-
-  // Create a CPU-set consisting of only the desired CPU
+  // Build a CPU-set containing ALL specified cores
   cpu_set_t cpu_set;
   CPU_ZERO(&cpu_set);
-  CPU_SET(cpu, &cpu_set);
+  for (size_t i = 0; i < num_core_ids; i++) {
+    if (core_ids[i] < 0 || core_ids[i] >= available) {
+      return -1; // Invalid core ID
+    }
+    CPU_SET(core_ids[i], &cpu_set);
+  }
 
   return pthread_setaffinity_np(lf_thread_self(), sizeof(cpu_set), &cpu_set);
 }

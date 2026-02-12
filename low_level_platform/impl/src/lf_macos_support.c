@@ -21,8 +21,9 @@
 /**
  * Real-time scheduling API not implemented for macOS.
  */
-int lf_thread_set_cpu(size_t num_cores) {
-  (void)num_cores;
+int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
+  (void)core_ids;
+  (void)num_core_ids;
   return -1;
 }
 

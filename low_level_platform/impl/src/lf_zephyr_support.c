@@ -147,23 +147,32 @@ int lf_thread_id() { return *((int*)k_thread_custom_data_get()); }
 
 lf_thread_t lf_thread_self() { return k_current_get(); }
 
-int lf_thread_set_cpu(size_t num_cores) {
-  if (num_cores == 0) {
+int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
+  if (core_ids == NULL || num_core_ids == 0) {
     return -1; // No pinning needed
   }
 
-  int available_cores = lf_available_cores();
-  if ((int)num_cores > available_cores) {
-    return -1; // Cannot use more cores than available
+  k_tid_t thread = lf_thread_self();
+  int available = lf_available_cores();
+
+  // Clear the CPU mask so the thread is initially allowed on no cores
+  int ret = k_thread_cpu_mask_clear(thread);
+  if (ret != 0) {
+    return ret;
   }
 
-  // Pin threads to CPUs starting from the highest numbered CPU
-  int cpu = available_cores - 1 - (lf_thread_id() % (int)num_cores);
-  if (cpu < 0) {
-    return -1;
+  // Enable every specified core so the thread may run on any of them
+  for (size_t i = 0; i < num_core_ids; i++) {
+    if (core_ids[i] < 0 || core_ids[i] >= available) {
+      continue; // Skip invalid core IDs
+    }
+    ret = k_thread_cpu_mask_enable(thread, core_ids[i]);
+    if (ret != 0) {
+      return ret;
+    }
   }
 
-  return k_thread_cpu_pin(lf_thread_self(), cpu);
+  return 0;
 }
 
 /**

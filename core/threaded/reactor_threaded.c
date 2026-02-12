@@ -883,9 +883,24 @@ static void* worker(void* arg) {
   }
 #endif
 
-#ifdef LF_NUMBER_OF_CORES
+#ifdef LF_CORE_IDS_INIT
+  {
+    static int core_ids[] = LF_CORE_IDS_INIT;
+    int ret = lf_thread_set_cpu(core_ids, sizeof(core_ids) / sizeof(core_ids[0]));
+    if (ret != 0 && ret != -1) {
+      LF_PRINT_LOG("Warning: Could not set CPU affinity (error %d).", ret);
+    }
+  }
+#elif defined(LF_NUMBER_OF_CORES)
   if (LF_NUMBER_OF_CORES > 0) {
-    int ret = lf_thread_set_cpu(LF_NUMBER_OF_CORES);
+    // Generate a sequential list of core IDs from the highest CPU downward
+    int available = lf_available_cores();
+    int num = (LF_NUMBER_OF_CORES > available) ? available : LF_NUMBER_OF_CORES;
+    int auto_core_ids[num];
+    for (int i = 0; i < num; i++) {
+      auto_core_ids[i] = available - 1 - i;
+    }
+    int ret = lf_thread_set_cpu(auto_core_ids, num);
     if (ret != 0 && ret != -1) {
       LF_PRINT_LOG("Warning: Could not set CPU affinity (error %d).", ret);
     }
