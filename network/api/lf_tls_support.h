@@ -22,9 +22,6 @@ typedef struct tls_priv_t {
 typedef struct tls_connection_params_t {
   /** @brief Common socket parameters. */
   socket_connection_params_t socket_params;
-
-  // 0 for RTI, 1 for federates.
-  int target;
 } tls_connection_params_t;
 
 /**
