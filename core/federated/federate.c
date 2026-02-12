@@ -1737,7 +1737,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
 
-  socket_connection_pasocket_connection_params_trameters_t params;
+  socket_connection_parameters_t params;
   params.type = TCP;
   params.port = uport;
   params.server_hostname = hostname;
