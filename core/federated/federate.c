@@ -1736,12 +1736,23 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   char hostname[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
 
+#ifdef COMM_TYPE_TCP
+  socket_connection_parameters_t params;
+  params.type = TCP;
+  params.port = uport;
+  params.server_hostname = hostname;
+#elif defined(COMM_TYPE_SST)
   sst_connection_params_t params;
-  
   params.socket_params.type = TCP;
   params.socket_params.port = uport;
   params.socket_params.server_hostname = hostname;
   params.target = 1;
+#elif defined(COMM_TYPE_TLS)
+  tls_connection_params_t params;
+  params.socket_params.type = TCP;
+  params.socket_params.port = uport;
+  params.socket_params.server_hostname = hostname;
+#endif
 
   net_abstraction_t net = connect_to_net((net_params_t*)&params);
   if (net == NULL) {
