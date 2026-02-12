@@ -1737,7 +1737,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
 
 #ifdef COMM_TYPE_TCP
-  socket_connection_parameters_t params;
+  socket_connection_params_t params;
   params.type = TCP;
   params.port = uport;
   params.server_hostname = hostname;
@@ -1831,12 +1831,24 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
+#ifdef COMM_TYPE_TCP
+  socket_connection_params_t params;
+  params.type = TCP;
+  params.port = port;
+  params.server_hostname = hostname;
+#elif defined(COMM_TYPE_SST)
   sst_connection_params_t params;
-  
   params.socket_params.type = TCP;
   params.socket_params.port = port;
   params.socket_params.server_hostname = hostname;
-  params.target = 0;
+  params.target = 1;
+#elif defined(COMM_TYPE_TLS)
+  tls_connection_params_t params;
+  params.socket_params.type = TCP;
+  params.socket_params.port = port;
+  params.socket_params.server_hostname = hostname;
+#endif
+
   net_abstraction_t net = connect_to_net((net_params_t*)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to RTI.");
