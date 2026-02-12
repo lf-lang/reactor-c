@@ -976,6 +976,11 @@ void usage(int argc, const char* argv[]) {
   printf("   Send stdout to individual log files for each federate.\n\n");
 #ifdef COMM_TYPE_SST
   printf("  -sst, --sst <n>\n");
+  printf("   Path to the SST configuration file.\n\n");
+#endif
+#ifdef COMM_TYPE_TLS
+  printf("  -tls, --tls <certificate_path> <private_key_path>\n");
+  printf("   Paths to the TLS certificate and private key to use.\n\n");
 #endif
 #endif
 
@@ -1136,6 +1141,29 @@ int process_args(int argc, const char* argv[]) {
       }
       const char* fid = argv[i++];
       lf_set_sst_config_path(fid);
+    }
+#endif
+#ifdef COMM_TYPE_TLS
+    else if (strcmp(arg, "-tls") == 0 || strcmp(arg, "--tls") == 0) {
+      // Need two arguments: cert path and key path
+      if (argc < i + 2) {
+        lf_print_error("--tls needs two arguments: <certificate_path> <private_key_path>.");
+        usage(argc, argv);
+        return 0;
+      }
+
+      const char* cert_path = argv[i++];
+      const char* key_path  = argv[i++];
+
+      if (cert_path[0] == '\0' || key_path[0] == '\0') {
+        lf_print_error("--tls certificate_path and private_key_path must be non-empty.");
+        usage(argc, argv);
+        return 0;
+      }
+
+      lf_set_tls_configuration(cert_path, key_path);
+      lf_print("TLS cert path: %s", cert_path);
+      lf_print("TLS key path : %s", key_path);
     }
 #endif
     else if (strcmp(arg, "--ros-args") == 0) {

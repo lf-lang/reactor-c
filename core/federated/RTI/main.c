@@ -261,6 +261,32 @@ int process_args(int argc, const char* argv[]) {
 #else
       i++;
       lf_set_sst_config_path(argv[i]);
+    } else if (strcmp(argv[i], "-tls") == 0 || strcmp(argv[i], "--tls") == 0) {
+#ifndef COMM_TYPE_TLS
+      lf_print_error("--tls requires the RTI to be built with the -DCOMM_TYPE=TLS option.");
+      usage(argc, argv);
+      return 0;
+#else
+      // Need two arguments: cert path and key path
+      if (argc < i + 3) {
+        lf_print_error("--tls needs two arguments: <certificate_path> <private_key_path>.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* cert_path = argv[i + 1];
+      const char* key_path  = argv[i + 2];
+
+      // Optional: basic sanity check (avoid empty strings)
+      if (cert_path[0] == '\0' || key_path[0] == '\0') {
+        lf_print_error("--tls certificate_path and private_key_path must be non-empty.");
+        usage(argc, argv);
+        return 0;
+      }
+
+      lf_set_tls_configuration(cert_path, key_path);
+      lf_print_debug("RTI: TLS cert path: %s", cert_path);
+      lf_print_debug("RTI: TLS key path : %s", key_path);
+      i += 2;
 #endif
     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
       rti.base.tracing_enabled = true;
