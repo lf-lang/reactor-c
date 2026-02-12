@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
@@ -239,7 +240,6 @@ int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* bu
 }
 
 int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
-  tls_priv_t* priv = (tls_priv_t*)net_abs;
   int ret = read_from_net(net_abs, num_bytes, buffer);
   if (ret < 0) {
     shutdown_net(net_abs, false);

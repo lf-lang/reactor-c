@@ -261,6 +261,7 @@ int process_args(int argc, const char* argv[]) {
 #else
       i++;
       lf_set_sst_config_path(argv[i]);
+#endif
     } else if (strcmp(argv[i], "-tls") == 0 || strcmp(argv[i], "--tls") == 0) {
 #ifndef COMM_TYPE_TLS
       lf_print_error("--tls requires the RTI to be built with the -DCOMM_TYPE=TLS option.");
