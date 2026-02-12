@@ -16,7 +16,7 @@
 #define NET_ABSTRACTION_H
 
 #include "socket_common.h"
-#ifdef(COMM_TYPE_SST)
+#ifdef COMM_TYPE_SST
 #include "lf_sst_support.h"
 #endif
 #ifdef COMM_TYPE_TLS
