@@ -140,17 +140,8 @@ net_abstraction_t accept_net(net_abstraction_t server_chan) {
   if (SSL_accept(client_priv->ssl) <= 0) {
     lf_print_error("SSL_accept failed.");
     ERR_print_errors_fp(stderr);
-    SSL_free(client_priv->ssl);
-    client_priv->ssl = NULL;
-    // Close socket and free memory
-    // close(client_sock); // socket_priv destructor relies on this being closed?
-    // We should cleanup properly.
-    // For now, let's assume free_net handles it if we call shutdown_net later,
-    // but here we just return NULL, so we leak if we don't cleanup.
-    // Let's rely on caller or do minimal cleanup.
-    close(client_sock);
-    free(client_priv->socket_priv);
-    free(client_priv);
+
+    shutdown_net(client_net, false);
     return NULL;
   }
 
@@ -209,6 +200,22 @@ net_abstraction_t connect_to_net(net_params_t* params) {
   return net;
 }
 
+static int is_disconnect_syscall(int err, int ret) {
+  if (err != SSL_ERROR_SYSCALL) return 0;
+
+  if (ret == 0) {
+    // Often: "unexpected EOF while reading" / peer closed without close_notify
+    return 1;
+  }
+  if (ret == -1) {
+    // RST/timeout/pipe, treat as disconnect if you want EOF semantics
+    if (errno == ECONNRESET || errno == EPIPE || errno == ETIMEDOUT || errno == ENOTCONN) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
   LF_ASSERT_NON_NULL(net_abs);
   tls_priv_t* priv = (tls_priv_t*)net_abs;
@@ -217,27 +224,34 @@ int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* bu
   while (bytes_read < num_bytes) {
     int ret = SSL_read(priv->ssl, buffer + bytes_read, num_bytes - bytes_read);
     if (ret > 0) {
-      bytes_read += ret;
-    } else {
-      int err = SSL_get_error(priv->ssl, ret);
-      if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
-        // Retry logic for blocking behavior
-        lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
-        continue;
-      }
-      if (err == SSL_ERROR_ZERO_RETURN) {
-        // Connection closed gracefully
-        return 1; // EOF
-      }
-      // Error
-      lf_print_error("SSL_read failed with error %d", err);
-      ERR_print_errors_fp(stderr);
-      return -1;
+      bytes_read += (size_t)ret;
+      continue;
     }
+
+    int err = SSL_get_error(priv->ssl, ret);
+
+    if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
+      lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
+      continue;
+    }
+
+    if (err == SSL_ERROR_ZERO_RETURN) {
+      // close_notify received
+      return 1; // EOF
+    }
+
+    if (is_disconnect_syscall(err, ret)) {
+      // peer disconnected without close_notify (or reset)
+      return 1; // treat as EOF
+    }
+
+    // Real TLS/protocol error
+    lf_print_error("SSL_read failed (ret=%d, err=%d, errno=%d)", ret, err, errno);
+    ERR_print_errors_fp(stderr);
+    return -1;
   }
   return 0;
 }
-
 int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
   int ret = read_from_net(net_abs, num_bytes, buffer);
   if (ret < 0) {
