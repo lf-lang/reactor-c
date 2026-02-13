@@ -18,10 +18,8 @@
 static const char* tls_cert_path = NULL;
 static const char* tls_key_path = NULL;
 
-// Global SSL context for the server side (listening) or client side (connecting)
-// In a simple model, we might share one context or recreate per connection.
-// For efficiency, a global context is better if configuration is static.
-static SSL_CTX* global_ctx = NULL;
+static SSL_CTX* global_client_ctx = NULL;
+static SSL_CTX* global_server_ctx = NULL;
 
 void lf_set_tls_configuration(const char* cert_path, const char* key_path) {
   tls_cert_path = cert_path;
@@ -104,11 +102,11 @@ int create_server(net_abstraction_t net_abs) {
   tls_priv_t* priv = (tls_priv_t*)net_abs;
 
   // Initialize Global Context if not already done
-  if (global_ctx == NULL) {
-    global_ctx = create_ssl_context(TLS_server_method());
-    configure_ssl_context(global_ctx);
+  if (global_server_ctx == NULL) {
+    global_server_ctx = create_ssl_context(TLS_server_method());
+    configure_ssl_context(global_server_ctx);
   }
-  priv->ctx = global_ctx;
+  priv->ctx = global_server_ctx;
 
   // Create the underlying socket server
   return create_socket_server(priv->socket_priv->user_specified_port, &priv->socket_priv->socket_descriptor,
@@ -137,6 +135,7 @@ net_abstraction_t accept_net(net_abstraction_t server_chan) {
   client_priv->ssl = SSL_new(client_priv->ctx);
   SSL_set_fd(client_priv->ssl, client_sock);
 
+  SSL_set_accept_state(client_priv->ssl);
   // Perform TLS handshake (accept)
   if (SSL_accept(client_priv->ssl) <= 0) {
     lf_print_error("SSL_accept failed.");
@@ -170,10 +169,10 @@ void create_client(net_abstraction_t net_abs) {
   // Create the underlying TCP socket
   priv->socket_priv->socket_descriptor = create_real_time_tcp_socket_errexit();
 
-  if (global_ctx == NULL) {
-    global_ctx = create_ssl_context(TLS_client_method());
+  if (global_client_ctx == NULL) {
+    global_client_ctx = create_ssl_context(TLS_client_method());
   }
-  priv->ctx = global_ctx;
+  priv->ctx = global_client_ctx;
 }
 
 net_abstraction_t connect_to_net(net_params_t* params) {
