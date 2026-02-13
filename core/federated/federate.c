@@ -1841,7 +1841,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   params.socket_params.type = TCP;
   params.socket_params.port = port;
   params.socket_params.server_hostname = hostname;
-  params.target = 1;
+  params.target = 0;
 #elif defined(COMM_TYPE_TLS)
   tls_connection_params_t params;
   params.socket_params.type = TCP;
