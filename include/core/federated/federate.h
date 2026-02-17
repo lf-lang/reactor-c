@@ -192,6 +192,11 @@ typedef struct federate_instance_t {
    */
   instant_t min_delay_from_physical_action_to_federate_output;
 
+  /**
+   * Indicator that this federate needs to refresh its session key/keys for its connections
+   */
+  bool rekey_requested;
+
 #ifdef FEDERATED_DECENTRALIZED
   /**
    * Thread responsible for setting ports to absent by an STAA offset if they
@@ -562,6 +567,21 @@ void lf_stall_advance_level_federation_locked(size_t level);
  * time. It starts a thread to listen for messages from the RTI.
  */
 void lf_synchronize_with_other_federates(void);
+
+/**
+ * @brief Refresh session keys for all the federates it is connected to
+ */
+void lf_refresh_key(void);
+
+/**
+ * TODO(Kushal) write comments
+ */
+void _lf_check_and_perform_rekey(void);
+
+/**
+ * 
+ */
+void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer);
 
 /**
  * @brief Update the max level allowed to advance (MLAA).

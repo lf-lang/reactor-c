@@ -439,6 +439,12 @@ int process_args(int argc, const char* argv[]);
  * @param rti The RTI instance to initialize.
  */
 void initialize_RTI(rti_remote_t* rti);
+/**
+ * TODO(Kushal Paliwal)
+ * Write comments
+ *
+ */
+void handle_key_refresh_request(federate_info_t* fed, unsigned char* buffer);
 
 #endif // RTI_REMOTE_H
 #endif // STANDALONE_RTI

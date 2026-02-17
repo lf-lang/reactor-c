@@ -1543,6 +1543,9 @@ static void* listen_to_rti_net(void* args) {
     case MSG_TYPE_CLOCK_SYNC_T4:
       lf_print_error("Federate %d received unexpected clock sync message from RTI.", _lf_my_fed_id);
       break;
+    case MSG_TYPE_SST_KEY_ACK:
+      handle_rti_session_key_ack(_fed.net_to_RTI, buffer);
+      break;
     default:
       lf_print_error_and_exit("Received from RTI an unrecognized message type: %hhx.", buffer[0]);
       // Trace the event when tracing is enabled
@@ -2675,4 +2678,38 @@ instant_t lf_wait_until_time(tag_t tag) {
 }
 #endif // FEDERATED_DECENTRALIZED
 
+/**
+ * Request a session-key refresh for federated communication.
+ *
+ * This is a reactor-level callable API that does NOT perform any network I/O.
+ * It only sets a flag indicating that a rekey/refresh should be performed later
+ * by the federated networking/runtime layer at a safe point (outside reaction execution).
+ */
+void lf_refresh_key(void){
+  lf_print("DEBUG: Rekey Requested");
+  _fed.rekey_requested = true;
+}
+
+void _lf_check_and_perform_rekey(void){
+  if(_fed.rekey_requested){
+    get_new_session_key(_fed.net_to_RTI);
+
+    LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+    send_key_refresh_request(_fed.net_to_RTI, MSG_TYPE_SST_KEY_REFRESH_REQUEST);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    _fed.rekey_requested = false;
+  }
+}
+
+void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer){
+  unsigned char key_id[SESSION_KEY_ID_SIZE];
+  read_from_net_fail_on_error(net_abs, SESSION_KEY_ID_SIZE, key_id, NULL);
+  if(!verify_pending_key_id(net_abs, key_id)){
+    LF_PRINT_DEBUG("Key IDs dont match");
+    return;
+  }
+
+  swap_to_pending_key(net_abs);
+  LF_PRINT_DEBUG("Key ID match in ACK");
+}
 #endif // FEDERATED

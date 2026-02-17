@@ -180,6 +180,9 @@ static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* schedul
         break;
       }
       LF_MUTEX_UNLOCK(&env->mutex);
+      #ifdef COMM_TYPE_SST
+        _lf_check_and_perform_rekey();
+      #endif
     }
 
     if (_lf_sched_distribute_ready_reactions(scheduler) > 0) {

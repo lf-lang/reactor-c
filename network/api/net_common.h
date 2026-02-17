@@ -628,6 +628,23 @@
  */
 #define MSG_TYPE_P2P_TAGGED_MESSAGE 18
 
+/**
+ * @brief Byte identifying a key refresh request.
+ * @ingroup Network
+ * 
+ * Used to request that the perr should switch to a new session key.
+ */
+#define MSG_TYPE_SST_KEY_REFRESH_REQUEST 110
+
+/**
+ * @brief Byte identifying a key refresh acknowledgement.
+ * @ingroup Network
+ * 
+ * Sent in response to MSG_TYPE_SST_KEY_REFRESH_REQUEST to confirm the peer is ready
+ * to use the new session key.
+ */
+#define MSG_TYPE_SST_KEY_ACK 111
+
 ////////////////////////////////////////////////
 /**
  * @brief Physical clock synchronization messages according to PTP.

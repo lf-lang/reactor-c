@@ -80,7 +80,8 @@ net_abstraction_t accept_net(net_abstraction_t server_chan) {
     if (get_peer_address(client_priv->socket_priv) != 0) {
       lf_print_error("Failed to save peer address.");
     }
-
+    
+    client_priv->sst_ctx = serv_priv->sst_ctx;
     // TODO: Do we need to copy sst_ctx form server_chan to fed_chan?
     session_key_list_t* s_key_list = init_empty_session_key_list();
     SST_session_ctx_t* session_ctx =
@@ -316,4 +317,53 @@ void set_server_port(net_abstraction_t net_abs, int32_t port) {
 void set_server_hostname(net_abstraction_t net_abs, const char* hostname) {
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   memcpy(priv->socket_priv->server_hostname, hostname, INET_ADDRSTRLEN);
+}
+
+void get_new_session_key(net_abstraction_t net_abs){
+  LF_ASSERT_NON_NULL(net_abs);
+  LF_PRINT_LOG("New session key acquired");
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  session_key_list_t* new_list = get_session_key(priv->sst_ctx, NULL);
+  priv->pending_key = &new_list->s_key[0];
+  // LF_PRINT_DEBUG("New session key acquired");
+}
+
+void send_key_refresh_request(net_abstraction_t net_abs, unsigned char msg_type){
+  LF_ASSERT_NON_NULL(net_abs);
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  
+  unsigned char buffer[1+SESSION_KEY_ID_SIZE];
+  buffer[0] = msg_type;
+  memcpy(&buffer[1], priv->pending_key->key_id, SESSION_KEY_ID_SIZE);
+
+  int result = write_to_net_close_on_error(net_abs, 9, buffer);
+  LF_PRINT_DEBUG("Result: %d", result);
+}
+
+void fetch_pending_session_key(net_abstraction_t net_abs, unsigned char* key_id){
+  LF_ASSERT_NON_NULL(net_abs);
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  session_key_list_t* existing = init_empty_session_key_list();
+  session_key_t* new_key = get_session_key_by_ID(key_id, priv->sst_ctx, existing);
+  if(new_key != NULL){
+    priv->pending_key = new_key;
+  }
+  //Todo: check if the key is still there
+  free_session_key_list_t(existing);
+
+}
+
+bool verify_pending_key_id(net_abstraction_t net_abs, unsigned char* key_id){
+  LF_ASSERT_NON_NULL(net_abs);
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  return memcmp(priv->pending_key->key_id, key_id, SESSION_KEY_ID_SIZE);
+}
+
+void swap_to_pending_key(net_abstraction_t net_abs){
+  LF_ASSERT_NON_NULL(net_abs);
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  priv->session_ctx->s_key = *priv->pending_key;
+  priv->session_ctx->received_seq_num = 0;
+  priv->session_ctx->sent_seq_num = 0;
+  priv->pending_key = NULL;
 }

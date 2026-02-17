@@ -309,4 +309,14 @@ void set_server_port(net_abstraction_t net_abs, int32_t port);
  */
 void set_server_hostname(net_abstraction_t net_abs, const char* hostname);
 
+void get_new_session_key(net_abstraction_t net_abs);
+
+void send_key_refresh_request(net_abstraction_t net_abs, unsigned char msg_type);
+
+void fetch_pending_session_key(net_abstraction_t net_abs, unsigned char* key_id);
+
+bool verify_pending_key_id(net_abstraction_t net_abs, unsigned char* key_id);
+
+void swap_to_pending_key(net_abstraction_t net_abs);
+
 #endif /* NET_ABSTRACTION_H */
