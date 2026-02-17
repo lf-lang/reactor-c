@@ -837,10 +837,7 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
     if (!violation) {
 #ifdef LF_THREAD_POLICY
       // Set thread priority based on reaction deadline before invoking the reaction
-      if (current_reaction_to_execute->deadline >= 0LL) {
-        int priority = get_priority_value(current_reaction_to_execute->deadline);
-        lf_thread_set_priority(lf_thread_self(), priority);
-      }
+      lf_thread_set_priority(lf_thread_self(), get_priority_value(current_reaction_to_execute->deadline));
 #endif
       // Invoke the reaction function.
       _lf_worker_invoke_reaction(env, worker_number, current_reaction_to_execute);
