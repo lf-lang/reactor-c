@@ -37,6 +37,11 @@
 #include <openssl/hmac.h> // For HMAC-based authentication of federates.
 #endif
 
+// Global variables for synchronizing read and write when session key is being refreshed
+#ifdef COMM_TYPE_SST
+lf_cond_t lf_rekey_completed;
+static bool lf_rekey_in_progress = false;
+#endif
 // Global variables defined in tag.c:
 extern instant_t start_time;
 
@@ -133,6 +138,12 @@ static void send_tag(unsigned char type, tag_t tag) {
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  #ifdef COMM_TYPE_SST
+  // Waits until the rekey in progress is complete before sending any more writes 
+  while(lf_rekey_in_progress){
+    LF_COND_WAIT(&lf_rekey_completed);
+  }
+  #endif
   write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, buffer, &lf_outbound_net_mutex,
                              "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
@@ -2545,6 +2556,9 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     }
   }
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  #ifdef COMM_TYPE_SST
+  _lf_check_and_perform_rekey();
+  #endif
   return result;
 }
 
@@ -2579,12 +2593,21 @@ void lf_synchronize_with_other_federates(void) {
   _lf_get_environments(&top_level_env);
   LF_COND_INIT(&lf_port_status_changed, &top_level_env->mutex);
 
+  #ifdef COMM_TYPE_SST
+  LF_COND_INIT(&lf_rekey_completed, &lf_outbound_net_mutex);
+  #endif
+
   LF_PRINT_DEBUG("Synchronizing with other federates.");
 
   // Reset the start time to the coordinated start time for all federates.
   // Note that this does not grant execution to this federate.
   start_time = get_start_time_from_rti(lf_time_physical());
   lf_tracing_set_start_time(start_time);
+
+  // #if defined(COMM_TYPE_SST) && defined(LF_TRACE)
+  // _lf_register_trace_event(_sst_rekey_start_desc, NULL, trace_user, _sst_rekey_start_desc);
+  // _lf_register_trace_event(_sst_rekey_end_desc,   NULL, trace_user, _sst_rekey_end_desc);
+  // #endif
 
   // Start a thread to listen for incoming messages from the RTI.
   // @note Up until this point, the federate has been listening for messages
@@ -2690,17 +2713,38 @@ void lf_refresh_key(void){
   _fed.rekey_requested = true;
 }
 
+#ifdef COMM_TYPE_SST
 void _lf_check_and_perform_rekey(void){
   if(_fed.rekey_requested){
+    // environment_t* env;
+    // _lf_get_environments(&env);
+    // tag_t tag = env->current_tag;
+    // #ifdef LF_TRACE
+    // call_tracepoint(user_event, _sst_rekey_start_desc, tag, -1, -1, -1, NULL, NULL, 0);
+    // #endif
+    lf_print("Acquiring new session key and sending it to RTI");
     get_new_session_key(_fed.net_to_RTI);
 
     LF_MUTEX_LOCK(&lf_outbound_net_mutex);
     send_key_refresh_request(_fed.net_to_RTI, MSG_TYPE_SST_KEY_REFRESH_REQUEST);
+    lf_rekey_in_progress = true;
+    LF_COND_WAIT(&lf_rekey_completed);
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    // #ifdef LF_TRACE
+    // call_tracepoint(user_event, _sst_rekey_end_desc, tag, -1, -1, -1, NULL, NULL, 0);
+    // #endif
     _fed.rekey_requested = false;
   }
 }
+#endif
 
+/**
+ * When a message of type MSG_TYPE_SST_REFRESH_ACK arrives on the listner thread for RTI
+ * this function is called to compare the received key id with the key id of the pending key
+ * for the federate instance. On a match the current key is swapped with the pending key
+ * and a broadcast signal is sent to alert the threads that rekey is complete and now threads 
+ * can write to the socket. 
+ */
 void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer){
   unsigned char key_id[SESSION_KEY_ID_SIZE];
   read_from_net_fail_on_error(net_abs, SESSION_KEY_ID_SIZE, key_id, NULL);
@@ -2710,6 +2754,10 @@ void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer
   }
 
   swap_to_pending_key(net_abs);
-  LF_PRINT_DEBUG("Key ID match in ACK");
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  lf_rekey_in_progress = false;
+  LF_COND_BROADCAST(&lf_rekey_completed);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  lf_print("Key ID match in ACK");
 }
 #endif // FEDERATED

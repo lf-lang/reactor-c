@@ -1029,7 +1029,9 @@ void* federate_info_thread_TCP(void* fed) {
       handle_federate_failed(my_fed);
       return NULL;
     case MSG_TYPE_SST_KEY_REFRESH_REQUEST:
+      #ifdef COMM_TYPE_SST
       handle_key_refresh_request(my_fed, buffer);
+      #endif
       break;
     default:
       lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->enclave.id,
@@ -1611,24 +1613,24 @@ void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number
   }
   free(scheduling_nodes);
 }
-
+#ifdef COMM_TYPE_SST
 void handle_key_refresh_request(federate_info_t* fed, unsigned char* buffer){
-  unsigned char key_id[SESSION_KEY_ID_SIZE];
-  read_from_net_fail_on_error(fed->net, SESSION_KEY_ID_SIZE, key_id, NULL);
+  unsigned char key_id[8];
+  read_from_net_fail_on_error(fed->net, 8, key_id, NULL);
 
   fetch_pending_session_key(fed->net, key_id);
-  LF_PRINT_DEBUG("New session key fetched and stored in the pending key field");
+  lf_print("New session key fetched and stored in the pending key field");
   
   LF_MUTEX_LOCK(&rti_mutex);
   send_key_refresh_request(fed->net, MSG_TYPE_SST_KEY_ACK);
+  swap_to_pending_key(fed->net);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
-  swap_to_pending_key(fed->net);
-
-  LF_PRINT_DEBUG("Key ID swap complete");
+  lf_print("Key ID swap complete");
 
 
   
 }
+#endif
 
 #endif // STANDALONE_RTI
