@@ -632,7 +632,7 @@
  * @brief Byte identifying a key refresh request.
  * @ingroup Network
  * 
- * Used to request that the perr should switch to a new session key.
+ * Used to request that the peer should switch to a new session key.
  */
 #define MSG_TYPE_SST_KEY_REFRESH_REQUEST 110
 

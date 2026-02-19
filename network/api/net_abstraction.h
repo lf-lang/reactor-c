@@ -309,14 +309,65 @@ void set_server_port(net_abstraction_t net_abs, int32_t port);
  */
 void set_server_hostname(net_abstraction_t net_abs, const char* hostname);
 
+/**
+ * @brief Fetches a fresh session key from the SST auth server and stores it as pending_key.
+ * @ingroup Network
+ *
+ * Called by _lf_check_and_perform_rekey() on the federate before sending a key refresh
+ * request. The key is stored by value so it survives the free of the returned key list.
+ *
+ * @param net_abs The network abstraction whose pending_key will be updated.
+ */
 void get_new_session_key(net_abstraction_t net_abs);
 
+/**
+ * @brief Sends a key refresh message containing the pending key ID to the peer.
+ * @ingroup Network
+ *
+ * Used in both directions: federate sends MSG_TYPE_SST_KEY_REFRESH_REQUEST to initiate
+ * rotation; RTI sends MSG_TYPE_SST_KEY_ACK to confirm. The format is identical: 1 byte
+ * msg_type + 8 bytes key ID.
+ *
+ * @param net_abs  The network abstraction to send from.
+ * @param msg_type MSG_TYPE_SST_KEY_REFRESH_REQUEST or MSG_TYPE_SST_KEY_ACK.
+ */
 void send_key_refresh_request(net_abstraction_t net_abs, unsigned char msg_type);
 
+/**
+ * @brief Looks up a session key by ID in the SST context and stores it as pending_key.
+ * @ingroup Network
+ *
+ * Called on the RTI in handle_key_refresh_request() after receiving a refresh request.
+ * The RTI uses the key ID sent by the federate to locate the same key locally, so both
+ * sides can swap to it after the ACK.
+ *
+ * @param net_abs The network abstraction whose pending_key will be set.
+ * @param key_id  The 8-byte key ID received from the peer.
+ */
 void fetch_pending_session_key(net_abstraction_t net_abs, unsigned char* key_id);
 
+/**
+ * @brief Returns true if key_id matches the pending key's ID.
+ * @ingroup Network
+ *
+ * Called by handle_rti_session_key_ack() on the federate to verify the RTI's ACK refers
+ * to the key that was requested. A mismatch means the ACK is ignored and no swap occurs.
+ *
+ * @param net_abs The network abstraction holding pending_key.
+ * @param key_id  The 8-byte key ID from the peer's message.
+ */
 bool verify_pending_key_id(net_abstraction_t net_abs, unsigned char* key_id);
 
+/**
+ * @brief Activates pending_key as the current session key and resets sequence counters.
+ * @ingroup Network
+ *
+ * Called after both sides confirm the key ID: on the federate in handle_rti_session_key_ack()
+ * and on the RTI in handle_key_refresh_request(). Resetting sequence counters to zero ensures
+ * the new key starts from a clean state.
+ *
+ * @param net_abs The network abstraction to update.
+ */
 void swap_to_pending_key(net_abstraction_t net_abs);
 
 #endif /* NET_ABSTRACTION_H */

@@ -37,10 +37,9 @@
 #include <openssl/hmac.h> // For HMAC-based authentication of federates.
 #endif
 
-// Global variables for synchronizing read and write when session key is being refreshed
+// Global variable for synchronizing read and write when session key is being refreshed
 #ifdef COMM_TYPE_SST
 lf_cond_t lf_rekey_completed;
-static bool lf_rekey_in_progress = false;
 #endif
 // Global variables defined in tag.c:
 extern instant_t start_time;
@@ -138,12 +137,6 @@ static void send_tag(unsigned char type, tag_t tag) {
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-  #ifdef COMM_TYPE_SST
-  // Waits until the rekey in progress is complete before sending any more writes 
-  while(lf_rekey_in_progress){
-    LF_COND_WAIT(&lf_rekey_completed);
-  }
-  #endif
   write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, buffer, &lf_outbound_net_mutex,
                              "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
@@ -2713,37 +2706,46 @@ void lf_refresh_key(void){
   _fed.rekey_requested = true;
 }
 
+/**
+ * Performs a session key rotation if one has been requested via lf_refresh_key().
+ *
+ * When rekey_requested is set, this function:
+ *   1. Fetches a new session key from the SST auth server (get_new_session_key), storing it
+ *      as pending_key on the federate's RTI connection.
+ *   2. Sends a MSG_TYPE_SST_KEY_REFRESH_REQUEST to the RTI carrying the new key's ID, then
+ *      blocks on lf_rekey_completed until the RTI acknowledges.
+ *   3. Returns once handle_rti_session_key_ack has swapped the key and signaled completion.
+ *
+ * The outbound mutex is held across the send and wait to serialize this handshake with any
+ * other outbound writes.
+ */
 #ifdef COMM_TYPE_SST
 void _lf_check_and_perform_rekey(void){
   if(_fed.rekey_requested){
-    // environment_t* env;
-    // _lf_get_environments(&env);
-    // tag_t tag = env->current_tag;
-    // #ifdef LF_TRACE
-    // call_tracepoint(user_event, _sst_rekey_start_desc, tag, -1, -1, -1, NULL, NULL, 0);
-    // #endif
     lf_print("Acquiring new session key and sending it to RTI");
     get_new_session_key(_fed.net_to_RTI);
 
+    // Hold the outbound mutex while sending the request and waiting for the RTI's ACK.
+    // lf_rekey_completed is signaled by handle_rti_session_key_ack once the new key is
+    // active, at which point this thread wakes, releases the mutex, and returns.
     LF_MUTEX_LOCK(&lf_outbound_net_mutex);
     send_key_refresh_request(_fed.net_to_RTI, MSG_TYPE_SST_KEY_REFRESH_REQUEST);
-    lf_rekey_in_progress = true;
     LF_COND_WAIT(&lf_rekey_completed);
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
-    // #ifdef LF_TRACE
-    // call_tracepoint(user_event, _sst_rekey_end_desc, tag, -1, -1, -1, NULL, NULL, 0);
-    // #endif
+
     _fed.rekey_requested = false;
   }
 }
 #endif
 
 /**
- * When a message of type MSG_TYPE_SST_REFRESH_ACK arrives on the listner thread for RTI
- * this function is called to compare the received key id with the key id of the pending key
- * for the federate instance. On a match the current key is swapped with the pending key
- * and a broadcast signal is sent to alert the threads that rekey is complete and now threads 
- * can write to the socket. 
+ * Handles a MSG_TYPE_SST_KEY_ACK message received from the RTI on the listener thread.
+ * This is the final step of the key rotation handshake, running concurrently with
+ * _lf_check_and_perform_rekey() which is blocked waiting on lf_rekey_completed.
+ *
+ * Reads the 8-byte key ID from the RTI and verifies it matches the pending key that was
+ * requested. On a match, swaps the pending key into the active session key slot, then
+ * broadcasts lf_rekey_completed to wake _lf_check_and_perform_rekey(
  */
 void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer){
   unsigned char key_id[SESSION_KEY_ID_SIZE];
@@ -2755,7 +2757,6 @@ void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer
 
   swap_to_pending_key(net_abs);
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-  lf_rekey_in_progress = false;
   LF_COND_BROADCAST(&lf_rekey_completed);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
   lf_print("Key ID match in ACK");
