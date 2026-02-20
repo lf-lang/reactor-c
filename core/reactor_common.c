@@ -1021,39 +1021,11 @@ int process_args(int argc, const char* argv[]) {
       }
       const char* time_spec = argv[i++];
       const char* units = argv[i++];
-
-#if defined(PLATFORM_ARDUINO)
-      duration = atol(time_spec);
-#else
-      duration = atoll(time_spec);
-#endif
-
-      // A parse error returns 0LL, so check to see whether that is what is meant.
-      if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
-        // Parse error.
-        lf_print_error("Invalid time value: %s", time_spec);
-        usage(argc, argv);
-        return 0;
-      }
-      if (strncmp(units, "sec", 3) == 0) {
-        duration = SEC(duration);
-      } else if (strncmp(units, "msec", 4) == 0) {
-        duration = MSEC(duration);
-      } else if (strncmp(units, "usec", 4) == 0) {
-        duration = USEC(duration);
-      } else if (strncmp(units, "nsec", 4) == 0) {
-        duration = NSEC(duration);
-      } else if (strncmp(units, "min", 3) == 0) {
-        duration = MINUTE(duration);
-      } else if (strncmp(units, "hour", 4) == 0) {
-        duration = HOUR(duration);
-      } else if (strncmp(units, "day", 3) == 0) {
-        duration = DAY(duration);
-      } else if (strncmp(units, "week", 4) == 0) {
-        duration = WEEK(duration);
-      } else {
-        // Invalid units.
-        lf_print_error("Invalid time units: %s", units);
+      int parse_result = lf_time_parse(time_spec, units, &duration);
+      if (parse_result != 0) {
+        lf_print_error(parse_result == -1
+            ? "Invalid time value: %s" : "Invalid time units: %s",
+            parse_result == -1 ? time_spec : units);
         usage(argc, argv);
         return 0;
       }
