@@ -954,9 +954,11 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
 
 /**
  * Print a usage message.
- * TODO: This is not necessary for NO_CLI
  */
 void usage(int argc, const char* argv[]) {
+#if defined(NO_CLI)
+  printf("\nNo command-line arguments are supported.\n");
+#else
   printf("\nCommand-line arguments: \n\n");
   printf("  -f, --fast [true | false]\n");
   printf("   Whether to wait for physical time to match logical time.\n\n");
@@ -975,7 +977,7 @@ void usage(int argc, const char* argv[]) {
   printf("  -l\n");
   printf("   Send stdout to individual log files for each federate.\n\n");
 #endif
-
+#endif
   printf("Command given:\n");
   for (int i = 0; i < argc; i++) {
     printf("%s ", argv[i]);
@@ -992,9 +994,9 @@ const char** default_argv = NULL;
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
- * TODO: Not necessary for NO_CLI
  */
 int process_args(int argc, const char* argv[]) {
+#if !defined(NO_CLI)
   int i = 1;
   while (i < argc) {
     const char* arg = argv[i++];
@@ -1023,9 +1025,8 @@ int process_args(int argc, const char* argv[]) {
       const char* units = argv[i++];
       int parse_result = lf_time_parse(time_spec, units, &duration);
       if (parse_result != 0) {
-        lf_print_error(parse_result == -1
-            ? "Invalid time value: %s" : "Invalid time units: %s",
-            parse_result == -1 ? time_spec : units);
+        lf_print_error(parse_result == -1 ? "Invalid time value: %s" : "Invalid time units: %s",
+                       parse_result == -1 ? time_spec : units);
         usage(argc, argv);
         return 0;
       }
@@ -1104,6 +1105,7 @@ int process_args(int argc, const char* argv[]) {
       return 0;
     }
   }
+#endif
   return 1;
 }
 
