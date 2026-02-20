@@ -327,8 +327,7 @@ int lf_time_parse(const char* time_str, const char* units_str, interval_t* resul
     *result = USEC(value);
   } else if (strncmp(units_str, "msec", 4) == 0 || strcmp(units_str, "ms") == 0) {
     *result = MSEC(value);
-  } else if (strncmp(units_str, "second", 6) == 0 || strncmp(units_str, "sec", 3) == 0
-             || strcmp(units_str, "s") == 0) {
+  } else if (strncmp(units_str, "second", 6) == 0 || strncmp(units_str, "sec", 3) == 0 || strcmp(units_str, "s") == 0) {
     *result = SEC(value);
   } else if (strncmp(units_str, "minute", 6) == 0 || strncmp(units_str, "min", 3) == 0) {
     *result = MINUTE(value);
