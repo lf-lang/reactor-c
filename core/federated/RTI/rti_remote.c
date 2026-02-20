@@ -1618,14 +1618,7 @@ void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number
   free(scheduling_nodes);
 }
 
-/**
- * Called by federate_info_thread_TCP when MSG_TYPE_SST_KEY_REFRESH_REQUEST arrives.
- * Reads the 8-byte key ID sent by the federate, retrieves the matching session key from
- * the RTI's SST context via fetch_pending_session_key, acknowledges with MSG_TYPE_SST_KEY_ACK,
- * then swaps the new key into the active slot under rti_mutex so no concurrent
- * send uses a stale key.
- */
-#ifdef COMM_TYPE_SST
+#ifdef COMM_TYPE_SST 
 void handle_key_refresh_request(federate_info_t* fed, unsigned char* buffer){
   unsigned char key_id[8];
   read_from_net_fail_on_error(fed->net, 8, key_id, NULL);

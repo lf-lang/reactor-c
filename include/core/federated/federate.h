@@ -569,17 +569,41 @@ void lf_stall_advance_level_federation_locked(size_t level);
 void lf_synchronize_with_other_federates(void);
 
 /**
- * @brief Refresh session keys for all the federates it is connected to
+ * @brief Request a session key refresh for all SST connections.
+ *
+ * Sets the rekey_requested flag, signaling that a key rotation should
+ * be performed. The actual handshake is deferred and handled asynchronously
+ * by _lf_check_and_perform_rekey() at a safe point outside of reaction
+ * execution. Safe to call from within a reaction.
+ *
+ * Only has effect when COMM_TYPE_SST is configured with centralized coordination.
  */
 void lf_refresh_key(void);
 
 /**
- * TODO(Kushal) write comments
+ * @brief Check if a key refresh has been requested and perform the handshake if so.
+ *
+ * If rekey_requested is set, fetches a new session key from the SST auth
+ * server, sends a MSG_TYPE_SST_KEY_REFRESH_REQUEST to the RTI containing
+ * the new key ID, and blocks until the RTI acknowledges via
+ * handle_rti_session_key_ack(). Resets rekey_requested upon completion.
+ *
+ * This function is called internally at a safe point in the federate's
+ * execution loop and should not be called directly by user code.
  */
 void _lf_check_and_perform_rekey(void);
 
 /**
- * 
+ * @brief Handle a session key acknowledgment from the RTI.
+ *
+ * Called when the RTI responds with MSG_TYPE_SST_KEY_ACK during a key
+ * rotation handshake. Reads the key ID from the message, verifies it
+ * matches the pending key, swaps the pending key into active use, resets
+ * sequence counters, and signals lf_rekey_completed to unblock
+ * _lf_check_and_perform_rekey().
+ *
+ * @param net_abs The network abstraction for the RTI connection.
+ * @param buffer The buffer containing the incoming message.
  */
 void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer);
 
