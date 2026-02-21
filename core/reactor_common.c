@@ -1099,9 +1099,15 @@ int process_args(int argc, const char* argv[]) {
     else if (strcmp(arg, "--ros-args") == 0) {
       // FIXME: Ignore ROS arguments for now
     } else {
+#ifdef FEDERATED
+      // In federated programs, arguments intended for other federates
+      // may be forwarded here. Skip them silently.
+      lf_print("Ignoring unrecognized command-line argument: %s. Assuming it is intended for another federate.", arg);
+#else
       lf_print_error("Unrecognized command-line argument: %s", arg);
       usage(argc, argv);
       return 0;
+#endif
     }
   }
   return 1;
