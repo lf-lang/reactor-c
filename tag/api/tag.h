@@ -373,8 +373,6 @@ size_t lf_comma_separated_time(char* buffer, instant_t time);
  * @param result Pointer to store the resulting time in nanoseconds.
  * @return 0 on success, -1 if the time value is invalid, -2 if the units are invalid.
  */
-#if !defined(NO_CLI)
 int lf_time_parse(const char* time_str, const char* units_str, interval_t* result);
-#endif // !NO_CLI
 
 #endif // TAG_H
