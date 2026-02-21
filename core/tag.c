@@ -315,7 +315,6 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
   return result;
 }
 
-#if !defined(NO_CLI)
 int lf_time_parse(const char* time_str, const char* units_str, interval_t* result) {
   char* end;
   int value = (int)strtol(time_str, &end, 10);
@@ -343,4 +342,3 @@ int lf_time_parse(const char* time_str, const char* units_str, interval_t* resul
   }
   return 0;
 }
-#endif // !NO_CLI

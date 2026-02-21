@@ -996,7 +996,6 @@ const char** default_argv = NULL;
  * @return 1 if the arguments processed successfully, 0 otherwise.
  */
 int process_args(int argc, const char* argv[]) {
-#if !defined(NO_CLI)
   int i = 1;
   while (i < argc) {
     const char* arg = argv[i++];
@@ -1105,7 +1104,6 @@ int process_args(int argc, const char* argv[]) {
       return 0;
     }
   }
-#endif
   return 1;
 }
 
