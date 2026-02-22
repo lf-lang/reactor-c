@@ -11,6 +11,7 @@
  */
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -952,30 +953,52 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
   }
 }
 
+// Defaults for the code-generated parameter table.
+// The code generator overrides these if there are user-defined parameters.
+lf_cli_param_t* _lf_cli_params = NULL;
+int _lf_cli_params_count = 0;
+
 /**
- * Print a usage message.
+ * Print a usage message listing user-defined parameters (if any) and runtime options.
  */
 void usage(int argc, const char* argv[]) {
 #if defined(NO_CLI)
   printf("\nNo command-line arguments are supported.\n");
 #else
-  printf("\nCommand-line arguments: \n\n");
-  printf("  -f, --fast [true | false]\n");
-  printf("   Whether to wait for physical time to match logical time.\n\n");
+  printf("\nUsage: %s [options]\n\n", argv[0]);
+  if (_lf_cli_params_count > 0) {
+    printf("Reactor Parameters:\n");
+    for (int j = 0; j < _lf_cli_params_count; j++) {
+      lf_cli_param_t* p = &_lf_cli_params[j];
+      if (p->type == CLI_TIME) {
+        printf("  --%s <value> <units>\n", p->name);
+      } else if (p->type == CLI_BOOL) {
+        printf("  --%s <true|false>\n", p->name);
+      } else {
+        printf("  --%s <value>\n", p->name);
+      }
+      printf("      %s\n\n", p->description);
+    }
+  }
+  printf("Runtime Options:\n");
+  printf("  -f, --fast <true|false>\n");
+  printf("      Whether to wait for physical time to match logical time.\n\n");
   printf("  -o, --timeout <duration> <units>\n");
-  printf("   Stop after the specified amount of logical time, where units are one of\n");
-  printf("   nsec, usec, msec, sec, minute, hour, day, week, or the plurals of those.\n\n");
-  printf("  -k, --keepalive\n");
-  printf("   Whether continue execution even when there are no events to process.\n\n");
+  printf("      Stop after the specified amount of logical time, where units are one of\n");
+  printf("      nsec, usec, msec, sec, minute, hour, day, week, or the plurals of those.\n\n");
+  printf("  -k, --keepalive <true|false>\n");
+  printf("      Whether to continue execution even when there are no events to process.\n\n");
   printf("  -w, --workers <n>\n");
-  printf("   Executed in <n> threads if possible (optional feature).\n\n");
-  printf("  -i, --id <n>\n");
-  printf("   The ID of the federation that this reactor will join.\n\n");
+  printf("      Execute in <n> threads if possible (optional feature).\n\n");
+  printf("  -h, --help\n");
+  printf("      Display this help message.\n\n");
 #ifdef FEDERATED
+  printf("  -i, --id <n>\n");
+  printf("      The ID of the federation that this reactor will join.\n\n");
   printf("  -r, --rti <n>\n");
-  printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
+  printf("      The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
   printf("  -l\n");
-  printf("   Send stdout to individual log files for each federate.\n\n");
+  printf("      Send stdout to individual log files for each federate.\n\n");
 #endif
 #endif
   printf("Command given:\n");
@@ -983,6 +1006,96 @@ void usage(int argc, const char* argv[]) {
     printf("%s ", argv[i]);
   }
   printf("\n\n");
+}
+
+/**
+ * Process user-defined main reactor parameters from the command line.
+ * Returns 0 on success, 1 for --help (exit 0), 2 for error (exit 1).
+ */
+int process_user_args(int argc, const char* argv[], int* newargc, const char** newargv) {
+  *newargc = 0;
+  newargv[(*newargc)++] = argv[0];
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+      usage(argc, argv);
+      return 1;
+    }
+    bool matched = false;
+    for (int j = 0; j < _lf_cli_params_count; j++) {
+      lf_cli_param_t* p = &_lf_cli_params[j];
+      char option[256];
+      snprintf(option, sizeof(option), "--%s", p->name);
+      if (strcmp(argv[i], option) == 0) {
+        matched = true;
+        if (p->is_width) {
+          fprintf(stderr, "Error: Command-line changes to multiport and bank widths"
+                          " are not supported.\n"
+                          "Change the width in the source code and recompile instead.\n");
+          return 2;
+        }
+        if (p->type == CLI_TIME) {
+          if (i + 2 >= argc) {
+            fprintf(stderr, "Error: --%s needs a time value and units (e.g., --%s 500 msec).\n", p->name, p->name);
+            return 2;
+          }
+          const char* time_str = argv[++i];
+          const char* unit_str = argv[++i];
+          if (lf_time_parse(time_str, unit_str, (interval_t*)p->value) != 0) {
+            fprintf(stderr, "Error: invalid time value '%s %s' for --%s.\n", time_str, unit_str, p->name);
+            return 2;
+          }
+          *p->given = true;
+        } else {
+          if (i + 1 >= argc) {
+            fprintf(stderr, "Error: --%s needs a value.\n", p->name);
+            return 2;
+          }
+          const char* val_str = argv[++i];
+          char* end;
+          switch (p->type) {
+          case CLI_INT:
+            *((int*)p->value) = atoi(val_str);
+            break;
+          case CLI_DOUBLE:
+            *((double*)p->value) = strtod(val_str, &end);
+            if (*end != '\0') {
+              fprintf(stderr, "Error: invalid double value '%s' for --%s.\n", val_str, p->name);
+              return 2;
+            }
+            break;
+          case CLI_FLOAT:
+            *((float*)p->value) = strtof(val_str, &end);
+            if (*end != '\0') {
+              fprintf(stderr, "Error: invalid float value '%s' for --%s.\n", val_str, p->name);
+              return 2;
+            }
+            break;
+          case CLI_BOOL:
+            if (strcmp(val_str, "true") == 0 || strcmp(val_str, "1") == 0) {
+              *((bool*)p->value) = true;
+            } else if (strcmp(val_str, "false") == 0 || strcmp(val_str, "0") == 0) {
+              *((bool*)p->value) = false;
+            } else {
+              fprintf(stderr, "Error: invalid bool value '%s' for --%s (expected true or false).\n", val_str, p->name);
+              return 2;
+            }
+            break;
+          case CLI_STRING:
+            *((const char**)p->value) = val_str;
+            break;
+          default:
+            break;
+          }
+          *p->given = true;
+        }
+        break;
+      }
+    }
+    if (!matched) {
+      newargv[(*newargc)++] = argv[i];
+    }
+  }
+  return 0;
 }
 
 // Some options given in the target directive are provided here as
@@ -1043,6 +1156,9 @@ int process_args(int argc, const char* argv[]) {
       } else {
         lf_print_error("Invalid value for --keepalive: %s", keep_spec);
       }
+    } else if (strcmp(arg, "-h") == 0 || strcmp(arg, "--help") == 0) {
+      usage(argc, argv);
+      return 0;
     } else if (strcmp(arg, "-w") == 0 || strcmp(arg, "--workers") == 0) {
       if (argc < i + 1) {
         lf_print_error("--workers needs an integer argument.s");
