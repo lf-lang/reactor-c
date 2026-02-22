@@ -37,5 +37,6 @@ var searchData=
   ['print_5freaction_34',['print_reaction',['../group__Internal.html#ga26e33f5180dc5951b3d26094959913b7',1,'pqueue.h']]],
   ['print_5ftable_35',['print_table',['../group__Tracing.html#gac8588a40ed5942245242363f13a698f5',1,'trace_util.h']]],
   ['process_5fargs_36',['process_args',['../group__Internal.html#ga80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;reactor_common.h'],['../group__RTI.html#ga80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;rti_remote.h']]],
-  ['process_5fclock_5fsync_5fargs_37',['process_clock_sync_args',['../group__RTI.html#gad7d4392b21b300612a5239fbb1ffa274',1,'rti_remote.h']]]
+  ['process_5fclock_5fsync_5fargs_37',['process_clock_sync_args',['../group__RTI.html#gad7d4392b21b300612a5239fbb1ffa274',1,'rti_remote.h']]],
+  ['process_5fuser_5fargs_38',['process_user_args',['../group__Internal.html#ga091dcc6caaaacf4c6bc71717577d7ec8',1,'reactor_common.h']]]
 ];

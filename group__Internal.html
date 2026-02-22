@@ -148,6 +148,8 @@ Data Structures</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Event activation record to push onto the event queue.  <a href="structevent__t.html#details">More...</a><br /></td></tr>
 <tr class="memitem:lf_5Faction_5Fbase_5Ft" id="r_lf_5Faction_5Fbase_5Ft"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base type for actions.  <a href="structlf__action__base__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:lf_5Fcli_5Fparam_5Ft" id="r_lf_5Fcli_5Fparam_5Ft"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structlf__cli__param__t.html">lf_cli_param_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Descriptor for a user-defined main reactor parameter overridable from the command line.  <a href="structlf__cli__param__t.html#details">More...</a><br /></td></tr>
 <tr class="memitem:lf_5Fport_5Fbase_5Ft" id="r_lf_5Fport_5Fbase_5Ft"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structlf__port__base__t.html">lf_port_base_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base type for ports.  <a href="structlf__port__base__t.html#details">More...</a><br /></td></tr>
 <tr class="memitem:lf_5Fscheduler_5Ft" id="r_lf_5Fscheduler_5Ft"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structlf__scheduler__t.html">lf_scheduler_t</a></td></tr>
@@ -293,6 +295,17 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:gab6749d3dbb42ebbff86bd3cb3c5355d1" id="r_gab6749d3dbb42ebbff86bd3cb3c5355d1"><td class="memItemLeft">enum &#160;</td><td class="memItemRight"><a class="el" href="#gab6749d3dbb42ebbff86bd3cb3c5355d1">lf_cli_type_t</a> { <br />
+&#160;&#160;<a class="el" href="#ggab6749d3dbb42ebbff86bd3cb3c5355d1a09d6a14cdb0766e765c2c7ca8b2af5bb">CLI_TIME</a>
+, <a class="el" href="#ggab6749d3dbb42ebbff86bd3cb3c5355d1a6a2c058f3b82734ecf0b3cbe5a2a0601">CLI_INT</a>
+, <a class="el" href="#ggab6749d3dbb42ebbff86bd3cb3c5355d1a7fba473d691d4e6f82590046adc180fe">CLI_DOUBLE</a>
+, <a class="el" href="#ggab6749d3dbb42ebbff86bd3cb3c5355d1afbd9c902ff2f90bb0374b97641233446">CLI_FLOAT</a>
+, <br />
+&#160;&#160;<a class="el" href="#ggab6749d3dbb42ebbff86bd3cb3c5355d1adf8fdb008a2c4c82d8bbc64f7f0c25e8">CLI_BOOL</a>
+, <a class="el" href="#ggab6749d3dbb42ebbff86bd3cb3c5355d1a45c4dbdb3ed80c8b6aebfb2205333cc6">CLI_STRING</a>
+<br />
+ }</td></tr>
+<tr class="memdesc:gab6749d3dbb42ebbff86bd3cb3c5355d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type tag for a user-defined CLI parameter.  <a href="#gab6749d3dbb42ebbff86bd3cb3c5355d1">More...</a><br /></td></tr>
 <tr class="memitem:ga0183c0b43037a172a1cd9aa6ed6b3822" id="r_ga0183c0b43037a172a1cd9aa6ed6b3822"><td class="memItemLeft">enum &#160;</td><td class="memItemRight"><a class="el" href="#ga0183c0b43037a172a1cd9aa6ed6b3822">lf_spacing_policy_t</a> { <a class="el" href="#gga0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90">defer</a>
 , <a class="el" href="#gga0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019">drop</a>
 , <a class="el" href="#gga0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323">replace</a>
@@ -554,6 +567,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga26e33f5180dc5951b3d26094959913b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print some information about the given reaction.  <br /></td></tr>
 <tr class="memitem:ga80aaf4eeed3e2902f8fe9de80b45777d" id="r_ga80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ga80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (int argc, const char *argv[])</td></tr>
 <tr class="memdesc:ga80aaf4eeed3e2902f8fe9de80b45777d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the command-line arguments.  <br /></td></tr>
+<tr class="memitem:ga091dcc6caaaacf4c6bc71717577d7ec8" id="r_ga091dcc6caaaacf4c6bc71717577d7ec8"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ga091dcc6caaaacf4c6bc71717577d7ec8">process_user_args</a> (int argc, const char *argv[], int *newargc, const char **newargv)</td></tr>
+<tr class="memdesc:ga091dcc6caaaacf4c6bc71717577d7ec8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process user-defined main reactor parameters from the command line.  <br /></td></tr>
 <tr class="memitem:ga648da83816bb67aedeeaa8c10a99ec7a" id="r_ga648da83816bb67aedeeaa8c10a99ec7a"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ga648da83816bb67aedeeaa8c10a99ec7a">reaction_matches</a> (void *a, void *b)</td></tr>
 <tr class="memdesc:ga648da83816bb67aedeeaa8c10a99ec7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if the two arguments are identical pointers.  <br /></td></tr>
 <tr class="memitem:gaeaaa76aeb7d93efc4e0f0c484548af70" id="r_gaeaaa76aeb7d93efc4e0f0c484548af70"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gaeaaa76aeb7d93efc4e0f0c484548af70">schedule_output_reactions</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int worker)</td></tr>
@@ -568,6 +583,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaa329f59a16f5617b5195f2c05872c9e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform final wrap-up on exit.  <br /></td></tr>
 <tr class="memitem:ga896f27619ab0582d5a70d8f613567671" id="r_ga896f27619ab0582d5a70d8f613567671"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga896f27619ab0582d5a70d8f613567671">tracepoint_schedule</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> extra_delay)</td></tr>
 <tr class="memdesc:ga896f27619ab0582d5a70d8f613567671"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trace a call to schedule.  <br /></td></tr>
+<tr class="memitem:ga7f44f474f50286c4ba8c0ebac254bb28" id="r_ga7f44f474f50286c4ba8c0ebac254bb28"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga7f44f474f50286c4ba8c0ebac254bb28">usage</a> (int argc, const char *argv[])</td></tr>
+<tr class="memdesc:ga7f44f474f50286c4ba8c0ebac254bb28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print a usage message listing both user-defined parameters and runtime options.  <br /></td></tr>
 <tr class="memitem:ga70c4ab92f00f9bcc31e4d696db1c0526" id="r_ga70c4ab92f00f9bcc31e4d696db1c0526"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ga70c4ab92f00f9bcc31e4d696db1c0526">wait_until</a> (<a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> wait_until_time, lf_cond_t *condition)</td></tr>
 <tr class="memdesc:ga70c4ab92f00f9bcc31e4d696db1c0526"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait until physical time matches or exceeds the time of the specified tag.  <br /></td></tr>
 </table><table class="memberdecls">
@@ -1824,6 +1841,38 @@ Variables</h2></td></tr>
 </div>
 </div>
 <a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="gab6749d3dbb42ebbff86bd3cb3c5355d1" name="gab6749d3dbb42ebbff86bd3cb3c5355d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab6749d3dbb42ebbff86bd3cb3c5355d1">&#9670;&#160;</a></span>lf_cli_type_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#gab6749d3dbb42ebbff86bd3cb3c5355d1">lf_cli_type_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor__common_8h.html">reactor_common.h</a>&gt;</code></p>
+
+<p>Type tag for a user-defined CLI parameter. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggab6749d3dbb42ebbff86bd3cb3c5355d1a09d6a14cdb0766e765c2c7ca8b2af5bb" name="ggab6749d3dbb42ebbff86bd3cb3c5355d1a09d6a14cdb0766e765c2c7ca8b2af5bb"></a>CLI_TIME&#160;</td><td class="fielddoc"><p><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b" title="Interval of time.">interval_t</a>, parsed as value + units (e.g., "500 msec"). </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab6749d3dbb42ebbff86bd3cb3c5355d1a6a2c058f3b82734ecf0b3cbe5a2a0601" name="ggab6749d3dbb42ebbff86bd3cb3c5355d1a6a2c058f3b82734ecf0b3cbe5a2a0601"></a>CLI_INT&#160;</td><td class="fielddoc"><p>int, parsed with atoi. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab6749d3dbb42ebbff86bd3cb3c5355d1a7fba473d691d4e6f82590046adc180fe" name="ggab6749d3dbb42ebbff86bd3cb3c5355d1a7fba473d691d4e6f82590046adc180fe"></a>CLI_DOUBLE&#160;</td><td class="fielddoc"><p>double, parsed with strtod. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab6749d3dbb42ebbff86bd3cb3c5355d1afbd9c902ff2f90bb0374b97641233446" name="ggab6749d3dbb42ebbff86bd3cb3c5355d1afbd9c902ff2f90bb0374b97641233446"></a>CLI_FLOAT&#160;</td><td class="fielddoc"><p>float, parsed with strtof. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab6749d3dbb42ebbff86bd3cb3c5355d1adf8fdb008a2c4c82d8bbc64f7f0c25e8" name="ggab6749d3dbb42ebbff86bd3cb3c5355d1adf8fdb008a2c4c82d8bbc64f7f0c25e8"></a>CLI_BOOL&#160;</td><td class="fielddoc"><p>bool, parsed as "true"/"false" or "1"/"0". </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggab6749d3dbb42ebbff86bd3cb3c5355d1a45c4dbdb3ed80c8b6aebfb2205333cc6" name="ggab6749d3dbb42ebbff86bd3cb3c5355d1a45c4dbdb3ed80c8b6aebfb2205333cc6"></a>CLI_STRING&#160;</td><td class="fielddoc"><p>const char*, set directly from the argument string. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a id="ga0183c0b43037a172a1cd9aa6ed6b3822" name="ga0183c0b43037a172a1cd9aa6ed6b3822"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga0183c0b43037a172a1cd9aa6ed6b3822">&#9670;&#160;</a></span>lf_spacing_policy_t</h2>
 
@@ -5689,6 +5738,52 @@ The running state does not seem to be read. </dd></dl>
 
 </div>
 </div>
+<a id="ga091dcc6caaaacf4c6bc71717577d7ec8" name="ga091dcc6caaaacf4c6bc71717577d7ec8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga091dcc6caaaacf4c6bc71717577d7ec8">&#9670;&#160;</a></span>process_user_args()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int process_user_args </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>argc</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>argv</em></span>[], </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>newargc</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char **</td>          <td class="paramname"><span class="paramname"><em>newargv</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor__common_8h.html">reactor_common.h</a>&gt;</code></p>
+
+<p>Process user-defined main reactor parameters from the command line. </p>
+<p>Parses user-defined parameters from argv using the table in _lf_cli_params. Recognized parameters are consumed; the remaining arguments are copied into newargv/newargc so they can be forwarded to lf_reactor_c_main().</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">argc</td><td>The number of command-line arguments. </td></tr>
+    <tr><td class="paramname">argv</td><td>The command-line arguments. </td></tr>
+    <tr><td class="paramname">newargc</td><td>Output: number of remaining (unrecognized) arguments. </td></tr>
+    <tr><td class="paramname">newargv</td><td>Output: array of remaining arguments (must be pre-allocated to at least argc). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, non-zero on error (the program should exit). </dd></dl>
+
+</div>
+</div>
 <a id="ga648da83816bb67aedeeaa8c10a99ec7a" name="ga648da83816bb67aedeeaa8c10a99ec7a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga648da83816bb67aedeeaa8c10a99ec7a">&#9670;&#160;</a></span>reaction_matches()</h2>
 
@@ -5912,6 +6007,38 @@ The running state does not seem to be read. </dd></dl>
     <tr><td class="paramname">env</td><td>The environment in which we are executing </td></tr>
     <tr><td class="paramname">trigger</td><td>Pointer to the <a class="el" href="structtrigger__t.html" title="Trigger struct representing an output, timer, action, or input.">trigger_t</a> struct for the trigger. </td></tr>
     <tr><td class="paramname">extra_delay</td><td>The extra delay passed to schedule(). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga7f44f474f50286c4ba8c0ebac254bb28" name="ga7f44f474f50286c4ba8c0ebac254bb28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7f44f474f50286c4ba8c0ebac254bb28">&#9670;&#160;</a></span>usage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void usage </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>argc</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>argv</em></span>[]&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor__common_8h.html">reactor_common.h</a>&gt;</code></p>
+
+<p>Print a usage message listing both user-defined parameters and runtime options. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">argc</td><td>The number of command-line arguments. </td></tr>
+    <tr><td class="paramname">argv</td><td>The command-line arguments. </td></tr>
   </table>
   </dd>
 </dl>

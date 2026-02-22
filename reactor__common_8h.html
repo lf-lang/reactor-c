@@ -111,10 +111,29 @@ $(function(){initNavTree('reactor__common_8h.html','',''); });
 </div>
 <p><a href="reactor__common_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:lf_5Fcli_5Fparam_5Ft" id="r_lf_5Fcli_5Fparam_5Ft"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structlf__cli__param__t.html">lf_cli_param_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Descriptor for a user-defined main reactor parameter overridable from the command line.  <a href="structlf__cli__param__t.html#details">More...</a><br /></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ga3b755b6f58cb9ea64ae2f1ba9a382c86" id="r_ga3b755b6f58cb9ea64ae2f1ba9a382c86"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga3b755b6f58cb9ea64ae2f1ba9a382c86">MIN_SLEEP_DURATION</a>&#160;&#160;&#160;<a class="el" href="group__Constants.html#gaa2aeaab0c2033d1db412c8021bff93fc">USEC</a>(10)</td></tr>
 <tr class="memdesc:ga3b755b6f58cb9ea64ae2f1ba9a382c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constant giving the minimum amount of time to sleep to wait for physical time to reach a logical time.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:gab6749d3dbb42ebbff86bd3cb3c5355d1" id="r_gab6749d3dbb42ebbff86bd3cb3c5355d1"><td class="memItemLeft">enum &#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#gab6749d3dbb42ebbff86bd3cb3c5355d1">lf_cli_type_t</a> { <br />
+&#160;&#160;<a class="el" href="group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1a09d6a14cdb0766e765c2c7ca8b2af5bb">CLI_TIME</a>
+, <a class="el" href="group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1a6a2c058f3b82734ecf0b3cbe5a2a0601">CLI_INT</a>
+, <a class="el" href="group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1a7fba473d691d4e6f82590046adc180fe">CLI_DOUBLE</a>
+, <a class="el" href="group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1afbd9c902ff2f90bb0374b97641233446">CLI_FLOAT</a>
+, <br />
+&#160;&#160;<a class="el" href="group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1adf8fdb008a2c4c82d8bbc64f7f0c25e8">CLI_BOOL</a>
+, <a class="el" href="group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1a45c4dbdb3ed80c8b6aebfb2205333cc6">CLI_STRING</a>
+<br />
+ }</td></tr>
+<tr class="memdesc:gab6749d3dbb42ebbff86bd3cb3c5355d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Type tag for a user-defined CLI parameter.  <a href="group__Internal.html#gab6749d3dbb42ebbff86bd3cb3c5355d1">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -168,13 +187,19 @@ Functions</h2></td></tr>
 <tr class="memdesc:gad149603053631bf4d6236426ddae2bde"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function that is called when the program is about to exit.  <br /></td></tr>
 <tr class="memitem:ga80aaf4eeed3e2902f8fe9de80b45777d" id="r_ga80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (int argc, const char *argv[])</td></tr>
 <tr class="memdesc:ga80aaf4eeed3e2902f8fe9de80b45777d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the command-line arguments.  <br /></td></tr>
+<tr class="memitem:ga091dcc6caaaacf4c6bc71717577d7ec8" id="r_ga091dcc6caaaacf4c6bc71717577d7ec8"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga091dcc6caaaacf4c6bc71717577d7ec8">process_user_args</a> (int argc, const char *argv[], int *newargc, const char **newargv)</td></tr>
+<tr class="memdesc:ga091dcc6caaaacf4c6bc71717577d7ec8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process user-defined main reactor parameters from the command line.  <br /></td></tr>
 <tr class="memitem:gaeaaa76aeb7d93efc4e0f0c484548af70" id="r_gaeaaa76aeb7d93efc4e0f0c484548af70"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#gaeaaa76aeb7d93efc4e0f0c484548af70">schedule_output_reactions</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int worker)</td></tr>
 <tr class="memdesc:gaeaaa76aeb7d93efc4e0f0c484548af70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule the output reactions for the specified reaction in the specified environment.  <br /></td></tr>
 <tr class="memitem:gaa329f59a16f5617b5195f2c05872c9e9" id="r_gaa329f59a16f5617b5195f2c05872c9e9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#gaa329f59a16f5617b5195f2c05872c9e9">termination</a> (void)</td></tr>
 <tr class="memdesc:gaa329f59a16f5617b5195f2c05872c9e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform final wrap-up on exit.  <br /></td></tr>
+<tr class="memitem:ga7f44f474f50286c4ba8c0ebac254bb28" id="r_ga7f44f474f50286c4ba8c0ebac254bb28"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga7f44f474f50286c4ba8c0ebac254bb28">usage</a> (int argc, const char *argv[])</td></tr>
+<tr class="memdesc:ga7f44f474f50286c4ba8c0ebac254bb28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print a usage message listing both user-defined parameters and runtime options.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
+<tr class="memitem:ab5dc932f2e918479f1e1a794951a97e6" id="r_ab5dc932f2e918479f1e1a794951a97e6"><td class="memItemLeft"><a class="el" href="structlf__cli__param__t.html">lf_cli_param_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#ab5dc932f2e918479f1e1a794951a97e6">_lf_cli_params</a></td></tr>
+<tr class="memitem:ac4ef40ede19625d7676b9748e7457517" id="r_ac4ef40ede19625d7676b9748e7457517"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ac4ef40ede19625d7676b9748e7457517">_lf_cli_params_count</a></td></tr>
 <tr class="memitem:a30eba499960e8780d3746d3ad433c371" id="r_a30eba499960e8780d3746d3ad433c371"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a30eba499960e8780d3746d3ad433c371">_lf_normal_termination</a></td></tr>
 <tr class="memitem:a01fd0d1404992f7d875791a764a26925" id="r_a01fd0d1404992f7d875791a764a26925"><td class="memItemLeft">unsigned int&#160;</td><td class="memItemRight"><a class="el" href="#a01fd0d1404992f7d875791a764a26925">_lf_number_of_workers</a></td></tr>
 <tr class="memitem:af4b5bfd131da48f0fb95eab14e6e61c8" id="r_af4b5bfd131da48f0fb95eab14e6e61c8"><td class="memItemLeft">struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#af4b5bfd131da48f0fb95eab14e6e61c8">_lf_reactors_to_free</a></td></tr>
@@ -200,6 +225,50 @@ Alexander Schulz-Rosengarten </dd>
 Erling Rennemo Jellum</dd></dl>
 <p>The functions declared in this file, as opposed to the ones in <a class="el" href="reactor_8h.html" title="Definitions for the C target of Lingua Franca shared by threaded and unthreaded versions.">reactor.h</a>, are not meant to be called by application programmers. They should be viewed as private functions that make up the C runtime. In some cases, the implementation of these functions is in reactor_common.c, and in other cases, alternative implementations are provided in reactor.c and reactor_threaded.c. A third possibility is that the function is code generated. </p>
 </div><a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
+<a id="ab5dc932f2e918479f1e1a794951a97e6" name="ab5dc932f2e918479f1e1a794951a97e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5dc932f2e918479f1e1a794951a97e6">&#9670;&#160;</a></span>_lf_cli_params</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structlf__cli__param__t.html">lf_cli_param_t</a>* _lf_cli_params</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel extern">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac4ef40ede19625d7676b9748e7457517" name="ac4ef40ede19625d7676b9748e7457517"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac4ef40ede19625d7676b9748e7457517">&#9670;&#160;</a></span>_lf_cli_params_count</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int _lf_cli_params_count</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel extern">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a30eba499960e8780d3746d3ad433c371" name="a30eba499960e8780d3746d3ad433c371"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a30eba499960e8780d3746d3ad433c371">&#9670;&#160;</a></span>_lf_normal_termination</h2>
 

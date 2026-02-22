@@ -16,6 +16,7 @@ var annotated_dup =
     [ "influx_v2_client_t", "structinflux__v2__client__t.html", "structinflux__v2__client__t" ],
     [ "lf_action_base_t", "structlf__action__base__t.html", "structlf__action__base__t" ],
     [ "lf_action_internal_t", "structlf__action__internal__t.html", "structlf__action__internal__t" ],
+    [ "lf_cli_param_t", "structlf__cli__param__t.html", "structlf__cli__param__t" ],
     [ "lf_multiport_iterator_t", "structlf__multiport__iterator__t.html", "structlf__multiport__iterator__t" ],
     [ "lf_port_base_t", "structlf__port__base__t.html", "structlf__port__base__t" ],
     [ "lf_port_internal_t", "structlf__port__internal__t.html", "structlf__port__internal__t" ],

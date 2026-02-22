@@ -2734,11 +2734,55 @@
     <includes id="util_8h" name="util.h" local="yes" import="no" module="no" objc="no">util.h</includes>
     <includes id="modes_8h" name="modes.h" local="yes" import="no" module="no" objc="no">modes.h</includes>
     <includes id="port_8h" name="port.h" local="yes" import="no" module="no" objc="no">port.h</includes>
+    <class kind="struct">lf_cli_param_t</class>
     <member kind="define">
       <type>#define</type>
       <name>MIN_SLEEP_DURATION</name>
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga3b755b6f58cb9ea64ae2f1ba9a382c86</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>lf_cli_type_t</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gab6749d3dbb42ebbff86bd3cb3c5355d1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_TIME</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1a09d6a14cdb0766e765c2c7ca8b2af5bb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_INT</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1a6a2c058f3b82734ecf0b3cbe5a2a0601</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_DOUBLE</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1a7fba473d691d4e6f82590046adc180fe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_FLOAT</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1afbd9c902ff2f90bb0374b97641233446</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_BOOL</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1adf8fdb008a2c4c82d8bbc64f7f0c25e8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_STRING</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1a45c4dbdb3ed80c8b6aebfb2205333cc6</anchor>
       <arglist></arglist>
     </member>
     <member kind="function">
@@ -2917,6 +2961,13 @@
       <arglist>(int argc, const char *argv[])</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>process_user_args</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga091dcc6caaaacf4c6bc71717577d7ec8</anchor>
+      <arglist>(int argc, const char *argv[], int *newargc, const char **newargv)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>schedule_output_reactions</name>
       <anchorfile>group__Internal.html</anchorfile>
@@ -2929,6 +2980,27 @@
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>gaa329f59a16f5617b5195f2c05872c9e9</anchor>
       <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>usage</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga7f44f474f50286c4ba8c0ebac254bb28</anchor>
+      <arglist>(int argc, const char *argv[])</arglist>
+    </member>
+    <member kind="variable">
+      <type>lf_cli_param_t *</type>
+      <name>_lf_cli_params</name>
+      <anchorfile>reactor__common_8h.html</anchorfile>
+      <anchor>ab5dc932f2e918479f1e1a794951a97e6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>_lf_cli_params_count</name>
+      <anchorfile>reactor__common_8h.html</anchorfile>
+      <anchor>ac4ef40ede19625d7676b9748e7457517</anchor>
+      <arglist></arglist>
     </member>
     <member kind="variable">
       <type>bool</type>
@@ -7115,6 +7187,52 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>lf_cli_param_t</name>
+    <filename>structlf__cli__param__t.html</filename>
+    <member kind="variable">
+      <type>const char *</type>
+      <name>description</name>
+      <anchorfile>structlf__cli__param__t.html</anchorfile>
+      <anchor>ac4dc5b328292f7ad68e8e90badb724d0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool *</type>
+      <name>given</name>
+      <anchorfile>structlf__cli__param__t.html</anchorfile>
+      <anchor>a7c6500f889e4206793504df3844bd680</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>is_width</name>
+      <anchorfile>structlf__cli__param__t.html</anchorfile>
+      <anchor>a76314e729d4c6a7ed7fd5e709d25a481</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>const char *</type>
+      <name>name</name>
+      <anchorfile>structlf__cli__param__t.html</anchorfile>
+      <anchor>a2bd92664043e3009e4a561a72969d9d1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>lf_cli_type_t</type>
+      <name>type</name>
+      <anchorfile>structlf__cli__param__t.html</anchorfile>
+      <anchor>a86ef934906092ac28147194150decdc0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>void *</type>
+      <name>value</name>
+      <anchorfile>structlf__cli__param__t.html</anchorfile>
+      <anchor>aa3c80a588b22ee064941e376fea3a49e</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>lf_multiport_iterator_t</name>
     <filename>structlf__multiport__iterator__t.html</filename>
     <member kind="variable">
@@ -10359,6 +10477,7 @@
     <class kind="struct">environment_t</class>
     <class kind="struct">event_t</class>
     <class kind="struct">lf_action_base_t</class>
+    <class kind="struct">lf_cli_param_t</class>
     <class kind="struct">lf_port_base_t</class>
     <class kind="struct">lf_scheduler_t</class>
     <class kind="struct">lf_semaphore_t</class>
@@ -10743,6 +10862,49 @@
       <name>watchdog_t</name>
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>gaee1cd2bc521f76fa428cc659474d9570</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>lf_cli_type_t</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gab6749d3dbb42ebbff86bd3cb3c5355d1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_TIME</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1a09d6a14cdb0766e765c2c7ca8b2af5bb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_INT</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1a6a2c058f3b82734ecf0b3cbe5a2a0601</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_DOUBLE</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1a7fba473d691d4e6f82590046adc180fe</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_FLOAT</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1afbd9c902ff2f90bb0374b97641233446</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_BOOL</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1adf8fdb008a2c4c82d8bbc64f7f0c25e8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>CLI_STRING</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ggab6749d3dbb42ebbff86bd3cb3c5355d1a45c4dbdb3ed80c8b6aebfb2205333cc6</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumeration">
@@ -11685,6 +11847,13 @@
     </member>
     <member kind="function">
       <type>int</type>
+      <name>process_user_args</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga091dcc6caaaacf4c6bc71717577d7ec8</anchor>
+      <arglist>(int argc, const char *argv[], int *newargc, const char **newargv)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
       <name>reaction_matches</name>
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga648da83816bb67aedeeaa8c10a99ec7a</anchor>
@@ -11731,6 +11900,13 @@
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga896f27619ab0582d5a70d8f613567671</anchor>
       <arglist>(environment_t *env, trigger_t *trigger, interval_t extra_delay)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>usage</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga7f44f474f50286c4ba8c0ebac254bb28</anchor>
+      <arglist>(int argc, const char *argv[])</arglist>
     </member>
     <member kind="function">
       <type>bool</type>

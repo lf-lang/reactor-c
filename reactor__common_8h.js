@@ -1,6 +1,14 @@
 var reactor__common_8h =
 [
     [ "MIN_SLEEP_DURATION", "group__Internal.html#ga3b755b6f58cb9ea64ae2f1ba9a382c86", null ],
+    [ "lf_cli_type_t", "group__Internal.html#gab6749d3dbb42ebbff86bd3cb3c5355d1", [
+      [ "CLI_TIME", "group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1a09d6a14cdb0766e765c2c7ca8b2af5bb", null ],
+      [ "CLI_INT", "group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1a6a2c058f3b82734ecf0b3cbe5a2a0601", null ],
+      [ "CLI_DOUBLE", "group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1a7fba473d691d4e6f82590046adc180fe", null ],
+      [ "CLI_FLOAT", "group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1afbd9c902ff2f90bb0374b97641233446", null ],
+      [ "CLI_BOOL", "group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1adf8fdb008a2c4c82d8bbc64f7f0c25e8", null ],
+      [ "CLI_STRING", "group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1a45c4dbdb3ed80c8b6aebfb2205333cc6", null ]
+    ] ],
     [ "_lf_advance_tag", "group__Internal.html#ga4659db62370c837baa55484134b3bfb7", null ],
     [ "_lf_create_dummy_events", "group__Internal.html#ga6396bfcdac50ddb71b6b29fa33a3cc5d", null ],
     [ "_lf_initialize_timer", "group__Internal.html#ga61a2c70695093f8a38b1e922fb36547f", null ],
@@ -26,8 +34,12 @@ var reactor__common_8h =
     [ "lf_set_default_command_line_options", "group__Internal.html#ga2dce2075be67995107b9d8f2d5e20551", null ],
     [ "lf_terminate_execution", "group__Internal.html#gad149603053631bf4d6236426ddae2bde", null ],
     [ "process_args", "group__Internal.html#ga80aaf4eeed3e2902f8fe9de80b45777d", null ],
+    [ "process_user_args", "group__Internal.html#ga091dcc6caaaacf4c6bc71717577d7ec8", null ],
     [ "schedule_output_reactions", "group__Internal.html#gaeaaa76aeb7d93efc4e0f0c484548af70", null ],
     [ "termination", "group__Internal.html#gaa329f59a16f5617b5195f2c05872c9e9", null ],
+    [ "usage", "group__Internal.html#ga7f44f474f50286c4ba8c0ebac254bb28", null ],
+    [ "_lf_cli_params", "reactor__common_8h.html#ab5dc932f2e918479f1e1a794951a97e6", null ],
+    [ "_lf_cli_params_count", "reactor__common_8h.html#ac4ef40ede19625d7676b9748e7457517", null ],
     [ "_lf_normal_termination", "reactor__common_8h.html#a30eba499960e8780d3746d3ad433c371", null ],
     [ "_lf_number_of_workers", "reactor__common_8h.html#a01fd0d1404992f7d875791a764a26925", null ],
     [ "_lf_reactors_to_free", "reactor__common_8h.html#af4b5bfd131da48f0fb95eab14e6e61c8", null ],

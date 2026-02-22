@@ -1,7 +1,7 @@
 var searchData=
 [
   ['n_5fdeleted_5fitems_0',['n_deleted_items',['../structhashset__st.html#a507237ecc37b9c45f79df318534f1109',1,'hashset_st']]],
-  ['name_1',['name',['../structenvironment__t.html#a58106ba029a6892ca82028c163cf2e96',1,'environment_t::name'],['../structreaction__t.html#a5af95a97a0b83dbf7954236378f1bfa2',1,'reaction_t::name'],['../structself__base__t.html#a2e2f5caeb7ed80f890ab6defba500dff',1,'self_base_t::name'],['../structreactor__mode__t.html#a26ee520b8d6383bc025cf9fbdde7ef5e',1,'reactor_mode_t::name']]],
+  ['name_1',['name',['../structenvironment__t.html#a58106ba029a6892ca82028c163cf2e96',1,'environment_t::name'],['../structreaction__t.html#a5af95a97a0b83dbf7954236378f1bfa2',1,'reaction_t::name'],['../structself__base__t.html#a2e2f5caeb7ed80f890ab6defba500dff',1,'self_base_t::name'],['../structreactor__mode__t.html#a26ee520b8d6383bc025cf9fbdde7ef5e',1,'reactor_mode_t::name'],['../structlf__cli__param__t.html#a2bd92664043e3009e4a561a72969d9d1',1,'lf_cli_param_t::name']]],
   ['nbits_2',['nbits',['../structhashset__st.html#afaeab28ca2127ce6b5c2e454b3e7b9fd',1,'hashset_st']]],
   ['need_5fto_5fsend_5fltc_3',['need_to_send_LTC',['../structenvironment__t.html#aeef35dea438a853fc258631ea4a0e90c',1,'environment_t']]],
   ['neighbor_20structure_4',['Conveying the neighbor structure',['../net__common_8h.html#autotoc_md13',1,'']]],

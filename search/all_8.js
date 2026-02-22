@@ -26,7 +26,7 @@ var searchData=
   ['deque_5fpush_5ffront_23',['deque_push_front',['../group__Utilities.html#ga19a0d218efcb14cc2c3d7b009a5d0f16',1,'deque.h']]],
   ['deque_5fsize_24',['deque_size',['../group__Utilities.html#gad7e6969a2e1a7e7529575558103d512d',1,'deque.h']]],
   ['deque_5ft_25',['deque_t',['../structdeque__t.html',1,'deque_t'],['../group__Utilities.html#gafc1887f5ebd7da3ce7dfc73beb195598',1,'deque_t:&#160;deque.h']]],
-  ['description_26',['description',['../structobject__description__t.html#a8f7829cb65aea820db731eaf70c079fc',1,'object_description_t']]],
+  ['description_26',['description',['../structlf__cli__param__t.html#ac4dc5b328292f7ad68e8e90badb724d0',1,'lf_cli_param_t::description'],['../structobject__description__t.html#a8f7829cb65aea820db731eaf70c079fc',1,'object_description_t::description']]],
   ['destination_5fchannel_27',['destination_channel',['../structlf__port__base__t.html#ab7734e3cdd562ad5f6ad94f97e095822',1,'lf_port_base_t::destination_channel'],['../structlf__port__internal__t.html#a7c70e1156dfb93174d5af2175ba58191',1,'lf_port_internal_t::destination_channel']]],
   ['destructor_28',['destructor',['../structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c',1,'token_type_t']]],
   ['diagram_20visualizer_29',['Trace sequence diagram visualizer',['../dir_8eb20451329ba806a1d422bd038b0865.html#autotoc_md23',1,'']]],

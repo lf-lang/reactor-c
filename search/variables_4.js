@@ -7,7 +7,7 @@ var searchData=
   ['deadline_5fviolation_5fhandler_4',['deadline_violation_handler',['../structreaction__t.html#a487aaa96abda17f7184c07ccd1e870b2',1,'reaction_t']]],
   ['default_5fargc_5',['default_argc',['../reactor__common_8h.html#aab46895a3a4d1341a19b689a0ea902d1',1,'reactor_common.h']]],
   ['default_5fargv_6',['default_argv',['../reactor__common_8h.html#ad0fd32b8326e2d630ee8f4a431ea2867',1,'reactor_common.h']]],
-  ['description_7',['description',['../structobject__description__t.html#a8f7829cb65aea820db731eaf70c079fc',1,'object_description_t']]],
+  ['description_7',['description',['../structlf__cli__param__t.html#ac4dc5b328292f7ad68e8e90badb724d0',1,'lf_cli_param_t::description'],['../structobject__description__t.html#a8f7829cb65aea820db731eaf70c079fc',1,'object_description_t::description']]],
   ['destination_5fchannel_8',['destination_channel',['../structlf__port__base__t.html#ab7734e3cdd562ad5f6ad94f97e095822',1,'lf_port_base_t::destination_channel'],['../structlf__port__internal__t.html#a7c70e1156dfb93174d5af2175ba58191',1,'lf_port_internal_t::destination_channel']]],
   ['destructor_9',['destructor',['../structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c',1,'token_type_t']]],
   ['digits_10',['digits',['../structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
