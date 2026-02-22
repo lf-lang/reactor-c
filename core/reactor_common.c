@@ -954,9 +954,11 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
 
 /**
  * Print a usage message.
- * TODO: This is not necessary for NO_CLI
  */
 void usage(int argc, const char* argv[]) {
+#if defined(NO_CLI)
+  printf("\nNo command-line arguments are supported.\n");
+#else
   printf("\nCommand-line arguments: \n\n");
   printf("  -f, --fast [true | false]\n");
   printf("   Whether to wait for physical time to match logical time.\n\n");
@@ -975,7 +977,7 @@ void usage(int argc, const char* argv[]) {
   printf("  -l\n");
   printf("   Send stdout to individual log files for each federate.\n\n");
 #endif
-
+#endif
   printf("Command given:\n");
   for (int i = 0; i < argc; i++) {
     printf("%s ", argv[i]);
@@ -992,7 +994,6 @@ const char** default_argv = NULL;
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
- * TODO: Not necessary for NO_CLI
  */
 int process_args(int argc, const char* argv[]) {
   int i = 1;
@@ -1021,39 +1022,10 @@ int process_args(int argc, const char* argv[]) {
       }
       const char* time_spec = argv[i++];
       const char* units = argv[i++];
-
-#if defined(PLATFORM_ARDUINO)
-      duration = atol(time_spec);
-#else
-      duration = atoll(time_spec);
-#endif
-
-      // A parse error returns 0LL, so check to see whether that is what is meant.
-      if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
-        // Parse error.
-        lf_print_error("Invalid time value: %s", time_spec);
-        usage(argc, argv);
-        return 0;
-      }
-      if (strncmp(units, "sec", 3) == 0) {
-        duration = SEC(duration);
-      } else if (strncmp(units, "msec", 4) == 0) {
-        duration = MSEC(duration);
-      } else if (strncmp(units, "usec", 4) == 0) {
-        duration = USEC(duration);
-      } else if (strncmp(units, "nsec", 4) == 0) {
-        duration = NSEC(duration);
-      } else if (strncmp(units, "min", 3) == 0) {
-        duration = MINUTE(duration);
-      } else if (strncmp(units, "hour", 4) == 0) {
-        duration = HOUR(duration);
-      } else if (strncmp(units, "day", 3) == 0) {
-        duration = DAY(duration);
-      } else if (strncmp(units, "week", 4) == 0) {
-        duration = WEEK(duration);
-      } else {
-        // Invalid units.
-        lf_print_error("Invalid time units: %s", units);
+      int parse_result = lf_time_parse(time_spec, units, &duration);
+      if (parse_result != 0) {
+        lf_print_error(parse_result == -1 ? "Invalid time value: %s" : "Invalid time units: %s",
+                       parse_result == -1 ? time_spec : units);
         usage(argc, argv);
         return 0;
       }
@@ -1127,9 +1099,15 @@ int process_args(int argc, const char* argv[]) {
     else if (strcmp(arg, "--ros-args") == 0) {
       // FIXME: Ignore ROS arguments for now
     } else {
+#ifdef FEDERATED
+      // In federated programs, arguments intended for other federates
+      // may be forwarded here. Skip them silently.
+      lf_print("Ignoring unrecognized command-line argument: %s. Assuming it is intended for another federate.", arg);
+#else
       lf_print_error("Unrecognized command-line argument: %s", arg);
       usage(argc, argv);
       return 0;
+#endif
     }
   }
   return 1;
