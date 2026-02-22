@@ -32,6 +32,17 @@
 //////////////////////  CLI Parameter Table  //////////////////////
 
 /**
+ * @brief Type tag for a user-defined CLI parameter.
+ * @ingroup Internal
+ */
+typedef enum {
+  CLI_TIME,   ///< interval_t, parsed as value + units (e.g., "500 msec").
+  CLI_INT,    ///< int, parsed with atoi.
+  CLI_DOUBLE, ///< double, parsed with strtod.
+  CLI_FLOAT   ///< float, parsed with strtof.
+} lf_cli_type_t;
+
+/**
  * @brief Descriptor for a user-defined main reactor parameter overridable from the command line.
  * @ingroup Internal
  *
@@ -41,8 +52,8 @@
  */
 typedef struct {
   const char* name;        ///< Parameter name (e.g., "period").
-  bool is_time;            ///< True if the parameter is a time value (interval_t), false for int.
-  void* value;             ///< Pointer to the storage variable (interval_t* or int*).
+  lf_cli_type_t type;     ///< The type of the parameter value.
+  void* value;             ///< Pointer to the storage variable.
   bool* given;             ///< Pointer to a bool that is set to true when the arg is provided.
   const char* description; ///< Description for the help message (e.g., "time value (default: 1 sec)").
   bool is_width;           ///< True if this parameter is used for multiport/bank widths (not overridable).

@@ -970,7 +970,7 @@ void usage(int argc, const char* argv[]) {
     printf("Reactor Parameters:\n");
     for (int j = 0; j < _lf_cli_params_count; j++) {
       lf_cli_param_t* p = &_lf_cli_params[j];
-      if (p->is_time) {
+      if (p->type == CLI_TIME) {
         printf("  --%s <value> <units>\n", p->name);
       } else {
         printf("  --%s <value>\n", p->name);
@@ -1008,7 +1008,7 @@ void usage(int argc, const char* argv[]) {
 
 /**
  * Process user-defined main reactor parameters from the command line.
- * Returns 0 on success, non-zero on error.
+ * Returns 0 on success, 1 for --help (exit 0), 2 for error (exit 1).
  */
 int process_user_args(int argc, const char* argv[], int* newargc, const char** newargv) {
   *newargc = 0;
@@ -1021,7 +1021,6 @@ int process_user_args(int argc, const char* argv[], int* newargc, const char** n
     bool matched = false;
     for (int j = 0; j < _lf_cli_params_count; j++) {
       lf_cli_param_t* p = &_lf_cli_params[j];
-      // Build the option string "--name"
       char option[256];
       snprintf(option, sizeof(option), "--%s", p->name);
       if (strcmp(argv[i], option) == 0) {
@@ -1032,7 +1031,7 @@ int process_user_args(int argc, const char* argv[], int* newargc, const char** n
                           "Change the width in the source code and recompile instead.\n");
           return 2;
         }
-        if (p->is_time) {
+        if (p->type == CLI_TIME) {
           if (i + 2 >= argc) {
             fprintf(stderr, "Error: --%s needs a time value and units (e.g., --%s 500 msec).\n", p->name, p->name);
             return 2;
@@ -1045,12 +1044,33 @@ int process_user_args(int argc, const char* argv[], int* newargc, const char** n
           }
           *p->given = true;
         } else {
-          // Assume the argument is an integer.
           if (i + 1 >= argc) {
             fprintf(stderr, "Error: --%s needs a value.\n", p->name);
             return 2;
           }
-          *((int*)p->value) = atoi(argv[++i]);
+          const char* val_str = argv[++i];
+          char* end;
+          switch (p->type) {
+          case CLI_INT:
+            *((int*)p->value) = atoi(val_str);
+            break;
+          case CLI_DOUBLE:
+            *((double*)p->value) = strtod(val_str, &end);
+            if (*end != '\0') {
+              fprintf(stderr, "Error: invalid double value '%s' for --%s.\n", val_str, p->name);
+              return 2;
+            }
+            break;
+          case CLI_FLOAT:
+            *((float*)p->value) = strtof(val_str, &end);
+            if (*end != '\0') {
+              fprintf(stderr, "Error: invalid float value '%s' for --%s.\n", val_str, p->name);
+              return 2;
+            }
+            break;
+          default:
+            break;
+          }
           *p->given = true;
         }
         break;
