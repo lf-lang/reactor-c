@@ -524,6 +524,11 @@
             <Anchor>ga1789de56286aa33c086b194b544c2d91</Anchor>
            </Node>
            <Node>
+            <Name>lf_time_parse</Name>
+            <Path>group__API.html</Path>
+            <Anchor>ga2361531ff9cbedbc03354450503a43c4</Anchor>
+           </Node>
+           <Node>
             <Name>lf_time_physical</Name>
             <Path>group__API.html</Path>
             <Anchor>ga7538766a655ba2e60ddde55f2e020e58</Anchor>
@@ -12193,6 +12198,11 @@
                             <Name>lf_time_logical_elapsed</Name>
                             <Path>group__Internal.html</Path>
                             <Anchor>ga6faad0d905f7135352f511bc235425e1</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_time_parse</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>ga2361531ff9cbedbc03354450503a43c4</Anchor>
                            </Node>
                            <Node>
                             <Name>lf_time_physical</Name>

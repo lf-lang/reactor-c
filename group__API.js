@@ -89,6 +89,7 @@ var group__API =
     [ "lf_tag_max", "group__API.html#ga4c39037bf099ff2c31a71fe96ac59a61", null ],
     [ "lf_tag_min", "group__API.html#ga80abd9981c0375a0abbe47591204f18b", null ],
     [ "lf_time_add", "group__API.html#ga1789de56286aa33c086b194b544c2d91", null ],
+    [ "lf_time_parse", "group__API.html#ga2361531ff9cbedbc03354450503a43c4", null ],
     [ "lf_time_physical", "group__API.html#ga7538766a655ba2e60ddde55f2e020e58", null ],
     [ "lf_time_physical_elapsed", "group__API.html#ga98468f1c5132e3aa18d77f85d65bb6ec", null ],
     [ "lf_time_start", "group__API.html#ga8da2172c41ab13ff4748994a62ae34b5", null ],

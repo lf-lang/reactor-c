@@ -5000,6 +5000,13 @@
       <arglist>(void *env)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>lf_time_parse</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga2361531ff9cbedbc03354450503a43c4</anchor>
+      <arglist>(const char *time_str, const char *units_str, interval_t *result)</arglist>
+    </member>
+    <member kind="function">
       <type>instant_t</type>
       <name>lf_time_physical</name>
       <anchorfile>group__API.html</anchorfile>
@@ -9333,6 +9340,13 @@
       <anchorfile>group__API.html</anchorfile>
       <anchor>ga1789de56286aa33c086b194b544c2d91</anchor>
       <arglist>(instant_t a, interval_t b)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_time_parse</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga2361531ff9cbedbc03354450503a43c4</anchor>
+      <arglist>(const char *time_str, const char *units_str, interval_t *result)</arglist>
     </member>
     <member kind="function">
       <type>instant_t</type>

@@ -8913,6 +8913,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_time_parse</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>ga2361531ff9cbedbc03354450503a43c4</Anchor>
+    <DeclaredIn>tag.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_time_physical</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>

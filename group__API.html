@@ -265,6 +265,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga80abd9981c0375a0abbe47591204f18b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the lesser out of two tags.  <br /></td></tr>
 <tr class="memitem:ga1789de56286aa33c086b194b544c2d91" id="r_ga1789de56286aa33c086b194b544c2d91"><td class="memItemLeft"><a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga1789de56286aa33c086b194b544c2d91">lf_time_add</a> (<a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> a, <a class="el" href="#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> b)</td></tr>
 <tr class="memdesc:ga1789de56286aa33c086b194b544c2d91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sum of an interval and an instant, saturating on overflow and underflow.  <br /></td></tr>
+<tr class="memitem:ga2361531ff9cbedbc03354450503a43c4" id="r_ga2361531ff9cbedbc03354450503a43c4"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ga2361531ff9cbedbc03354450503a43c4">lf_time_parse</a> (const char *time_str, const char *units_str, <a class="el" href="#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> *result)</td></tr>
+<tr class="memdesc:ga2361531ff9cbedbc03354450503a43c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a time value and units from strings, producing a time in nanoseconds.  <br /></td></tr>
 <tr class="memitem:ga7538766a655ba2e60ddde55f2e020e58" id="r_ga7538766a655ba2e60ddde55f2e020e58"><td class="memItemLeft"><a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga7538766a655ba2e60ddde55f2e020e58">lf_time_physical</a> (void)</td></tr>
 <tr class="memdesc:ga7538766a655ba2e60ddde55f2e020e58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the current physical time in nanoseconds.  <br /></td></tr>
 <tr class="memitem:ga98468f1c5132e3aa18d77f85d65bb6ec" id="r_ga98468f1c5132e3aa18d77f85d65bb6ec"><td class="memItemLeft"><a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga98468f1c5132e3aa18d77f85d65bb6ec">lf_time_physical_elapsed</a> (void)</td></tr>
@@ -2321,6 +2323,46 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="#ga827080fd3c574bad5a32db9f7c367587" title="Time instant.">instant_t</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga2361531ff9cbedbc03354450503a43c4" name="ga2361531ff9cbedbc03354450503a43c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2361531ff9cbedbc03354450503a43c4">&#9670;&#160;</a></span>lf_time_parse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_time_parse </td>
+          <td>(</td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>time_str</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>units_str</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> *</td>          <td class="paramname"><span class="paramname"><em>result</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="tag_8h.html">tag.h</a>&gt;</code></p>
+
+<p>Parse a time value and units from strings, producing a time in nanoseconds. </p>
+<p>Recognized unit strings (case-sensitive, prefix match): "nsec" or "ns", "usec" or "us", "msec" or "ms", "sec" or "s" or "second", "min" or "minute", "hour", "day", "week".</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">time_str</td><td>A string representing a numeric time value (e.g., "500"). </td></tr>
+    <tr><td class="paramname">units_str</td><td>A string representing the time units (e.g., "msec"). </td></tr>
+    <tr><td class="paramname">result</td><td>Pointer to store the resulting time in nanoseconds. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, -1 if the time value is invalid, -2 if the units are invalid. </dd></dl>
 
 </div>
 </div>

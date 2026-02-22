@@ -46,6 +46,7 @@ var tag_8h =
     [ "lf_time_add", "group__API.html#ga1789de56286aa33c086b194b544c2d91", null ],
     [ "lf_time_logical", "group__Internal.html#ga751c9fce12510f5bb98d862f57077396", null ],
     [ "lf_time_logical_elapsed", "group__Internal.html#ga6faad0d905f7135352f511bc235425e1", null ],
+    [ "lf_time_parse", "group__API.html#ga2361531ff9cbedbc03354450503a43c4", null ],
     [ "lf_time_physical", "group__API.html#ga7538766a655ba2e60ddde55f2e020e58", null ],
     [ "lf_time_physical_elapsed", "group__API.html#ga98468f1c5132e3aa18d77f85d65bb6ec", null ],
     [ "lf_time_start", "group__API.html#ga8da2172c41ab13ff4748994a62ae34b5", null ],
