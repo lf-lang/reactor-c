@@ -972,6 +972,8 @@ void usage(int argc, const char* argv[]) {
       lf_cli_param_t* p = &_lf_cli_params[j];
       if (p->type == CLI_TIME) {
         printf("  --%s <value> <units>\n", p->name);
+      } else if (p->type == CLI_BOOL) {
+        printf("  --%s <true|false>\n", p->name);
       } else {
         printf("  --%s <value>\n", p->name);
       }
@@ -1067,6 +1069,19 @@ int process_user_args(int argc, const char* argv[], int* newargc, const char** n
               fprintf(stderr, "Error: invalid float value '%s' for --%s.\n", val_str, p->name);
               return 2;
             }
+            break;
+          case CLI_BOOL:
+            if (strcmp(val_str, "true") == 0 || strcmp(val_str, "1") == 0) {
+              *((bool*)p->value) = true;
+            } else if (strcmp(val_str, "false") == 0 || strcmp(val_str, "0") == 0) {
+              *((bool*)p->value) = false;
+            } else {
+              fprintf(stderr, "Error: invalid bool value '%s' for --%s (expected true or false).\n", val_str, p->name);
+              return 2;
+            }
+            break;
+          case CLI_STRING:
+            *((const char**)p->value) = val_str;
             break;
           default:
             break;

@@ -39,7 +39,9 @@ typedef enum {
   CLI_TIME,   ///< interval_t, parsed as value + units (e.g., "500 msec").
   CLI_INT,    ///< int, parsed with atoi.
   CLI_DOUBLE, ///< double, parsed with strtod.
-  CLI_FLOAT   ///< float, parsed with strtof.
+  CLI_FLOAT,  ///< float, parsed with strtof.
+  CLI_BOOL,   ///< bool, parsed as "true"/"false" or "1"/"0".
+  CLI_STRING  ///< const char*, set directly from the argument string.
 } lf_cli_type_t;
 
 /**
