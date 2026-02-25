@@ -768,6 +768,9 @@ static void* listen_to_federates(void* _args) {
           net_closed = true;
         }
         break;
+      case MSG_TYPE_SST_KEY_REFRESH_REQUEST:
+        handle_key_refresh_request(net);
+        break;
       default:
         bad_message = true;
       }
@@ -2550,7 +2553,9 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   }
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
   #ifdef COMM_TYPE_SST
-  _lf_check_and_perform_rekey();
+  if(atomic_exchange(&_fed.rekey_requested, false)){
+    _lf_check_and_perform_rekey();
+  }
   #endif
   return result;
 }
@@ -2692,26 +2697,55 @@ instant_t lf_wait_until_time(tag_t tag) {
 
 void lf_refresh_key(void){
   lf_print("DEBUG: Rekey Requested");
-  _fed.rekey_requested = true;
+  atomic_store(&_fed.rekey_requested, true);
 }
 
 
 #ifdef COMM_TYPE_SST
 void _lf_check_and_perform_rekey(void){
-  if(_fed.rekey_requested){
-    lf_print("Acquiring new session key and sending it to RTI");
-    get_new_session_key(_fed.net_to_RTI);
 
-    // Hold the outbound mutex while sending the request and waiting for the RTI's ACK.
-    // lf_rekey_completed is signaled by handle_rti_session_key_ack once the new key is
-    // active, at which point this thread wakes, releases the mutex, and returns.
-    LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-    send_key_refresh_request(_fed.net_to_RTI, MSG_TYPE_SST_KEY_REFRESH_REQUEST);
-    LF_COND_WAIT(&lf_rekey_completed);
-    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  #ifdef FEDERATED_CENTRALIZED
+  lf_print("Acquiring new session key and sending it to RTI");
+  get_new_session_key(_fed.net_to_RTI);
 
-    _fed.rekey_requested = false;
+  // Hold the outbound mutex while sending the request and waiting for the RTI's ACK.
+  // lf_rekey_completed is signaled by handle_rti_session_key_ack once the new key is
+  // active, at which point this thread wakes, releases the mutex, and returns.
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  send_key_refresh_request(_fed.net_to_RTI, MSG_TYPE_SST_KEY_REFRESH_REQUEST);
+  LF_COND_WAIT(&lf_rekey_completed);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  #endif
+
+  #ifdef FEDERATED_DECENTRALIZED
+  for (int i=0; i< _fed.number_of_outbound_p2p_connections; i++){
+
+    net_abstraction_t net = _fed.net_for_outbound_p2p_connections[i];
+    if(net != NULL){
+      get_new_session_key(net);
+      lf_print("DEBUG: New session key received\n");
+
+      LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+      send_key_refresh_request(net, MSG_TYPE_SST_KEY_REFRESH_REQUEST);
+      lf_print("DEBUG: Refresh Request Sent");
+      LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+
+      unsigned char buffer;
+      read_from_net_fail_on_error(net, 1, &buffer, NULL);
+      unsigned char key_id[SESSION_KEY_ID_SIZE];
+      lf_print("DEBUG: ACK ARRIVED");
+      read_from_net_fail_on_error(net, SESSION_KEY_ID_SIZE, key_id, NULL);
+      if(!verify_pending_key_id(net, key_id)){
+        lf_print_error("Key IDs dont match");
+      }
+
+      LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+      swap_to_pending_key(net);
+      LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+      
+    }
   }
+  #endif
 }
 
 void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer){
@@ -2727,6 +2761,17 @@ void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer
   LF_COND_BROADCAST(&lf_rekey_completed);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
   lf_print("Key ID match in ACK");
+}
+
+void handle_key_refresh_request(net_abstraction_t net_abs){
+  unsigned char key_id[SESSION_KEY_ID_SIZE];
+  read_from_net_fail_on_error(net_abs, SESSION_KEY_ID_SIZE, key_id, NULL);
+  fetch_pending_session_key(net_abs, key_id);
+
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  send_key_refresh_request(net_abs, MSG_TYPE_SST_KEY_ACK);
+  swap_to_pending_key(net_abs);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
 }
 #endif
 #endif // FEDERATED

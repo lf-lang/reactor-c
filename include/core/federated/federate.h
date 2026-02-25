@@ -19,6 +19,7 @@
 #define FEDERATE_H
 
 #include <stdbool.h>
+#include <stdatomic.h>
 
 #include "tag.h"
 #include "lf_types.h"
@@ -195,7 +196,7 @@ typedef struct federate_instance_t {
   /**
    * Indicator that this federate needs to refresh its session key/keys for its connections
    */
-  bool rekey_requested;
+  _Atomic bool rekey_requested;
 
 #ifdef FEDERATED_DECENTRALIZED
   /**
@@ -607,6 +608,17 @@ void _lf_check_and_perform_rekey(void);
  */
 void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer);
 
+/**
+ * @brief Handle a session key refresh request from a federate
+ * 
+ * Called when a federate sends a key refresh request with MSG_TYPE__SST_KEY_REFRESH_REQUEST
+ * to its outbound federates. Reads the key ID from the message, fetches the corresponding key
+ * from the auth and stores it in the pending key field. Responds back to the federate who initiated the request with
+ * MSG_TYPE_SST_KEY_ACK and then swaps it current key with the key stored in the pending key field
+ * 
+ * @param net_abs The network abstraction for the RTI connection.
+ */
+void handle_key_refresh_request(net_abstraction_t net_abs);
 /**
  * @brief Update the max level allowed to advance (MLAA).
  * @ingroup Federated
