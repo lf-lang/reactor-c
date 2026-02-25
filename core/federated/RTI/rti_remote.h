@@ -15,13 +15,6 @@
 #ifndef RTI_REMOTE_H
 #define RTI_REMOTE_H
 
-#include <sys/socket.h>
-#include <sys/types.h>  // Provides select() function to read from multiple sockets.
-#include <netinet/in.h> // Defines struct sockaddr_in
-#include <arpa/inet.h>  // inet_ntop & inet_pton
-#include <unistd.h>     // Defines read(), write(), and close()
-#include <strings.h>    // Defines bzero().
-
 #include "rti_common.h"
 
 #ifdef __RTI_AUTH__
@@ -31,7 +24,7 @@
 
 #include "lf_types.h"
 #include "pqueue_tag.h"
-#include "socket_common.h"
+#include "net_abstraction.h"
 
 /**
  * @brief Time allowed for federates to reply to stop request.
@@ -60,8 +53,8 @@ typedef struct federate_info_t {
   bool requested_stop;
   /** @brief The ID of the thread handling communication with this federate. */
   lf_thread_t thread_id;
-  /** @brief The TCP socket descriptor for communicating with this federate. */
-  int socket;
+  /** @brief The network abstraction for communicating with this federate. */
+  net_abstraction_t net;
   /** @brief The UDP address for the federate. */
   struct sockaddr_in UDP_addr;
   /** @brief Indicates the status of clock synchronization for this federate. Enabled by default. */
@@ -69,13 +62,6 @@ typedef struct federate_info_t {
   /** @brief Record of in-transit messages to this federate that are not yet processed. This record is ordered based on
    * the time value of each message for a more efficient access. */
   pqueue_tag_t* in_transit_message_tags;
-  /** @brief Human-readable IP address of the federate's socket server. */
-  char server_hostname[INET_ADDRSTRLEN];
-  /** @brief Port number of the socket server of the federate. The port number will be -1 if there is no server or if
-   * the RTI has not been informed of the port number. */
-  int32_t server_port;
-  /** @brief Information about the IP address of the socket server of the federate. */
-  struct in_addr server_ip_addr;
 } federate_info_t;
 
 /**
@@ -126,20 +112,21 @@ typedef struct rti_remote_t {
    */
   const char* federation_id;
 
-  /** @brief The desired port specified by the user on the command line. */
+  /** @brief The desired port specified by the user on the command line.
+   * This should be not moved to the net_abstraction_t, because the user can configure this as -p or --port.
+   */
   uint16_t user_specified_port;
-
-  /** @brief The final port number that the TCP socket server ends up using. */
-  uint16_t final_port_TCP;
-
-  /** @brief The TCP socket descriptor for the socket server. */
-  int socket_descriptor_TCP;
 
   /** @brief The final port number that the UDP socket server ends up using. */
   uint16_t final_port_UDP;
 
   /** @brief The UDP socket descriptor for the socket server. */
   int socket_descriptor_UDP;
+
+  /**
+   * The rti's network abstraction.
+   */
+  net_abstraction_t rti_net;
 
   /** @brief Thread performing PTP clock sync sessions periodically. */
   lf_thread_t clock_thread;
@@ -359,13 +346,13 @@ void* clock_synchronization_thread(void* noargs);
 void* federate_info_thread_TCP(void* fed);
 
 /**
- * @brief Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
+ * @brief Send a MSG_TYPE_REJECT message to the specified channel and close the channel.
  * @ingroup RTI
  *
- * @param socket_id Pointer to the socket ID.
+ * @param net_abs Pointer to the network abstraction.
  * @param error_code An error code.
  */
-void send_reject(int* socket_id, unsigned char error_code);
+void send_reject(net_abstraction_t net_abs, unsigned char error_code);
 
 /**
  * @brief Wait for one incoming connection request from each federate,
@@ -374,9 +361,9 @@ void send_reject(int* socket_id, unsigned char error_code);
  *
  * Return when all federates have connected.
  *
- * @param socket_descriptor The socket on which to accept connections.
+ * @param rti_net The rti's network abstraction on which to accept connections.
  */
-void lf_connect_to_federates(int socket_descriptor);
+void lf_connect_to_federates(net_abstraction_t rti_net);
 
 /**
  * @brief Thread to respond to new connections, which could be federates of other federations
@@ -403,7 +390,7 @@ void initialize_federate(federate_info_t* fed, uint16_t id);
  *
  * @param port The port on which to listen for socket connections, or 0 to use the default port range.
  */
-int32_t start_rti_server(uint16_t port);
+int start_rti_server();
 
 /**
  * @brief Start the runtime infrastructure (RTI) interaction with the federates and wait for the federates to exit.
@@ -411,7 +398,7 @@ int32_t start_rti_server(uint16_t port);
  *
  * @param socket_descriptor The socket descriptor returned by start_rti_server().
  */
-void wait_for_federates(int socket_descriptor);
+void wait_for_federates();
 
 /**
  * @brief Print a usage message.
