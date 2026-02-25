@@ -19,6 +19,7 @@
 #define FEDERATE_H
 
 #include <stdbool.h>
+#include <stdatomic.h>
 
 #include "tag.h"
 #include "lf_types.h"
@@ -191,6 +192,11 @@ typedef struct federate_instance_t {
    * path from a physical action to any output.
    */
   instant_t min_delay_from_physical_action_to_federate_output;
+
+  /**
+   * Indicator that this federate needs to refresh its session key/keys for its connections
+   */
+  _Atomic bool rekey_requested;
 
 #ifdef FEDERATED_DECENTRALIZED
   /**
@@ -563,6 +569,56 @@ void lf_stall_advance_level_federation_locked(size_t level);
  */
 void lf_synchronize_with_other_federates(void);
 
+/**
+ * @brief Request a session key refresh for all SST connections.
+ *
+ * Sets the rekey_requested flag, signaling that a key rotation should
+ * be performed. The actual handshake is deferred and handled asynchronously
+ * by _lf_check_and_perform_rekey() at a safe point outside of reaction
+ * execution. Safe to call from within a reaction.
+ *
+ * Only has effect when COMM_TYPE_SST is configured with centralized coordination.
+ */
+void lf_refresh_key(void);
+
+/**
+ * @brief Check if a key refresh has been requested and perform the handshake if so.
+ *
+ * If rekey_requested is set, fetches a new session key from the SST auth
+ * server, sends a MSG_TYPE_SST_KEY_REFRESH_REQUEST to the RTI containing
+ * the new key ID, and blocks until the RTI acknowledges via
+ * handle_rti_session_key_ack(). Resets rekey_requested upon completion.
+ *
+ * This function is called internally at a safe point in the federate's
+ * execution loop and should not be called directly by user code.
+ */
+void _lf_check_and_perform_rekey(void);
+
+/**
+ * @brief Handle a session key acknowledgment from the RTI.
+ *
+ * Called when the RTI responds with MSG_TYPE_SST_KEY_ACK during a key
+ * rotation handshake. Reads the key ID from the message, verifies it
+ * matches the pending key, swaps the pending key into active use, resets
+ * sequence counters, and signals lf_rekey_completed to unblock
+ * _lf_check_and_perform_rekey().
+ *
+ * @param net_abs The network abstraction for the RTI connection.
+ * @param buffer The buffer containing the incoming message.
+ */
+void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer);
+
+/**
+ * @brief Handle a session key refresh request from a federate
+ * 
+ * Called when a federate sends a key refresh request with MSG_TYPE__SST_KEY_REFRESH_REQUEST
+ * to its outbound federates. Reads the key ID from the message, fetches the corresponding key
+ * from the auth and stores it in the pending key field. Responds back to the federate who initiated the request with
+ * MSG_TYPE_SST_KEY_ACK and then swaps it current key with the key stored in the pending key field
+ * 
+ * @param net_abs The network abstraction for the RTI connection.
+ */
+void handle_key_refresh_request(net_abstraction_t net_abs);
 /**
  * @brief Update the max level allowed to advance (MLAA).
  * @ingroup Federated

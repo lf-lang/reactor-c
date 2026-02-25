@@ -11,6 +11,7 @@ typedef struct sst_priv_t {
   unsigned char buffer[MAX_SECURE_COMM_MSG_LENGTH];
   size_t buf_filled;
   size_t buf_off; 
+  session_key_t pending_key;
 } sst_priv_t;
 
 typedef struct sst_connection_params_t {

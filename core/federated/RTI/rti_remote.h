@@ -439,6 +439,22 @@ int process_args(int argc, const char* argv[]);
  * @param rti The RTI instance to initialize.
  */
 void initialize_RTI(rti_remote_t* rti);
+/**
+ * @brief Handle a session key refresh request from a federate.
+ *
+ * Reads the new key ID sent by the federate, fetches the corresponding
+ * session key from the SST context, acknowledges the request with
+ * MSG_TYPE_SST_KEY_ACK, and swaps the new key into the active slot.
+ * The key swap is performed under the RTI mutex to prevent concurrent
+ * access during the transition.
+ *
+ * This is called when the RTI receives a MSG_TYPE_SST_KEY_REFRESH_REQUEST
+ * message from a federate.
+ *
+ * @param fed The federate that initiated the key refresh.
+ * @param buffer The buffer containing the incoming message.
+ */
+void handle_key_refresh_request(federate_info_t* fed, unsigned char* buffer);
 
 #endif // RTI_REMOTE_H
 #endif // STANDALONE_RTI
