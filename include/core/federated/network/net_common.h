@@ -790,59 +790,18 @@
 //// Rejection codes
 
 /**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * federation ID does not match.
- * @ingroup Federated
+ * These codes are sent in a MSG_TYPE_REJECT message.
+ * They are limited to one byte (uchar).
  */
-#define FEDERATION_ID_DOES_NOT_MATCH 1
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * federate ID is already in use.
- * @ingroup Federated
- */
-#define FEDERATE_ID_IN_USE 2
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * federate ID is out of range.
- * @ingroup Federated
- */
-#define FEDERATE_ID_OUT_OF_RANGE 3
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * incoming message is not expected.
- * @ingroup Federated
- */
-#define UNEXPECTED_MESSAGE 4
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * connected to the wrong server.
- * @ingroup Federated
- */
-#define WRONG_SERVER 5
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * HMAC authentication failed.
- * @ingroup Federated
- */
-#define HMAC_DOES_NOT_MATCH 6
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * RTI was not executed using the -a or --auth option.
- * @ingroup Federated
- */
-#define RTI_NOT_EXECUTED_WITH_AUTH 7
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * federate is joining too late.
- * @ingroup Federated
- */
-#define JOINING_TOO_LATE 8
+typedef enum {
+  FEDERATION_ID_DOES_NOT_MATCH = 1,
+  FEDERATE_ID_IN_USE = 2,
+  FEDERATE_ID_OUT_OF_RANGE = 3,
+  UNEXPECTED_MESSAGE = 4,
+  WRONG_SERVER = 5,
+  HMAC_DOES_NOT_MATCH = 6,
+  RTI_NOT_EXECUTED_WITH_AUTH = 7,
+  JOINING_TOO_LATE = 8
+} rejection_code_t;
 
 #endif /* NET_COMMON_H */
