@@ -125,7 +125,6 @@ typedef pqueue_tag_t pqueue_delayed_grants_t;
  *
  * @note IMPORTANT: If you make any change to this struct, you MUST also change
  * rti_common_t in enclave.h! The change must exactly match.
->>>>>>> origin/main
  */
 typedef struct rti_remote_t {
   /** @brief The base RTI common data structure. */
