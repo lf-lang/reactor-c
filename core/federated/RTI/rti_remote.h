@@ -55,30 +55,6 @@
 typedef struct federate_info_t {
   /** @brief The base scheduling node information for this federate. */
   scheduling_node_t enclave;
-  bool requested_stop;                   // Indicates that the federate has requested stop or has replied
-                                         // to a request for stop from the RTI. Used to prevent double-counting
-                                         // a federate when handling lf_request_stop().
-  lf_thread_t thread_id;                 // The ID of the thread handling communication with this federate.
-  int socket;                            // The TCP socket descriptor for communicating with this federate.
-  struct sockaddr_in UDP_addr;           // The UDP address for the federate.
-  bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
-                                         // for this federate. Enabled by default.
-  pqueue_tag_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
-                                         // yet processed. This record is ordered based on the time
-                                         // value of each message for a more efficient access.
-  char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
-  int32_t server_port;                   // port number of the socket server of the federate
-                                         // if it has any incoming direct connections from other federates.
-                                         // The port number will be -1 if there is no server or if the
-                                         // RTI has not been informed of the port number.
-  struct in_addr server_ip_addr;         // Information about the IP address of the socket
-                                         // server of the federate.
-  bool has_upstream_transient_federates; // Indicates whether the federate has upstream
-                                         // transient federates
-  bool is_transient;                     // Indicates whether the federate is transient or persistent.
-  tag_t effective_start_tag;             // Records the start time of the federate, which is
-                                         // mainly useful for transient federates
-=======
   /** @brief Indicates that the federate has requested stop or has replied to a request for stop from the RTI. Used to
    * prevent double-counting a federate when handling lf_request_stop(). */
   bool requested_stop;
@@ -100,7 +76,12 @@ typedef struct federate_info_t {
   int32_t server_port;
   /** @brief Information about the IP address of the socket server of the federate. */
   struct in_addr server_ip_addr;
->>>>>>> origin/main
+  /** @brief Indicates whether the federate has upstream transient federates. */
+  bool has_upstream_transient_federates;
+  /** @brief Indicates whether the federate is transient or persistent. */
+  bool is_transient;
+  /** @brief Records the start time of the federate, which is mainly useful for transient federates. */
+  tag_t effective_start_tag;
 } federate_info_t;
 
 /**
