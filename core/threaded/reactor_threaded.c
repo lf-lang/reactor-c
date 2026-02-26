@@ -817,6 +817,9 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
   lf_stall_advance_level_federation(env, 0);
 #endif
   while ((current_reaction_to_execute = lf_sched_get_ready_reaction(env->scheduler, worker_number)) != NULL) {
+#ifdef LF_THREAD_POLICY
+    int assigned_priority = 0;
+#endif
     // Got a reaction that is ready to run.
     LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
                    "level: %lld, is input reaction: %d, and deadline " PRINTF_TIME ".",
@@ -837,7 +840,11 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
     if (!violation) {
 #ifdef LF_THREAD_POLICY
       // Set thread priority based on reaction deadline before invoking the reaction
-      lf_thread_set_priority(lf_thread_self(), get_priority_value(current_reaction_to_execute->deadline));
+      assigned_priority = get_priority_value(current_reaction_to_execute->deadline);
+      LF_PRINT_LOG("Worker %d: Setting priority %d to execute reaction %s with deadline " PRINTF_TIME "ns.",
+                   worker_number, assigned_priority, current_reaction_to_execute->name,
+                   current_reaction_to_execute->deadline);
+      lf_thread_set_priority(lf_thread_self(), assigned_priority);
 #endif
       // Invoke the reaction function.
       _lf_worker_invoke_reaction(env, worker_number, current_reaction_to_execute);
