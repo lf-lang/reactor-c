@@ -1,9 +1,7 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @copyright (c) 2020-2023, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @author Edward A. Lee
+ * @author Soroush Bateni
  *
  * @brief Definitions needed for the modal models in the Python target.
  */

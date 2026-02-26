@@ -1,10 +1,10 @@
 /**
- * @file
+ * @file watchdog.h
  * @author Benjamin Asch
  * @author Edward A. Lee
- * @copyright (c) 2023-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief Declarations for watchdogs.
+ * @ingroup Internal
  */
 
 #ifndef WATCHDOG_H
@@ -19,27 +19,93 @@ extern "C" {
 #endif
 
 /**
- * Watchdog function type. The argument passed to one of
- * these watchdog functions is a pointer to the self struct
- * for the reactor.
+ * @brief Watchdog function type.
+ * @ingroup Internal
+ *
+ * The argument passed to one of these watchdog functions is a pointer to the self
+ * struct for the reactor.
  */
 typedef void (*watchdog_function_t)(void*);
 
-/** Typdef for watchdog_t struct, used to call watchdog handler. */
+/**
+ * @brief Typdef for watchdog_t struct, used to call watchdog handler.
+ * @ingroup Internal
+ */
 typedef struct watchdog_t {
-  struct self_base_t* base;              // The reactor that contains the watchdog.
-  trigger_t* trigger;                    // The trigger associated with this watchdog.
-  instant_t expiration;                  // The expiration instant for the watchdog. (Initialized to NEVER)
-  interval_t min_expiration;             // The minimum expiration interval for the watchdog.
-  lf_thread_t thread_id;                 // The thread that the watchdog is meant to run on.
-  lf_cond_t cond;                        // Condition variable used for sleeping and termination.
-  bool active;                           // Boolean indicating whether or not thread is active.
-  bool terminate;                        // Boolean indicating whether termination of the thread has been requested.
-  watchdog_function_t watchdog_function; // The function/handler for the watchdog.
+  /**
+   * @brief Pointer to the reactor that contains this watchdog.
+   *
+   * Points to the self_base_t struct of the reactor instance that owns this watchdog.
+   */
+  struct self_base_t* base;
+
+  /**
+   * @brief The trigger associated with this watchdog.
+   *
+   * Used to schedule watchdog expiration events and manage the watchdog's lifecycle.
+   */
+  trigger_t* trigger;
+
+  /**
+   * @brief The expiration instant for the watchdog.
+   *
+   * The logical time at which the watchdog will expire. Initialized to NEVER
+   * and updated when the watchdog is started or restarted.
+   */
+  instant_t expiration;
+
+  /**
+   * @brief The minimum expiration interval for the watchdog.
+   *
+   * The minimum time that must elapse before the watchdog can expire.
+   * This is added to the current logical time when starting the watchdog.
+   */
+  interval_t min_expiration;
+
+  /**
+   * @brief The thread ID where the watchdog handler should run.
+   *
+   * Identifies the thread that should execute the watchdog's handler function
+   * when the watchdog expires.
+   */
+  lf_thread_t thread_id;
+
+  /**
+   * @brief Condition variable for thread synchronization.
+   *
+   * Used to coordinate the watchdog thread's sleep and wake operations,
+   * and to handle termination signals.
+   */
+  lf_cond_t cond;
+
+  /**
+   * @brief Indicates whether the watchdog thread is currently active.
+   *
+   * When true, the watchdog thread is running or waiting for expiration.
+   * When false, the watchdog thread is inactive (stopped or terminated).
+   */
+  bool active;
+
+  /**
+   * @brief Indicates whether watchdog thread termination has been requested.
+   *
+   * When true, the watchdog thread should terminate. Used to coordinate
+   * graceful shutdown of the watchdog thread.
+   */
+  bool terminate;
+
+  /**
+   * @brief The watchdog handler function.
+   *
+   * Function pointer to the handler that will be called when the watchdog
+   * expires. The handler receives a pointer to the reactor's self struct.
+   */
+  watchdog_function_t watchdog_function;
 } watchdog_t;
 
 /**
  * @brief Start or restart the watchdog timer.
+ * @ingroup API
  *
  * This function sets the expiration time of the watchdog to the current logical time
  * plus the minimum timeout of the watchdog plus the specified `additional_timeout`.
@@ -55,6 +121,8 @@ void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
 
 /**
  * @brief Stop the specified watchdog without invoking the expiration handler.
+ * @ingroup API
+ *
  * This function sets the expiration time of the watchdog to `NEVER`.
  *
  * @param watchdog The watchdog.
@@ -63,17 +131,26 @@ void lf_watchdog_stop(watchdog_t* watchdog);
 
 ///////////////////// Internal functions /////////////////////
 // The following functions are internal to the runtime and should not be documented by Doxygen.
-/// \cond INTERNAL  // Doxygen conditional.
 
 /**
- * Function to initialize mutexes for watchdogs
+ * @brief Function to initialize mutexes for watchdogs
+ * @ingroup Internal
+ *
+ * This function is used to initialize the mutexes for the watchdogs.
+ *
+ * @param env The environment to initialize the watchdogs for.
  */
 void _lf_initialize_watchdogs(environment_t* env);
 
-/** Terminates all watchdogs inside the environment. */
+/**
+ * @brief Terminates all watchdogs inside the environment.
+ * @ingroup Internal
+ *
+ * This function is used to terminate all the watchdogs inside the environment.
+ *
+ * @param env The environment to terminate the watchdogs for.
+ */
 void _lf_watchdog_terminate_all(environment_t* env);
-
-/// \endcond // INTERNAL
 
 #ifdef __cplusplus
 }

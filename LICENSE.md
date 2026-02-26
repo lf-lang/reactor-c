@@ -1,7 +1,7 @@
 All files in this repository are copyrighted by their respective authors
 and/or institutions and bear a BSD 2-Clause License:
 
-Copyright (c) 2021-2023, by the Authors
+Copyright (c) 2021-2025, by the Authors
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:

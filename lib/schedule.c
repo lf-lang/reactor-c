@@ -1,8 +1,7 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @copyright (c) 2020-2024, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @author Edward A. Lee
+ *
  * @brief Implementation of schedule functions for Lingua Franca programs.
  */
 
@@ -13,6 +12,9 @@
 
 #include <assert.h>
 #include <string.h> // Defines memcpy.
+
+// Global variable defined in reactor_common.c:
+extern bool _lf_termination_executed;
 
 trigger_handle_t lf_schedule(void* action, interval_t offset) {
   return lf_schedule_token((lf_action_base_t*)action, offset, NULL);
@@ -34,77 +36,65 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
 }
 
 trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-  environment_t* env = ((lf_action_base_t*)action)->parent->environment;
-
-  LF_CRITICAL_SECTION_ENTER(env);
-  int return_value = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, extra_delay, token);
-  // Notify the main thread in case it is waiting for physical time to elapse.
-  lf_notify_of_event(env);
-  LF_CRITICAL_SECTION_EXIT(env);
-  return return_value;
+  return _lf_schedule_token(((lf_action_base_t*)action)->parent->environment, action, extra_delay, token);
 }
 
 trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
-  if (value == NULL) {
-    return lf_schedule_token(action, offset, NULL);
-  }
-  environment_t* env = ((lf_action_base_t*)action)->parent->environment;
-  token_template_t* template = (token_template_t*)action;
-  if (action == NULL || template->type.element_size <= 0) {
-    lf_print_error("schedule: Invalid element size.");
-    return -1;
-  }
-  LF_CRITICAL_SECTION_ENTER(env);
-  // Initialize token with an array size of length and a reference count of 0.
-  lf_token_t* token = _lf_initialize_token(template, length);
-  // Copy the value into the newly allocated memory.
-  memcpy(token->value, value, template->type.element_size * length);
-  // The schedule function will increment the reference count.
-  trigger_handle_t result = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, offset, token);
-  // Notify the main thread in case it is waiting for physical time to elapse.
-  lf_notify_of_event(env);
-  LF_CRITICAL_SECTION_EXIT(env);
-  return result;
+  return _lf_schedule_copy(((lf_action_base_t*)action)->parent->environment, action, offset, value, length);
 }
 
 trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length) {
+  int result = 0;
   if (length < 0) {
     lf_print_error("schedule_value():"
                    " Ignoring request to schedule an action with a value that has a negative length (%d).",
                    length);
-    return -1;
+    result = -1;
+  } else {
+    token_template_t* template = (token_template_t*)action;
+    environment_t* env = ((lf_action_base_t*)action)->parent->environment;
+    LF_CRITICAL_SECTION_ENTER(env);
+    if (_lf_termination_executed) {
+      free(value);
+      result = 0;
+    } else {
+      lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
+      result = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, extra_delay, token);
+      // Notify the main thread in case it is waiting for physical time to elapse.
+      lf_notify_of_event(env);
+    }
+    LF_CRITICAL_SECTION_EXIT(env);
   }
-  token_template_t* template = (token_template_t*)action;
-  environment_t* env = ((lf_action_base_t*)action)->parent->environment;
-  LF_CRITICAL_SECTION_ENTER(env);
-  lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
-  int return_value = lf_schedule_trigger(env, ((lf_action_base_t*)action)->trigger, extra_delay, token);
-  // Notify the main thread in case it is waiting for physical time to elapse.
-  lf_notify_of_event(env);
-  LF_CRITICAL_SECTION_EXIT(env);
-  return return_value;
+  return result;
 }
 
 /**
  * Check the deadline of the currently executing reaction against the
- * current physical time. If the deadline has passed, invoke the deadline
- * handler (if invoke_deadline_handler parameter is set true) and return true.
+ * current physical time. If the deadline has passed, invoke_deadline_handler parameter is set true,
+ * and there is a deadline handler, invoke the deadline handler and return true.
  * Otherwise, return false.
  *
  * @param self The self struct of the reactor.
  * @param invoke_deadline_handler When this is set true, also invoke deadline
- *  handler if the deadline has passed.
+ *  handler if the deadline has passed and there is a deadline handler.
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
   reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
   if (lf_time_physical() > (lf_time_logical(((self_base_t*)self)->environment) + reaction->deadline)) {
-    if (invoke_deadline_handler) {
+    if (invoke_deadline_handler && reaction->deadline_violation_handler != NULL) {
       reaction->deadline_violation_handler(self);
+      return true;
     }
-    return true;
   }
   return false;
+}
+
+void lf_update_deadline(void* self, interval_t updated_deadline) {
+  reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
+  if (reaction != NULL) {
+    reaction->deadline = updated_deadline;
+  }
 }
 
 trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, interval_t extra_delay,
@@ -170,6 +160,10 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
   if (trigger->is_physical) {
     // Get the current physical time and assign it as the intended time.
     intended_tag.time = lf_time_physical() + delay;
+    if (intended_tag.time < env->start_tag.time) {
+      // A physical action should never be assigned a time earlier than the start time.
+      intended_tag.time = env->start_tag.time;
+    }
     intended_tag.microstep = 0;
   } else {
 // FIXME: We need to verify that we are executing within a reaction?
@@ -197,7 +191,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
 #endif
 
   // Check for conflicts (a queued event with the same trigger and tag).
-  if (min_spacing <= 0) {
+  if (min_spacing < 0) {
     // No minimum spacing defined.
     e->base.tag = intended_tag;
     event_t* found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)e);
@@ -212,6 +206,7 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         LF_PRINT_DEBUG("Attempt to schedule an event after stop_tag was rejected.");
         // Scheduling an event will incur a microstep
         // after the stop tag.
+        _lf_done_using(token);
         lf_recycle_event(env, e);
         return 0;
       }
@@ -227,12 +222,12 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
     // scheduled event. It determines the
     // earliest time at which the new event can be scheduled.
     // Check to see whether the event is too early.
-    instant_t earliest_time = trigger->last_tag.time + min_spacing;
+    instant_t earliest_time = lf_time_add(trigger->last_tag.time, min_spacing);
     LF_PRINT_DEBUG("There is a previously scheduled event; earliest possible time "
                    "with min spacing: " PRINTF_TIME,
                    earliest_time);
     // If the event is early, see which policy applies.
-    if (earliest_time > intended_tag.time) {
+    if (earliest_time > intended_tag.time || (earliest_time == intended_tag.time && min_spacing == 0)) {
       LF_PRINT_DEBUG("Event is early.");
       event_t *dummy, *found;
       switch (trigger->policy) {
@@ -244,9 +239,9 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         lf_recycle_event(env, e);
         return (0);
       case replace:
-        LF_PRINT_DEBUG("Policy is replace. Replacing the previous event.");
+        LF_PRINT_DEBUG("Policy is replace. Replace the previous event's payload with new payload.");
         // If the event with the previous tag is still on the event
-        // queue, then replace the token.  To find this event, we have
+        // queue, then replace the token. To find this event, we have
         // to construct a dummy event_t struct.
         dummy = lf_get_new_event(env);
         dummy->trigger = trigger;
@@ -267,6 +262,23 @@ trigger_handle_t lf_schedule_trigger(environment_t* env, trigger_t* trigger, int
         // If the preceding event _has_ been handled, then adjust
         // the tag to defer the event.
         intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
+        break;
+      case update:
+        LF_PRINT_DEBUG("Policy is update. Drop the previous event and insert a new event.");
+        // If the event with the previous tag is still on the event
+        // queue, then drop the previous event. To find this event, we have
+        // to construct a dummy event_t struct.
+        dummy = lf_get_new_event(env);
+        dummy->trigger = trigger;
+        dummy->base.tag = trigger->last_tag;
+        found = (event_t*)pqueue_tag_find_equal_same_tag(env->event_q, (pqueue_tag_element_t*)dummy);
+
+        if (found != NULL) {
+          // Remove the previous event.
+          pqueue_tag_remove(env->event_q, (pqueue_tag_element_t*)found);
+        }
+        // Recycle the dummy event used to find the previous event.
+        lf_recycle_event(env, dummy);
         break;
       default:
         // Default policy is defer

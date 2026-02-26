@@ -2,8 +2,6 @@
  * @file
  * @author Edward A. Lee
  * @author Soroush Bateni
- * @copyright (c) 2020-2023, The University of California at Berkeley and UT Dallas.
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  *
  * @brief Utility function for playing audio on Linux.
  *
@@ -52,13 +50,6 @@ struct note notes[NUM_NOTES] = {0};
 // yet finished playing, it will be replaced by the new note.
 int note_counter = 0;
 
-/**
- * Add the given value to the current write buffer at the specified index.
- * If the resulting value is larger than what can be represented in
- * the 16-bit short, truncate it.
- * @param index Where in the buffer to add the amplitude.
- * @param value The amplitude to add to whatever amplitude is already there.
- */
 void add_to_sound(int index_offset, double value) {
   int sample_value = next_buffer[index_offset] + value;
   if (sample_value > MAX_AMPLITUDE) {

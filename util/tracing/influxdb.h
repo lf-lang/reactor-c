@@ -1,3 +1,26 @@
+/**
+ * @file influxdb.h
+ * @brief Structures and functions supporting interaction with InfluxDB.
+ * @ingroup Tracing
+ *
+ *  Usage:
+ * ```
+ * send_udp/post_http(c,
+ *         INFLUX_MEAS("foo"),
+ *         INFLUX_TAG("k", "v"), INFLUX_TAG("k2", "v2"),
+ *         INFLUX_F_STR("s", "string"), INFLUX_F_FLT("f", 28.39, 2),
+ *
+ *         INFLUX_MEAS("bar"),
+ *         INFLUX_F_INT("i", 1048576), INFLUX_F_BOL("b", 1),
+ *         INFLUX_TS(1512722735522840439),
+ *
+ *         INFLUX_END);
+ * ```
+ **NOTICE**: For best performance you should sort tags by key before sending them to the database.
+ *           The sort should match the results from the [Go bytes.Compare
+ *function](https://golang.org/pkg/bytes/#Compare).
+ */
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -10,24 +33,6 @@
 #include <unistd.h>
 #include <curl/curl.h>
 
-/*
-  Usage:
-    send_udp/post_http(c,
-            INFLUX_MEAS("foo"),
-            INFLUX_TAG("k", "v"), INFLUX_TAG("k2", "v2"),
-            INFLUX_F_STR("s", "string"), INFLUX_F_FLT("f", 28.39, 2),
-
-            INFLUX_MEAS("bar"),
-            INFLUX_F_INT("i", 1048576), INFLUX_F_BOL("b", 1),
-            INFLUX_TS(1512722735522840439),
-
-            INFLUX_END);
-
-  **NOTICE**: For best performance you should sort tags by key before sending them to the database.
-              The sort should match the results from the [Go bytes.Compare
-  function](https://golang.org/pkg/bytes/#Compare).
- */
-
 #define INFLUX_MEAS(m) IF_TYPE_MEAS, (m)
 #define INFLUX_TAG(k, v) IF_TYPE_TAG, (k), (v)
 #define INFLUX_F_STR(k, v) IF_TYPE_FIELD_STRING, (k), (v)
@@ -37,7 +42,11 @@
 #define INFLUX_TS(ts) IF_TYPE_TIMESTAMP, (long long)(ts)
 #define INFLUX_END IF_TYPE_ARG_END
 
-typedef struct _influx_client_t {
+/**
+ * @brief InfluxDB client.
+ * @ingroup Tracing
+ */
+typedef struct influx_client_t {
   char* host;
   int port;
   char* db;    // http only
@@ -46,7 +55,11 @@ typedef struct _influx_client_t {
   char* token; // http only
 } influx_client_t;
 
-typedef struct _influx_v2_client_t {
+/**
+ * @brief InfluxDB v2 client.
+ * @ingroup Tracing
+ */
+typedef struct influx_v2_client_t {
   char* host;
   int port;
   char* org;
@@ -57,9 +70,46 @@ typedef struct _influx_v2_client_t {
   char* token; // http only
 } influx_v2_client_t;
 
+/**
+ * @brief Format a line for InfluxDB.
+ * @ingroup Tracing
+ *
+ * @param buf Returned pointer to the formatted line.
+ * @param len Returned length of the formatted line.
+ * @param used Number of bytes used in the formatted line.
+ * @param ... Formatting arguments.
+ * @return int 0 on success, -1 on failure.
+ */
 int format_line(char** buf, int* len, size_t used, ...);
+
+/**
+ * @brief Post a line to InfluxDB via HTTP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB client.
+ * @param ... Formatting arguments.
+ * @return int 0 on success, -1 on failure.
+ */
 int post_http(influx_client_t* c, ...);
+
+/**
+ * @brief Send a line to InfluxDB via UDP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB client.
+ * @param ... Formatting arguments.
+ * @return int 0 on success, -1 on failure.
+ */
 int send_udp(influx_client_t* c, ...);
+
+/**
+ * @brief Post a line to InfluxDB via HTTP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB v2 client.
+ * @param ... Formatting arguments.
+ * @return int 0 on success, -1 on failure.
+ */
 int post_curl(influx_v2_client_t* c, ...);
 
 #define IF_TYPE_ARG_END 0
@@ -75,7 +125,27 @@ int _escaped_append(char** dest, size_t* len, size_t* used, const char* src, con
 int _begin_line(char** buf);
 int _format_line(char** buf, va_list ap);
 int _format_line2(char** buf, va_list ap, size_t*, size_t);
+
+/**
+ * @brief Post a line to InfluxDB via HTTP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB client.
+ * @param buf Pointer to the line to post.
+ * @param len Length of the line to post.
+ * @return int 0 on success, -1 on failure.
+ */
 int post_http_send_line(influx_client_t* c, char* buf, int len);
+
+/**
+ * @brief Send a line to InfluxDB via UDP.
+ * @ingroup Tracing
+ *
+ * @param c InfluxDB client.
+ * @param line Pointer to the line to send.
+ * @param len Length of the line to send.
+ * @return int 0 on success, -1 on failure.
+ */
 int send_udp_line(influx_client_t* c, char* line, int len);
 
 int post_http_send_line(influx_client_t* c, char* buf, int len) {
@@ -287,13 +357,12 @@ int post_curl(influx_v2_client_t* c, ...) {
   curl_easy_setopt(curl, CURLOPT_URL, url_string);
   free(url_string);
 
-  char* token_string = (char*)malloc(120 * sizeof(char));
-  sprintf(token_string, "Authorization: Token %s", c->token);
+  char token_string[120];
+  snprintf(token_string, sizeof(token_string), "Authorization: Token %s", c->token);
 
   struct curl_slist* list = NULL;
   list = curl_slist_append(list, token_string);
   curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
-  free(token_string);
 
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
