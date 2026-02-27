@@ -3,8 +3,7 @@
  * @author Benjamin Asch
  * @author Edward A. Lee
  * @author Erling Jellum
- * @copyright (c) 2023, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ *
  * @brief Definitions for watchdogs.
  */
 

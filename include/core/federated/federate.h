@@ -1,23 +1,31 @@
 /**
- * @file
+ * @file federate.h
+ * @brief Data structures and functions for federated Lingua Franca programs.
+ * @ingroup Federated
+ *
  * @author Soroush Bateni
  * @author Peter Donovan
  * @author Edward A. Lee
  * @author Anirudh Rengarajsm
- * @copyright (c) 2020-2023, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
- * @brief Data structures and functions used and defined in federate.c.
+ *
+ * This file defines the core data structures and functions used in federated Lingua Franca programs.
+ * It includes the federate instance structure that tracks the state of a federate, including its
+ * connections to the RTI and other federates, message handling, and coordination mechanisms.
+ * The file also provides functions for managing these connections, sending and receiving messages,
+ * and handling various aspects of federated execution.
  */
 
 #ifndef FEDERATE_H
 #define FEDERATE_H
 
 #include <stdbool.h>
+#include <stdatomic.h>
 
 #include "tag.h"
 #include "lf_types.h"
 #include "environment.h"
 #include "low_level_platform.h"
+#include "net_abstraction.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)
@@ -27,20 +35,21 @@
 // Data types
 
 /**
- * Structure that a federate instance uses to keep track of its own state.
+ * @brief Structure that a federate instance uses to keep track of its own state.
+ * @ingroup Federated
  */
 typedef struct federate_instance_t {
   /**
-   * The TCP socket descriptor for this federate to communicate with the RTI.
+   * The network abstraction for this federate to communicate with the RTI.
    * This is set by lf_connect_to_rti(), which must be called before other
    * functions that communicate with the rti are called.
    */
-  int socket_TCP_RTI;
+  net_abstraction_t net_to_RTI;
 
   /**
-   * Thread listening for incoming TCP messages from the RTI.
+   * Thread listening for incoming messages from the RTI.
    */
-  lf_thread_t RTI_socket_listener;
+  lf_thread_t RTI_net_listener;
 
   /**
    * Number of inbound physical connections to the federate.
@@ -54,7 +63,7 @@ typedef struct federate_instance_t {
    * This is NULL if there are none and otherwise has size given by
    * number_of_inbound_p2p_connections.
    */
-  lf_thread_t* inbound_socket_listeners;
+  lf_thread_t* inbound_net_listeners;
 
   /**
    * Number of outbound peer-to-peer connections from the federate.
@@ -64,57 +73,50 @@ typedef struct federate_instance_t {
   size_t number_of_outbound_p2p_connections;
 
   /**
-   * An array that holds the socket descriptors for inbound
+   * An array that holds the network abstractions for inbound
    * connections from each federate. The index will be the federate
    * ID of the remote sending federate. This is initialized at startup
-   * to -1 and is set to a socket ID by lf_handle_p2p_connections_from_federates()
-   * when the socket is opened.
+   * to NULL and is set to the pointer of the network abstraction by lf_connect_to_federate()
+   * when the network abstractions is opened.
    *
-   * @note There will not be an inbound socket unless a physical connection
+   * @note There will not be an inbound network abstraction unless a physical connection
    * or a p2p logical connection (by setting the coordination target property
    * to "distributed") is specified in the Lingua Franca program where this
    * federate is the destination. Multiple incoming p2p connections from the
-   * same remote federate will use the same socket.
+   * same remote federate will use the same network abstraction.
    */
-  int sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+  net_abstraction_t net_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
-   * An array that holds the socket descriptors for outbound direct
+   * An array that holds the network abstractions for outbound direct
    * connections to each remote federate. The index will be the federate
    * ID of the remote receiving federate. This is initialized at startup
-   * to -1 and is set to a socket ID by lf_connect_to_federate()
-   * when the socket is opened.
+   * to NULL and is set to the pointer of the network abstraction by lf_connect_to_federate()
+   * when the network abstractions is opened.
    *
-   * @note This federate will not open an outbound socket unless a physical
+   * @note This federate will not open an outbound network abstractions unless a physical
    * connection or a p2p logical connection (by setting the coordination target
    * property to "distributed") is specified in the Lingua Franca
    * program where this federate acts as the source. Multiple outgoing p2p
-   * connections to the same remote federate will use the same socket.
+   * connections to the same remote federate will use the same network abstractions.
    */
-  int sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+  net_abstraction_t net_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
-   * Thread ID for a thread that accepts sockets and then supervises
-   * listening to those sockets for incoming P2P (physical) connections.
+   * Thread ID for a thread that accepts network abstractions and then supervises
+   * listening to those network abstractions for incoming P2P (physical) connections.
    */
   lf_thread_t inbound_p2p_handling_thread_id;
 
   /**
-   * A socket descriptor for the socket server of the federate.
+   * A network abstraction for the server of the federate.
    * This is assigned in lf_create_server().
-   * This socket is used to listen to incoming physical connections from
+   * This network abstraction is used to listen to incoming physical connections from
    * remote federates. Once an incoming connection is accepted, the
-   * opened socket will be stored in
-   * federate_sockets_for_inbound_p2p_connections.
+   * opened network abstraction will be stored in
+   * federate_net_for_inbound_p2p_connections.
    */
-  int server_socket;
-
-  /**
-   * The port used for the server socket to listen for messages from other federates.
-   * The federate informs the RTI of this port once it has created its socket server by
-   * sending an ADDRESS_AD message (@see rti.h).
-   */
-  int server_port;
+  net_abstraction_t server_net;
 
   /**
    * Most recent tag advance grant (TAG) received from the RTI, or NEVER if none
@@ -196,6 +198,9 @@ typedef struct federate_instance_t {
    * The default value of false may be overridden in _lf_initialize_trigger_objects.
    */
   bool is_transient;
+  
+  /** Indicator that this federate needs to refresh its session key/keys for its connections*/
+  _Atomic bool rekey_requested;
 
 #ifdef FEDERATED_DECENTRALIZED
   /**
@@ -207,6 +212,10 @@ typedef struct federate_instance_t {
 } federate_instance_t;
 
 #ifdef FEDERATED_DECENTRALIZED
+/**
+ * @brief Structure for STAA (safe to assume absent).
+ * @ingroup Federated
+ */
 typedef struct staa_t {
   lf_action_base_t** actions;
   size_t STAA;
@@ -214,6 +223,10 @@ typedef struct staa_t {
 } staa_t;
 #endif
 
+/**
+ * @brief Structure for federation metadata.
+ * @ingroup Federated
+ */
 typedef struct federation_metadata_t {
   const char* federation_id;
   char* rti_host;
@@ -221,18 +234,24 @@ typedef struct federation_metadata_t {
   char* rti_user;
 } federation_metadata_t;
 
+/**
+ * @brief Code returned by @ref lf_parse_rti_addr().
+ * @ingroup Federated
+ */
 typedef enum parse_rti_code_t { SUCCESS, INVALID_PORT, INVALID_HOST, INVALID_USER, FAILED_TO_PARSE } parse_rti_code_t;
 
 //////////////////////////////////////////////////////////////////////////////////
 // Global variables
 
 /**
- * Mutex lock held while performing socket write and close operations.
+ * @brief Mutex lock held while performing outbound network abstraction write and close operations.
+ * @ingroup Federated
  */
-extern lf_mutex_t lf_outbound_socket_mutex;
+extern lf_mutex_t lf_outbound_net_mutex;
 
 /**
- * Condition variable for blocking on unkonwn federate input ports.
+ * @brief Condition variable for blocking on unkonwn federate input ports.
+ * @ingroup Federated
  */
 extern lf_cond_t lf_port_status_changed;
 
@@ -241,28 +260,32 @@ extern lf_cond_t lf_port_status_changed;
 
 /**
  * @brief Connect to the federate with the specified id.
+ * @ingroup Federated
  *
  * The established connection will then be used in functions such as lf_send_tagged_message()
  * to send messages directly to the specified federate.
  * This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain
  * the IP address and port number of the specified federate. It then attempts
- * to establish a socket connection to the specified federate.
+ * to establish a network abstraction connection to the specified federate.
  * If this fails, the program exits. If it succeeds, it sets element [id] of
- * the _fed.sockets_for_outbound_p2p_connections global array to
- * refer to the socket for communicating directly with the federate.
+ * the _fed.net_for_outbound_p2p_connections global array to
+ * refer to the network abstraction for communicating directly with the federate.
+ *
  * @param remote_federate_id The ID of the remote federate.
  */
-void lf_connect_to_federate(uint16_t);
+void lf_connect_to_federate(uint16_t remote_federate_id);
 
 /**
  * @brief Connect to the RTI at the specified host and port.
+ * @ingroup Federated
  *
- * This will return the socket descriptor for the connection.
+ * This will return the network abstraction for the connection.
  * If port_number is 0, then start at DEFAULT_PORT and increment
  * the port number on each attempt. If an attempt fails, wait CONNECT_RETRY_INTERVAL
  * and try again.  If it fails after CONNECT_TIMEOUT, the program exits.
- * If it succeeds, it sets the _fed.socket_TCP_RTI global variable to refer to
- * the socket for communicating with the RTI.
+ * If it succeeds, it sets the _fed.net_to_RTI global variable to refer to
+ * the network abstraction for communicating with the RTI.
+ *
  * @param hostname A hostname, such as "localhost".
  * @param port_number A port number or 0 to start with the default.
  */
@@ -270,10 +293,11 @@ void lf_connect_to_rti(const char* hostname, int port_number);
 
 /**
  * @brief Create a server to listen to incoming P2P connections.
+ * @ingroup Federated
  *
  * Such connections are used for physical connections or any connection if using
- * decentralized coordination. This function only handles the creation of the server socket.
- * The bound port for the server socket is then sent to the RTI by sending an
+ * decentralized coordination. This function only handles the creation of the server network abstraction.
+ * The bound port for the server network abstraction is then sent to the RTI by sending an
  * MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
  * This function expects no response from the RTI.
  *
@@ -288,26 +312,30 @@ void lf_create_server(int specified_port);
 
 /**
  * @brief Enqueue port absent reactions.
+ * @ingroup Federated
  *
  * These reactions will send a MSG_TYPE_PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
+ *
  * @param env The environment of the federate
  */
 void lf_enqueue_port_absent_reactions(environment_t* env);
 
 /**
  * @brief Thread to accept connections from other federates.
+ * @ingroup Federated
  *
  * This thread accepts connections from federates that send messages directly
  * to this one (not through the RTI). This thread starts a thread for
- * each accepted socket connection to read messages and, once it has opened all expected
- * sockets, exits.
+ * each accepted network abstraction connection to read messages and, once it has opened all expected
+ * network abstractions, exits.
  * @param ignored No argument needed for this thread.
  */
-void* lf_handle_p2p_connections_from_federates(void*);
+void* lf_handle_p2p_connections_from_federates(void* ignored);
 
 /**
  * @brief Send a latest tag confirmed (LTC) signal to the RTI.
+ * @ingroup Federated
  *
  * This avoids the send if an equal or later LTC has previously been sent.
  *
@@ -316,16 +344,19 @@ void* lf_handle_p2p_connections_from_federates(void*);
  *
  * @param tag_to_send The tag to send.
  */
-void lf_latest_tag_confirmed(tag_t);
+void lf_latest_tag_confirmed(tag_t tag_to_send);
 
 /**
  * @brief Parse the address of the RTI and store them into the global federation_metadata struct.
+ * @ingroup Federated
+ *
  * @return a parse_rti_code_t indicating the result of the parse.
  */
 parse_rti_code_t lf_parse_rti_addr(const char* rti_addr);
 
 /**
  * @brief Reset the status fields on network input ports to unknown or absent.
+ * @ingroup Federated
  *
  * This will reset to absent if the last_known_status_tag field of the port
  * is greater than or equal to the current tag of the top-level environment.
@@ -334,16 +365,17 @@ parse_rti_code_t lf_parse_rti_addr(const char* rti_addr);
  * @note This function must be called at the beginning of each
  *  logical time.
  */
-void lf_reset_status_fields_on_input_port_triggers();
+void lf_reset_status_fields_on_input_port_triggers(void);
 
 /**
  * @brief Send a message to another federate.
+ * @ingroup Federated
  *
  * This function is used for physical connections
- * between federates. If the socket connection to the remote federate or the RTI has been broken,
+ * between federates. If the connection to the remote federate or the RTI has been broken,
  * then this returns -1 without sending. Otherwise, it returns 0.
  *
- * This method assumes that the caller does not hold the lf_outbound_socket_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_net_mutex lock,
  * which it acquires to perform the send.
  *
  * @param message_type The type of the message being sent (currently only MSG_TYPE_P2P_MESSAGE).
@@ -359,17 +391,20 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
 
 /**
  * @brief Send information about connections to the RTI.
+ * @ingroup Federated
  *
  * This is a generated function that sends information about connections between this federate
  * and other federates where messages are routed through the RTI. Currently, this
  * only includes logical connections when the coordination is centralized. This
  * information is needed for the RTI to perform the centralized coordination.
- * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
+ * @see @ref MSG_TYPE_NEIGHBOR_STRUCTURE in @ref net_common.h
+ * @param socket_TCP_RTI The socket descriptor for the connection to the RTI.
  */
-void lf_send_neighbor_structure_to_RTI(int);
+void lf_send_neighbor_structure_to_RTI(net_abstraction_t);
 
 /**
  * @brief Send a next event tag (NET) signal.
+ * @ingroup Federated
  *
  * If this federate depends on upstream federates or sends data to downstream
  * federates, then send to the RTI a NET, which will give the tag of the
@@ -428,6 +463,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
 
 /**
  * @brief Send a port absent message.
+ * @ingroup Federated
  *
  * This informs the remote federate that it will not receive a message with tag less than the
  * current tag of the specified environment delayed by the additional_delay.
@@ -442,22 +478,24 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
 
 /**
  * @brief Send a MSG_TYPE_STOP_REQUEST message to the RTI.
+ * @ingroup Federated
  *
  * The payload is the specified tag plus one microstep. If this federate has previously
  * received a stop request from the RTI, then do not send the message and
- * return 1. Return -1 if the socket is disconnected. Otherwise, return 0.
+ * return 1. Return -1 if the network abstraction is disconnected. Otherwise, return 0.
  * @return 0 if the message is sent.
  */
 int lf_send_stop_request_to_rti(tag_t stop_tag);
 
 /**
  * @brief Send a tagged message to the specified port of the specified federate.
+ * @ingroup Federated
  *
  * The tag will be the current tag of the specified environment delayed by the specified additional_delay.
  * If the delayed tag falls after the timeout time, then the message is not sent and -1 is returned.
  * The caller can reuse or free the memory storing the message after this returns.
  *
- * If the message fails to send (e.g. the socket connection is broken), then the
+ * If the message fails to send (e.g. the network abstraction connection is broken), then the
  * response depends on the message_type.  For MSG_TYPE_TAGGED_MESSAGE, the message is
  * supposed to go via the RTI, and failure to communicate with the RTI is a critical failure.
  * In this case, the program will exit with an error message. If the message type is
@@ -466,7 +504,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  * to believe that there were no messages forthcoming.  In this case, on failure to send
  * the message, this function returns -11.
  *
- * This method assumes that the caller does not hold the lf_outbound_socket_mutex lock,
+ * This method assumes that the caller does not hold the lf_outbound_net_mutex lock,
  * which it acquires to perform the send.
  *
  * @param env The environment from which to get the current tag.
@@ -488,6 +526,8 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
 
 /**
  * @brief Set the federation_id of this federate.
+ * @ingroup Federated
+ *
  * @param fid The federation ID.
  */
 void lf_set_federation_id(const char* fid);
@@ -500,6 +540,7 @@ const char* lf_get_federation_id();
 #ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Spawn a thread to iterate through STAA structs.
+ * @ingroup Federated
  *
  * This will set their associated ports absent
  * at an offset if the port is not present with a value by a certain physical time.
@@ -509,9 +550,10 @@ void lf_spawn_staa_thread(void);
 
 /**
  * @brief Wait until inputs statuses are known up to and including the specified level.
+ * @ingroup Federated
  *
  * Specifically, wait until the specified level is less that the max level allowed to
- * advance (MLAA).
+ * advance (MLAA). This function does nothing if the environment is not the top-level environment.
  * @param env The environment (which should always be the top-level environment).
  * @param level The level to which we would like to advance.
  */
@@ -519,22 +561,76 @@ void lf_stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
  * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex lock.
+ * @ingroup Federated
+ *
  * @param level The level to which we would like to advance.
  */
 void lf_stall_advance_level_federation_locked(size_t level);
 
 /**
  * @brief Synchronize the start with other federates via the RTI.
+ * @ingroup Federated
  *
  * This assumes that a connection to the RTI is already made
- * and _lf_rti_socket_TCP is valid. It then sends the current logical
+ * and net_to_RTI is valid. It then sends the current logical
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
  */
-void lf_synchronize_with_other_federates();
+void lf_synchronize_with_other_federates(void);
 
 /**
+ * @brief Request a session key refresh for all SST connections.
+ *
+ * Sets the rekey_requested flag, signaling that a key rotation should
+ * be performed. The actual handshake is deferred and handled asynchronously
+ * by _lf_check_and_perform_rekey() at a safe point outside of reaction
+ * execution. Safe to call from within a reaction.
+ *
+ * Only has effect when COMM_TYPE_SST is configured with centralized coordination.
+ */
+void lf_refresh_key(void);
+
+/**
+ * @brief Check if a key refresh has been requested and perform the handshake if so.
+ *
+ * If rekey_requested is set, fetches a new session key from the SST auth
+ * server, sends a MSG_TYPE_SST_KEY_REFRESH_REQUEST to the RTI containing
+ * the new key ID, and blocks until the RTI acknowledges via
+ * handle_rti_session_key_ack(). Resets rekey_requested upon completion.
+ *
+ * This function is called internally at a safe point in the federate's
+ * execution loop and should not be called directly by user code.
+ */
+void _lf_check_and_perform_rekey(void);
+
+/**
+ * @brief Handle a session key acknowledgment from the RTI.
+ *
+ * Called when the RTI responds with MSG_TYPE_SST_KEY_ACK during a key
+ * rotation handshake. Reads the key ID from the message, verifies it
+ * matches the pending key, swaps the pending key into active use, resets
+ * sequence counters, and signals lf_rekey_completed to unblock
+ * _lf_check_and_perform_rekey().
+ *
+ * @param net_abs The network abstraction for the RTI connection.
+ * @param buffer The buffer containing the incoming message.
+ */
+void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer);
+
+/**
+ * @brief Handle a session key refresh request from a federate
+ * 
+ * Called when a federate sends a key refresh request with MSG_TYPE__SST_KEY_REFRESH_REQUEST
+ * to its outbound federates. Reads the key ID from the message, fetches the corresponding key
+ * from the auth and stores it in the pending key field. Responds back to the federate who initiated the request with
+ * MSG_TYPE_SST_KEY_ACK and then swaps it current key with the key stored in the pending key field
+ * 
+ * @param net_abs The network abstraction for the RTI connection.
+ */
+void handle_key_refresh_request(net_abstraction_t net_abs);
+/**
  * @brief Update the max level allowed to advance (MLAA).
+ * @ingroup Federated
  *
  * If the specified tag is greater than the current_tag of the top-level environment
  * (or equal and is_provisional is false), then set the MLAA to INT_MAX and return.
@@ -553,6 +649,7 @@ bool lf_update_max_level(tag_t tag, bool is_provisional);
 #ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Return the physical time that we should wait until before advancing to the specified tag.
+ * @ingroup Federated
  *
  * This function adds the STA offset (STP_offset parameter) to the time of the specified tag unless
  * the tag is the starting tag (it is always safe to advance to the starting tag). It also avoids

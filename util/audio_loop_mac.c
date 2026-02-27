@@ -1,13 +1,10 @@
 /**
  * @file
  * @author Edward A. Lee
- * @copyright (c) 2020-2023, The University of California at Berkeley and UT Dallas.
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  *
  * @brief Utility function for playing audio on MacOS.
  *
  * See audio_loop.h for instructions.
- *
  */
 
 #include <stdio.h>

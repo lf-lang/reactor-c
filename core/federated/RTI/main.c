@@ -1,34 +1,10 @@
 #if defined STANDALONE_RTI
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Edward A. Lee
  * @author Soroush Bateni
  *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Runtime infrastructure for distributed Lingua Franca programs.
+ * @brief Runtime infrastructure for distributed Lingua Franca programs.
  *
  * This implementation creates one thread per federate so as to be able
  * to take advantage of multiple cores. It may be more efficient, however,
@@ -80,11 +56,11 @@ static void send_failed_signal(federate_info_t* fed) {
   if (rti.base.tracing_enabled) {
     tracepoint_rti_to_federate(send_FAILED, fed->enclave.id, NULL);
   }
-  int failed = write_to_socket(fed->socket, bytes_to_write, &(buffer[0]));
+  int failed = write_to_net(fed->net, bytes_to_write, &(buffer[0]));
   if (failed == 0) {
     LF_PRINT_LOG("RTI has sent failed signal to federate %d due to abnormal termination.", fed->enclave.id);
   } else {
-    lf_print_error("RTI failed to send failed signal to federate %d on socket ID %d.", fed->enclave.id, fed->socket);
+    lf_print_error("RTI failed to send failed signal to federate %d.", fed->enclave.id);
   }
 }
 
@@ -117,6 +93,8 @@ void termination() {
 
 void usage(int argc, const char* argv[]) {
   lf_print("\nCommand-line arguments: \n");
+  lf_print("  -v, --version");
+  lf_print("   The version of the RTI.\n");
   lf_print("  -i, --id <n>");
   lf_print("   The ID of the federation that this RTI will control.\n");
   lf_print("  -n, --number_of_federates <n>");
@@ -139,12 +117,20 @@ void usage(int argc, const char* argv[]) {
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
   lf_print("  -d, --disable_dnet Turn off the use of DNET signals.\n");
+  lf_print("  -sst, --sst SST config path for RTI.\n");
+  lf_print("  -tls, --tls <cert_path> <key_path>   TLS certificate and private key paths.\n");
 
   lf_print("Command given:");
   for (int i = 0; i < argc; i++) {
     lf_print("%s ", argv[i]);
   }
   lf_print("\n");
+}
+
+static void print_version_and_exit() {
+  printf("RTI %s %s %s\n", RTI_VERSION, RTI_COMMIT, RTI_BUILD_DATE);
+  normal_termination = true;
+  exit(0);
 }
 
 int process_clock_sync_args(int argc, const char* argv[]) {
@@ -211,7 +197,9 @@ int process_clock_sync_args(int argc, const char* argv[]) {
 
 int process_args(int argc, const char* argv[]) {
   for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
+    if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
+      print_version_and_exit();
+    } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
       if (argc < i + 2) {
         lf_print_error("--id needs a string argument.");
         usage(argc, argv);
@@ -251,6 +239,7 @@ int process_args(int argc, const char* argv[]) {
       rti.number_of_transient_federates = (int32_t)num_transient_federates; // FIXME: Loses numbers on 64-bit machines
       lf_print("RTI: Number of transient federates: %d", rti.number_of_transient_federates);
     } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
+#if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST) || defined(COMM_TYPE_TLS)
       if (argc < i + 2) {
         lf_print_error("--port needs a short unsigned integer argument ( > 0 and < %d).", UINT16_MAX);
         usage(argc, argv);
@@ -264,6 +253,9 @@ int process_args(int argc, const char* argv[]) {
         return 0;
       }
       rti.user_specified_port = (uint16_t)RTI_port;
+#else
+      lf_print_error("--port is only available for TCP.");
+#endif
     } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--clock_sync") == 0) {
       if (argc < i + 2) {
         lf_print_error("--clock-sync needs off|init|on.");
@@ -279,6 +271,42 @@ int process_args(int argc, const char* argv[]) {
       return 0;
 #endif
       rti.authentication_enabled = true;
+    } else if (strcmp(argv[i], "-sst") == 0 || strcmp(argv[i], "--sst") == 0) {
+#ifndef COMM_TYPE_SST
+      lf_print_error("--sst requires the RTI to be built with the --DCOMM_TYPE=SST option.");
+      usage(argc, argv);
+      return 0;
+#else
+      i++;
+      lf_set_sst_config_path(argv[i]);
+#endif
+    } else if (strcmp(argv[i], "-tls") == 0 || strcmp(argv[i], "--tls") == 0) {
+#ifndef COMM_TYPE_TLS
+      lf_print_error("--tls requires the RTI to be built with the -DCOMM_TYPE=TLS option.");
+      usage(argc, argv);
+      return 0;
+#else
+      // Need two arguments: cert path and key path
+      if (argc < i + 3) {
+        lf_print_error("--tls needs two arguments: <certificate_path> <private_key_path>.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* cert_path = argv[i + 1];
+      const char* key_path  = argv[i + 2];
+
+      // Optional: basic sanity check (avoid empty strings)
+      if (cert_path[0] == '\0' || key_path[0] == '\0') {
+        lf_print_error("--tls certificate_path and private_key_path must be non-empty.");
+        usage(argc, argv);
+        return 0;
+      }
+
+      lf_set_tls_configuration(cert_path, key_path);
+      lf_print_debug("RTI: TLS cert path: %s", cert_path);
+      lf_print_debug("RTI: TLS key path : %s", key_path);
+      i += 2;
+#endif
     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
       rti.base.tracing_enabled = true;
     } else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dnet_disabled") == 0) {
@@ -354,9 +382,8 @@ int main(int argc, const char* argv[]) {
     rti.base.scheduling_nodes[i] = (scheduling_node_t*)fed_info;
   }
 
-  int socket_descriptor = start_rti_server(rti.user_specified_port);
-  if (socket_descriptor >= 0) {
-    wait_for_federates(socket_descriptor);
+  if (!start_rti_server()) {
+    wait_for_federates();
     normal_termination = true;
     if (rti.base.tracing_enabled) {
       // No need for a mutex lock because all threads have exited.
