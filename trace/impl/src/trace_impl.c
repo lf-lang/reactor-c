@@ -268,7 +268,7 @@ void lf_tracing_global_init(char* process_name, char* process_names, int fedid, 
   bool file_exists = false;
   bool new_file = false;
   if (strcmp(process_name, "rti") == 0) {
-    sprintf(filename, "%s.lft", process_name);
+    snprintf(filename, sizeof(filename), "%s.lft", process_name);
   } else {
     FILE* file;
     do {

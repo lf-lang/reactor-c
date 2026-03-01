@@ -1,10 +1,9 @@
 /**
  * @file
  * @author Erling R. Jellum
- * @copyright (c) 2023-2024, The Norwegian University of Science and Technology.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  *
- * This file defines functions intitializing and freeing memory for environments.
+ * @brief Functions for initializing and freeing memory for environments.
+ *
  * See environment.h for docs.
  */
 
@@ -184,6 +183,12 @@ void environment_free(environment_t* env) {
   free(env->is_present_fields);
   free(env->is_present_fields_abbreviated);
   pqueue_tag_free(env->event_q);
+
+  // Free the recycle queue.
+  while (pqueue_tag_size(env->recycle_q) > 0) {
+    event_t* event = (event_t*)pqueue_tag_pop(env->recycle_q);
+    free(event);
+  }
   pqueue_tag_free(env->recycle_q);
 
   environment_free_threaded(env);
@@ -193,15 +198,18 @@ void environment_free(environment_t* env) {
 }
 
 void environment_init_tags(environment_t* env, instant_t start_time, interval_t duration) {
-  env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+  // Current tag and start tag of the environment is initialized.
+  env->current_tag = (tag_t){.time = start_time, .microstep = 0};
+  env->start_tag = (tag_t){.time = start_time, .microstep = 0};
+  env->duration = duration;
 
-  tag_t stop_tag = FOREVER_TAG_INITIALIZER;
   if (duration >= 0LL) {
     // A duration has been specified. Calculate the stop time.
-    stop_tag.time = env->current_tag.time + duration;
-    stop_tag.microstep = 0;
+    env->stop_tag.time = lf_time_add(env->start_tag.time, env->duration);
+    env->stop_tag.microstep = 0;
+  } else {
+    env->stop_tag = (tag_t)FOREVER_TAG_INITIALIZER;
   }
-  env->stop_tag = stop_tag;
 }
 
 int environment_init(environment_t* env, const char* name, int id, int num_workers, int num_timers,

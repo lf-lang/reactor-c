@@ -1,46 +1,84 @@
+/**
+ * @file socket_common.h
+ * @brief Common socket operations and utilities for federated Lingua Franca programs.
+ * @ingroup Federated
+ *
+ * @author Edward A. Lee
+ * @author Soroush Bateni
+ * @author Peter Donovan
+ *
+ * This file provides common socket operations and utilities used in federated Lingua Franca programs.
+ * It includes functions for creating and managing TCP/UDP sockets, handling connections,
+ * and performing read/write operations with proper error handling and retry mechanisms.
+ * The file also defines various constants for timeouts, retry intervals, and port configurations.
+ */
 #ifndef SOCKET_COMMON_H
 #define SOCKET_COMMON_H
 
 #include "low_level_platform.h"
 
 /**
- * The amount of time to wait after a failed socket read or write before trying again. This defaults to 100 ms.
+ * @brief The number of federates.
+ * @ingroup Federated
+ *
+ * This defaults to 1.
+ */
+#ifndef NUMBER_OF_FEDERATES
+#define NUMBER_OF_FEDERATES 1
+#endif
+
+/**
+ * @brief The amount of time to wait after a failed socket read or write before trying again.
+ * @ingroup Federated
+ *
+ * This defaults to 100 ms.
  */
 #define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
 
 /**
- * The timeout time in ns for TCP operations.
+ * @brief The timeout time in ns for TCP operations.
+ * @ingroup Federated
+ *
  * Default value is 10 secs.
  */
 #define TCP_TIMEOUT_TIME SEC(10)
 
 /**
- * The timeout time in ns for UDP operations.
+ * @brief The timeout time in ns for UDP operations.
+ * @ingroup Federated
+ *
  * Default value is 1 sec.
  */
 #define UDP_TIMEOUT_TIME SEC(1)
 
 /**
- * Time between a federate's attempts to connect to the RTI.
+ * @brief Time between a federate's attempts to connect to the RTI.
+ * @ingroup Federated
  */
 #define CONNECT_RETRY_INTERVAL MSEC(500)
 
 /**
- * Bound on the number of retries to connect to the RTI.
+ * @brief Bound on the number of retries to connect to the RTI.
+ * @ingroup Federated
+ *
  * A federate will retry every CONNECT_RETRY_INTERVAL nanoseconds until
  * CONNECTION_TIMEOUT expires.
  */
 #define CONNECT_TIMEOUT MINUTES(1)
 
 /**
- * Maximum number of port addresses that a federate will try to connect to the RTI on.
+ * @brief Maximum number of port addresses that a federate will try to connect to the RTI on.
+ * @ingroup Federated
+ *
  * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
  * on the number of RTIs that can be running on the same host.
  */
 #define MAX_NUM_PORT_ADDRESSES 16u
 
 /**
- * Time to wait before re-attempting to bind to a port.
+ * @brief Time to wait before re-attempting to bind to a port.
+ * @ingroup Federated
+ *
  * When a process closes, the network stack typically waits between 30 and 120
  * seconds before releasing the port.  This is to allow for delayed packets so
  * that a new process does not receive packets from a previous process.
@@ -49,12 +87,15 @@
 #define PORT_BIND_RETRY_INTERVAL SEC(1)
 
 /**
- * Number of attempts to bind to a port before giving up.
+ * @brief Number of attempts to bind to a port before giving up.
+ * @ingroup Federated
  */
 #define PORT_BIND_RETRY_LIMIT 60
 
 /**
- * Default port number for the RTI.
+ * @brief Default port number for the RTI.
+ * @ingroup Federated
+ *
  * Unless a specific port has been specified by the LF program in the "at"
  * for the RTI or on the command line, when the RTI starts up, it will attempt
  * to open a socket server on this port.
@@ -62,21 +103,23 @@
 #define DEFAULT_PORT 15045u
 
 /**
- * Byte identifying that the federate or the RTI has failed.
+ * @brief Byte identifying that the federate or the RTI has failed.
+ * @ingroup Federated
  */
 #define MSG_TYPE_FAILED 25
 
+/**
+ * @brief Type of socket.
+ * @ingroup Federated
+ */
 typedef enum socket_type_t { TCP, UDP } socket_type_t;
 
 /**
- * Mutex protecting socket close operations.
- */
-extern lf_mutex_t socket_mutex;
-
-/**
- * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
- * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
- * on any error.
+ * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled.
+ * @ingroup Federated
+ *
+ * This uses TCP_NODELAY and Delayed ACKs disabled with TCP_QUICKACK.
+ * It exits application on any error.
  *
  * @return The socket ID (a file descriptor).
  */
@@ -84,6 +127,7 @@ int create_real_time_tcp_socket_errexit();
 
 /**
  * @brief Create a TCP server that listens for socket connections.
+ * @ingroup Federated
  *
  * If the specified port number is greater than zero, this function will attempt to acquire that port.
  * If the specified port number is zero, and the increment_port_on_retry is true, it will attempt to acquire
@@ -106,7 +150,9 @@ int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket
                   bool increment_port_on_retry);
 
 /**
- * Wait for an incoming connection request on the specified server socket.
+ * @brief Wait for an incoming connection request on the specified server socket.
+ * @ingroup Federated
+ *
  * This blocks until a connection is successfully accepted. If an error occurs that is not
  * temporary (e.g., `EAGAIN` or `EWOULDBLOCK`), it reports the error and exits. Temporary
  * errors cause the function to retry accepting the connection.
@@ -125,6 +171,8 @@ int create_server(uint16_t port, int* final_socket, uint16_t* final_port, socket
 int accept_socket(int socket, int rti_socket);
 
 /**
+ * @brief Attempt to establish a TCP connection to the specified hostname and port.
+ * @ingroup Federated
  *
  * Attempt to establish a TCP connection to the specified hostname
  * and port. This function uses `getaddrinfo` to resolve the hostname and retries the connection
@@ -140,7 +188,9 @@ int accept_socket(int socket, int rti_socket);
 int connect_to_socket(int sock, const char* hostname, int port);
 
 /**
- * Read the specified number of bytes from the specified socket into the specified buffer.
+ * @brief Read the specified number of bytes from the specified socket into the specified buffer.
+ * @ingroup Federated
+ *
  * If an error occurs during this reading, return -1 and set errno to indicate
  * the cause of the error. If the read succeeds in reading the specified number of bytes,
  * return 0. If an EOF occurs before reading the specified number of bytes, return 1.
@@ -156,9 +206,11 @@ int connect_to_socket(int sock, const char* hostname, int port);
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
 /**
- * Read the specified number of bytes to the specified socket using read_from_socket
- * and close the socket if an error occurs. If an error occurs, this will change the
- * socket ID pointed to by the first argument to -1 and will return -1.
+ * @brief Read the specified number of bytes from the specified socket into the specified buffer.
+ * @ingroup Federated
+ *
+ * This uses @ref read_from_socket, but if a failure occurs, it closes the socket using
+ * @ref shutdown_socket and returns -1. Otherwise, it returns 0.
  * @param socket Pointer to the socket ID.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
@@ -167,9 +219,12 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
 
 /**
- * Read the specified number of bytes from the specified socket into the
- * specified buffer. If a disconnect or an EOF occurs during this
- * reading, then if format is non-null, report an error and exit.
+ * @brief Read the specified number of bytes from the specified socket into the specified
+ * buffer and close the socket if an error occurs.
+ * @ingroup Federated
+ *
+ * If a disconnect or an EOF occurs during this reading, then if format is non-null,
+ * report an error and exit.
  * If the mutex argument is non-NULL, release the mutex before exiting.
  * If format is null, then report the error, but do not exit.
  * This function takes a formatted string and additional optional arguments
@@ -179,26 +234,27 @@ int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char
  * @param buffer The buffer into which to put the bytes.
  * @param format A printf-style format string, followed by arguments to
  *  fill the string, or NULL to not exit with an error message.
- * @return The number of bytes read, or 0 if an EOF is received, or
- *  a negative number for an error.
  */
-void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
-                                    char* format, ...);
+void read_from_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, char* format, ...);
 
 /**
- * Without blocking, peek at the specified socket and, if there is
- * anything on the queue, put its first byte at the specified address and return 1.
- * If there is nothing on the queue, return 0, and if an error occurs,
- * return -1.
+ * @brief Without blocking, peek at the specified socket.
+ * @ingroup Federated
+ *
+ * If there is anything on the queue, put its first byte at the specified address and return 1.
+ * If there is nothing on the queue, return 0, and if an error occurs, return -1.
+ *
  * @param socket The socket ID.
  * @param result Pointer to where to put the first byte available on the socket.
  */
 ssize_t peek_from_socket(int socket, unsigned char* result);
 
 /**
- * Write the specified number of bytes to the specified socket from the
- * specified buffer. If an error occurs, return -1 and set errno to indicate
- * the cause of the error. If the write succeeds, return 0.
+ * @brief Write the specified number of bytes to the specified socket from the specified buffer.
+ * @ingroup Federated
+ *
+ * If an error occurs, return -1 and set errno to indicate the cause of the error.
+ * If the write succeeds, return 0.
  * This function repeats the attempt until the specified number of bytes
  * have been written or an error occurs. Specifically, errors EAGAIN,
  * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
@@ -212,9 +268,12 @@ ssize_t peek_from_socket(int socket, unsigned char* result);
 int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
 /**
- * Write the specified number of bytes to the specified socket using write_to_socket
- * and close the socket if an error occurs. If an error occurs, this will change the
- * socket ID pointed to by the first argument to -1 and will return -1.
+ * @brief Write the specified number of bytes to the specified socket.
+ * @ingroup Federated
+ *
+ * This uses @ref write_to_socket and closes the socket if an error occurs.
+ * If an error occurs, this will change the socket ID pointed to by the first argument to -1 and will return -1.
+ *
  * @param socket Pointer to the socket ID.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
@@ -223,12 +282,15 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
 int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
 
 /**
- * Write the specified number of bytes to the specified socket using
- * write_to_socket_close_on_error and exit with an error code if an error occurs.
- * If the mutex argument is non-NULL, release the mutex before exiting.  If the
- * format argument is non-null, then use it an any additional arguments to form
+ * @brief Write the specified number of bytes to the specified socket.
+ * @ingroup Federated
+ *
+ * This uses @ref write_to_socket_close_on_error and exits with an error code if an error occurs.
+ * If the mutex argument is non-NULL, release the mutex before exiting.
+ * If the format argument is non-null, then use it an any additional arguments to form
  * the error message using printf conventions. Otherwise, print a generic error
  * message.
+ *
  * @param socket Pointer to the socket ID.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
@@ -239,5 +301,30 @@ int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char*
  */
 void write_to_socket_fail_on_error(int* socket, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                    char* format, ...);
+
+/**
+ * @brief Initialize shutdown mutex.
+ * @ingroup Federated
+ *
+ * This is used to synchronize the shutdown of the federate.
+ */
+void init_shutdown_mutex(void);
+
+/**
+ * @brief Shutdown and close the socket.
+ * @ingroup Federated
+ *
+ * If `read_before_closing` is false, this calls `shutdown` with `SHUT_RDWR`, shutting down both directions.
+ * If this fails, then it calls `close`.
+ * If read_before_closing is true, this calls `shutdown` with `SHUT_WR`, only disallowing further writing.
+ * If this succeeds, then it calls `read` until an `EOF` is received and discards all received bytes,
+ * otherwise it calls `close`.
+ * In all cases, the socket ID pointed to by the `socket` argument is set to -1.
+ *
+ * @param socket Pointer to the socket descriptor to shutdown and close.
+ * @param read_before_closing If true, read until EOF before closing the socket.
+ * @return int 0 for success and -1 if either `shutdown` or `close` returns an error.
+ */
+int shutdown_socket(int* socket, bool read_before_closing);
 
 #endif /* SOCKET_COMMON_H */

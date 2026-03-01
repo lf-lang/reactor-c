@@ -3,14 +3,14 @@
  * @author Edward A. Lee
  * @author Soroush Bateni
  * @author Hou Seng (Steven) Wong
- * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ *
  * @brief Implementation of time and tag functions for Lingua Franca programs.
  */
 
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "tag.h"
@@ -118,6 +118,22 @@ int lf_tag_compare(tag_t tag1, tag_t tag2) {
     return 1;
   } else {
     return 0;
+  }
+}
+
+tag_t lf_tag_max(tag_t tag1, tag_t tag2) {
+  if (lf_tag_compare(tag1, tag2) < 0) {
+    return tag2;
+  } else {
+    return tag1;
+  }
+}
+
+tag_t lf_tag_min(tag_t tag1, tag_t tag2) {
+  if (lf_tag_compare(tag1, tag2) < 0) {
+    return tag1;
+  } else {
+    return tag2;
   }
 }
 
@@ -305,4 +321,32 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     result += 4;
   }
   return result;
+}
+
+int lf_time_parse(const char* time_str, const char* units_str, interval_t* result) {
+  char* end;
+  int value = (int)strtol(time_str, &end, 10);
+  if (*end != '\0') {
+    return -1;
+  }
+  if (strncmp(units_str, "nsec", 4) == 0 || strcmp(units_str, "ns") == 0) {
+    *result = NSEC(value);
+  } else if (strncmp(units_str, "usec", 4) == 0 || strcmp(units_str, "us") == 0) {
+    *result = USEC(value);
+  } else if (strncmp(units_str, "msec", 4) == 0 || strcmp(units_str, "ms") == 0) {
+    *result = MSEC(value);
+  } else if (strncmp(units_str, "second", 6) == 0 || strncmp(units_str, "sec", 3) == 0 || strcmp(units_str, "s") == 0) {
+    *result = SEC(value);
+  } else if (strncmp(units_str, "minute", 6) == 0 || strncmp(units_str, "min", 3) == 0) {
+    *result = MINUTE(value);
+  } else if (strncmp(units_str, "hour", 4) == 0) {
+    *result = HOUR(value);
+  } else if (strncmp(units_str, "day", 3) == 0) {
+    *result = DAY(value);
+  } else if (strncmp(units_str, "week", 4) == 0) {
+    *result = WEEK(value);
+  } else {
+    return -2;
+  }
+  return 0;
 }
