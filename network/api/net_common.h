@@ -364,6 +364,10 @@
  */
 #define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(instant_t))
 
+/**
+ * @brief The length of a timestamp message with an effective start tag.
+ * @ingroup Federated
+ */
 #define MSG_TYPE_TIMESTAMP_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(tag_t))
 
 /**
@@ -817,6 +821,7 @@ typedef enum {
   RTI_NOT_EXECUTED_WITH_AUTH = 7,
   JOINING_TOO_LATE = 8
 } rejection_code_t;
+
 #define FEDERATION_ID_DOES_NOT_MATCH 1
 
 /**

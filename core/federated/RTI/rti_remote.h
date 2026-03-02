@@ -135,7 +135,8 @@ typedef struct rti_remote_t {
   volatile bool all_federates_exited;
 
   /**
-   * Boolean indicating that all persistent federates have exited.
+   * @brief Boolean indicating that all persistent federates have exited.
+   *
    * This gets set to true exactly once before the program waits for
    * persistent federates, then exits.
    * It is marked volatile because the write is not guarded by a mutex.
@@ -453,7 +454,9 @@ void* respond_to_erroneous_connections(void* nothing);
 void initialize_federate(federate_info_t* fed, uint16_t id);
 
 /**
- * Reset the federate. The federate has to be transient.
+ * @brief Reset the federate. The federate has to be transient.
+ * @ingroup RTI
+ *
  * @param fed A pointer to the federate
  */
 void reset_transient_federate(federate_info_t* fed);

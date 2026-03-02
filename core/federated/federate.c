@@ -884,7 +884,7 @@ static int perform_hmac_authentication() {
     if (received[0] == MSG_TYPE_FAILED) {
       lf_print_error("RTI has failed.");
       return -1;
-    } else if (received[0] == MSG_TYPE_REJECT && received[1] == RTI_NOT_EXECUTED_WITH_AUTH) {
+    } else if (received[0] == MSG_TYPE_REJECT && received[1] == (unsigned char)RTI_NOT_EXECUTED_WITH_AUTH) {
       lf_print_error("RTI is not executed with HMAC option.");
       return -1;
     } else {
@@ -907,7 +907,7 @@ static int perform_hmac_authentication() {
     lf_print_error("HMAC authentication failed.");
     unsigned char response[2];
     response[0] = MSG_TYPE_REJECT;
-    response[1] = HMAC_DOES_NOT_MATCH;
+    response[1] = (unsigned char)HMAC_DOES_NOT_MATCH;
 
     // Ignore errors on writing back.
     write_to_net(_fed.net_to_RTI, 2, response);
@@ -994,15 +994,15 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
       if (buffer[0] == MSG_TYPE_FAILED) {
         lf_print_error_and_exit("RTI has failed.");
       } else if (buffer[0] == MSG_TYPE_UPSTREAM_CONNECTED) {
-        // We need to handle this message and continue waiting for MSG_TYPE_TIMESTAMP_START to arrive
+        // We need to handle this message and continue waiting for MSG_TYPE_TIMESTAMP to arrive
         handle_upstream_connected_message();
         continue;
       } else if (buffer[0] == MSG_TYPE_UPSTREAM_DISCONNECTED) {
-        // We need to handle this message and continue waiting for MSG_TYPE_TIMESTAMP_START to arrive
+        // We need to handle this message and continue waiting for MSG_TYPE_TIMESTAMP to arrive
         handle_upstream_disconnected_message();
         continue;
       } else {
-        lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP_START message from the RTI. Got %u (see net_common.h).",
+        lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP message from the RTI. Got %u (see net_common.h).",
                                 buffer[0]);
       }
     } else {
@@ -1011,6 +1011,8 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
       break;
     }
   }
+
+  LF_PRINT_DEBUG("Read %zu bytes.", buffer_length);
 
   instant_t timestamp = extract_int64(&(buffer[1]));
   if (_fed.is_transient) {
@@ -2059,7 +2061,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
       // Read one more byte to determine the cause of rejection.
       unsigned char cause;
       read_from_net_fail_on_error(_fed.net_to_RTI, 1, &cause, "Failed to read the cause of rejection by the RTI.");
-      if (cause == FEDERATION_ID_DOES_NOT_MATCH || cause == WRONG_SERVER) {
+      if (cause == (unsigned char)FEDERATION_ID_DOES_NOT_MATCH || cause == (unsigned char)WRONG_SERVER) {
         lf_print_warning("Connected to the wrong RTI. Will try again");
         continue;
       }
@@ -2178,7 +2180,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         // Wrong message received.
         unsigned char response[2];
         response[0] = MSG_TYPE_REJECT;
-        response[1] = WRONG_SERVER;
+        response[1] = (unsigned char)WRONG_SERVER;
         // Trace the event when tracing is enabled
         tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
         // Ignore errors on this response.
@@ -2198,7 +2200,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       if (read_failed == 0) {
         unsigned char response[2];
         response[0] = MSG_TYPE_REJECT;
-        response[1] = FEDERATION_ID_DOES_NOT_MATCH;
+        response[1] = (unsigned char)FEDERATION_ID_DOES_NOT_MATCH;
         // Trace the event when tracing is enabled
         tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
         // Ignore errors on this response.

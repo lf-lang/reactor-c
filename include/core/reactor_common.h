@@ -29,6 +29,41 @@
 #include "modes.h"
 #include "port.h"
 
+//////////////////////  CLI Parameter Table  //////////////////////
+
+/**
+ * @brief Type tag for a user-defined CLI parameter.
+ * @ingroup Internal
+ */
+typedef enum {
+  CLI_TIME,   ///< interval_t, parsed as value + units (e.g., "500 msec").
+  CLI_INT,    ///< int, parsed with atoi.
+  CLI_DOUBLE, ///< double, parsed with strtod.
+  CLI_FLOAT,  ///< float, parsed with strtof.
+  CLI_BOOL,   ///< bool, parsed as "true"/"false" or "1"/"0".
+  CLI_STRING  ///< const char*, set directly from the argument string.
+} lf_cli_type_t;
+
+/**
+ * @brief Descriptor for a user-defined main reactor parameter overridable from the command line.
+ * @ingroup Internal
+ *
+ * The code generator populates an array of these structs so that the runtime
+ * can parse user parameters in a table-driven fashion, without generating
+ * large if-else chains.
+ */
+typedef struct {
+  const char* name;        ///< Parameter name (e.g., "period").
+  lf_cli_type_t type;      ///< The type of the parameter value.
+  void* value;             ///< Pointer to the storage variable.
+  bool* given;             ///< Pointer to a bool that is set to true when the arg is provided.
+  const char* description; ///< Description for the help message (e.g., "time value (default: 1 sec)").
+  bool is_width;           ///< True if this parameter is used for multiport/bank widths (not overridable).
+} lf_cli_param_t;
+
+extern lf_cli_param_t* _lf_cli_params;
+extern int _lf_cli_params_count;
+
 //////////////////////  Constants & Macros  //////////////////////
 
 /**
@@ -362,6 +397,31 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
  * @param argv The command-line arguments.
  */
 int process_args(int argc, const char* argv[]);
+
+/**
+ * @brief Process user-defined main reactor parameters from the command line.
+ * @ingroup Internal
+ *
+ * Parses user-defined parameters from argv using the table in _lf_cli_params.
+ * Recognized parameters are consumed; the remaining arguments are copied into
+ * newargv/newargc so they can be forwarded to lf_reactor_c_main().
+ *
+ * @param argc The number of command-line arguments.
+ * @param argv The command-line arguments.
+ * @param newargc Output: number of remaining (unrecognized) arguments.
+ * @param newargv Output: array of remaining arguments (must be pre-allocated to at least argc).
+ * @return 0 on success, non-zero on error (the program should exit).
+ */
+int process_user_args(int argc, const char* argv[], int* newargc, const char** newargv);
+
+/**
+ * @brief Print a usage message listing both user-defined parameters and runtime options.
+ * @ingroup Internal
+ *
+ * @param argc The number of command-line arguments.
+ * @param argv The command-line arguments.
+ */
+void usage(int argc, const char* argv[]);
 
 /**
  * @brief Initialize global variables and start tracing before calling the

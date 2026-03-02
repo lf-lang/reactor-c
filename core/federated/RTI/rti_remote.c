@@ -2291,7 +2291,7 @@ void* respond_to_erroneous_connections(void* nothing) {
     lf_print_error("RTI received an unexpected connection request. Federation is running.");
     unsigned char response[2];
     response[0] = MSG_TYPE_REJECT;
-    response[1] = FEDERATION_ID_DOES_NOT_MATCH;
+    response[1] = (unsigned char)FEDERATION_ID_DOES_NOT_MATCH;
     // Ignore errors on this response.
     if (write_to_net(fed_net, 2, response)) {
       lf_print_warning("RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
