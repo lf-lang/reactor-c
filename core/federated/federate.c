@@ -937,7 +937,7 @@ static int perform_hmac_authentication() {
 static void handle_upstream_connected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
-  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+  read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer, NULL,
                                  "Failed to read upstream connected message from RTI.");
   uint16_t connected = extract_uint16(buffer);
   LF_PRINT_DEBUG("Received notification that upstream federate %d has connected", connected);
@@ -956,7 +956,7 @@ static void handle_upstream_connected_message(void) {
 static void handle_upstream_disconnected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
-  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+  read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer, NULL,
                                  "Failed to read upstream disconnected message from RTI.");
   uint16_t disconnected = extract_uint16(buffer);
   LF_PRINT_DEBUG("Received notification that upstream federate %d has disconnected", disconnected);

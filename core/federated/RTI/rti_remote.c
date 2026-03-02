@@ -243,7 +243,7 @@ static void send_upstream_connected_locked(federate_info_t* destination, federat
   unsigned char buffer[MSG_TYPE_UPSTREAM_CONNECTED_LENGTH];
   buffer[0] = MSG_TYPE_UPSTREAM_CONNECTED;
   encode_uint16(connected->enclave.id, &buffer[1]);
-  if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_UPSTREAM_CONNECTED_LENGTH, buffer)) {
+  if (write_to_net_close_on_error(destination->net, MSG_TYPE_UPSTREAM_CONNECTED_LENGTH, buffer)) {
     lf_print_warning("RTI: Failed to send upstream connected message to federate %d.", destination->enclave.id);
   }
 }
@@ -259,7 +259,7 @@ static void send_upstream_disconnected_locked(federate_info_t* destination, fede
   unsigned char buffer[MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH];
   buffer[0] = MSG_TYPE_UPSTREAM_DISCONNECTED;
   encode_uint16(disconnected->enclave.id, &buffer[1]);
-  if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
+  if (write_to_net_close_on_error(destination->net, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
     lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.", disconnected->enclave.id);
   }
 }
@@ -1030,7 +1030,7 @@ static void send_start_tag_locked(federate_info_t* my_fed, instant_t federation_
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &federate_start_tag);
   }
-  if (write_to_socket(my_fed->socket, buffer_size, start_time_buffer)) {
+  if (write_to_net(my_fed->net, buffer_size, start_time_buffer)) {
     lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
   } else {
     // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP_START
@@ -1106,7 +1106,7 @@ void handle_timestamp(federate_info_t* my_fed) {
 
     // Send reject message if the federation is in shutdown phase or if
     // it is in the execution phase but the federate is persistent.
-    send_reject(&my_fed->socket, JOINING_TOO_LATE);
+    send_reject(my_fed->net, JOINING_TOO_LATE);
     return;
   } else {
     // The federate is transient and we are in the execution phase.
@@ -1544,7 +1544,6 @@ void* federate_info_thread_TCP(void* fed) {
   if (my_fed->is_transient) {
     // FIXME: Aren't there transit messages anymore???
     // free_in_transit_message_q(my_fed->in_transit_message_tags);
-    lf_print("RTI: Transient Federate %d thread exited. and socket_id is: %d ", my_fed->enclave.id, my_fed->socket);
 
     // Update the number of connected transient federates
     rti_remote->number_of_connected_transient_federates--;
@@ -2123,7 +2122,7 @@ void send_stop(federate_info_t* fed) {
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_to_federate(send_STOP, fed->enclave.id, NULL);
   }
-  write_to_socket_fail_on_error(&(fed->socket), MSG_TYPE_STOP_LENGTH, outgoing_buffer, NULL,
+  write_to_net_fail_on_error(fed->net, MSG_TYPE_STOP_LENGTH, outgoing_buffer, NULL,
                                 "RTI failed to send MSG_TYPE_STOP message to federate %d.", fed->enclave.id);
 
   LF_PRINT_LOG("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
@@ -2134,17 +2133,18 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
   while (!rti_remote->all_persistent_federates_exited) {
     // Continue waiting for an incoming connection requests from transients to join, or for hot swap.
     // Wait for an incoming connection request.
-    int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
+    net_abstraction_t fed_net = accept_net(rti_remote->rti_net);
+    if(fed_net == NULL){
+      return NULL;
+    }
 
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
     if (rti_remote->authentication_enabled) {
-      if (!authenticate_federate(&socket_id)) {
+      if (!authenticate_federate(fed_net)) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
-        // Close the socket.
-        shutdown(socket_id, SHUT_RDWR);
-        close(socket_id);
-        socket_id = -1;
+        // Close the network abstraction
+        shutdown_net(fed_net, false);
         continue;
       }
     }
@@ -2152,10 +2152,10 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
 
     // The first message from the federate should contain its ID and the federation ID.
     // The function also detects if a hot swap request is initiated.
-    int32_t fed_id = receive_and_check_fed_id_message(&socket_id);
+    int32_t fed_id = receive_and_check_fed_id_message(fed_net);
 
-    if (fed_id >= 0 && receive_connection_information(&socket_id, (uint16_t)fed_id) &&
-        receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
+    if (fed_id >= 0 && receive_connection_information(fed_net, (uint16_t)fed_id) &&
+        receive_udp_message_and_set_up_clock_sync(fed_net, (uint16_t)fed_id)) {
       LF_MUTEX_LOCK(&rti_mutex);
       if (hot_swap_in_progress) {
         lf_print("RTI: Hot swap confirmed for federate %d.", fed_id);
@@ -2307,9 +2307,6 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   fed->requested_stop = false;
   fed->clock_synchronization_enabled = true;
   fed->in_transit_message_tags = pqueue_tag_init(10);
-  strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
-  fed->server_ip_addr.s_addr = 0;
-  fed->server_port = -1;
   fed->has_upstream_transient_federates = false;
   fed->is_transient = true;
   fed->effective_start_tag = NEVER_TAG;
@@ -2322,14 +2319,11 @@ void reset_transient_federate(federate_info_t* fed) {
   fed->enclave.last_provisionally_granted = NEVER_TAG;
   fed->enclave.next_event = NEVER_TAG;
   // Reset of the federate-related attributes
-  fed->socket = -1; // No socket.
+  fed->net = NULL; // No socket.
   fed->clock_synchronization_enabled = true;
   // FIXME: The following two lines can be improved?
   pqueue_tag_free(fed->in_transit_message_tags);
   fed->in_transit_message_tags = pqueue_tag_init(10);
-  strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
-  fed->server_ip_addr.s_addr = 0;
-  fed->server_port = -1;
   fed->requested_stop = false;
   fed->effective_start_tag = NEVER_TAG;
   // Whenver a transient resigns or leaves, invalidate all federates, so that all min_delays_upstream
