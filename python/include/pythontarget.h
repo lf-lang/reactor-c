@@ -116,7 +116,7 @@ PyObject* py_register_user_trace_event(PyObject* self, PyObject* args);
  * @brief Trace a user-defined event at the current logical time.
  *
  * @param self The Python object of the reactor.
- * @param args (py_self, description_or_handle) where handle is from register_user_trace_event.
+ * @param args (py_self, handle) where handle is from register_user_trace_event.
  */
 PyObject* py_tracepoint_user_event(PyObject* self, PyObject* args);
 
@@ -124,7 +124,7 @@ PyObject* py_tracepoint_user_event(PyObject* self, PyObject* args);
  * @brief Trace a user-defined event with a value at the current logical time.
  *
  * @param self The Python object of the reactor.
- * @param args (py_self, description_or_handle, value: int).
+ * @param args (py_self, handle, value: int).
  */
 PyObject* py_tracepoint_user_value(PyObject* self, PyObject* args);
 

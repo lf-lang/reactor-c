@@ -272,21 +272,21 @@ PyObject* py_register_user_trace_event(PyObject* self, PyObject* args) {
 }
 
 /**
- * Trace a user-defined event. The description_or_handle must be the handle
+ * Trace a user-defined event. The handle must be the handle
  * returned by register_user_trace_event (an int).
  */
 PyObject* py_tracepoint_user_event(PyObject* self, PyObject* args) {
   PyObject* py_self;
-  PyObject* description_or_handle = NULL;
+  PyObject* handle = NULL;
 
-  if (!PyArg_ParseTuple(args, "OO", &py_self, &description_or_handle)) {
+  if (!PyArg_ParseTuple(args, "OO", &py_self, &handle)) {
     return NULL;
   }
   void* self_ptr = get_lf_self_pointer(py_self);
   if (self_ptr == NULL) {
     return NULL;
   }
-  char* desc_ptr = (char*)PyLong_AsVoidPtr(description_or_handle);
+  char* desc_ptr = (char*)PyLong_AsVoidPtr(handle);
   if (desc_ptr == NULL && PyErr_Occurred()) {
     return NULL;
   }
@@ -297,22 +297,22 @@ PyObject* py_tracepoint_user_event(PyObject* self, PyObject* args) {
 }
 
 /**
- * Trace a user-defined event with a value. The description_or_handle must be
+ * Trace a user-defined event with a value. The handle must be
  * the handle returned by register_user_trace_event (an int).
  */
 PyObject* py_tracepoint_user_value(PyObject* self, PyObject* args) {
   PyObject* py_self;
-  PyObject* description_or_handle = NULL;
+  PyObject* handle = NULL;
   long value = 0;
 
-  if (!PyArg_ParseTuple(args, "OOl", &py_self, &description_or_handle, &value)) {
+  if (!PyArg_ParseTuple(args, "OOl", &py_self, &handle, &value)) {
     return NULL;
   }
   void* self_ptr = get_lf_self_pointer(py_self);
   if (self_ptr == NULL) {
     return NULL;
   }
-  char* desc_ptr = (char*)PyLong_AsVoidPtr(description_or_handle);
+  char* desc_ptr = (char*)PyLong_AsVoidPtr(handle);
   if (desc_ptr == NULL && PyErr_Occurred()) {
     return NULL;
   }
