@@ -9,6 +9,7 @@
 #include "pythontarget.h"
 #include "modal_models/definitions.h"
 #include "platform.h" // defines MAX_PATH on Windows
+#include <stdlib.h>
 #include <string.h>
 #include "python_action.h"
 #include "python_port.h"
@@ -258,14 +259,16 @@ PyObject* py_register_user_trace_event(PyObject* self, PyObject* args) {
   if (self_ptr == NULL) {
     return NULL;
   }
-  char* desc_copy = strdup(description);
+  size_t len = strlen(description) + 1;
+  /* Allocate on the reactor's allocation record so it is freed when the reactor is deallocated. */
+  char* desc_copy = (char*)lf_allocate(len, 1, &((self_base_t*)self_ptr)->allocations);
   if (desc_copy == NULL) {
     PyErr_NoMemory();
     return NULL;
   }
+  memcpy(desc_copy, description, len);
   int result = register_user_trace_event(self_ptr, desc_copy);
   if (!result) {
-    free(desc_copy);
     return PyLong_FromLong(0);
   }
   return PyLong_FromVoidPtr(desc_copy);
@@ -290,7 +293,9 @@ PyObject* py_tracepoint_user_event(PyObject* self, PyObject* args) {
   if (desc_ptr == NULL && PyErr_Occurred()) {
     return NULL;
   }
-  tracepoint_user_event(self_ptr, desc_ptr);
+  if (desc_ptr != NULL) {
+    tracepoint_user_event(self_ptr, desc_ptr);
+  }
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -303,9 +308,9 @@ PyObject* py_tracepoint_user_event(PyObject* self, PyObject* args) {
 PyObject* py_tracepoint_user_value(PyObject* self, PyObject* args) {
   PyObject* py_self;
   PyObject* handle = NULL;
-  long value = 0;
+  long long value = 0;
 
-  if (!PyArg_ParseTuple(args, "OOl", &py_self, &handle, &value)) {
+  if (!PyArg_ParseTuple(args, "OOL", &py_self, &handle, &value)) {
     return NULL;
   }
   void* self_ptr = get_lf_self_pointer(py_self);
@@ -316,7 +321,9 @@ PyObject* py_tracepoint_user_value(PyObject* self, PyObject* args) {
   if (desc_ptr == NULL && PyErr_Occurred()) {
     return NULL;
   }
-  tracepoint_user_value(self_ptr, desc_ptr, (long long)value);
+  if (desc_ptr != NULL) {
+    tracepoint_user_value(self_ptr, desc_ptr, value);
+  }
 
   Py_INCREF(Py_None);
   return Py_None;
