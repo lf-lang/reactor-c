@@ -102,6 +102,32 @@ PyObject* py_package_directory(PyObject* self, PyObject* args);
  */
 PyObject* py_check_deadline(PyObject* self, PyObject* args);
 
+/**
+ * @brief Register a user trace event. Returns an opaque handle for use with
+ * tracepoint_user_event and tracepoint_user_value.
+ *
+ * @param self The Python object of the reactor.
+ * @param args (py_self, description: str).
+ * @return PyLong (handle) or 0 if tracing is disabled or registration failed.
+ */
+PyObject* py_register_user_trace_event(PyObject* self, PyObject* args);
+
+/**
+ * @brief Trace a user-defined event at the current logical time.
+ *
+ * @param self The Python object of the reactor.
+ * @param args (py_self, handle) where handle is from register_user_trace_event.
+ */
+PyObject* py_tracepoint_user_event(PyObject* self, PyObject* args);
+
+/**
+ * @brief Trace a user-defined event with a value at the current logical time.
+ *
+ * @param self The Python object of the reactor.
+ * @param args (py_self, handle, value: int).
+ */
+PyObject* py_tracepoint_user_value(PyObject* self, PyObject* args);
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 

@@ -9,6 +9,8 @@
 #include "pythontarget.h"
 #include "modal_models/definitions.h"
 #include "platform.h" // defines MAX_PATH on Windows
+#include <stdlib.h>
+#include <string.h>
 #include "python_action.h"
 #include "python_port.h"
 #include "python_tag.h"
@@ -19,6 +21,7 @@
 #include "util.h"
 #include "environment.h"
 #include "api/schedule.h"
+#include "tracepoint.h"
 
 ////////////// Global variables ///////////////
 // The global Python object that holds the .py module that the
@@ -240,6 +243,92 @@ PyObject* py_check_deadline(PyObject* self, PyObject* args) {
   return PyBool_FromLong(result);
 }
 
+/**
+ * Register a user trace event. Returns an opaque handle (as a Python int)
+ * that must be passed to tracepoint_user_event and tracepoint_user_value.
+ * When tracing is disabled, returns 0 and tracepoint calls are no-ops.
+ */
+PyObject* py_register_user_trace_event(PyObject* self, PyObject* args) {
+  PyObject* py_self;
+  const char* description = NULL;
+
+  if (!PyArg_ParseTuple(args, "Os", &py_self, &description)) {
+    return NULL;
+  }
+  void* self_ptr = get_lf_self_pointer(py_self);
+  if (self_ptr == NULL) {
+    return NULL;
+  }
+  size_t len = strlen(description) + 1;
+  /* Allocate on the reactor's allocation record so it is freed when the reactor is deallocated. */
+  char* desc_copy = (char*)lf_allocate(len, 1, &((self_base_t*)self_ptr)->allocations);
+  if (desc_copy == NULL) {
+    PyErr_NoMemory();
+    return NULL;
+  }
+  memcpy(desc_copy, description, len);
+  int result = register_user_trace_event(self_ptr, desc_copy);
+  if (!result) {
+    return PyLong_FromLong(0);
+  }
+  return PyLong_FromVoidPtr(desc_copy);
+}
+
+/**
+ * Trace a user-defined event. The handle must be the handle
+ * returned by register_user_trace_event (an int).
+ */
+PyObject* py_tracepoint_user_event(PyObject* self, PyObject* args) {
+  PyObject* py_self;
+  PyObject* handle = NULL;
+
+  if (!PyArg_ParseTuple(args, "OO", &py_self, &handle)) {
+    return NULL;
+  }
+  void* self_ptr = get_lf_self_pointer(py_self);
+  if (self_ptr == NULL) {
+    return NULL;
+  }
+  char* desc_ptr = (char*)PyLong_AsVoidPtr(handle);
+  if (desc_ptr == NULL && PyErr_Occurred()) {
+    return NULL;
+  }
+  if (desc_ptr != NULL) {
+    tracepoint_user_event(self_ptr, desc_ptr);
+  }
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+/**
+ * Trace a user-defined event with a value. The handle must be
+ * the handle returned by register_user_trace_event (an int).
+ */
+PyObject* py_tracepoint_user_value(PyObject* self, PyObject* args) {
+  PyObject* py_self;
+  PyObject* handle = NULL;
+  long long value = 0;
+
+  if (!PyArg_ParseTuple(args, "OOL", &py_self, &handle, &value)) {
+    return NULL;
+  }
+  void* self_ptr = get_lf_self_pointer(py_self);
+  if (self_ptr == NULL) {
+    return NULL;
+  }
+  char* desc_ptr = (char*)PyLong_AsVoidPtr(handle);
+  if (desc_ptr == NULL && PyErr_Occurred()) {
+    return NULL;
+  }
+  if (desc_ptr != NULL) {
+    tracepoint_user_value(self_ptr, desc_ptr, value);
+  }
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 
@@ -293,6 +382,12 @@ static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
     {"check_deadline", (PyCFunction)py_check_deadline, METH_VARARGS,
      "Check whether the deadline of the currently executing reaction has passed"},
+    {"register_user_trace_event", (PyCFunction)py_register_user_trace_event, METH_VARARGS,
+     "Register a user trace event; returns a handle for use with tracepoint_user_event and tracepoint_user_value"},
+    {"tracepoint_user_event", (PyCFunction)py_tracepoint_user_event, METH_VARARGS,
+     "Trace a user-defined event (pass the handle from register_user_trace_event)"},
+    {"tracepoint_user_value", (PyCFunction)py_tracepoint_user_value, METH_VARARGS,
+     "Trace a user-defined event with a value (pass the handle from register_user_trace_event)"},
     {NULL, NULL, 0, NULL}};
 
 /**
