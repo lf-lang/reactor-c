@@ -359,7 +359,12 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
   Py_BEGIN_ALLOW_THREADS lf_reactor_c_main(argc, argv);
   Py_END_ALLOW_THREADS
 
-      Py_INCREF(Py_None);
+#ifdef LF_TRACE
+  // Ensure trace buffers are flushed for Python runs
+  lf_tracing_global_shutdown();
+#endif
+
+  Py_INCREF(Py_None);
   return Py_None;
 }
 
