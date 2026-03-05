@@ -16,7 +16,7 @@
 #include "python_tag.h"
 #include "python_time.h"
 #include "reactor.h"
-#include "reactor.h"
+#include "reactor_common.h"
 #include "tag.h"
 #include "util.h"
 #include "environment.h"
@@ -359,13 +359,11 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
   Py_BEGIN_ALLOW_THREADS lf_reactor_c_main(argc, argv);
   Py_END_ALLOW_THREADS
 
-#ifdef LF_TRACE
   // Ensure trace buffers are flushed for Python runs.
   // Call termination() instead of lf_tracing_global_shutdown() directly
   // so that the atexit-registered termination() will not perform a
   // second, unsafe shutdown.
   termination();
-#endif
 
   Py_INCREF(Py_None);
   return Py_None;
