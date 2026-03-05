@@ -360,8 +360,11 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
   Py_END_ALLOW_THREADS
 
 #ifdef LF_TRACE
-  // Ensure trace buffers are flushed for Python runs
-  lf_tracing_global_shutdown();
+  // Ensure trace buffers are flushed for Python runs.
+  // Call termination() instead of lf_tracing_global_shutdown() directly
+  // so that the atexit-registered termination() will not perform a
+  // second, unsafe shutdown.
+  termination();
 #endif
 
   Py_INCREF(Py_None);
