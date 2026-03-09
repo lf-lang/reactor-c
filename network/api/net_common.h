@@ -822,48 +822,4 @@ typedef enum {
   JOINING_TOO_LATE = 8
 } rejection_code_t;
 
-#define FEDERATION_ID_DOES_NOT_MATCH 1
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * federate ID is already in use.
- * @ingroup Network
- */
-#define FEDERATE_ID_IN_USE 2
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * federate ID is out of range.
- * @ingroup Network
- */
-#define FEDERATE_ID_OUT_OF_RANGE 3
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * incoming message is not expected.
- * @ingroup Network
- */
-#define UNEXPECTED_MESSAGE 4
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * connected to the wrong server.
- * @ingroup Network
- */
-#define WRONG_SERVER 5
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * HMAC authentication failed.
- * @ingroup Network
- */
-#define HMAC_DOES_NOT_MATCH 6
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * RTI was not executed using the -a or --auth option.
- * @ingroup Network
- */
-#define RTI_NOT_EXECUTED_WITH_AUTH 7
-
 #endif /* NET_COMMON_H */

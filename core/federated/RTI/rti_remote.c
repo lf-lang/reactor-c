@@ -1076,6 +1076,7 @@ void handle_timestamp(federate_info_t* my_fed) {
     if (!my_fed->is_transient) {
       rti_remote->num_feds_proposed_start++;
     }
+
     if (rti_remote->num_feds_proposed_start ==
         (rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates)) {
       // This federate is the last persistent federate to proposed a start time.
@@ -1103,7 +1104,6 @@ void handle_timestamp(federate_info_t* my_fed) {
     LF_MUTEX_UNLOCK(&rti_mutex);
   } else if (rti_remote->phase == shutdown_phase || !my_fed->is_transient) {
     LF_MUTEX_UNLOCK(&rti_mutex);
-
     // Send reject message if the federation is in shutdown phase or if
     // it is in the execution phase but the federate is persistent.
     send_reject(my_fed->net, JOINING_TOO_LATE);
@@ -1188,11 +1188,12 @@ void handle_timestamp(federate_info_t* my_fed) {
       // sooner than the effective start tag.
       pqueue_delayed_grant_element_t* dge =
           pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, downstream->enclave.id);
-      if (dge != NULL && lf_tag_compare(dge->base.tag, my_fed->effective_start_tag) > 0) {
+      if (dge != NULL && lf_tag_compare(dge->base.tag, my_fed->effective_start_tag) >= 0) {
         pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
       }
     }
 
+    my_fed->enclave.next_event = my_fed->effective_start_tag;
     // Once the effective start time set, sent it to the joining transient,
     // together with the start time of the federation.
 
@@ -1208,33 +1209,34 @@ void handle_timestamp(federate_info_t* my_fed) {
     LF_MUTEX_UNLOCK(&rti_mutex);
   }
 
-  LF_MUTEX_UNLOCK(&rti_mutex);
+  // // LF_MUTEX_UNLOCK(&rti_mutex);
+  // lf_print("DEBUG: Sending maximum time plus an offset on a TIMESTAMP message");
+  // // Send back to the federate the maximum time plus an offset on a TIMESTAMP
+  // // message.
+  // unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
+  // start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
+  // // Add an offset to this start time to get everyone starting together.
+  // start_time = rti_remote->max_start_time + DELAY_START;
+  // lf_tracing_set_start_time(start_time);
+  // encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
 
-  // Send back to the federate the maximum time plus an offset on a TIMESTAMP
-  // message.
-  unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
-  start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
-  // Add an offset to this start time to get everyone starting together.
-  start_time = rti_remote->max_start_time + DELAY_START;
-  lf_tracing_set_start_time(start_time);
-  encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+  // if (rti_remote->base.tracing_enabled) {
+  //   tag_t tag = {.time = start_time, .microstep = 0};
+  //   tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &tag);
+  // }
+  // if (write_to_net(my_fed->net, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
+  //   lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
+  // }
 
-  if (rti_remote->base.tracing_enabled) {
-    tag_t tag = {.time = start_time, .microstep = 0};
-    tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &tag);
-  }
-  if (write_to_net(my_fed->net, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
-    lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
-  }
-
-  LF_MUTEX_LOCK(&rti_mutex);
-  // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
-  // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
-  // the federate to the start time.
-  my_fed->enclave.state = GRANTED;
-  lf_cond_broadcast(&sent_start_time);
-  LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
-  LF_MUTEX_UNLOCK(&rti_mutex);
+  // LF_MUTEX_LOCK(&rti_mutex);
+  // // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
+  // // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
+  // // the federate to the start time.
+  // my_fed->enclave.state = GRANTED;
+  // lf_cond_broadcast(&sent_start_time);
+  // lf_print("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
+  // LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
+  // LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
 void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type) {
@@ -1444,6 +1446,7 @@ static void handle_federate_resign(federate_info_t* my_fed) {
   my_fed->enclave.next_event = FOREVER_TAG;
 
   shutdown_net(my_fed->net, true);
+  my_fed->net = NULL;
 
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
@@ -1697,7 +1700,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
             return -1;
           }
           
-          return -1;
+          // return -1;
         }
       }
     }

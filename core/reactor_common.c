@@ -992,6 +992,7 @@ void usage(int argc, const char* argv[]) {
   printf("      Execute in <n> threads if possible (optional feature).\n\n");
   printf("  -h, --help\n");
   printf("      Display this help message.\n\n");
+#endif
 #ifdef FEDERATED
   printf("  -i, --id <n>\n");
   printf("      The ID of the federation that this reactor will join.\n\n");
