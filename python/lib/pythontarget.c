@@ -715,6 +715,28 @@ PyObject* get_python_instance(string module, string class, int instance_id) {
   return NULL;
 }
 
+long lf_py_get_parameter_as_long(string module, string instance_name, int instance_id, string param_name) {
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  long result = -1;
+
+  PyObject* py_inst = get_python_instance(module, instance_name, instance_id);
+  if (py_inst == NULL) {
+    PyGILState_Release(gstate);
+    return -1;
+  }
+
+  PyObject* py_param = PyObject_GetAttrString(py_inst, param_name);
+  Py_DECREF(py_inst);
+
+  if (py_param != NULL) {
+    result = PyLong_AsLong(py_param);
+    Py_DECREF(py_param);
+  }
+
+  PyGILState_Release(gstate);
+  return result;
+}
+
 int set_python_field_to_c_pointer(string module, string class, int instance_id, string field, void* pointer) {
   PyGILState_STATE gstate;
   gstate = PyGILState_Ensure();

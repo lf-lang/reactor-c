@@ -204,6 +204,22 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
 PyObject* get_python_instance(string module, string class, int instance_id);
 
 /**
+ * @brief Get the value of a reactor instance parameter from the Python object as a long.
+ *
+ * Looks up the Python instance via get_python_instance(module, instance_name, instance_id),
+ * then retrieves the attribute param_name and converts it with PyLong_AsLong.
+ * The GIL is acquired and released internally.
+ *
+ * @param module The module name (e.g. "__main__").
+ * @param instance_name The instance name (e.g. self->_lf_name).
+ * @param instance_id The instance index in the Python list (typically 0 for non-banked).
+ * @param param_name The parameter attribute name (e.g. "sender_index").
+ * @return The parameter value as a long, or -1 on error (instance not found, attribute missing,
+ *         or not an integer). The caller should check for negative values if errors need handling.
+ */
+long lf_py_get_parameter_as_long(string module, string instance_name, int instance_id, string param_name);
+
+/**
  * @brief Set a python field to a hold a C pointer.
  *
  * @param module The module name.
