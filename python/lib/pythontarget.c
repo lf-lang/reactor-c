@@ -715,23 +715,37 @@ PyObject* get_python_instance(string module, string class, int instance_id) {
   return NULL;
 }
 
-long lf_py_get_parameter_as_long(string module, string instance_name, int instance_id, string param_name) {
+long lf_py_get_nonnegative_integer_parameter(string module, string instance_name, int instance_id, string param_name) {
   PyGILState_STATE gstate = PyGILState_Ensure();
   long result = -1;
 
   PyObject* py_inst = get_python_instance(module, instance_name, instance_id);
   if (py_inst == NULL) {
+    Py_DECREF(py_inst);
     PyGILState_Release(gstate);
     return -1;
   }
 
   PyObject* py_param = PyObject_GetAttrString(py_inst, param_name);
   Py_DECREF(py_inst);
-
-  if (py_param != NULL) {
-    result = PyLong_AsLong(py_param);
-    Py_DECREF(py_param);
+  if (py_param == NULL) {
+    // Attribute lookup failed; log and clear the Python exception to avoid
+    // leaving a pending exception that could affect later code.
+    lf_print_error("Could not get Python parameter '%s' from instance '%s'.", param_name, instance_name);
+    PyErr_Clear();
+    PyGILState_Release(gstate);
+    return -1;
   }
+
+  result = PyLong_AsLong(py_param);
+  if (PyErr_Occurred()) {
+    // Conversion to long failed (e.g., wrong type or overflow). Log and
+    // clear the exception, and return an error value.
+    lf_print_error("Could not convert Python parameter '%s' of instance '%s' to long.", param_name, instance_name);
+    PyErr_Clear();
+    result = -1;
+  }
+  Py_DECREF(py_param);
 
   PyGILState_Release(gstate);
   return result;
