@@ -9,17 +9,14 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
-#include <math.h>   // For sqrtl() and powl
 #include <stdarg.h> // Defines va_list
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>      // Defines memcpy()
-#include <time.h>        // Defines nanosleep()
-#include <netinet/in.h>  // IPPROTO_TCP, IPPROTO_UDP
-#include <netinet/tcp.h> // TCP_NODELAY
+#include <string.h> // Defines memcpy()
+#include <time.h>   // Defines nanosleep()
 
 #include "net_util.h"
-#include "util.h"
+#include "logging_macros.h"
 
 // Below are more generally useful functions.
 
@@ -58,7 +55,7 @@ void encode_uint16(uint16_t data, unsigned char* buffer) {
   buffer[1] = (unsigned char)((data & 0xff00) >> 8);
 }
 
-int host_is_big_endian() {
+int host_is_big_endian(void) {
   static int host = 0;
   union {
     uint32_t uint;
