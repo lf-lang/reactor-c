@@ -62,6 +62,7 @@ prune_event_name = {
     "Sending P2P_MSG": "P2P_MSG",
     "Sending ADR_AD": "ADR_AD",
     "Sending ADR_QR": "ADR_QR",
+    "Sending ADR_QR_REP": "ADR_QR_REP",
     "Sending DNET": "DNET",
     "Receiving ACK": "ACK",
     "Receiving FAILED": "FAILED",
@@ -84,6 +85,7 @@ prune_event_name = {
     "Receiving P2P_MSG": "P2P_MSG",
     "Receiving ADR_AD": "ADR_AD",
     "Receiving ADR_QR": "ADR_QR",
+    "Receiving ADR_QR_REP": "ADR_QR_REP",
     "Receiving DNET": "DNET",
     "Receiving UNIDENTIFIED": "UNIDENTIFIED",
     "Scheduler advancing time ends": "AdvLT"
@@ -113,7 +115,7 @@ parser.add_argument('-e', '--end', type=str, nargs=2,
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
 # Set of tagged events (messages)
-non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_AD', 'MSG', 'P2P_MSG'}
+non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG'}
 
 
 ################################################################################
@@ -675,7 +677,7 @@ if __name__ == '__main__':
             # FIXME: Using microseconds is hardwired here.
             physical_time = f'{int(row["physical_time"]/1000):,}'
 
-            if (row['event'] in {'FED_ID', 'ACK', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_AD', 'MSG', 'P2P_MSG'}):
+            if (row['event'] in {'FED_ID', 'ACK', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG'}):
                 label = row['event']
             else:
                 label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
