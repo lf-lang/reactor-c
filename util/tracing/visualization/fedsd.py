@@ -728,16 +728,11 @@ if __name__ == '__main__':
         # Draw interactions
         f.write(svg_string_comment('Draw interactions'))
         for index, row in trace_df.iterrows():
-            # For time labels, display them on the left for the RTI, right for everything else.
-            anchor = 'start'
-            if (row['self_id'] < 0):
-                anchor = 'end'
-
             # formatted physical time.
             # FIXME: Using microseconds is hardwired here.
             physical_time = f'{int(row["physical_time"]/1000):,}'
 
-            if (row['event'] in {'FED_ID', 'ACK', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG'}):
+            if (row['event'] in non_tagged_messages):
                 label = row['event']
             else:
                 label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
@@ -745,8 +740,12 @@ if __name__ == '__main__':
             if (row['arrow'] == 'arrow'):
                 f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
                 if (row['inout'] in 'in'):
+                    # Label at receiver (x2): goes outward — right if receiver is right of sender.
+                    anchor = 'start' if row['x2'] > row['x1'] else 'end'
                     f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
                 else:
+                    # Label at sender (x1): goes outward — left if receiver is right of sender.
+                    anchor = 'end' if row['x2'] > row['x1'] else 'start'
                     f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
             elif (row['arrow'] == 'dot'):
                 if (row['inout'] == 'in'):
@@ -754,14 +753,17 @@ if __name__ == '__main__':
                 else:
                     label = "(out) to " + str(row['partner_id']) + ' ' + label
 
-                if (anchor == 'end'):
-                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+                if (row['self_id'] < 0):
+                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, 'end'))
                     f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
                 else:
                     f.write(svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label))
 
             elif (row['arrow'] == 'marked'):
-                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+                # Label goes outward: right of receiver if receiver is right of sender, left otherwise.
+                partner_x = x_coor.get(int(row['partner_id']), row['x1'])
+                marked_anchor = 'start' if row['x1'] > partner_x else 'end'
+                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, marked_anchor))
 
             elif (row['arrow'] == 'adv'):
                 f.write(svg_string_draw_adv(row['x1'], row['y1'], label))
