@@ -146,7 +146,7 @@ parser.add_argument('-e', '--end', type=str, nargs=2,
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
-# Set of tagged events (messages)
+# Set of non-tagged events (messages)
 non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG'}
 
 
