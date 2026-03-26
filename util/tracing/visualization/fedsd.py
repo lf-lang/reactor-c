@@ -3,7 +3,7 @@
 # Utility that reports the interactions (exchanged messages) between federates and the RTI in a 
 # sequence-diagram-like format, or between enclaves in an enclaved execution.
 # 
-# The utility operates on lft trace files and outputs an svg file with a sticky header.
+# The utility operates on lft trace files and outputs an html file with a sticky header.
 
 '''
 In the dataframe, each row will be marked with one op these values:
@@ -20,16 +20,31 @@ css_style = ' <style> \
         stroke: black; \
         stroke-width: 2; \
     } \
-    .ABS {stroke: #d9dd1f; fill: #d9dd1f; } \
-    .LTC { stroke: #073b4c; fill: #073b4c;} \
-    .T_MSG { stroke: #ef476f; fill: #ef476f} \
-    .NET { stroke: #118ab2; fill: #118ab2} \
-    .PTAG { stroke: #06d6a0; fill: #06d6a0} \
-    .TAG { stroke: #08a578; fill: #08a578} \
-    .DNET { stroke: purple; fill: purple} \
-    .TIMESTAMP { stroke: grey; fill: grey } \
-    .FED_ID {stroke: #80DD99; fill: #80DD99 } \
-    .ADV {stroke-linecap="round" ; stroke: "red" ; fill: "red"} \
+    .ABS        { stroke: #d9dd1f; fill: #d9dd1f; } \
+    .LTC        { stroke: #073b4c; fill: #073b4c; } \
+    .T_MSG      { stroke: #ef476f; fill: #ef476f; } \
+    .P2P_T_MSG  { stroke: #c77dff; fill: #c77dff; } \
+    .NET        { stroke: #118ab2; fill: #118ab2; } \
+    .PTAG       { stroke: #06d6a0; fill: #06d6a0; } \
+    .TAG        { stroke: #08a578; fill: #08a578; } \
+    .DNET       { stroke: #7b2d8b; fill: #7b2d8b; } \
+    .TIMESTAMP  { stroke: #888888; fill: #888888; } \
+    .FED_ID     { stroke: #80DD99; fill: #80DD99; } \
+    .ACK        { stroke: #52b788; fill: #52b788; } \
+    .FAILED     { stroke: #c1121f; fill: #c1121f; } \
+    .STOP_REQ   { stroke: #e76f51; fill: #e76f51; } \
+    .STOP_REQ_REP { stroke: #ca6702; fill: #ca6702; } \
+    .STOP_GRN   { stroke: #e9c46a; fill: #e9c46a; } \
+    .REJECT     { stroke: #9b2226; fill: #9b2226; } \
+    .RESIGN     { stroke: #6d4c41; fill: #6d4c41; } \
+    .CLOSE_RQ   { stroke: #7f7f7f; fill: #7f7f7f; } \
+    .MSG        { stroke: #00b4d8; fill: #00b4d8; } \
+    .P2P_MSG    { stroke: #0077b6; fill: #0077b6; } \
+    .ADR_AD     { stroke: #80b918; fill: #80b918; } \
+    .ADR_QR     { stroke: #48cae4; fill: #48cae4; } \
+    .ADR_QR_REP { stroke: #0096c7; fill: #0096c7; } \
+    .UNIDENTIFIED { stroke: #adb5bd; fill: #adb5bd; } \
+    .ADV        { stroke: #e63946; fill: #e63946; stroke-linecap: round; } \
     text { \
         font-size: smaller; \
         font-family: sans-serif; \
@@ -105,7 +120,7 @@ import subprocess
 
 def format_actor_name(name):
     '''
-    Format an actor name for display inside a circle.
+    Format an actor name for display inside a rectangle.
     - "RTI" is kept as-is.
     - Compiler-generated federate names of the form "federate__<base>_main_<id>"
       are shortened to "<base>: <id>" (e.g. "federate__up1_main_0" -> "up1: 0").
@@ -150,7 +165,7 @@ def svg_string_draw_line(x1, y1, x2, y2, type=''):
      * y2: Int Y coordinate of the sink point
      * type: The type of the message (for styling)
     Returns:
-     * String: the svg string of the line©
+     * String: the svg string of the line
     '''
     str_line = '\t<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'"'
     if (type):
