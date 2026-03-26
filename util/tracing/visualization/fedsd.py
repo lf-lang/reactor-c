@@ -3,7 +3,7 @@
 # Utility that reports the interactions (exchanged messages) between federates and the RTI in a 
 # sequence-diagram-like format, or between enclaves in an enclaved execution.
 # 
-# The utility operates on lft trace files and outputs an html file embedding an svg image.
+# The utility operates on lft trace files and outputs an html file with an SVG diagram and a sticky header.
 
 '''
 In the dataframe, each row will be marked with one op these values:
@@ -637,38 +637,59 @@ if __name__ == '__main__':
                 trace_df.at[index, 'arrow'] = 'arrow'
 
     ############################################################################
-    #### Write to svg file
+    #### Write to html file
     ############################################################################
+    # svg_width is the natural pixel width of the diagram content.
+    # The HTML body uses overflow-x: auto so a horizontal scrollbar appears
+    # when the browser window is narrower than the diagram.
     svg_width = padding * 2 + (len(actors) - 1) * spacing + padding * 2 + 200
     svg_height = padding + trace_df.iloc[-1]['y1']
+    # The sticky header is tall enough to contain the circles (centred at padding/2, r=20).
+    header_height = padding
 
     with open('trace_svg.html', 'w', encoding='utf-8') as f:
-        # Print header
-        f.write('<!DOCTYPE html>\n')
-        f.write('<html>\n')
-        f.write('<body>\n\n')
-        
-        f.write('<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n')
+        f.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n')
+        f.write('<style>\n')
+        f.write('  * { margin: 0; padding: 0; }\n')
+        # Allow horizontal scroll on the whole page when the diagram is wider than the window.
+        f.write('  body { overflow-x: auto; }\n')
+        # The sticky header div stays at the top of the viewport while the diagram scrolls.
+        f.write('  #sticky-header { position: sticky; top: 0; z-index: 100; display: block; }\n')
+        f.write('  svg { display: block; }\n')
+        f.write('</style>\n')
+        f.write('</head>\n<body>\n\n')
 
+        # ---- Sticky header: circles and actor labels only ----
+        f.write('<div id="sticky-header">\n')
+        f.write('<svg width="'+str(svg_width)+'" height="'+str(header_height)+'">\n')
         f.write(css_style)
-        
-        # Print the circles and the names
+        # White background so it occludes the diagram lines that scroll beneath it.
+        f.write('\t<rect x="0" y="0" width="'+str(svg_width)+'" height="'+str(header_height)+'" fill="white"/>\n')
+        for key in x_coor:
+            title = actors_names[key]
+            center = 15 if (key == -1) else 5
+            f.write('\t<circle cx="'+str(x_coor[key])+'" cy="'+str(math.ceil(padding/2))+'" r="20" stroke="black" stroke-width="2" fill="white"/>\n')
+            f.write('\t<text x="'+str(x_coor[key]-center)+'" y="'+str(math.ceil(padding/2)+5)+'" fill="black">'+title+'</text>\n')
+        f.write('</svg>\n')
+        f.write('</div>\n\n')
+
+        # ---- Main diagram SVG: vertical lines and all interactions ----
+        f.write('<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n')
+        f.write(css_style)
+
+        # Draw vertical lines for each actor (full diagram height)
         for key in x_coor:
             title = actors_names[key]
             if (key == -1):
-                f.write(svg_string_comment('RTI Actor and line'))
-                center = 15
+                f.write(svg_string_comment('RTI Actor line'))
             else:
-                f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor and line'))
-                center = 5
+                f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor line'))
             f.write(svg_string_draw_line(x_coor[key], math.ceil(padding/2), x_coor[key], svg_height, False))
-            f.write('\t<circle cx="'+str(x_coor[key])+'" cy="'+str(math.ceil(padding/2))+'" r="20" stroke="black" stroke-width="2" fill="white"/>\n')
-            f.write('\t<text x="'+str(x_coor[key]-center)+'" y="'+str(math.ceil(padding/2)+5)+'" fill="black">'+title+'</text>\n')
 
-        # Now, we need to iterate over the traces to draw the lines
+        # Draw interactions
         f.write(svg_string_comment('Draw interactions'))
         for index, row in trace_df.iterrows():
-            # For time labels, display them on the left for the RTI, right for everthing else.
+            # For time labels, display them on the left for the RTI, right for everything else.
             anchor = 'start'
             if (row['self_id'] < 0):
                 anchor = 'end'
@@ -681,8 +702,8 @@ if __name__ == '__main__':
                 label = row['event']
             else:
                 label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
-            
-            if (row['arrow'] == 'arrow'): 
+
+            if (row['arrow'] == 'arrow'):
                 f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
                 if (row['inout'] in 'in'):
                     f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
@@ -691,9 +712,9 @@ if __name__ == '__main__':
             elif (row['arrow'] == 'dot'):
                 if (row['inout'] == 'in'):
                     label = "(in) from " + str(row['partner_id']) + ' ' + label
-                else :
+                else:
                     label = "(out) to " + str(row['partner_id']) + ' ' + label
-                
+
                 if (anchor == 'end'):
                     f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
                     f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
@@ -707,10 +728,7 @@ if __name__ == '__main__':
                 f.write(svg_string_draw_adv(row['x1'], row['y1'], label))
 
         f.write('\n</svg>\n\n')
-
-        # Print footer
-        f.write('</body>\n')
-        f.write('</html>\n')
+        f.write('</body>\n</html>\n')
 
     # Write to a csv file, just to double check
     trace_df.to_csv('all.csv', index=True)
