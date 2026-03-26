@@ -3,7 +3,7 @@
 # Utility that reports the interactions (exchanged messages) between federates and the RTI in a 
 # sequence-diagram-like format, or between enclaves in an enclaved execution.
 # 
-# The utility operates on lft trace files and outputs an html file with an SVG diagram and a sticky header.
+# The utility operates on lft trace files and outputs an svg file with a sticky header.
 
 '''
 In the dataframe, each row will be marked with one op these values:
@@ -96,10 +96,27 @@ prune_event_name.setdefault(" ", "UNIDENTIFIED")
 import argparse         # For arguments parsing
 import pandas as pd     # For csv manipulation
 import os
+import re
 import sys
 from pathlib import Path
 import math
 import subprocess
+
+
+def format_actor_name(name):
+    '''
+    Format an actor name for display inside a circle.
+    - "RTI" is kept as-is.
+    - Compiler-generated federate names of the form "federate__<base>_main_<id>"
+      are shortened to "<base>: <id>" (e.g. "federate__up1_main_0" -> "up1: 0").
+    - Any other name is returned unchanged.
+    '''
+    if name == 'RTI':
+        return 'RTI'
+    m = re.match(r'^federate__(.+)_main_(\d+)$', name)
+    if m:
+        return m.group(1) + ': ' + m.group(2)
+    return name
 
 # Define the arguments to pass in the command line
 parser = argparse.ArgumentParser(description='Set of the lft trace files to render.')
@@ -666,10 +683,17 @@ if __name__ == '__main__':
         # White background so it occludes the diagram lines that scroll beneath it.
         f.write('\t<rect x="0" y="0" width="'+str(svg_width)+'" height="'+str(header_height)+'" fill="white"/>\n')
         for key in x_coor:
-            title = actors_names[key]
-            center = 15 if (key == -1) else 5
-            f.write('\t<circle cx="'+str(x_coor[key])+'" cy="'+str(math.ceil(padding/2))+'" r="20" stroke="black" stroke-width="2" fill="white"/>\n')
-            f.write('\t<text x="'+str(x_coor[key]-center)+'" y="'+str(math.ceil(padding/2)+5)+'" fill="black">'+title+'</text>\n')
+            title = format_actor_name(actors_names[key])
+            cx = x_coor[key]
+            cy = math.ceil(padding / 2)
+            r = 20  # original circle radius; diameter becomes the rect height
+            rect_w = max(r * 2, len(title) * 7 + 12)
+            rect_h = r * 2
+            # Draw rectangle then bold text centered on it (later = on top in SVG)
+            f.write('\t<rect x="'+str(cx - rect_w//2)+'" y="'+str(cy - rect_h//2)+'" '
+                    +'width="'+str(rect_w)+'" height="'+str(rect_h)+'" fill="white" stroke="black" stroke-width="2"/>\n')
+            f.write('\t<text x="'+str(cx)+'" y="'+str(cy)+'" text-anchor="middle" dominant-baseline="central" '
+                    +'font-weight="bold" fill="black">'+title+'</text>\n')
         f.write('</svg>\n')
         f.write('</div>\n\n')
 
@@ -684,7 +708,7 @@ if __name__ == '__main__':
                 f.write(svg_string_comment('RTI Actor line'))
             else:
                 f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor line'))
-            f.write(svg_string_draw_line(x_coor[key], math.ceil(padding/2), x_coor[key], svg_height, False))
+            f.write(svg_string_draw_line(x_coor[key], 0, x_coor[key], svg_height, False))
 
         # Draw interactions
         f.write(svg_string_comment('Draw interactions'))
