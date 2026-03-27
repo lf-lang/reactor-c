@@ -1535,10 +1535,10 @@ void wait_for_federates(int socket_descriptor) {
   void* thread_exit_status;
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
-    lf_print_info("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
+    LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
     lf_thread_join(fed->thread_id, &thread_exit_status);
     pqueue_tag_free(fed->in_transit_message_tags);
-    lf_print_info("RTI: Federate %d thread exited.", fed->enclave.id);
+    LF_PRINT_LOG("RTI: Federate %d thread exited.", fed->enclave.id);
   }
 
   rti_remote->all_federates_exited = true;

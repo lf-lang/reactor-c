@@ -24,7 +24,23 @@
 #include <stdarg.h> // Defines va_list
 #include <time.h>   // Defines nanosleep()
 #include <stdbool.h>
-#include <unistd.h> // Defines isatty()
+
+/**
+ * Use POSIX isatty(3) to decide whether stdout gets ANSI color. Only enable on hosts where
+ * unistd.h and isatty are part of the normal POSIX toolchain (not native Windows, not bare-metal).
+ */
+#if defined(LF_NO_STDOUT_COLOR) || defined(PLATFORM_ARDUINO) || defined(PLATFORM_PATMOS) || defined(_WIN32) ||         \
+    defined(_WIN64)
+#define LF_USE_POSIX_ISATTY_FOR_COLOR 0
+#elif defined(__unix__) || defined(__unix) || defined(__APPLE__)
+#define LF_USE_POSIX_ISATTY_FOR_COLOR 1
+#else
+#define LF_USE_POSIX_ISATTY_FOR_COLOR 0
+#endif
+
+#if LF_USE_POSIX_ISATTY_FOR_COLOR
+#include <unistd.h>
+#endif
 
 #ifndef NUMBER_OF_FEDERATES
 #define NUMBER_OF_FEDERATES 1
@@ -49,11 +65,24 @@ print_message_function_t* print_message_function = NULL;
 int print_message_level = -1;
 
 // Centralized ANSI color definitions for runtime logging output.
+// `\x1b` is the escape character for ANSI color codes. Same as `\033` (octal 033), or 27.
 static const char* LF_COLOR_RED = "\x1b[31m";
 static const char* LF_COLOR_LIGHT_PURPLE = "\x1b[95m";
 static const char* LF_COLOR_BLUE = "\x1b[34m";
 static const char* LF_COLOR_CYAN = "\x1b[36m";
 static const char* LF_COLOR_RESET = "\x1b[0m";
+
+/**
+ * Whether stdout should get ANSI color escapes. Only POSIX-like hosts use isatty(); elsewhere
+ * (e.g. native Windows, Arduino, Patmos) we skip color.
+ */
+static bool lf_stdout_supports_ansi_color(void) {
+#if !LF_USE_POSIX_ISATTY_FOR_COLOR
+  return false;
+#else
+  return isatty(fileno(stdout)) != 0;
+#endif
+}
 
 uint16_t lf_fed_id() { return _lf_my_fed_id; }
 
@@ -100,19 +129,19 @@ void _lf_message_print(const char* color, const char* prefix, const char* format
     char* message;
     const char* active_color = "";
     const char* active_reset = "";
-    if (print_message_function == NULL && isatty(fileno(stdout)) != 0 && color != NULL) {
+    if (print_message_function == NULL && lf_stdout_supports_ansi_color() && color != NULL && color[0] != '\0') {
       active_color = color;
       active_reset = LF_COLOR_RESET;
     }
     if (_lf_my_fed_id == UINT16_MAX) {
       size_t length = strlen(active_color) + strlen(prefix) + strlen(format) + strlen(active_reset) + 32;
       message = (char*)malloc(length + 1);
-      snprintf(message, length, "%s%s%s%s\n", active_color, prefix, format, active_reset);
+      snprintf(message, length + 1, "%s%s%s%s\n", active_color, prefix, format, active_reset);
     } else {
 #if defined STANDALONE_RTI
       size_t length = strlen(active_color) + strlen(prefix) + strlen(format) + strlen(active_reset) + 37;
       message = (char*)malloc(length + 1);
-      snprintf(message, length, "%sRTI: %s%s%s\n", active_color, prefix, format, active_reset);
+      snprintf(message, length + 1, "%sRTI: %s%s%s\n", active_color, prefix, format, active_reset);
 #else
       // Get the federate name from the top-level environment, which by convention is the first.
       environment_t* envs;
@@ -124,7 +153,7 @@ void _lf_message_print(const char* color, const char* prefix, const char* format
       if (strncmp(name, "federate__", 10) == 0)
         name += 10;
 
-      snprintf(message, length, "%sFed %d (%s): %s%s%s\n", active_color, _lf_my_fed_id, name, prefix, format,
+      snprintf(message, length + 1, "%sFed %d (%s): %s%s%s\n", active_color, _lf_my_fed_id, name, prefix, format,
                active_reset);
 #endif // STANDALONE_RTI
     }
