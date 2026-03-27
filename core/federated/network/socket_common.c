@@ -105,7 +105,7 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
       server_fd.sin_port = htons(used_port);
       // Do not sleep.
     } else {
-      lf_print("Failed to bind socket on port %d. Will try again.", used_port);
+      lf_print_warning("Failed to bind socket on port %d. Will try again.", used_port);
       lf_sleep(PORT_BIND_RETRY_INTERVAL);
     }
     result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
@@ -264,7 +264,7 @@ int connect_to_socket(int sock, const char* hostname, int port) {
     }
   }
   freeaddrinfo(result);
-  lf_print("Connected to %s:%d.", hostname, used_port);
+  lf_print_info("Connected to %s:%d.", hostname, used_port);
   return ret;
 }
 

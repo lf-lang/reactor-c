@@ -24,6 +24,7 @@
 #include <stdarg.h> // Defines va_list
 #include <time.h>   // Defines nanosleep()
 #include <stdbool.h>
+#include <unistd.h> // Defines isatty()
 
 #ifndef NUMBER_OF_FEDERATES
 #define NUMBER_OF_FEDERATES 1
@@ -47,25 +48,32 @@ print_message_function_t* print_message_function = NULL;
 /** The level of messages to redirect to print_message_function. */
 int print_message_level = -1;
 
+// Centralized ANSI color definitions for runtime logging output.
+static const char* LF_COLOR_RED = "\x1b[31m";
+static const char* LF_COLOR_LIGHT_PURPLE = "\x1b[95m";
+static const char* LF_COLOR_BLUE = "\x1b[34m";
+static const char* LF_COLOR_CYAN = "\x1b[36m";
+static const char* LF_COLOR_RESET = "\x1b[0m";
+
 uint16_t lf_fed_id() { return _lf_my_fed_id; }
 
 // Declaration needed to attach attributes to suppress warnings of the form:
 // "warning: function '_lf_message_print' might be a candidate for 'gnu_printf'
 // format attribute [-Wsuggest-attribute=format]"
-void _lf_message_print(const char* prefix, const char* format, va_list args, int log_level)
-    ATTRIBUTE_FORMAT_PRINTF(2, 0);
+void _lf_message_print(const char* color, const char* prefix, const char* format, va_list args, int log_level)
+    ATTRIBUTE_FORMAT_PRINTF(3, 0);
 
 /**
  * Print a fatal error message. Internal function.
  */
 static void lf_vprint_fatal_error(const char* format, va_list args) {
-  _lf_message_print("FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
+  _lf_message_print(LF_COLOR_RED, "FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
 }
 
 /**
  * Internal implementation of the next few reporting functions.
  */
-void _lf_message_print(const char* prefix, const char* format, va_list args,
+void _lf_message_print(const char* color, const char* prefix, const char* format, va_list args,
                        int log_level) { // Disable warnings about format check.
   // The logging level may be set either by a LOG_LEVEL #define
   // (which is code generated based on the logging target property)
@@ -90,27 +98,34 @@ void _lf_message_print(const char* prefix, const char* format, va_list args,
     // interleaved between threads.
     // vprintf() is a version that takes an arg list rather than multiple args.
     char* message;
+    const char* active_color = "";
+    const char* active_reset = "";
+    if (print_message_function == NULL && isatty(fileno(stdout)) != 0 && color != NULL) {
+      active_color = color;
+      active_reset = LF_COLOR_RESET;
+    }
     if (_lf_my_fed_id == UINT16_MAX) {
-      size_t length = strlen(prefix) + strlen(format) + 32;
+      size_t length = strlen(active_color) + strlen(prefix) + strlen(format) + strlen(active_reset) + 32;
       message = (char*)malloc(length + 1);
-      snprintf(message, length, "%s%s\n", prefix, format);
+      snprintf(message, length, "%s%s%s%s\n", active_color, prefix, format, active_reset);
     } else {
 #if defined STANDALONE_RTI
-      size_t length = strlen(prefix) + strlen(format) + 37;
+      size_t length = strlen(active_color) + strlen(prefix) + strlen(format) + strlen(active_reset) + 37;
       message = (char*)malloc(length + 1);
-      snprintf(message, length, "RTI: %s%s\n", prefix, format);
+      snprintf(message, length, "%sRTI: %s%s%s\n", active_color, prefix, format, active_reset);
 #else
       // Get the federate name from the top-level environment, which by convention is the first.
       environment_t* envs;
       _lf_get_environments(&envs);
       char* name = envs->name;
-      size_t length = strlen(prefix) + strlen(format) + +strlen(name) + 32;
+      size_t length = strlen(active_color) + strlen(prefix) + strlen(format) + strlen(name) + strlen(active_reset) + 32;
       message = (char*)malloc(length + 1);
       // If the name has prefix "federate__", strip that out.
       if (strncmp(name, "federate__", 10) == 0)
         name += 10;
 
-      snprintf(message, length, "Fed %d (%s): %s%s\n", _lf_my_fed_id, name, prefix, format);
+      snprintf(message, length, "%sFed %d (%s): %s%s%s\n", active_color, _lf_my_fed_id, name, prefix, format,
+               active_reset);
 #endif // STANDALONE_RTI
     }
     if (print_message_function == NULL) {
@@ -130,7 +145,18 @@ void lf_print(const char* format, ...) {
   va_end(args);
 }
 
-void lf_vprint(const char* format, va_list args) { _lf_message_print("", format, args, LOG_LEVEL_INFO); }
+void lf_vprint(const char* format, va_list args) { _lf_message_print("", "", format, args, LOG_LEVEL_INFO); }
+
+void lf_print_info(const char* format, ...) {
+  va_list args;
+  va_start(args, format);
+  lf_vprint_info(format, args);
+  va_end(args);
+}
+
+void lf_vprint_info(const char* format, va_list args) {
+  _lf_message_print(LF_COLOR_CYAN, "", format, args, LOG_LEVEL_INFO);
+}
 
 void lf_print_log(const char* format, ...) {
   va_list args;
@@ -139,7 +165,9 @@ void lf_print_log(const char* format, ...) {
   va_end(args);
 }
 
-void lf_vprint_log(const char* format, va_list args) { _lf_message_print("LOG: ", format, args, LOG_LEVEL_LOG); }
+void lf_vprint_log(const char* format, va_list args) {
+  _lf_message_print(LF_COLOR_BLUE, "LOG: ", format, args, LOG_LEVEL_LOG);
+}
 
 void lf_print_debug(const char* format, ...) {
   va_list args;
@@ -148,7 +176,9 @@ void lf_print_debug(const char* format, ...) {
   va_end(args);
 }
 
-void lf_vprint_debug(const char* format, va_list args) { _lf_message_print("DEBUG: ", format, args, LOG_LEVEL_DEBUG); }
+void lf_vprint_debug(const char* format, va_list args) {
+  _lf_message_print("", "DEBUG: ", format, args, LOG_LEVEL_DEBUG);
+}
 
 void lf_print_error(const char* format, ...) {
   va_list args;
@@ -157,7 +187,9 @@ void lf_print_error(const char* format, ...) {
   va_end(args);
 }
 
-void lf_vprint_error(const char* format, va_list args) { _lf_message_print("ERROR: ", format, args, LOG_LEVEL_ERROR); }
+void lf_vprint_error(const char* format, va_list args) {
+  _lf_message_print(LF_COLOR_RED, "ERROR: ", format, args, LOG_LEVEL_ERROR);
+}
 
 void lf_print_warning(const char* format, ...) {
   va_list args;
@@ -167,7 +199,7 @@ void lf_print_warning(const char* format, ...) {
 }
 
 void lf_vprint_warning(const char* format, va_list args) {
-  _lf_message_print("WARNING: ", format, args, LOG_LEVEL_WARNING);
+  _lf_message_print(LF_COLOR_LIGHT_PURPLE, "WARNING: ", format, args, LOG_LEVEL_WARNING);
 }
 
 void lf_print_error_and_exit(const char* format, ...) {

@@ -1182,7 +1182,7 @@ int process_args(int argc, const char* argv[]) {
       }
       const char* fid = argv[i++];
       lf_set_federation_id(fid);
-      lf_print("Federation ID for executable %s: %s", argv[0], fid);
+      lf_print_log("Federation ID for executable %s: %s", argv[0], fid);
     } else if (strcmp(arg, "-r") == 0 || strcmp(arg, "--rti") == 0) {
       if (argc < i + 1) {
         lf_print_error("--rti needs a string argument in the form of [user]@[host]:[port].");
@@ -1218,7 +1218,8 @@ int process_args(int argc, const char* argv[]) {
 #ifdef FEDERATED
       // In federated programs, arguments intended for other federates
       // may be forwarded here. Skip them silently.
-      lf_print("Ignoring unrecognized command-line argument: %s. Assuming it is intended for another federate.", arg);
+      lf_print_info("Ignoring unrecognized command-line argument: %s. Assuming it is intended for another federate.",
+                    arg);
 #else
       lf_print_error("Unrecognized command-line argument: %s", arg);
       usage(argc, argv);
@@ -1366,13 +1367,13 @@ void termination(void) {
       if (elapsed_time >= 0LL) {
         char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
         lf_comma_separated_time(time_buffer, elapsed_time);
-        printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
+        lf_print_info("---- Elapsed logical time (in nsec): %s", time_buffer);
 
         // If start_time is 0, then execution didn't get far enough along
         // to initialize this.
         if (start_time > 0LL) {
           lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
-          printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
+          lf_print_info("---- Elapsed physical time (in nsec): %s", time_buffer);
         }
       }
     }
