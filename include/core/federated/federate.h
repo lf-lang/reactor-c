@@ -102,6 +102,13 @@ typedef struct federate_instance_t {
   int sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
+   * An array indicating whether each federate is transient.
+   * The index is the federate ID.
+   * This is initialized at startup by the generated _lf_executable_preamble().
+   */
+  bool transients[NUMBER_OF_FEDERATES];
+
+  /**
    * Thread ID for a thread that accepts sockets and then supervises
    * listening to those sockets for incoming P2P (physical) connections.
    */
