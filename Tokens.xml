@@ -11203,6 +11203,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>receive_ADR_QR_REP</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a6d3e3d6b5c7fb851c6633d9ec4cac884</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>receive_CLOSE_RQ</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -11789,6 +11799,16 @@
     </TokenIdentifier>
     <Path>group__Tracing.html</Path>
     <Anchor>ggab02e9e69539d60297cedb38c2193a453a4ebac2f241a667876f0a7ab20a8efdec</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>send_ADR_QR_REP</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a73ff55a6e4eeb9b6beb1ee48ff38a278</Anchor>
     <DeclaredIn>trace_types.h</DeclaredIn>
   </Token>
   <Token>
@@ -12773,6 +12793,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>send_ADR_QR_REP</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a73ff55a6e4eeb9b6beb1ee48ff38a278</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>send_DNET</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -12989,6 +13019,16 @@
     </TokenIdentifier>
     <Path>group__Tracing.html</Path>
     <Anchor>ggab02e9e69539d60297cedb38c2193a453af6e18bcb48b442e2be5a898d60c3bdf2</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>receive_ADR_QR_REP</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a6d3e3d6b5c7fb851c6633d9ec4cac884</Anchor>
     <DeclaredIn>trace_types.h</DeclaredIn>
   </Token>
   <Token>

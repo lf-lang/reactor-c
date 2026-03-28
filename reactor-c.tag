@@ -5392,6 +5392,12 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <name>send_ADR_QR_REP</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a73ff55a6e4eeb9b6beb1ee48ff38a278</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
       <name>send_DNET</name>
       <anchorfile>group__Tracing.html</anchorfile>
       <anchor>ggab02e9e69539d60297cedb38c2193a453afd2cdb4240669a883e88c58b28b470cd</anchor>
@@ -5521,6 +5527,12 @@
       <name>receive_ADR_QR</name>
       <anchorfile>group__Tracing.html</anchorfile>
       <anchor>ggab02e9e69539d60297cedb38c2193a453af6e18bcb48b442e2be5a898d60c3bdf2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_ADR_QR_REP</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a6d3e3d6b5c7fb851c6633d9ec4cac884</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
@@ -13449,6 +13461,12 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <name>send_ADR_QR_REP</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a73ff55a6e4eeb9b6beb1ee48ff38a278</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
       <name>send_DNET</name>
       <anchorfile>group__Tracing.html</anchorfile>
       <anchor>ggab02e9e69539d60297cedb38c2193a453afd2cdb4240669a883e88c58b28b470cd</anchor>
@@ -13578,6 +13596,12 @@
       <name>receive_ADR_QR</name>
       <anchorfile>group__Tracing.html</anchorfile>
       <anchor>ggab02e9e69539d60297cedb38c2193a453af6e18bcb48b442e2be5a898d60c3bdf2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_ADR_QR_REP</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a6d3e3d6b5c7fb851c6633d9ec4cac884</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">

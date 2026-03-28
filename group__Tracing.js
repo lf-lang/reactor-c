@@ -76,6 +76,7 @@ var group__Tracing =
       [ "send_P2P_MSG", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453aa7a4fca7a8ef7dfde896701070fcfe6b", null ],
       [ "send_ADR_AD", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a787c95dd61408de4fcc85bdbb3bc6946", null ],
       [ "send_ADR_QR", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a4ebac2f241a667876f0a7ab20a8efdec", null ],
+      [ "send_ADR_QR_REP", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a73ff55a6e4eeb9b6beb1ee48ff38a278", null ],
       [ "send_DNET", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453afd2cdb4240669a883e88c58b28b470cd", null ],
       [ "receive_ACK", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a908926b0adde60c94d40c90fb4aa0221", null ],
       [ "receive_FAILED", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a9fc739f4f25f7832d01711069eaf5004", null ],
@@ -98,6 +99,7 @@ var group__Tracing =
       [ "receive_P2P_MSG", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453ae06a042ab87b41578d9adf1c95322475", null ],
       [ "receive_ADR_AD", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a92c4ad633d4739f7ee1cd40fdaf8cc5e", null ],
       [ "receive_ADR_QR", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453af6e18bcb48b442e2be5a898d60c3bdf2", null ],
+      [ "receive_ADR_QR_REP", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a6d3e3d6b5c7fb851c6633d9ec4cac884", null ],
       [ "receive_DNET", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453affe028b8b1b469f6c85d636e780b6c4d", null ],
       [ "receive_UNIDENTIFIED", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a48fffa45ebf3f03caa2dc044af72349f", null ],
       [ "NUM_EVENT_TYPES", "group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134", null ]
