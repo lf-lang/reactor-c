@@ -589,7 +589,8 @@ static int handle_tagged_message(int* socket, int fed_id) {
   action->trigger->physical_time_of_arrival = time_of_arrival;
 
   // Create a token for the message
-  lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, length);
+  lf_token_t* message_token =
+      _lf_new_token((token_type_t*)action, message_contents, length / ((token_type_t*)action)->element_size);
 
   if (handle_message_now(env, action->trigger, intended_tag)) {
     // Since the message is intended for the current tag and a port absent reaction
