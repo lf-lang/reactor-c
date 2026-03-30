@@ -68,6 +68,7 @@ int print_message_level = -1;
 // `\x1b` is the escape character for ANSI color codes. Same as `\033` (octal 033), or 27.
 static const char* LF_COLOR_RED = "\x1b[31m";
 static const char* LF_COLOR_LIGHT_PURPLE = "\x1b[95m";
+static const char* LF_COLOR_GREEN = "\x1b[92m";
 static const char* LF_COLOR_BLUE = "\x1b[34m";
 static const char* LF_COLOR_CYAN = "\x1b[36m";
 static const char* LF_COLOR_RESET = "\x1b[0m";
@@ -206,7 +207,7 @@ void lf_print_debug(const char* format, ...) {
 }
 
 void lf_vprint_debug(const char* format, va_list args) {
-  _lf_message_print("", "DEBUG: ", format, args, LOG_LEVEL_DEBUG);
+  _lf_message_print(LF_COLOR_GREEN, "DEBUG: ", format, args, LOG_LEVEL_DEBUG);
 }
 
 void lf_print_error(const char* format, ...) {
