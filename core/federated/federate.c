@@ -589,8 +589,26 @@ static int handle_tagged_message(int* socket, int fed_id) {
   action->trigger->physical_time_of_arrival = time_of_arrival;
 
   // Create a token for the message
-  lf_token_t* message_token =
-      _lf_new_token((token_type_t*)action, message_contents, length / ((token_type_t*)action)->element_size);
+  size_t element_size = ((token_type_t*)action)->element_size;
+  size_t element_count = 0;
+  if (element_size == 0) {
+    // Avoid division by zero; this indicates an inconsistent or misconfigured action type.
+    LF_PRINT_ERROR("Received message for port %d with element_size == 0; creating token with 0 elements.", port_id);
+    element_count = 0;
+  } else {
+    element_count = length / element_size;
+    if (length % element_size != 0) {
+      // Log a warning if the payload size is not an exact multiple of element_size.
+      LF_PRINT_WARNING(
+          "Received message for port %d with payload length %zu bytes not a multiple of element_size %zu; "
+          "truncating to %zu elements.",
+          port_id,
+          (size_t)length,
+          element_size,
+          element_count);
+    }
+  }
+  lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, element_count);
 
   if (handle_message_now(env, action->trigger, intended_tag)) {
     // Since the message is intended for the current tag and a port absent reaction
