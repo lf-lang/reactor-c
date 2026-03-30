@@ -651,6 +651,10 @@ void handle_address_query(uint16_t fed_id) {
                                 "Failed to write ip address to socket of federate %d.", fed_id);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_ADR_QR_REP, fed_id, NULL);
+  }
+
   LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id, remote_fed->server_hostname,
                  remote_fed->server_port);
 }
