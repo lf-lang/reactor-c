@@ -599,13 +599,9 @@ static int handle_tagged_message(int* socket, int fed_id) {
     element_count = length / element_size;
     if (length % element_size != 0) {
       // Log a warning if the payload size is not an exact multiple of element_size.
-      LF_PRINT_WARNING(
-          "Received message for port %d with payload length %zu bytes not a multiple of element_size %zu; "
-          "truncating to %zu elements.",
-          port_id,
-          (size_t)length,
-          element_size,
-          element_count);
+      LF_PRINT_WARNING("Received message for port %d with payload length %zu bytes not a multiple of element_size %zu; "
+                       "truncating to %zu elements.",
+                       port_id, (size_t)length, element_size, element_count);
     }
   }
   lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, element_count);
