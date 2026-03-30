@@ -28,6 +28,7 @@
 #include "net_util.h"
 #include <string.h>
 #include "clock.h" // For lf_clock_cond_timedwait()
+#include <stdio.h>
 
 // Global variables defined in tag.c:
 extern instant_t start_time;
@@ -1208,35 +1209,6 @@ void handle_timestamp(federate_info_t* my_fed) {
 
     LF_MUTEX_UNLOCK(&rti_mutex);
   }
-
-  // // LF_MUTEX_UNLOCK(&rti_mutex);
-  // lf_print("DEBUG: Sending maximum time plus an offset on a TIMESTAMP message");
-  // // Send back to the federate the maximum time plus an offset on a TIMESTAMP
-  // // message.
-  // unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
-  // start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
-  // // Add an offset to this start time to get everyone starting together.
-  // start_time = rti_remote->max_start_time + DELAY_START;
-  // lf_tracing_set_start_time(start_time);
-  // encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
-
-  // if (rti_remote->base.tracing_enabled) {
-  //   tag_t tag = {.time = start_time, .microstep = 0};
-  //   tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &tag);
-  // }
-  // if (write_to_net(my_fed->net, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
-  //   lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
-  // }
-
-  // LF_MUTEX_LOCK(&rti_mutex);
-  // // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
-  // // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
-  // // the federate to the start time.
-  // my_fed->enclave.state = GRANTED;
-  // lf_cond_broadcast(&sent_start_time);
-  // lf_print("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
-  // LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
-  // LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
 void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type) {
@@ -1527,12 +1499,15 @@ void* federate_info_thread_TCP(void* fed) {
     */
     case MSG_TYPE_SST_KEY_REFRESH_REQUEST:
       #ifdef COMM_TYPE_SST
-      handle_key_refresh_request(my_fed, buffer);
+      handle_key_refresh_request(my_fed);
       #endif
       break;
+    
+    case MSG_TYPE_TRANSIENT_LAUNCH_REQUEST:
+      handle_transient_launch_request(my_fed);
+      break;
     default:
-      lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->enclave.id,
-                     buffer[0]);
+      lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u", my_fed->enclave.id, buffer[0]);
       if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(receive_UNIDENTIFIED, my_fed->enclave.id, NULL);
       }
@@ -1700,7 +1675,10 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
             return -1;
           }
           
-          // return -1;
+          // Do NOT return -1 here. This is the hot-swap case: a transient federate
+          // that is already connected is reconnecting during execution with no other
+          // hot swap in progress. Fall through so the hot-swap initialization block
+          // below can allocate hot_swap_federate and set hot_swap_in_progress = true.
         }
       }
     }
@@ -1718,8 +1696,10 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     hot_swap_federate = (federate_info_t*)malloc(sizeof(federate_info_t));
     initialize_federate(hot_swap_federate, fed_id);
 
-    // Set that hot swap is in progress
+    // Mark hot swap as in progress and reset the old-federate-resigned flag,
+    // so the RTI waits for the old instance to disconnect before promoting the new one.
     hot_swap_in_progress = true;
+    hot_swap_old_resigned = false;
     // free(fed);  // Free the old memory to prevent memory leak
     fed = hot_swap_federate;
     lf_print("RTI: Hot Swap starting for federate %d.", fed_id);
@@ -2190,6 +2170,12 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // Redirect the federate in rti_remote
         rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*)hot_swap_federate;
 
+        //Assign the transient federates info required to launch the transient from the old federate to the hot swap federate
+        hot_swap_federate->transient_launch_name = fed_old->transient_launch_name;
+        hot_swap_federate->transient_launch_ip = fed_old->transient_launch_ip;
+        hot_swap_federate->transient_launch_binary_path = fed_old->transient_launch_binary_path;
+        hot_swap_federate->transient_launch_sst_config_path = fed_old->transient_launch_sst_config_path;
+        hot_swap_federate->transient_launch_user = fed_old->transient_launch_user;
         // Free the old federate memory and reset the Hot wap indicators
         // FIXME: Is this enough to free the memory allocated to the federate?
         free(fed_old);
@@ -2535,7 +2521,7 @@ void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number
 }
 
 #ifdef COMM_TYPE_SST 
-void handle_key_refresh_request(federate_info_t* fed, unsigned char* buffer){
+void handle_key_refresh_request(federate_info_t* fed){
   unsigned char key_id[8];
   read_from_net_fail_on_error(fed->net, 8, key_id, NULL);
 
@@ -2553,5 +2539,104 @@ void handle_key_refresh_request(federate_info_t* fed, unsigned char* buffer){
   
 }
 #endif
+void handle_transient_launch_request(federate_info_t* fed){
+  unsigned char fed_id[2];
+  read_from_net_fail_on_error(fed->net, sizeof(uint16_t), fed_id, NULL);
+  uint16_t transient_fed_id = extract_uint16(fed_id);
+
+  federate_info_t* transient_federate = GET_FED_INFO(transient_fed_id);
+
+  char cmd[4096];
+  bool is_local = (transient_federate->transient_launch_ip == NULL ||
+                   strcmp(transient_federate->transient_launch_ip, "localhost") == 0);
+  if (is_local) {
+    // The transient federate is on the same machine as the RTI — run directly.
+    snprintf(cmd, sizeof(cmd),
+      "nohup %s -i %s -sst %s >federate_%d.log 2>&1 &",
+      transient_federate->transient_launch_binary_path,
+      rti_remote->federation_id,
+      transient_federate->transient_launch_sst_config_path,
+      transient_fed_id
+    );
+  } else {
+    // Launch the transient federate remotely via SSH. The command changes to the
+    // LinguaFrancaRemote working directory, then starts the federate binary with
+    // nohup so it survives SSH disconnect. The -sst flag passes the SST security
+    // config, and both stdout and stderr are redirected to a per-federate log file.
+    // The trailing '&' runs the process in the background so the SSH session exits
+    // immediately after spawning it.
+    snprintf(cmd, sizeof(cmd),
+      "ssh %s@%s 'mkdir -p ~/LinguaFrancaRemote/TransientFederateLog && cd ~/LinguaFrancaRemote && nohup %s -i %s -sst %s >~/LinguaFrancaRemote/TransientFederateLog/federate_%d.log 2>&1 &'",
+      transient_federate->transient_launch_user,
+      transient_federate->transient_launch_ip,
+      transient_federate->transient_launch_binary_path,
+      rti_remote->federation_id,
+      transient_federate->transient_launch_sst_config_path,
+      transient_fed_id
+    );
+  }
+
+  if (system(cmd) != 0) {
+    lf_print_error("RTI failed to launch transient federate %d.", transient_fed_id);
+  }
+
+}
+
+void parse_transient_federate_config(const char* file_path){
+  if (file_path == NULL) return;
+
+  FILE* file_pointer;
+  char line[4096];
+
+  file_pointer = fopen(file_path, "r");
+  if (file_pointer == NULL){
+    lf_print_error("Error opening the transient config file");
+    return;
+  }
+  federate_info_t* federate_instance = NULL;
+  while(fgets(line, sizeof(line), file_pointer) != NULL){
+    line[strcspn(line, "\n")] = '\0';
+    char* equals = strchr(line, '=');
+    if(equals == NULL){
+      continue;
+    }
+    char* value = equals + 1;
+    *equals = '\0';
+
+    if(strcmp(line, "federateId") == 0){
+      errno = 0;
+      char* endptr;
+      long id_long = strtol(value, &endptr, 10);
+
+      if(errno != 0 || id_long > UINT16_MAX || id_long<0){
+        lf_print_error("Invalid federateID: %s", value);
+        continue;
+      }
+
+      uint16_t id = (uint16_t)id_long;
+      federate_instance = GET_FED_INFO(id);
+    }
+    else if(federate_instance == NULL){
+      continue;
+    }
+    else if(strcmp(line, "federateName") == 0){
+      federate_instance->transient_launch_name = strdup(value);
+    }
+    else if(strcmp(line, "federateIp") == 0){
+      federate_instance->transient_launch_ip = strdup(value);
+    }
+    else if(strcmp(line, "federateLaunchPath") == 0){
+      federate_instance->transient_launch_binary_path = strdup(value);
+    }
+    else if(strcmp(line, "federateSSTPath") == 0){
+      federate_instance->transient_launch_sst_config_path = strdup(value);
+    }
+    else if(strcmp(line, "federateUser") == 0){
+      federate_instance->transient_launch_user = strdup(value);
+    }
+
+  }
+  fclose(file_pointer);
+}
 
 #endif // STANDALONE_RTI

@@ -668,6 +668,16 @@
  */
 #define MSG_TYPE_SST_KEY_ACK 111
 
+/**
+ * @brief Byte identifying transient federate launch request
+ * @ingroup Network
+ * 
+ * This is sent to the RTI to request it to launch a certain transient
+ * federate. This message is accompanied with the id of the transient
+ * federate. 
+ */
+#define MSG_TYPE_TRANSIENT_LAUNCH_REQUEST 112
+
 ////////////////////////////////////////////////
 /**
  * @brief Physical clock synchronization messages according to PTP.

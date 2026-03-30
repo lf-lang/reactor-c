@@ -2697,7 +2697,17 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   if(atomic_exchange(&_fed.rekey_requested, false)){
     _lf_check_and_perform_rekey();
   }
+
+  #ifdef FEDERATED_CENTRALIZED
+  // Check if this federate initiated any transient federate launch
+  if (atomic_exchange(&_fed.transient_launch_requested, false)){
+    _lf_send_launch_request();
+  }
   #endif
+
+  #endif
+
+
   return result;
 }
 
@@ -2872,9 +2882,51 @@ instant_t lf_wait_until_time(tag_t tag) {
 }
 #endif // FEDERATED_DECENTRALIZED
 
+void lf_launch_transient_federate(char* port_name){
+  // Search the port map for entries matching the given port name.
+  for(int i=0; i<_fed.port_map_size; i++){
+    if (strcmp(port_name, _fed.port_to_transient_feds_mapping[i].port_name) == 0){
+      // Queue each transient federate associated with this port for launch.
+      for (int j=0; j<_fed.port_to_transient_feds_mapping[i].num_of_transients; j++){
+        uint16_t fed_id = *(_fed.port_to_transient_feds_mapping[i].transient_fed_id + j);
+        // Guard against overflow of the pending launches buffer
+        if (_fed.num_transient_fed_launch_requested < NUMBER_OF_FEDERATES){
+          _fed.pending_transient_launches[_fed.num_transient_fed_launch_requested] = fed_id;
+          _fed.num_transient_fed_launch_requested++;
+        }
+      }
+    }
+  }
+  // If any federates are queued, set the launch request field to true to signal the runtime
+  // that there are transient federate launches required
+  if (_fed.num_transient_fed_launch_requested > 0){
+    atomic_store(&_fed.transient_launch_requested, true);
+  }
+
+}
+
+void _lf_send_launch_request(){
+  size_t bytes_to_write = 1 + sizeof(uint16_t);
+  unsigned char buffer[bytes_to_write];
+
+  for(int i=0; i<_fed.num_transient_fed_launch_requested; i++){
+    uint16_t fed_id = _fed.pending_transient_launches[i];
+    buffer[0] = MSG_TYPE_TRANSIENT_LAUNCH_REQUEST;
+    encode_uint16(fed_id, &(buffer[1]));
+    LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+    write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, buffer, NULL, NULL);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+        
+    memset(buffer, 0, bytes_to_write);
+  }
+
+  // Reset the pending_transient_launches and count of the number of transient to be launched to 0
+  memset(_fed.pending_transient_launches, 0, sizeof(uint16_t)*_fed.num_transient_fed_launch_requested);
+  _fed.num_transient_fed_launch_requested = 0;
+}
 
 void lf_refresh_key(void){
-  lf_print("DEBUG: Rekey Requested");
+  LF_PRINT_DEBUG("Rekey Requested");
   atomic_store(&_fed.rekey_requested, true);
 }
 

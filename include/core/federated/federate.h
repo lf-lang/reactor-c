@@ -35,6 +35,16 @@
 // Data types
 
 /**
+ * Maps a port name to the set of transient federates that should be launched
+ * when that port becomes active.
+ */
+typedef struct port_transient_map_t {
+  char* port_name;
+  uint16_t* transient_fed_id;
+  int num_of_transients;
+} port_transient_map_t;
+
+/**
  * @brief Structure that a federate instance uses to keep track of its own state.
  * @ingroup Federated
  */
@@ -201,6 +211,21 @@ typedef struct federate_instance_t {
   
   /** Indicator that this federate needs to refresh its session key/keys for its connections*/
   _Atomic bool rekey_requested;
+
+  /** Indicator that a transient federate launch needs to be requested to the rti */
+  _Atomic bool transient_launch_requested;
+
+  /** An array of transient federates that needs to be launched */
+  uint16_t pending_transient_launches[NUMBER_OF_FEDERATES];
+
+  /** Total number of transient federates launch requested */
+  int num_transient_fed_launch_requested;
+
+  /** Provides output port name -> list of transient fed ids mapping. It is generated at compile time.  */
+  port_transient_map_t port_to_transient_feds_mapping[NUMBER_OF_FEDERATES];
+
+  /** Count of port -> transient fed mappings present for this federation*/
+  int port_map_size;
 
 #ifdef FEDERATED_DECENTRALIZED
   /**
@@ -577,6 +602,29 @@ void lf_stall_advance_level_federation_locked(size_t level);
  * time. It starts a thread to listen for messages from the RTI.
  */
 void lf_synchronize_with_other_federates(void);
+
+/**
+ * @brief Request RTI for a launch of a transient federate
+ * 
+ * This function sets the transient_launch_requested flag to true, this would signal
+ * that the federate needs to send a request to the RTI to launch one or more
+ * transient federates
+ * 
+ * @param port_name The port name is looked up in the port to transient
+ * federates mapping to determine the transient federates that are connected to this
+ * port.
+ */
+void lf_launch_transient_federate(char* port_name);
+
+/**
+ * @brief Sends a transient federate launch request to the RTI
+ * 
+ * This functions is called when the transient_launch_requested is checked if it is
+ * set to true. The function traverses over the list of pending transient federates
+ * that need to be launched and for each a request is sent to the RTI with the msg
+ * type MSG_TYPE_TRANSIENT_LAUNCH_REQUEST and the federate id.  
+ */
+void _lf_send_launch_request();
 
 /**
  * @brief Request a session key refresh for all SST connections.

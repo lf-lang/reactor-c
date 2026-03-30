@@ -68,7 +68,21 @@ typedef struct federate_info_t {
   bool is_transient;
   /** @brief Records the start time of the federate, which is mainly useful for transient federates */
   tag_t effective_start_tag;
-  
+
+  /** These fields are only initialised to a value if the federate is transient. These fields are used by the rti to launch a 
+   * transient federate on a remote machine using ssh from rti's machine.
+   */
+
+  /** @brief Username user to identify the unique account we would ssh into */
+  char* transient_launch_user;
+  /** @brief Ip address for the transient federate remote machine */
+  char* transient_launch_ip;
+  /** @brief Binary file path for the transient federate on the remote machine where it will be launched */
+  char* transient_launch_binary_path;
+  /** @brief SST config file path for the transeint federate on the remote machine */
+  char* transient_launch_sst_config_path;
+  /** @brief Transient federates name */
+  char* transient_launch_name;
 } federate_info_t;
 
 /**
@@ -529,9 +543,28 @@ void initialize_RTI(rti_remote_t* rti);
  * message from a federate.
  *
  * @param fed The federate that initiated the key refresh.
- * @param buffer The buffer containing the incoming message.
  */
-void handle_key_refresh_request(federate_info_t* fed, unsigned char* buffer);
+void handle_key_refresh_request(federate_info_t* fed);
+
+/**
+ * @brief Handle transient federate launch request 
+ * 
+ * This function is called when a message type MSG_TYPE_TRANSIENT_LAUNCH_REQUEST is received by the
+ * RTI. The function reads the federate id that was requested to be launched. Federate information is 
+ * retrived using the GET_FED_INFO(id) command to retrieve the transient federate fields required by the RTI
+ * to SSH into the federates machine and the other data required to locate and launch the federate
+ */
+void handle_transient_launch_request(federate_info_t* fed);
+
+/**
+ * @brief Parse the transient federate config file which contains information on all transient
+ * federates present in the federation required to launch them
+ * 
+ * Read the config file to get information on the transient federates and store
+ * the name, host address, remote user where the transient federate is deployed,
+ * launch file path and the sst config in the federate's instance fields
+ */
+void parse_transient_federate_config(const char* file_path);
 
 #endif // RTI_REMOTE_H
 #endif // STANDALONE_RTI

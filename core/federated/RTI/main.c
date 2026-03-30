@@ -46,6 +46,9 @@ const char* rti_trace_file_name = "rti.lft";
 /** Indicator that normal termination of the RTI has occurred. */
 bool normal_termination = false;
 
+// RTI transient federates information file path
+const char* transient_federates_file_path = NULL;
+
 /**
  * Send a failed signal to the specified federate.
  */
@@ -208,6 +211,15 @@ int process_args(int argc, const char* argv[]) {
       i++;
       lf_print("RTI: Federation ID: %s", argv[i]);
       rti.federation_id = argv[i];
+    } else if (strcmp(argv[i], "-tf") == 0 || strcmp(argv[i], "--tf") == 0){
+      if (argc < i + 2) {
+        lf_print_error("-tf needs the file path argument");
+        return 0;
+      }
+      i++;
+      transient_federates_file_path = argv[i];
+      lf_print("RTI: The transient federates config file path was retrieved: %s", transient_federates_file_path);
+
     } else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--number_of_federates") == 0) {
       if (argc < i + 2) {
         lf_print_error("--number_of_federates needs an integer argument.");
@@ -381,6 +393,10 @@ int main(int argc, const char* argv[]) {
     initialize_federate(fed_info, i);
     rti.base.scheduling_nodes[i] = (scheduling_node_t*)fed_info;
   }
+
+  // One of the options for a place to parse the transient federate config file and set the fields of the transient federates?? 
+  // TODO: Find other safe places to parse the transeint config file?? 
+  parse_transient_federate_config(transient_federates_file_path);
 
   if (!start_rti_server()) {
     wait_for_federates();
