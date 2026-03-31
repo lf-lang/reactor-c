@@ -751,7 +751,7 @@ static void* listen_to_federates(void* _args) {
     bool bad_message = false;
     if (read_from_socket_close_on_error(socket_id, 1, buffer)) {
       // Socket has been closed.
-      lf_print("Socket from federate %d is closed.", fed_id);
+      lf_print_info("Socket from federate %d is closed.", fed_id);
       // Stop listening to this federate.
       socket_closed = true;
     } else {
@@ -949,7 +949,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   tag_t tag = {.time = timestamp, .microstep = 0};
   // Trace the event when tracing is enabled
   tracepoint_federate_from_rti(receive_TIMESTAMP, _lf_my_fed_id, &tag);
-  lf_print("Starting timestamp is: " PRINTF_TIME ".", timestamp);
+  lf_print_info("Starting timestamp is: " PRINTF_TIME ".", timestamp);
   LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
   return timestamp;
@@ -1542,7 +1542,7 @@ static void* listen_to_rti_TCP(void* args) {
       }
     } else if (read_failed > 0) {
       // EOF received.
-      lf_print("Connection to the RTI closed with an EOF.");
+      lf_print_info("Connection to the RTI closed with an EOF.");
       shutdown_socket(&_fed.socket_TCP_RTI, false);
       return NULL;
     }
@@ -1832,7 +1832,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                        remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
       continue;
     } else {
-      lf_print("Connected to federate %d, port %hu.", remote_federate_id, uport);
+      lf_print_info("Connected to federate %d, port %hu.", remote_federate_id, uport);
       // Trace the event when tracing is enabled
       tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
       break;
