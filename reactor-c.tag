@@ -4158,10 +4158,10 @@
       <arglist>(mutex)</arglist>
     </member>
     <member kind="function">
-      <type>void void void void</type>
+      <type>void void void void void</type>
       <name>error</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga8db9f1cd3ea7eb70e6958e732b26e61d</anchor>
+      <anchor>ga73dce66b0161fa5da8bb2a1bcc8d3101</anchor>
       <arglist>(const char *msg)</arglist>
     </member>
     <member kind="function">
@@ -4179,10 +4179,10 @@
       <arglist>(const char *format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
-      <type>void void void</type>
+      <type>void void void void</type>
       <name>lf_vprint_debug</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga334870b12bd4bc49b9da219e31225477</anchor>
+      <anchor>gaec240098951eda60632ee6283450dbf0</anchor>
       <arglist>(const char *format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
@@ -4201,9 +4201,16 @@
     </member>
     <member kind="function">
       <type>void void</type>
+      <name>lf_vprint_info</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga136068c8a901039b20f0bd1e552d6885</anchor>
+      <arglist>(const char *format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void</type>
       <name>lf_vprint_log</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga8432a03751d354b69ffe2f5b8c664654</anchor>
+      <anchor>ga0b410cbb25ceba53293a3cee9d64aab0</anchor>
       <arglist>(const char *format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
@@ -4351,45 +4358,52 @@
       <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
-      <type>void void void</type>
+      <type>void void void void</type>
       <name>lf_print_debug</name>
       <anchorfile>group__API.html</anchorfile>
-      <anchor>ga22ebee89c962ac34cc1fa7b9762b77d2</anchor>
-      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
-    </member>
-    <member kind="function">
-      <type>void void void void</type>
-      <name>lf_print_error</name>
-      <anchorfile>group__API.html</anchorfile>
-      <anchor>gae0a6bd6b164c5cc3e9928f5375dd1a97</anchor>
-      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
-    </member>
-    <member kind="function">
-      <type>void void void void void void</type>
-      <name>lf_print_error_and_exit</name>
-      <anchorfile>group__API.html</anchorfile>
-      <anchor>gabf2630e80adfec45b8b4a2782a0767a7</anchor>
-      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
-    </member>
-    <member kind="function">
-      <type>void void void void void void void</type>
-      <name>lf_print_error_system_failure</name>
-      <anchorfile>group__API.html</anchorfile>
-      <anchor>gacbc9741875a95bb30e1a8d68cfb7cf06</anchor>
-      <arglist>(const char *format,...)</arglist>
-    </member>
-    <member kind="function">
-      <type>void void</type>
-      <name>lf_print_log</name>
-      <anchorfile>group__API.html</anchorfile>
-      <anchor>gab202dc9383567eaa8d9ae7240c939c19</anchor>
+      <anchor>gabd6405738a4627385a6f3a42ef699053</anchor>
       <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
       <type>void void void void void</type>
+      <name>lf_print_error</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga43edc98b0e919af21d98951e6ec321d3</anchor>
+      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void void void void void</type>
+      <name>lf_print_error_and_exit</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga4e8f3883185b649cf76a2742b40c1231</anchor>
+      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void void void void void void</type>
+      <name>lf_print_error_system_failure</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gaa3215c4ac1863a4e36afb8075236cd72</anchor>
+      <arglist>(const char *format,...)</arglist>
+    </member>
+    <member kind="function">
+      <type>void void</type>
+      <name>lf_print_info</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga1ccde32ac15737cca48fecd88d89c472</anchor>
+      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void</type>
+      <name>lf_print_log</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga04de5be3e0e5beee4d80966937bc63ca</anchor>
+      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void void void void</type>
       <name>lf_print_warning</name>
       <anchorfile>group__API.html</anchorfile>
-      <anchor>ga613bc8d331e3fd9a3f78eb1600092e1d</anchor>
+      <anchor>ga01f18501c6335b9879aeb2fa85527450</anchor>
       <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
@@ -9311,45 +9325,52 @@
       <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
-      <type>void void void</type>
+      <type>void void void void</type>
       <name>lf_print_debug</name>
       <anchorfile>group__API.html</anchorfile>
-      <anchor>ga22ebee89c962ac34cc1fa7b9762b77d2</anchor>
-      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
-    </member>
-    <member kind="function">
-      <type>void void void void</type>
-      <name>lf_print_error</name>
-      <anchorfile>group__API.html</anchorfile>
-      <anchor>gae0a6bd6b164c5cc3e9928f5375dd1a97</anchor>
-      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
-    </member>
-    <member kind="function">
-      <type>void void void void void void</type>
-      <name>lf_print_error_and_exit</name>
-      <anchorfile>group__API.html</anchorfile>
-      <anchor>gabf2630e80adfec45b8b4a2782a0767a7</anchor>
-      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
-    </member>
-    <member kind="function">
-      <type>void void void void void void void</type>
-      <name>lf_print_error_system_failure</name>
-      <anchorfile>group__API.html</anchorfile>
-      <anchor>gacbc9741875a95bb30e1a8d68cfb7cf06</anchor>
-      <arglist>(const char *format,...)</arglist>
-    </member>
-    <member kind="function">
-      <type>void void</type>
-      <name>lf_print_log</name>
-      <anchorfile>group__API.html</anchorfile>
-      <anchor>gab202dc9383567eaa8d9ae7240c939c19</anchor>
+      <anchor>gabd6405738a4627385a6f3a42ef699053</anchor>
       <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
       <type>void void void void void</type>
+      <name>lf_print_error</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga43edc98b0e919af21d98951e6ec321d3</anchor>
+      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void void void void void</type>
+      <name>lf_print_error_and_exit</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga4e8f3883185b649cf76a2742b40c1231</anchor>
+      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void void void void void void</type>
+      <name>lf_print_error_system_failure</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gaa3215c4ac1863a4e36afb8075236cd72</anchor>
+      <arglist>(const char *format,...)</arglist>
+    </member>
+    <member kind="function">
+      <type>void void</type>
+      <name>lf_print_info</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga1ccde32ac15737cca48fecd88d89c472</anchor>
+      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void</type>
+      <name>lf_print_log</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga04de5be3e0e5beee4d80966937bc63ca</anchor>
+      <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void void void void</type>
       <name>lf_print_warning</name>
       <anchorfile>group__API.html</anchorfile>
-      <anchor>ga613bc8d331e3fd9a3f78eb1600092e1d</anchor>
+      <anchor>ga01f18501c6335b9879aeb2fa85527450</anchor>
       <arglist>(const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
@@ -11319,10 +11340,10 @@
       <arglist>(environment_t *env)</arglist>
     </member>
     <member kind="function">
-      <type>void void void void</type>
+      <type>void void void void void</type>
       <name>error</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga8db9f1cd3ea7eb70e6958e732b26e61d</anchor>
+      <anchor>ga73dce66b0161fa5da8bb2a1bcc8d3101</anchor>
       <arglist>(const char *msg)</arglist>
     </member>
     <member kind="function">
@@ -11592,10 +11613,10 @@
       <arglist>(const char *format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
-      <type>void void void</type>
+      <type>void void void void</type>
       <name>lf_vprint_debug</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga334870b12bd4bc49b9da219e31225477</anchor>
+      <anchor>gaec240098951eda60632ee6283450dbf0</anchor>
       <arglist>(const char *format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">
@@ -11614,9 +11635,16 @@
     </member>
     <member kind="function">
       <type>void void</type>
+      <name>lf_vprint_info</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga136068c8a901039b20f0bd1e552d6885</anchor>
+      <arglist>(const char *format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
+    </member>
+    <member kind="function">
+      <type>void void void</type>
       <name>lf_vprint_log</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga8432a03751d354b69ffe2f5b8c664654</anchor>
+      <anchor>ga0b410cbb25ceba53293a3cee9d64aab0</anchor>
       <arglist>(const char *format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1</arglist>
     </member>
     <member kind="function">

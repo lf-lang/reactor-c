@@ -13,13 +13,14 @@ var util_8h =
     [ "LF_MUTEX_INIT", "group__Internal.html#gadab0b8f13f8462ec0eddc7257ddb5394", null ],
     [ "LF_MUTEX_LOCK", "group__Internal.html#gab907d4c8d53c26fdbcbaa8d02e6a8810", null ],
     [ "LF_MUTEX_UNLOCK", "group__Internal.html#ga2bb9c8d2b589a6eb4f72f6750a1133fc", null ],
-    [ "error", "group__Internal.html#ga8db9f1cd3ea7eb70e6958e732b26e61d", null ],
+    [ "error", "group__Internal.html#ga73dce66b0161fa5da8bb2a1bcc8d3101", null ],
     [ "lf_fed_id", "group__Internal.html#ga6e9c2ed60ca5adec5ba3f43d4410dc75", null ],
     [ "lf_vprint", "group__Internal.html#ga1b64e4e645fbebb1a3b132280b2c5b35", null ],
-    [ "lf_vprint_debug", "group__Internal.html#ga334870b12bd4bc49b9da219e31225477", null ],
+    [ "lf_vprint_debug", "group__Internal.html#gaec240098951eda60632ee6283450dbf0", null ],
     [ "lf_vprint_error", "group__Internal.html#ga3d1b4e46f0394bbf2e74c4eabfd8923f", null ],
     [ "lf_vprint_error_and_exit", "group__Internal.html#ga698eb7c2ecf514b4afa1ab7ab598eea2", null ],
-    [ "lf_vprint_log", "group__Internal.html#ga8432a03751d354b69ffe2f5b8c664654", null ],
+    [ "lf_vprint_info", "group__Internal.html#ga136068c8a901039b20f0bd1e552d6885", null ],
+    [ "lf_vprint_log", "group__Internal.html#ga0b410cbb25ceba53293a3cee9d64aab0", null ],
     [ "lf_vprint_warning", "group__Internal.html#ga47f8c72c1407daae89508da09273d655", null ],
     [ "_lf_my_fed_id", "group__Internal.html#ga3c7bddddb86913975950acdcf8bfef2a", null ]
 ];

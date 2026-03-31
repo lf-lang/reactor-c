@@ -5838,7 +5838,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Internal.html</Path>
-    <Anchor>ga8db9f1cd3ea7eb70e6958e732b26e61d</Anchor>
+    <Anchor>ga73dce66b0161fa5da8bb2a1bcc8d3101</Anchor>
     <DeclaredIn>util.h</DeclaredIn>
   </Token>
   <Token>
@@ -8098,7 +8098,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__API.html</Path>
-    <Anchor>ga22ebee89c962ac34cc1fa7b9762b77d2</Anchor>
+    <Anchor>gabd6405738a4627385a6f3a42ef699053</Anchor>
     <DeclaredIn>logging.h</DeclaredIn>
   </Token>
   <Token>
@@ -8108,7 +8108,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__API.html</Path>
-    <Anchor>gae0a6bd6b164c5cc3e9928f5375dd1a97</Anchor>
+    <Anchor>ga43edc98b0e919af21d98951e6ec321d3</Anchor>
     <DeclaredIn>logging.h</DeclaredIn>
   </Token>
   <Token>
@@ -8118,7 +8118,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__API.html</Path>
-    <Anchor>gabf2630e80adfec45b8b4a2782a0767a7</Anchor>
+    <Anchor>ga4e8f3883185b649cf76a2742b40c1231</Anchor>
     <DeclaredIn>logging.h</DeclaredIn>
   </Token>
   <Token>
@@ -8128,7 +8128,17 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__API.html</Path>
-    <Anchor>gacbc9741875a95bb30e1a8d68cfb7cf06</Anchor>
+    <Anchor>gaa3215c4ac1863a4e36afb8075236cd72</Anchor>
+    <DeclaredIn>logging.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_print_info</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>ga1ccde32ac15737cca48fecd88d89c472</Anchor>
     <DeclaredIn>logging.h</DeclaredIn>
   </Token>
   <Token>
@@ -8148,7 +8158,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__API.html</Path>
-    <Anchor>gab202dc9383567eaa8d9ae7240c939c19</Anchor>
+    <Anchor>ga04de5be3e0e5beee4d80966937bc63ca</Anchor>
     <DeclaredIn>logging.h</DeclaredIn>
   </Token>
   <Token>
@@ -8168,7 +8178,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__API.html</Path>
-    <Anchor>ga613bc8d331e3fd9a3f78eb1600092e1d</Anchor>
+    <Anchor>ga01f18501c6335b9879aeb2fa85527450</Anchor>
     <DeclaredIn>logging.h</DeclaredIn>
   </Token>
   <Token>
@@ -9328,7 +9338,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Internal.html</Path>
-    <Anchor>ga334870b12bd4bc49b9da219e31225477</Anchor>
+    <Anchor>gaec240098951eda60632ee6283450dbf0</Anchor>
     <DeclaredIn>util.h</DeclaredIn>
   </Token>
   <Token>
@@ -9353,12 +9363,22 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_vprint_info</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga136068c8a901039b20f0bd1e552d6885</Anchor>
+    <DeclaredIn>util.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_vprint_log</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Internal.html</Path>
-    <Anchor>ga8432a03751d354b69ffe2f5b8c664654</Anchor>
+    <Anchor>ga0b410cbb25ceba53293a3cee9d64aab0</Anchor>
     <DeclaredIn>util.h</DeclaredIn>
   </Token>
   <Token>

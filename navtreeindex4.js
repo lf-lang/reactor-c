@@ -1,5 +1,7 @@
 var NAVTREEINDEX4 =
 {
+"structenvironment__t.html#a7efb23f2e28e89e501b4021f423adc3c":[3,4,18,6],
+"structenvironment__t.html#a898e3b0c489cec6848c730cf1f7e2266":[3,4,18,23],
 "structenvironment__t.html#a8f815a1dde09400b2c7e58f7b4200f66":[3,4,18,22],
 "structenvironment__t.html#a98c12d624ec660bb83bd614481643a16":[3,4,18,9],
 "structenvironment__t.html#a9a20bd6721513d325f75070ded6ec60e":[3,4,18,1],
@@ -247,7 +249,5 @@ var NAVTREEINDEX4 =
 "structrti__addr__info__t.html#a814382a63d0c415566268997e7e2c238":[3,6,8,1],
 "structrti__addr__info__t.html#ab67e59a55eda384237ee0c01b161808c":[3,6,8,3],
 "structrti__common__t.html":[3,8,7],
-"structrti__common__t.html#a1a6c918ac1891377b8bd69c06a44e290":[3,8,7,3],
-"structrti__common__t.html#a21547718724f363f1b684898535a6874":[3,8,7,0],
-"structrti__common__t.html#a415277bcbc13aabe238614b9a0d6d4de":[3,8,7,1]
+"structrti__common__t.html#a1a6c918ac1891377b8bd69c06a44e290":[3,8,7,3]
 };
