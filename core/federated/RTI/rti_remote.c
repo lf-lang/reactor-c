@@ -1492,7 +1492,7 @@ void* federate_info_thread_TCP(void* fed) {
   if (my_fed->is_transient) {
     // FIXME: Aren't there transit messages anymore???
     // free_in_transit_message_q(my_fed->in_transit_message_tags);
-    lf_print("RTI: Transient Federate %d thread exited. and socket_id is: %d ", my_fed->enclave.id, my_fed->socket);
+    lf_print_info("RTI: Transient Federate %d thread exited.", my_fed->enclave.id);
 
     // Update the number of connected transient federates
     rti_remote->number_of_connected_transient_federates--;
@@ -1666,7 +1666,7 @@ static int32_t receive_and_check_fed_id_message(int* socket_id) {
     hot_swap_in_progress = true;
     // free(fed);  // Free the old memory to prevent memory leak
     fed = hot_swap_federate;
-    lf_print("RTI: Hot Swap starting for federate %d.", fed_id);
+    lf_print_info("RTI: Hot Swap starting for federate %d.", fed_id);
   } else {
     fed = fed_twin;
     fed->is_transient = is_transient;
@@ -2041,7 +2041,7 @@ void lf_connect_to_persistent_federates(int socket_descriptor) {
         rti_remote->number_of_connected_transient_federates++;
         assert(rti_remote->number_of_connected_transient_federates <= rti_remote->number_of_transient_federates);
         i--;
-        lf_print("RTI: Transient federate %d joined.", fed->enclave.id);
+        lf_print_info("RTI: Transient federate %d joined.", fed->enclave.id);
       }
     } else {
       // Received message was rejected. Try again.
@@ -2164,7 +2164,7 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // synchronization messages.
         federate_info_t* fed = GET_FED_INFO(fed_id);
         lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
-        lf_print("RTI: Transient federate %d joined.", fed_id);
+        lf_print_info("RTI: Transient federate %d joined.", fed_id);
       }
       rti_remote->number_of_connected_transient_federates++;
     } else {
@@ -2371,7 +2371,7 @@ void wait_for_federates(int socket_descriptor) {
   // All persistent federates have connected.
   lf_print_info("RTI: All expected persistent federates have connected. Starting execution.");
   if (rti_remote->number_of_transient_federates > 0) {
-    lf_print("RTI: Transient Federates can join and leave the federation at anytime.");
+    lf_print_info("RTI: Transient Federates can join and leave the federation at any time.");
   }
 
   // The socket server will only continue to accept connections from transient
