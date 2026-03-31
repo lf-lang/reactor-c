@@ -996,7 +996,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // Send the timestamp marker first.
   send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
 
-  // Read bytes from the socket. We need either 9 butes or 21, depending on the federate type
+  // Read bytes from the socket. We need either 9 bytes or 21, depending on the federate type
   // Buffer for message ID plus timestamp.
   size_t buffer_length = (_fed.is_transient) ? MSG_TYPE_TIMESTAMP_TAG_LENGTH : MSG_TYPE_TIMESTAMP_LENGTH;
   unsigned char buffer[buffer_length];
