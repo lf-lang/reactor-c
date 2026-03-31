@@ -1033,7 +1033,8 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   lf_print_info("Federation start time is: " PRINTF_TIME ".", timestamp);
   if (_fed.is_transient) {
     effective_start_tag = extract_tag(&(buffer[9]));
-    lf_print_info("Effective relative start tag is: (" PRINTF_TAG ").", effective_start_tag.time - timestamp, effective_start_tag.microstep);
+    lf_print_info("Effective relative start tag is: (" PRINTF_TAG ").", effective_start_tag.time - timestamp,
+                  effective_start_tag.microstep);
   } else {
     effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
   }
