@@ -944,6 +944,10 @@ void handle_address_query(uint16_t fed_id) {
                                 "Failed to write ip address to socket of federate %d.", fed_id);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_ADR_QR_REP, fed_id, NULL);
+  }
+
   LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id, remote_fed->server_hostname,
                  remote_fed->server_port);
 }
@@ -1388,7 +1392,7 @@ static void handle_federate_resign(federate_info_t* my_fed) {
 
   // First, mark a federate as disconnected and inform if necessary
   notify_federate_disconnected(my_fed);
-  lf_print("RTI: Federate %d has resigned.", my_fed->enclave.id);
+  lf_print_info("RTI: Federate %d has resigned.", my_fed->enclave.id);
 
   LF_MUTEX_LOCK(&rti_mutex);
 
@@ -2301,7 +2305,7 @@ int32_t start_rti_server(uint16_t port) {
   if (create_server(port, &rti_remote->socket_descriptor_TCP, &rti_remote->final_port_TCP, TCP, true)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
   };
-  lf_print("RTI: Listening for federates.");
+  lf_print_info("RTI: Listening for federates.");
   // Create the UDP socket server
   // Try to get the rti_remote->final_port_TCP + 1 port
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
@@ -2365,7 +2369,7 @@ void wait_for_federates(int socket_descriptor) {
   }
 
   // All persistent federates have connected.
-  lf_print("RTI: All expected persistent federates have connected. Starting execution.");
+  lf_print_info("RTI: All expected persistent federates have connected. Starting execution.");
   if (rti_remote->number_of_transient_federates > 0) {
     lf_print("RTI: Transient Federates can join and leave the federation at anytime.");
   }
@@ -2393,26 +2397,26 @@ void wait_for_federates(int socket_descriptor) {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
     if (!fed->is_transient) {
-      lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
+      LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
       lf_thread_join(fed->thread_id, &thread_exit_status);
       pqueue_tag_free(fed->in_transit_message_tags);
-      lf_print("RTI: Persistent federate %d thread exited.", fed->enclave.id);
+      LF_PRINT_LOG("RTI: Persistent federate %d thread exited.", fed->enclave.id);
     }
   }
 
   rti_remote->all_persistent_federates_exited = true;
   rti_remote->phase = shutdown_phase;
-  lf_print("RTI: All persistent threads exited.");
+  lf_print_info("RTI: All persistent threads exited.");
 
   // Wait for transient federate threads to exit, if any.
   if (rti_remote->number_of_transient_federates > 0) {
     for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
       federate_info_t* fed = GET_FED_INFO(i);
       if (fed->is_transient) {
-        lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
+        LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
         lf_thread_join(fed->thread_id, &thread_exit_status);
         pqueue_tag_free(fed->in_transit_message_tags);
-        lf_print("RTI: Transient federate %d thread exited.", fed->enclave.id);
+        LF_PRINT_LOG("RTI: Transient federate %d thread exited.", fed->enclave.id);
       }
     }
   }

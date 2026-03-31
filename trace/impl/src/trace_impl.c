@@ -20,7 +20,7 @@
 
 // PRIVATE DATA STRUCTURES ***************************************************
 
-static lf_platform_mutex_ptr_t trace_mutex;
+static lf_platform_mutex_ptr_t trace_mutex = NULL;
 static trace_t trace;
 static int process_id;
 static int64_t start_time;
@@ -297,6 +297,9 @@ void lf_tracing_global_init(char* process_name, char* process_names, int fedid, 
 }
 void lf_tracing_set_start_time(int64_t time) { start_time = time; }
 void lf_tracing_global_shutdown() {
-  stop_trace(&trace);
-  lf_platform_mutex_free(trace_mutex);
+  if (trace_mutex != NULL && !trace._lf_trace_stop) {
+    stop_trace(&trace);
+    lf_platform_mutex_free(trace_mutex);
+    trace_mutex = NULL;
+  }
 }
