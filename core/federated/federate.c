@@ -592,9 +592,10 @@ static int handle_tagged_message(int* socket, int fed_id) {
   size_t element_size = ((token_type_t*)action)->element_size;
   size_t element_count = 0;
   if (element_size == 0) {
-    // Avoid division by zero; this indicates an inconsistent or misconfigured action type.
-    lf_print_error("Received message for port %d with element_size == 0; creating token with 0 elements.", port_id);
-    element_count = 0;
+    // Message might be being handled by a custom serializer, e.g. in Python.
+    // Treat the message as a byte array.
+    element_count = length;
+    element_size = 1;
   } else {
     element_count = length / element_size;
     if (length % element_size != 0) {
