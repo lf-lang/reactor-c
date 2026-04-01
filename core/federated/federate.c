@@ -1719,7 +1719,6 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                                 "Failed to read the IP address for federate %d from RTI.", remote_federate_id);
     tracepoint_federate_from_rti(receive_ADR_QR_REP, _lf_my_fed_id, NULL);
 
-
     // A reply of -1 for the port means that the RTI does not know
     // the port number of the remote federate, presumably because the
     // remote federate has not yet sent an MSG_TYPE_ADDRESS_ADVERTISEMENT message to the RTI.
