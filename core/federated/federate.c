@@ -731,7 +731,7 @@ static void* listen_to_federates(void* _args) {
     bool bad_message = false;
     if (read_from_net_close_on_error(net, 1, buffer)) {
       // network abstraction has been closed.
-      lf_print("network abstraction from federate %d is closed.", fed_id);
+      lf_print_info("network abstraction from federate %d is closed.", fed_id);
       // Stop listening to this federate.
       net_closed = true;
     } else {
@@ -928,7 +928,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   tag_t tag = {.time = timestamp, .microstep = 0};
   // Trace the event when tracing is enabled
   tracepoint_federate_from_rti(receive_TIMESTAMP, _lf_my_fed_id, &tag);
-  lf_print("Starting timestamp is: " PRINTF_TIME ".", timestamp);
+  lf_print_info("Starting timestamp is: " PRINTF_TIME ".", timestamp);
   LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
   return timestamp;
@@ -1505,7 +1505,7 @@ static void* listen_to_rti_net(void* args) {
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
-      lf_print("Connection to the RTI closed with an EOF.");
+      lf_print_info("Connection to the RTI closed with an EOF.");
       shutdown_net(_fed.net_to_RTI, false);
       return NULL;
     }
@@ -1717,6 +1717,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
     read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(host_ip_addr), (unsigned char*)&host_ip_addr,
                                 "Failed to read the IP address for federate %d from RTI.", remote_federate_id);
+    tracepoint_federate_from_rti(receive_ADR_QR_REP, _lf_my_fed_id, NULL);
+
 
     // A reply of -1 for the port means that the RTI does not know
     // the port number of the remote federate, presumably because the
@@ -1800,7 +1802,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                        remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
       continue;
     } else {
-      lf_print("Connected to federate %d, port %hu.", remote_federate_id, uport);
+      lf_print_info("Connected to federate %d, port %hu.", remote_federate_id, uport);
       // Trace the event when tracing is enabled
       tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
       break;

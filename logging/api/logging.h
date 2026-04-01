@@ -97,6 +97,19 @@
 void lf_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
+ * @brief Report an informational message on stdout with no prefix and a newline appended
+ * at the end.
+ * @ingroup API
+ *
+ * If this execution is federated, then the message will be prefaced by identifying
+ * information for the federate. The arguments are just like printf().
+ *
+ * @param format The format string to print.
+ * @param ... The arguments to print.
+ */
+void lf_print_info(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+
+/**
  * @brief Report an log message on stdout with the prefix "LOG: " and a newline appended at the end.
  * @ingroup API
  *

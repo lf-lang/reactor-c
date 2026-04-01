@@ -665,6 +665,14 @@ void handle_address_query(uint16_t fed_id) {
                              "Failed to write ip address to network abstraction of federate %d.", fed_id);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_ADR_QR_REP, fed_id, NULL);
+  }
+
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_ADR_QR_REP, fed_id, NULL);
+  }
+
   LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id, server_host_name,
                  server_port);
 }
@@ -947,7 +955,7 @@ static void handle_federate_resign(federate_info_t* my_fed) {
     tracepoint_rti_from_federate(receive_RESIGN, my_fed->enclave.id, NULL);
   }
 
-  lf_print("RTI: Federate %d has resigned.", my_fed->enclave.id);
+  lf_print_info("RTI: Federate %d has resigned.", my_fed->enclave.id);
 
   my_fed->enclave.state = NOT_CONNECTED;
 
@@ -1509,7 +1517,7 @@ int start_rti_server() {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
     return -1;
   };
-  lf_print("RTI: Listening for federates.");
+  lf_print_info("RTI: Listening for federates.");
   // Create the UDP socket server
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
     if (create_socket_server(DEFAULT_UDP_PORT, &rti_remote->socket_descriptor_UDP, &rti_remote->final_port_UDP, UDP)) {
@@ -1525,7 +1533,7 @@ void wait_for_federates() {
   lf_connect_to_federates(rti_remote->rti_net);
 
   // All federates have connected.
-  lf_print("RTI: All expected federates have connected. Starting execution.");
+  lf_print_info("RTI: All expected federates have connected. Starting execution.");
 
   // The network abstraction server will not continue to accept connections after all the federates
   // have joined.
@@ -1538,10 +1546,10 @@ void wait_for_federates() {
   void* thread_exit_status;
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
-    lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
+    LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
     lf_thread_join(fed->thread_id, &thread_exit_status);
     pqueue_tag_free(fed->in_transit_message_tags);
-    lf_print("RTI: Federate %d thread exited.", fed->enclave.id);
+    LF_PRINT_LOG("RTI: Federate %d thread exited.", fed->enclave.id);
   }
 
   rti_remote->all_federates_exited = true;

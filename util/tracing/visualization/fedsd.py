@@ -3,7 +3,7 @@
 # Utility that reports the interactions (exchanged messages) between federates and the RTI in a 
 # sequence-diagram-like format, or between enclaves in an enclaved execution.
 # 
-# The utility operates on lft trace files and outputs an html file embedding an svg image.
+# The utility operates on lft trace files and outputs an html file with a sticky header.
 
 '''
 In the dataframe, each row will be marked with one op these values:
@@ -20,16 +20,31 @@ css_style = ' <style> \
         stroke: black; \
         stroke-width: 2; \
     } \
-    .ABS {stroke: #d9dd1f; fill: #d9dd1f; } \
-    .LTC { stroke: #073b4c; fill: #073b4c;} \
-    .T_MSG { stroke: #ef476f; fill: #ef476f} \
-    .NET { stroke: #118ab2; fill: #118ab2} \
-    .PTAG { stroke: #06d6a0; fill: #06d6a0} \
-    .TAG { stroke: #08a578; fill: #08a578} \
-    .DNET { stroke: purple; fill: purple} \
-    .TIMESTAMP { stroke: grey; fill: grey } \
-    .FED_ID {stroke: #80DD99; fill: #80DD99 } \
-    .ADV {stroke-linecap="round" ; stroke: "red" ; fill: "red"} \
+    .ABS        { stroke: #d9dd1f; fill: #d9dd1f; } \
+    .LTC        { stroke: #073b4c; fill: #073b4c; } \
+    .T_MSG      { stroke: #ef476f; fill: #ef476f; } \
+    .P2P_T_MSG  { stroke: #c77dff; fill: #c77dff; } \
+    .NET        { stroke: #118ab2; fill: #118ab2; } \
+    .PTAG       { stroke: #06d6a0; fill: #06d6a0; } \
+    .TAG        { stroke: #08a578; fill: #08a578; } \
+    .DNET       { stroke: #7b2d8b; fill: #7b2d8b; } \
+    .TIMESTAMP  { stroke: #888888; fill: #888888; } \
+    .FED_ID     { stroke: #80DD99; fill: #80DD99; } \
+    .ACK        { stroke: #52b788; fill: #52b788; } \
+    .FAILED     { stroke: #c1121f; fill: #c1121f; } \
+    .STOP_REQ   { stroke: #e76f51; fill: #e76f51; } \
+    .STOP_REQ_REP { stroke: #ca6702; fill: #ca6702; } \
+    .STOP_GRN   { stroke: #e9c46a; fill: #e9c46a; } \
+    .REJECT     { stroke: #9b2226; fill: #9b2226; } \
+    .RESIGN     { stroke: #6d4c41; fill: #6d4c41; } \
+    .CLOSE_RQ   { stroke: #7f7f7f; fill: #7f7f7f; } \
+    .MSG        { stroke: #00b4d8; fill: #00b4d8; } \
+    .P2P_MSG    { stroke: #0077b6; fill: #0077b6; } \
+    .ADR_AD     { stroke: #80b918; fill: #80b918; } \
+    .ADR_QR     { stroke: #48cae4; fill: #48cae4; } \
+    .ADR_QR_REP { stroke: #0096c7; fill: #0096c7; } \
+    .UNIDENTIFIED { stroke: #adb5bd; fill: #adb5bd; } \
+    .ADV        { stroke: #e63946; fill: #e63946; stroke-linecap: round; } \
     text { \
         font-size: smaller; \
         font-family: sans-serif; \
@@ -62,6 +77,7 @@ prune_event_name = {
     "Sending P2P_MSG": "P2P_MSG",
     "Sending ADR_AD": "ADR_AD",
     "Sending ADR_QR": "ADR_QR",
+    "Sending ADR_QR_REP": "ADR_QR_REP",
     "Sending DNET": "DNET",
     "Receiving ACK": "ACK",
     "Receiving FAILED": "FAILED",
@@ -84,6 +100,7 @@ prune_event_name = {
     "Receiving P2P_MSG": "P2P_MSG",
     "Receiving ADR_AD": "ADR_AD",
     "Receiving ADR_QR": "ADR_QR",
+    "Receiving ADR_QR_REP": "ADR_QR_REP",
     "Receiving DNET": "DNET",
     "Receiving UNIDENTIFIED": "UNIDENTIFIED",
     "Scheduler advancing time ends": "AdvLT"
@@ -94,10 +111,27 @@ prune_event_name.setdefault(" ", "UNIDENTIFIED")
 import argparse         # For arguments parsing
 import pandas as pd     # For csv manipulation
 import os
+import re
 import sys
 from pathlib import Path
 import math
 import subprocess
+
+
+def format_actor_name(name):
+    '''
+    Format an actor name for display inside a rectangle.
+    - "RTI" is kept as-is.
+    - Compiler-generated federate names of the form "federate__<base>_main_<id>"
+      are shortened to "<base>: <id>" (e.g. "federate__up1_main_0" -> "up1: 0").
+    - Any other name is returned unchanged.
+    '''
+    if name == 'RTI':
+        return 'RTI'
+    m = re.match(r'^federate__(.+)_main_(\d+)$', name)
+    if m:
+        return m.group(1) + ': ' + m.group(2)
+    return name
 
 # Define the arguments to pass in the command line
 parser = argparse.ArgumentParser(description='Set of the lft trace files to render.')
@@ -112,8 +146,8 @@ parser.add_argument('-e', '--end', type=str, nargs=2,
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
-# Set of tagged events (messages)
-non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_AD', 'MSG', 'P2P_MSG'}
+# Set of non-tagged events (messages)
+non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG'}
 
 
 ################################################################################
@@ -131,7 +165,7 @@ def svg_string_draw_line(x1, y1, x2, y2, type=''):
      * y2: Int Y coordinate of the sink point
      * type: The type of the message (for styling)
     Returns:
-     * String: the svg string of the line©
+     * String: the svg string of the line
     '''
     str_line = '\t<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'"'
     if (type):
@@ -635,80 +669,107 @@ if __name__ == '__main__':
                 trace_df.at[index, 'arrow'] = 'arrow'
 
     ############################################################################
-    #### Write to svg file
+    #### Write to html file
     ############################################################################
+    # svg_width is the natural pixel width of the diagram content.
+    # The HTML body uses overflow-x: auto so a horizontal scrollbar appears
+    # when the browser window is narrower than the diagram.
     svg_width = padding * 2 + (len(actors) - 1) * spacing + padding * 2 + 200
     svg_height = padding + trace_df.iloc[-1]['y1']
+    # The sticky header is tall enough to contain the circles (centred at padding/2, r=20).
+    header_height = padding
 
     with open('trace_svg.html', 'w', encoding='utf-8') as f:
-        # Print header
-        f.write('<!DOCTYPE html>\n')
-        f.write('<html>\n')
-        f.write('<body>\n\n')
-        
-        f.write('<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n')
+        f.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n')
+        f.write('<style>\n')
+        f.write('  * { margin: 0; padding: 0; }\n')
+        # Allow horizontal scroll on the whole page when the diagram is wider than the window.
+        f.write('  body { overflow-x: auto; }\n')
+        # The sticky header div stays at the top of the viewport while the diagram scrolls.
+        f.write('  #sticky-header { position: sticky; top: 0; z-index: 100; display: block; }\n')
+        f.write('  svg { display: block; }\n')
+        f.write('</style>\n')
+        f.write('</head>\n<body>\n\n')
 
+        # ---- Sticky header: circles and actor labels only ----
+        f.write('<div id="sticky-header">\n')
+        f.write('<svg width="'+str(svg_width)+'" height="'+str(header_height)+'">\n')
         f.write(css_style)
-        
-        # Print the circles and the names
+        # White background so it occludes the diagram lines that scroll beneath it.
+        f.write('\t<rect x="0" y="0" width="'+str(svg_width)+'" height="'+str(header_height)+'" fill="white"/>\n')
+        for key in x_coor:
+            title = format_actor_name(actors_names[key])
+            cx = x_coor[key]
+            cy = math.ceil(padding / 2)
+            r = 20  # original circle radius; diameter becomes the rect height
+            rect_w = max(r * 2, len(title) * 7 + 12)
+            rect_h = r * 2
+            # Draw rectangle then bold text centered on it (later = on top in SVG)
+            f.write('\t<rect x="'+str(cx - rect_w//2)+'" y="'+str(cy - rect_h//2)+'" '
+                    +'width="'+str(rect_w)+'" height="'+str(rect_h)+'" fill="white" stroke="black" stroke-width="2"/>\n')
+            f.write('\t<text x="'+str(cx)+'" y="'+str(cy)+'" text-anchor="middle" dominant-baseline="central" '
+                    +'font-weight="bold" fill="black">'+title+'</text>\n')
+        f.write('</svg>\n')
+        f.write('</div>\n\n')
+
+        # ---- Main diagram SVG: vertical lines and all interactions ----
+        f.write('<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n')
+        f.write(css_style)
+
+        # Draw vertical lines for each actor (full diagram height)
         for key in x_coor:
             title = actors_names[key]
             if (key == -1):
-                f.write(svg_string_comment('RTI Actor and line'))
-                center = 15
+                f.write(svg_string_comment('RTI Actor line'))
             else:
-                f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor and line'))
-                center = 5
-            f.write(svg_string_draw_line(x_coor[key], math.ceil(padding/2), x_coor[key], svg_height, False))
-            f.write('\t<circle cx="'+str(x_coor[key])+'" cy="'+str(math.ceil(padding/2))+'" r="20" stroke="black" stroke-width="2" fill="white"/>\n')
-            f.write('\t<text x="'+str(x_coor[key]-center)+'" y="'+str(math.ceil(padding/2)+5)+'" fill="black">'+title+'</text>\n')
+                f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor line'))
+            f.write(svg_string_draw_line(x_coor[key], 0, x_coor[key], svg_height, False))
 
-        # Now, we need to iterate over the traces to draw the lines
+        # Draw interactions
         f.write(svg_string_comment('Draw interactions'))
         for index, row in trace_df.iterrows():
-            # For time labels, display them on the left for the RTI, right for everthing else.
-            anchor = 'start'
-            if (row['self_id'] < 0):
-                anchor = 'end'
-
             # formatted physical time.
             # FIXME: Using microseconds is hardwired here.
             physical_time = f'{int(row["physical_time"]/1000):,}'
 
-            if (row['event'] in {'FED_ID', 'ACK', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_AD', 'MSG', 'P2P_MSG'}):
+            if (row['event'] in non_tagged_messages):
                 label = row['event']
             else:
                 label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
-            
-            if (row['arrow'] == 'arrow'): 
+
+            if (row['arrow'] == 'arrow'):
                 f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
                 if (row['inout'] in 'in'):
+                    # Label at receiver (x2): goes outward — right if receiver is right of sender.
+                    anchor = 'start' if row['x2'] > row['x1'] else 'end'
                     f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
                 else:
+                    # Label at sender (x1): goes outward — left if receiver is right of sender.
+                    anchor = 'end' if row['x2'] > row['x1'] else 'start'
                     f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
             elif (row['arrow'] == 'dot'):
                 if (row['inout'] == 'in'):
                     label = "(in) from " + str(row['partner_id']) + ' ' + label
-                else :
+                else:
                     label = "(out) to " + str(row['partner_id']) + ' ' + label
-                
-                if (anchor == 'end'):
-                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+
+                if (row['self_id'] < 0):
+                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, 'end'))
                     f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
                 else:
                     f.write(svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label))
 
             elif (row['arrow'] == 'marked'):
-                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+                # Label goes outward: right of receiver if receiver is right of sender, left otherwise.
+                partner_x = x_coor.get(int(row['partner_id']), row['x1'])
+                marked_anchor = 'start' if row['x1'] > partner_x else 'end'
+                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, marked_anchor))
 
             elif (row['arrow'] == 'adv'):
                 f.write(svg_string_draw_adv(row['x1'], row['y1'], label))
 
         f.write('\n</svg>\n\n')
-
-        # Print footer
-        f.write('</body>\n')
-        f.write('</html>\n')
+        f.write('</body>\n</html>\n')
 
     # Write to a csv file, just to double check
     trace_df.to_csv('all.csv', index=True)
