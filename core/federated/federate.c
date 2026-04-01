@@ -591,9 +591,11 @@ static int handle_tagged_message(int* socket, int fed_id) {
   // Create a token for the message
   size_t element_size = ((token_type_t*)action)->element_size;
   size_t element_count = 0;
+  bool opaque_byte_payload = false;
   if (element_size == 0) {
-    // Message might be being handled by a custom serializer, e.g. in Python.
-    // Treat the message as a byte array.
+    // Opaque on-wire payload (e.g. pickle or custom serializer): interpret `length` as bytes.
+    // token->length becomes the byte count; each logical element is one byte (see below).
+    opaque_byte_payload = true;
     element_count = length;
     element_size = 1;
   } else {
@@ -606,6 +608,12 @@ static int handle_tagged_message(int* socket, int fed_id) {
     }
   }
   lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, element_count);
+  if (opaque_byte_payload) {
+    // The template still had element_size 0 so codegen/runtime could select this branch; the token
+    // must report element_size 1 so token->length * type->element_size equals the payload size in
+    // bytes (e.g. PyBytes_FromStringAndSize and lf_writable_copy).
+    message_token->type->element_size = 1;
+  }
 
   if (handle_message_now(env, action->trigger, intended_tag)) {
     // Since the message is intended for the current tag and a port absent reaction
