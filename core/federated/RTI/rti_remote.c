@@ -2096,6 +2096,11 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
     // Wait for an incoming connection request.
     int socket_id = accept_socket(rti_remote->socket_descriptor_TCP, -1);
 
+    // If accept failed (e.g., socket was shut down), exit the loop.
+    if (socket_id < 0) {
+      break;
+    }
+
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
     if (rti_remote->authentication_enabled) {
@@ -2198,7 +2203,7 @@ static void* lf_delayed_grants_thread(void* nothing) {
   initialize_lf_thread_id();
   // Hold the mutex when not waiting.
   LF_MUTEX_LOCK(&rti_mutex);
-  while (!rti_remote->all_federates_exited) {
+  while (!rti_remote->all_persistent_federates_exited) {
     if (pqueue_delayed_grants_size(rti_remote->delayed_grants) > 0) {
       // Do not pop, but rather peek.
       pqueue_delayed_grant_element_t* next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
@@ -2408,25 +2413,40 @@ void wait_for_federates(int socket_descriptor) {
   rti_remote->phase = shutdown_phase;
   lf_print_info("RTI: All persistent threads exited.");
 
+  // Broadcast on updated_delayed_grants to wake up lf_delayed_grants_thread,
+  // which may be blocked in lf_cond_wait and uses all_persistent_federates_exited
+  // as its exit condition.
+  LF_MUTEX_LOCK(&rti_mutex);
+  lf_cond_broadcast(&updated_delayed_grants);
+  LF_MUTEX_UNLOCK(&rti_mutex);
+
+  // Shutdown and close the socket that is listening for incoming connections.
+  // This must be done before joining transient threads so that the blocking
+  // accept_socket() call in lf_connect_to_transient_federates_thread is
+  // unblocked, allowing that thread to see all_persistent_federates_exited
+  // and exit its loop.
+  shutdown_socket(&socket_descriptor, false);
+
   // Wait for transient federate threads to exit, if any.
   if (rti_remote->number_of_transient_federates > 0) {
     for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
       federate_info_t* fed = GET_FED_INFO(i);
-      if (fed->is_transient) {
+      // Only join if the federate is currently connected (thread is running).
+      // If state is NOT_CONNECTED, either the federate never joined (thread was
+      // never created) or it already resigned and its thread already exited.
+      if (fed->is_transient && fed->enclave.state != NOT_CONNECTED) {
         LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
         lf_thread_join(fed->thread_id, &thread_exit_status);
         pqueue_tag_free(fed->in_transit_message_tags);
         LF_PRINT_LOG("RTI: Transient federate %d thread exited.", fed->enclave.id);
       }
     }
+    // Join the transient listener and delayed grants threads to avoid leaking them.
+    lf_thread_join(transient_thread, &thread_exit_status);
+    lf_thread_join(delayed_grants_thread, &thread_exit_status);
   }
 
   rti_remote->all_federates_exited = true;
-
-  // Shutdown and close the socket that is listening for incoming connections
-  // so that the accept() call in respond_to_erroneous_connections returns.
-  // That thread should then check rti->all_federates_exited and it should exit.
-  shutdown_socket(&socket_descriptor, false);
 
   if (rti_remote->socket_descriptor_UDP > 0) {
     shutdown_socket(&rti_remote->socket_descriptor_UDP, false);
