@@ -2205,7 +2205,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   while (!_lf_termination_executed) {
     // Case where all inbound connections are to persistent federates 
     if (received_federates == _fed.number_of_inbound_p2p_connections && 
-    _fed.number_of_inbound_p2p_connections_to_transients == 0) {
+    _fed.number_of_inbound_p2p_transients == 0) {
       break;
     }
     // Wait for an incoming connection request.
@@ -2380,6 +2380,23 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
     lf_print_error("lf_send_message: Unsupported message type (%d).", message_type);
     return -1;
   }
+  
+  // If there are outbound transients, check whether the destination is one of them.
+  // If it is and its socket is shut, gracefully skip the send.
+  if (_fed.number_of_outbound_p2p_transients > 0) {
+    bool is_outbound_transient = false;
+    for (size_t i = 0; i < _fed.number_of_outbound_p2p_transients; i++) {
+      if (_fed.outbound_p2p_transient_ids[i] == (uint16_t)federate) {
+        is_outbound_transient = true;
+        break;
+      }
+    }
+    if (is_outbound_transient && _fed.sockets_for_outbound_p2p_connections[federate] < 0) {
+      lf_print("The destination transient federate %d is not connected. Abort sending!", federate);
+      return 0;
+    }
+  }
+
   header_buffer[0] = (unsigned char)message_type;
   // Next two bytes identify the destination port.
   // NOTE: Send messages little endian (network order), not big endian.
@@ -2673,8 +2690,18 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     return -1;
   }
 #if defined(FEDERATED_DECENTRALIZED)
-  if (_fed.transients[federate] && _fed.sockets_for_outbound_p2p_connections[federate] < 0) {
-    lf_print("The destination transient federate %d is not connected. Abort sending!", federate);
+  if (_fed.sockets_for_outbound_p2p_connections[federate] < 0) {
+    // Only print a warning if the destination is a known outbound transient.
+    bool is_outbound_transient = false;
+    for (size_t i = 0; i < _fed.number_of_outbound_p2p_transients; i++) {
+      if (_fed.outbound_p2p_transient_ids[i] == (uint16_t)federate) {
+        is_outbound_transient = true;
+        break;
+      }
+    }
+    if (is_outbound_transient) {
+      lf_print("The destination transient federate %d is not connected. Abort sending!", federate);
+    }
     return 0;
   }
 #endif

@@ -58,6 +58,11 @@ typedef struct federate_instance_t {
   size_t number_of_inbound_p2p_connections;
 
   /**
+   * Number of inbound peer-to-peer connections from transient federates.
+   */
+  size_t number_of_inbound_p2p_transients;
+
+  /**
    * Array of thread IDs for threads that listen for incoming messages.
    * This is NULL if there are none and otherwise has size given by
    * number_of_inbound_p2p_connections.
@@ -72,14 +77,16 @@ typedef struct federate_instance_t {
   size_t number_of_outbound_p2p_connections;
 
   /**
-   * Number of inbound peer-to-peer connections from transient federates.
-   */
-  size_t number_of_inbound_p2p_connections_to_transients;
-
-  /**
    * Number of outbound peer-to-peer connections to transient federates.
    */
-  size_t number_of_outbound_p2p_connections_to_transients;
+  size_t number_of_outbound_p2p_transients;
+
+  /**
+   * An array of IDs of transient federates to which this federate has outbound
+   * peer-to-peer connections. The array has size number_of_outbound_p2p_transients
+   * and is allocated at startup by the generated _lf_executable_preamble().
+   */
+  uint16_t* outbound_p2p_transient_ids;
 
   /**
    * An array that holds the socket descriptors for inbound

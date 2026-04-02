@@ -1062,7 +1062,6 @@ static void send_start_tag_locked(federate_info_t* my_fed, instant_t federation_
   // Notify my_fed of any upstream transient federates that are connected.
   // This has to occur before sending the start tag so that my_fed does not begin executing thinking that these
   // upstream federates are not connected.
-  my_fed->enclave.id);
   for (int i = 0; i < my_fed->enclave.num_immediate_upstreams; i++) {
     federate_info_t* fed = GET_FED_INFO(my_fed->enclave.immediate_upstreams[i]);
     if (fed->is_transient && fed->enclave.state == GRANTED) {
