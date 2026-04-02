@@ -1881,7 +1881,7 @@ void lf_terminate_execution(environment_t* env) {
 //////////////////////////////////////////////////////////////////////////////////
 // Public functions (declared in federate.h, in alphabetical order)
 
-void lf_connect_to_federate(uint16_t remote_federate_id) {
+void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient) {
   int result = -1;
 
   // Ask the RTI for port number of the remote federate.
@@ -1891,17 +1891,21 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   int port = -1;
   struct in_addr host_ip_addr;
   instant_t start_connect = lf_time_physical();
+  // If the remote federate if oersistent, iterate until we get a valid port number from the RTI,
+  // If not, execute only once, as a request registration. 
   while (port == -1 && !_lf_termination_executed) {
     buffer[0] = MSG_TYPE_ADDRESS_QUERY;
     // NOTE: Sending messages in little endian.
     encode_uint16(remote_federate_id, &(buffer[1]));
+    // Indicate whether the remote federate being queried is transient.
+    buffer[1 + sizeof(uint16_t)] = is_transient ? 1 : 0;
 
     LF_PRINT_DEBUG("Sending address query for federate %d.", remote_federate_id);
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_ADR_QR, _lf_my_fed_id, NULL);
 
     LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
-    write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(uint16_t) + 1, buffer, &lf_outbound_socket_mutex,
+    write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, 1 + sizeof(uint16_t) + 1, buffer, &lf_outbound_socket_mutex,
                                   "Failed to send address query for federate %d to RTI.", remote_federate_id);
     LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
 
@@ -1928,12 +1932,16 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
     // the port number of the remote federate, presumably because the
     // remote federate has not yet sent an MSG_TYPE_ADDRESS_ADVERTISEMENT message to the RTI.
     // Sleep for some time before retrying.
-    if (port == -1) {
+    if (port == -1 && !is_transient) {
       if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
         lf_print_error_and_exit("TIMEOUT obtaining IP/port for federate %d from the RTI.", remote_federate_id);
       }
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
       lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
+    } else if (port == -1 && is_transient) {
+      // For transient federates, we only execute once, as a request registration. If the RTI does not reply 
+      // with a valid port number, we treat it normally and return.
+      return;
     }
   }
   assert(port < 65536);

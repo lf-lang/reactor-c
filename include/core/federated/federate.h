@@ -304,7 +304,7 @@ extern lf_cond_t lf_port_status_changed;
  *   available, so the connection attempt is handled differently than for a
  *   persistent federate.
  */
-void lf_connect_to_federate(uint16_t remote_federate_id);
+void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient);
 
 /**
  * @brief Connect to the RTI at the specified host and port.
