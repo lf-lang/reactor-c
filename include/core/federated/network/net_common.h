@@ -787,6 +787,15 @@
 #define MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH (1 + sizeof(uint16_t))
 
 /**
+ * A message that informs an upstream federate that a transient federate downstream of it
+ * has disconnected. The next 2 bytes are the federate ID of the downstream federate.
+ * Upon receiving this, the upstream federate should close its outbound P2P connection
+ * to the downstream.
+ */
+#define MSG_TYPE_DOWNSTREAM_DISCONNECTED 31
+#define MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
+
+/**
  * Byte sent by the RTI ordering the federate to stop. Upon receiving the message,
  * the federate will call lf_stop(), which will make it resign at its current_tag
  * plus 1 microstep.

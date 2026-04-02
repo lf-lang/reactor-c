@@ -87,6 +87,8 @@ typedef enum {
   // New entries must be added here, at the end, to avoid shifting existing indices.
   send_DOWNSTREAM_CONNECTED,
   receive_DOWNSTREAM_CONNECTED,
+  send_DOWNSTREAM_DISCONNECTED,
+  receive_DOWNSTREAM_DISCONNECTED,
   NUM_EVENT_TYPES
 } trace_event_t;
 
@@ -164,6 +166,8 @@ static const char* trace_event_names[] = {
     // New entries appended at the end to avoid shifting existing indices.
     "Sending DOWNSTREAM_CONNECTED",
     "Receiving DOWNSTREAM_CONNECTED",
+    "Sending DOWNSTREAM_DISCONNECTED",
+    "Receiving DOWNSTREAM_DISCONNECTED",
 };
 
 static inline void _suppress_unused_variable_warning_for_static_variable() { (void)trace_event_names; }

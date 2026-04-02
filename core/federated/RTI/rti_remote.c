@@ -305,7 +305,41 @@ static void send_downstream_connected_locked(federate_info_t* my_fed) {
 }
 
 /**
- * @brief Mark a federate as disconnected and, if this is a transient, inform downstream federates.
+ * @brief Send MSG_TYPE_DOWNSTREAM_DISCONNECTED to the upstream federates of a transient federate.
+ *
+ * This notifies upstream federates that a transient federate downstream of them has
+ * disconnected, so they can close the outbound P2P connection to it.
+ *
+ * This function assumes that the mutex lock is already held.
+ * @param my_fed The transient federate that has just disconnected.
+ */
+static void send_downstream_disconnected_locked(federate_info_t* my_fed) {
+  unsigned char buffer[MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_DOWNSTREAM_DISCONNECTED;
+  encode_uint16(my_fed->enclave.id, &buffer[1]);
+  // Iterate over all federates and notify those that have my_fed as an outbound transient.
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+    federate_info_t* fed = GET_FED_INFO(i);
+    if (fed->enclave.state == NOT_CONNECTED) {
+      continue;
+    }
+    for (int32_t j = 0; j < fed->number_of_outbound_transients; j++) {
+      if (fed->outbound_transients[j] == (int32_t)my_fed->enclave.id) {
+        if (write_to_socket_close_on_error(&fed->socket, MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH, buffer)) {
+          lf_print_warning("RTI: Failed to send downstream disconnected message to federate %d.", fed->enclave.id);
+        }
+        if (rti_remote->base.tracing_enabled) {
+          tracepoint_rti_to_federate(send_DOWNSTREAM_DISCONNECTED, fed->enclave.id, NULL);
+        }
+        break;
+      }
+    }
+  }
+}
+
+/**
+ * @brief Mark a federate as disconnected and, if this is a transient, inform downstream and
+ * inbound federates.
  * @param fed The disconnected federate.
  */
 static void notify_federate_disconnected(federate_info_t* fed) {
@@ -321,6 +355,8 @@ static void notify_federate_disconnected(federate_info_t* fed) {
         send_upstream_disconnected_locked(downstream, fed);
       }
     }
+    // Notify upstream federates that have fed in their list of outbound transients.
+    send_downstream_disconnected_locked(fed);
     LF_MUTEX_UNLOCK(&rti_mutex);
   }
 }

@@ -1018,7 +1018,24 @@ static void handle_downstream_connected_message(void) {
   tracepoint_federate_from_rti(receive_DOWNSTREAM_CONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that downstream transient federate %d has connected.", remote_federate_id);
 
-  lf_connect_to_federate(remote_federate_id, true);
+  lf_connect_to_federate(remote_federate_id, true); 
+}
+
+/**
+ * @brief Handle message from the RTI that a transient downstream federate has disconnected.
+ *
+ * Reads the downstream federate's ID and closes the outbound P2P socket to it.
+ */
+static void handle_downstream_disconnected_message(void) {
+  size_t bytes_to_read = sizeof(uint16_t);
+  unsigned char buffer[bytes_to_read];
+  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+                                 "Failed to read downstream disconnected message from RTI.");
+  uint16_t remote_federate_id = extract_uint16(buffer);
+  tracepoint_federate_from_rti(receive_DOWNSTREAM_DISCONNECTED, _lf_my_fed_id, NULL);
+  LF_PRINT_DEBUG("Received notification that downstream transient federate %d has disconnected.", remote_federate_id);
+
+  shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[remote_federate_id], false);
 }
 
 /**
@@ -1066,6 +1083,11 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
       } else if (buffer[0] == MSG_TYPE_UPSTREAM_DISCONNECTED) {
         // We need to handle this message and continue waiting for MSG_TYPE_TIMESTAMP to arrive
         handle_upstream_disconnected_message();
+        continue;
+      } else if (buffer[0] == MSG_TYPE_DOWNSTREAM_DISCONNECTED) {
+        // A transient downstream disconnected before we even got our start time.
+        // Drain the federate ID payload and continue waiting for MSG_TYPE_TIMESTAMP.
+        handle_downstream_disconnected_message();
         continue;
       } else if (buffer[0] == MSG_TYPE_DOWNSTREAM_CONNECTED) {
         // Defer lf_connect_to_federate() until after MSG_TYPE_TIMESTAMP is received.
@@ -1782,6 +1804,9 @@ static void* listen_to_rti_TCP(void* args) {
     case MSG_TYPE_DOWNSTREAM_CONNECTED:
       handle_downstream_connected_message();
       break;
+    case MSG_TYPE_DOWNSTREAM_DISCONNECTED:
+      handle_downstream_disconnected_message();
+      break;  
     case MSG_TYPE_CLOCK_SYNC_T1:
     case MSG_TYPE_CLOCK_SYNC_T4:
       lf_print_error("Federate %d received unexpected clock sync message from RTI on TCP socket.", _lf_my_fed_id);
