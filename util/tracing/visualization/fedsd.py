@@ -658,6 +658,25 @@ if __name__ == '__main__':
                     (trace_df['logical_time'] == logical_time) & \
                     (trace_df['microstep'] == microstep) \
                 ]
+            elif (event == 'P2P_MSG'):
+                # P2P messages travel directly between federates without going through the
+                # RTI, so partner_id in the trace is typically -1 on both sides (the RTI is
+                # not involved and the tracepoint has no partner). We therefore cannot use
+                # partner_id for matching. Instead we match each 'out' to the first pending
+                # 'in' whose physical_time >= the sender's physical_time (causality guarantee:
+                # the receive cannot precede the send).
+                physical_time = trace_df.at[index, 'physical_time']
+                if (inout == 'out'):
+                    matching_df = trace_df[\
+                        (trace_df['inout'] == 'in') & \
+                        (trace_df['arrow'] == 'pending') & \
+                        (trace_df['event'] == event) & \
+                        (trace_df['physical_time'] >= physical_time) \
+                    ]
+                else:
+                    # 'in' rows are claimed by the corresponding 'out' pass above.
+                    # If we reach an 'in' here it means no 'out' claimed it; render as dot.
+                    matching_df = trace_df[0:0]
             else :
                 matching_df = trace_df[\
                     (trace_df['inout'] != inout) & \
