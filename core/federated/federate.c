@@ -1039,6 +1039,19 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   size_t buffer_length = (_fed.is_transient) ? MSG_TYPE_TIMESTAMP_TAG_LENGTH : MSG_TYPE_TIMESTAMP_LENGTH;
   unsigned char buffer[buffer_length];
 
+  // Deferred DOWNSTREAM_CONNECTED notifications: calling lf_connect_to_federate() inline
+  // here is unsafe because the RTI may have already written MSG_TYPE_TIMESTAMP into this
+  // federate's TCP stream immediately after MSG_TYPE_DOWNSTREAM_CONNECTED (from a concurrent
+  // send_start_tag_locked call for the transient federate). If we call lf_connect_to_federate()
+  // now it will read from the socket expecting MSG_TYPE_ADDRESS_QUERY_REPLY but will instead
+  // consume the queued MSG_TYPE_TIMESTAMP bytes, causing a fatal "Unexpected reply of type 2".
+  // Fix: read and save each downstream federate ID, then call lf_connect_to_federate() for
+  // each one only after MSG_TYPE_TIMESTAMP has been received and the loop has exited.
+  uint16_t pending_downstream_ids[_fed.number_of_outbound_p2p_transients > 0
+                                       ? _fed.number_of_outbound_p2p_transients
+                                       : 1];
+  size_t num_pending_downstream = 0;
+
   while (true) {
     read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, 1, buffer, NULL,
                                    "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
@@ -1055,8 +1068,22 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
         handle_upstream_disconnected_message();
         continue;
       } else if (buffer[0] == MSG_TYPE_DOWNSTREAM_CONNECTED) {
-        // We need to handle this message and continue waiting for MSG_TYPE_TIMESTAMP to arrive
-        handle_downstream_connected_message();
+        // Defer lf_connect_to_federate() until after MSG_TYPE_TIMESTAMP is received.
+        // Read the federate ID payload now to drain the socket, but do not attempt the
+        // address query yet: the RTI may have written MSG_TYPE_TIMESTAMP into this socket
+        // right after MSG_TYPE_DOWNSTREAM_CONNECTED (from send_start_tag_locked running
+        // concurrently for the joining transient), so any read inside lf_connect_to_federate
+        // would consume those bytes and crash with "Unexpected reply of type 2".
+        unsigned char id_buf[sizeof(uint16_t)];
+        read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(uint16_t), id_buf, NULL,
+                                       "Failed to read downstream connected federate ID.");
+        tracepoint_federate_from_rti(receive_DOWNSTREAM_CONNECTED, _lf_my_fed_id, NULL);
+        uint16_t remote_federate_id = extract_uint16(id_buf);
+        LF_PRINT_DEBUG("Deferring P2P connection to downstream transient federate %d until after start time is received.",
+                       remote_federate_id);
+        if (num_pending_downstream < _fed.number_of_outbound_p2p_transients) {
+          pending_downstream_ids[num_pending_downstream++] = remote_federate_id;
+        }
         continue;
       } else {
         lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP message from the RTI. Got %u (see net_common.h).",
@@ -1086,6 +1113,16 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // This is rather a choice. To be changed, if needed, of course.
   tracepoint_federate_from_rti(receive_TIMESTAMP, _lf_my_fed_id, &effective_start_tag);
   LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
+
+  // Now that MSG_TYPE_TIMESTAMP has been received and the start time is known, it is safe
+  // to establish outbound P2P connections to any transient downstream federates that sent
+  // DOWNSTREAM_CONNECTED notifications while we were waiting. The ADDRESS_QUERY round-trip
+  // can proceed without risk of consuming queued TIMESTAMP bytes.
+  for (size_t i = 0; i < num_pending_downstream; i++) {
+    LF_PRINT_DEBUG("Establishing deferred P2P connection to downstream transient federate %d.",
+                   pending_downstream_ids[i]);
+    lf_connect_to_federate(pending_downstream_ids[i], true);
+  }
 
   return timestamp;
 }
@@ -1907,12 +1944,13 @@ void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient) {
     LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
     write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, 1 + sizeof(uint16_t) + 1, buffer, &lf_outbound_socket_mutex,
                                   "Failed to send address query for federate %d to RTI.", remote_federate_id);
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
 
     // Read RTI's response.
     read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(int32_t) + 1, buffer,
                                    "Failed to read the requested port number for federate %d from RTI.",
                                    remote_federate_id);
+
+    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
 
     if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
       // Unexpected reply. Could be that RTI has failed and sent a resignation.
