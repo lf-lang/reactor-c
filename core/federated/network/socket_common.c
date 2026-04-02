@@ -192,7 +192,10 @@ int accept_socket(int socket, int rti_socket) {
       // Got a socket
       break;
     } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
-      if (errno != ECONNABORTED) {
+      // ECONNABORTED: a connection was aborted before accept() could complete — not fatal.
+      // EINVAL: the socket was shut down (e.g., shutdown_socket() was called to unblock this
+      // accept() intentionally when the RTI is shutting down) — expected, not an error.
+      if (errno != ECONNABORTED && errno != EINVAL) {
         lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
       }
       break;
