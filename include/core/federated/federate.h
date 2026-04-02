@@ -104,6 +104,15 @@ typedef struct federate_instance_t {
   int sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
+   * An array indexed by federate ID indicating whether the corresponding
+   * inbound peer-to-peer federate is transient. Initialized to false.
+   * Set in lf_handle_p2p_connections_from_federates() when the handshake
+   * reveals the remote federate's type. Used by mark_inputs_known_absent()
+   * to avoid permanently stamping FOREVER_TAG on ports whose source may rejoin.
+   */
+  bool inbound_p2p_is_transient[NUMBER_OF_FEDERATES];
+
+  /**
    * An array that holds the socket descriptors for outbound direct
    * connections to each remote federate. The index will be the federate
    * ID of the remote receiving federate. This is initialized at startup

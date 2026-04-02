@@ -311,16 +311,27 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
  */
 static void mark_inputs_known_absent(int fed_id) {
 #ifdef FEDERATED_DECENTRALIZED
-  // Note that when transient federates are supported, this will need to be updated because the
-  // federate could rejoin.
   environment_t* env;
   _lf_get_environments(&env);
   LF_MUTEX_LOCK(&env->mutex);
 
+  // For a persistent federate, use FOREVER_TAG: it will never send again, so
+  // all its input ports can be permanently marked absent.
+  // For a transient federate, use env->current_tag instead: the federate may
+  // rejoin later, and stamping FOREVER_TAG would permanently block its ports
+  // from being updated after reconnection, causing spurious
+  // "Attempt to update to earlier tag" warnings and downstream STP violations.
+  // env->current_tag is the right choice because update_last_known_status_on_input_port
+  // clamps upward (if tag < current_tag, it uses current_tag anyway), so passing
+  // current_tag is equivalent to "absent at the current logical time" — sufficient
+  // to unblock the scheduler, but small enough that any future message from the
+  // rejoining federate at a tag >= current_tag will update the port normally.
+  tag_t absent_until = _fed.inbound_p2p_is_transient[fed_id] ? env->current_tag : FOREVER_TAG;
+
   for (size_t i = 0; i < _lf_action_table_size; i++) {
     lf_action_base_t* action = _lf_action_table[i];
     if (action->source_id == fed_id) {
-      update_last_known_status_on_input_port(env, FOREVER_TAG, i, true);
+      update_last_known_status_on_input_port(env, absent_until, i, true);
     }
   }
   LF_MUTEX_UNLOCK(&env->mutex);
@@ -2321,6 +2332,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Extract the ID of the sending federate.
     uint16_t remote_fed_id = extract_uint16((unsigned char*)&(buffer[1]));
     bool remote_fed_is_transient = buffer[1 + sizeof(uint16_t)];
+    _fed.inbound_p2p_is_transient[remote_fed_id] = remote_fed_is_transient;
     if (remote_fed_is_transient) {
       LF_PRINT_DEBUG("Received sending federate ID %d, which is transient.", remote_fed_id);
     } else {
