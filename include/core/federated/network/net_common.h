@@ -576,6 +576,7 @@
  * @ingroup Federated
  *
  * The next two bytes are the other federate's ID.
+ * The following byte is 1 if the remote federate being queried is transient, 0 otherwise.
  */
 #define MSG_TYPE_ADDRESS_QUERY 13
 

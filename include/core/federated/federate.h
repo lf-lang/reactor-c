@@ -299,6 +299,10 @@ extern lf_cond_t lf_port_status_changed;
  * refer to the socket for communicating directly with the federate.
  *
  * @param remote_federate_id The ID of the remote federate.
+ * @param is_transient Whether the remote federate is transient. This affects
+ *   connection behavior: a transient remote federate may not be immediately
+ *   available, so the connection attempt is handled differently than for a
+ *   persistent federate.
  */
 void lf_connect_to_federate(uint16_t remote_federate_id);
 

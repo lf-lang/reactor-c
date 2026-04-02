@@ -946,9 +946,11 @@ void handle_address_query(uint16_t fed_id) {
   // Use buffer both for reading and constructing the reply.
   // The length is what is needed for the reply.
   unsigned char buffer[1 + sizeof(int32_t)];
-  read_from_socket_fail_on_error(&fed->socket, sizeof(uint16_t), (unsigned char*)buffer,
+  // Read remote_fed_id (2 bytes) + is_transient flag (1 byte).
+  read_from_socket_fail_on_error(&fed->socket, sizeof(uint16_t) + 1, (unsigned char*)buffer,
                                  "Failed to read address query.");
   uint16_t remote_fed_id = extract_uint16(buffer);
+  bool remote_is_transient = (buffer[sizeof(uint16_t)] == 1);
 
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_from_federate(receive_ADR_QR, fed_id, NULL);
