@@ -125,13 +125,6 @@ typedef struct federate_instance_t {
   lf_thread_t inbound_p2p_handling_thread_id;
 
   /**
-   * Thread ID for a thread that manages outbound P2P connections to transient federates.
-   * Transient federates may join and leave the federation, so connections to them
-   * are handled separately from persistent federates.
-   */
-  lf_thread_t outbound_p2p_transients_handling_thread_id;
-
-  /**
    * A socket descriptor for the socket server of the federate.
    * This is assigned in lf_create_server().
    * This socket is used to listen to incoming physical connections from
@@ -363,20 +356,6 @@ void lf_enqueue_port_absent_reactions(environment_t* env);
  * @param ignored No argument needed for this thread.
  */
 void* lf_handle_p2p_connections_from_federates(void* ignored);
-
-/**
- * @brief Thread that manages outbound P2P connections to transient federates.
- * @ingroup Federated
- *
- * For each transient federate that this federate has an outbound connection to,
- * this thread queries the RTI for its address and establishes the socket
- * connection using the same handshake protocol as lf_connect_to_federate().
- * Unlike persistent federates, transient federates may not be present at
- * startup, so connections to them are handled in a dedicated thread.
- *
- * @param env_arg Pointer to the environment (environment_t*).
- */
-void* lf_handle_p2p_connections_to_transients(void* env_arg);
 
 /**
  * @brief Send a latest tag confirmed (LTC) signal to the RTI.

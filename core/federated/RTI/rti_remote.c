@@ -278,23 +278,29 @@ static void send_upstream_disconnected_locked(federate_info_t* destination, fede
  * (or re-establish) the outbound P2P connection.
  *
  * This function assumes that the mutex lock is already held.
- * @param destination The upstream federate to notify.
- * @param connected The transient federate that has connected.
+ * @param my_fed The transient federate that has just connected.
  */
-static void send_downstream_connected_locked(federate_info_t* destination, federate_info_t* connected) {
-  // if (destination->enclave.state == NOT_CONNECTED) {
-  //   LF_PRINT_LOG("RTI did not send downstream connected message to federate %d, because it is not connected.",
-  //                destination->enclave.id);
-  //   return;
-  // }
+static void send_downstream_connected_locked(federate_info_t* my_fed) {
   unsigned char buffer[MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH];
   buffer[0] = MSG_TYPE_DOWNSTREAM_CONNECTED;
-  encode_uint16(connected->enclave.id, &buffer[1]);
-  if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH, buffer)) {
-    lf_print_warning("RTI: Failed to send downstream connected message to federate %d.", destination->enclave.id);
-  }
-  if (rti_remote->base.tracing_enabled) {
-    tracepoint_rti_to_federate(send_DOWNSTREAM_CONNECTED, destination->enclave.id, NULL);
+  encode_uint16(my_fed->enclave.id, &buffer[1]);
+  // Iterate over all federates and notify those that have my_fed as an outbound transient.
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+    federate_info_t* fed = GET_FED_INFO(i);
+    if (fed->enclave.state == NOT_CONNECTED) {
+      continue;
+    }
+    for (int32_t j = 0; j < fed->number_of_outbound_transients; j++) {
+      if (fed->outbound_transients[j] == (int32_t)my_fed->enclave.id) {
+        if (write_to_socket_close_on_error(&fed->socket, MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH, buffer)) {
+          lf_print_warning("RTI: Failed to send downstream connected message to federate %d.", fed->enclave.id);
+        }
+        if (rti_remote->base.tracing_enabled) {
+          tracepoint_rti_to_federate(send_DOWNSTREAM_CONNECTED, fed->enclave.id, NULL);
+        }
+        break;
+      }
+    }
   }
 }
 
@@ -958,6 +964,28 @@ void handle_address_query(uint16_t fed_id) {
 
   LF_PRINT_DEBUG("RTI received address query from %d for %d.", fed_id, remote_fed_id);
 
+  // If the queried federate is transient, record it in the querying federate's
+  // outbound_transients array (if not already present).
+  if (remote_is_transient) {
+    LF_MUTEX_LOCK(&rti_mutex);
+    bool already_registered = false; 
+    int32_t i = 0;
+    for (; i < fed->number_of_outbound_transients; i++) {
+      if (fed->outbound_transients[i] == (int32_t)remote_fed_id) {
+        already_registered = true;
+        break;
+      } else if (fed->outbound_transients[i] == -1) {
+        // This means we have found an empty slot, so we can stop looking.
+        break;
+      }
+    }
+    if (!already_registered) {
+      fed->outbound_transients[i] = (int32_t)remote_fed_id;
+      fed->number_of_outbound_transients++;
+    }
+    LF_MUTEX_UNLOCK(&rti_mutex);
+  }
+
   // NOTE: server_port initializes to -1, which means the RTI does not know
   // the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message
   // from this federate. In that case, it will respond by sending -1.
@@ -1034,13 +1062,15 @@ static void send_start_tag_locked(federate_info_t* my_fed, instant_t federation_
   // Notify my_fed of any upstream transient federates that are connected.
   // This has to occur before sending the start tag so that my_fed does not begin executing thinking that these
   // upstream federates are not connected.
+  lf_print_info("================================== number of immediate upstreams: %d of %d", my_fed->enclave.num_immediate_upstreams, my_fed->enclave.id);
   for (int i = 0; i < my_fed->enclave.num_immediate_upstreams; i++) {
     federate_info_t* fed = GET_FED_INFO(my_fed->enclave.immediate_upstreams[i]);
     if (fed->is_transient && fed->enclave.state == GRANTED) {
       send_upstream_connected_locked(my_fed, fed);
     }
   }
-
+  send_downstream_connected_locked(my_fed);
+  
   // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
   // message.
   // If it is a persistent federate, only the start_time is sent. If, however, it is a transient
@@ -1067,6 +1097,7 @@ static void send_start_tag_locked(federate_info_t* my_fed, instant_t federation_
 
     // If this is a transient federate, notify its downstream federates that it is now connected.
     if (my_fed->is_transient) {
+      // Notify downstreams: their upstream (my_fed) has connected.
       for (int i = 0; i < my_fed->enclave.num_immediate_downstreams; i++) {
         send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.immediate_downstreams[i]), my_fed);
       }
@@ -2314,6 +2345,12 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   fed->has_upstream_transient_federates = false;
   fed->is_transient = true;
   fed->effective_start_tag = NEVER_TAG;
+  fed->number_of_outbound_transients = 0;
+  int32_t num_transients = rti_remote->number_of_transient_federates;
+  fed->outbound_transients = (int32_t*)malloc(num_transients * sizeof(int32_t));
+  for (int32_t i = 0; i < num_transients; i++) {
+    fed->outbound_transients[i] = -1;
+  }
 }
 
 void reset_transient_federate(federate_info_t* fed) {
@@ -2333,6 +2370,11 @@ void reset_transient_federate(federate_info_t* fed) {
   fed->server_port = -1;
   fed->requested_stop = false;
   fed->effective_start_tag = NEVER_TAG;
+  fed->number_of_outbound_transients = 0;
+  int32_t num_transients = rti_remote->number_of_transient_federates;
+  for (int32_t i = 0; i < num_transients; i++) {
+    fed->outbound_transients[i] = -1;
+  }
   // Whenver a transient resigns or leaves, invalidate all federates, so that all min_delays_upstream
   // get re-computed.
   // FIXME: Maybe optimize it to only invalidate those affected by the transient

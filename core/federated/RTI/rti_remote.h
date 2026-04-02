@@ -82,6 +82,12 @@ typedef struct federate_info_t {
   bool is_transient;
   /** @brief Records the start time of the federate, which is mainly useful for transient federates. */
   tag_t effective_start_tag;
+  /** @brief Number of outbound connections to transient federates. */
+  int32_t number_of_outbound_transients;
+  /** @brief IDs of transient federates this federate has outbound connections to.
+   *  The array has size equal to the total number of transient federates in the federation,
+   *  and entries are initialized (and reset) to -1. */
+  int32_t* outbound_transients;
 } federate_info_t;
 
 /**

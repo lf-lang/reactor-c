@@ -2304,147 +2304,6 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   return NULL;
 }
 
-void* lf_handle_p2p_connections_to_transients(void* env_arg) {
-  LF_ASSERT_NON_NULL(env_arg);
-  environment_t* env = (environment_t*)env_arg;
-  (void)env; // Reserved for future use (e.g., locking env->mutex).
-
-  for (uint16_t remote_federate_id = 0; remote_federate_id < NUMBER_OF_FEDERATES; remote_federate_id++) {
-    // Only handle outbound connections to transient federates.
-    if (!_fed.transients[remote_federate_id]) {
-      continue;
-    }
-    // Check that we actually have an outbound connection to this federate.
-    if (_fed.sockets_for_outbound_p2p_connections[remote_federate_id] >= 0) {
-      continue; // Already connected.
-    }
-
-    int result = -1;
-
-    // Ask the RTI for the port number of the remote transient federate.
-    unsigned char buffer[sizeof(int32_t) + INET_ADDRSTRLEN + 1];
-    int port = -1;
-    struct in_addr host_ip_addr;
-    instant_t start_connect = lf_time_physical();
-
-    while (port == -1 && !_lf_termination_executed) {
-      buffer[0] = MSG_TYPE_ADDRESS_QUERY;
-      encode_uint16(remote_federate_id, &(buffer[1]));
-
-      LF_PRINT_DEBUG("Sending address query for transient federate %d.", remote_federate_id);
-      tracepoint_federate_to_rti(send_ADR_QR, _lf_my_fed_id, NULL);
-
-      LF_MUTEX_LOCK(&lf_outbound_socket_mutex);
-      write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(uint16_t) + 1, buffer, &lf_outbound_socket_mutex,
-                                    "Failed to send address query for transient federate %d to RTI.",
-                                    remote_federate_id);
-      LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
-
-      read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(int32_t) + 1, buffer,
-                                     "Failed to read port number for transient federate %d from RTI.",
-                                     remote_federate_id);
-
-      if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
-        if (buffer[0] == MSG_TYPE_FAILED) {
-          lf_print_error_and_exit("RTI has failed.");
-        } else {
-          lf_print_error_and_exit("Unexpected reply of type %hhu from RTI (see net_common.h).", buffer[0]);
-        }
-      }
-      port = extract_int32(&buffer[1]);
-
-      read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(host_ip_addr), (unsigned char*)&host_ip_addr,
-                                     "Failed to read IP address for transient federate %d from RTI.",
-                                     remote_federate_id);
-      tracepoint_federate_from_rti(receive_ADR_QR_REP, _lf_my_fed_id, NULL);
-
-      // A port of -1 means the transient federate has not yet registered with the RTI.
-      // Wait and retry.
-      if (port == -1) {
-        if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-          lf_print_warning("TIMEOUT obtaining address for transient federate %d. Skipping.", remote_federate_id);
-          break;
-        }
-        lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
-      }
-    }
-
-    if (port <= 0) {
-      continue; // Could not obtain address; transient federate may not be present.
-    }
-
-    assert(port < 65536);
-    uint16_t uport = (uint16_t)port;
-    char hostname[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
-
-    int socket_id = create_real_time_tcp_socket_errexit();
-    if (connect_to_socket(socket_id, (const char*)hostname, uport) < 0) {
-      lf_print_error("Failed to connect() to transient federate %d.", remote_federate_id);
-      shutdown_socket(&socket_id, false);
-      continue;
-    }
-
-    start_connect = lf_time_physical();
-    while (result < 0 && !_lf_termination_executed) {
-      if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-        lf_print_error("Failed to connect to transient federate %d with timeout: " PRINTF_TIME ". Giving up.",
-                       remote_federate_id, CONNECT_TIMEOUT);
-        break;
-      }
-      if (rti_failed()) {
-        break;
-      }
-
-      // Send our federate ID and federation ID.
-      size_t buffer_length = 1 + sizeof(uint16_t) + 1 + 1;
-      unsigned char send_buffer[buffer_length];
-      send_buffer[0] = MSG_TYPE_P2P_SENDING_FED_ID;
-      if (_lf_my_fed_id == UINT16_MAX) {
-        lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX - 1);
-      }
-      encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(send_buffer[1]));
-      send_buffer[1 + sizeof(uint16_t)] = _fed.is_transient ? 1 : 0;
-      unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
-      send_buffer[sizeof(uint16_t) + 2] = federation_id_length;
-      tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
-
-      write_to_socket_fail_on_error(&socket_id, buffer_length, send_buffer, NULL,
-                                    "Failed to send fed_id to transient federate %d.", remote_federate_id);
-      write_to_socket_fail_on_error(&socket_id, federation_id_length,
-                                    (unsigned char*)federation_metadata.federation_id, NULL,
-                                    "Failed to send federation id to transient federate %d.", remote_federate_id);
-
-      unsigned char ack_buffer[1];
-      read_from_socket_fail_on_error(&socket_id, 1, ack_buffer,
-                                     "Failed to read MSG_TYPE_ACK from transient federate %d.", remote_federate_id);
-      if (ack_buffer[0] != MSG_TYPE_ACK) {
-        read_from_socket_fail_on_error(&socket_id, 1, ack_buffer,
-                                       "Failed to read error code from transient federate %d.", remote_federate_id);
-        lf_print_error("Received MSG_TYPE_REJECT from transient federate %d (code %d).", remote_federate_id,
-                       ack_buffer[0]);
-        result = -1;
-        lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
-        continue;
-      } else {
-        lf_print("Connected to transient federate %d, port %hu.", remote_federate_id, uport);
-        tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
-        result = 0;
-        break;
-      }
-    }
-
-    if (result == 0) {
-      _fed.sockets_for_outbound_p2p_connections[remote_federate_id] = socket_id;
-    } else {
-      shutdown_socket(&socket_id, false);
-    }
-  }
-
-  LF_PRINT_LOG("Done handling outbound P2P connections to transient federates.");
-  return NULL;
-}
-
 void lf_latest_tag_confirmed(tag_t tag_to_send) {
   environment_t* env;
   if (lf_tag_compare(_fed.last_sent_LTC, tag_to_send) >= 0) {
@@ -2813,6 +2672,12 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     lf_print_error("lf_send_message: Unsupported message type (%d).", message_type);
     return -1;
   }
+#if defined(FEDERATED_DECENTRALIZED)
+  if (_fed.transients[federate] && _fed.sockets_for_outbound_p2p_connections[federate] < 0) {
+    lf_print("The destination transient federate %d is not connected. Abort sending!", federate);
+    return 0;
+  }
+#endif
 
   size_t buffer_head = 0;
   // First byte is the message type.
