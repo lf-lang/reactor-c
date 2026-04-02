@@ -1002,6 +1002,26 @@ static void handle_upstream_disconnected_message(void) {
 }
 
 /**
+ * @brief Handle message from the RTI that a transient downstream federate has connected.
+ *
+ * Reads the downstream federate's ID, then synchronously queries the RTI for its address
+ * and establishes (or re-establishes) the outbound P2P connection to it.
+ * This function is called inline from listen_to_rti_TCP or get_start_time_from_rti,
+ * so it reads the address-query reply directly from socket_TCP_RTI.
+ */
+static void handle_downstream_connected_message(void) {
+  size_t bytes_to_read = sizeof(uint16_t);
+  unsigned char buffer[bytes_to_read];
+  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+                                 "Failed to read downstream connected message from RTI.");
+  uint16_t remote_federate_id = extract_uint16(buffer);
+  tracepoint_federate_from_rti(receive_DOWNSTREAM_CONNECTED, _lf_my_fed_id, NULL);
+  LF_PRINT_DEBUG("Received notification that downstream transient federate %d has connected.", remote_federate_id);
+
+  lf_connect_to_federate(remote_federate_id, true);
+}
+
+/**
  * Send the specified timestamp to the RTI and wait for a response.
  * The specified timestamp should be current physical time of the
  * federate, and the response will be the designated start time for
@@ -1033,6 +1053,10 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
       } else if (buffer[0] == MSG_TYPE_UPSTREAM_DISCONNECTED) {
         // We need to handle this message and continue waiting for MSG_TYPE_TIMESTAMP to arrive
         handle_upstream_disconnected_message();
+        continue;
+      } else if (buffer[0] == MSG_TYPE_DOWNSTREAM_CONNECTED) {
+        // We need to handle this message and continue waiting for MSG_TYPE_TIMESTAMP to arrive
+        handle_downstream_connected_message();
         continue;
       } else {
         lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP message from the RTI. Got %u (see net_common.h).",
@@ -1717,6 +1741,9 @@ static void* listen_to_rti_TCP(void* args) {
       break;
     case MSG_TYPE_UPSTREAM_DISCONNECTED:
       handle_upstream_disconnected_message();
+      break;
+    case MSG_TYPE_DOWNSTREAM_CONNECTED:
+      handle_downstream_connected_message();
       break;
     case MSG_TYPE_CLOCK_SYNC_T1:
     case MSG_TYPE_CLOCK_SYNC_T4:

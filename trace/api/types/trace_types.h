@@ -84,6 +84,9 @@ typedef enum {
   receive_UNIDENTIFIED,
   send_STOP,
   receive_STOP,
+  // New entries must be added here, at the end, to avoid shifting existing indices.
+  send_DOWNSTREAM_CONNECTED,
+  receive_DOWNSTREAM_CONNECTED,
   NUM_EVENT_TYPES
 } trace_event_t;
 
@@ -158,6 +161,9 @@ static const char* trace_event_names[] = {
     "Receiving UNIDENTIFIED",
     "Sending STOP",
     "Receiving STOP",
+    // New entries appended at the end to avoid shifting existing indices.
+    "Sending DOWNSTREAM_CONNECTED",
+    "Receiving DOWNSTREAM_CONNECTED",
 };
 
 static inline void _suppress_unused_variable_warning_for_static_variable() { (void)trace_event_names; }

@@ -271,6 +271,34 @@ static void send_upstream_disconnected_locked(federate_info_t* destination, fede
 }
 
 /**
+ * @brief Send MSG_TYPE_DOWNSTREAM_CONNECTED to the specified upstream federate.
+ *
+ * This notifies an upstream federate that a transient federate downstream of it has
+ * (re-)connected, so the upstream should query the RTI for its address and establish
+ * (or re-establish) the outbound P2P connection.
+ *
+ * This function assumes that the mutex lock is already held.
+ * @param destination The upstream federate to notify.
+ * @param connected The transient federate that has connected.
+ */
+static void send_downstream_connected_locked(federate_info_t* destination, federate_info_t* connected) {
+  // if (destination->enclave.state == NOT_CONNECTED) {
+  //   LF_PRINT_LOG("RTI did not send downstream connected message to federate %d, because it is not connected.",
+  //                destination->enclave.id);
+  //   return;
+  // }
+  unsigned char buffer[MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_DOWNSTREAM_CONNECTED;
+  encode_uint16(connected->enclave.id, &buffer[1]);
+  if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH, buffer)) {
+    lf_print_warning("RTI: Failed to send downstream connected message to federate %d.", destination->enclave.id);
+  }
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_DOWNSTREAM_CONNECTED, destination->enclave.id, NULL);
+  }
+}
+
+/**
  * @brief Mark a federate as disconnected and, if this is a transient, inform downstream federates.
  * @param fed The disconnected federate.
  */
