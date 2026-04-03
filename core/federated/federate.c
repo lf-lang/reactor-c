@@ -326,12 +326,16 @@ static void mark_inputs_known_absent(int fed_id) {
   // current_tag is equivalent to "absent at the current logical time" — sufficient
   // to unblock the scheduler, but small enough that any future message from the
   // rejoining federate at a tag >= current_tag will update the port normally.
-  tag_t absent_until = _fed.inbound_p2p_is_transient[fed_id] ? env->current_tag : FOREVER_TAG;
+  bool is_transient = _fed.inbound_p2p_is_transient[fed_id];
+  tag_t absent_until = is_transient ? env->current_tag : FOREVER_TAG;
 
   for (size_t i = 0; i < _lf_action_table_size; i++) {
     lf_action_base_t* action = _lf_action_table[i];
     if (action->source_id == fed_id) {
-      update_last_known_status_on_input_port(env, absent_until, i, true);
+      // For transients, pass warn=false: the port's last_known_status_tag may already be
+      // ahead of current_tag (advanced by a prior message or the STAA thread), so the
+      // update will be a no-op. That is correct and expected — no warning needed.
+      update_last_known_status_on_input_port(env, absent_until, i, !is_transient);
     }
   }
   LF_MUTEX_UNLOCK(&env->mutex);
@@ -2458,18 +2462,9 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   
   // If there are outbound transients, check whether the destination is one of them.
   // If it is and its socket is shut, gracefully skip the send.
-  if (_fed.number_of_outbound_p2p_transients > 0) {
-    bool is_outbound_transient = false;
-    for (size_t i = 0; i < _fed.number_of_outbound_p2p_transients; i++) {
-      if (_fed.outbound_p2p_transient_ids[i] == (uint16_t)federate) {
-        is_outbound_transient = true;
-        break;
-      }
-    }
-    if (is_outbound_transient && _fed.sockets_for_outbound_p2p_connections[federate] < 0) {
-      lf_print("The destination transient federate %d is not connected. Abort sending!", federate);
-      return 0;
-    }
+  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.sockets_for_outbound_p2p_connections[federate] < 0) {
+    lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
+    return 0;
   }
 
   header_buffer[0] = (unsigned char)message_type;
@@ -2764,22 +2759,11 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     lf_print_error("lf_send_message: Unsupported message type (%d).", message_type);
     return -1;
   }
-#if defined(FEDERATED_DECENTRALIZED)
-  if (_fed.sockets_for_outbound_p2p_connections[federate] < 0) {
+  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.sockets_for_outbound_p2p_connections[federate] < 0) {
     // Only print a warning if the destination is a known outbound transient.
-    bool is_outbound_transient = false;
-    for (size_t i = 0; i < _fed.number_of_outbound_p2p_transients; i++) {
-      if (_fed.outbound_p2p_transient_ids[i] == (uint16_t)federate) {
-        is_outbound_transient = true;
-        break;
-      }
-    }
-    if (is_outbound_transient) {
-      lf_print("The destination transient federate %d is not connected. Abort sending!", federate);
-    }
+    lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
     return 0;
-  }
-#endif
+  } 
 
   size_t buffer_head = 0;
   // First byte is the message type.

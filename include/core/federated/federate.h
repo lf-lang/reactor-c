@@ -86,7 +86,7 @@ typedef struct federate_instance_t {
    * peer-to-peer connections. The array has size number_of_outbound_p2p_transients
    * and is allocated at startup by the generated _lf_executable_preamble().
    */
-  uint16_t* outbound_p2p_transient_ids;
+  bool outbound_p2p_connection_is_transient[NUMBER_OF_FEDERATES];
 
   /**
    * An array that holds the socket descriptors for inbound
