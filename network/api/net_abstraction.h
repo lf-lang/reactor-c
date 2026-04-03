@@ -21,7 +21,6 @@
  * @brief Pointer to whatever data structure is used to maintain the state of a network connection or service.
  * @ingroup Network
  *
- * Pointer to whatever data structure is used to maintain the state of a network connection or service.
  * For example, this could point to an integer socket identifier if TCP is being used for network connections.
  */
 typedef void* net_abstraction_t;
