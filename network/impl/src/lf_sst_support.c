@@ -125,7 +125,7 @@ net_abstraction_t connect_to_net(net_params_t* params) {
   }
   if (sst_params->target == 1) {
     //Override target group to federates.
-    snprintf(priv->sst_ctx->config.purpose[ctx->config.purpose_index], sizeof(ctx->config.purpose[ctx->config.purpose_index]), "{\"group\":\"Federates\"}");
+    snprintf(priv->sst_ctx->purpose_for_requesting_key, sizeof(ctx->purpose_for_requesting_key), "{\"group\":\"Federates\"}");
   }
   session_key_list_t* s_key_list = get_session_key(priv->sst_ctx, NULL);
   SST_session_ctx_t* session_ctx =
