@@ -77,7 +77,7 @@ void create_client(net_abstraction_t net_abs) {
   priv->socket_descriptor = create_real_time_tcp_socket_errexit();
 }
 
-net_abstraction_t connect_to_net(net_params_t* params) {
+net_abstraction_t connect_to_net(net_params_t params) {
   // Create a network abstraction.
   net_abstraction_t net = initialize_net();
   socket_priv_t* priv = (socket_priv_t*)net;

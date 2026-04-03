@@ -92,7 +92,7 @@ void create_client(net_abstraction_t net_abs);
  * @param params Pointer to implementation-specific connection parameters.
  * @return A connected network abstraction on success, or NULL on failure.
  */
-net_abstraction_t connect_to_net(net_params_t* params);
+net_abstraction_t connect_to_net(net_params_t params);
 
 /**
  * @brief Read a fixed number of bytes from a network abstraction.

@@ -1758,7 +1758,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   params.type = TCP;
   params.port = uport;
   params.server_hostname = hostname;
-  net_abstraction_t net = connect_to_net((net_params_t*)&params);
+  net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to federate.");
   }
@@ -1839,7 +1839,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   params.type = TCP;
   params.port = port;
   params.server_hostname = hostname;
-  net_abstraction_t net = connect_to_net((net_params_t*)&params);
+  net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to RTI.");
   }
@@ -1946,7 +1946,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
-  net_abstraction_t* server_net = initialize_net();
+  net_abstraction_t server_net = initialize_net();
   ((socket_priv_t*)server_net)->port = (uint16_t)specified_port;
 
   if (create_server(server_net)) {
