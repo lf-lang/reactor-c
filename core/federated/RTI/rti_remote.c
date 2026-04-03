@@ -1428,8 +1428,7 @@ void* federate_info_thread_TCP(void* fed) {
     int read_failed = read_from_socket(my_fed->socket, 1, buffer);
     if (read_failed) {
       // Socket is closed
-      lf_print_error("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
-      notify_federate_disconnected(my_fed);
+      lf_print_info("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
       my_fed->enclave.state = NOT_CONNECTED;
       // Nothing more to do. Close the socket and exit.
       // Prevent multiple threads from closing the same socket at the same time.
