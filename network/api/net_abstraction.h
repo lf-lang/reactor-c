@@ -211,7 +211,6 @@ bool is_net_open(net_abstraction_t net_abs);
  * SHUT_WR, then read() until EOF and discard received bytes before closing.
  *
  * @param net_abs The network abstraction to shut down and close.
- * @param net_abs The network abstraction to shutdown and close.
  * @param read_before_closing If true, read until EOF before closing the network abstraction.
  * @return int Returns 0 on success, -1 on failure (errno will indicate the error).
  */

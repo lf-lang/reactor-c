@@ -669,10 +669,6 @@ void handle_address_query(uint16_t fed_id) {
     tracepoint_rti_to_federate(send_ADR_QR_REP, fed_id, NULL);
   }
 
-  if (rti_remote->base.tracing_enabled) {
-    tracepoint_rti_to_federate(send_ADR_QR_REP, fed_id, NULL);
-  }
-
   LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id, server_host_name,
                  server_port);
 }

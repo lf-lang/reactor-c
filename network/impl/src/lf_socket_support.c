@@ -21,7 +21,7 @@ net_abstraction_t initialize_net() {
   // Initialize priv.
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));
   if (priv == NULL) {
-    lf_print_error_and_exit("Falied to malloc socket_priv_t.");
+    lf_print_error_and_exit("Failed to malloc socket_priv_t.");
   }
 
   // Server initialization.
