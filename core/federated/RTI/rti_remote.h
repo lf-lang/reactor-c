@@ -62,6 +62,27 @@ typedef struct federate_info_t {
   /** @brief Record of in-transit messages to this federate that are not yet processed. This record is ordered based on
    * the time value of each message for a more efficient access. */
   pqueue_tag_t* in_transit_message_tags;
+  /** @brief Indicates whether the federate has uptream transient federates */
+  bool has_upstream_transient_federates;
+  /** @brief Indicates whether the federate is transient or persistent. */
+  bool is_transient;
+  /** @brief Records the start time of the federate, which is mainly useful for transient federates */
+  tag_t effective_start_tag;
+
+  /** These fields are only initialised to a value if the federate is transient. These fields are used by the rti to launch a 
+   * transient federate on a remote machine using ssh from rti's machine.
+   */
+
+  /** @brief Username user to identify the unique account we would ssh into */
+  char* transient_launch_user;
+  /** @brief Ip address for the transient federate remote machine */
+  char* transient_launch_ip;
+  /** @brief Binary file path for the transient federate on the remote machine where it will be launched */
+  char* transient_launch_binary_path;
+  /** @brief SST config file path for the transeint federate on the remote machine */
+  char* transient_launch_sst_config_path;
+  /** @brief Transient federates name */
+  char* transient_launch_name;
 } federate_info_t;
 
 /**
@@ -69,6 +90,29 @@ typedef struct federate_info_t {
  * @ingroup RTI
  */
 typedef enum clock_sync_stat { clock_sync_off, clock_sync_init, clock_sync_on } clock_sync_stat;
+
+/**
+ * The federation life cycle phases.
+ */
+typedef enum federation_life_cycle_phase {
+  startup_phase,   // Not all persistent federates have joined.
+  execution_phase, // All persistent federates have joined.
+  shutdown_phase   // Federation is shutting down.
+} federation_life_cycle_phase;
+
+/**
+ * @brief The type for an element in a delayed grants priority queue that is sorted by tag.
+ */
+typedef struct pqueue_delayed_grant_element_t {
+  pqueue_tag_element_t base;
+  uint16_t fed_id;     // Id of the federate with delayed grant of tag (in base)
+  bool is_provisional; // Boolean recoding if the delayed grant is provisional
+} pqueue_delayed_grant_element_t;
+
+/**
+ * @brief Type of a delayed grants queue sorted by tags.
+ */
+typedef pqueue_tag_t pqueue_delayed_grants_t;
 
 /**
  * @brief Structure that an RTI instance uses to keep track of its own and its
@@ -103,6 +147,16 @@ typedef struct rti_remote_t {
    * in respond_to_erroneous_connections().
    */
   volatile bool all_federates_exited;
+
+  /**
+   * @brief Boolean indicating that all persistent federates have exited.
+   *
+   * This gets set to true exactly once before the program waits for
+   * persistent federates, then exits.
+   * It is marked volatile because the write is not guarded by a mutex.
+   * The main thread makes this true.
+   */
+  volatile bool all_persistent_federates_exited;
 
   /**
    * @brief The ID of the federation that this RTI will supervise.
@@ -149,6 +203,27 @@ typedef struct rti_remote_t {
 
   /** @brief Boolean indicating that a stop request is already in progress. */
   bool stop_in_progress;
+
+  /**
+   * Number of transient federates
+   */
+  int32_t number_of_transient_federates;
+
+  /**
+   * Number of connected transient federates
+   */
+  int32_t number_of_connected_transient_federates;
+
+  /**
+   * Indicates the life cycle phase of the federation.
+   */
+  federation_life_cycle_phase phase;
+
+  /**
+   * Queue of the pending grants, in case transient federates are absent and
+   * issuing grants to their downstreams need to be delayed.
+   */
+  pqueue_delayed_grants_t* delayed_grants;
 } rti_remote_t;
 
 extern int lf_critical_section_enter(environment_t* env);
@@ -272,7 +347,7 @@ void handle_address_query(uint16_t fed_id);
  * field of the _RTI.federates[federate_id] array of structs.
  *
  * The server_hostname and server_ip_addr fields are assigned
- * in lf_connect_to_federates() upon accepting the socket
+ * in lf_connect_to_persistent_federates() upon accepting the socket
  * from the remote federate.
  *
  * This function assumes the caller does not hold the mutex.
@@ -355,6 +430,14 @@ void* federate_info_thread_TCP(void* fed);
 void send_reject(net_abstraction_t net_abs, unsigned char error_code);
 
 /**
+ * Thread to wait for incoming connection request from transient federates.
+ * Upon receiving the connection request, check if a hot swap should start or
+ * simply create a thread to communicate with that federate.
+ * Stops if all persistent federates exited.
+ */
+void* lf_connect_to_transient_federates_thread(void* nothing);
+
+/**
  * @brief Wait for one incoming connection request from each federate,
  * and, upon receiving it, create a thread to communicate with that federate.
  * @ingroup RTI
@@ -383,6 +466,14 @@ void* respond_to_erroneous_connections(void* nothing);
  * @param id The federate ID.
  */
 void initialize_federate(federate_info_t* fed, uint16_t id);
+
+/**
+ * @brief Reset the federate. The federate has to be transient.
+ * @ingroup RTI
+ *
+ * @param fed A pointer to the federate
+ */
+void reset_transient_federate(federate_info_t* fed);
 
 /**
  * @brief Start the socket server for the runtime infrastructure (RTI) and return the socket descriptor.
@@ -439,6 +530,41 @@ int process_args(int argc, const char* argv[]);
  * @param rti The RTI instance to initialize.
  */
 void initialize_RTI(rti_remote_t* rti);
+/**
+ * @brief Handle a session key refresh request from a federate.
+ *
+ * Reads the new key ID sent by the federate, fetches the corresponding
+ * session key from the SST context, acknowledges the request with
+ * MSG_TYPE_SST_KEY_ACK, and swaps the new key into the active slot.
+ * The key swap is performed under the RTI mutex to prevent concurrent
+ * access during the transition.
+ *
+ * This is called when the RTI receives a MSG_TYPE_SST_KEY_REFRESH_REQUEST
+ * message from a federate.
+ *
+ * @param fed The federate that initiated the key refresh.
+ */
+void handle_key_refresh_request(federate_info_t* fed);
+
+/**
+ * @brief Handle transient federate launch request 
+ * 
+ * This function is called when a message type MSG_TYPE_TRANSIENT_LAUNCH_REQUEST is received by the
+ * RTI. The function reads the federate id that was requested to be launched. Federate information is 
+ * retrived using the GET_FED_INFO(id) command to retrieve the transient federate fields required by the RTI
+ * to SSH into the federates machine and the other data required to locate and launch the federate
+ */
+void handle_transient_launch_request(federate_info_t* fed);
+
+/**
+ * @brief Parse the transient federate config file which contains information on all transient
+ * federates present in the federation required to launch them
+ * 
+ * Read the config file to get information on the transient federates and store
+ * the name, host address, remote user where the transient federate is deployed,
+ * launch file path and the sst config in the federate's instance fields
+ */
+void parse_transient_federate_config(const char* file_path);
 
 #endif // RTI_REMOTE_H
 #endif // STANDALONE_RTI

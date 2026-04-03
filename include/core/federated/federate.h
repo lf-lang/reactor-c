@@ -19,6 +19,7 @@
 #define FEDERATE_H
 
 #include <stdbool.h>
+#include <stdatomic.h>
 
 #include "tag.h"
 #include "lf_types.h"
@@ -32,6 +33,16 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 // Data types
+
+/**
+ * Maps a port name to the set of transient federates that should be launched
+ * when that port becomes active.
+ */
+typedef struct port_transient_map_t {
+  char* port_name;
+  uint16_t* transient_fed_id;
+  int num_of_transients;
+} port_transient_map_t;
 
 /**
  * @brief Structure that a federate instance uses to keep track of its own state.
@@ -191,6 +202,30 @@ typedef struct federate_instance_t {
    * path from a physical action to any output.
    */
   instant_t min_delay_from_physical_action_to_federate_output;
+
+  /**
+   * Indicator of whether this federate is transient.
+   * The default value of false may be overridden in _lf_initialize_trigger_objects.
+   */
+  bool is_transient;
+  
+  /** Indicator that this federate needs to refresh its session key/keys for its connections*/
+  _Atomic bool rekey_requested;
+
+  /** Indicator that a transient federate launch needs to be requested to the rti */
+  _Atomic bool transient_launch_requested;
+
+  /** An array of transient federates that needs to be launched */
+  uint16_t pending_transient_launches[NUMBER_OF_FEDERATES];
+
+  /** Total number of transient federates launch requested */
+  int num_transient_fed_launch_requested;
+
+  /** Provides output port name -> list of transient fed ids mapping. It is generated at compile time.  */
+  port_transient_map_t port_to_transient_feds_mapping[NUMBER_OF_FEDERATES];
+
+  /** Count of port -> transient fed mappings present for this federation*/
+  int port_map_size;
 
 #ifdef FEDERATED_DECENTRALIZED
   /**
@@ -522,6 +557,11 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
  */
 void lf_set_federation_id(const char* fid);
 
+/**
+ * @brief Return the federation id.
+ */
+const char* lf_get_federation_id();
+
 #ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Spawn a thread to iterate through STAA structs.
@@ -563,6 +603,79 @@ void lf_stall_advance_level_federation_locked(size_t level);
  */
 void lf_synchronize_with_other_federates(void);
 
+/**
+ * @brief Request RTI for a launch of a transient federate
+ * 
+ * This function sets the transient_launch_requested flag to true, this would signal
+ * that the federate needs to send a request to the RTI to launch one or more
+ * transient federates
+ * 
+ * @param port_name The port name is looked up in the port to transient
+ * federates mapping to determine the transient federates that are connected to this
+ * port.
+ */
+void lf_launch_transient_federate(char* port_name);
+
+/**
+ * @brief Sends a transient federate launch request to the RTI
+ * 
+ * This functions is called when the transient_launch_requested is checked if it is
+ * set to true. The function traverses over the list of pending transient federates
+ * that need to be launched and for each a request is sent to the RTI with the msg
+ * type MSG_TYPE_TRANSIENT_LAUNCH_REQUEST and the federate id.  
+ */
+void _lf_send_launch_request();
+
+/**
+ * @brief Request a session key refresh for all SST connections.
+ *
+ * Sets the rekey_requested flag, signaling that a key rotation should
+ * be performed. The actual handshake is deferred and handled asynchronously
+ * by _lf_check_and_perform_rekey() at a safe point outside of reaction
+ * execution. Safe to call from within a reaction.
+ *
+ * Only has effect when COMM_TYPE_SST is configured with centralized coordination.
+ */
+void lf_refresh_key(void);
+
+/**
+ * @brief Check if a key refresh has been requested and perform the handshake if so.
+ *
+ * If rekey_requested is set, fetches a new session key from the SST auth
+ * server, sends a MSG_TYPE_SST_KEY_REFRESH_REQUEST to the RTI containing
+ * the new key ID, and blocks until the RTI acknowledges via
+ * handle_rti_session_key_ack(). Resets rekey_requested upon completion.
+ *
+ * This function is called internally at a safe point in the federate's
+ * execution loop and should not be called directly by user code.
+ */
+void _lf_check_and_perform_rekey(void);
+
+/**
+ * @brief Handle a session key acknowledgment from the RTI.
+ *
+ * Called when the RTI responds with MSG_TYPE_SST_KEY_ACK during a key
+ * rotation handshake. Reads the key ID from the message, verifies it
+ * matches the pending key, swaps the pending key into active use, resets
+ * sequence counters, and signals lf_rekey_completed to unblock
+ * _lf_check_and_perform_rekey().
+ *
+ * @param net_abs The network abstraction for the RTI connection.
+ * @param buffer The buffer containing the incoming message.
+ */
+void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer);
+
+/**
+ * @brief Handle a session key refresh request from a federate
+ * 
+ * Called when a federate sends a key refresh request with MSG_TYPE__SST_KEY_REFRESH_REQUEST
+ * to its outbound federates. Reads the key ID from the message, fetches the corresponding key
+ * from the auth and stores it in the pending key field. Responds back to the federate who initiated the request with
+ * MSG_TYPE_SST_KEY_ACK and then swaps it current key with the key stored in the pending key field
+ * 
+ * @param net_abs The network abstraction for the RTI connection.
+ */
+void handle_key_refresh_request(net_abstraction_t net_abs);
 /**
  * @brief Update the max level allowed to advance (MLAA).
  * @ingroup Federated

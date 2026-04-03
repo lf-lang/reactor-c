@@ -80,7 +80,8 @@ net_abstraction_t accept_net(net_abstraction_t server_chan) {
     if (get_peer_address(client_priv->socket_priv) != 0) {
       lf_print_error("Failed to save peer address.");
     }
-
+    
+    client_priv->sst_ctx = serv_priv->sst_ctx;
     // TODO: Do we need to copy sst_ctx form server_chan to fed_chan?
     session_key_list_t* s_key_list = init_empty_session_key_list();
     SST_session_ctx_t* session_ctx =
@@ -124,7 +125,7 @@ net_abstraction_t connect_to_net(net_params_t* params) {
   }
   if (sst_params->target == 1) {
     //Override target group to federates.
-    snprintf(priv->sst_ctx->config.purpose[ctx->config.purpose_index], sizeof(ctx->config.purpose[ctx->config.purpose_index]), "{\"group\":\"Federates\"}");
+    snprintf(priv->sst_ctx->purpose_for_requesting_key, sizeof(ctx->purpose_for_requesting_key), "{\"group\":\"Federates\"}");
   }
   session_key_list_t* s_key_list = get_session_key(priv->sst_ctx, NULL);
   SST_session_ctx_t* session_ctx =
@@ -316,4 +317,80 @@ void set_server_port(net_abstraction_t net_abs, int32_t port) {
 void set_server_hostname(net_abstraction_t net_abs, const char* hostname) {
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   memcpy(priv->socket_priv->server_hostname, hostname, INET_ADDRSTRLEN);
+}
+
+/**
+ * Called by _lf_check_and_perform_rekey() on the federate side before initiating a key
+ * rotation. Contacts the SST auth server to obtain a fresh session key and stores it in
+ * pending_key by value, so it remains valid after new_list is freed.
+ */
+void get_new_session_key(net_abstraction_t net_abs){
+  LF_ASSERT_NON_NULL(net_abs);
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  session_key_list_t* new_list = get_session_key(priv->sst_ctx, NULL);
+  priv->pending_key = new_list->s_key[0];
+  free_session_key_list_t(new_list);
+  lf_print("DEBUG: Session key acquired on the federate side");
+}
+
+/**
+ * Sends a key refresh message to the peer: 1 byte msg_type followed by the 8-byte pending
+ * key ID. Used in both directions of the handshake:
+ *   Federate -> RTI: called with MSG_TYPE_SST_KEY_REFRESH_REQUEST to start a key rotation.
+ *   RTI -> Federate: called with MSG_TYPE_SST_KEY_ACK to confirm the new key is accepted.
+ */
+
+void send_key_refresh_request(net_abstraction_t net_abs, unsigned char msg_type){
+  LF_ASSERT_NON_NULL(net_abs);
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  
+  unsigned char buffer[1+SESSION_KEY_ID_SIZE];
+  buffer[0] = msg_type;
+  memcpy(&buffer[1], priv->pending_key.key_id, SESSION_KEY_ID_SIZE);
+
+  int result = write_to_net_close_on_error(net_abs, 9, buffer);
+  LF_PRINT_DEBUG("Result: %d", result);
+}
+
+/**
+ * Called on the RTI side in handle_key_refresh_request() when a MSG_TYPE_SST_KEY_REFRESH_REQUEST
+ * arrives. The federate has already fetched the new key from the auth server and sent its ID;
+ * this function retrieves the matching key from the RTI's SST context and stores it as
+ * pending_key.
+ */
+void fetch_pending_session_key(net_abstraction_t net_abs, unsigned char* key_id){
+  LF_ASSERT_NON_NULL(net_abs);
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  session_key_list_t* existing = init_empty_session_key_list();
+  session_key_t* new_key = get_session_key_by_ID(key_id, priv->sst_ctx, existing);
+  if(new_key != NULL){
+    priv->pending_key = *new_key;
+  }
+
+  free_session_key_list_t(existing);
+
+}
+
+/**
+ * Called by handle_rti_session_key_ack() on the federate side to confirm the key ID in the
+ * RTI's ACK refers to the same key that was requested. Returns false if they don't match.
+ */
+bool verify_pending_key_id(net_abstraction_t net_abs, unsigned char* key_id){
+  LF_ASSERT_NON_NULL(net_abs);
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  return memcmp(priv->pending_key.key_id, key_id, SESSION_KEY_ID_SIZE) == 0;
+}
+
+/**
+ * Replaces the active session key with pending_key and resets both sequence counters to zero
+ * so encryption restarts cleanly with the new key. Called on the federate side in
+ * handle_rti_session_key_ack() and on the RTI side in handle_key_refresh_request(), after
+ * both sides have confirmed the key ID matches.
+ */
+void swap_to_pending_key(net_abstraction_t net_abs){
+  LF_ASSERT_NON_NULL(net_abs);
+  sst_priv_t* priv = (sst_priv_t *)net_abs;
+  priv->session_ctx->s_key = priv->pending_key;
+  priv->session_ctx->received_seq_num = 0;
+  priv->session_ctx->sent_seq_num = 0;
 }

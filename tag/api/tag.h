@@ -307,6 +307,14 @@ instant_t lf_time_physical_elapsed(void);
 instant_t lf_time_start(void);
 
 /**
+ * Return the tag at which the execution effectively started.
+ * Most of the time, this will default to {.time = start_time, .microstep: 0}.
+ * When the reactor is a transient federate, however, the value will be different.
+ * @return A tag.
+ */
+tag_t lf_tag_start_effective(void);
+
+/**
  * @brief For user-friendly reporting of time values, the buffer length required.
  * @ingroup API
  *
@@ -358,5 +366,21 @@ size_t lf_readable_time(char* buffer, instant_t time);
  * @return The number of characters written (not counting the null terminator).
  */
 size_t lf_comma_separated_time(char* buffer, instant_t time);
+
+/**
+ * @brief Parse a time value and units from strings, producing a time in nanoseconds.
+ * @ingroup API
+ *
+ * Recognized unit strings (case-sensitive, prefix match):
+ * "nsec" or "ns", "usec" or "us", "msec" or "ms",
+ * "sec" or "s" or "second", "min" or "minute",
+ * "hour", "day", "week".
+ *
+ * @param time_str A string representing a numeric time value (e.g., "500").
+ * @param units_str A string representing the time units (e.g., "msec").
+ * @param result Pointer to store the resulting time in nanoseconds.
+ * @return 0 on success, -1 if the time value is invalid, -2 if the units are invalid.
+ */
+int lf_time_parse(const char* time_str, const char* units_str, interval_t* result);
 
 #endif // TAG_H
