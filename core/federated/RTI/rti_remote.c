@@ -246,6 +246,9 @@ static void send_upstream_connected_locked(federate_info_t* destination, federat
   if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_UPSTREAM_CONNECTED_LENGTH, buffer)) {
     lf_print_warning("RTI: Failed to send upstream connected message to federate %d.", destination->enclave.id);
   }
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_UPSTREAM_CONNECTED, destination->enclave.id, NULL);
+  }
 }
 
 /**
@@ -261,6 +264,9 @@ static void send_upstream_disconnected_locked(federate_info_t* destination, fede
   encode_uint16(disconnected->enclave.id, &buffer[1]);
   if (write_to_socket_close_on_error(&destination->socket, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
     lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.", disconnected->enclave.id);
+  }
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_UPSTREAM_DISCONNECTED, destination->enclave.id, NULL);
   }
 }
 

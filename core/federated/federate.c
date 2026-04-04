@@ -971,6 +971,7 @@ static void handle_upstream_connected_message(void) {
   read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
                                  "Failed to read upstream connected message from RTI.");
   uint16_t connected = extract_uint16(buffer);
+  tracepoint_federate_from_rti(receive_UPSTREAM_CONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that upstream federate %d has connected", connected);
   // Mark the upstream as connected.
   for (size_t i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
@@ -990,6 +991,7 @@ static void handle_upstream_disconnected_message(void) {
   read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
                                  "Failed to read upstream disconnected message from RTI.");
   uint16_t disconnected = extract_uint16(buffer);
+  tracepoint_federate_from_rti(receive_UPSTREAM_DISCONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that upstream federate %d has disconnected", disconnected);
   // Mark the upstream as disconnected.
   for (size_t i = 0; i < _lf_zero_delay_cycle_action_table_size; i++) {
