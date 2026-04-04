@@ -2078,9 +2078,21 @@ void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient) {
     write_to_socket_fail_on_error(&socket_id, federation_id_length, (unsigned char*)federation_metadata.federation_id,
                                   NULL, "Failed to send federation id to federate %d.", remote_federate_id);
 
-    read_from_socket_fail_on_error(&socket_id, 1, (unsigned char*)buffer,
-                                   "Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.",
-                                   remote_federate_id);
+    // For transient outbound connections, a connection reset from the remote side
+    // (e.g. macOS resets the TCP connection if the accept loop hasn't run yet) is
+    // a soft error: the RTI will resend MSG_TYPE_OUTBOUND_CONNECTED when the transient
+    // is ready. Using the non-fatal read here prevents a spurious fatal exit on macOS.
+    int ack_read_failed = read_from_socket_close_on_error(&socket_id, 1, (unsigned char*)buffer);
+    if (ack_read_failed) {
+      if (is_transient) {
+        lf_print_warning("Failed to read MSG_TYPE_ACK from transient federate %d. Connection may have been reset. "
+                         "Will retry when RTI notifies reconnection.",
+                         remote_federate_id);
+        return;
+      }
+      lf_print_error_and_exit("Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.",
+                              remote_federate_id);
+    }
     if (buffer[0] != MSG_TYPE_ACK) {
       // Get the error code.
       read_from_socket_fail_on_error(&socket_id, 1, (unsigned char*)buffer,
