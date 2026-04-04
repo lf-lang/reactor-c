@@ -783,8 +783,8 @@
  * Upon receiving this, the upstream federate should query the RTI for the downstream's
  * address and establish (or re-establish) the outbound P2P connection.
  */
-#define MSG_TYPE_DOWNSTREAM_CONNECTED 30
-#define MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH (1 + sizeof(uint16_t))
+#define MSG_TYPE_OUTBOUND_CONNECTED 30
+#define MSG_TYPE_OUTBOUND_CONNECTED_LENGTH (1 + sizeof(uint16_t))
 
 /**
  * A message that informs an upstream federate that a transient federate downstream of it
@@ -792,8 +792,8 @@
  * Upon receiving this, the upstream federate should close its outbound P2P connection
  * to the downstream.
  */
-#define MSG_TYPE_DOWNSTREAM_DISCONNECTED 31
-#define MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
+#define MSG_TYPE_OUTBOUND_DISCONNECTED 31
+#define MSG_TYPE_OUTBOUND_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
 
 /**
  * Byte sent by the RTI ordering the federate to stop. Upon receiving the message,

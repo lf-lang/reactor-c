@@ -110,7 +110,7 @@ typedef struct federate_instance_t {
    * reveals the remote federate's type. Used by mark_inputs_known_absent()
    * to avoid permanently stamping FOREVER_TAG on ports whose source may rejoin.
    */
-  bool inbound_p2p_is_transient[NUMBER_OF_FEDERATES];
+  bool inbound_p2p_connection_is_transient[NUMBER_OF_FEDERATES];
 
   /**
    * An array that holds the socket descriptors for outbound direct
@@ -295,7 +295,7 @@ extern lf_cond_t lf_port_status_changed;
 // Public functions (in alphabetical order)
 
 /**
- * @brief Connect to the federate with the specified id.
+ * @brief Connect to the federate with the specified id, based if it is transient or not.
  * @ingroup Federated
  *
  * The established connection will then be used in functions such as lf_send_tagged_message()
