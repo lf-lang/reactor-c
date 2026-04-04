@@ -16,15 +16,16 @@
 #include <arpa/inet.h>  // inet_ntop & inet_pton
 #include <netdb.h>      // Defines getaddrinfo(), freeaddrinfo() and struct addrinfo.
 #include <netinet/in.h> // Defines struct sockaddr_in
+#include <stdio.h>      // Defines strerror()
+#include <string.h>     // Defines memset(), strnlen(), strncmp(), strncpy()
 #include <sys/socket.h>
 #include <unistd.h> // Defines read(), write(), and close()
-#include <string.h> // Defines memset(), strnlen(), strncmp(), strncpy()
-#include <stdio.h>  // Defines strerror()
 
 #include <assert.h>
 #include <errno.h>   // Defined perror(), errno
 #include <strings.h> // Defines bzero().
 
+#include "api/schedule.h"
 #include "clock-sync.h"
 #include "federate.h"
 #include "net_common.h"
@@ -32,13 +33,12 @@
 #include "reactor.h"
 #include "reactor_common.h"
 #include "reactor_threaded.h"
-#include "api/schedule.h"
 #include "scheduler.h"
 #include "tracepoint.h"
 
 #ifdef FEDERATED_AUTHENTICATED
-#include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC-based authentication of federates.
+#include <openssl/rand.h> // For secure random number generation.
 #endif
 
 // Global variables defined in tag.c:
@@ -267,7 +267,8 @@ static void update_last_known_status_on_input_ports(tag_t tag, environment_t* en
  * @param env The top-level environment, whose mutex is assumed to be held.
  * @param tag The tag on which the latest status of the specified network input port is known.
  * @param port_id The port ID.
- * @param warn If true, print a warning if the tag is less than the last known status tag of the port.
+ * @param warn If true, print a warning if the tag is less than the last known status tag of the
+ * port.
  */
 static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id, bool warn) {
   if (lf_tag_compare(tag, env->current_tag) < 0)
@@ -303,7 +304,8 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
 }
 
 /**
- * @brief Mark all the input ports connected to the given federate as known to be absent until FOREVER.
+ * @brief Mark all the input ports connected to the given federate as known to be absent until
+ * FOREVER.
  *
  * This does nothing if the federate is not using decentralized coordination.
  * This function acquires the mutex on the top-level environment.
@@ -365,8 +367,8 @@ static void update_last_known_status_on_action(environment_t* env, lf_action_bas
     tag = env->current_tag;
   trigger_t* input_port_trigger = action->trigger;
   if (lf_tag_compare(tag, input_port_trigger->last_known_status_tag) > 0) {
-    LF_PRINT_LOG("Updating the last known status tag of port for upstream absent transient federate from " PRINTF_TAG
-                 " to " PRINTF_TAG ".",
+    LF_PRINT_LOG("Updating the last known status tag of port for upstream absent transient "
+                 "federate from " PRINTF_TAG " to " PRINTF_TAG ".",
                  input_port_trigger->last_known_status_tag.time - lf_time_start(),
                  input_port_trigger->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
     input_port_trigger->last_known_status_tag = tag;
@@ -462,7 +464,8 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
  * cycles, where processing at a tag must be able to begin before all messages have arrived
  * at that tag. This returns true if the following conditions are all true:
  *
- * 1. the first reaction triggered has a level >= MLAA (a port is or will be blocked on this trigger);
+ * 1. the first reaction triggered has a level >= MLAA (a port is or will be blocked on this
+ * trigger);
  * 2. the intended_tag is equal to the current tag of the environment;
  * 3. the intended_tag is greater than the last_tag of the trigger;
  * 4. the intended_tag is greater than the last_known_status_tag of the trigger;
@@ -647,7 +650,8 @@ static int handle_tagged_message(int* socket, int fed_id) {
     element_count = length / element_size;
     if (length % element_size != 0) {
       // Log a warning if the payload size is not an exact multiple of element_size.
-      lf_print_warning("Received message for port %d with payload length %zu bytes not a multiple of element_size %zu; "
+      lf_print_warning("Received message for port %d with payload length %zu bytes not a multiple "
+                       "of element_size %zu; "
                        "truncating to %zu elements.",
                        port_id, (size_t)length, element_size, element_count);
     }
@@ -683,8 +687,8 @@ static int handle_tagged_message(int* socket, int fed_id) {
 
     tag_t actual_tag = intended_tag;
 #ifdef FEDERATED_DECENTRALIZED
-    // For tardy messages in decentralized coordination, we need to figure out what the actual tag will be.
-    // (Centralized coordination errors out with tardy messages).
+    // For tardy messages in decentralized coordination, we need to figure out what the actual tag
+    // will be. (Centralized coordination errors out with tardy messages).
     if (lf_tag_compare(intended_tag, env->current_tag) <= 0) {
       // Message is tardy.
       actual_tag = env->current_tag;
@@ -1033,8 +1037,8 @@ static void handle_outbound_connected_message(void) {
   tracepoint_federate_from_rti(receive_OUTBOUND_CONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that outbound transient federate %d has connected.", remote_federate_id);
 
-  // 
-  lf_connect_to_federate(remote_federate_id, true); 
+  //
+  lf_connect_to_federate(remote_federate_id, true);
 }
 
 /**
@@ -1080,9 +1084,8 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // consume the queued MSG_TYPE_TIMESTAMP bytes, causing a fatal "Unexpected reply of type 2".
   // Fix: read and save each downstream federate ID, then call lf_connect_to_federate() for
   // each one only after MSG_TYPE_TIMESTAMP has been received and the loop has exited.
-  uint16_t pending_downstream_ids[_fed.number_of_outbound_p2p_transients > 0
-                                       ? _fed.number_of_outbound_p2p_transients
-                                       : 1];
+  uint16_t
+      pending_downstream_ids[_fed.number_of_outbound_p2p_transients > 0 ? _fed.number_of_outbound_p2p_transients : 1];
   size_t num_pending_downstream = 0;
 
   while (true) {
@@ -1117,7 +1120,8 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
                                        "Failed to read outbound connected federate ID.");
         tracepoint_federate_from_rti(receive_OUTBOUND_CONNECTED, _lf_my_fed_id, NULL);
         uint16_t remote_federate_id = extract_uint16(id_buf);
-        LF_PRINT_DEBUG("Deferring P2P connection to downstream transient federate %d until after start time is received.",
+        LF_PRINT_DEBUG("Deferring P2P connection to downstream transient federate %d until after "
+                       "start time is received.",
                        remote_federate_id);
         if (num_pending_downstream < _fed.number_of_outbound_p2p_transients) {
           pending_downstream_ids[num_pending_downstream++] = remote_federate_id;
@@ -1223,7 +1227,8 @@ static void handle_tag_advance_grant(void) {
 
 #ifdef FEDERATED_DECENTRALIZED
 /**
- * @brief Return true if there is an input port among those with a given STAA whose status is unknown.
+ * @brief Return true if there is an input port among those with a given STAA whose status is
+ * unknown.
  *
  * @param staa_elem A record of all input port actions.
  */
@@ -1294,11 +1299,11 @@ static void* update_ports_from_staa_offsets(void* args) {
     tag_t tag_when_started_waiting = lf_tag(env);
     for (size_t i = 0; i < staa_lst_size; ++i) {
       staa_t* staa_elem = staa_lst[i];
-      // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
-      // The list is sorted in increasing order of adjusted STAA offsets.
-      // We need to add the lf_fed_STA_offset to the wait time and guard against overflow.
-      // Skip this if the current tag is the dynamically determined stop time
-      // (due to a call to lf_request_stop()).  This is indicated by a stop_tag with microstep greater than 0.
+      // The staa_elem is adjusted in the code generator to have subtracted the delay on the
+      // connection. The list is sorted in increasing order of adjusted STAA offsets. We need to add
+      // the lf_fed_STA_offset to the wait time and guard against overflow. Skip this if the current
+      // tag is the dynamically determined stop time (due to a call to lf_request_stop()).  This is
+      // indicated by a stop_tag with microstep greater than 0.
       interval_t wait_time = 0;
       if (lf_tag_compare(env->current_tag, env->stop_tag) != 0 || env->stop_tag.microstep == 0) {
         wait_time = lf_time_add(staa_elem->STAA, lf_fed_STA_offset);
@@ -1330,10 +1335,10 @@ static void* update_ports_from_staa_offsets(void* args) {
           }
           /* Possibly useful for debugging:
           tag_t current_tag = lf_tag(env);
-          LF_PRINT_DEBUG("**** (update thread) Assuming absent! " PRINTF_TAG, current_tag.time - lf_time_start(),
-          current_tag.microstep); LF_PRINT_DEBUG("**** (update thread) Lag is " PRINTF_TIME, current_tag.time -
-          lf_time_physical()); LF_PRINT_DEBUG("**** (update thread) Wait until time is " PRINTF_TIME,
-          wait_until_time - lf_time_start());
+          LF_PRINT_DEBUG("**** (update thread) Assuming absent! " PRINTF_TAG, current_tag.time -
+          lf_time_start(), current_tag.microstep); LF_PRINT_DEBUG("**** (update thread) Lag is "
+          PRINTF_TIME, current_tag.time - lf_time_physical()); LF_PRINT_DEBUG("**** (update thread)
+          Wait until time is " PRINTF_TIME, wait_until_time - lf_time_start());
           */
 
           // Mark input ports absent.
@@ -1547,7 +1552,8 @@ static void handle_stop_granted_message() {
 
     // Sanity check.
     if (lf_tag_compare(received_stop_tag, env[i].current_tag) <= 0) {
-      lf_print_error("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current "
+      lf_print_error("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this "
+                     "federate's current "
                      "tag " PRINTF_TAG ". "
                      "Stopping at the next microstep instead.",
                      env[i].current_tag.time - start_time, env[i].current_tag.microstep);
@@ -1822,7 +1828,7 @@ static void* listen_to_rti_TCP(void* args) {
       break;
     case MSG_TYPE_OUTBOUND_DISCONNECTED:
       handle_outbound_disconnected_message();
-      break;  
+      break;
     case MSG_TYPE_CLOCK_SYNC_T1:
     case MSG_TYPE_CLOCK_SYNC_T4:
       lf_print_error("Federate %d received unexpected clock sync message from RTI on TCP socket.", _lf_my_fed_id);
@@ -1970,7 +1976,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient) {
   struct in_addr host_ip_addr;
   instant_t start_connect = lf_time_physical();
   // If the remote federate if oersistent, iterate until we get a valid port number from the RTI,
-  // If not, execute only once, as a request registration. 
+  // If not, execute only once, as a request registration.
   while (port == -1 && !_lf_termination_executed) {
     buffer[0] = MSG_TYPE_ADDRESS_QUERY;
     // NOTE: Sending messages in little endian.
@@ -2018,8 +2024,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient) {
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
       lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
     } else if (port == -1 && is_transient) {
-      // For transient federates, we only execute once, as a request registration. If the RTI does not reply 
-      // with a valid port number, we treat it normally and return.
+      // For transient federates, we only execute once, as a request registration. If the RTI does
+      // not reply with a valid port number, we treat it normally and return.
       return;
     }
   }
@@ -2282,9 +2288,8 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   // Allocate memory to store thread IDs.
   _fed.inbound_socket_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (!_lf_termination_executed) {
-    // Case where all inbound connections are to persistent federates 
-    if (received_federates == _fed.number_of_inbound_p2p_connections && 
-    _fed.number_of_inbound_p2p_transients == 0) {
+    // Case where all inbound connections are to persistent federates
+    if (received_federates == _fed.number_of_inbound_p2p_connections && _fed.number_of_inbound_p2p_transients == 0) {
       break;
     }
     // Wait for an incoming connection request.
@@ -2391,7 +2396,8 @@ void lf_latest_tag_confirmed(tag_t tag_to_send) {
   }
   _lf_get_environments(&env);
   if (!env->need_to_send_LTC) {
-    LF_PRINT_LOG("Skip sending Latest Tag Confirmed (LTC) to the RTI because there was no tagged message with the "
+    LF_PRINT_LOG("Skip sending Latest Tag Confirmed (LTC) to the RTI because there was no tagged "
+                 "message with the "
                  "tag " PRINTF_TAG " that this federate has received.",
                  tag_to_send.time - start_time, tag_to_send.microstep);
     return;
@@ -2460,7 +2466,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
     lf_print_error("lf_send_message: Unsupported message type (%d).", message_type);
     return -1;
   }
-  
+
   // If there are outbound transients, check whether the destination is one of them.
   // If it is and its socket is shut, gracefully skip the send.
   if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.sockets_for_outbound_p2p_connections[federate] < 0) {
@@ -2533,7 +2539,8 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received.",
                      _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
 
-      // In case a downstream federate needs the NET of this tag or has not received any DNET, send NET.
+      // In case a downstream federate needs the NET of this tag or has not received any DNET, send
+      // NET.
       if (!_fed.received_any_DNET ||
           (lf_tag_compare(_fed.last_DNET, tag) < 0 && lf_tag_compare(_fed.last_DNET, _fed.last_sent_NET) >= 0)) {
         send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
@@ -2636,9 +2643,10 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       return tag;
     }
 
-    // This federate should repeatedly advance its tag to ensure downstream federates can make progress.
-    // Before advancing to the next tag, we need to wait some time so that we don't overwhelm the network and the
-    // RTI. That amount of time will be no greater than ADVANCE_MESSAGE_INTERVAL in the future.
+    // This federate should repeatedly advance its tag to ensure downstream federates can make
+    // progress. Before advancing to the next tag, we need to wait some time so that we don't
+    // overwhelm the network and the RTI. That amount of time will be no greater than
+    // ADVANCE_MESSAGE_INTERVAL in the future.
     LF_PRINT_DEBUG("Waiting for physical time to elapse or an event on the event queue.");
 
     instant_t wait_until_time_ns = lf_time_physical() + ADVANCE_MESSAGE_INTERVAL;
@@ -2764,7 +2772,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     // Only print a warning if the destination is a known outbound transient.
     lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
     return 0;
-  } 
+  }
 
   size_t buffer_head = 0;
   // First byte is the message type.
@@ -2982,9 +2990,9 @@ instant_t lf_wait_until_time(tag_t tag) {
   // Do not add the STA if the tag is the starting tag.
   if (tag.time != start_time || tag.microstep != 0u) {
 
-    // Apply the STA to the logical time, but only if at least one network input port is not known up to this tag.
-    // Subtract one microstep because it is sufficient to commit to a tag if the input ports are known
-    // up to one microstep earlier.
+    // Apply the STA to the logical time, but only if at least one network input port is not known
+    // up to this tag. Subtract one microstep because it is sufficient to commit to a tag if the
+    // input ports are known up to one microstep earlier.
     if (tag.microstep > 0) {
       tag.microstep--;
     } else {

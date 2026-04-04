@@ -8,11 +8,11 @@
  * @author Edward A. Lee
  * @author Anirudh Rengarajsm
  *
- * This file defines the core data structures and functions used in federated Lingua Franca programs.
- * It includes the federate instance structure that tracks the state of a federate, including its
- * connections to the RTI and other federates, message handling, and coordination mechanisms.
- * The file also provides functions for managing these connections, sending and receiving messages,
- * and handling various aspects of federated execution.
+ * This file defines the core data structures and functions used in federated Lingua Franca
+ * programs. It includes the federate instance structure that tracks the state of a federate,
+ * including its connections to the RTI and other federates, message handling, and coordination
+ * mechanisms. The file also provides functions for managing these connections, sending and
+ * receiving messages, and handling various aspects of federated execution.
  */
 
 #ifndef FEDERATE_H
@@ -20,11 +20,11 @@
 
 #include <stdbool.h>
 
-#include "tag.h"
-#include "lf_types.h"
 #include "environment.h"
+#include "lf_types.h"
 #include "low_level_platform.h"
 #include "socket_common.h"
+#include "tag.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)
@@ -531,9 +531,10 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  * @brief Send a tagged message to the specified port of the specified federate.
  * @ingroup Federated
  *
- * The tag will be the current tag of the specified environment delayed by the specified additional_delay.
- * If the delayed tag falls after the timeout time, then the message is not sent and -1 is returned.
- * The caller can reuse or free the memory storing the message after this returns.
+ * The tag will be the current tag of the specified environment delayed by the specified
+ * additional_delay. If the delayed tag falls after the timeout time, then the message is not sent
+ * and -1 is returned. The caller can reuse or free the memory storing the message after this
+ * returns.
  *
  * If the message fails to send (e.g. the socket connection is broken), then the
  * response depends on the message_type.  For MSG_TYPE_TAGGED_MESSAGE, the message is
@@ -600,7 +601,8 @@ void lf_spawn_staa_thread(void);
 void lf_stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
- * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex lock.
+ * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex
+ * lock.
  * @ingroup Federated
  *
  * @param level The level to which we would like to advance.

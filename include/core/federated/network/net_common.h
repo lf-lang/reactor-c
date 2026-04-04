@@ -174,9 +174,9 @@
  *  request). When the RTI has gathered all the stop tags
  *  from federates (that are still connected), it will decide on a common stop tag
  *  which is the maximum of the seen stop tag and answer with a MSG_TYPE_STOP_GRANTED. The federate
- *  sending the MSG_TYPE_STOP_REQUEST and federates sending the MSG_TYPE_STOP_REQUEST_REPLY will freeze
- *  the advancement of tag until they receive the MSG_TYPE_STOP_GRANTED message, in which
- *  case they might continue their execution until the stop tag has been reached.
+ *  sending the MSG_TYPE_STOP_REQUEST and federates sending the MSG_TYPE_STOP_REQUEST_REPLY will
+ * freeze the advancement of tag until they receive the MSG_TYPE_STOP_GRANTED message, in which case
+ * they might continue their execution until the stop tag has been reached.
  *
  */
 
@@ -193,7 +193,8 @@
 #define FED_COM_BUFFER_SIZE 256u
 
 /**
- * @brief Time that a federate waits before asking the RTI again for the port and IP address of a federate.
+ * @brief Time that a federate waits before asking the RTI again for the port and IP address of a
+ * federate.
  * @ingroup Federated
  *
  * The federate repeatedly sends an MSG_TYPE_ADDRESS_QUERY message after the RTI responds that it
