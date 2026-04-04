@@ -920,6 +920,7 @@ static void handle_federate_failed(federate_info_t* my_fed) {
   my_fed->enclave.next_event = FOREVER_TAG;
 
   shutdown_net(my_fed->net, false);
+  my_fed->net = NULL;
 
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
@@ -959,6 +960,7 @@ static void handle_federate_resign(federate_info_t* my_fed) {
   my_fed->enclave.next_event = FOREVER_TAG;
 
   shutdown_net(my_fed->net, true);
+  my_fed->net = NULL;
 
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
@@ -990,6 +992,7 @@ void* federate_info_thread_TCP(void* fed) {
       // Nothing more to do. Close the network abstraction and exit.
       // Prevent multiple threads from closing the same network abstraction at the same time.
       shutdown_net(my_fed->net, false);
+      my_fed->net = NULL;
       // FIXME: We need better error handling here, but do not stop execution here.
       break;
     }
@@ -1054,6 +1057,7 @@ void send_reject(net_abstraction_t net_abs, unsigned char error_code) {
   }
   // Close the network abstraction without reading until EOF.
   shutdown_net(net_abs, false);
+  net_abs = NULL;
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
@@ -1423,6 +1427,7 @@ void lf_connect_to_federates(net_abstraction_t rti_net) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
         // Close the network abstraction without reading until EOF.
         shutdown_net(fed_net, false);
+        fed_net = NULL;
         // Ignore the federate that failed authentication.
         i--;
         continue;
@@ -1491,6 +1496,7 @@ void* respond_to_erroneous_connections(void* nothing) {
     }
     // Close the network abstraction without reading until EOF.
     shutdown_net(fed_net, false);
+    fed_net = NULL;
   }
   return NULL;
 }
@@ -1554,6 +1560,7 @@ void wait_for_federates() {
   // so that the accept() call in respond_to_erroneous_connections returns.
   // That thread should then check rti->all_federates_exited and it should exit.
   shutdown_net(rti_remote->rti_net, false);
+  rti_remote->rti_net = NULL;
 
   if (rti_remote->socket_descriptor_UDP > 0) {
     // UDP only uses sockets.

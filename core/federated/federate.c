@@ -1518,11 +1518,13 @@ static void* listen_to_rti_net(void* args) {
     if (read_failed < 0) {
       lf_print_error("Connection to the RTI was closed by the RTI with an error. Considering this a soft error.");
       shutdown_net(_fed.net_to_RTI, false);
+      _fed.net_to_RTI = NULL;
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
       lf_print_info("Connection to the RTI closed with an EOF.");
       shutdown_net(_fed.net_to_RTI, false);
+      _fed.net_to_RTI = NULL;
       return NULL;
     }
     switch (buffer[0]) {
@@ -2032,6 +2034,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         write_to_net(net, 2, response);
       }
       shutdown_net(net, false);
+      net = NULL;
       continue;
     }
 
@@ -2052,6 +2055,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         write_to_net(net, 2, response);
       }
       shutdown_net(net, false);
+      net = NULL;
       continue;
     }
 
