@@ -1,7 +1,7 @@
 /**
  * @file net_util.h
  * @brief Network utility functions for Lingua Franca programs.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @author Edward A. Lee
  * @author Soroush Bateni
@@ -30,22 +30,18 @@
 #include "low_level_platform.h"
 #include "tag.h"
 
-#ifdef FEDERATED
-#include "socket_common.h"
-#endif
-
 #define HOST_LITTLE_ENDIAN 1
 #define HOST_BIG_ENDIAN 2
 
 /**
  * @brief Return true (1) if the host is big endian. Otherwise, return false.
- * @ingroup Federated
+ * @ingroup Network
  */
 int host_is_big_endian(void);
 
 /**
  * @brief Write the specified data as a sequence of bytes starting at the specified address.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This encodes the data in little-endian order (lowest order byte first).
  * @param data The data to write.
@@ -55,7 +51,7 @@ void encode_int64(int64_t data, unsigned char* buffer);
 
 /**
  * @brief Write the specified data as a sequence of bytes starting at the specified address.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This encodes the data in little-endian order (lowest order byte first).
  * This works for int32_t.
@@ -66,7 +62,7 @@ void encode_int32(int32_t data, unsigned char* buffer);
 
 /**
  * @brief Write the specified data as a sequence of bytes starting at the specified address.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This encodes the data in little-endian order (lowest order byte first).
  * This works for uint32_t.
@@ -77,7 +73,7 @@ void encode_uint32(uint32_t data, unsigned char* buffer);
 
 /**
  * @brief Write the specified data as a sequence of bytes starting at the specified address.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This encodes the data in little-endian order (lowest order byte first).
  * @param data The data to write.
@@ -87,7 +83,7 @@ void encode_uint16(uint16_t data, unsigned char* buffer);
 
 /**
  * @brief If this host is little endian, then reverse the order of the bytes of the argument.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Otherwise, return the argument unchanged.
  * This can be used to convert the argument to network order (big endian) and then back again.
@@ -101,7 +97,7 @@ int32_t swap_bytes_if_big_endian_int32(int32_t src);
 
 /**
  * @brief If this host is little endian, then reverse the order of the bytes of the argument.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Otherwise, return the argument unchanged.
  * This can be used to convert the argument to network order (big endian) and then back again.
@@ -113,7 +109,7 @@ int64_t swap_bytes_if_big_endian_int64(int64_t src);
 
 /**
  * @brief If this host is little endian, then reverse the order of the bytes of the argument.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Otherwise, return the argument unchanged.
  * This can be used to convert the argument to network order (big endian) and then back again.
@@ -127,7 +123,7 @@ uint16_t swap_bytes_if_big_endian_uint16(uint16_t src);
 
 /**
  * @brief This will swap the order of the bytes if this machine is big endian.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @param bytes The address of the start of the sequence of bytes.
  */
@@ -135,7 +131,7 @@ int32_t extract_int32(unsigned char* bytes);
 
 /**
  * @brief This will swap the order of the bytes if this machine is big endian.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @param bytes The address of the start of the sequence of bytes.
  */
@@ -143,7 +139,7 @@ int64_t extract_int64(unsigned char* bytes);
 
 /**
  * @brief Extract an uint16_t from the specified byte sequence.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This will swap the order of the bytes if this machine is big endian.
  * @param bytes The address of the start of the sequence of bytes.
@@ -154,7 +150,7 @@ uint16_t extract_uint16(unsigned char* bytes);
 
 /**
  * @brief Extract the core header information that all messages between federates share.
- * @ingroup Federated
+ * @ingroup Network
  *
  * The core header information is two bytes with the ID of the destination port,
  * two bytes with the ID of the destination federate, and four bytes with the length of the message.
@@ -168,7 +164,7 @@ void extract_header(unsigned char* buffer, uint16_t* port_id, uint16_t* federate
 
 /**
  * @brief Extract the timed header information for timed messages between federates.
- * @ingroup Federated
+ * @ingroup Network
  *
  * This is two bytes with the ID of the destination port, two bytes with the ID of the destination
  * federate, four bytes with the length of the message, eight bytes with a timestamp, and four bytes with a microstep.
@@ -182,7 +178,7 @@ void extract_timed_header(unsigned char* buffer, uint16_t* port_id, uint16_t* fe
 
 /**
  * @brief Extract tag information from buffer.
- * @ingroup Federated
+ * @ingroup Network
  *
  * The tag is transmitted as a 64-bit (8 byte) signed integer for time and a 32-bit (4 byte) unsigned integer for
  * microstep.
@@ -193,7 +189,7 @@ tag_t extract_tag(unsigned char* buffer);
 
 /**
  * @brief Encode tag information into buffer.
- * @ingroup Federated
+ * @ingroup Network
  *
  * Buffer must have been allocated externally.
  * @param buffer The buffer to encode into.
@@ -203,7 +199,7 @@ void encode_tag(unsigned char* buffer, tag_t tag);
 
 /**
  * @brief A helper struct for passing rti_addr information between lf_parse_rti_addr and extract_rti_addr_info
- * @ingroup Federated
+ * @ingroup Network
  *
  */
 typedef struct rti_addr_info_t {
@@ -217,7 +213,7 @@ typedef struct rti_addr_info_t {
 
 /**
  * @brief Check whether str matches regex.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @param str The string to check.
  * @param regex The regex to check against.
@@ -227,7 +223,7 @@ bool match_regex(const char* str, char* regex);
 
 /**
  * @brief Check whether port is valid.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @param port The port to check.
  * @return true if valid, false otherwise.
@@ -236,7 +232,7 @@ bool validate_port(char* port);
 
 /**
  * @brief Check whether host is valid.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @param host The host to check.
  * @return true if valid, false otherwise.
@@ -245,7 +241,7 @@ bool validate_host(const char* host);
 
 /**
  * @brief Check whether user is valid.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @param user The user to check.
  * @return true if valid, false otherwise.
@@ -254,7 +250,7 @@ bool validate_user(const char* user);
 
 /**
  * @brief Extract one match group from the rti_addr regex .
- * @ingroup Federated
+ * @ingroup Network
  *
  * @param rti_addr The rti_addr to extract from.
  * @param dest The destination to store the match group.
@@ -269,7 +265,7 @@ bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, siz
 
 /**
  * @brief Extract match groups from the rti_addr regex.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @param rti_addr The rti_addr to extract from.
  * @param rti_addr_strs The array of rti_addr strings to store the match groups.
@@ -286,7 +282,7 @@ bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti
 
 /**
  * @brief Extract the host, port and user from rti_addr.
- * @ingroup Federated
+ * @ingroup Network
  *
  * @param rti_addr The rti_addr to extract from.
  * @param rti_addr_info The rti_addr_info into which to store the extracted information.
