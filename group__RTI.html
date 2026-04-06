@@ -199,7 +199,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga1ffcd0bc844a81aa45cfaa4e1e697ef1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a latest tag confirmed (LTC) message.  <br /></td></tr>
 <tr class="memitem:gad68a1cbfc6299b091b8f7b0e97f8bb5b" id="r_gad68a1cbfc6299b091b8f7b0e97f8bb5b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gad68a1cbfc6299b091b8f7b0e97f8bb5b">handle_next_event_tag</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed)</td></tr>
 <tr class="memdesc:gad68a1cbfc6299b091b8f7b0e97f8bb5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a next event tag (NET) message.  <br /></td></tr>
-<tr class="memitem:gad69c4cb2041a1a262bce829c49ae9246" id="r_gad69c4cb2041a1a262bce829c49ae9246"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gad69c4cb2041a1a262bce829c49ae9246">handle_physical_clock_sync_message</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *my_fed, <a class="el" href="group__Federated.html#ga54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type)</td></tr>
+<tr class="memitem:gad69c4cb2041a1a262bce829c49ae9246" id="r_gad69c4cb2041a1a262bce829c49ae9246"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gad69c4cb2041a1a262bce829c49ae9246">handle_physical_clock_sync_message</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *my_fed, socket_type_t socket_type)</td></tr>
 <tr class="memdesc:gad69c4cb2041a1a262bce829c49ae9246"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle clock synchronization T3 messages from federates.  <br /></td></tr>
 <tr class="memitem:ga307edbac9eb75981db9dc7c0fcfc73e6" id="r_ga307edbac9eb75981db9dc7c0fcfc73e6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga307edbac9eb75981db9dc7c0fcfc73e6">handle_port_absent_message</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *sending_federate, unsigned char *buffer)</td></tr>
 <tr class="memdesc:ga307edbac9eb75981db9dc7c0fcfc73e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a port absent message being received rom a federate via the RIT.  <br /></td></tr>
@@ -229,8 +229,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gab38455d4faf77b4d86dcd77976afe1f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the node is in a cycle (possibly a zero-delay cycle).  <br /></td></tr>
 <tr class="memitem:ga94101c5bfb54d670a8f47f448e351a34" id="r_ga94101c5bfb54d670a8f47f448e351a34"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ga94101c5bfb54d670a8f47f448e351a34">is_in_zero_delay_cycle</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *node)</td></tr>
 <tr class="memdesc:ga94101c5bfb54d670a8f47f448e351a34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the node is in a zero-delay cycle.  <br /></td></tr>
-<tr class="memitem:ga52a9225745a4b229aee86fcc4617b904" id="r_ga52a9225745a4b229aee86fcc4617b904"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga52a9225745a4b229aee86fcc4617b904">lf_connect_to_federates</a> (int socket_descriptor)</td></tr>
-<tr class="memdesc:ga52a9225745a4b229aee86fcc4617b904"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for one incoming connection request from each federate, and, upon receiving it, create a thread to communicate with that federate.  <br /></td></tr>
+<tr class="memitem:ga14c897c9da2160d4aceff4751822eced" id="r_ga14c897c9da2160d4aceff4751822eced"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga14c897c9da2160d4aceff4751822eced">lf_connect_to_federates</a> (net_abstraction_t rti_net)</td></tr>
+<tr class="memdesc:ga14c897c9da2160d4aceff4751822eced"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for one incoming connection request from each federate, and, upon receiving it, create a thread to communicate with that federate.  <br /></td></tr>
 <tr class="memitem:ga06003604b6defab443bdfe34f3ab17ee" id="r_ga06003604b6defab443bdfe34f3ab17ee"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ga06003604b6defab443bdfe34f3ab17ee">lf_get_downstream_of</a> (int enclave_id, uint16_t **result)</td></tr>
 <tr class="memdesc:ga06003604b6defab443bdfe34f3ab17ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the array of ids of enclaves directly downstream of the specified enclave.  <br /></td></tr>
 <tr class="memitem:gaaba4ae9dd32581f9f34a7a81d9c7791c" id="r_gaaba4ae9dd32581f9f34a7a81d9c7791c"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gaaba4ae9dd32581f9f34a7a81d9c7791c">lf_get_upstream_delay_of</a> (int enclave_id, <a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> **result)</td></tr>
@@ -259,12 +259,12 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga48640596070ecfb23f94532363b5cd6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify the local RTI of a next event tag (NET).  <br /></td></tr>
 <tr class="memitem:gaf921c9092b09500768f94e41b3a7c8f4" id="r_gaf921c9092b09500768f94e41b3a7c8f4"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gaf921c9092b09500768f94e41b3a7c8f4">rti_update_other_net_locked</a> (<a class="el" href="structenclave__info__t.html">enclave_info_t</a> *src, <a class="el" href="structenclave__info__t.html">enclave_info_t</a> *target, <a class="el" href="structtag__t.html">tag_t</a> net)</td></tr>
 <tr class="memdesc:gaf921c9092b09500768f94e41b3a7c8f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify the local RTI to update the next event tag (NET) of a target enclave.  <br /></td></tr>
-<tr class="memitem:ga5b16bd2ead60426e3ace71eca1cfede5" id="r_ga5b16bd2ead60426e3ace71eca1cfede5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga5b16bd2ead60426e3ace71eca1cfede5">send_physical_clock</a> (unsigned char message_type, <a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed, <a class="el" href="group__Federated.html#ga54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type)</td></tr>
+<tr class="memitem:ga5b16bd2ead60426e3ace71eca1cfede5" id="r_ga5b16bd2ead60426e3ace71eca1cfede5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga5b16bd2ead60426e3ace71eca1cfede5">send_physical_clock</a> (unsigned char message_type, <a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed, socket_type_t socket_type)</td></tr>
 <tr class="memdesc:ga5b16bd2ead60426e3ace71eca1cfede5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take a snapshot of the physical clock time and send it to federate fed_id.  <br /></td></tr>
-<tr class="memitem:gac1d01420f22f3dc5dbdef49ffebdb443" id="r_gac1d01420f22f3dc5dbdef49ffebdb443"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gac1d01420f22f3dc5dbdef49ffebdb443">send_reject</a> (int *socket_id, unsigned char error_code)</td></tr>
-<tr class="memdesc:gac1d01420f22f3dc5dbdef49ffebdb443"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a MSG_TYPE_REJECT message to the specified socket and close the socket.  <br /></td></tr>
-<tr class="memitem:ga6cc1fe69c154d09d88de1f1c06eb4b0d" id="r_ga6cc1fe69c154d09d88de1f1c06eb4b0d"><td class="memItemLeft">int32_t&#160;</td><td class="memItemRight"><a class="el" href="#ga6cc1fe69c154d09d88de1f1c06eb4b0d">start_rti_server</a> (uint16_t port)</td></tr>
-<tr class="memdesc:ga6cc1fe69c154d09d88de1f1c06eb4b0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the socket server for the runtime infrastructure (RTI) and return the socket descriptor.  <br /></td></tr>
+<tr class="memitem:ga614f81fe705224534d84b97254030fa1" id="r_ga614f81fe705224534d84b97254030fa1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga614f81fe705224534d84b97254030fa1">send_reject</a> (net_abstraction_t net_abs, unsigned char error_code)</td></tr>
+<tr class="memdesc:ga614f81fe705224534d84b97254030fa1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a MSG_TYPE_REJECT message to the specified channel and close the channel.  <br /></td></tr>
+<tr class="memitem:gadfcb2fedc086ab63276bfc442efa488d" id="r_gadfcb2fedc086ab63276bfc442efa488d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gadfcb2fedc086ab63276bfc442efa488d">start_rti_server</a> ()</td></tr>
+<tr class="memdesc:gadfcb2fedc086ab63276bfc442efa488d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the socket server for the runtime infrastructure (RTI).  <br /></td></tr>
 <tr class="memitem:gaf849510938f837c74cfe8f843cb7dcb2" id="r_gaf849510938f837c74cfe8f843cb7dcb2"><td class="memItemLeft"><a class="el" href="structtag__advance__grant__t.html">tag_advance_grant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#gaf849510938f837c74cfe8f843cb7dcb2">tag_advance_grant_if_safe</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *e)</td></tr>
 <tr class="memdesc:gaf849510938f837c74cfe8f843cb7dcb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether the specified scheduling node is eligible for a tag advance grant, (TAG) and, if so, return the details.  <br /></td></tr>
 <tr class="memitem:ga13560f0cae54155219f4d8d9c487b0ef" id="r_ga13560f0cae54155219f4d8d9c487b0ef"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga13560f0cae54155219f4d8d9c487b0ef">tracepoint_rti_from_federate</a> (<a class="el" href="group__Tracing.html#gab02e9e69539d60297cedb38c2193a453">trace_event_t</a> event_type, int fed_id, <a class="el" href="structtag__t.html">tag_t</a> *tag)</td></tr>
@@ -279,12 +279,12 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga21533a3d64de78b3766016c2166460c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the next event tag of an scheduling node.  <br /></td></tr>
 <tr class="memitem:ga7f44f474f50286c4ba8c0ebac254bb28" id="r_ga7f44f474f50286c4ba8c0ebac254bb28"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga7f44f474f50286c4ba8c0ebac254bb28">usage</a> (int argc, const char *argv[])</td></tr>
 <tr class="memdesc:ga7f44f474f50286c4ba8c0ebac254bb28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print a usage message.  <br /></td></tr>
-<tr class="memitem:ga005cb43e8e6c7795c8f0db27e2424475" id="r_ga005cb43e8e6c7795c8f0db27e2424475"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga005cb43e8e6c7795c8f0db27e2424475">wait_for_federates</a> (int socket_descriptor)</td></tr>
-<tr class="memdesc:ga005cb43e8e6c7795c8f0db27e2424475"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the runtime infrastructure (RTI) interaction with the federates and wait for the federates to exit.  <br /></td></tr>
+<tr class="memitem:ga54b6796240cd61f06bb111f6f29e2997" id="r_ga54b6796240cd61f06bb111f6f29e2997"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga54b6796240cd61f06bb111f6f29e2997">wait_for_federates</a> ()</td></tr>
+<tr class="memdesc:ga54b6796240cd61f06bb111f6f29e2997"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the runtime infrastructure (RTI) interaction with the federates and wait for the federates to exit.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Functions for the runtime infrastructure for federated execution. </p>
-<p>This group contains functions for the runtime infrastructure for federated execution. The message types and protocols are defined in <a class="el" href="net__common_8h.html" title="net_common.h">net_common.h</a>. </p>
+<p>This group contains functions for the runtime infrastructure for federated execution. The message types and protocols are defined in net_common.h. </p>
 </div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
 <a id="ga0066544a32ab71d5601142354230452b" name="ga0066544a32ab71d5601142354230452b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga0066544a32ab71d5601142354230452b">&#9670;&#160;</a></span>MAX_TIME_FOR_REPLY_TO_STOP_REQUEST</h2>
@@ -834,9 +834,9 @@ Functions</h2></td></tr>
 <p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
 
 <p>Handle address advertisement messages (. </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__Federated.html#gae004cb4e5add42afe5483f6706e11d35" title="Byte identifying a message advertising the port for the TCP connection server of a federate.">MSG_TYPE_ADDRESS_ADVERTISEMENT</a> in <a class="el" href="net__common_8h.html" title="Common message types and definitions for federated Lingua Franca programs.">net_common.h</a>).</dd></dl>
+<dl class="section see"><dt>See also</dt><dd>MSG_TYPE_ADDRESS_ADVERTISEMENT in net_common.h).</dd></dl>
 <p>The federate is expected to send its server port number as the next byte. The RTI will keep a record of this number in the .server_port field of the _RTI.federates[federate_id] array of structs.</p>
-<p>The server_hostname and server_ip_addr fields are assigned in <a class="el" href="#ga52a9225745a4b229aee86fcc4617b904" title="Wait for one incoming connection request from each federate, and, upon receiving it,...">lf_connect_to_federates()</a> upon accepting the socket from the remote federate.</p>
+<p>The server_hostname and server_ip_addr fields are assigned in <a class="el" href="#ga14c897c9da2160d4aceff4751822eced" title="Wait for one incoming connection request from each federate, and, upon receiving it,...">lf_connect_to_federates()</a> upon accepting the socket from the remote federate.</p>
 <p>This function assumes the caller does not hold the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -865,7 +865,7 @@ Functions</h2></td></tr>
 <p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
 
 <p>Handle address query messages. </p>
-<p>This function reads the body of a MSG_TYPE_ADDRESS_QUERY (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html" title="Common message types and definitions for federated Lingua Franca programs.">net_common.h</a>) message which is the requested destination federate ID and replies with the stored port value for the socket server of that federate. The port values are initialized to -1. If no <a class="el" href="group__Federated.html#gae004cb4e5add42afe5483f6706e11d35" title="Byte identifying a message advertising the port for the TCP connection server of a federate.">MSG_TYPE_ADDRESS_ADVERTISEMENT</a> message has been received from the destination federate, the <a class="el" href="group__RTI.html" title="Functions for the runtime infrastructure for federated execution.">RTI</a> will simply reply with -1 for the port. The sending federate is responsible for checking back with the <a class="el" href="group__RTI.html" title="Functions for the runtime infrastructure for federated execution.">RTI</a> after a period of time.</dd></dl>
+<p>This function reads the body of a MSG_TYPE_ADDRESS_QUERY (</p><dl class="section see"><dt>See also</dt><dd>net_common.h) message which is the requested destination federate ID and replies with the stored port value for the socket server of that federate. The port values are initialized to -1. If no MSG_TYPE_ADDRESS_ADVERTISEMENT message has been received from the destination federate, the <a class="el" href="group__RTI.html" title="Functions for the runtime infrastructure for federated execution.">RTI</a> will simply reply with -1 for the port. The sending federate is responsible for checking back with the <a class="el" href="group__RTI.html" title="Functions for the runtime infrastructure for federated execution.">RTI</a> after a period of time.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fed_id</td><td>The federate sending a MSG_TYPE_ADDRESS_QUERY message. </td></tr>
@@ -894,7 +894,7 @@ Functions</h2></td></tr>
 
 <p>Handle a latest tag confirmed (LTC) message. </p>
 <p>This function assumes the caller does not hold the mutex.</p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__Federated.html#gada47c9f6736992a3df380526d87089f9" title="Byte identifying a latest tag confirmed (LTC) message sent by a federate to the RTI.">MSG_TYPE_LATEST_TAG_CONFIRMED</a> in <a class="el" href="net__common_8h.html" title="net_common.h">net_common.h</a>.</dd></dl>
+<dl class="section see"><dt>See also</dt><dd>MSG_TYPE_LATEST_TAG_CONFIRMED in net_common.h.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fed</td><td>The federate that has completed a logical tag. </td></tr>
@@ -923,7 +923,7 @@ Functions</h2></td></tr>
 
 <p>Handle a next event tag (NET) message. </p>
 <p>This function assumes the caller does not hold the mutex.</p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__Federated.html#gaf662a6a84cd64cddad92e20e26af877e" title="Byte identifying a next event tag (NET) message sent from a federate in centralized coordination.">MSG_TYPE_NEXT_EVENT_TAG</a> in <a class="el" href="net__common_8h.html" title="net_common.h">net_common.h</a>.</dd></dl>
+<dl class="section see"><dt>See also</dt><dd>MSG_TYPE_NEXT_EVENT_TAG in net_common.h.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fed</td><td>The federate sending a NET message. </td></tr>
@@ -947,7 +947,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="group__Federated.html#ga54c375e3893ff5969d20df65b90c8335">socket_type_t</a></td>          <td class="paramname"><span class="paramname"><em>socket_type</em></span>&#160;)</td>
+          <td class="paramtype">socket_type_t</td>          <td class="paramname"><span class="paramname"><em>socket_type</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1375,8 +1375,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ga52a9225745a4b229aee86fcc4617b904" name="ga52a9225745a4b229aee86fcc4617b904"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga52a9225745a4b229aee86fcc4617b904">&#9670;&#160;</a></span>lf_connect_to_federates()</h2>
+<a id="ga14c897c9da2160d4aceff4751822eced" name="ga14c897c9da2160d4aceff4751822eced"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga14c897c9da2160d4aceff4751822eced">&#9670;&#160;</a></span>lf_connect_to_federates()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1384,7 +1384,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void lf_connect_to_federates </td>
           <td>(</td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>socket_descriptor</em></span></td><td>)</td>
+          <td class="paramtype">net_abstraction_t</td>          <td class="paramname"><span class="paramname"><em>rti_net</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1396,7 +1396,7 @@ Functions</h2></td></tr>
 <p>Return when all federates have connected.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">socket_descriptor</td><td>The socket on which to accept connections. </td></tr>
+    <tr><td class="paramname">rti_net</td><td>The rti's network abstraction on which to accept connections. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1887,7 +1887,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="group__Federated.html#ga54c375e3893ff5969d20df65b90c8335">socket_type_t</a></td>          <td class="paramname"><span class="paramname"><em>socket_type</em></span>&#160;)</td>
+          <td class="paramtype">socket_type_t</td>          <td class="paramname"><span class="paramname"><em>socket_type</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1898,7 +1898,7 @@ Functions</h2></td></tr>
 <p>This version assumes the caller holds the mutex lock.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">message_type</td><td>The type of the clock sync message (see <a class="el" href="net__common_8h.html" title="net_common.h">net_common.h</a>). </td></tr>
+    <tr><td class="paramname">message_type</td><td>The type of the clock sync message (see net_common.h). </td></tr>
     <tr><td class="paramname">fed</td><td>The federate to send the physical time to. </td></tr>
     <tr><td class="paramname">socket_type</td><td>The socket type (TCP or UDP). </td></tr>
   </table>
@@ -1907,8 +1907,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="gac1d01420f22f3dc5dbdef49ffebdb443" name="gac1d01420f22f3dc5dbdef49ffebdb443"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gac1d01420f22f3dc5dbdef49ffebdb443">&#9670;&#160;</a></span>send_reject()</h2>
+<a id="ga614f81fe705224534d84b97254030fa1" name="ga614f81fe705224534d84b97254030fa1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga614f81fe705224534d84b97254030fa1">&#9670;&#160;</a></span>send_reject()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1916,7 +1916,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void send_reject </td>
           <td>(</td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>socket_id</em></span>, </td>
+          <td class="paramtype">net_abstraction_t</td>          <td class="paramname"><span class="paramname"><em>net_abs</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1928,10 +1928,10 @@ Functions</h2></td></tr>
 
 <p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
 
-<p>Send a MSG_TYPE_REJECT message to the specified socket and close the socket. </p>
+<p>Send a MSG_TYPE_REJECT message to the specified channel and close the channel. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">socket_id</td><td>Pointer to the socket ID. </td></tr>
+    <tr><td class="paramname">net_abs</td><td>Pointer to the network abstraction. </td></tr>
     <tr><td class="paramname">error_code</td><td>An error code. </td></tr>
   </table>
   </dd>
@@ -1939,16 +1939,16 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ga6cc1fe69c154d09d88de1f1c06eb4b0d" name="ga6cc1fe69c154d09d88de1f1c06eb4b0d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6cc1fe69c154d09d88de1f1c06eb4b0d">&#9670;&#160;</a></span>start_rti_server()</h2>
+<a id="gadfcb2fedc086ab63276bfc442efa488d" name="gadfcb2fedc086ab63276bfc442efa488d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadfcb2fedc086ab63276bfc442efa488d">&#9670;&#160;</a></span>start_rti_server()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int32_t start_rti_server </td>
+          <td class="memname">int start_rti_server </td>
           <td>(</td>
-          <td class="paramtype">uint16_t</td>          <td class="paramname"><span class="paramname"><em>port</em></span></td><td>)</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1956,13 +1956,7 @@ Functions</h2></td></tr>
 
 <p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
 
-<p>Start the socket server for the runtime infrastructure (RTI) and return the socket descriptor. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">port</td><td>The port on which to listen for socket connections, or 0 to use the default port range. </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Start the socket server for the runtime infrastructure (RTI). </p>
 
 </div>
 </div>
@@ -2198,8 +2192,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ga005cb43e8e6c7795c8f0db27e2424475" name="ga005cb43e8e6c7795c8f0db27e2424475"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga005cb43e8e6c7795c8f0db27e2424475">&#9670;&#160;</a></span>wait_for_federates()</h2>
+<a id="ga54b6796240cd61f06bb111f6f29e2997" name="ga54b6796240cd61f06bb111f6f29e2997"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga54b6796240cd61f06bb111f6f29e2997">&#9670;&#160;</a></span>wait_for_federates()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2207,7 +2201,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void wait_for_federates </td>
           <td>(</td>
-          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>socket_descriptor</em></span></td><td>)</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -2216,12 +2210,6 @@ Functions</h2></td></tr>
 <p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
 
 <p>Start the runtime infrastructure (RTI) interaction with the federates and wait for the federates to exit. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">socket_descriptor</td><td>The socket descriptor returned by <a class="el" href="#ga6cc1fe69c154d09d88de1f1c06eb4b0d" title="Start the socket server for the runtime infrastructure (RTI) and return the socket descriptor.">start_rti_server()</a>. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>

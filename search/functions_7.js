@@ -8,8 +8,8 @@ var searchData=
   ['handle_5fport_5fabsent_5fmessage_5',['handle_port_absent_message',['../group__RTI.html#ga307edbac9eb75981db9dc7c0fcfc73e6',1,'rti_remote.h']]],
   ['handle_5fstop_5frequest_5fmessage_6',['handle_stop_request_message',['../group__RTI.html#ga41ca594227fe9bb62f67b21cc2e7b6d6',1,'rti_remote.h']]],
   ['handle_5fstop_5frequest_5freply_7',['handle_stop_request_reply',['../group__RTI.html#gac4d4e5a1df9c31133d942a6e50e4c163',1,'rti_remote.h']]],
-  ['handle_5ft1_5fclock_5fsync_5fmessage_8',['handle_T1_clock_sync_message',['../group__Federated.html#gace14df89540b56b069c6c619e8f37493',1,'clock-sync.h']]],
-  ['handle_5ft4_5fclock_5fsync_5fmessage_9',['handle_T4_clock_sync_message',['../group__Federated.html#ga1b35d21eda090ea4bf8a79f401dbdad0',1,'clock-sync.h']]],
+  ['handle_5ft1_5fclock_5fsync_5fmessage_8',['handle_T1_clock_sync_message',['../group__Federated.html#ga9a5e16b3705dd53c5a2e59a3acbf1edb',1,'clock-sync.h']]],
+  ['handle_5ft4_5fclock_5fsync_5fmessage_9',['handle_T4_clock_sync_message',['../group__Federated.html#gaed582f6b18142dab9c3e607f240d9f62',1,'clock-sync.h']]],
   ['handle_5ftimed_5fmessage_10',['handle_timed_message',['../group__RTI.html#ga9fca6a5c7e73b40db2f6ef6f50c7a112',1,'rti_remote.h']]],
   ['handle_5ftimestamp_11',['handle_timestamp',['../group__RTI.html#ga0a2eadb2f35483bc7ce62a5845110330',1,'rti_remote.h']]],
   ['hashmap_5ffree_12',['hashmap_free',['../group__Utilities.html#gafa5597a9582cc604eb0da7aac536ce4c',1,'hashmap.h']]],
@@ -27,6 +27,5 @@ var searchData=
   ['hashset_5fiterator_5fnext_24',['hashset_iterator_next',['../group__Utilities.html#ga1f8e715379e1c95db280451114056bd8',1,'hashset_itr.h']]],
   ['hashset_5fiterator_5fvalue_25',['hashset_iterator_value',['../group__Utilities.html#ga08d3680504ca63e10abbf03b115acb1b',1,'hashset_itr.h']]],
   ['hashset_5fnum_5fitems_26',['hashset_num_items',['../group__Utilities.html#ga8d4800d73d1a58ad953501d9035de5ec',1,'hashset.h']]],
-  ['hashset_5fremove_27',['hashset_remove',['../group__Utilities.html#ga5b0ad513d6e64cd754213b0103a094e0',1,'hashset.h']]],
-  ['host_5fis_5fbig_5fendian_28',['host_is_big_endian',['../group__Federated.html#gad791461950852eb074b90bc75156b413',1,'net_util.h']]]
+  ['hashset_5fremove_27',['hashset_remove',['../group__Utilities.html#ga5b0ad513d6e64cd754213b0103a094e0',1,'hashset.h']]]
 ];

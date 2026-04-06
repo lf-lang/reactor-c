@@ -38,7 +38,6 @@ var annotated_dup =
     [ "reaction_t", "structreaction__t.html", "structreaction__t" ],
     [ "reactor_mode_state_t", "structreactor__mode__state__t.html", "structreactor__mode__state__t" ],
     [ "reactor_mode_t", "structreactor__mode__t.html", "structreactor__mode__t" ],
-    [ "rti_addr_info_t", "structrti__addr__info__t.html", "structrti__addr__info__t" ],
     [ "rti_common_t", "structrti__common__t.html", "structrti__common__t" ],
     [ "rti_local_t", "structrti__local__t.html", "structrti__local__t" ],
     [ "rti_remote_t", "structrti__remote__t.html", "structrti__remote__t" ],

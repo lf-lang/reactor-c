@@ -100,16 +100,10 @@ $(function(){initNavTree('rti__remote_8h.html','',''); });
 
 <p>Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;sys/socket.h&gt;</code><br />
-<code>#include &lt;sys/types.h&gt;</code><br />
-<code>#include &lt;netinet/in.h&gt;</code><br />
-<code>#include &lt;arpa/inet.h&gt;</code><br />
-<code>#include &lt;unistd.h&gt;</code><br />
-<code>#include &lt;strings.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="rti__common_8h_source.html">rti_common.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="rti__common_8h_source.html">rti_common.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pqueue__tag_8h_source.html">pqueue_tag.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="socket__common_8h_source.html">socket_common.h</a>&quot;</code><br />
+<code>#include &quot;net_abstraction.h&quot;</code><br />
 </div>
 <p><a href="rti__remote_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -156,7 +150,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga1ffcd0bc844a81aa45cfaa4e1e697ef1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a latest tag confirmed (LTC) message.  <br /></td></tr>
 <tr class="memitem:gad68a1cbfc6299b091b8f7b0e97f8bb5b" id="r_gad68a1cbfc6299b091b8f7b0e97f8bb5b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#gad68a1cbfc6299b091b8f7b0e97f8bb5b">handle_next_event_tag</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed)</td></tr>
 <tr class="memdesc:gad68a1cbfc6299b091b8f7b0e97f8bb5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a next event tag (NET) message.  <br /></td></tr>
-<tr class="memitem:gad69c4cb2041a1a262bce829c49ae9246" id="r_gad69c4cb2041a1a262bce829c49ae9246"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#gad69c4cb2041a1a262bce829c49ae9246">handle_physical_clock_sync_message</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *my_fed, <a class="el" href="group__Federated.html#ga54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type)</td></tr>
+<tr class="memitem:gad69c4cb2041a1a262bce829c49ae9246" id="r_gad69c4cb2041a1a262bce829c49ae9246"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#gad69c4cb2041a1a262bce829c49ae9246">handle_physical_clock_sync_message</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *my_fed, socket_type_t socket_type)</td></tr>
 <tr class="memdesc:gad69c4cb2041a1a262bce829c49ae9246"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle clock synchronization T3 messages from federates.  <br /></td></tr>
 <tr class="memitem:ga307edbac9eb75981db9dc7c0fcfc73e6" id="r_ga307edbac9eb75981db9dc7c0fcfc73e6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga307edbac9eb75981db9dc7c0fcfc73e6">handle_port_absent_message</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *sending_federate, unsigned char *buffer)</td></tr>
 <tr class="memdesc:ga307edbac9eb75981db9dc7c0fcfc73e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a port absent message being received rom a federate via the RIT.  <br /></td></tr>
@@ -172,8 +166,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gab32a595d53f125832570251023d10c46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the federate with the specified ID.  <br /></td></tr>
 <tr class="memitem:ga0aefafd71cb0b057a604a04f1af61174" id="r_ga0aefafd71cb0b057a604a04f1af61174"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga0aefafd71cb0b057a604a04f1af61174">initialize_RTI</a> (<a class="el" href="structrti__remote__t.html">rti_remote_t</a> *rti)</td></tr>
 <tr class="memdesc:ga0aefafd71cb0b057a604a04f1af61174"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the _RTI instance.  <br /></td></tr>
-<tr class="memitem:ga52a9225745a4b229aee86fcc4617b904" id="r_ga52a9225745a4b229aee86fcc4617b904"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga52a9225745a4b229aee86fcc4617b904">lf_connect_to_federates</a> (int socket_descriptor)</td></tr>
-<tr class="memdesc:ga52a9225745a4b229aee86fcc4617b904"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for one incoming connection request from each federate, and, upon receiving it, create a thread to communicate with that federate.  <br /></td></tr>
+<tr class="memitem:ga14c897c9da2160d4aceff4751822eced" id="r_ga14c897c9da2160d4aceff4751822eced"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga14c897c9da2160d4aceff4751822eced">lf_connect_to_federates</a> (net_abstraction_t rti_net)</td></tr>
+<tr class="memdesc:ga14c897c9da2160d4aceff4751822eced"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for one incoming connection request from each federate, and, upon receiving it, create a thread to communicate with that federate.  <br /></td></tr>
 <tr class="memitem:ae0fda178667bc6cd94890a13316c285c" id="r_ae0fda178667bc6cd94890a13316c285c"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="memitem:aed2c25495b50b46780c6288e4370541e" id="r_aed2c25495b50b46780c6288e4370541e"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="memitem:ga80aaf4eeed3e2902f8fe9de80b45777d" id="r_ga80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (int argc, const char *argv[])</td></tr>
@@ -182,18 +176,18 @@ Functions</h2></td></tr>
 <tr class="memdesc:gad7d4392b21b300612a5239fbb1ffa274"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process command-line arguments related to clock synchronization.  <br /></td></tr>
 <tr class="memitem:gac6af5f2343ecf9ed87cdbebd98b94271" id="r_gac6af5f2343ecf9ed87cdbebd98b94271"><td class="memItemLeft">void *&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#gac6af5f2343ecf9ed87cdbebd98b94271">respond_to_erroneous_connections</a> (void *nothing)</td></tr>
 <tr class="memdesc:gac6af5f2343ecf9ed87cdbebd98b94271"><td class="mdescLeft">&#160;</td><td class="mdescRight">Thread to respond to new connections, which could be federates of other federations who are attempting to join the wrong federation.  <br /></td></tr>
-<tr class="memitem:ga5b16bd2ead60426e3ace71eca1cfede5" id="r_ga5b16bd2ead60426e3ace71eca1cfede5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga5b16bd2ead60426e3ace71eca1cfede5">send_physical_clock</a> (unsigned char message_type, <a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed, <a class="el" href="group__Federated.html#ga54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type)</td></tr>
+<tr class="memitem:ga5b16bd2ead60426e3ace71eca1cfede5" id="r_ga5b16bd2ead60426e3ace71eca1cfede5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga5b16bd2ead60426e3ace71eca1cfede5">send_physical_clock</a> (unsigned char message_type, <a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed, socket_type_t socket_type)</td></tr>
 <tr class="memdesc:ga5b16bd2ead60426e3ace71eca1cfede5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take a snapshot of the physical clock time and send it to federate fed_id.  <br /></td></tr>
-<tr class="memitem:gac1d01420f22f3dc5dbdef49ffebdb443" id="r_gac1d01420f22f3dc5dbdef49ffebdb443"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#gac1d01420f22f3dc5dbdef49ffebdb443">send_reject</a> (int *socket_id, unsigned char error_code)</td></tr>
-<tr class="memdesc:gac1d01420f22f3dc5dbdef49ffebdb443"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a MSG_TYPE_REJECT message to the specified socket and close the socket.  <br /></td></tr>
-<tr class="memitem:ga6cc1fe69c154d09d88de1f1c06eb4b0d" id="r_ga6cc1fe69c154d09d88de1f1c06eb4b0d"><td class="memItemLeft">int32_t&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga6cc1fe69c154d09d88de1f1c06eb4b0d">start_rti_server</a> (uint16_t port)</td></tr>
-<tr class="memdesc:ga6cc1fe69c154d09d88de1f1c06eb4b0d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the socket server for the runtime infrastructure (RTI) and return the socket descriptor.  <br /></td></tr>
+<tr class="memitem:ga614f81fe705224534d84b97254030fa1" id="r_ga614f81fe705224534d84b97254030fa1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga614f81fe705224534d84b97254030fa1">send_reject</a> (net_abstraction_t net_abs, unsigned char error_code)</td></tr>
+<tr class="memdesc:ga614f81fe705224534d84b97254030fa1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a MSG_TYPE_REJECT message to the specified channel and close the channel.  <br /></td></tr>
+<tr class="memitem:gadfcb2fedc086ab63276bfc442efa488d" id="r_gadfcb2fedc086ab63276bfc442efa488d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#gadfcb2fedc086ab63276bfc442efa488d">start_rti_server</a> ()</td></tr>
+<tr class="memdesc:gadfcb2fedc086ab63276bfc442efa488d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the socket server for the runtime infrastructure (RTI).  <br /></td></tr>
 <tr class="memitem:ga7190c8d1000afb0a5e8898011d041917" id="r_ga7190c8d1000afb0a5e8898011d041917"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga7190c8d1000afb0a5e8898011d041917">update_federate_next_event_tag_locked</a> (uint16_t federate_id, <a class="el" href="structtag__t.html">tag_t</a> next_event_tag)</td></tr>
 <tr class="memdesc:ga7190c8d1000afb0a5e8898011d041917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the next event tag of federate <span class="tt">federate_id</span>.  <br /></td></tr>
 <tr class="memitem:ga7f44f474f50286c4ba8c0ebac254bb28" id="r_ga7f44f474f50286c4ba8c0ebac254bb28"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga7f44f474f50286c4ba8c0ebac254bb28">usage</a> (int argc, const char *argv[])</td></tr>
 <tr class="memdesc:ga7f44f474f50286c4ba8c0ebac254bb28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print a usage message.  <br /></td></tr>
-<tr class="memitem:ga005cb43e8e6c7795c8f0db27e2424475" id="r_ga005cb43e8e6c7795c8f0db27e2424475"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga005cb43e8e6c7795c8f0db27e2424475">wait_for_federates</a> (int socket_descriptor)</td></tr>
-<tr class="memdesc:ga005cb43e8e6c7795c8f0db27e2424475"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the runtime infrastructure (RTI) interaction with the federates and wait for the federates to exit.  <br /></td></tr>
+<tr class="memitem:ga54b6796240cd61f06bb111f6f29e2997" id="r_ga54b6796240cd61f06bb111f6f29e2997"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__RTI.html#ga54b6796240cd61f06bb111f6f29e2997">wait_for_federates</a> ()</td></tr>
+<tr class="memdesc:ga54b6796240cd61f06bb111f6f29e2997"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the runtime infrastructure (RTI) interaction with the federates and wait for the federates to exit.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>

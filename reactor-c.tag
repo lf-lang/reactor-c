@@ -311,7 +311,6 @@
     <includes id="rti__common_8h" name="rti_common.h" local="yes" import="no" module="no" objc="no">rti_common.h</includes>
     <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
     <includes id="pqueue__tag_8h" name="pqueue_tag.h" local="yes" import="no" module="no" objc="no">pqueue_tag.h</includes>
-    <includes id="socket__common_8h" name="socket_common.h" local="yes" import="no" module="no" objc="no">socket_common.h</includes>
     <class kind="struct">federate_info_t</class>
     <class kind="struct">rti_remote_t</class>
     <member kind="define">
@@ -469,8 +468,8 @@
       <type>void</type>
       <name>lf_connect_to_federates</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga52a9225745a4b229aee86fcc4617b904</anchor>
-      <arglist>(int socket_descriptor)</arglist>
+      <anchor>ga14c897c9da2160d4aceff4751822eced</anchor>
+      <arglist>(net_abstraction_t rti_net)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -518,15 +517,15 @@
       <type>void</type>
       <name>send_reject</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>gac1d01420f22f3dc5dbdef49ffebdb443</anchor>
-      <arglist>(int *socket_id, unsigned char error_code)</arglist>
+      <anchor>ga614f81fe705224534d84b97254030fa1</anchor>
+      <arglist>(net_abstraction_t net_abs, unsigned char error_code)</arglist>
     </member>
     <member kind="function">
-      <type>int32_t</type>
+      <type>int</type>
       <name>start_rti_server</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga6cc1fe69c154d09d88de1f1c06eb4b0d</anchor>
-      <arglist>(uint16_t port)</arglist>
+      <anchor>gadfcb2fedc086ab63276bfc442efa488d</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -546,8 +545,8 @@
       <type>void</type>
       <name>wait_for_federates</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga005cb43e8e6c7795c8f0db27e2424475</anchor>
-      <arglist>(int socket_descriptor)</arglist>
+      <anchor>ga54b6796240cd61f06bb111f6f29e2997</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="variable">
       <type>bool</type>
@@ -957,15 +956,15 @@
       <type>int</type>
       <name>handle_T1_clock_sync_message</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gace14df89540b56b069c6c619e8f37493</anchor>
-      <arglist>(unsigned char *buffer, int socket, instant_t t2)</arglist>
+      <anchor>ga9a5e16b3705dd53c5a2e59a3acbf1edb</anchor>
+      <arglist>(unsigned char *buffer, void *socket_or_net, instant_t t2, socket_type_t socket_type)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>handle_T4_clock_sync_message</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga1b35d21eda090ea4bf8a79f401dbdad0</anchor>
-      <arglist>(unsigned char *buffer, int socket, instant_t r4)</arglist>
+      <anchor>gaed582f6b18142dab9c3e607f240d9f62</anchor>
+      <arglist>(unsigned char *buffer, void *socket_or_net, instant_t r4, socket_type_t socket_type)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -985,8 +984,8 @@
       <type>void</type>
       <name>synchronize_initial_physical_clock_with_rti</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga3eba5f95a19f86a70d9d11fd2c736dd1</anchor>
-      <arglist>(int *rti_socket_TCP)</arglist>
+      <anchor>ga81643c3ea545b727bba5c1e9623ca068</anchor>
+      <arglist>(net_abstraction_t rti_net)</arglist>
     </member>
   </compound>
   <compound kind="file">
@@ -997,7 +996,6 @@
     <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
     <includes id="environment_8h" name="environment.h" local="yes" import="no" module="no" objc="no">environment.h</includes>
     <includes id="low__level__platform_8h" name="low_level_platform.h" local="yes" import="no" module="no" objc="no">low_level_platform.h</includes>
-    <includes id="socket__common_8h" name="socket_common.h" local="yes" import="no" module="no" objc="no">socket_common.h</includes>
     <class kind="struct">federate_instance_t</class>
     <class kind="struct">federation_metadata_t</class>
     <class kind="struct">staa_t</class>
@@ -1140,8 +1138,8 @@
       <type>void</type>
       <name>lf_send_neighbor_structure_to_RTI</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga131226459d7dacc6068c0a6d1d9ebde1</anchor>
-      <arglist>(int socket_TCP_RTI)</arglist>
+      <anchor>gadd3ee252de10afabeca8110aadff2635</anchor>
+      <arglist>(net_abstraction_t)</arglist>
     </member>
     <member kind="function">
       <type>tag_t</type>
@@ -1222,9 +1220,9 @@
     </member>
     <member kind="variable">
       <type>lf_mutex_t</type>
-      <name>lf_outbound_socket_mutex</name>
+      <name>lf_outbound_net_mutex</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga1881fdaaffead81a8d2993121d9cd78f</anchor>
+      <anchor>ga11533680dc94241a7073fe9ff45900f4</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -1233,759 +1231,6 @@
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga4ea10c9ed824595585d91f37dbfd4364</anchor>
       <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="file">
-    <name>net_common.h</name>
-    <path>/Users/runner/work/reactor-c/reactor-c/include/core/federated/network/</path>
-    <filename>net__common_8h.html</filename>
-    <member kind="define">
-      <type>#define</type>
-      <name>ADDRESS_QUERY_RETRY_INTERVAL</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8ce563da4edbe9c4f7c1ccf35ad8694f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DELAY_START</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga4b8c713b515dba0c86d9205dc0caf4ed</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>ENCODE_STOP_GRANTED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8086398bfefdc0104767df037e59daa5</anchor>
-      <arglist>(buffer, time, microstep)</arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>ENCODE_STOP_REQUEST</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga3268a658c2cb5126be5284a86ad9bd62</anchor>
-      <arglist>(buffer, time, microstep)</arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>ENCODE_STOP_REQUEST_REPLY</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae06b33f7fcdc71f52eb0fcf81e07e4d6</anchor>
-      <arglist>(buffer, time, microstep)</arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>FED_COM_BUFFER_SIZE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gacc95612e1d2dbbdf34afe76d50e75223</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>FEDERATE_ID_IN_USE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae3bd830cd17cf0914b61d0516360abc1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>FEDERATE_ID_OUT_OF_RANGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5846fdcf4c92041f543b73e29e78aa21</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>FEDERATION_ID_DOES_NOT_MATCH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga653676d1f302fe08249af3dee78fa294</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>HMAC_DOES_NOT_MATCH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga51d08a784b4ee6463688a971d99d2944</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_ACK</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gad94567b2d2e277ddc1be0da9a92b09e7</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_ADDRESS_ADVERTISEMENT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae004cb4e5add42afe5483f6706e11d35</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_ADDRESS_QUERY</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5ac191bca25da16eca3e4f02d21172ef</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_ADDRESS_QUERY_REPLY</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaabe4cac3ef1d0834a99fa2532dfaa6ba</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_CLOCK_SYNC_CODED_PROBE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa13eface5080ad75bbd53abe919c80b6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_CLOCK_SYNC_T1</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaea37eff76ade1b2781a7e6298afb3a04</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_CLOCK_SYNC_T3</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga52a76e4cc36217a169f32d5adde590cc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_CLOCK_SYNC_T4</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae128056ab2af39988103856ee815d930</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gafb060091e032562cf32c0eb62340d309</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FAILED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf27674f627be1c469a529a995da5c074</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FED_IDS</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8e49ce0b1c3a58c881849ca4d0bae824</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FED_NONCE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga191b27bec42ab0370248fbc64cc9b860</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FED_RESPONSE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gacd7e1e07253e568044a204a1f82d36a1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_LATEST_TAG_CONFIRMED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gada47c9f6736992a3df380526d87089f9</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gac79b5228f132029285408a30a31a174e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_NEIGHBOR_STRUCTURE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga48ec489cb1543b161c262f4bee6c9598</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga77a9c1b741d7ca0f4e8d00a5b74ef91e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_NEXT_EVENT_TAG</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf662a6a84cd64cddad92e20e26af877e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_P2P_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga2b9f13f8df66448bf81ac5fe0774c124</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_P2P_SENDING_FED_ID</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gacd33bbab7bf74e5ac8bad3bd27145f8b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_P2P_TAGGED_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5c1256c8c62fbbcb1b16ea67d8f529fb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_PORT_ABSENT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gadb9610b1edbee4c85e194e391a6eeb74</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga9a9bb60d4df1ba581a29319850097cc2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_REJECT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga59a69d0685fdc2a216718f1efa083c4c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_RESIGN</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga9e19e307a4c3a9dbccea4f2539cd67dd</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_RTI_RESPONSE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga20f24b4b20547d44523120689afd9b98</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_GRANTED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaad37dd00423e88f213ca7d7d238bce2e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_GRANTED_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga76275384e9865f1f1ed32408c03d876a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_REQUEST</name>
-      <anchorfile>net__common_8h.html</anchorfile>
-      <anchor>a8588a57a3ae81bf33c740dfc57103a23</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_REQUEST_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa3ed75054ae1aaa64dafa6399f7a23cb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_REQUEST_REPLY</name>
-      <anchorfile>net__common_8h.html</anchorfile>
-      <anchor>adbe10e103635ee7ec4bca3226ccebc56</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_REQUEST_REPLY_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa62d9986e928cb5e872caa6a509cae6c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_TAG_ADVANCE_GRANT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga94fe2c510160682b2c0ffc00b35e0ad5</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_TAGGED_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga2922af172f2e95bc73bd0675a4107b3b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_TIMESTAMP</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga27db349e7460afc1758bf2eec95d7005</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_TIMESTAMP_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga3450aedd1ca1c368ed28ed2e859588ef</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_UDP_PORT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae2c2fdb5fbcc47750409348d37b0cd78</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>NONCE_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga6771c37605e49c8faae7898797f254b7</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>RTI_NOT_EXECUTED_WITH_AUTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae546b6c6176fe607616181e144364f2b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>SHA256_HMAC_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gabd435507a255ff2571133013bdf93bd2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>UNEXPECTED_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae2e1a44a10d4219f4645a4e99fee009c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>WRONG_SERVER</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5a6c87886a0136b58ae5bb1d627c7ae3</anchor>
-      <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="file">
-    <name>net_util.h</name>
-    <path>/Users/runner/work/reactor-c/reactor-c/include/core/federated/network/</path>
-    <filename>net__util_8h.html</filename>
-    <includes id="low__level__platform_8h" name="low_level_platform.h" local="yes" import="no" module="no" objc="no">low_level_platform.h</includes>
-    <includes id="tag_8h" name="tag.h" local="yes" import="no" module="no" objc="no">tag.h</includes>
-    <includes id="socket__common_8h" name="socket_common.h" local="yes" import="no" module="no" objc="no">socket_common.h</includes>
-    <class kind="struct">rti_addr_info_t</class>
-    <member kind="define">
-      <type>#define</type>
-      <name>HOST_BIG_ENDIAN</name>
-      <anchorfile>net__util_8h.html</anchorfile>
-      <anchor>a18c839c3ef122fe4ecc7b907ea688a97</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>HOST_LITTLE_ENDIAN</name>
-      <anchorfile>net__util_8h.html</anchorfile>
-      <anchor>ae0b024f7ee4bd875149b1a0a50c20b0a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="typedef">
-      <type>struct rti_addr_info_t</type>
-      <name>rti_addr_info_t</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf820f39ab52ce0a58d7ba739051b8f24</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_int32</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gafc6b3d0e0e777738422c11fa07b35e0f</anchor>
-      <arglist>(int32_t data, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_int64</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae233fa02382ed619a78b1c32e14a8657</anchor>
-      <arglist>(int64_t data, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_tag</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga7b5ae6582f28e14a37d50a2d243613c5</anchor>
-      <arglist>(unsigned char *buffer, tag_t tag)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_uint16</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gafad4dadc9bbc06596be44e7ecc4c7281</anchor>
-      <arglist>(uint16_t data, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_uint32</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga9b75c9d94d4f3d34d52f46c65cf950d4</anchor>
-      <arglist>(uint32_t data, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>extract_header</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga82060dae45e1c3b922005e56829c9814</anchor>
-      <arglist>(unsigned char *buffer, uint16_t *port_id, uint16_t *federate_id, size_t *length)</arglist>
-    </member>
-    <member kind="function">
-      <type>int32_t</type>
-      <name>extract_int32</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8f772b5761c6b74b4136db6ee021e6c5</anchor>
-      <arglist>(unsigned char *bytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>int64_t</type>
-      <name>extract_int64</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8decc0f4a38aa42fbc6ccfb029e3a061</anchor>
-      <arglist>(unsigned char *bytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>extract_match_group</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8ec38908b111a79943446bfbdec188f0</anchor>
-      <arglist>(const char *rti_addr, char *dest, regmatch_t group, size_t max_len, size_t min_len, const char *err_msg)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>extract_match_groups</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga50c7f94caa2a61bcba5f89535da07036</anchor>
-      <arglist>(const char *rti_addr, char **rti_addr_strs, bool **rti_addr_flags, regmatch_t *group_array, int *gids, size_t *max_lens, size_t *min_lens, const char **err_msgs)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>extract_rti_addr_info</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga0737fc3d45aae606811f57a16ad87208</anchor>
-      <arglist>(const char *rti_addr, rti_addr_info_t *rti_addr_info)</arglist>
-    </member>
-    <member kind="function">
-      <type>tag_t</type>
-      <name>extract_tag</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga9cd95311c2c29ce5bed1c44d5336584d</anchor>
-      <arglist>(unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>extract_timed_header</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8e2cc45fc8571af05bb05f4952d4cde5</anchor>
-      <arglist>(unsigned char *buffer, uint16_t *port_id, uint16_t *federate_id, size_t *length, tag_t *tag)</arglist>
-    </member>
-    <member kind="function">
-      <type>uint16_t</type>
-      <name>extract_uint16</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga1686d838d49741a6ff2ee65bd766a987</anchor>
-      <arglist>(unsigned char *bytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>host_is_big_endian</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gad791461950852eb074b90bc75156b413</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>match_regex</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga7a568c79c856e633f5f181dd21700b74</anchor>
-      <arglist>(const char *str, char *regex)</arglist>
-    </member>
-    <member kind="function">
-      <type>int32_t</type>
-      <name>swap_bytes_if_big_endian_int32</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaeaff8773e0cba7d0f8a6d03b8f0f7766</anchor>
-      <arglist>(int32_t src)</arglist>
-    </member>
-    <member kind="function">
-      <type>int64_t</type>
-      <name>swap_bytes_if_big_endian_int64</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa548ffc52c264f564127b80f63170c33</anchor>
-      <arglist>(int64_t src)</arglist>
-    </member>
-    <member kind="function">
-      <type>uint16_t</type>
-      <name>swap_bytes_if_big_endian_uint16</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga48fa075b3a868790da8fb303a397cd60</anchor>
-      <arglist>(uint16_t src)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>validate_host</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga0f6ec1479ffe28cc089fe6b13e675f0e</anchor>
-      <arglist>(const char *host)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>validate_port</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga841bec9ddc3fb61c2b615f5d512dc3f0</anchor>
-      <arglist>(char *port)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>validate_user</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga1285f4b0283c8e0c020e12e76a4426c2</anchor>
-      <arglist>(const char *user)</arglist>
-    </member>
-  </compound>
-  <compound kind="file">
-    <name>socket_common.h</name>
-    <path>/Users/runner/work/reactor-c/reactor-c/include/core/federated/network/</path>
-    <filename>socket__common_8h.html</filename>
-    <includes id="low__level__platform_8h" name="low_level_platform.h" local="yes" import="no" module="no" objc="no">low_level_platform.h</includes>
-    <member kind="define">
-      <type>#define</type>
-      <name>CONNECT_RETRY_INTERVAL</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gab2106828de539188aed925f592751c12</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>CONNECT_TIMEOUT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga252b2cb72531cb00ecd4d4db37a5a473</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DEFAULT_PORT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga16b710f592bf8f7900666392adc444dc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DELAY_BETWEEN_SOCKET_RETRIES</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga7b7cd916c6c027dc9ebdff449fb6edad</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MAX_NUM_PORT_ADDRESSES</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5dbc42b5857eb262a06aa04399475d16</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FAILED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf27674f627be1c469a529a995da5c074</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>NUMBER_OF_FEDERATES</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf58c457e08491f7cfd5a0a46940e11ad</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>PORT_BIND_RETRY_INTERVAL</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf11c9d6cd02e9e78e38a848cf75205cb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>PORT_BIND_RETRY_LIMIT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga04c08dc0b0733010f3190bf6df123433</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>TCP_TIMEOUT_TIME</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gab1edbb864391382835b9ad71408c5c53</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>UDP_TIMEOUT_TIME</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaac9f4a449d302b4f39e69a14b3a4c8d5</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="typedef">
-      <type>enum socket_type_t</type>
-      <name>socket_type_t</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga45bb50f52b617bc6a30719cbaafd075d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumeration">
-      <type></type>
-      <name>socket_type_t</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga54c375e3893ff5969d20df65b90c8335</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TCP</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gga54c375e3893ff5969d20df65b90c8335aa040cd7feeb588104634cdadf35abf1c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>UDP</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gga54c375e3893ff5969d20df65b90c8335adb542475cf9d0636e4225e216cee9ae6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>accept_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga3f3dfc2ccd62e181467f7a22ab5ebe49</anchor>
-      <arglist>(int socket, int rti_socket)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>connect_to_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5ac5b1b8bf1c832cbdd2f6cdbb769df8</anchor>
-      <arglist>(int sock, const char *hostname, int port)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>create_real_time_tcp_socket_errexit</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga10b0373c1cff0213b17cb7308949f0a2</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>create_server</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga94aaee169c4c822e4c9e6a73f59a6952</anchor>
-      <arglist>(uint16_t port, int *final_socket, uint16_t *final_port, socket_type_t sock_type, bool increment_port_on_retry)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>init_shutdown_mutex</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gadc2dc02aa0e242eab3574240e90984b4</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function">
-      <type>ssize_t</type>
-      <name>peek_from_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae4ba6b1361cd7c47e8a0eb70729d9636</anchor>
-      <arglist>(int socket, unsigned char *result)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>read_from_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa8f7af0d4004aa925499fecefa1ac6b8</anchor>
-      <arglist>(int socket, size_t num_bytes, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>read_from_socket_close_on_error</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga941fd71700b7646e6edbbb76db4f7bd2</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>read_from_socket_fail_on_error</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga46a44d92c24d3caadec0bc9e59a26361</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer, char *format,...)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>shutdown_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga365eba5b8b3f6445eeaffcb4435165c5</anchor>
-      <arglist>(int *socket, bool read_before_closing)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>write_to_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae8d4b83faeac37f665666429742813f9</anchor>
-      <arglist>(int socket, size_t num_bytes, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>write_to_socket_close_on_error</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf88884c303b81143ef5ab7af4683a66c</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>write_to_socket_fail_on_error</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gada8d9360bdf4e9d7f36bbfc7e682f06e</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer, lf_mutex_t *mutex, char *format,...)</arglist>
     </member>
   </compound>
   <compound kind="file">
@@ -3296,7 +2541,6 @@
     <path>/Users/runner/work/reactor-c/reactor-c/include/core/</path>
     <filename>tracepoint_8h.html</filename>
     <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
-    <includes id="net__common_8h" name="net_common.h" local="yes" import="no" module="no" objc="no">net_common.h</includes>
     <includes id="trace__types_8h" name="trace_types.h" local="yes" import="no" module="no" objc="no">trace_types.h</includes>
     <includes id="trace_8h" name="trace.h" local="yes" import="no" module="no" objc="no">trace.h</includes>
     <class kind="struct">trace_record_t</class>
@@ -6696,38 +5940,17 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>net_abstraction_t</type>
+      <name>net</name>
+      <anchorfile>structfederate__info__t.html</anchorfile>
+      <anchor>a8afb9d8bb911680499970b1de3fbdf93</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>bool</type>
       <name>requested_stop</name>
       <anchorfile>structfederate__info__t.html</anchorfile>
       <anchor>af1264d573e3ada0d716c64cfa4f26b36</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>char</type>
-      <name>server_hostname</name>
-      <anchorfile>structfederate__info__t.html</anchorfile>
-      <anchor>ac1a52d02c1f668f6421e31d4dd144d82</anchor>
-      <arglist>[INET_ADDRSTRLEN]</arglist>
-    </member>
-    <member kind="variable">
-      <type>struct in_addr</type>
-      <name>server_ip_addr</name>
-      <anchorfile>structfederate__info__t.html</anchorfile>
-      <anchor>aa9400fd6abe91530dcf2efb682aaeb15</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>int32_t</type>
-      <name>server_port</name>
-      <anchorfile>structfederate__info__t.html</anchorfile>
-      <anchor>adefac36562f7dfcc97f6e1138754f6ca</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>int</type>
-      <name>socket</name>
-      <anchorfile>structfederate__info__t.html</anchorfile>
-      <anchor>a4ecfa6d90654e5b3d46207453d3562e5</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -6763,17 +5986,17 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>lf_thread_t *</type>
+      <name>inbound_net_listeners</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a1362fc33bd9e33cde9349445431dfc9c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>lf_thread_t</type>
       <name>inbound_p2p_handling_thread_id</name>
       <anchorfile>structfederate__instance__t.html</anchorfile>
       <anchor>ab441abf042a2ff79099bdf2860aeb058</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>lf_thread_t *</type>
-      <name>inbound_socket_listeners</name>
-      <anchorfile>structfederate__instance__t.html</anchorfile>
-      <anchor>ac751250db764f954659deb15f1427044</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -6826,6 +6049,27 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>net_abstraction_t</type>
+      <name>net_for_inbound_p2p_connections</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a4ab5d26002d2de1b954eee6c5bafdf38</anchor>
+      <arglist>[NUMBER_OF_FEDERATES]</arglist>
+    </member>
+    <member kind="variable">
+      <type>net_abstraction_t</type>
+      <name>net_for_outbound_p2p_connections</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>abc66dce37557448ff93ecc4bdf329b76</anchor>
+      <arglist>[NUMBER_OF_FEDERATES]</arglist>
+    </member>
+    <member kind="variable">
+      <type>net_abstraction_t</type>
+      <name>net_to_RTI</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a434d15925fe4c0721a2c1685102ae823</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>size_t</type>
       <name>number_of_inbound_p2p_connections</name>
       <anchorfile>structfederate__instance__t.html</anchorfile>
@@ -6855,45 +6099,17 @@
     </member>
     <member kind="variable">
       <type>lf_thread_t</type>
-      <name>RTI_socket_listener</name>
+      <name>RTI_net_listener</name>
       <anchorfile>structfederate__instance__t.html</anchorfile>
-      <anchor>a5b6b4b5912a7bb7df1c8987f38e12004</anchor>
+      <anchor>a4e61aad7155ef98a682aeaa89dd04c14</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>int</type>
-      <name>server_port</name>
+      <type>net_abstraction_t</type>
+      <name>server_net</name>
       <anchorfile>structfederate__instance__t.html</anchorfile>
-      <anchor>a309c9672d657f20cd1d3661edc7d5179</anchor>
+      <anchor>a44bfdad9ab6659ca07fb6c3339971630</anchor>
       <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>int</type>
-      <name>server_socket</name>
-      <anchorfile>structfederate__instance__t.html</anchorfile>
-      <anchor>a20c5d19d5166ec82a09efe072c2f1b49</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>int</type>
-      <name>socket_TCP_RTI</name>
-      <anchorfile>structfederate__instance__t.html</anchorfile>
-      <anchor>aacdc19a638ccdc9fae494ce641f4cb04</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>int</type>
-      <name>sockets_for_inbound_p2p_connections</name>
-      <anchorfile>structfederate__instance__t.html</anchorfile>
-      <anchor>ac22a97892260d332da6f05194c280f9c</anchor>
-      <arglist>[1]</arglist>
-    </member>
-    <member kind="variable">
-      <type>int</type>
-      <name>sockets_for_outbound_p2p_connections</name>
-      <anchorfile>structfederate__instance__t.html</anchorfile>
-      <anchor>aa4fcfa96a7c2bfd33cf45ddc43ad3437</anchor>
-      <arglist>[1]</arglist>
     </member>
     <member kind="variable">
       <type>lf_thread_t</type>
@@ -8078,52 +7294,6 @@
     </member>
   </compound>
   <compound kind="struct">
-    <name>rti_addr_info_t</name>
-    <filename>structrti__addr__info__t.html</filename>
-    <member kind="variable">
-      <type>bool</type>
-      <name>has_host</name>
-      <anchorfile>structrti__addr__info__t.html</anchorfile>
-      <anchor>a73312cb4f806de3a9b23eb811861ac24</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>has_port</name>
-      <anchorfile>structrti__addr__info__t.html</anchorfile>
-      <anchor>a814382a63d0c415566268997e7e2c238</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>bool</type>
-      <name>has_user</name>
-      <anchorfile>structrti__addr__info__t.html</anchorfile>
-      <anchor>a66ce998dc61ba1e1a939c18cb79ae9af</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>char</type>
-      <name>rti_host_str</name>
-      <anchorfile>structrti__addr__info__t.html</anchorfile>
-      <anchor>ab67e59a55eda384237ee0c01b161808c</anchor>
-      <arglist>[256]</arglist>
-    </member>
-    <member kind="variable">
-      <type>char</type>
-      <name>rti_port_str</name>
-      <anchorfile>structrti__addr__info__t.html</anchorfile>
-      <anchor>a182bcc2f25e999e33b4065115287a6a0</anchor>
-      <arglist>[6]</arglist>
-    </member>
-    <member kind="variable">
-      <type>char</type>
-      <name>rti_user_str</name>
-      <anchorfile>structrti__addr__info__t.html</anchorfile>
-      <anchor>a3604fd6c5f95ce9afa7afcb188093ac8</anchor>
-      <arglist>[256]</arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
     <name>rti_common_t</name>
     <filename>structrti__common__t.html</filename>
     <member kind="variable">
@@ -8255,13 +7425,6 @@
     </member>
     <member kind="variable">
       <type>uint16_t</type>
-      <name>final_port_TCP</name>
-      <anchorfile>structrti__remote__t.html</anchorfile>
-      <anchor>af398be0ec31a58806d978a0670b59fac</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint16_t</type>
       <name>final_port_UDP</name>
       <anchorfile>structrti__remote__t.html</anchorfile>
       <anchor>a313ec8858bdf1eb12c8a24c17290afb2</anchor>
@@ -8282,10 +7445,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>int</type>
-      <name>socket_descriptor_TCP</name>
+      <type>net_abstraction_t</type>
+      <name>rti_net</name>
       <anchorfile>structrti__remote__t.html</anchorfile>
-      <anchor>a092fe7859e3ead8ad646a848ef6282e7</anchor>
+      <anchor>abf6767b1b9d02eb2f868900104dfd8c0</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -12088,13 +11251,9 @@
     <filename>group__Federated.html</filename>
     <file>clock-sync.h</file>
     <file>federate.h</file>
-    <file>net_common.h</file>
-    <file>net_util.h</file>
-    <file>socket_common.h</file>
     <class kind="struct">federate_instance_t</class>
     <class kind="struct">federation_metadata_t</class>
     <class kind="struct">lf_stat_ll</class>
-    <class kind="struct">rti_addr_info_t</class>
     <class kind="struct">socket_stat_t</class>
     <class kind="struct">staa_t</class>
     <member kind="define">
@@ -12120,107 +11279,9 @@
     </member>
     <member kind="define">
       <type>#define</type>
-      <name>ADDRESS_QUERY_RETRY_INTERVAL</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8ce563da4edbe9c4f7c1ccf35ad8694f</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
       <name>CLOCK_SYNC_GUARD_BAND</name>
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga0810a64801750ce9b148848c228c86e9</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>CONNECT_RETRY_INTERVAL</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gab2106828de539188aed925f592751c12</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>CONNECT_TIMEOUT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga252b2cb72531cb00ecd4d4db37a5a473</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DEFAULT_PORT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga16b710f592bf8f7900666392adc444dc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DELAY_BETWEEN_SOCKET_RETRIES</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga7b7cd916c6c027dc9ebdff449fb6edad</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DELAY_START</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga4b8c713b515dba0c86d9205dc0caf4ed</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>ENCODE_STOP_GRANTED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8086398bfefdc0104767df037e59daa5</anchor>
-      <arglist>(buffer, time, microstep)</arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>ENCODE_STOP_REQUEST</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga3268a658c2cb5126be5284a86ad9bd62</anchor>
-      <arglist>(buffer, time, microstep)</arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>ENCODE_STOP_REQUEST_REPLY</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae06b33f7fcdc71f52eb0fcf81e07e4d6</anchor>
-      <arglist>(buffer, time, microstep)</arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>FED_COM_BUFFER_SIZE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gacc95612e1d2dbbdf34afe76d50e75223</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>FEDERATE_ID_IN_USE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae3bd830cd17cf0914b61d0516360abc1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>FEDERATE_ID_OUT_OF_RANGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5846fdcf4c92041f543b73e29e78aa21</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>FEDERATION_ID_DOES_NOT_MATCH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga653676d1f302fe08249af3dee78fa294</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>HMAC_DOES_NOT_MATCH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga51d08a784b4ee6463688a971d99d2944</anchor>
       <arglist></arglist>
     </member>
     <member kind="define">
@@ -12249,335 +11310,6 @@
       <name>LF_CLOCK_SYNC_ON</name>
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>gaa9efe35bfc06d22220c852574c4a5feb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MAX_NUM_PORT_ADDRESSES</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5dbc42b5857eb262a06aa04399475d16</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_ACK</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gad94567b2d2e277ddc1be0da9a92b09e7</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_ADDRESS_ADVERTISEMENT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae004cb4e5add42afe5483f6706e11d35</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_ADDRESS_QUERY</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5ac191bca25da16eca3e4f02d21172ef</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_ADDRESS_QUERY_REPLY</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaabe4cac3ef1d0834a99fa2532dfaa6ba</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_CLOCK_SYNC_CODED_PROBE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa13eface5080ad75bbd53abe919c80b6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_CLOCK_SYNC_T1</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaea37eff76ade1b2781a7e6298afb3a04</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_CLOCK_SYNC_T3</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga52a76e4cc36217a169f32d5adde590cc</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_CLOCK_SYNC_T4</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae128056ab2af39988103856ee815d930</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gafb060091e032562cf32c0eb62340d309</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FAILED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf27674f627be1c469a529a995da5c074</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FAILED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf27674f627be1c469a529a995da5c074</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FED_IDS</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8e49ce0b1c3a58c881849ca4d0bae824</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FED_NONCE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga191b27bec42ab0370248fbc64cc9b860</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_FED_RESPONSE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gacd7e1e07253e568044a204a1f82d36a1</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_LATEST_TAG_CONFIRMED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gada47c9f6736992a3df380526d87089f9</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gac79b5228f132029285408a30a31a174e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_NEIGHBOR_STRUCTURE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga48ec489cb1543b161c262f4bee6c9598</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga77a9c1b741d7ca0f4e8d00a5b74ef91e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_NEXT_EVENT_TAG</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf662a6a84cd64cddad92e20e26af877e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_P2P_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga2b9f13f8df66448bf81ac5fe0774c124</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_P2P_SENDING_FED_ID</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gacd33bbab7bf74e5ac8bad3bd27145f8b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_P2P_TAGGED_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5c1256c8c62fbbcb1b16ea67d8f529fb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_PORT_ABSENT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gadb9610b1edbee4c85e194e391a6eeb74</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga9a9bb60d4df1ba581a29319850097cc2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_REJECT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga59a69d0685fdc2a216718f1efa083c4c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_RESIGN</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga9e19e307a4c3a9dbccea4f2539cd67dd</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_RTI_RESPONSE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga20f24b4b20547d44523120689afd9b98</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_GRANTED</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaad37dd00423e88f213ca7d7d238bce2e</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_GRANTED_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga76275384e9865f1f1ed32408c03d876a</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_REQUEST_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa3ed75054ae1aaa64dafa6399f7a23cb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_STOP_REQUEST_REPLY_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa62d9986e928cb5e872caa6a509cae6c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_TAG_ADVANCE_GRANT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga94fe2c510160682b2c0ffc00b35e0ad5</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_TAGGED_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga2922af172f2e95bc73bd0675a4107b3b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_TIMESTAMP</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga27db349e7460afc1758bf2eec95d7005</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_TIMESTAMP_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga3450aedd1ca1c368ed28ed2e859588ef</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>MSG_TYPE_UDP_PORT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae2c2fdb5fbcc47750409348d37b0cd78</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>NONCE_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga6771c37605e49c8faae7898797f254b7</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>NUMBER_OF_FEDERATES</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf58c457e08491f7cfd5a0a46940e11ad</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>PORT_BIND_RETRY_INTERVAL</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf11c9d6cd02e9e78e38a848cf75205cb</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>PORT_BIND_RETRY_LIMIT</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga04c08dc0b0733010f3190bf6df123433</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>RTI_NOT_EXECUTED_WITH_AUTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae546b6c6176fe607616181e144364f2b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>SHA256_HMAC_LENGTH</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gabd435507a255ff2571133013bdf93bd2</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>TCP_TIMEOUT_TIME</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gab1edbb864391382835b9ad71408c5c53</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>UDP_TIMEOUT_TIME</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaac9f4a449d302b4f39e69a14b3a4c8d5</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>UNEXPECTED_MESSAGE</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae2e1a44a10d4219f4645a4e99fee009c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>WRONG_SERVER</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5a6c87886a0136b58ae5bb1d627c7ae3</anchor>
       <arglist></arglist>
     </member>
     <member kind="typedef">
@@ -12609,24 +11341,10 @@
       <arglist></arglist>
     </member>
     <member kind="typedef">
-      <type>struct rti_addr_info_t</type>
-      <name>rti_addr_info_t</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf820f39ab52ce0a58d7ba739051b8f24</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="typedef">
       <type>struct socket_stat_t</type>
       <name>socket_stat_t</name>
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga7e49fed082ec884e26d761e1c4f0d428</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="typedef">
-      <type>enum socket_type_t</type>
-      <name>socket_type_t</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga45bb50f52b617bc6a30719cbaafd075d</anchor>
       <arglist></arglist>
     </member>
     <member kind="typedef">
@@ -12673,32 +11391,6 @@
       <anchor>gga9acb70e6b48452bd9d146e35bafc535ca3ad4ab464aba04397206e8b89aa1955a</anchor>
       <arglist></arglist>
     </member>
-    <member kind="enumeration">
-      <type></type>
-      <name>socket_type_t</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga54c375e3893ff5969d20df65b90c8335</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>TCP</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gga54c375e3893ff5969d20df65b90c8335aa040cd7feeb588104634cdadf35abf1c</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
-      <name>UDP</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gga54c375e3893ff5969d20df65b90c8335adb542475cf9d0636e4225e216cee9ae6</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>accept_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga3f3dfc2ccd62e181467f7a22ab5ebe49</anchor>
-      <arglist>(int socket, int rti_socket)</arglist>
-    </member>
     <member kind="function">
       <type>void</type>
       <name>clock_sync_add_offset</name>
@@ -12722,13 +11414,6 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>connect_to_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga5ac5b1b8bf1c832cbdd2f6cdbb769df8</anchor>
-      <arglist>(int sock, const char *hostname, int port)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
       <name>create_clock_sync_thread</name>
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>gac094b53ced87d3cbd617a66591f4282a</anchor>
@@ -12736,143 +11421,17 @@
     </member>
     <member kind="function">
       <type>int</type>
-      <name>create_real_time_tcp_socket_errexit</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga10b0373c1cff0213b17cb7308949f0a2</anchor>
-      <arglist>()</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>create_server</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga94aaee169c4c822e4c9e6a73f59a6952</anchor>
-      <arglist>(uint16_t port, int *final_socket, uint16_t *final_port, socket_type_t sock_type, bool increment_port_on_retry)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_int32</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gafc6b3d0e0e777738422c11fa07b35e0f</anchor>
-      <arglist>(int32_t data, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_int64</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae233fa02382ed619a78b1c32e14a8657</anchor>
-      <arglist>(int64_t data, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_tag</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga7b5ae6582f28e14a37d50a2d243613c5</anchor>
-      <arglist>(unsigned char *buffer, tag_t tag)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_uint16</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gafad4dadc9bbc06596be44e7ecc4c7281</anchor>
-      <arglist>(uint16_t data, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>encode_uint32</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga9b75c9d94d4f3d34d52f46c65cf950d4</anchor>
-      <arglist>(uint32_t data, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>extract_header</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga82060dae45e1c3b922005e56829c9814</anchor>
-      <arglist>(unsigned char *buffer, uint16_t *port_id, uint16_t *federate_id, size_t *length)</arglist>
-    </member>
-    <member kind="function">
-      <type>int32_t</type>
-      <name>extract_int32</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8f772b5761c6b74b4136db6ee021e6c5</anchor>
-      <arglist>(unsigned char *bytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>int64_t</type>
-      <name>extract_int64</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8decc0f4a38aa42fbc6ccfb029e3a061</anchor>
-      <arglist>(unsigned char *bytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>extract_match_group</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8ec38908b111a79943446bfbdec188f0</anchor>
-      <arglist>(const char *rti_addr, char *dest, regmatch_t group, size_t max_len, size_t min_len, const char *err_msg)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>extract_match_groups</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga50c7f94caa2a61bcba5f89535da07036</anchor>
-      <arglist>(const char *rti_addr, char **rti_addr_strs, bool **rti_addr_flags, regmatch_t *group_array, int *gids, size_t *max_lens, size_t *min_lens, const char **err_msgs)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>extract_rti_addr_info</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga0737fc3d45aae606811f57a16ad87208</anchor>
-      <arglist>(const char *rti_addr, rti_addr_info_t *rti_addr_info)</arglist>
-    </member>
-    <member kind="function">
-      <type>tag_t</type>
-      <name>extract_tag</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga9cd95311c2c29ce5bed1c44d5336584d</anchor>
-      <arglist>(unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>extract_timed_header</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga8e2cc45fc8571af05bb05f4952d4cde5</anchor>
-      <arglist>(unsigned char *buffer, uint16_t *port_id, uint16_t *federate_id, size_t *length, tag_t *tag)</arglist>
-    </member>
-    <member kind="function">
-      <type>uint16_t</type>
-      <name>extract_uint16</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga1686d838d49741a6ff2ee65bd766a987</anchor>
-      <arglist>(unsigned char *bytes)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
       <name>handle_T1_clock_sync_message</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gace14df89540b56b069c6c619e8f37493</anchor>
-      <arglist>(unsigned char *buffer, int socket, instant_t t2)</arglist>
+      <anchor>ga9a5e16b3705dd53c5a2e59a3acbf1edb</anchor>
+      <arglist>(unsigned char *buffer, void *socket_or_net, instant_t t2, socket_type_t socket_type)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
       <name>handle_T4_clock_sync_message</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga1b35d21eda090ea4bf8a79f401dbdad0</anchor>
-      <arglist>(unsigned char *buffer, int socket, instant_t r4)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>host_is_big_endian</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gad791461950852eb074b90bc75156b413</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>init_shutdown_mutex</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gadc2dc02aa0e242eab3574240e90984b4</anchor>
-      <arglist>(void)</arglist>
+      <anchor>gaed582f6b18142dab9c3e607f240d9f62</anchor>
+      <arglist>(unsigned char *buffer, void *socket_or_net, instant_t r4, socket_type_t socket_type)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -12955,8 +11514,8 @@
       <type>void</type>
       <name>lf_send_neighbor_structure_to_RTI</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga131226459d7dacc6068c0a6d1d9ebde1</anchor>
-      <arglist>(int socket_TCP_RTI)</arglist>
+      <anchor>gadd3ee252de10afabeca8110aadff2635</anchor>
+      <arglist>(net_abstraction_t)</arglist>
     </member>
     <member kind="function">
       <type>tag_t</type>
@@ -13050,41 +11609,6 @@
       <arglist>(tag_t tag)</arglist>
     </member>
     <member kind="function">
-      <type>bool</type>
-      <name>match_regex</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga7a568c79c856e633f5f181dd21700b74</anchor>
-      <arglist>(const char *str, char *regex)</arglist>
-    </member>
-    <member kind="function">
-      <type>ssize_t</type>
-      <name>peek_from_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae4ba6b1361cd7c47e8a0eb70729d9636</anchor>
-      <arglist>(int socket, unsigned char *result)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>read_from_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa8f7af0d4004aa925499fecefa1ac6b8</anchor>
-      <arglist>(int socket, size_t num_bytes, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>read_from_socket_close_on_error</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga941fd71700b7646e6edbbb76db4f7bd2</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>read_from_socket_fail_on_error</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga46a44d92c24d3caadec0bc9e59a26361</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer, char *format,...)</arglist>
-    </member>
-    <member kind="function">
       <type>void</type>
       <name>reset_socket_stat</name>
       <anchorfile>group__Federated.html</anchorfile>
@@ -13099,39 +11623,11 @@
       <arglist>(void)</arglist>
     </member>
     <member kind="function">
-      <type>int</type>
-      <name>shutdown_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga365eba5b8b3f6445eeaffcb4435165c5</anchor>
-      <arglist>(int *socket, bool read_before_closing)</arglist>
-    </member>
-    <member kind="function">
-      <type>int32_t</type>
-      <name>swap_bytes_if_big_endian_int32</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaeaff8773e0cba7d0f8a6d03b8f0f7766</anchor>
-      <arglist>(int32_t src)</arglist>
-    </member>
-    <member kind="function">
-      <type>int64_t</type>
-      <name>swap_bytes_if_big_endian_int64</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaa548ffc52c264f564127b80f63170c33</anchor>
-      <arglist>(int64_t src)</arglist>
-    </member>
-    <member kind="function">
-      <type>uint16_t</type>
-      <name>swap_bytes_if_big_endian_uint16</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga48fa075b3a868790da8fb303a397cd60</anchor>
-      <arglist>(uint16_t src)</arglist>
-    </member>
-    <member kind="function">
       <type>void</type>
       <name>synchronize_initial_physical_clock_with_rti</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga3eba5f95a19f86a70d9d11fd2c736dd1</anchor>
-      <arglist>(int *rti_socket_TCP)</arglist>
+      <anchor>ga81643c3ea545b727bba5c1e9623ca068</anchor>
+      <arglist>(net_abstraction_t rti_net)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -13161,53 +11657,11 @@
       <anchor>gaa074cf1f2690197f9edfd7a115381d6a</anchor>
       <arglist>(trace_event_t event_type, int fed_id, tag_t *tag)</arglist>
     </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>validate_host</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga0f6ec1479ffe28cc089fe6b13e675f0e</anchor>
-      <arglist>(const char *host)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>validate_port</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga841bec9ddc3fb61c2b615f5d512dc3f0</anchor>
-      <arglist>(char *port)</arglist>
-    </member>
-    <member kind="function">
-      <type>bool</type>
-      <name>validate_user</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga1285f4b0283c8e0c020e12e76a4426c2</anchor>
-      <arglist>(const char *user)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>write_to_socket</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gae8d4b83faeac37f665666429742813f9</anchor>
-      <arglist>(int socket, size_t num_bytes, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>int</type>
-      <name>write_to_socket_close_on_error</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gaf88884c303b81143ef5ab7af4683a66c</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>write_to_socket_fail_on_error</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>gada8d9360bdf4e9d7f36bbfc7e682f06e</anchor>
-      <arglist>(int *socket, size_t num_bytes, unsigned char *buffer, lf_mutex_t *mutex, char *format,...)</arglist>
-    </member>
     <member kind="variable">
       <type>lf_mutex_t</type>
-      <name>lf_outbound_socket_mutex</name>
+      <name>lf_outbound_net_mutex</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga1881fdaaffead81a8d2993121d9cd78f</anchor>
+      <anchor>ga11533680dc94241a7073fe9ff45900f4</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -14152,8 +12606,8 @@
       <type>void</type>
       <name>lf_connect_to_federates</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga52a9225745a4b229aee86fcc4617b904</anchor>
-      <arglist>(int socket_descriptor)</arglist>
+      <anchor>ga14c897c9da2160d4aceff4751822eced</anchor>
+      <arglist>(net_abstraction_t rti_net)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -14264,15 +12718,15 @@
       <type>void</type>
       <name>send_reject</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>gac1d01420f22f3dc5dbdef49ffebdb443</anchor>
-      <arglist>(int *socket_id, unsigned char error_code)</arglist>
+      <anchor>ga614f81fe705224534d84b97254030fa1</anchor>
+      <arglist>(net_abstraction_t net_abs, unsigned char error_code)</arglist>
     </member>
     <member kind="function">
-      <type>int32_t</type>
+      <type>int</type>
       <name>start_rti_server</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga6cc1fe69c154d09d88de1f1c06eb4b0d</anchor>
-      <arglist>(uint16_t port)</arglist>
+      <anchor>gadfcb2fedc086ab63276bfc442efa488d</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>tag_advance_grant_t</type>
@@ -14327,8 +12781,8 @@
       <type>void</type>
       <name>wait_for_federates</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga005cb43e8e6c7795c8f0db27e2424475</anchor>
-      <arglist>(int socket_descriptor)</arglist>
+      <anchor>ga54b6796240cd61f06bb111f6f29e2997</anchor>
+      <arglist>()</arglist>
     </member>
   </compound>
   <compound kind="page">
@@ -14430,7 +12884,6 @@
     <name>/Users/runner/work/reactor-c/reactor-c/include/core/federated</name>
     <path>/Users/runner/work/reactor-c/reactor-c/include/core/federated/</path>
     <filename>dir_e0b79ab85e892bf9453f746580791e50.html</filename>
-    <dir>/Users/runner/work/reactor-c/reactor-c/include/core/federated/network</dir>
     <file>clock-sync.h</file>
     <file>federate.h</file>
   </compound>
@@ -14477,14 +12930,6 @@
     <path>/Users/runner/work/reactor-c/reactor-c/include/core/modal_models/</path>
     <filename>dir_22c9e7958acfc976c9adbaa7ba7fed24.html</filename>
     <file>modes.h</file>
-  </compound>
-  <compound kind="dir">
-    <name>/Users/runner/work/reactor-c/reactor-c/include/core/federated/network</name>
-    <path>/Users/runner/work/reactor-c/reactor-c/include/core/federated/network/</path>
-    <filename>dir_923a8cfe9e7422391fb9e4b64cd33eea.html</filename>
-    <file>net_common.h</file>
-    <file>net_util.h</file>
-    <file>socket_common.h</file>
   </compound>
   <compound kind="dir">
     <name>/Users/runner/work/reactor-c/reactor-c/platform</name>

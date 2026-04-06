@@ -21,7 +21,7 @@ var federate_8h =
     [ "lf_parse_rti_addr", "group__Federated.html#gae612f180643d0436d4496738b957af68", null ],
     [ "lf_reset_status_fields_on_input_port_triggers", "group__Federated.html#gae3bc503fcbeaffe48f4500fddba4b21a", null ],
     [ "lf_send_message", "group__Federated.html#ga2f330bfe2fdb03cbf49596bcc012bc58", null ],
-    [ "lf_send_neighbor_structure_to_RTI", "group__Federated.html#ga131226459d7dacc6068c0a6d1d9ebde1", null ],
+    [ "lf_send_neighbor_structure_to_RTI", "group__Federated.html#gadd3ee252de10afabeca8110aadff2635", null ],
     [ "lf_send_next_event_tag", "group__Federated.html#ga33d69f68b22b5143c029f463d6efba4f", null ],
     [ "lf_send_port_absent_to_federate", "group__Federated.html#ga527e8cd401ba68b503403706815ed1a0", null ],
     [ "lf_send_stop_request_to_rti", "group__Federated.html#gab4d7e691d4b52f2c0dac90e772d86dd5", null ],
@@ -33,6 +33,6 @@ var federate_8h =
     [ "lf_synchronize_with_other_federates", "group__Federated.html#ga36681c905141edace5d23ff8d5c8f205", null ],
     [ "lf_update_max_level", "group__Federated.html#ga84e5177d12e705274be1e6652b5d7c01", null ],
     [ "lf_wait_until_time", "group__Federated.html#gaa0c8d0811c7faae11b9f1a7fcb30f917", null ],
-    [ "lf_outbound_socket_mutex", "group__Federated.html#ga1881fdaaffead81a8d2993121d9cd78f", null ],
+    [ "lf_outbound_net_mutex", "group__Federated.html#ga11533680dc94241a7073fe9ff45900f4", null ],
     [ "lf_port_status_changed", "group__Federated.html#ga4ea10c9ed824595585d91f37dbfd4364", null ]
 ];

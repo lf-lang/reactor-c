@@ -105,7 +105,7 @@ $(function(){initNavTree('federate_8h.html','',''); });
 <code>#include &quot;<a class="el" href="lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="environment_8h_source.html">environment.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="low__level__platform_8h_source.html">low_level_platform.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="socket__common_8h_source.html">socket_common.h</a>&quot;</code><br />
+<code>#include &quot;net_abstraction.h&quot;</code><br />
 </div>
 <p><a href="federate_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -166,8 +166,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gae3bc503fcbeaffe48f4500fddba4b21a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the status fields on network input ports to unknown or absent.  <br /></td></tr>
 <tr class="memitem:ga2f330bfe2fdb03cbf49596bcc012bc58" id="r_ga2f330bfe2fdb03cbf49596bcc012bc58"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="group__Federated.html#ga2f330bfe2fdb03cbf49596bcc012bc58">lf_send_message</a> (int message_type, unsigned short port, unsigned short federate, const char *next_destination_str, size_t length, unsigned char *message)</td></tr>
 <tr class="memdesc:ga2f330bfe2fdb03cbf49596bcc012bc58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a message to another federate.  <br /></td></tr>
-<tr class="memitem:ga131226459d7dacc6068c0a6d1d9ebde1" id="r_ga131226459d7dacc6068c0a6d1d9ebde1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__Federated.html#ga131226459d7dacc6068c0a6d1d9ebde1">lf_send_neighbor_structure_to_RTI</a> (int socket_TCP_RTI)</td></tr>
-<tr class="memdesc:ga131226459d7dacc6068c0a6d1d9ebde1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send information about connections to the RTI.  <br /></td></tr>
+<tr class="memitem:gadd3ee252de10afabeca8110aadff2635" id="r_gadd3ee252de10afabeca8110aadff2635"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__Federated.html#gadd3ee252de10afabeca8110aadff2635">lf_send_neighbor_structure_to_RTI</a> (net_abstraction_t)</td></tr>
+<tr class="memdesc:gadd3ee252de10afabeca8110aadff2635"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send information about connections to the RTI.  <br /></td></tr>
 <tr class="memitem:ga33d69f68b22b5143c029f463d6efba4f" id="r_ga33d69f68b22b5143c029f463d6efba4f"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="group__Federated.html#ga33d69f68b22b5143c029f463d6efba4f">lf_send_next_event_tag</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="structtag__t.html">tag_t</a> tag, bool wait_for_reply)</td></tr>
 <tr class="memdesc:ga33d69f68b22b5143c029f463d6efba4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a next event tag (NET) signal.  <br /></td></tr>
 <tr class="memitem:ga527e8cd401ba68b503403706815ed1a0" id="r_ga527e8cd401ba68b503403706815ed1a0"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__Federated.html#ga527e8cd401ba68b503403706815ed1a0">lf_send_port_absent_to_federate</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> additional_delay, unsigned short port_ID, unsigned short fed_ID)</td></tr>
@@ -193,8 +193,8 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:ga1881fdaaffead81a8d2993121d9cd78f" id="r_ga1881fdaaffead81a8d2993121d9cd78f"><td class="memItemLeft">lf_mutex_t&#160;</td><td class="memItemRight"><a class="el" href="group__Federated.html#ga1881fdaaffead81a8d2993121d9cd78f">lf_outbound_socket_mutex</a></td></tr>
-<tr class="memdesc:ga1881fdaaffead81a8d2993121d9cd78f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutex lock held while performing outbound socket write and close operations.  <br /></td></tr>
+<tr class="memitem:ga11533680dc94241a7073fe9ff45900f4" id="r_ga11533680dc94241a7073fe9ff45900f4"><td class="memItemLeft">lf_mutex_t&#160;</td><td class="memItemRight"><a class="el" href="group__Federated.html#ga11533680dc94241a7073fe9ff45900f4">lf_outbound_net_mutex</a></td></tr>
+<tr class="memdesc:ga11533680dc94241a7073fe9ff45900f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutex lock held while performing outbound network abstraction write and close operations.  <br /></td></tr>
 <tr class="memitem:ga4ea10c9ed824595585d91f37dbfd4364" id="r_ga4ea10c9ed824595585d91f37dbfd4364"><td class="memItemLeft">lf_cond_t&#160;</td><td class="memItemRight"><a class="el" href="group__Federated.html#ga4ea10c9ed824595585d91f37dbfd4364">lf_port_status_changed</a></td></tr>
 <tr class="memdesc:ga4ea10c9ed824595585d91f37dbfd4364"><td class="mdescLeft">&#160;</td><td class="mdescRight">Condition variable for blocking on unkonwn federate input ports.  <br /></td></tr>
 </table>

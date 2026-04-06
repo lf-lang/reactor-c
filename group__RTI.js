@@ -13,11 +13,8 @@ var group__RTI =
       [ "clock_synchronization_enabled", "structfederate__info__t.html#a792b3d59fe8438b370dcea4a9beff748", null ],
       [ "enclave", "structfederate__info__t.html#acd6450143749bf7421c64b28d68a1e3e", null ],
       [ "in_transit_message_tags", "structfederate__info__t.html#aa643bb07575eca7bf9c5665377442369", null ],
+      [ "net", "structfederate__info__t.html#a8afb9d8bb911680499970b1de3fbdf93", null ],
       [ "requested_stop", "structfederate__info__t.html#af1264d573e3ada0d716c64cfa4f26b36", null ],
-      [ "server_hostname", "structfederate__info__t.html#ac1a52d02c1f668f6421e31d4dd144d82", null ],
-      [ "server_ip_addr", "structfederate__info__t.html#aa9400fd6abe91530dcf2efb682aaeb15", null ],
-      [ "server_port", "structfederate__info__t.html#adefac36562f7dfcc97f6e1138754f6ca", null ],
-      [ "socket", "structfederate__info__t.html#a4ecfa6d90654e5b3d46207453d3562e5", null ],
       [ "thread_id", "structfederate__info__t.html#aedcf9a6f3003d2a4f9c78f5601c463d8", null ],
       [ "UDP_addr", "structfederate__info__t.html#a49e0905a7ff0b8c85d4e4c61ef4c25c6", null ]
     ] ],
@@ -47,11 +44,10 @@ var group__RTI =
       [ "clock_sync_period_ns", "structrti__remote__t.html#a59948493be7f9c37c4d9e87fe794cc4a", null ],
       [ "clock_thread", "structrti__remote__t.html#ae82c97407ee17f16cd9e95cc4fade654", null ],
       [ "federation_id", "structrti__remote__t.html#aa6ebdbc41ba330fc7d23f478bf62d7ea", null ],
-      [ "final_port_TCP", "structrti__remote__t.html#af398be0ec31a58806d978a0670b59fac", null ],
       [ "final_port_UDP", "structrti__remote__t.html#a313ec8858bdf1eb12c8a24c17290afb2", null ],
       [ "max_start_time", "structrti__remote__t.html#af8774b865d79565eff6296da5459ac83", null ],
       [ "num_feds_proposed_start", "structrti__remote__t.html#a1c695fdf2ff3d64f7599887ce525d64d", null ],
-      [ "socket_descriptor_TCP", "structrti__remote__t.html#a092fe7859e3ead8ad646a848ef6282e7", null ],
+      [ "rti_net", "structrti__remote__t.html#abf6767b1b9d02eb2f868900104dfd8c0", null ],
       [ "socket_descriptor_UDP", "structrti__remote__t.html#acdd54a055b69ed96feef48423e7e0496", null ],
       [ "stop_in_progress", "structrti__remote__t.html#a498c079c9b24587dccb394f17a3fdc2c", null ],
       [ "user_specified_port", "structrti__remote__t.html#a2f275409a0e4a1a537c3028e674bada3", null ]
@@ -124,7 +120,7 @@ var group__RTI =
     [ "invalidate_min_delays", "group__RTI.html#ga5f7d50fc74bdc38f889c38109c406468", null ],
     [ "is_in_cycle", "group__RTI.html#gab38455d4faf77b4d86dcd77976afe1f1", null ],
     [ "is_in_zero_delay_cycle", "group__RTI.html#ga94101c5bfb54d670a8f47f448e351a34", null ],
-    [ "lf_connect_to_federates", "group__RTI.html#ga52a9225745a4b229aee86fcc4617b904", null ],
+    [ "lf_connect_to_federates", "group__RTI.html#ga14c897c9da2160d4aceff4751822eced", null ],
     [ "lf_get_downstream_of", "group__RTI.html#ga06003604b6defab443bdfe34f3ab17ee", null ],
     [ "lf_get_upstream_delay_of", "group__RTI.html#gaaba4ae9dd32581f9f34a7a81d9c7791c", null ],
     [ "lf_get_upstream_of", "group__RTI.html#ga8f432bb04e691f66f4f81cbbecb741ed", null ],
@@ -140,8 +136,8 @@ var group__RTI =
     [ "rti_next_event_tag_locked", "group__RTI.html#ga48640596070ecfb23f94532363b5cd6a", null ],
     [ "rti_update_other_net_locked", "group__RTI.html#gaf921c9092b09500768f94e41b3a7c8f4", null ],
     [ "send_physical_clock", "group__RTI.html#ga5b16bd2ead60426e3ace71eca1cfede5", null ],
-    [ "send_reject", "group__RTI.html#gac1d01420f22f3dc5dbdef49ffebdb443", null ],
-    [ "start_rti_server", "group__RTI.html#ga6cc1fe69c154d09d88de1f1c06eb4b0d", null ],
+    [ "send_reject", "group__RTI.html#ga614f81fe705224534d84b97254030fa1", null ],
+    [ "start_rti_server", "group__RTI.html#gadfcb2fedc086ab63276bfc442efa488d", null ],
     [ "tag_advance_grant_if_safe", "group__RTI.html#gaf849510938f837c74cfe8f843cb7dcb2", null ],
     [ "tracepoint_rti_from_federate", "group__RTI.html#ga13560f0cae54155219f4d8d9c487b0ef", null ],
     [ "tracepoint_rti_to_federate", "group__RTI.html#ga0da8aecc05366988f8d929118be90bbe", null ],
@@ -149,5 +145,5 @@ var group__RTI =
     [ "update_min_delays", "group__RTI.html#ga93ef5ce52bd47e14977ea3571c1b152b", null ],
     [ "update_scheduling_node_next_event_tag_locked", "group__RTI.html#ga21533a3d64de78b3766016c2166460c9", null ],
     [ "usage", "group__RTI.html#ga7f44f474f50286c4ba8c0ebac254bb28", null ],
-    [ "wait_for_federates", "group__RTI.html#ga005cb43e8e6c7795c8f0db27e2424475", null ]
+    [ "wait_for_federates", "group__RTI.html#ga54b6796240cd61f06bb111f6f29e2997", null ]
 ];

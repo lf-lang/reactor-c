@@ -1,14 +1,6 @@
 var searchData=
 [
-  ['sequence_0',['Startup sequence',['../net__common_8h.html#autotoc_md11',1,'']]],
-  ['sequence_20diagram_20visualizer_1',['Trace sequence diagram visualizer',['../dir_8eb20451329ba806a1d422bd038b0865.html#autotoc_md23',1,'']]],
-  ['setting_20up_20coordination_2',['Setting up coordination',['../net__common_8h.html#autotoc_md15',1,'']]],
-  ['started_3',['Getting started',['../intro.html#autotoc_md2',1,'']]],
-  ['startup_20sequence_4',['Startup sequence',['../net__common_8h.html#autotoc_md11',1,'']]],
-  ['stop_5',['Requesting a stop',['../net__common_8h.html#autotoc_md16',1,'']]],
-  ['structure_6',['Conveying the neighbor structure',['../net__common_8h.html#autotoc_md13',1,'']]],
-  ['style_20and_20formatting_7',['Code style and formatting',['../contributing.html#autotoc_md9',1,'']]],
-  ['supported_20platforms_8',['Supported Platforms',['../index.html#autotoc_md1',1,'']]],
-  ['synchronization_9',['Clock synchronization',['../net__common_8h.html#autotoc_md14',1,'']]],
-  ['system_20tests_10',['System Tests',['../contributing.html#autotoc_md7',1,'']]]
+  ['unit_20tests_0',['Unit Tests',['../contributing.html#autotoc_md8',1,'']]],
+  ['util_1',['/lib/C/util/',['../dir_b678eaba3b8dfcb4861ec903b7dd977f.html#autotoc_md14',1,'']]],
+  ['util_20tracing_2',['util/tracing',['../dir_53a6a24996274aaee671356227f4d951.html#autotoc_md15',1,'']]]
 ];

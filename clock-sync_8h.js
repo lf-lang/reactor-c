@@ -14,9 +14,9 @@ var clock_sync_8h =
     [ "clock_sync_set_constant_bias", "group__Federated.html#ga4f1aaaa9e0b74867ba6b60eb962dfca6", null ],
     [ "clock_sync_subtract_offset", "group__Federated.html#gaf5fb44eb0db80b9dfa61399bdab8b85c", null ],
     [ "create_clock_sync_thread", "group__Federated.html#gac094b53ced87d3cbd617a66591f4282a", null ],
-    [ "handle_T1_clock_sync_message", "group__Federated.html#gace14df89540b56b069c6c619e8f37493", null ],
-    [ "handle_T4_clock_sync_message", "group__Federated.html#ga1b35d21eda090ea4bf8a79f401dbdad0", null ],
+    [ "handle_T1_clock_sync_message", "group__Federated.html#ga9a5e16b3705dd53c5a2e59a3acbf1edb", null ],
+    [ "handle_T4_clock_sync_message", "group__Federated.html#gaed582f6b18142dab9c3e607f240d9f62", null ],
     [ "reset_socket_stat", "group__Federated.html#gae267d03a5f2263604459ca4c1aef2c2c", null ],
     [ "setup_clock_synchronization_with_rti", "group__Federated.html#ga834b31e00e677a23b6a86119b7a2fe59", null ],
-    [ "synchronize_initial_physical_clock_with_rti", "group__Federated.html#ga3eba5f95a19f86a70d9d11fd2c736dd1", null ]
+    [ "synchronize_initial_physical_clock_with_rti", "group__Federated.html#ga81643c3ea545b727bba5c1e9623ca068", null ]
 ];

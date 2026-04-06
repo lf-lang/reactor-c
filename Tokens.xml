@@ -382,16 +382,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>rti_addr_info_t</Name>
-      <APILanguage>c</APILanguage>
-      <Type>cl</Type>
-      <Scope>rti_addr_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structrti__addr__info__t.html</Path>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>rti_common_t</Name>
       <APILanguage>c</APILanguage>
       <Type>cl</Type>
@@ -1383,16 +1373,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>final_port_TCP</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>rti_remote_t</Scope>
-    </TokenIdentifier>
-    <Path>structrti__remote__t.html</Path>
-    <Anchor>af398be0ec31a58806d978a0670b59fac</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>final_port_UDP</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1503,26 +1483,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>has_host</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>rti_addr_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structrti__addr__info__t.html</Path>
-    <Anchor>a73312cb4f806de3a9b23eb811861ac24</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>has_port</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>rti_addr_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structrti__addr__info__t.html</Path>
-    <Anchor>a814382a63d0c415566268997e7e2c238</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>has_upstream</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1530,16 +1490,6 @@
     </TokenIdentifier>
     <Path>structfederate__instance__t.html</Path>
     <Anchor>a603662cf0155920b8a76659e7dacb9ef</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>has_user</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>rti_addr_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structrti__addr__info__t.html</Path>
-    <Anchor>a66ce998dc61ba1e1a939c18cb79ae9af</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1673,6 +1623,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>inbound_net_listeners</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a1362fc33bd9e33cde9349445431dfc9c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>inbound_p2p_handling_thread_id</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1680,16 +1640,6 @@
     </TokenIdentifier>
     <Path>structfederate__instance__t.html</Path>
     <Anchor>ab441abf042a2ff79099bdf2860aeb058</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>inbound_socket_listeners</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_instance_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__instance__t.html</Path>
-    <Anchor>ac751250db764f954659deb15f1427044</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2410,6 +2360,46 @@
     </TokenIdentifier>
     <Path>structenvironment__t.html</Path>
     <Anchor>aeef35dea438a853fc258631ea4a0e90c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>net</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_info_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__info__t.html</Path>
+    <Anchor>a8afb9d8bb911680499970b1de3fbdf93</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>net_for_inbound_p2p_connections</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a4ab5d26002d2de1b954eee6c5bafdf38</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>net_for_outbound_p2p_connections</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>abc66dce37557448ff93ecc4bdf329b76</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>net_to_RTI</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a434d15925fe4c0721a2c1685102ae823</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3143,13 +3133,23 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>rti_host_str</Name>
+      <Name>rti_net</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
-      <Scope>rti_addr_info_t</Scope>
+      <Scope>rti_remote_t</Scope>
     </TokenIdentifier>
-    <Path>structrti__addr__info__t.html</Path>
-    <Anchor>ab67e59a55eda384237ee0c01b161808c</Anchor>
+    <Path>structrti__remote__t.html</Path>
+    <Anchor>abf6767b1b9d02eb2f868900104dfd8c0</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>RTI_net_listener</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a4e61aad7155ef98a682aeaa89dd04c14</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3163,26 +3163,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>rti_port_str</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>rti_addr_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structrti__addr__info__t.html</Path>
-    <Anchor>a182bcc2f25e999e33b4065115287a6a0</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>RTI_socket_listener</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_instance_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__instance__t.html</Path>
-    <Anchor>a5b6b4b5912a7bb7df1c8987f38e12004</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>rti_user</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -3190,16 +3170,6 @@
     </TokenIdentifier>
     <Path>structfederation__metadata__t.html</Path>
     <Anchor>acb5d86838516db68d87a30babcce36dd</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>rti_user_str</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>rti_addr_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structrti__addr__info__t.html</Path>
-    <Anchor>a3604fd6c5f95ce9afa7afcb188093ac8</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3233,53 +3203,13 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>server_hostname</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__info__t.html</Path>
-    <Anchor>ac1a52d02c1f668f6421e31d4dd144d82</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>server_ip_addr</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__info__t.html</Path>
-    <Anchor>aa9400fd6abe91530dcf2efb682aaeb15</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>server_port</Name>
+      <Name>server_net</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
       <Scope>federate_instance_t</Scope>
     </TokenIdentifier>
     <Path>structfederate__instance__t.html</Path>
-    <Anchor>a309c9672d657f20cd1d3661edc7d5179</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>server_port</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__info__t.html</Path>
-    <Anchor>adefac36562f7dfcc97f6e1138754f6ca</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>server_socket</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_instance_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__instance__t.html</Path>
-    <Anchor>a20c5d19d5166ec82a09efe072c2f1b49</Anchor>
+    <Anchor>a44bfdad9ab6659ca07fb6c3339971630</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3383,26 +3313,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>socket</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_info_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__info__t.html</Path>
-    <Anchor>a4ecfa6d90654e5b3d46207453d3562e5</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>socket_descriptor_TCP</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>rti_remote_t</Scope>
-    </TokenIdentifier>
-    <Path>structrti__remote__t.html</Path>
-    <Anchor>a092fe7859e3ead8ad646a848ef6282e7</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>socket_descriptor_UDP</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -3410,36 +3320,6 @@
     </TokenIdentifier>
     <Path>structrti__remote__t.html</Path>
     <Anchor>acdd54a055b69ed96feef48423e7e0496</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>socket_TCP_RTI</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_instance_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__instance__t.html</Path>
-    <Anchor>aacdc19a638ccdc9fae494ce641f4cb04</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>sockets_for_inbound_p2p_connections</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_instance_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__instance__t.html</Path>
-    <Anchor>ac22a97892260d332da6f05194c280f9c</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>sockets_for_outbound_p2p_connections</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>federate_instance_t</Scope>
-    </TokenIdentifier>
-    <Path>structfederate__instance__t.html</Path>
-    <Anchor>aa4fcfa96a7c2bfd33cf45ddc43ad3437</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -5033,16 +4913,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>accept_socket</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga3f3dfc2ccd62e181467f7a22ab5ebe49</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>add_to_sound</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -5050,16 +4920,6 @@
     <Path>group__Utilities.html</Path>
     <Anchor>gae0d2efe97b2aac751245705e32d2c927</Anchor>
     <DeclaredIn>audio_loop.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ADDRESS_QUERY_RETRY_INTERVAL</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga8ce563da4edbe9c4f7c1ccf35ad8694f</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -5343,36 +5203,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>CONNECT_RETRY_INTERVAL</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gab2106828de539188aed925f592751c12</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>CONNECT_TIMEOUT</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga252b2cb72531cb00ecd4d4db37a5a473</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>connect_to_socket</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga5ac5b1b8bf1c832cbdd2f6cdbb769df8</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>create_clock_sync_thread</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -5380,26 +5210,6 @@
     <Path>group__Federated.html</Path>
     <Anchor>gac094b53ced87d3cbd617a66591f4282a</Anchor>
     <DeclaredIn>clock-sync.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>create_real_time_tcp_socket_errexit</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga10b0373c1cff0213b17cb7308949f0a2</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>create_server</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga94aaee169c4c822e4c9e6a73f59a6952</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -5463,16 +5273,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>DEFAULT_PORT</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga16b710f592bf8f7900666392adc444dc</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>defer</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -5480,26 +5280,6 @@
     <Path>group__Internal.html</Path>
     <Anchor>gga0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90</Anchor>
     <DeclaredIn>lf_types.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>DELAY_BETWEEN_SOCKET_RETRIES</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga7b7cd916c6c027dc9ebdff449fb6edad</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>DELAY_START</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga4b8c713b515dba0c86d9205dc0caf4ed</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -5693,86 +5473,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>encode_int32</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gafc6b3d0e0e777738422c11fa07b35e0f</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>encode_int64</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae233fa02382ed619a78b1c32e14a8657</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENCODE_STOP_GRANTED</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga8086398bfefdc0104767df037e59daa5</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENCODE_STOP_REQUEST</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga3268a658c2cb5126be5284a86ad9bd62</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>ENCODE_STOP_REQUEST_REPLY</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae06b33f7fcdc71f52eb0fcf81e07e4d6</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>encode_tag</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga7b5ae6582f28e14a37d50a2d243613c5</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>encode_uint16</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gafad4dadc9bbc06596be44e7ecc4c7281</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>encode_uint32</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga9b75c9d94d4f3d34d52f46c65cf950d4</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>end_sensor_simulator</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -5893,96 +5593,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>extract_header</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga82060dae45e1c3b922005e56829c9814</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>extract_int32</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga8f772b5761c6b74b4136db6ee021e6c5</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>extract_int64</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga8decc0f4a38aa42fbc6ccfb029e3a061</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>extract_match_group</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga8ec38908b111a79943446bfbdec188f0</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>extract_match_groups</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga50c7f94caa2a61bcba5f89535da07036</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>extract_rti_addr_info</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga0737fc3d45aae606811f57a16ad87208</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>extract_tag</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga9cd95311c2c29ce5bed1c44d5336584d</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>extract_timed_header</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga8e2cc45fc8571af05bb05f4952d4cde5</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>extract_uint16</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga1686d838d49741a6ff2ee65bd766a987</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>FAILED_TO_PARSE</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -6010,36 +5620,6 @@
     <Path>reactor__common_8h.html</Path>
     <Anchor>a9c91e5c84c3910df17c909ccdea074db</Anchor>
     <DeclaredIn>reactor_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>FED_COM_BUFFER_SIZE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gacc95612e1d2dbbdf34afe76d50e75223</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>FEDERATE_ID_IN_USE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae3bd830cd17cf0914b61d0516360abc1</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>FEDERATE_ID_OUT_OF_RANGE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga5846fdcf4c92041f543b73e29e78aa21</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -6080,16 +5660,6 @@
     <Path>group__Tracing.html</Path>
     <Anchor>ggab02e9e69539d60297cedb38c2193a453a9b673ff06b88b52089cafea62715f7c0</Anchor>
     <DeclaredIn>trace_types.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>FEDERATION_ID_DOES_NOT_MATCH</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga653676d1f302fe08249af3dee78fa294</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -6338,7 +5908,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Federated.html</Path>
-    <Anchor>gace14df89540b56b069c6c619e8f37493</Anchor>
+    <Anchor>ga9a5e16b3705dd53c5a2e59a3acbf1edb</Anchor>
     <DeclaredIn>clock-sync.h</DeclaredIn>
   </Token>
   <Token>
@@ -6348,7 +5918,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Federated.html</Path>
-    <Anchor>ga1b35d21eda090ea4bf8a79f401dbdad0</Anchor>
+    <Anchor>gaed582f6b18142dab9c3e607f240d9f62</Anchor>
     <DeclaredIn>clock-sync.h</DeclaredIn>
   </Token>
   <Token>
@@ -6623,46 +6193,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>HMAC_DOES_NOT_MATCH</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga51d08a784b4ee6463688a971d99d2944</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>HOST_BIG_ENDIAN</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>net__util_8h.html</Path>
-    <Anchor>a18c839c3ef122fe4ecc7b907ea688a97</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>host_is_big_endian</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gad791461950852eb074b90bc75156b413</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>HOST_LITTLE_ENDIAN</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>net__util_8h.html</Path>
-    <Anchor>ae0b024f7ee4bd875149b1a0a50c20b0a</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>HOUR</Name>
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
@@ -6910,16 +6440,6 @@
     <Path>scheduler__instance_8h.html</Path>
     <Anchor>a763b254fdbe81abb51ce307567969306</Anchor>
     <DeclaredIn>scheduler_instance.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>init_shutdown_mutex</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gadc2dc02aa0e242eab3574240e90984b4</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -7428,7 +6948,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__RTI.html</Path>
-    <Anchor>ga52a9225745a4b229aee86fcc4617b904</Anchor>
+    <Anchor>ga14c897c9da2160d4aceff4751822eced</Anchor>
     <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
@@ -7973,12 +7493,12 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>lf_outbound_socket_mutex</Name>
+      <Name>lf_outbound_net_mutex</Name>
       <APILanguage>c</APILanguage>
       <Type>data</Type>
     </TokenIdentifier>
     <Path>group__Federated.html</Path>
-    <Anchor>ga1881fdaaffead81a8d2993121d9cd78f</Anchor>
+    <Anchor>ga11533680dc94241a7073fe9ff45900f4</Anchor>
     <DeclaredIn>federate.h</DeclaredIn>
   </Token>
   <Token>
@@ -8568,7 +8088,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Federated.html</Path>
-    <Anchor>ga131226459d7dacc6068c0a6d1d9ebde1</Anchor>
+    <Anchor>gadd3ee252de10afabeca8110aadff2635</Anchor>
     <DeclaredIn>federate.h</DeclaredIn>
   </Token>
   <Token>
@@ -9523,16 +9043,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>match_regex</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga7a568c79c856e633f5f181dd21700b74</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>MAX_AMPLITUDE</Name>
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
@@ -9540,16 +9050,6 @@
     <Path>group__Utilities.html</Path>
     <Anchor>ga141b139da77580918b0f9821ab3dbb99</Anchor>
     <DeclaredIn>audio_loop.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MAX_NUM_PORT_ADDRESSES</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga5dbc42b5857eb262a06aa04399475d16</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -9693,386 +9193,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>MSG_TYPE_ACK</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gad94567b2d2e277ddc1be0da9a92b09e7</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_ADDRESS_ADVERTISEMENT</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae004cb4e5add42afe5483f6706e11d35</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_ADDRESS_QUERY</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga5ac191bca25da16eca3e4f02d21172ef</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_ADDRESS_QUERY_REPLY</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaabe4cac3ef1d0834a99fa2532dfaa6ba</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_CLOCK_SYNC_CODED_PROBE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaa13eface5080ad75bbd53abe919c80b6</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_CLOCK_SYNC_T1</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaea37eff76ade1b2781a7e6298afb3a04</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_CLOCK_SYNC_T3</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga52a76e4cc36217a169f32d5adde590cc</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_CLOCK_SYNC_T4</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae128056ab2af39988103856ee815d930</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gafb060091e032562cf32c0eb62340d309</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_FAILED</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaf27674f627be1c469a529a995da5c074</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_FAILED</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaf27674f627be1c469a529a995da5c074</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_FED_IDS</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga8e49ce0b1c3a58c881849ca4d0bae824</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_FED_NONCE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga191b27bec42ab0370248fbc64cc9b860</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_FED_RESPONSE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gacd7e1e07253e568044a204a1f82d36a1</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_LATEST_TAG_CONFIRMED</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gada47c9f6736992a3df380526d87089f9</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_MESSAGE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gac79b5228f132029285408a30a31a174e</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_NEIGHBOR_STRUCTURE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga48ec489cb1543b161c262f4bee6c9598</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga77a9c1b741d7ca0f4e8d00a5b74ef91e</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_NEXT_EVENT_TAG</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaf662a6a84cd64cddad92e20e26af877e</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_P2P_MESSAGE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga2b9f13f8df66448bf81ac5fe0774c124</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_P2P_SENDING_FED_ID</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gacd33bbab7bf74e5ac8bad3bd27145f8b</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_P2P_TAGGED_MESSAGE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga5c1256c8c62fbbcb1b16ea67d8f529fb</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_PORT_ABSENT</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gadb9610b1edbee4c85e194e391a6eeb74</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga9a9bb60d4df1ba581a29319850097cc2</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_REJECT</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga59a69d0685fdc2a216718f1efa083c4c</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_RESIGN</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga9e19e307a4c3a9dbccea4f2539cd67dd</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_RTI_RESPONSE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga20f24b4b20547d44523120689afd9b98</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_STOP_GRANTED</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaad37dd00423e88f213ca7d7d238bce2e</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_STOP_GRANTED_LENGTH</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga76275384e9865f1f1ed32408c03d876a</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_STOP_REQUEST</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>net__common_8h.html</Path>
-    <Anchor>a8588a57a3ae81bf33c740dfc57103a23</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_STOP_REQUEST_LENGTH</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaa3ed75054ae1aaa64dafa6399f7a23cb</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_STOP_REQUEST_REPLY</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>net__common_8h.html</Path>
-    <Anchor>adbe10e103635ee7ec4bca3226ccebc56</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_STOP_REQUEST_REPLY_LENGTH</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaa62d9986e928cb5e872caa6a509cae6c</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_TAG_ADVANCE_GRANT</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga94fe2c510160682b2c0ffc00b35e0ad5</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_TAGGED_MESSAGE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga2922af172f2e95bc73bd0675a4107b3b</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_TIMESTAMP</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga27db349e7460afc1758bf2eec95d7005</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_TIMESTAMP_LENGTH</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga3450aedd1ca1c368ed28ed2e859588ef</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>MSG_TYPE_UDP_PORT</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae2c2fdb5fbcc47750409348d37b0cd78</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>NEVER</Name>
       <APILanguage>unknown</APILanguage>
       <Type>macro</Type>
@@ -10120,16 +9240,6 @@
     <Path>group__Modal.html</Path>
     <Anchor>ggadd32beb39577775204a6f1ed1f947df9acbde8a6b8987eeb436dbcc6127b6f65d</Anchor>
     <DeclaredIn>modes.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>NONCE_LENGTH</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga6771c37605e49c8faae7898797f254b7</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -10250,16 +9360,6 @@
     <Path>group__Utilities.html</Path>
     <Anchor>ga5b0b677cb9527865430a9b3d7a71cb03</Anchor>
     <DeclaredIn>audio_loop.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>NUMBER_OF_FEDERATES</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaf58c457e08491f7cfd5a0a46940e11ad</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -10413,16 +9513,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>peek_from_socket</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae4ba6b1361cd7c47e8a0eb70729d9636</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>PENDING</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -10430,26 +9520,6 @@
     <Path>group__RTI.html</Path>
     <Anchor>gga2c9591789f1d6afd603e0330e13f3744a1869818fd53ff519eb8e429301bdff73</Anchor>
     <DeclaredIn>rti_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>PORT_BIND_RETRY_INTERVAL</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaf11c9d6cd02e9e78e38a848cf75205cb</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>PORT_BIND_RETRY_LIMIT</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga04c08dc0b0733010f3190bf6df123433</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -11123,36 +10193,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>read_from_socket</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaa8f7af0d4004aa925499fecefa1ac6b8</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>read_from_socket_close_on_error</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga941fd71700b7646e6edbbb76db4f7bd2</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>read_from_socket_fail_on_error</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga46a44d92c24d3caadec0bc9e59a26361</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>read_header</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -11513,16 +10553,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>rti_addr_info_t</Name>
-      <APILanguage>c</APILanguage>
-      <Type>tdef</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaf820f39ab52ce0a58d7ba739051b8f24</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>rti_common_t</Name>
       <APILanguage>c</APILanguage>
       <Type>tdef</Type>
@@ -11550,16 +10580,6 @@
     <Path>group__RTI.html</Path>
     <Anchor>ga48640596070ecfb23f94532363b5cd6a</Anchor>
     <DeclaredIn>rti_local.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>RTI_NOT_EXECUTED_WITH_AUTH</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae546b6c6176fe607616181e144364f2b</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -11978,7 +10998,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__RTI.html</Path>
-    <Anchor>gac1d01420f22f3dc5dbdef49ffebdb443</Anchor>
+    <Anchor>ga614f81fe705224534d84b97254030fa1</Anchor>
     <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
@@ -12093,16 +11113,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>SHA256_HMAC_LENGTH</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gabd435507a255ff2571133013bdf93bd2</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>should_stop_locked</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -12123,16 +11133,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>shutdown_socket</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga365eba5b8b3f6445eeaffcb4435165c5</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>socket_stat_t</Name>
       <APILanguage>c</APILanguage>
       <Type>tdef</Type>
@@ -12140,46 +11140,6 @@
     <Path>group__Federated.html</Path>
     <Anchor>ga7e49fed082ec884e26d761e1c4f0d428</Anchor>
     <DeclaredIn>clock-sync.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>socket_type_t</Name>
-      <APILanguage>c</APILanguage>
-      <Type>enum</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga54c375e3893ff5969d20df65b90c8335</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>TCP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gga54c375e3893ff5969d20df65b90c8335aa040cd7feeb588104634cdadf35abf1c</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>UDP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gga54c375e3893ff5969d20df65b90c8335adb542475cf9d0636e4225e216cee9ae6</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>socket_type_t</Name>
-      <APILanguage>c</APILanguage>
-      <Type>tdef</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga45bb50f52b617bc6a30719cbaafd075d</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -12198,7 +11158,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__RTI.html</Path>
-    <Anchor>ga6cc1fe69c154d09d88de1f1c06eb4b0d</Anchor>
+    <Anchor>gadfcb2fedc086ab63276bfc442efa488d</Anchor>
     <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
@@ -12263,42 +11223,12 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>swap_bytes_if_big_endian_int32</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaeaff8773e0cba7d0f8a6d03b8f0f7766</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>swap_bytes_if_big_endian_int64</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaa548ffc52c264f564127b80f63170c33</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>swap_bytes_if_big_endian_uint16</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga48fa075b3a868790da8fb303a397cd60</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>synchronize_initial_physical_clock_with_rti</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Federated.html</Path>
-    <Anchor>ga3eba5f95a19f86a70d9d11fd2c736dd1</Anchor>
+    <Anchor>ga81643c3ea545b727bba5c1e9623ca068</Anchor>
     <DeclaredIn>clock-sync.h</DeclaredIn>
   </Token>
   <Token>
@@ -12310,26 +11240,6 @@
     <Path>group__RTI.html</Path>
     <Anchor>gaf849510938f837c74cfe8f843cb7dcb2</Anchor>
     <DeclaredIn>rti_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>TCP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gga54c375e3893ff5969d20df65b90c8335aa040cd7feeb588104634cdadf35abf1c</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>TCP_TIMEOUT_TIME</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gab1edbb864391382835b9ad71408c5c53</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -13313,36 +12223,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>UDP</Name>
-      <APILanguage>c</APILanguage>
-      <Type>econst</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gga54c375e3893ff5969d20df65b90c8335adb542475cf9d0636e4225e216cee9ae6</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>UDP_TIMEOUT_TIME</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaac9f4a449d302b4f39e69a14b3a4c8d5</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>UNEXPECTED_MESSAGE</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae2e1a44a10d4219f4645a4e99fee009c</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>unknown</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -13493,36 +12373,6 @@
   </Token>
   <Token>
     <TokenIdentifier>
-      <Name>validate_host</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga0f6ec1479ffe28cc089fe6b13e675f0e</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>validate_port</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga841bec9ddc3fb61c2b615f5d512dc3f0</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>validate_user</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga1285f4b0283c8e0c020e12e76a4426c2</Anchor>
-    <DeclaredIn>net_util.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
       <Name>VALUE_FREED</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -13638,7 +12488,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__RTI.html</Path>
-    <Anchor>ga005cb43e8e6c7795c8f0db27e2424475</Anchor>
+    <Anchor>ga54b6796240cd61f06bb111f6f29e2997</Anchor>
     <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
@@ -13720,46 +12570,6 @@
     <Path>group__Tracing.html</Path>
     <Anchor>ggab02e9e69539d60297cedb38c2193a453a9c6849445ded286ba9f914d3b1decd2a</Anchor>
     <DeclaredIn>trace_types.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>write_to_socket</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gae8d4b83faeac37f665666429742813f9</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>write_to_socket_close_on_error</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gaf88884c303b81143ef5ab7af4683a66c</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>write_to_socket_fail_on_error</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>gada8d9360bdf4e9d7f36bbfc7e682f06e</Anchor>
-    <DeclaredIn>socket_common.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>WRONG_SERVER</Name>
-      <APILanguage>unknown</APILanguage>
-      <Type>macro</Type>
-    </TokenIdentifier>
-    <Path>group__Federated.html</Path>
-    <Anchor>ga5a6c87886a0136b58ae5bb1d627c7ae3</Anchor>
-    <DeclaredIn>net_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>

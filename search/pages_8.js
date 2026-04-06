@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['neighbor_20structure_0',['Conveying the neighbor structure',['../net__common_8h.html#autotoc_md13',1,'']]]
+  ['platforms_0',['Supported Platforms',['../index.html#autotoc_md1',1,'']]]
 ];
