@@ -18,6 +18,7 @@
 #define CLOCK_SYNC_H
 
 #include "low_level_platform.h"
+#include "net_abstraction.h"
 
 #ifndef LF_CLOCK_SYNC
 /**
@@ -233,15 +234,15 @@ uint16_t setup_clock_synchronization_with_rti(void);
  * is required.
  *
  * This is a blocking function that expects
- * to read a MSG_TYPE_CLOCK_SYNC_T1 from the RTI TCP socket.
+ * to read a MSG_TYPE_CLOCK_SYNC_T1 from the RTI network abstraction.
  * It will then follow the PTP protocol to synchronize the local
  * physical clock with the RTI.
  * Failing to complete this protocol is treated as a catastrophic
  * error that causes the federate to exit.
  *
- * @param rti_socket_TCP Pointer to the RTI's socket
+ * @param rti_net Pointer to the RTI's network abstraction.
  */
-void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
+void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net);
 
 /**
  * @brief Handle a clock synchroninzation message T1 coming from the RTI.
@@ -252,31 +253,33 @@ void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
  * It also measures the time it takes between when the method is
  * called and the reply has been sent.
  * @param buffer The buffer containing the message, including the message type.
- * @param socket The socket (either _lf_rti_socket_TCP or _lf_rti_socket_UDP).
+ * @param net_abstraction_t The pointer to the network abstraction.
  * @param t2 The physical time at which the T1 message was received.
+ * @param socket_type The socket type (TCP or UDP).
  * @return 0 if T3 reply is successfully sent, -1 otherwise.
  */
-int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2);
+int handle_T1_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t t2, socket_type_t socket_type);
 
 /**
  * @brief Handle a clock synchronization message T4 coming from the RTI.
  * @ingroup Federated
  *
- * If the socket is _lf_rti_socket_TCP, then assume we are in the
+ * If the socket_or_net is a network abstraction, then assume we are in the
  * initial clock synchronization phase and set the clock offset
  * based on the estimated clock synchronization error.
- * Otherwise, if the socket is _lf_rti_socket_UDP, then this looks also for a
+ * Otherwise, if the socket_or_net is UDP socket, then this looks also for a
  * subsequent "coded probe" message on the socket. If the delay between
  * the T4 and the coded probe message is not as expected, then reject
  * this clock synchronization round. If it is not rejected, then make
  * an adjustment to the clock offset based on the estimated error.
- * This function does not acquire the socket_mutex lock.
+ * This function does not acquire the net_mutex lock.
  * The caller should acquire it unless it is sure there is only one thread running.
  * @param buffer The buffer containing the message, including the message type.
- * @param socket The socket (either _lf_rti_socket_TCP or _lf_rti_socket_UDP).
- * @param r4 The physical time at which this T4 message was received.
+ * @param net_abstraction_t The pointer to the network abstraction.
+ * @param r4 The physical time at which this T4 message was received.\
+ * @param socket_type The socket type (TCP or UDP).
  */
-void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r4);
+void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, instant_t r4, socket_type_t socket_type);
 
 /**
  * @brief Create the thread responsible for handling clock synchronization
