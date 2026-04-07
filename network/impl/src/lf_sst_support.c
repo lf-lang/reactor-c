@@ -66,7 +66,6 @@ int create_server(net_abstraction_t net_abs) {
                               &priv->socket_priv->port, TCP);
 }
 
-
 net_abstraction_t accept_net(net_abstraction_t server_chan) {
   LF_ASSERT_NON_NULL(server_chan);
   sst_priv_t* serv_priv = (sst_priv_t*)server_chan;
@@ -118,13 +117,15 @@ net_abstraction_t connect_to_net(net_params_t* params) {
   // Create the client network abstraction.
   create_client(net);
   // Connect to the target server.
-  if (connect_to_socket(priv->socket_priv->socket_descriptor, priv->socket_priv->server_hostname, priv->socket_priv->server_port) != 0) {
+  if (connect_to_socket(priv->socket_priv->socket_descriptor, priv->socket_priv->server_hostname,
+                        priv->socket_priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
     return NULL;
   }
   if (sst_params->target == 1) {
-    //Override target group to federates.
-    snprintf(priv->sst_ctx->config.purpose[ctx->config.purpose_index], sizeof(ctx->config.purpose[ctx->config.purpose_index]), "{\"group\":\"Federates\"}");
+    // Override target group to federates.
+    snprintf(priv->sst_ctx->config.purpose[ctx->config.purpose_index],
+             sizeof(ctx->config.purpose[ctx->config.purpose_index]), "{\"group\":\"Federates\"}");
   }
   session_key_list_t* s_key_list = get_session_key(priv->sst_ctx, NULL);
   SST_session_ctx_t* session_ctx =
@@ -138,54 +139,54 @@ int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* bu
   sst_priv_t* priv = (sst_priv_t*)net_abs;
 
   if (num_bytes > MAX_SECURE_COMM_MSG_LENGTH) {
-      lf_print_error("Unable to handle message. Expected: %zu, Maximum: %d", num_bytes, MAX_SECURE_COMM_MSG_LENGTH);
-      return -1;
+    lf_print_error("Unable to handle message. Expected: %zu, Maximum: %d", num_bytes, MAX_SECURE_COMM_MSG_LENGTH);
+    return -1;
   }
   size_t copied = 0;
   // 1) First use buffered data.
   if (priv->buf_off < priv->buf_filled) {
-      size_t avail = priv->buf_filled - priv->buf_off;
-      size_t to_copy = (avail < num_bytes) ? avail : num_bytes;
-      memcpy(buffer, priv->buffer + priv->buf_off, to_copy);
-      priv->buf_off += to_copy;
-      copied += to_copy;
+    size_t avail = priv->buf_filled - priv->buf_off;
+    size_t to_copy = (avail < num_bytes) ? avail : num_bytes;
+    memcpy(buffer, priv->buffer + priv->buf_off, to_copy);
+    priv->buf_off += to_copy;
+    copied += to_copy;
 
-      // Reset buffer offset when the buffer is all used.
-      if (priv->buf_off == priv->buf_filled) {
-          priv->buf_off = priv->buf_filled = 0;
-      }
-
-      // Return when the buffered data is enough.
-      if (copied == num_bytes) {
-        return 0;
-      }
+    // Reset buffer offset when the buffer is all used.
+    if (priv->buf_off == priv->buf_filled) {
+      priv->buf_off = priv->buf_filled = 0;
     }
+
+    // Return when the buffered data is enough.
+    if (copied == num_bytes) {
+      return 0;
+    }
+  }
 
   // 2) Additionally try to read more bytes.
   while (copied < num_bytes) {
-      int ret = read_secure_message(priv->buffer,  priv->session_ctx);
-      if (ret == 0) {
-        // EOF received.
-        return 1;
-      } else if (ret < 0) {
-          lf_print_error("read_secure_message failed: %d", ret);
-          return -1;
-      }
+    int ret = read_secure_message(priv->buffer, priv->session_ctx);
+    if (ret == 0) {
+      // EOF received.
+      return 1;
+    } else if (ret < 0) {
+      lf_print_error("read_secure_message failed: %d", ret);
+      return -1;
+    }
 
-      // Mark the filled length and reset offset.
-      priv->buf_filled = (size_t)ret;
-      priv->buf_off = 0;
+    // Mark the filled length and reset offset.
+    priv->buf_filled = (size_t)ret;
+    priv->buf_off = 0;
 
-      size_t need = num_bytes - copied;
-      size_t to_copy = (priv->buf_filled < need) ? priv->buf_filled : need;
-      memcpy(buffer + copied, priv->buffer + priv->buf_off, to_copy);
-      priv->buf_off += to_copy;
-      copied += to_copy;
+    size_t need = num_bytes - copied;
+    size_t to_copy = (priv->buf_filled < need) ? priv->buf_filled : need;
+    memcpy(buffer + copied, priv->buffer + priv->buf_off, to_copy);
+    priv->buf_off += to_copy;
+    copied += to_copy;
 
-      // Reset buffer offset when meets the end of the filled buffer.
-      if (priv->buf_off == priv->buf_filled) {
-          priv->buf_off = priv->buf_filled = 0;
-      }
+    // Reset buffer offset when meets the end of the filled buffer.
+    if (priv->buf_off == priv->buf_filled) {
+      priv->buf_off = priv->buf_filled = 0;
+    }
   }
 
   return 0;
@@ -225,7 +226,7 @@ void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, un
 int write_to_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
   LF_ASSERT_NON_NULL(net_abs);
   sst_priv_t* priv = (sst_priv_t*)net_abs;
-  return send_secure_message((char *)buffer, (unsigned int) num_bytes, priv->session_ctx);
+  return send_secure_message((char*)buffer, (unsigned int)num_bytes, priv->session_ctx);
 }
 
 int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer) {
@@ -278,7 +279,6 @@ int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
   return ret;
 }
 
-
 // Helper function.
 void lf_set_sst_config_path(const char* config_path) { sst_config_path = config_path; }
 
@@ -311,7 +311,7 @@ void set_my_port(net_abstraction_t net_abs, int32_t port) {
 void set_server_port(net_abstraction_t net_abs, int32_t port) {
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   priv->socket_priv->server_port = port;
-} 
+}
 
 void set_server_hostname(net_abstraction_t net_abs, const char* hostname) {
   sst_priv_t* priv = (sst_priv_t*)net_abs;

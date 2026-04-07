@@ -201,7 +201,8 @@ net_abstraction_t connect_to_net(net_params_t* params) {
 }
 
 static int is_disconnect_syscall(int err, int ret) {
-  if (err != SSL_ERROR_SYSCALL) return 0;
+  if (err != SSL_ERROR_SYSCALL)
+    return 0;
 
   if (ret == 0) {
     // Often: "unexpected EOF while reading" / peer closed without close_notify

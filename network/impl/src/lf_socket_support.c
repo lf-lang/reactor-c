@@ -187,7 +187,6 @@ int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
   return ret;
 }
 
-
 int32_t get_my_port(net_abstraction_t net_abs) {
   LF_ASSERT_NON_NULL(net_abs);
   socket_priv_t* priv = (socket_priv_t*)net_abs;

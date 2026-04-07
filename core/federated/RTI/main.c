@@ -276,7 +276,7 @@ int process_args(int argc, const char* argv[]) {
         return 0;
       }
       const char* cert_path = argv[i + 1];
-      const char* key_path  = argv[i + 2];
+      const char* key_path = argv[i + 2];
 
       // Optional: basic sanity check (avoid empty strings)
       if (cert_path[0] == '\0' || key_path[0] == '\0') {

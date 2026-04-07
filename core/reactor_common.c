@@ -1241,7 +1241,7 @@ int process_args(int argc, const char* argv[]) {
       }
 
       const char* cert_path = argv[i++];
-      const char* key_path  = argv[i++];
+      const char* key_path = argv[i++];
 
       if (cert_path[0] == '\0' || key_path[0] == '\0') {
         lf_print_error("--tls certificate_path and private_key_path must be non-empty.");

@@ -10,7 +10,7 @@ typedef struct sst_priv_t {
   SST_session_ctx_t* session_ctx;
   unsigned char buffer[MAX_SECURE_COMM_MSG_LENGTH];
   size_t buf_filled;
-  size_t buf_off; 
+  size_t buf_off;
 } sst_priv_t;
 
 typedef struct sst_connection_params_t {

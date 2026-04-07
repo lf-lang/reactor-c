@@ -18,7 +18,7 @@ typedef struct tls_priv_t {
 /**
  * @brief Structure for TLS connection parameters.
  * @ingroup Network
- */ 
+ */
 typedef struct tls_connection_params_t {
   /** @brief Common socket parameters. */
   socket_connection_params_t socket_params;
