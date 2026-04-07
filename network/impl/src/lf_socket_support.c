@@ -21,7 +21,7 @@ net_abstraction_t initialize_net() {
   // Initialize priv.
   socket_priv_t* priv = malloc(sizeof(socket_priv_t));
   if (priv == NULL) {
-    lf_print_error_and_exit("Falied to malloc socket_priv_t.");
+    lf_print_error_and_exit("Failed to malloc socket_priv_t.");
   }
 
   // Server initialization.
@@ -77,7 +77,7 @@ void create_client(net_abstraction_t net_abs) {
   priv->socket_descriptor = create_real_time_tcp_socket_errexit();
 }
 
-net_abstraction_t connect_to_net(net_params_t* params) {
+net_abstraction_t connect_to_net(net_params_t params) {
   // Create a network abstraction.
   net_abstraction_t net = initialize_net();
   socket_priv_t* priv = (socket_priv_t*)net;
@@ -116,6 +116,7 @@ int read_from_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, un
 
 void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer, char* format,
                                  ...) {
+  LF_ASSERT_NON_NULL(net_abs);
   va_list args;
   int read_failed = read_from_net_close_on_error(net_abs, num_bytes, buffer);
   if (read_failed) {
@@ -151,6 +152,7 @@ int write_to_net_close_on_error(net_abstraction_t net_abs, size_t num_bytes, uns
 
 void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex,
                                 char* format, ...) {
+  LF_ASSERT_NON_NULL(net_abs);
   va_list args;
   int result = write_to_net_close_on_error(net_abs, num_bytes, buffer);
   if (result) {

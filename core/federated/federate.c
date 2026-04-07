@@ -568,7 +568,23 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
   action->trigger->physical_time_of_arrival = time_of_arrival;
 
   // Create a token for the message
-  lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, length);
+  size_t element_size = ((token_type_t*)action)->element_size;
+  size_t element_count = 0;
+  if (element_size == 0) {
+    // Message might be being handled by a custom serializer, e.g. in Python.
+    // Treat the message as a byte array.
+    element_count = length;
+    element_size = 1;
+  } else {
+    element_count = length / element_size;
+    if (length % element_size != 0) {
+      // Log a warning if the payload size is not an exact multiple of element_size.
+      lf_print_warning("Received message for port %d with payload length %zu bytes not a multiple of element_size %zu; "
+                       "truncating to %zu elements.",
+                       port_id, (size_t)length, element_size, element_count);
+    }
+  }
+  lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, element_count);
 
   if (handle_message_now(env, action->trigger, intended_tag)) {
     // Since the message is intended for the current tag and a port absent reaction
@@ -730,7 +746,7 @@ static void* listen_to_federates(void* _args) {
     bool bad_message = false;
     if (read_from_net_close_on_error(net, 1, buffer)) {
       // network abstraction has been closed.
-      lf_print("network abstraction from federate %d is closed.", fed_id);
+      lf_print_info("network abstraction from federate %d is closed.", fed_id);
       // Stop listening to this federate.
       net_closed = true;
     } else {
@@ -927,7 +943,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   tag_t tag = {.time = timestamp, .microstep = 0};
   // Trace the event when tracing is enabled
   tracepoint_federate_from_rti(receive_TIMESTAMP, _lf_my_fed_id, &tag);
-  lf_print("Starting timestamp is: " PRINTF_TIME ".", timestamp);
+  lf_print_info("Starting timestamp is: " PRINTF_TIME ".", timestamp);
   LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
   return timestamp;
@@ -1501,11 +1517,13 @@ static void* listen_to_rti_net(void* args) {
     if (read_failed < 0) {
       lf_print_error("Connection to the RTI was closed by the RTI with an error. Considering this a soft error.");
       shutdown_net(_fed.net_to_RTI, false);
+      _fed.net_to_RTI = NULL;
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
-      lf_print("Connection to the RTI closed with an EOF.");
+      lf_print_info("Connection to the RTI closed with an EOF.");
       shutdown_net(_fed.net_to_RTI, false);
+      _fed.net_to_RTI = NULL;
       return NULL;
     }
     switch (buffer[0]) {
@@ -1716,6 +1734,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
     read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(host_ip_addr), (unsigned char*)&host_ip_addr,
                                 "Failed to read the IP address for federate %d from RTI.", remote_federate_id);
+    tracepoint_federate_from_rti(receive_ADR_QR_REP, _lf_my_fed_id, NULL);
 
     // A reply of -1 for the port means that the RTI does not know
     // the port number of the remote federate, presumably because the
@@ -1754,7 +1773,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   params.socket_params.server_hostname = hostname;
 #endif
 
-  net_abstraction_t net = connect_to_net((net_params_t*)&params);
+  net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to federate.");
   }
@@ -1813,7 +1832,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                        remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
       continue;
     } else {
-      lf_print("Connected to federate %d, port %hu.", remote_federate_id, uport);
+      lf_print_info("Connected to federate %d, port %hu.", remote_federate_id, uport);
       // Trace the event when tracing is enabled
       tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
       break;
@@ -1849,7 +1868,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   params.socket_params.server_hostname = hostname;
 #endif
 
-  net_abstraction_t net = connect_to_net((net_params_t*)&params);
+  net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to RTI.");
   }
@@ -1956,7 +1975,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
-  net_abstraction_t* server_net = initialize_net();
+  net_abstraction_t server_net = initialize_net();
   set_my_port(server_net, specified_port);
   if (create_server(server_net)) {
     lf_print_error_system_failure("Failed to create server: %s.", strerror(errno));
@@ -2041,6 +2060,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         write_to_net(net, 2, response);
       }
       shutdown_net(net, false);
+      net = NULL;
       continue;
     }
 
@@ -2061,6 +2081,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         write_to_net(net, 2, response);
       }
       shutdown_net(net, false);
+      net = NULL;
       continue;
     }
 

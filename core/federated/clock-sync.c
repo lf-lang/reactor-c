@@ -192,7 +192,7 @@ void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net) {
     // Handle the message and send a reply T3 message.
     // NOTE: No need to acquire the mutex lock during initialization because only
     // one thread is running.
-    if (handle_T1_clock_sync_message(buffer, (void*)rti_net, receive_time, false) != 0) {
+    if (handle_T1_clock_sync_message(buffer, (void*)rti_net, receive_time, TCP) != 0) {
       lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
     }
 
@@ -207,7 +207,7 @@ void synchronize_initial_physical_clock_with_rti(net_abstraction_t rti_net) {
     }
 
     // Handle the message.
-    handle_T4_clock_sync_message(buffer, (void*)rti_net, receive_time, false);
+    handle_T4_clock_sync_message(buffer, (void*)rti_net, receive_time, TCP);
   }
 
   LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
@@ -439,7 +439,7 @@ static void* listen_to_rti_UDP_thread(void* args) {
           break;
         }
         connected = true;
-        if (handle_T1_clock_sync_message(buffer, (void*)&_lf_rti_socket_UDP, receive_time, true) != 0) {
+        if (handle_T1_clock_sync_message(buffer, (void*)&_lf_rti_socket_UDP, receive_time, UDP) != 0) {
           // Failed to send T3 reply. Wait for the next T1.
           waiting_for_T1 = true;
           continue;
@@ -452,7 +452,7 @@ static void* listen_to_rti_UDP_thread(void* args) {
         continue;
       }
     } else if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T4) {
-      handle_T4_clock_sync_message(buffer, (void*)&_lf_rti_socket_UDP, receive_time, true);
+      handle_T4_clock_sync_message(buffer, (void*)&_lf_rti_socket_UDP, receive_time, UDP);
       waiting_for_T1 = true;
     } else {
       lf_print_warning("Clock sync: Received from RTI an unexpected UDP message type: %u. "

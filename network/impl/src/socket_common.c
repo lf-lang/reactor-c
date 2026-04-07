@@ -99,8 +99,6 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
 
   int result = bind(socket_descriptor, (struct sockaddr*)&server_fd, sizeof(server_fd));
 
-  // Try repeatedly to bind to a port.
-
   // Set the global server port.
   if (specified_port == 0) {
     // Need to retrieve the port number assigned by the OS.
@@ -265,7 +263,7 @@ int connect_to_socket(int sock, const char* hostname, int port) {
     }
   }
   freeaddrinfo(result);
-  lf_print("Connected to %s:%d.", hostname, used_port);
+  lf_print_info("Connected to %s:%d.", hostname, used_port);
   return ret;
 }
 

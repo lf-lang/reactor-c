@@ -27,7 +27,6 @@
  * @brief Pointer to whatever data structure is used to maintain the state of a network connection or service.
  * @ingroup Network
  *
- * Pointer to whatever data structure is used to maintain the state of a network connection or service.
  * For example, this could point to an integer socket identifier if TCP is being used for network connections.
  */
 typedef void* net_abstraction_t;
@@ -47,16 +46,15 @@ typedef void* net_params_t;
  * @brief Allocate and initialize a network abstraction handle.
  * @ingroup Network
  *
- * Allocate memory for the network abstraction.
  * @return net_abstraction_t Initialized network abstraction.
  */
 net_abstraction_t initialize_net();
 
 /**
- * @brief Create a server network abstraction that will accept incoming connections.
+ * @brief Create a server network server that will accept incoming connections.
  * @ingroup Network
  *
- * Create a network abstraction server. For example, this might be a server socket that accepts connections.
+ * For example, this might be a server socket that accepts connections.
  *
  * @param net_abs Server's network abstraction as returned by `initialize_net`.
  * @return int 0 for success, -1 for failure.
@@ -98,7 +96,7 @@ void create_client(net_abstraction_t net_abs);
  * @param params Pointer to implementation-specific connection parameters.
  * @return A connected network abstraction on success, or NULL on failure.
  */
-net_abstraction_t connect_to_net(net_params_t* params);
+net_abstraction_t connect_to_net(net_params_t params);
 
 /**
  * @brief Read a fixed number of bytes from a network abstraction.
@@ -219,7 +217,6 @@ bool is_net_open(net_abstraction_t net_abs);
  * SHUT_WR, then read() until EOF and discard received bytes before closing.
  *
  * @param net_abs The network abstraction to shut down and close.
- * @param net_abs The network abstraction to shutdown and close.
  * @param read_before_closing If true, read until EOF before closing the network abstraction.
  * @return int Returns 0 on success, -1 on failure (errno will indicate the error).
  */
