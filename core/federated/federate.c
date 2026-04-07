@@ -948,7 +948,7 @@ static void handle_upstream_connected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
   read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer,
-                                 "Failed to read upstream connected message from RTI.");
+                              "Failed to read upstream connected message from RTI.");
   uint16_t connected = extract_uint16(buffer);
   LF_PRINT_DEBUG("Received notification that upstream federate %d has connected", connected);
   // Mark the upstream as connected.
@@ -967,7 +967,7 @@ static void handle_upstream_disconnected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
   read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer,
-                                 "Failed to read upstream disconnected message from RTI.");
+                              "Failed to read upstream disconnected message from RTI.");
   uint16_t disconnected = extract_uint16(buffer);
   LF_PRINT_DEBUG("Received notification that upstream federate %d has disconnected", disconnected);
   // Mark the upstream as disconnected.
@@ -997,8 +997,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   unsigned char buffer[buffer_length];
 
   while (true) {
-    read_from_net_fail_on_error(_fed.net_to_RTI, 1, buffer,
-                                   "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
+    read_from_net_fail_on_error(_fed.net_to_RTI, 1, buffer, "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
     // First byte received is the message ID.
     if (buffer[0] != MSG_TYPE_TIMESTAMP) {
       if (buffer[0] == MSG_TYPE_FAILED) {
@@ -1017,7 +1016,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
       }
     } else {
       read_from_net_fail_on_error(_fed.net_to_RTI, buffer_length - 1, buffer + 1,
-                                     "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
+                                  "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
       break;
     }
   }

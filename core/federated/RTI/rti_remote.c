@@ -2092,7 +2092,7 @@ void send_stop(federate_info_t* fed) {
     tracepoint_rti_to_federate(send_STOP, fed->enclave.id, NULL);
   }
   write_to_net_fail_on_error(fed->net, MSG_TYPE_STOP_LENGTH, outgoing_buffer, NULL,
-                                "RTI failed to send MSG_TYPE_STOP message to federate %d.", fed->enclave.id);
+                             "RTI failed to send MSG_TYPE_STOP message to federate %d.", fed->enclave.id);
 
   LF_PRINT_LOG("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
 }
