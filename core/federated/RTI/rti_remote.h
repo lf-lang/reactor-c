@@ -454,10 +454,8 @@ void initialize_federate(federate_info_t* fed, uint16_t id);
 void reset_transient_federate(federate_info_t* fed);
 
 /**
- * @brief Start the socket server for the runtime infrastructure (RTI) and return the socket descriptor.
+ * @brief Start the server for the runtime infrastructure (RTI).
  * @ingroup RTI
- *
- * @param port The port on which to listen for socket connections, or 0 to use the default port range.
  */
 int start_rti_server();
 
