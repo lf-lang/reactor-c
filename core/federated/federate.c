@@ -967,7 +967,7 @@ static void handle_upstream_connected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
   read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer,
-                                 "Failed to read upstream connected message from RTI.");
+                              "Failed to read upstream connected message from RTI.");
   uint16_t connected = extract_uint16(buffer);
   tracepoint_federate_from_rti(receive_UPSTREAM_CONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that upstream federate %d has connected", connected);
@@ -987,7 +987,7 @@ static void handle_upstream_disconnected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
   read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer,
-                                 "Failed to read upstream disconnected message from RTI.");
+                              "Failed to read upstream disconnected message from RTI.");
   uint16_t disconnected = extract_uint16(buffer);
   tracepoint_federate_from_rti(receive_UPSTREAM_DISCONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that upstream federate %d has disconnected", disconnected);
@@ -1011,7 +1011,7 @@ static void handle_outbound_connected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
   read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer, NULL,
-                                 "Failed to read outbound connected message from RTI.");
+                              "Failed to read outbound connected message from RTI.");
   uint16_t remote_federate_id = extract_uint16(buffer);
   tracepoint_federate_from_rti(receive_OUTBOUND_CONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that outbound transient federate %d has connected.", remote_federate_id);
@@ -1029,7 +1029,7 @@ static void handle_outbound_disconnected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
   read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer, NULL,
-                                 "Failed to read outbound disconnected message from RTI.");
+                              "Failed to read outbound disconnected message from RTI.");
   uint16_t remote_federate_id = extract_uint16(buffer);
   tracepoint_federate_from_rti(receive_OUTBOUND_DISCONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that downstream transient federate %d has disconnected.", remote_federate_id);
@@ -1068,8 +1068,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   size_t num_pending_downstream = 0;
 
   while (true) {
-    read_from_net_fail_on_error(_fed.net_to_RTI, 1, buffer,
-                                   "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
+    read_from_net_fail_on_error(_fed.net_to_RTI, 1, buffer, "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
     // First byte received is the message ID.
     if (buffer[0] != MSG_TYPE_TIMESTAMP) {
       if (buffer[0] == MSG_TYPE_FAILED) {
@@ -1096,7 +1095,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
         // would consume those bytes and crash with "Unexpected reply of type 2".
         unsigned char id_buf[sizeof(uint16_t)];
         read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(uint16_t), id_buf, NULL,
-                                       "Failed to read outbound connected federate ID.");
+                                    "Failed to read outbound connected federate ID.");
         tracepoint_federate_from_rti(receive_OUTBOUND_CONNECTED, _lf_my_fed_id, NULL);
         uint16_t remote_federate_id = extract_uint16(id_buf);
         LF_PRINT_DEBUG("Deferring P2P connection to downstream transient federate %d until after "
@@ -1112,7 +1111,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
       }
     } else {
       read_from_net_fail_on_error(_fed.net_to_RTI, buffer_length - 1, buffer + 1,
-                                     "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
+                                  "Failed to read MSG_TYPE_TIMESTAMP message from RTI.");
       break;
     }
   }
@@ -2053,7 +2052,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient) {
     // (e.g. macOS resets the TCP connection if the accept loop hasn't run yet) is
     // a soft error: the RTI will resend MSG_TYPE_OUTBOUND_CONNECTED when the transient
     // is ready. Using the non-fatal read here prevents a spurious fatal exit on macOS.
-    int ack_read_failed = read_from_net_fail_on_error(net, 1, (unsigned char*)buffer);
+    int ack_read_failed = read_from_net(net, 1, (unsigned char*)buffer);
     if (ack_read_failed) {
       if (is_transient) {
         lf_print_warning("Failed to read MSG_TYPE_ACK from transient federate %d. Connection may have been reset. "
