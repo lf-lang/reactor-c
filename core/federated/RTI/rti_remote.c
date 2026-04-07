@@ -2292,7 +2292,8 @@ void reset_transient_federate(federate_info_t* fed) {
   fed->enclave.last_provisionally_granted = NEVER_TAG;
   fed->enclave.next_event = NEVER_TAG;
   // Reset of the federate-related attributes
-  free_net(fed->net) fed->net = initialize_net();
+  shutdown_net(fed->net, false);
+  fed->net = initialize_net();
   fed->clock_synchronization_enabled = true;
   // FIXME: The following two lines can be improved?
   pqueue_tag_free(fed->in_transit_message_tags);
