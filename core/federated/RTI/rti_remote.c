@@ -292,7 +292,7 @@ static void send_outbound_connected_locked(federate_info_t* my_fed) {
     }
     for (int32_t j = 0; j < fed->number_of_outbound_transients; j++) {
       if (fed->outbound_transients[j] == (int32_t)my_fed->enclave.id) {
-        if (write_to_socket_close_on_error(&fed->socket, MSG_TYPE_OUTBOUND_CONNECTED_LENGTH, buffer)) {
+        if (write_to_net_close_on_error(fed->net, MSG_TYPE_OUTBOUND_CONNECTED_LENGTH, buffer)) {
           lf_print_warning("RTI: Failed to send outbound connected message to federate %d.", fed->enclave.id);
         }
         if (rti_remote->base.tracing_enabled) {
@@ -325,7 +325,7 @@ static void send_outbound_disconnected_locked(federate_info_t* my_fed) {
     }
     for (int32_t j = 0; j < fed->number_of_outbound_transients; j++) {
       if (fed->outbound_transients[j] == (int32_t)my_fed->enclave.id) {
-        if (write_to_socket_close_on_error(&fed->socket, MSG_TYPE_OUTBOUND_DISCONNECTED_LENGTH, buffer)) {
+        if (write_to_net_close_on_error(fed->net, MSG_TYPE_OUTBOUND_DISCONNECTED_LENGTH, buffer)) {
           lf_print_warning("RTI: Failed to send outbound disconnected message to federate %d.", fed->enclave.id);
         }
         if (rti_remote->base.tracing_enabled) {

@@ -1005,12 +1005,12 @@ static void handle_upstream_disconnected_message(void) {
  * Reads the outbound federate's ID, then synchronously queries the RTI for its address
  * and establishes (or re-establishes) the outbound P2P connection to it.
  * This function is called inline from listen_to_rti_TCP or get_start_time_from_rti,
- * so it reads the address-query reply directly from socket_TCP_RTI.
+ * so it reads the address-query reply directly from net_to_RTI.
  */
 static void handle_outbound_connected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
-  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+  read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer, NULL,
                                  "Failed to read outbound connected message from RTI.");
   uint16_t remote_federate_id = extract_uint16(buffer);
   tracepoint_federate_from_rti(receive_OUTBOUND_CONNECTED, _lf_my_fed_id, NULL);
@@ -1023,18 +1023,18 @@ static void handle_outbound_connected_message(void) {
 /**
  * @brief Handle message from the RTI that a transient downstream federate has disconnected.
  *
- * Reads the downstream federate's ID and closes the outbound P2P socket to it.
+ * Reads the downstream federate's ID and closes the outbound P2P net to it.
  */
 static void handle_outbound_disconnected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
-  read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+  read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer, NULL,
                                  "Failed to read outbound disconnected message from RTI.");
   uint16_t remote_federate_id = extract_uint16(buffer);
   tracepoint_federate_from_rti(receive_OUTBOUND_DISCONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that downstream transient federate %d has disconnected.", remote_federate_id);
 
-  shutdown_socket(&_fed.sockets_for_outbound_p2p_connections[remote_federate_id], false);
+  shutdown_net(_fed.net_for_outbound_p2p_connections[remote_federate_id], false);
 }
 
 /**
@@ -1059,7 +1059,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   // here is unsafe because the RTI may have already written MSG_TYPE_TIMESTAMP into this
   // federate's TCP stream immediately after MSG_TYPE_OUTBOUND_CONNECTED (from a concurrent
   // send_start_tag_locked call for the transient federate). If we call lf_connect_to_federate()
-  // now it will read from the socket expecting MSG_TYPE_ADDRESS_QUERY_REPLY but will instead
+  // now it will read from the net_abs expecting MSG_TYPE_ADDRESS_QUERY_REPLY but will instead
   // consume the queued MSG_TYPE_TIMESTAMP bytes, causing a fatal "Unexpected reply of type 2".
   // Fix: read and save each downstream federate ID, then call lf_connect_to_federate() for
   // each one only after MSG_TYPE_TIMESTAMP has been received and the loop has exited.
@@ -1089,13 +1089,13 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
         continue;
       } else if (buffer[0] == MSG_TYPE_OUTBOUND_CONNECTED) {
         // Defer lf_connect_to_federate() until after MSG_TYPE_TIMESTAMP is received.
-        // Read the federate ID payload now to drain the socket, but do not attempt the
-        // address query yet: the RTI may have written MSG_TYPE_TIMESTAMP into this socket
+        // Read the federate ID payload now to drain the net_abs, but do not attempt the
+        // address query yet: the RTI may have written MSG_TYPE_TIMESTAMP into this net_abs
         // right after MSG_TYPE_OUTBOUND_CONNECTED (from send_start_tag_locked running
         // concurrently for the joining transient), so any read inside lf_connect_to_federate
         // would consume those bytes and crash with "Unexpected reply of type 2".
         unsigned char id_buf[sizeof(uint16_t)];
-        read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, sizeof(uint16_t), id_buf, NULL,
+        read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(uint16_t), id_buf, NULL,
                                        "Failed to read outbound connected federate ID.");
         tracepoint_federate_from_rti(receive_OUTBOUND_CONNECTED, _lf_my_fed_id, NULL);
         uint16_t remote_federate_id = extract_uint16(id_buf);
@@ -1962,7 +1962,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient) {
                                 "Failed to read the requested port number for federate %d from RTI.",
                                 remote_federate_id);
 
-    LF_MUTEX_UNLOCK(&lf_outbound_socket_mutex);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
 
     if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
       // Unexpected reply. Could be that RTI has failed and sent a resignation.
@@ -2463,8 +2463,8 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   }
 
   // If there are outbound transients, check whether the destination is one of them.
-  // If it is and its socket is shut, gracefully skip the send.
-  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.sockets_for_outbound_p2p_connections[federate] < 0) {
+  // If it is and its net_abs is shut, gracefully skip the send.
+  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.net_for_outbound_p2p_connections[federate] < 0) {
     lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
     return 0;
   }
@@ -2763,7 +2763,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     lf_print_error("lf_send_message: Unsupported message type (%d).", message_type);
     return -1;
   }
-  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.sockets_for_outbound_p2p_connections[federate] < 0) {
+  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.net_for_outbound_p2p_connections[federate] < 0) {
     // Only print a warning if the destination is a known outbound transient.
     lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
     return 0;
