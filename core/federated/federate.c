@@ -2463,7 +2463,7 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
 
   // If there are outbound transients, check whether the destination is one of them.
   // If it is and its net_abs is shut, gracefully skip the send.
-  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.net_for_outbound_p2p_connections[federate] < 0) {
+  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.net_for_outbound_p2p_connections[federate] == NULL) {
     lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
     return 0;
   }
@@ -2762,7 +2762,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     lf_print_error("lf_send_message: Unsupported message type (%d).", message_type);
     return -1;
   }
-  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.net_for_outbound_p2p_connections[federate] < 0) {
+  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.net_for_outbound_p2p_connections[federate] == NULL) {
     // Only print a warning if the destination is a known outbound transient.
     lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
     return 0;
