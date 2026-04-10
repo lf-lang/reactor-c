@@ -661,9 +661,8 @@ void _lf_check_and_perform_rekey(void);
  * _lf_check_and_perform_rekey().
  *
  * @param net_abs The network abstraction for the RTI connection.
- * @param buffer The buffer containing the incoming message.
  */
-void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer);
+void handle_rti_session_key_ack(net_abstraction_t net_abs);
 
 /**
  * @brief Handle a session key refresh request from a federate

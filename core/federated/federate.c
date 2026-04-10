@@ -1671,7 +1671,7 @@ static void* listen_to_rti_net(void* args) {
       lf_print_error("Federate %d received unexpected clock sync message from RTI.", _lf_my_fed_id);
       break;
     case MSG_TYPE_SST_KEY_ACK:
-      handle_rti_session_key_ack(_fed.net_to_RTI, buffer);
+      handle_rti_session_key_ack(_fed.net_to_RTI);
       break;
     default:
       lf_print_error_and_exit("Received from RTI an unrecognized message type: %hhx.", buffer[0]);
@@ -2978,7 +2978,7 @@ void _lf_check_and_perform_rekey(void){
   #endif
 }
 
-void handle_rti_session_key_ack(net_abstraction_t net_abs, unsigned char* buffer){
+void handle_rti_session_key_ack(net_abstraction_t net_abs){
   unsigned char key_id[SESSION_KEY_ID_SIZE];
   read_from_net_fail_on_error(net_abs, SESSION_KEY_ID_SIZE, key_id, NULL);
   if(!verify_pending_key_id(net_abs, key_id)){
