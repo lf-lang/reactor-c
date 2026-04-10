@@ -74,9 +74,8 @@ int lf_initialize_double(const char* filename, char delimiter, size_t row_number
         if (end != fields[i] && *end == '\0') {
           *out = parsed;
         } else {
-          lf_print_error(
-              "Failed to parse numeric value \"%s\" at row %zu, column %zu in \"%s\".",
-              fields[i], row_number, i, filename);
+          lf_print_error("Failed to parse numeric value \"%s\" at row %zu, column %zu in \"%s\".", fields[i],
+                         row_number, i, filename);
         }
       }
       va_end(ap);

@@ -4,20 +4,20 @@
  *
  * @brief Utlitity functions for initializing parameters and state variables from a file.
  *
- * To use these functions, create a file that contains the parameter or state variable 
+ * To use these functions, create a file that contains the parameter or state variable
  * values, separated by a delimiter of your choice. For example, if you have parameters
  * `x`, `y`, and `z` of type doublethat you want to initialize from a file `params.csv`,
  * you can create a file `params.csv` that contains the values for `x`, `y`, and `z`:
- * 
+ *
  * ```csv
  * x,y,z
  * 1.0,2.0,3.0
  * 4.0,5.0,6.0
  * ```
  * Including a header row with the names of the parameters is optional (but recommended).
- * 
+ *
  * Then, you can initialize the parameters from the file `params.csv` as follows:
- * 
+ *
  * ```lf-c
  * main reactor MyReactor(x: double = 0.0, y: double = 0.0, z: double = 0.0, row_number: int = 0) {
  *   reaction(startup) {=
@@ -28,19 +28,19 @@
  * The `row_number` parameter is the row number of the file to initialize from.
  * If the `row_number` is a top-level parameter (of the main reactor), then you
  * can override this parameter on the command line when running the program as follows:
- * 
+ *
  * ```
  * ./MyReactor --row_number=1
  * ```
  *
- * If you want to initialize state variables rather than parameters, then you can 
+ * If you want to initialize state variables rather than parameters, then you can
  * initialize them in the startup reaction as follows:
- * 
+ *
  * ```lf-c
  * reaction(startup) {=
  *   lf_initialize_double("params.csv", ',', self->row_number, &self->x, &self->y, &self->z, NULL);
  * =}
- * 
+ *
  * If you have reactors within a bank, then you can declare a `bank_index` parameter
  * and use it to calculate the row number of the file to initialize from. For example:
  * ```lf-c
