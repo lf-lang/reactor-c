@@ -9,6 +9,8 @@
 #define INITIALIZE_FROM_FILE_H
 
 #include <stddef.h> // Defines size_t
+#include "reactor.h"
+#include "lf_types.h"
 
 #define SC_CSV_LINE_MAX 256
 #define SC_CSV_MAX_COLS 256
@@ -197,12 +199,24 @@ int lf_initialize_int(const char* filename, char delimiter, size_t row_number, .
  * terminated with NULL. If a field is enclosed in quotation marks (double or single), the marks
  * are stripped. Memory for each string is allocated using `lf_allocate` and recorded in the
  * reactor's allocation list so that it is freed automatically when the reactor is freed.
+ * 
+ * This macro is meant to be called from a reaction, not directly. If you wish to call it from
+ * somewhere other than a reaction, you can use the following function:
+ * ```lf-c
+ * int _lf_initialize_string(const char* filename, char delimiter, size_t row_number,
+ *                          struct allocation_record_t** allocations, ...);
+ * ```
+ * If you pass NULL for the allocations parameter, then you will be responsible for freeing the allocated memory.
  * Example:
  * ```
  *   char* a;
  *   char* b;
- *   int count = lf_initialize_string("x.csv", ',', 2, &a, &b, NULL);
+ *   int count = _lf_initialize_string("x.csv", ',', 2, NULL, &a, &b, NULL);
+ *   ...
+ *   free(a);
+ *   free(b);
  * ```
+ * 
  * This will read the third row of the file "x.csv" (row numbers start from 0)
  * and parse the values into the variables `a` and `b`.
  * The file "x.csv" may look like this::
@@ -212,6 +226,7 @@ int lf_initialize_int(const char* filename, char delimiter, size_t row_number, .
  * foo,bar
  * ```
  * The quotation marks are optional and will be stripped if present.
+ * Note that putting a delimiter within the quotation marks is not supported and will give unpredictable results.
  * Including a header row with the names of the variables is optional (but recommended).
  *
  * The return value is the number of values parsed (2 in this case), or -1 if an error occurred,
