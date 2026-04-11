@@ -5,9 +5,10 @@
 #include <stdarg.h>
 
 #include "logging/api/logging.h"
+#include "reactor.h"
 #include "initialize_from_file.h"
 
-typedef enum { LF_TYPE_DOUBLE, LF_TYPE_INT } lf_numeric_type;
+typedef enum { LF_TYPE_DOUBLE, LF_TYPE_INT, LF_TYPE_STRING } lf_field_type;
 
 /** Remove leading and trailing whitespace from the string. */
 static void sc_csv_trim(char* s) {
@@ -41,11 +42,12 @@ static int sc_csv_split(char* line, char delimiter, char** fields, int max_field
 }
 
 /**
- * Shared implementation for lf_initialize_double and lf_initialize_int.
- * The `type` parameter selects whether va_arg pointers are double* or int*.
+ * Shared implementation for lf_initialize_double, lf_initialize_int, and _lf_initialize_string.
+ * The `type` parameter selects the expected va_arg pointer type (double*, int*, or char**).
+ * The `allocations` parameter is used only for LF_TYPE_STRING to record allocated memory.
  */
-static int lf_initialize_numeric(const char* filename, char delimiter, size_t row_number, lf_numeric_type type,
-                                 va_list ap) {
+static int lf_initialize_fields(const char* filename, char delimiter, size_t row_number, lf_field_type type,
+                                struct allocation_record_t** allocations, va_list ap) {
   size_t pointer_count = 0;
   FILE* f = fopen(filename, "r");
   if (!f) {
@@ -68,11 +70,12 @@ static int lf_initialize_numeric(const char* filename, char delimiter, size_t ro
       char* fields[SC_CSV_MAX_COLS];
       int field_count = sc_csv_split(row, delimiter, fields, SC_CSV_MAX_COLS);
       for (size_t i = 0; i < (size_t)field_count; i++) {
+        sc_csv_trim(fields[i]);
         if (type == LF_TYPE_DOUBLE) {
           double* out = va_arg(ap, double*);
-          if (out == NULL) break;
+          if (out == NULL)
+            break;
           pointer_count++;
-          sc_csv_trim(fields[i]);
           char* end = NULL;
           double parsed = strtod(fields[i], &end);
           if (end != fields[i] && *end == '\0') {
@@ -81,11 +84,11 @@ static int lf_initialize_numeric(const char* filename, char delimiter, size_t ro
             lf_print_error("Failed to parse numeric value \"%s\" at row %zu, column %zu in \"%s\".", fields[i],
                            row_number, i, filename);
           }
-        } else {
+        } else if (type == LF_TYPE_INT) {
           int* out = va_arg(ap, int*);
-          if (out == NULL) break;
+          if (out == NULL)
+            break;
           pointer_count++;
-          sc_csv_trim(fields[i]);
           char* end = NULL;
           long parsed = strtol(fields[i], &end, 10);
           if (end != fields[i] && *end == '\0') {
@@ -94,6 +97,22 @@ static int lf_initialize_numeric(const char* filename, char delimiter, size_t ro
             lf_print_error("Failed to parse integer value \"%s\" at row %zu, column %zu in \"%s\".", fields[i],
                            row_number, i, filename);
           }
+        } else {
+          char** out = va_arg(ap, char**);
+          if (out == NULL)
+            break;
+          pointer_count++;
+          char* field = fields[i];
+          size_t len = strlen(field);
+          if (len >= 2 &&
+              ((field[0] == '"' && field[len - 1] == '"') || (field[0] == '\'' && field[len - 1] == '\''))) {
+            field++;
+            len -= 2;
+          }
+          char* str = (char*)lf_allocate(len + 1, sizeof(char), allocations);
+          memcpy(str, field, len);
+          str[len] = '\0';
+          *out = str;
         }
       }
       fclose(f);
@@ -109,7 +128,7 @@ static int lf_initialize_numeric(const char* filename, char delimiter, size_t ro
 int lf_initialize_double(const char* filename, char delimiter, size_t row_number, ...) {
   va_list ap;
   va_start(ap, row_number);
-  int result = lf_initialize_numeric(filename, delimiter, row_number, LF_TYPE_DOUBLE, ap);
+  int result = lf_initialize_fields(filename, delimiter, row_number, LF_TYPE_DOUBLE, NULL, ap);
   va_end(ap);
   return result;
 }
@@ -117,7 +136,16 @@ int lf_initialize_double(const char* filename, char delimiter, size_t row_number
 int lf_initialize_int(const char* filename, char delimiter, size_t row_number, ...) {
   va_list ap;
   va_start(ap, row_number);
-  int result = lf_initialize_numeric(filename, delimiter, row_number, LF_TYPE_INT, ap);
+  int result = lf_initialize_fields(filename, delimiter, row_number, LF_TYPE_INT, NULL, ap);
+  va_end(ap);
+  return result;
+}
+
+int _lf_initialize_string(const char* filename, char delimiter, size_t row_number,
+                          struct allocation_record_t** allocations, ...) {
+  va_list ap;
+  va_start(ap, allocations);
+  int result = lf_initialize_fields(filename, delimiter, row_number, LF_TYPE_STRING, allocations, ap);
   va_end(ap);
   return result;
 }
