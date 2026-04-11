@@ -2,7 +2,7 @@
  * @file
  * @author Edward A. Lee
  *
- * @brief Utlitity functions for initializing parameters and state variables from a file.
+ * @brief Utility functions for initializing parameters and state variables from a file.
  * @ingroup Utilities
  */
 #ifndef INITIALIZE_FROM_FILE_H

@@ -61,12 +61,20 @@ static int lf_initialize_fields(const char* filename, char delimiter, size_t row
     if (row_count == row_number) {
       char* row = &line[0];
       // Remove the UTF-8 BOM (byte-order mark) if it exists.
-      if ((unsigned char)line[0] == 0xEF && (unsigned char)line[1] == 0xBB && (unsigned char)line[2] == 0xBF) {
+      size_t line_length = strlen(row);
+      if (line_length >= 3 && (unsigned char)row[0] == 0xEF && (unsigned char)row[1] == 0xBB &&
+          (unsigned char)line[2] == 0xBF) {
         row += 3;
+        line_length -= 3;
       }
       // Terminate the last item in the line with a null character.
       row[strcspn(row, "\r\n")] = '\0';
-
+      line_length = strcspn(row, "\r\n");
+      if (line_length >= SC_CSV_LINE_MAX) {
+        lf_print_error("Line too long in file \"%s\".", filename);
+        fclose(f);
+        return -1;
+      }
       char* fields[SC_CSV_MAX_COLS];
       int field_count = sc_csv_split(row, delimiter, fields, SC_CSV_MAX_COLS);
       for (size_t i = 0; i < (size_t)field_count; i++) {
@@ -83,6 +91,7 @@ static int lf_initialize_fields(const char* filename, char delimiter, size_t row
           } else {
             lf_print_error("Failed to parse numeric value \"%s\" at row %zu, column %zu in \"%s\".", fields[i],
                            row_number, i, filename);
+            return -1;
           }
         } else if (type == LF_TYPE_INT) {
           int* out = va_arg(ap, int*);
@@ -96,6 +105,7 @@ static int lf_initialize_fields(const char* filename, char delimiter, size_t row
           } else {
             lf_print_error("Failed to parse integer value \"%s\" at row %zu, column %zu in \"%s\".", fields[i],
                            row_number, i, filename);
+            return -1;
           }
         } else {
           char** out = va_arg(ap, char**);
