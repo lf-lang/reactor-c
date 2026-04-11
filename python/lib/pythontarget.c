@@ -266,6 +266,8 @@ PyObject* py_update_deadline(PyObject* self, PyObject* args) {
     return NULL;
   }
   lf_update_deadline(self_ptr, updated_deadline);
+
+  Py_INCREF(Py_None);
   return Py_None;
 }
 
