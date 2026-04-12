@@ -203,7 +203,7 @@ int lf_initialize_int(const char* filename, char delimiter, size_t row_number, .
  * terminated with NULL. If a field is enclosed in quotation marks (double or single), the marks
  * are stripped. Memory for each string is allocated using `lf_allocate` and recorded in the
  * reactor's allocation list so that it is freed automatically when the reactor is freed.
- * 
+ *
  * This macro is meant to be called from a reaction, not directly. If you wish to call it from
  * somewhere other than a reaction, you can use the following function:
  * ```lf-c
@@ -220,7 +220,7 @@ int lf_initialize_int(const char* filename, char delimiter, size_t row_number, .
  *   free(a);
  *   free(b);
  * ```
- * 
+ *
  * This will read the third row of the file "x.csv" (row numbers start from 0)
  * and parse the values into the variables `a` and `b`.
  * The file "x.csv" may look like this::

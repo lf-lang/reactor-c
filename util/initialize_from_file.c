@@ -70,8 +70,7 @@ static int lf_initialize_fields(const char* filename, char delimiter, size_t row
         return -1;
       }
       char* row = &line[0];
-      if (len >= 3 && (unsigned char)row[0] == 0xEF && (unsigned char)row[1] == 0xBB &&
-          (unsigned char)row[2] == 0xBF) {
+      if (len >= 3 && (unsigned char)row[0] == 0xEF && (unsigned char)row[1] == 0xBB && (unsigned char)row[2] == 0xBF) {
         row += 3;
       }
       row[strcspn(row, "\r\n")] = '\0';
@@ -135,7 +134,8 @@ static int lf_initialize_fields(const char* filename, char delimiter, size_t row
       // Consume the rest of this over-long line so it counts as one row.
       while (fgets(line, sizeof(line), f)) {
         len = strlen(line);
-        if ((len > 0 && line[len - 1] == '\n') || feof(f)) break;
+        if ((len > 0 && line[len - 1] == '\n') || feof(f))
+          break;
       }
     }
     row_count++;
