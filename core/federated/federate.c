@@ -641,7 +641,6 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
                      "    Discarding message and closing the network connection.",
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
-      // Free the allocated memory before returning
       // Can't free message_token here because it has been sent to the reaction queue.
       // _lf_done_using(message_token);
       // Close network abstraction, reading any incoming data and discarding it.
