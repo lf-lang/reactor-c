@@ -2034,7 +2034,6 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         write_to_net(net, 2, response);
       }
       shutdown_net(net, false);
-      net = NULL;
       continue;
     }
 
@@ -2055,7 +2054,6 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         write_to_net(net, 2, response);
       }
       shutdown_net(net, false);
-      net = NULL;
       continue;
     }
 

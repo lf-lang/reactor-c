@@ -1057,7 +1057,6 @@ void send_reject(net_abstraction_t net_abs, unsigned char error_code) {
   }
   // Close the network abstraction without reading until EOF.
   shutdown_net(net_abs, false);
-  net_abs = NULL;
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
@@ -1427,7 +1426,6 @@ void lf_connect_to_federates(net_abstraction_t rti_net) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
         // Close the network abstraction without reading until EOF.
         shutdown_net(fed_net, false);
-        fed_net = NULL;
         // Ignore the federate that failed authentication.
         i--;
         continue;
@@ -1496,7 +1494,6 @@ void* respond_to_erroneous_connections(void* nothing) {
     }
     // Close the network abstraction without reading until EOF.
     shutdown_net(fed_net, false);
-    fed_net = NULL;
   }
   return NULL;
 }
