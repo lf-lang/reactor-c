@@ -44,10 +44,6 @@ typedef struct deque_node_t {
   void* value;
 } deque_node_t;
 
-/**
- * Initialize the specified deque to an empty deque.
- * @param d The deque.
- */
 void deque_initialize(deque_t* d) {
   if (d != NULL) {
     d->front = NULL;
@@ -56,10 +52,6 @@ void deque_initialize(deque_t* d) {
   }
 }
 
-/**
- * Return true if the queue is empty.
- * @param d The deque.
- */
 bool deque_is_empty(deque_t* d) {
   if (d != NULL) {
     return (d->front == NULL);
@@ -67,11 +59,6 @@ bool deque_is_empty(deque_t* d) {
   return true;
 }
 
-/**
- * Return the size of the queue.
- * @param d The deque.
- * @return The size of the queue.
- */
 size_t deque_size(deque_t* d) { return d->size; }
 
 /**
@@ -87,11 +74,6 @@ deque_node_t* _deque_create_node(void* value) {
   return new_node;
 }
 
-/**
- * Push a value to the front of the queue.
- * @param d The queue.
- * @param value The value to push.
- */
 void deque_push_front(deque_t* d, void* value) {
   deque_node_t* n = _deque_create_node(value);
   if (d->front == NULL) {
@@ -105,11 +87,6 @@ void deque_push_front(deque_t* d, void* value) {
   }
 }
 
-/**
- * Push a value to the back of the queue.
- * @param d The queue.
- * @param value The value to push.
- */
 void deque_push_back(deque_t* d, void* value) {
   deque_node_t* n = _deque_create_node(value);
   if (d->back == NULL) {
@@ -123,11 +100,6 @@ void deque_push_back(deque_t* d, void* value) {
   }
 }
 
-/**
- * Pop a value from the front of the queue, removing it from the queue.
- * @param d The queue.
- * @return The value on the front of the queue or NULL if the queue is empty.
- */
 void* deque_pop_front(deque_t* d) {
   if (d == NULL || d->front == NULL) {
     return NULL;
@@ -147,11 +119,6 @@ void* deque_pop_front(deque_t* d) {
   return value;
 }
 
-/**
- * Pop a value from the back of the queue, removing it from the queue.
- * @param d The queue.
- * @return The value on the back of the queue or NULL if the queue is empty.
- */
 void* deque_pop_back(deque_t* d) {
   if (d == NULL || d->back == NULL) {
     return NULL;
@@ -170,11 +137,6 @@ void* deque_pop_back(deque_t* d) {
   return value;
 }
 
-/**
- * Peek at the value on the front of the queue, leaving it on the queue.
- * @param d The queue.
- * @return The value on the front of the queue or NULL if the queue is empty.
- */
 void* deque_peek_back(deque_t* d) {
   if (d == NULL || d->back == NULL) {
     return NULL;
@@ -182,11 +144,6 @@ void* deque_peek_back(deque_t* d) {
   return d->back->value;
 }
 
-/**
- * Peek at the value on the back of the queue, leaving it on the queue.
- * @param d The queue.
- * @return The value on the back of the queue or NULL if the queue is empty.
- */
 void* deque_peek_front(deque_t* d) {
   if (d == NULL || d->front == NULL) {
     return NULL;
