@@ -12,6 +12,10 @@
 #include "reactor.h"
 #include "lf_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SC_CSV_LINE_MAX 256
 #define SC_CSV_MAX_COLS 256
 
@@ -296,5 +300,9 @@ int lf_initialize_int(const char* filename, char delimiter, size_t row_number, .
 
 int _lf_initialize_string(const char* filename, char delimiter, size_t row_number,
                           struct allocation_record_t** allocations, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // INITIALIZE_FROM_FILE_H
