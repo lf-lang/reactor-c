@@ -149,8 +149,6 @@ typedef struct socket_priv_t {
   uint16_t port;
   /** @brief The desired port specified by the user on the command line. */
   uint16_t user_specified_port;
-  /** @brief Human-readable IP address of the federate's socket server. */
-  char server_hostname[INET_ADDRSTRLEN];
   /** @brief Port number of the socket server of the federate. The port number will be -1 if there is no server or if
    * the RTI has not been informed of the port number. */
   int32_t server_port;
@@ -296,7 +294,7 @@ bool is_socket_open(int socket);
  * @ingroup Network
  *
  * Get the connected peer name from the connected socket.
- * Set it to the server_ip_addr. Also, set server_hostname if LOG_LEVEL is higher than LOG_LEVEL_DEBUG.
+ * Set it to the server_ip_addr. Also, print server's hostname if LOG_LEVEL is higher than LOG_LEVEL_DEBUG.
  *
  * @param priv The socket_priv struct.
  * @return 0 for success, -1 for failure.

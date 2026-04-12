@@ -177,14 +177,10 @@ int get_peer_address(socket_priv_t* priv) {
   priv->server_ip_addr = peer_addr.sin_addr;
 
 #if LOG_LEVEL >= LOG_LEVEL_DEBUG
-  // Create the human readable format and copy that into
-  // the .server_hostname field of the federate.
+  // Create the human readable format for logging purposes
   char str[INET_ADDRSTRLEN + 1];
   inet_ntop(AF_INET, &priv->server_ip_addr, str, INET_ADDRSTRLEN);
-  strncpy(priv->server_hostname, str, INET_ADDRSTRLEN - 1); // Copy up to INET_ADDRSTRLEN - 1 characters
-  priv->server_hostname[INET_ADDRSTRLEN - 1] = '\0';        // Null-terminate explicitly
-
-  LF_PRINT_DEBUG("Got address %s", priv->server_hostname);
+  LF_PRINT_DEBUG("Got address %s", str);
 #endif
   return 0;
 }
