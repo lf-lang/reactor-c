@@ -244,7 +244,7 @@ int connect_to_socket(int sock, const char* hostname, struct in_addr* ip_addr, i
       lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
       break;
     }
-    
+
     if (ip_addr != NULL) {
       // Safe to type cast specific protocols (e.g., sockaddr_in) to the generic sockaddr.
       ret = connect(sock, (struct sockaddr*)&direct_addr, sizeof(direct_addr));
@@ -263,7 +263,7 @@ int connect_to_socket(int sock, const char* hostname, struct in_addr* ip_addr, i
       ret = connect(sock, result->ai_addr, result->ai_addrlen);
       freeaddrinfo(result);
     }
-    
+
     if (ret < 0) {
       lf_sleep(CONNECT_RETRY_INTERVAL);
       lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds. Connecting to port %d.\n",
