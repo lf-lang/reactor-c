@@ -10,6 +10,9 @@
  * It provides functions for different log levels (error, warning, info, log, debug)
  * and allows for custom message handling through function registration.
  */
+#ifndef LOGGING_H
+#define LOGGING_H
+
 #include <stdarg.h>
 
 // To silence warnings about a function being a candidate for format checking
@@ -198,3 +201,5 @@ typedef void(print_message_function_t)(const char*, va_list);
  * @param log_level The level of messages to redirect.
  */
 void lf_register_print_function(print_message_function_t* function, int log_level);
+
+#endif // LOGGING_H
