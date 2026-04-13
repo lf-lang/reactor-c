@@ -1753,13 +1753,10 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   assert(port > 0);
   uint16_t uport = (uint16_t)port;
 
-  char hostname[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
-
-  socket_connection_params_t params;
+  socket_connection_params_t params = {0};
   params.type = TCP;
   params.port = uport;
-  params.server_hostname = hostname;
+  params.server_ip_addr = &host_ip_addr;
   net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to federate.");
@@ -1837,7 +1834,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
-  socket_connection_params_t params;
+  socket_connection_params_t params = {0};
   params.type = TCP;
   params.port = port;
   params.server_hostname = hostname;
