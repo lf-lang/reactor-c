@@ -10,6 +10,9 @@
  * It provides functions for different log levels (error, warning, info, log, debug)
  * and allows for custom message handling through function registration.
  */
+#ifndef LOGGING_H
+#define LOGGING_H
+
 #include <stdarg.h>
 
 // To silence warnings about a function being a candidate for format checking
@@ -95,6 +98,19 @@
  * @param ... The arguments to print.
  */
 void lf_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+
+/**
+ * @brief Report an informational message on stdout with no prefix and a newline appended
+ * at the end.
+ * @ingroup API
+ *
+ * If this execution is federated, then the message will be prefaced by identifying
+ * information for the federate. The arguments are just like printf().
+ *
+ * @param format The format string to print.
+ * @param ... The arguments to print.
+ */
+void lf_print_info(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
  * @brief Report an log message on stdout with the prefix "LOG: " and a newline appended at the end.
@@ -185,3 +201,5 @@ typedef void(print_message_function_t)(const char*, va_list);
  * @param log_level The level of messages to redirect.
  */
 void lf_register_print_function(print_message_function_t* function, int log_level);
+
+#endif // LOGGING_H

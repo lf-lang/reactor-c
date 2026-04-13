@@ -78,6 +78,12 @@ uint16_t lf_fed_id(void);
 void lf_vprint(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
+ * @brief varargs alternative of "lf_print_info"
+ * @ingroup Internal
+ */
+void lf_vprint_info(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
+
+/**
  * @brief varargs alternative of "lf_print_log"
  * @ingroup Internal
  */
