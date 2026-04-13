@@ -13,7 +13,7 @@
  *
  * ```
  * target C {
- *    cmake-include: "/lib/c/reactor-c/util/deque.cmake"
+ *    cmake-include: "/lib/c/reactor-c/util/deque.cmake",
  *    files: ["/lib/c/reactor-c/util/deque.c", "/lib/c/reactor-c/util/deque.h"]
  * };
  * ```
