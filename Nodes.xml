@@ -765,6 +765,10 @@
             <Path>hashset__itr_8h.html</Path>
            </Node>
            <Node>
+            <Name>initialize_from_file.h</Name>
+            <Path>initialize__from__file_8h.html</Path>
+           </Node>
+           <Node>
             <Name>pointer_hashmap.h</Name>
             <Path>pointer__hashmap_8h.html</Path>
            </Node>
@@ -973,6 +977,11 @@
             <Anchor>gafe05484f1ece6fa30ba7b3bcf33f03b9</Anchor>
            </Node>
            <Node>
+            <Name>lf_initialize_string</Name>
+            <Path>group__Utilities.html</Path>
+            <Anchor>gaf36e5f8d4a3aab7cc4b1d40075f636e8</Anchor>
+           </Node>
+           <Node>
             <Name>lf_is_pointer</Name>
             <Path>group__Utilities.html</Path>
             <Anchor>ga9edb07d852ce1b4e090b36f8683c8017</Anchor>
@@ -1176,6 +1185,16 @@
             <Name>hashset_remove</Name>
             <Path>group__Utilities.html</Path>
             <Anchor>ga5b0ad513d6e64cd754213b0103a094e0</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_initialize_double</Name>
+            <Path>group__Utilities.html</Path>
+            <Anchor>gaad106b7c85ed76b183e45b5be26ed325</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_initialize_int</Name>
+            <Path>group__Utilities.html</Path>
+            <Anchor>gaa29f18ca2c61912c2b16df580e0acf8a</Anchor>
            </Node>
            <Node>
             <Name>lf_play_audio_waveform</Name>
@@ -12127,6 +12146,42 @@
                           <Name>var</Name>
                           <Path>generics_8h.html</Path>
                           <Anchor>a1b0936415a643c88ce543099c10e0d7f</Anchor>
+                         </Node>
+                        </Subnodes>
+                       </Node>
+                       <Node>
+                        <Name>initialize_from_file.h</Name>
+                        <Path>initialize__from__file_8h.html</Path>
+                      <Subnodes>
+                         <Node>
+                          <Name>lf_initialize_string</Name>
+                          <Path>group__Utilities.html</Path>
+                          <Anchor>gaf36e5f8d4a3aab7cc4b1d40075f636e8</Anchor>
+                         </Node>
+                         <Node>
+                          <Name>SC_CSV_LINE_MAX</Name>
+                          <Path>initialize__from__file_8h.html</Path>
+                          <Anchor>aeec3cb70a84e7163b1a15ae5ddbab00b</Anchor>
+                         </Node>
+                         <Node>
+                          <Name>SC_CSV_MAX_COLS</Name>
+                          <Path>initialize__from__file_8h.html</Path>
+                          <Anchor>a8e1668dfaf0cb0b2346be5fa7fcb84be</Anchor>
+                         </Node>
+                         <Node>
+                          <Name>_lf_initialize_string</Name>
+                          <Path>initialize__from__file_8h.html</Path>
+                          <Anchor>a4878fc86dfa53f1bd74ceb29405c63bc</Anchor>
+                         </Node>
+                         <Node>
+                          <Name>lf_initialize_double</Name>
+                          <Path>group__Utilities.html</Path>
+                          <Anchor>gaad106b7c85ed76b183e45b5be26ed325</Anchor>
+                         </Node>
+                         <Node>
+                          <Name>lf_initialize_int</Name>
+                          <Path>group__Utilities.html</Path>
+                          <Anchor>gaa29f18ca2c61912c2b16df580e0acf8a</Anchor>
                          </Node>
                         </Subnodes>
                        </Node>

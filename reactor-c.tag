@@ -5048,6 +5048,55 @@
     </member>
   </compound>
   <compound kind="file">
+    <name>initialize_from_file.h</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/util/</path>
+    <filename>initialize__from__file_8h.html</filename>
+    <includes id="reactor_8h" name="reactor.h" local="yes" import="no" module="no" objc="no">reactor.h</includes>
+    <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_initialize_string</name>
+      <anchorfile>group__Utilities.html</anchorfile>
+      <anchor>gaf36e5f8d4a3aab7cc4b1d40075f636e8</anchor>
+      <arglist>(filename, delimiter, row_number,...)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>SC_CSV_LINE_MAX</name>
+      <anchorfile>initialize__from__file_8h.html</anchorfile>
+      <anchor>aeec3cb70a84e7163b1a15ae5ddbab00b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>SC_CSV_MAX_COLS</name>
+      <anchorfile>initialize__from__file_8h.html</anchorfile>
+      <anchor>a8e1668dfaf0cb0b2346be5fa7fcb84be</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>_lf_initialize_string</name>
+      <anchorfile>initialize__from__file_8h.html</anchorfile>
+      <anchor>a4878fc86dfa53f1bd74ceb29405c63bc</anchor>
+      <arglist>(const char *filename, char delimiter, size_t row_number, struct allocation_record_t **allocations,...)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_initialize_double</name>
+      <anchorfile>group__Utilities.html</anchorfile>
+      <anchor>gaad106b7c85ed76b183e45b5be26ed325</anchor>
+      <arglist>(const char *filename, char delimiter, size_t row_number,...)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_initialize_int</name>
+      <anchorfile>group__Utilities.html</anchorfile>
+      <anchor>gaa29f18ca2c61912c2b16df580e0acf8a</anchor>
+      <arglist>(const char *filename, char delimiter, size_t row_number,...)</arglist>
+    </member>
+  </compound>
+  <compound kind="file">
     <name>sensor_simulator.h</name>
     <path>/Users/runner/work/reactor-c/reactor-c/util/</path>
     <filename>sensor__simulator_8h.html</filename>
@@ -8951,6 +9000,7 @@
     <file>hashmap.h</file>
     <file>hashset.h</file>
     <file>hashset_itr.h</file>
+    <file>initialize_from_file.h</file>
     <file>pointer_hashmap.h</file>
     <file>sensor_simulator.h</file>
     <file>type_converter.h</file>
@@ -8996,6 +9046,13 @@
       <anchorfile>group__Utilities.html</anchorfile>
       <anchor>gafe05484f1ece6fa30ba7b3bcf33f03b9</anchor>
       <arglist>(p)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_initialize_string</name>
+      <anchorfile>group__Utilities.html</anchorfile>
+      <anchor>gaf36e5f8d4a3aab7cc4b1d40075f636e8</anchor>
+      <arglist>(filename, delimiter, row_number,...)</arglist>
     </member>
     <member kind="define">
       <type>#define</type>
@@ -9283,6 +9340,20 @@
       <anchorfile>group__Utilities.html</anchorfile>
       <anchor>ga5b0ad513d6e64cd754213b0103a094e0</anchor>
       <arglist>(hashset_t set, void *item)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_initialize_double</name>
+      <anchorfile>group__Utilities.html</anchorfile>
+      <anchor>gaad106b7c85ed76b183e45b5be26ed325</anchor>
+      <arglist>(const char *filename, char delimiter, size_t row_number,...)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_initialize_int</name>
+      <anchorfile>group__Utilities.html</anchorfile>
+      <anchor>gaa29f18ca2c61912c2b16df580e0acf8a</anchor>
+      <arglist>(const char *filename, char delimiter, size_t row_number,...)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -13021,6 +13092,7 @@
     <file>audio_loop.h</file>
     <file>deque.h</file>
     <file>generics.h</file>
+    <file>initialize_from_file.h</file>
     <file>sensor_simulator.h</file>
     <file>type_converter.h</file>
     <file>wave_file_reader.h</file>

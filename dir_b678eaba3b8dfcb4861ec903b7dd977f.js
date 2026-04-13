@@ -4,6 +4,7 @@ var dir_b678eaba3b8dfcb4861ec903b7dd977f =
     [ "audio_loop.h", "audio__loop_8h.html", "audio__loop_8h" ],
     [ "deque.h", "deque_8h.html", "deque_8h" ],
     [ "generics.h", "generics_8h.html", "generics_8h" ],
+    [ "initialize_from_file.h", "initialize__from__file_8h.html", "initialize__from__file_8h" ],
     [ "sensor_simulator.h", "sensor__simulator_8h.html", "sensor__simulator_8h" ],
     [ "type_converter.h", "type__converter_8h.html", "type__converter_8h" ],
     [ "wave_file_reader.h", "wave__file__reader_8h.html", "wave__file__reader_8h" ]

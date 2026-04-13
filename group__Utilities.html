@@ -115,6 +115,8 @@ Files</h2></td></tr>
 <tr class="memdesc:hashset_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">A hash set implementation in C. <br /></td></tr>
 <tr class="memitem:hashset_5Fitr_2Eh" id="r_hashset_5Fitr_2Eh"><td class="memItemLeft">file &#160;</td><td class="memItemRight"><a class="el" href="hashset__itr_8h.html">hashset_itr.h</a></td></tr>
 <tr class="memdesc:hashset__itr_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">A C hashset iterator implemenation. <br /></td></tr>
+<tr class="memitem:initialize_5Ffrom_5Ffile_2Eh" id="r_initialize_5Ffrom_5Ffile_2Eh"><td class="memItemLeft">file &#160;</td><td class="memItemRight"><a class="el" href="initialize__from__file_8h.html">initialize_from_file.h</a></td></tr>
+<tr class="memdesc:initialize__from__file_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Utility functions for initializing parameters and state variables from a file. <br /></td></tr>
 <tr class="memitem:pointer_5Fhashmap_2Eh" id="r_pointer_5Fhashmap_2Eh"><td class="memItemLeft">file &#160;</td><td class="memItemRight"><a class="el" href="pointer__hashmap_8h.html">pointer_hashmap.h</a></td></tr>
 <tr class="memdesc:pointer__hashmap_8h"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a hashmap type that maps void pointers to integers. <br /></td></tr>
 <tr class="memitem:sensor_5Fsimulator_2Eh" id="r_sensor_5Fsimulator_2Eh"><td class="memItemLeft">file &#160;</td><td class="memItemRight"><a class="el" href="sensor__simulator_8h.html">sensor_simulator.h</a></td></tr>
@@ -153,6 +155,8 @@ Macros</h2></td></tr>
 <tr class="memdesc:ga9505134796fc957eb9fedf172cab3527"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decay the specified pointer.  <br /></td></tr>
 <tr class="memitem:gafe05484f1ece6fa30ba7b3bcf33f03b9" id="r_gafe05484f1ece6fa30ba7b3bcf33f03b9"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gafe05484f1ece6fa30ba7b3bcf33f03b9">lf_get_pointer</a>(p)</td></tr>
 <tr class="memdesc:gafe05484f1ece6fa30ba7b3bcf33f03b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the pointer for specified <span class="tt">p</span>.  <br /></td></tr>
+<tr class="memitem:gaf36e5f8d4a3aab7cc4b1d40075f636e8" id="r_gaf36e5f8d4a3aab7cc4b1d40075f636e8"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gaf36e5f8d4a3aab7cc4b1d40075f636e8">lf_initialize_string</a>(filename,  delimiter,  row_number, ...)</td></tr>
+<tr class="memdesc:gaf36e5f8d4a3aab7cc4b1d40075f636e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one delimited row from a file and parse as strings.  <br /></td></tr>
 <tr class="memitem:ga9edb07d852ce1b4e090b36f8683c8017" id="r_ga9edb07d852ce1b4e090b36f8683c8017"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga9edb07d852ce1b4e090b36f8683c8017">lf_is_pointer</a>(p)</td></tr>
 <tr class="memdesc:ga9edb07d852ce1b4e090b36f8683c8017"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check whether the passed variable <span class="tt">p</span> is a pointer.  <br /></td></tr>
 <tr class="memitem:ga271f353ddab44fb05a4b0f8627904fbe" id="r_ga271f353ddab44fb05a4b0f8627904fbe"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga271f353ddab44fb05a4b0f8627904fbe">lf_is_pointer_or_array</a>(p)</td></tr>
@@ -241,6 +245,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga8d4800d73d1a58ad953501d9035de5ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of items in the hashset.  <br /></td></tr>
 <tr class="memitem:ga5b0ad513d6e64cd754213b0103a094e0" id="r_ga5b0ad513d6e64cd754213b0103a094e0"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ga5b0ad513d6e64cd754213b0103a094e0">hashset_remove</a> (<a class="el" href="hashset_8h.html#ad69fd91d4c662d832841b95188dd47f4">hashset_t</a> set, void *item)</td></tr>
 <tr class="memdesc:ga5b0ad513d6e64cd754213b0103a094e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove an item from the hashset.  <br /></td></tr>
+<tr class="memitem:gaad106b7c85ed76b183e45b5be26ed325" id="r_gaad106b7c85ed76b183e45b5be26ed325"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gaad106b7c85ed76b183e45b5be26ed325">lf_initialize_double</a> (const char *filename, char delimiter, size_t row_number,...)</td></tr>
+<tr class="memdesc:gaad106b7c85ed76b183e45b5be26ed325"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one delimited row from a file and parse as doubles.  <br /></td></tr>
+<tr class="memitem:gaa29f18ca2c61912c2b16df580e0acf8a" id="r_gaa29f18ca2c61912c2b16df580e0acf8a"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gaa29f18ca2c61912c2b16df580e0acf8a">lf_initialize_int</a> (const char *filename, char delimiter, size_t row_number,...)</td></tr>
+<tr class="memdesc:gaa29f18ca2c61912c2b16df580e0acf8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read one delimited row from a file and parse as integers.  <br /></td></tr>
 <tr class="memitem:ga20d5fc7b37764eb8c3a4e917e93ad7d7" id="r_ga20d5fc7b37764eb8c3a4e917e93ad7d7"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ga20d5fc7b37764eb8c3a4e917e93ad7d7">lf_play_audio_waveform</a> (<a class="el" href="structlf__waveform__t.html">lf_waveform_t</a> *waveform, float emphasis, <a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> <a class="el" href="trace__util_8h.html#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a>)</td></tr>
 <tr class="memdesc:ga20d5fc7b37764eb8c3a4e917e93ad7d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Play the specified waveform with the specified emphasis at the specified time.  <br /></td></tr>
 <tr class="memitem:ga7e03b277fd2f2b3ae6aa029e5256da3e" id="r_ga7e03b277fd2f2b3ae6aa029e5256da3e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga7e03b277fd2f2b3ae6aa029e5256da3e">lf_start_audio_loop</a> (<a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> <a class="el" href="trace__util_8h.html#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a>)</td></tr>
@@ -410,6 +418,101 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The pointer for the specified variable. </dd></dl>
+
+</div>
+</div>
+<a id="gaf36e5f8d4a3aab7cc4b1d40075f636e8" name="gaf36e5f8d4a3aab7cc4b1d40075f636e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf36e5f8d4a3aab7cc4b1d40075f636e8">&#9670;&#160;</a></span>lf_initialize_string</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define lf_initialize_string</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>filename</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>delimiter</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>row_number</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em></em></span>...&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="initialize__from__file_8h.html">initialize_from_file.h</a>&gt;</code></p>
+<b>Value:</b><div class="fragment"><div class="line"><a class="code hl_function" href="initialize__from__file_8h.html#a4878fc86dfa53f1bd74ceb29405c63bc">_lf_initialize_string</a>(filename, delimiter, row_number, &amp;((<a class="code hl_struct" href="structself__base__t.html">self_base_t</a>*)self)-&gt;allocations, __VA_ARGS__)</div>
+<div class="ttc" id="ainitialize__from__file_8h_html_a4878fc86dfa53f1bd74ceb29405c63bc"><div class="ttname"><a href="initialize__from__file_8h.html#a4878fc86dfa53f1bd74ceb29405c63bc">_lf_initialize_string</a></div><div class="ttdeci">int _lf_initialize_string(const char *filename, char delimiter, size_t row_number, struct allocation_record_t **allocations,...)</div></div>
+<div class="ttc" id="astructself__base__t_html"><div class="ttname"><a href="structself__base__t.html">self_base_t</a></div><div class="ttdoc">The base type for all reactor self structs.</div><div class="ttdef"><b>Definition</b> lf_types.h:519</div></div>
+</div><!-- fragment -->
+<p>Read one delimited row from a file and parse as strings. </p>
+<p>Given a file path (either absolute or relative to the current working directory), this function reads the specified row, which it assumes is a list of strings separated by a delimiter, and parses the values into a list of specified variables given as a list of char** pointers terminated with NULL. If a field is enclosed in quotation marks (double or single), the marks are stripped. Memory for each string is allocated using <span class="tt"><a class="el" href="group__Internal.html#ga1a5fdb69bc112879d4014bb0790e843c" title="Allocate memory and record on the specified allocation record (a self struct).">lf_allocate</a></span> and recorded in the reactor's allocation list so that it is freed automatically when the reactor is freed.</p>
+<p>This macro is meant to be called from a reaction, not directly. If you wish to call it from somewhere other than a reaction, you can use the following function: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  int _lf_initialize_string(const char* filename, char delimiter, size_t row_number,</div>
+<div class="line">                           struct allocation_record_t** allocations, ...);</div>
+</div><!-- fragment --><p> If you pass NULL for the allocations parameter, then you will be responsible for freeing the allocated memory. Example: </p><div class="fragment"><div class="line"><span class="keywordtype">char</span>* a;</div>
+<div class="line"><span class="keywordtype">char</span>* b;</div>
+<div class="line"><span class="keywordtype">int</span> count = <a class="code hl_function" href="initialize__from__file_8h.html#a4878fc86dfa53f1bd74ceb29405c63bc">_lf_initialize_string</a>(<span class="stringliteral">&quot;x.csv&quot;</span>, <span class="charliteral">&#39;,&#39;</span>, 2, NULL, &amp;a, &amp;b, NULL);</div>
+<div class="line">...</div>
+<div class="line">free(a);</div>
+<div class="line">free(b);</div>
+</div><!-- fragment --><p>This will read the third row of the file "x.csv" (row numbers start from 0) and parse the values into the variables <span class="tt">a</span> and <span class="tt">b</span>. The file "x.csv" may look like this:: </p><div class="fragment"><div class="line">a,b</div>
+<div class="line">&quot;hello&quot;,&quot;world&quot;</div>
+<div class="line">foo,bar</div>
+</div><!-- fragment --><p> The quotation marks are optional and will be stripped if present. Note that putting a delimiter within the quotation marks is not supported and will give unpredictable results. Including a header row with the names of the variables is optional (but recommended).</p>
+<p>The return value is the number of values parsed (2 in this case), or -1 if an error occurred, for example if the file does not exist or the row number is out of range.</p>
+<p>To use this to initialize parameters and/or state variables of a reactor, you can do the following:</p>
+<div class="fragment"><div class="line">-c</div>
+<div class="line">  main reactor MyReactor(row_number: int = 0) {</div>
+<div class="line">    state name: string = &quot;&quot;;</div>
+<div class="line">    reaction(startup) {=</div>
+<div class="line">      lf_initialize_string(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;row_number, &amp;self-&gt;name, NULL);</div>
+<div class="line">    =}</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p>If the <span class="tt">row_number</span> is a top-level parameter (of the main reactor), as it is above, then you can override this parameter on the command line when running the program as follows:</p>
+<div class="fragment"><div class="line">bin/MyReactor --row_number 1</div>
+</div><!-- fragment --><p> This gives an easy way to compile once and run with different parameter values.</p>
+<p>If you wish to initialize parameters or state variables of a reactor within a bank, you can create a CSV file with one row per bank member and use the <span class="tt">bank_index</span> parameter to select the row to read. For example: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  reactor MyReactor(bank_index: int = 0) {</div>
+<div class="line">    reaction(startup) {=</div>
+<div class="line">      lf_initialize_string(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;bank_index + 1, &amp;self-&gt;name, NULL);</div>
+<div class="line">    =}</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p> The <span class="tt">bank_index</span> parameter is the index within the bank, starting from 0. The <span class="tt">+ 1</span> specifies to skip the header row. This way, each bank member can have a different set of parameter values.</p>
+<p>To use this in a Lingua Franca program, you must include the following in the target declaration: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  target C {</div>
+<div class="line">   cmake-include: &quot;/lib/c/reactor-c/util/initialize_from_file.cmake&quot;,</div>
+<div class="line">   files: [</div>
+<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.c&quot;,</div>
+<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.h&quot;]</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p>Then, in the reactor, you can include the header file as follows: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  reactor MyReactor {</div>
+<div class="line">    preamble {=</div>
+<div class="line">      #include &quot;initialize_from_file.h&quot;</div>
+<div class="line">    =}</div>
+<div class="line">    ...</div>
+<div class="line">  }</div>
+</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>The name of the file to read. </td></tr>
+    <tr><td class="paramname">delimiter</td><td>The delimiter character to use. </td></tr>
+    <tr><td class="paramname">row_number</td><td>The row number in the file to read. </td></tr>
+    <tr><td class="paramname">...</td><td>The char** pointers to the variables to store the values in, terminated with NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of values parsed, or -1 if an error occurred. </dd></dl>
 
 </div>
 </div>
@@ -1544,6 +1647,176 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Non-zero if the item was removed and zero if the item is not on the hashset. </dd></dl>
+
+</div>
+</div>
+<a id="gaad106b7c85ed76b183e45b5be26ed325" name="gaad106b7c85ed76b183e45b5be26ed325"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaad106b7c85ed76b183e45b5be26ed325">&#9670;&#160;</a></span>lf_initialize_double()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_initialize_double </td>
+          <td>(</td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>filename</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char</td>          <td class="paramname"><span class="paramname"><em>delimiter</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>row_number</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="initialize__from__file_8h.html">initialize_from_file.h</a>&gt;</code></p>
+
+<p>Read one delimited row from a file and parse as doubles. </p>
+<p>Given a file path (either absolute or relative to the current working directory), this function reads the specified row, which it assumes is a list of doubles separated by a delimiter, and parses the values into a list of specified variables given as a list of double* pointers terminated with NULL. Example: </p><div class="fragment"><div class="line"><span class="keywordtype">double</span> a, b;</div>
+<div class="line"><span class="keywordtype">int</span> count = <a class="code hl_function" href="#gaad106b7c85ed76b183e45b5be26ed325">lf_initialize_double</a>(<span class="stringliteral">&quot;x.csv&quot;</span>, <span class="charliteral">&#39;,&#39;</span>, 2, &amp;a, &amp;b, NULL);</div>
+<div class="ttc" id="agroup__Utilities_html_gaad106b7c85ed76b183e45b5be26ed325"><div class="ttname"><a href="#gaad106b7c85ed76b183e45b5be26ed325">lf_initialize_double</a></div><div class="ttdeci">int lf_initialize_double(const char *filename, char delimiter, size_t row_number,...)</div><div class="ttdoc">Read one delimited row from a file and parse as doubles.</div></div>
+</div><!-- fragment --><p> This will read the third row of the file "x.csv" (row numbers start from 0) and parse the values into the variables <span class="tt">a</span> and <span class="tt">b</span>. The file "x.csv" may look like this:: </p><div class="fragment"><div class="line">a,b</div>
+<div class="line">1.0,2.0</div>
+<div class="line">3.0,4.0</div>
+</div><!-- fragment --><p> Including a header row with the names of the variables is optional (but recommended).</p>
+<p>The return value is the number of values parsed (2 in this case), or -1 if an error occurred, for example if the file does not exist or the row number is out of range.</p>
+<p>To use this to initialize parameters and/or state variables of a reactor, you can do the following:</p>
+<div class="fragment"><div class="line">-c</div>
+<div class="line">  main reactor MyReactor(x: double = 0.0, row_number: int = 0) {</div>
+<div class="line">    state y: double = 0.0;</div>
+<div class="line">    reaction(startup) {=</div>
+<div class="line">      lf_initialize_double(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;row_number, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
+<div class="line">    =}</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p>If the <span class="tt">row_number</span> is a top-level parameter (of the main reactor), as it is above, then you can override this parameter on the command line when running the program as follows:</p>
+<div class="fragment"><div class="line">bin/MyReactor --row_number 1</div>
+</div><!-- fragment --><p> This gives an easy way to compile once and run with different parameter values.</p>
+<p>If you wish to initialize parameters or state variables of a reactor within a bank, you can create a CSV file with one row per bank member and use the <span class="tt">bank_index</span> parameter to select the row to read. For example: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  reactor MyReactor(bank_index: int = 0) {</div>
+<div class="line">    reaction(startup) {=</div>
+<div class="line">      lf_initialize_double(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;bank_index + 1, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
+<div class="line">    =}</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p> The <span class="tt">bank_index</span> parameter is the index within the bank, starting from 0. The <span class="tt">+ 1</span> specifies to skip the header row. This way, each bank member can have a different set of parameter values.</p>
+<p>To use this in a Lingua Franca program, you must include the following in the target declaration: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  target C {</div>
+<div class="line">   cmake-include: &quot;/lib/c/reactor-c/util/initialize_from_file.cmake&quot;,</div>
+<div class="line">   files: [</div>
+<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.c&quot;,</div>
+<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.h&quot;]</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p>Then, in the reactor, you can include the header file as follows: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  reactor MyReactor {</div>
+<div class="line">    preamble {=</div>
+<div class="line">      #include &quot;initialize_from_file.h&quot;</div>
+<div class="line">    =}</div>
+<div class="line">    ...</div>
+<div class="line">  }</div>
+</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>The name of the file to read. </td></tr>
+    <tr><td class="paramname">delimiter</td><td>The delimiter character to use. </td></tr>
+    <tr><td class="paramname">row_number</td><td>The row number in the file to read. </td></tr>
+    <tr><td class="paramname">...</td><td>The double* pointers to the variables to store the values in, terminated with NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of values parsed, or -1 if an error occurred. </dd></dl>
+
+</div>
+</div>
+<a id="gaa29f18ca2c61912c2b16df580e0acf8a" name="gaa29f18ca2c61912c2b16df580e0acf8a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa29f18ca2c61912c2b16df580e0acf8a">&#9670;&#160;</a></span>lf_initialize_int()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_initialize_int </td>
+          <td>(</td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>filename</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char</td>          <td class="paramname"><span class="paramname"><em>delimiter</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>row_number</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>...</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="initialize__from__file_8h.html">initialize_from_file.h</a>&gt;</code></p>
+
+<p>Read one delimited row from a file and parse as integers. </p>
+<p>Given a file path (either absolute or relative to the current working directory), this function reads the specified row, which it assumes is a list of integers separated by a delimiter, and parses the values into a list of specified variables given as a list of int* pointers terminated with NULL. Example: </p><div class="fragment"><div class="line"><span class="keywordtype">int</span> a, b;</div>
+<div class="line"><span class="keywordtype">int</span> count = <a class="code hl_function" href="#gaa29f18ca2c61912c2b16df580e0acf8a">lf_initialize_int</a>(<span class="stringliteral">&quot;x.csv&quot;</span>, <span class="charliteral">&#39;,&#39;</span>, 2, &amp;a, &amp;b, NULL);</div>
+<div class="ttc" id="agroup__Utilities_html_gaa29f18ca2c61912c2b16df580e0acf8a"><div class="ttname"><a href="#gaa29f18ca2c61912c2b16df580e0acf8a">lf_initialize_int</a></div><div class="ttdeci">int lf_initialize_int(const char *filename, char delimiter, size_t row_number,...)</div><div class="ttdoc">Read one delimited row from a file and parse as integers.</div></div>
+</div><!-- fragment --><p> This will read the third row of the file "x.csv" (row numbers start from 0) and parse the values into the variables <span class="tt">a</span> and <span class="tt">b</span>. The file "x.csv" may look like this:: </p><div class="fragment"><div class="line">a,b</div>
+<div class="line">1,2</div>
+<div class="line">3,4</div>
+</div><!-- fragment --><p> Including a header row with the names of the variables is optional (but recommended).</p>
+<p>The return value is the number of values parsed (2 in this case), or -1 if an error occurred, for example if the file does not exist or the row number is out of range.</p>
+<p>To use this to initialize parameters and/or state variables of a reactor, you can do the following:</p>
+<div class="fragment"><div class="line">-c</div>
+<div class="line">  main reactor MyReactor(x: int = 0, row_number: int = 0) {</div>
+<div class="line">    state y: int = 0;</div>
+<div class="line">    reaction(startup) {=</div>
+<div class="line">      lf_initialize_int(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;row_number, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
+<div class="line">    =}</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p>If the <span class="tt">row_number</span> is a top-level parameter (of the main reactor), as it is above, then you can override this parameter on the command line when running the program as follows:</p>
+<div class="fragment"><div class="line">bin/MyReactor --row_number 1</div>
+</div><!-- fragment --><p> This gives an easy way to compile once and run with different parameter values.</p>
+<p>If you wish to initialize parameters or state variables of a reactor within a bank, you can create a CSV file with one row per bank member and use the <span class="tt">bank_index</span> parameter to select the row to read. For example: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  reactor MyReactor(bank_index: int = 0) {</div>
+<div class="line">    reaction(startup) {=</div>
+<div class="line">      lf_initialize_int(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;bank_index + 1, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
+<div class="line">    =}</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p> The <span class="tt">bank_index</span> parameter is the index within the bank, starting from 0. The <span class="tt">+ 1</span> specifies to skip the header row. This way, each bank member can have a different set of parameter values.</p>
+<p>To use this in a Lingua Franca program, you must include the following in the target declaration: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  target C {</div>
+<div class="line">   cmake-include: &quot;/lib/c/reactor-c/util/initialize_from_file.cmake&quot;,</div>
+<div class="line">   files: [</div>
+<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.c&quot;,</div>
+<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.h&quot;]</div>
+<div class="line">  }</div>
+</div><!-- fragment --><p>Then, in the reactor, you can include the header file as follows: </p><div class="fragment"><div class="line">-c</div>
+<div class="line">  reactor MyReactor {</div>
+<div class="line">    preamble {=</div>
+<div class="line">      #include &quot;initialize_from_file.h&quot;</div>
+<div class="line">    =}</div>
+<div class="line">    ...</div>
+<div class="line">  }</div>
+</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>The name of the file to read. </td></tr>
+    <tr><td class="paramname">delimiter</td><td>The delimiter character to use. </td></tr>
+    <tr><td class="paramname">row_number</td><td>The row number in the file to read. </td></tr>
+    <tr><td class="paramname">...</td><td>The int* pointers to the variables to store the values in, terminated with NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of values parsed, or -1 if an error occurred. </dd></dl>
 
 </div>
 </div>

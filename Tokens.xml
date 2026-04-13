@@ -4453,6 +4453,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>_lf_initialize_string</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>initialize__from__file_8h.html</Path>
+    <Anchor>a4878fc86dfa53f1bd74ceb29405c63bc</Anchor>
+    <DeclaredIn>initialize_from_file.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>_lf_initialize_template</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -7220,6 +7230,36 @@
     <Path>group__Federated.html</Path>
     <Anchor>gaf7ba635fb6ffa82e4b05a51d4fc0020f</Anchor>
     <DeclaredIn>federate.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_initialize_double</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Utilities.html</Path>
+    <Anchor>gaad106b7c85ed76b183e45b5be26ed325</Anchor>
+    <DeclaredIn>initialize_from_file.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_initialize_int</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Utilities.html</Path>
+    <Anchor>gaa29f18ca2c61912c2b16df580e0acf8a</Anchor>
+    <DeclaredIn>initialize_from_file.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_initialize_string</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>group__Utilities.html</Path>
+    <Anchor>gaf36e5f8d4a3aab7cc4b1d40075f636e8</Anchor>
+    <DeclaredIn>initialize_from_file.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -10620,6 +10660,26 @@
     <Path>group__Utilities.html</Path>
     <Anchor>ga4b76a0c2859cfd819a343a780070ee2b</Anchor>
     <DeclaredIn>audio_loop.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>SC_CSV_LINE_MAX</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>initialize__from__file_8h.html</Path>
+    <Anchor>aeec3cb70a84e7163b1a15ae5ddbab00b</Anchor>
+    <DeclaredIn>initialize_from_file.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>SC_CSV_MAX_COLS</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>initialize__from__file_8h.html</Path>
+    <Anchor>a8e1668dfaf0cb0b2346be5fa7fcb84be</Anchor>
+    <DeclaredIn>initialize_from_file.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>

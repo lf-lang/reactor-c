@@ -63,8 +63,8 @@ var NAVTREEINDEX =
 "group__Constants.html#gaea80ae7708f69d05cd44126f08a08cf3",
 "group__Internal.html#gafd3a0abded3adbc25ab7dbc261e7b16c",
 "group__Utilities.html#ga196614841046dea5b94b2a60108fff40",
-"structlf__port__internal__t.html#aaa9ff391953ce66424abf4828777c89b",
-"util_8h.html"
+"structlf__port__internal__t.html",
+"trace__types_8h.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';
