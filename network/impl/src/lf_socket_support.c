@@ -176,13 +176,16 @@ bool is_net_open(net_abstraction_t net_abs) {
   return is_socket_open(priv->socket_descriptor);
 }
 
-int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
+int close_net(net_abstraction_t net_abs, bool read_before_closing) {
   if (net_abs == NULL) {
-    LF_PRINT_LOG("Socket already closed.");
     return 0;
   }
   socket_priv_t* priv = (socket_priv_t*)net_abs;
-  int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
+  return shutdown_socket(&priv->socket_descriptor, read_before_closing);
+}
+
+int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
+  int ret = close_net(net_abs, read_before_closing);
   free_net(net_abs);
   return ret;
 }
