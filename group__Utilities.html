@@ -457,9 +457,8 @@ Functions</h2></td></tr>
 </div><!-- fragment -->
 <p>Read one delimited row from a file and parse as strings. </p>
 <p>Given a file path (either absolute or relative to the current working directory), this function reads the specified row, which it assumes is a list of strings separated by a delimiter, and parses the values into a list of specified variables given as a list of char** pointers terminated with NULL. If a field is enclosed in quotation marks (double or single), the marks are stripped. Memory for each string is allocated using <span class="tt"><a class="el" href="group__Internal.html#ga1a5fdb69bc112879d4014bb0790e843c" title="Allocate memory and record on the specified allocation record (a self struct).">lf_allocate</a></span> and recorded in the reactor's allocation list so that it is freed automatically when the reactor is freed.</p>
-<p>This macro is meant to be called from a reaction, not directly. If you wish to call it from somewhere other than a reaction, you can use the following function: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  int _lf_initialize_string(const char* filename, char delimiter, size_t row_number,</div>
-<div class="line">                           struct allocation_record_t** allocations, ...);</div>
+<p>This macro is meant to be called from a reaction, not directly. If you wish to call it from somewhere other than a reaction, you can use the following function: </p><div class="fragment"><div class="line">int _lf_initialize_string(const char* filename, char delimiter, size_t row_number,</div>
+<div class="line">                         struct allocation_record_t** allocations, ...);</div>
 </div><!-- fragment --><p> If you pass NULL for the allocations parameter, then you will be responsible for freeing the allocated memory. Example: </p><div class="fragment"><div class="line"><span class="keywordtype">char</span>* a;</div>
 <div class="line"><span class="keywordtype">char</span>* b;</div>
 <div class="line"><span class="keywordtype">int</span> count = <a class="code hl_function" href="initialize__from__file_8h.html#a4878fc86dfa53f1bd74ceb29405c63bc">_lf_initialize_string</a>(<span class="stringliteral">&quot;x.csv&quot;</span>, <span class="charliteral">&#39;,&#39;</span>, 2, NULL, &amp;a, &amp;b, NULL);</div>
@@ -472,37 +471,33 @@ Functions</h2></td></tr>
 </div><!-- fragment --><p> The quotation marks are optional and will be stripped if present. Note that putting a delimiter within the quotation marks is not supported and will give unpredictable results. Including a header row with the names of the variables is optional (but recommended).</p>
 <p>The return value is the number of values parsed (2 in this case), or -1 if an error occurred, for example if the file does not exist or the row number is out of range.</p>
 <p>To use this to initialize parameters and/or state variables of a reactor, you can do the following:</p>
-<div class="fragment"><div class="line">-c</div>
-<div class="line">  main reactor MyReactor(row_number: int = 0) {</div>
-<div class="line">    state name: string = &quot;&quot;;</div>
-<div class="line">    reaction(startup) {=</div>
-<div class="line">      lf_initialize_string(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;row_number, &amp;self-&gt;name, NULL);</div>
-<div class="line">    =}</div>
-<div class="line">  }</div>
+<div class="fragment"><div class="line">main reactor MyReactor(row_number: int = 0) {</div>
+<div class="line">  state name: string = &quot;&quot;;</div>
+<div class="line">  reaction(startup) {=</div>
+<div class="line">    lf_initialize_string(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;row_number, &amp;self-&gt;name, NULL);</div>
+<div class="line">  =}</div>
+<div class="line">}</div>
 </div><!-- fragment --><p>If the <span class="tt">row_number</span> is a top-level parameter (of the main reactor), as it is above, then you can override this parameter on the command line when running the program as follows:</p>
 <div class="fragment"><div class="line">bin/MyReactor --row_number 1</div>
 </div><!-- fragment --><p> This gives an easy way to compile once and run with different parameter values.</p>
-<p>If you wish to initialize parameters or state variables of a reactor within a bank, you can create a CSV file with one row per bank member and use the <span class="tt">bank_index</span> parameter to select the row to read. For example: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  reactor MyReactor(bank_index: int = 0) {</div>
-<div class="line">    reaction(startup) {=</div>
-<div class="line">      lf_initialize_string(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;bank_index + 1, &amp;self-&gt;name, NULL);</div>
-<div class="line">    =}</div>
-<div class="line">  }</div>
+<p>If you wish to initialize parameters or state variables of a reactor within a bank, you can create a CSV file with one row per bank member and use the <span class="tt">bank_index</span> parameter to select the row to read. For example: </p><div class="fragment"><div class="line">reactor MyReactor(bank_index: int = 0) {</div>
+<div class="line">  reaction(startup) {=</div>
+<div class="line">    lf_initialize_string(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;bank_index + 1, &amp;self-&gt;name, NULL);</div>
+<div class="line">  =}</div>
+<div class="line">}</div>
 </div><!-- fragment --><p> The <span class="tt">bank_index</span> parameter is the index within the bank, starting from 0. The <span class="tt">+ 1</span> specifies to skip the header row. This way, each bank member can have a different set of parameter values.</p>
-<p>To use this in a Lingua Franca program, you must include the following in the target declaration: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  target C {</div>
-<div class="line">   cmake-include: &quot;/lib/c/reactor-c/util/initialize_from_file.cmake&quot;,</div>
-<div class="line">   files: [</div>
-<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.c&quot;,</div>
-<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.h&quot;]</div>
-<div class="line">  }</div>
-</div><!-- fragment --><p>Then, in the reactor, you can include the header file as follows: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  reactor MyReactor {</div>
-<div class="line">    preamble {=</div>
-<div class="line">      #include &quot;initialize_from_file.h&quot;</div>
-<div class="line">    =}</div>
-<div class="line">    ...</div>
-<div class="line">  }</div>
+<p>To use this in a Lingua Franca program, you must include the following in the target declaration: </p><div class="fragment"><div class="line">target C {</div>
+<div class="line"> cmake-include: &quot;/lib/c/reactor-c/util/initialize_from_file.cmake&quot;,</div>
+<div class="line"> files: [</div>
+<div class="line">     &quot;/lib/c/reactor-c/util/initialize_from_file.c&quot;,</div>
+<div class="line">     &quot;/lib/c/reactor-c/util/initialize_from_file.h&quot;]</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>Then, in the reactor, you can include the header file as follows: </p><div class="fragment"><div class="line">reactor MyReactor {</div>
+<div class="line">  preamble {=</div>
+<div class="line">    #include &quot;initialize_from_file.h&quot;</div>
+<div class="line">  =}</div>
+<div class="line">  ...</div>
+<div class="line">}</div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">filename</td><td>The name of the file to read. </td></tr>
@@ -1691,37 +1686,33 @@ Functions</h2></td></tr>
 </div><!-- fragment --><p> Including a header row with the names of the variables is optional (but recommended).</p>
 <p>The return value is the number of values parsed (2 in this case), or -1 if an error occurred, for example if the file does not exist or the row number is out of range.</p>
 <p>To use this to initialize parameters and/or state variables of a reactor, you can do the following:</p>
-<div class="fragment"><div class="line">-c</div>
-<div class="line">  main reactor MyReactor(x: double = 0.0, row_number: int = 0) {</div>
-<div class="line">    state y: double = 0.0;</div>
-<div class="line">    reaction(startup) {=</div>
-<div class="line">      lf_initialize_double(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;row_number, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
-<div class="line">    =}</div>
-<div class="line">  }</div>
+<div class="fragment"><div class="line">main reactor MyReactor(x: double = 0.0, row_number: int = 0) {</div>
+<div class="line">  state y: double = 0.0;</div>
+<div class="line">  reaction(startup) {=</div>
+<div class="line">    lf_initialize_double(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;row_number, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
+<div class="line">  =}</div>
+<div class="line">}</div>
 </div><!-- fragment --><p>If the <span class="tt">row_number</span> is a top-level parameter (of the main reactor), as it is above, then you can override this parameter on the command line when running the program as follows:</p>
 <div class="fragment"><div class="line">bin/MyReactor --row_number 1</div>
 </div><!-- fragment --><p> This gives an easy way to compile once and run with different parameter values.</p>
-<p>If you wish to initialize parameters or state variables of a reactor within a bank, you can create a CSV file with one row per bank member and use the <span class="tt">bank_index</span> parameter to select the row to read. For example: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  reactor MyReactor(bank_index: int = 0) {</div>
-<div class="line">    reaction(startup) {=</div>
-<div class="line">      lf_initialize_double(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;bank_index + 1, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
-<div class="line">    =}</div>
-<div class="line">  }</div>
+<p>If you wish to initialize parameters or state variables of a reactor within a bank, you can create a CSV file with one row per bank member and use the <span class="tt">bank_index</span> parameter to select the row to read. For example: </p><div class="fragment"><div class="line">reactor MyReactor(bank_index: int = 0) {</div>
+<div class="line">  reaction(startup) {=</div>
+<div class="line">    lf_initialize_double(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;bank_index + 1, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
+<div class="line">  =}</div>
+<div class="line">}</div>
 </div><!-- fragment --><p> The <span class="tt">bank_index</span> parameter is the index within the bank, starting from 0. The <span class="tt">+ 1</span> specifies to skip the header row. This way, each bank member can have a different set of parameter values.</p>
-<p>To use this in a Lingua Franca program, you must include the following in the target declaration: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  target C {</div>
-<div class="line">   cmake-include: &quot;/lib/c/reactor-c/util/initialize_from_file.cmake&quot;,</div>
-<div class="line">   files: [</div>
-<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.c&quot;,</div>
-<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.h&quot;]</div>
-<div class="line">  }</div>
-</div><!-- fragment --><p>Then, in the reactor, you can include the header file as follows: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  reactor MyReactor {</div>
-<div class="line">    preamble {=</div>
-<div class="line">      #include &quot;initialize_from_file.h&quot;</div>
-<div class="line">    =}</div>
-<div class="line">    ...</div>
-<div class="line">  }</div>
+<p>To use this in a Lingua Franca program, you must include the following in the target declaration: </p><div class="fragment"><div class="line">target C {</div>
+<div class="line"> cmake-include: &quot;/lib/c/reactor-c/util/initialize_from_file.cmake&quot;,</div>
+<div class="line"> files: [</div>
+<div class="line">     &quot;/lib/c/reactor-c/util/initialize_from_file.c&quot;,</div>
+<div class="line">     &quot;/lib/c/reactor-c/util/initialize_from_file.h&quot;]</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>Then, in the reactor, you can include the header file as follows: </p><div class="fragment"><div class="line">reactor MyReactor {</div>
+<div class="line">  preamble {=</div>
+<div class="line">    #include &quot;initialize_from_file.h&quot;</div>
+<div class="line">  =}</div>
+<div class="line">  ...</div>
+<div class="line">}</div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">filename</td><td>The name of the file to read. </td></tr>
@@ -1776,37 +1767,33 @@ Functions</h2></td></tr>
 </div><!-- fragment --><p> Including a header row with the names of the variables is optional (but recommended).</p>
 <p>The return value is the number of values parsed (2 in this case), or -1 if an error occurred, for example if the file does not exist or the row number is out of range.</p>
 <p>To use this to initialize parameters and/or state variables of a reactor, you can do the following:</p>
-<div class="fragment"><div class="line">-c</div>
-<div class="line">  main reactor MyReactor(x: int = 0, row_number: int = 0) {</div>
-<div class="line">    state y: int = 0;</div>
-<div class="line">    reaction(startup) {=</div>
-<div class="line">      lf_initialize_int(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;row_number, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
-<div class="line">    =}</div>
-<div class="line">  }</div>
+<div class="fragment"><div class="line">main reactor MyReactor(x: int = 0, row_number: int = 0) {</div>
+<div class="line">  state y: int = 0;</div>
+<div class="line">  reaction(startup) {=</div>
+<div class="line">    lf_initialize_int(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;row_number, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
+<div class="line">  =}</div>
+<div class="line">}</div>
 </div><!-- fragment --><p>If the <span class="tt">row_number</span> is a top-level parameter (of the main reactor), as it is above, then you can override this parameter on the command line when running the program as follows:</p>
 <div class="fragment"><div class="line">bin/MyReactor --row_number 1</div>
 </div><!-- fragment --><p> This gives an easy way to compile once and run with different parameter values.</p>
-<p>If you wish to initialize parameters or state variables of a reactor within a bank, you can create a CSV file with one row per bank member and use the <span class="tt">bank_index</span> parameter to select the row to read. For example: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  reactor MyReactor(bank_index: int = 0) {</div>
-<div class="line">    reaction(startup) {=</div>
-<div class="line">      lf_initialize_int(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;bank_index + 1, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
-<div class="line">    =}</div>
-<div class="line">  }</div>
+<p>If you wish to initialize parameters or state variables of a reactor within a bank, you can create a CSV file with one row per bank member and use the <span class="tt">bank_index</span> parameter to select the row to read. For example: </p><div class="fragment"><div class="line">reactor MyReactor(bank_index: int = 0) {</div>
+<div class="line">  reaction(startup) {=</div>
+<div class="line">    lf_initialize_int(&quot;params.csv&quot;, &#39;,&#39;, self-&gt;bank_index + 1, &amp;self-&gt;x, &amp;self-&gt;y, NULL);</div>
+<div class="line">  =}</div>
+<div class="line">}</div>
 </div><!-- fragment --><p> The <span class="tt">bank_index</span> parameter is the index within the bank, starting from 0. The <span class="tt">+ 1</span> specifies to skip the header row. This way, each bank member can have a different set of parameter values.</p>
-<p>To use this in a Lingua Franca program, you must include the following in the target declaration: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  target C {</div>
-<div class="line">   cmake-include: &quot;/lib/c/reactor-c/util/initialize_from_file.cmake&quot;,</div>
-<div class="line">   files: [</div>
-<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.c&quot;,</div>
-<div class="line">       &quot;/lib/c/reactor-c/util/initialize_from_file.h&quot;]</div>
-<div class="line">  }</div>
-</div><!-- fragment --><p>Then, in the reactor, you can include the header file as follows: </p><div class="fragment"><div class="line">-c</div>
-<div class="line">  reactor MyReactor {</div>
-<div class="line">    preamble {=</div>
-<div class="line">      #include &quot;initialize_from_file.h&quot;</div>
-<div class="line">    =}</div>
-<div class="line">    ...</div>
-<div class="line">  }</div>
+<p>To use this in a Lingua Franca program, you must include the following in the target declaration: </p><div class="fragment"><div class="line">target C {</div>
+<div class="line"> cmake-include: &quot;/lib/c/reactor-c/util/initialize_from_file.cmake&quot;,</div>
+<div class="line"> files: [</div>
+<div class="line">     &quot;/lib/c/reactor-c/util/initialize_from_file.c&quot;,</div>
+<div class="line">     &quot;/lib/c/reactor-c/util/initialize_from_file.h&quot;]</div>
+<div class="line">}</div>
+</div><!-- fragment --><p>Then, in the reactor, you can include the header file as follows: </p><div class="fragment"><div class="line">reactor MyReactor {</div>
+<div class="line">  preamble {=</div>
+<div class="line">    #include &quot;initialize_from_file.h&quot;</div>
+<div class="line">  =}</div>
+<div class="line">  ...</div>
+<div class="line">}</div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">filename</td><td>The name of the file to read. </td></tr>
