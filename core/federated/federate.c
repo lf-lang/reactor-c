@@ -641,11 +641,16 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
                      "    Discarding message and closing the network connection.",
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
-      // Free the allocated memory before returning
-      _lf_done_using(message_token);
-      // Close network abstraction, reading any incoming data and discarding it.
-      shutdown_net(_fed.net_for_inbound_p2p_connections[fed_id], false);
-      _fed.net_for_inbound_p2p_connections[fed_id] = NULL;
+      // The token was freshly allocated by _lf_new_token with ref_count 0 and was never
+      // scheduled, so _lf_done_using would incorrectly treat it as already freed.
+      // Use _lf_free_token directly, which handles ref_count == 0 correctly.
+      _lf_free_token(message_token);
+#ifdef FEDERATED_DECENTRALIZED
+      _lf_decrement_tag_barrier_locked(env);
+#endif
+      // Close the connection to unblock the listener, but do not free the memory;
+      // lf_terminate_execution will free it after joining the listener thread.
+      close_net(net, false);
       LF_MUTEX_UNLOCK(&env->mutex);
       return -1;
     } else {
@@ -1508,8 +1513,8 @@ static void* listen_to_rti_net(void* args) {
   // Listen for messages from the federate.
   while (!_lf_termination_executed) {
     // Check whether the RTI network abstraction is still valid.
-    if (_fed.net_to_RTI == NULL) {
-      lf_print_warning("network abstraction to the RTI unexpectedly closed.");
+    if (_fed.net_to_RTI == NULL || !is_net_open(_fed.net_to_RTI)) {
+      lf_print_warning("network connection to the RTI unexpectedly closed.");
       return NULL;
     }
     // Read one byte to get the message type.
@@ -1517,14 +1522,12 @@ static void* listen_to_rti_net(void* args) {
     int read_failed = read_from_net(_fed.net_to_RTI, 1, buffer);
     if (read_failed < 0) {
       lf_print_error("Connection to the RTI was closed by the RTI with an error. Considering this a soft error.");
-      shutdown_net(_fed.net_to_RTI, false);
-      _fed.net_to_RTI = NULL;
+      close_net(_fed.net_to_RTI, false);
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
       lf_print_info("Connection to the RTI closed with an EOF.");
-      shutdown_net(_fed.net_to_RTI, false);
-      _fed.net_to_RTI = NULL;
+      close_net(_fed.net_to_RTI, false);
       return NULL;
     }
     switch (buffer[0]) {
@@ -1647,11 +1650,10 @@ void lf_terminate_execution(environment_t* env) {
   }
 
   LF_PRINT_DEBUG("Closing incoming P2P network abstractions.");
-  // Close any incoming P2P network abstractions that are still open.
+  // Close connections to unblock any listener threads that are blocking on reads,
+  // but do NOT free the memory yet because listener threads hold local pointers.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
-    shutdown_net(_fed.net_for_inbound_p2p_connections[i], false);
-    // Ignore errors. Mark the network abstraction closed.
-    _fed.net_for_inbound_p2p_connections[i] = NULL;
+    close_net(_fed.net_for_inbound_p2p_connections[i], false);
   }
 
   // Check for all outgoing physical connections in
@@ -1659,10 +1661,6 @@ void lf_terminate_execution(environment_t* env) {
   // if the network abstraction ID is not NULL, the connection is still open.
   // Send an EOF by closing the network abstraction here.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
-
-    // Close outbound connections, in case they have not closed themselves.
-    // This will result in EOF being sent to the remote federate, except for
-    // abnormal termination, in which case it will just close the network abstraction.
     close_outbound_net(i);
   }
 
@@ -1680,6 +1678,14 @@ void lf_terminate_execution(environment_t* env) {
   LF_PRINT_DEBUG("Waiting for RTI's network abstraction listener threads.");
   // Wait for the thread listening for messages from the RTI to close.
   lf_thread_join(_fed.RTI_net_listener, NULL);
+
+  // All listener threads have now exited. Safe to free network abstraction memory.
+  for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
+    free_net(_fed.net_for_inbound_p2p_connections[i]);
+    _fed.net_for_inbound_p2p_connections[i] = NULL;
+  }
+  free_net(_fed.net_to_RTI);
+  _fed.net_to_RTI = NULL;
 
   // For abnormal termination, there is no need to free memory.
   if (_lf_normal_termination) {
