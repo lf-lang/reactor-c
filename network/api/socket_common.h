@@ -135,7 +135,7 @@ typedef struct socket_connection_params_t {
   const char* server_hostname;
 
   /** @brief IP address of the remote server. If provided, bypasses DNS resolution. */
-  struct in_addr* server_ip_addr;
+  const struct in_addr* server_ip_addr;
 } socket_connection_params_t;
 
 /**
@@ -220,7 +220,7 @@ int accept_socket(int socket);
  * @param port The port number to connect to. If 0 is specified, a default port range will be used.
  * @return 0 on success, -1 on failure, and `errno` is set to indicate the specific error.
  */
-int connect_to_socket(int sock, const char* hostname, struct in_addr* ip_addr, int port);
+int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_addr, int port);
 
 /**
  * @brief Read the specified number of bytes from the specified socket into the specified buffer.

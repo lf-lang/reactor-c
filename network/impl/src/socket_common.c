@@ -214,7 +214,7 @@ int accept_socket(int socket) {
   return socket_id;
 }
 
-int connect_to_socket(int sock, const char* hostname, struct in_addr* ip_addr, int port) {
+int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_addr, int port) {
   struct addrinfo hints;
   struct addrinfo* result = NULL;
   int ret = -1;
@@ -256,7 +256,7 @@ int connect_to_socket(int sock, const char* hostname, struct in_addr* ip_addr, i
       // Get address structure matching hostname and hints criteria, and
       // set port to the port number provided in str. There should only
       // ever be one matching address structure, and we connect to that.
-      if (getaddrinfo(hostname, (const char*)&str, &hints, &result)) {
+      if (getaddrinfo(hostname, str, &hints, &result)) {
         lf_print_error("No host matching given hostname: %s", hostname);
         break;
       }

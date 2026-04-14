@@ -2010,7 +2010,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   _fed.inbound_net_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
     if (rti_failed()) {
-      break;
+      return NULL;
     }
     // Wait for an incoming connection request.
     net_abstraction_t net = accept_net(_fed.server_net);
