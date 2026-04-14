@@ -650,7 +650,7 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
 #endif
       // Close the connection to unblock the listener, but do not free the memory;
       // lf_terminate_execution will free it after joining the listener thread.
-      close_net(_fed.net_for_inbound_p2p_connections[fed_id], false);
+      close_net(net, false);
       LF_MUTEX_UNLOCK(&env->mutex);
       return -1;
     } else {
@@ -1513,8 +1513,8 @@ static void* listen_to_rti_net(void* args) {
   // Listen for messages from the federate.
   while (!_lf_termination_executed) {
     // Check whether the RTI network abstraction is still valid.
-    if (_fed.net_to_RTI == NULL) {
-      lf_print_warning("network abstraction to the RTI unexpectedly closed.");
+    if (_fed.net_to_RTI == NULL || !is_net_open(_fed.net_to_RTI)) {
+      lf_print_warning("network connection to the RTI unexpectedly closed.");
       return NULL;
     }
     // Read one byte to get the message type.
@@ -1523,13 +1523,11 @@ static void* listen_to_rti_net(void* args) {
     if (read_failed < 0) {
       lf_print_error("Connection to the RTI was closed by the RTI with an error. Considering this a soft error.");
       close_net(_fed.net_to_RTI, false);
-      _fed.net_to_RTI = NULL;
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
       lf_print_info("Connection to the RTI closed with an EOF.");
       close_net(_fed.net_to_RTI, false);
-      _fed.net_to_RTI = NULL;
       return NULL;
     }
     switch (buffer[0]) {
