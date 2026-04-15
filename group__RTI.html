@@ -836,7 +836,7 @@ Functions</h2></td></tr>
 <p>Handle address advertisement messages (. </p>
 <dl class="section see"><dt>See also</dt><dd>MSG_TYPE_ADDRESS_ADVERTISEMENT in net_common.h).</dd></dl>
 <p>The federate is expected to send its server port number as the next byte. The RTI will keep a record of this number in the .server_port field of the _RTI.federates[federate_id] array of structs.</p>
-<p>The server_hostname and server_ip_addr fields are assigned in <a class="el" href="#ga14c897c9da2160d4aceff4751822eced" title="Wait for one incoming connection request from each federate, and, upon receiving it,...">lf_connect_to_federates()</a> upon accepting the socket from the remote federate.</p>
+<p>The server_ip_addr field is assigned in <a class="el" href="#ga14c897c9da2160d4aceff4751822eced" title="Wait for one incoming connection request from each federate, and, upon receiving it,...">lf_connect_to_federates()</a> upon accepting the socket from the remote federate.</p>
 <p>This function assumes the caller does not hold the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
