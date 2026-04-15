@@ -2016,6 +2016,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     net_abstraction_t net = accept_net(_fed.server_net);
     if (net == NULL) {
       lf_print_warning("Federate failed to accept the network abstraction.");
+      lf_sleep(MSEC(100));
       continue;
     }
     LF_PRINT_LOG("Accepted new connection from remote federate.");
