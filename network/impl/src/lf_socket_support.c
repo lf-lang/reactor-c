@@ -30,7 +30,6 @@ net_abstraction_t initialize_net() {
   priv->socket_descriptor = -1;
 
   // Federate initialization
-  strncpy(priv->server_hostname, "localhost", INET_ADDRSTRLEN);
   priv->server_ip_addr.s_addr = 0;
   priv->server_port = -1;
 
@@ -83,11 +82,11 @@ net_abstraction_t connect_to_net(net_params_t params) {
   socket_priv_t* priv = (socket_priv_t*)net;
   socket_connection_params_t* sock_params = (socket_connection_params_t*)params;
   priv->server_port = sock_params->port;
-  memcpy(priv->server_hostname, sock_params->server_hostname, INET_ADDRSTRLEN);
   // Create the client network abstraction.
   create_client(net);
   // Connect to the target server.
-  if (connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port) != 0) {
+  if (connect_to_socket(priv->socket_descriptor, sock_params->server_hostname, sock_params->server_ip_addr,
+                        priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
     return NULL;
   }
