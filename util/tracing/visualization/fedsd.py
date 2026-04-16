@@ -32,6 +32,7 @@ css_style = ' <style> \
     .FED_ID     { stroke: #80DD99; fill: #80DD99; } \
     .ACK        { stroke: #52b788; fill: #52b788; } \
     .FAILED     { stroke: #c1121f; fill: #c1121f; } \
+    .STOP       {stroke: #d0b7eb; fill: #d0b7eb} \
     .STOP_REQ   { stroke: #e76f51; fill: #e76f51; } \
     .STOP_REQ_REP { stroke: #ca6702; fill: #ca6702; } \
     .STOP_GRN   { stroke: #e9c46a; fill: #e9c46a; } \
@@ -103,7 +104,9 @@ prune_event_name = {
     "Receiving ADR_QR_REP": "ADR_QR_REP",
     "Receiving DNET": "DNET",
     "Receiving UNIDENTIFIED": "UNIDENTIFIED",
-    "Scheduler advancing time ends": "AdvLT"
+    "Scheduler advancing time ends": "AdvLT",
+    "Sending STOP": "STOP",
+    "Receiving STOP": "STOP"
 }
 
 prune_event_name.setdefault(" ", "UNIDENTIFIED")
@@ -147,7 +150,7 @@ parser.add_argument('-e', '--end', type=str, nargs=2,
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
 # Set of non-tagged events (messages)
-non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG'}
+non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG', 'STOP'}
 
 
 ################################################################################
@@ -246,7 +249,6 @@ def svg_string_draw_label(x1, y1, x2, y2, label) :
         else:
             rotation = 0
         str_line = '\t<text transform="translate('+str(x1+10)+', '+str(y1-5)+') rotate('+str(rotation)+')" text-anchor="start">'+label+'</text>\n'
-    #print('rot = '+str(rotation)+' x1='+str(x1)+' y1='+str(y1)+' x2='+str(x2)+' y2='+str(y2))
     return str_line
 
 
@@ -541,11 +543,17 @@ if __name__ == '__main__':
             if (not fed_df.empty):
                 # Get the federate id number
                 fed_id = fed_df.iloc[-1]['self_id']
-                # Add to the list of sequence diagram actors and add the name
-                actors.append(fed_id)
-                actors_names[fed_id] = Path(fed_trace).stem
-                # Derive the x coordinate of the actor
-                x_coor[fed_id] = (padding * 2) + (spacing * (len(actors) - 1))
+
+                ### Check that the federate id have not been entrered yet.
+                ### This is particlurly useful for transient actors, when
+                ### they leave and join several times
+                if (actors.count(fed_id) == 0): 
+                    # Add to the list of sequence diagram actors and add the name
+                    actors.append(fed_id)
+                    actors_names[fed_id] = Path(fed_trace).stem
+                    # Derive the x coordinate of the actor
+                    x_coor[fed_id] = (padding * 2) + (spacing * (len(actors)-1))
+
                 fed_df['x1'] = x_coor[fed_id]
                 trace_df = pd.concat([trace_df, fed_df])
                 fed_df = fed_df[0:0]
