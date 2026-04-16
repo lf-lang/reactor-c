@@ -228,6 +228,7 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
   if (result == NULL) {
     // Nothing found on the recycle bin.
     result = (lf_token_t*)calloc(1, sizeof(lf_token_t));
+    LF_ASSERT_NON_NULL(result);
     LF_PRINT_DEBUG("_lf_new_token: Allocated memory for token: %p", (void*)result);
   }
   result->type = type;

@@ -242,6 +242,35 @@ PyObject* py_check_deadline(PyObject* self, PyObject* args) {
   return PyBool_FromLong(result);
 }
 
+PyObject* py_update_deadline(PyObject* self, PyObject* args) {
+  PyObject* py_self;
+  int64_t updated_deadline = 0; // Default to 0
+  double updated_deadline_in_double =
+      0.0; // Deadline may be passed as a floating-point value in nanoseconds, e.g., SEC(0.5) → 0.5 * 1e9.
+
+  if (!PyArg_ParseTuple(args, "O|d", &py_self, &updated_deadline_in_double)) {
+    return NULL;
+  }
+
+  // Check overflow before converting a double to int64_t (interval_t).
+  if (updated_deadline_in_double > (double)INT64_MAX || updated_deadline_in_double < (double)INT64_MIN) {
+    PyErr_SetString(PyExc_OverflowError, "The updated deadline value is out of int64 range");
+    return NULL;
+  }
+
+  // Convert double to int64_t
+  updated_deadline = (int64_t)updated_deadline_in_double;
+
+  void* self_ptr = get_lf_self_pointer(py_self);
+  if (self_ptr == NULL) {
+    return NULL;
+  }
+  lf_update_deadline(self_ptr, updated_deadline);
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
 /**
  * Register a user trace event. Returns an opaque handle (as a Python int)
  * that must be passed to tracepoint_user_event and tracepoint_user_value.
@@ -386,6 +415,8 @@ static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
     {"check_deadline", (PyCFunction)py_check_deadline, METH_VARARGS,
      "Check whether the deadline of the currently executing reaction has passed"},
+    {"update_deadline", (PyCFunction)py_update_deadline, METH_VARARGS,
+     "Update the deadline of the currently executing reaction"},
     {"register_user_trace_event", (PyCFunction)py_register_user_trace_event, METH_VARARGS,
      "Register a user trace event; returns a handle for use with tracepoint_user_event and tracepoint_user_value"},
     {"tracepoint_user_event", (PyCFunction)py_tracepoint_user_event, METH_VARARGS,
