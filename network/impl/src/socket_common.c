@@ -177,14 +177,10 @@ int get_peer_address(socket_priv_t* priv) {
   priv->server_ip_addr = peer_addr.sin_addr;
 
 #if LOG_LEVEL >= LOG_LEVEL_DEBUG
-  // Create the human readable format and copy that into
-  // the .server_hostname field of the federate.
+  // Create the human readable format for logging purposes
   char str[INET_ADDRSTRLEN + 1];
   inet_ntop(AF_INET, &priv->server_ip_addr, str, INET_ADDRSTRLEN);
-  strncpy(priv->server_hostname, str, INET_ADDRSTRLEN - 1); // Copy up to INET_ADDRSTRLEN - 1 characters
-  priv->server_hostname[INET_ADDRSTRLEN - 1] = '\0';        // Null-terminate explicitly
-
-  LF_PRINT_DEBUG("Got address %s", priv->server_hostname);
+  LF_PRINT_DEBUG("Got address %s", str);
 #endif
   return 0;
 }
@@ -221,20 +217,28 @@ int accept_socket(int socket) {
   return socket_id;
 }
 
-int connect_to_socket(int sock, const char* hostname, int port) {
+int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_addr, int port) {
   struct addrinfo hints;
-  struct addrinfo* result;
+  struct addrinfo* result = NULL;
   int ret = -1;
 
-  memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_INET;       /* Allow IPv4 */
-  hints.ai_socktype = SOCK_STREAM; /* Stream socket */
-  hints.ai_protocol = IPPROTO_TCP; /* TCP protocol */
-  hints.ai_addr = NULL;
-  hints.ai_next = NULL;
-  hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
-
   uint16_t used_port = (port == 0) ? DEFAULT_PORT : (uint16_t)port;
+  struct sockaddr_in direct_addr;
+
+  if (ip_addr == NULL) {
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;       /* Allow IPv4 */
+    hints.ai_socktype = SOCK_STREAM; /* Stream socket */
+    hints.ai_protocol = IPPROTO_TCP; /* TCP protocol */
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+    hints.ai_flags = AI_NUMERICSERV; /* Allow only numeric port numbers */
+  } else {
+    memset(&direct_addr, 0, sizeof(direct_addr));
+    direct_addr.sin_family = AF_INET;
+    direct_addr.sin_port = htons(used_port);
+    direct_addr.sin_addr = *ip_addr;
+  }
 
   instant_t start_connect = lf_time_physical();
   // while (!_lf_termination_executed) { // Not working...
@@ -243,30 +247,43 @@ int connect_to_socket(int sock, const char* hostname, int port) {
       lf_print_error("Failed to connect with timeout: " PRINTF_TIME ". Giving up.", CONNECT_TIMEOUT);
       break;
     }
-    // Convert port number to string.
-    char str[6];
-    snprintf(str, sizeof(str), "%u", used_port);
 
-    // Get address structure matching hostname and hints criteria, and
-    // set port to the port number provided in str. There should only
-    // ever be one matching address structure, and we connect to that.
-    if (getaddrinfo(hostname, (const char*)&str, &hints, &result)) {
-      lf_print_error("No host matching given hostname: %s", hostname);
-      break;
+    if (ip_addr != NULL) {
+      // Safe to type cast specific protocols (e.g., sockaddr_in) to the generic sockaddr.
+      ret = connect(sock, (struct sockaddr*)&direct_addr, sizeof(direct_addr));
+    } else {
+      // Convert port number to string.
+      char str[6];
+      snprintf(str, sizeof(str), "%u", used_port);
+
+      // Get address structure matching hostname and hints criteria, and
+      // set port to the port number provided in str. There should only
+      // ever be one matching address structure, and we connect to that.
+      if (getaddrinfo(hostname, str, &hints, &result)) {
+        lf_print_error("No host matching given hostname: %s", hostname);
+        break;
+      }
+      ret = connect(sock, result->ai_addr, result->ai_addrlen);
+      freeaddrinfo(result);
     }
-    ret = connect(sock, result->ai_addr, result->ai_addrlen);
+
     if (ret < 0) {
       lf_sleep(CONNECT_RETRY_INTERVAL);
       lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds. Connecting to port %d.\n",
                        CONNECT_RETRY_INTERVAL, used_port);
-      freeaddrinfo(result);
       continue;
     } else {
       break;
     }
   }
-  freeaddrinfo(result);
-  lf_print_info("Connected to %s:%d.", hostname, used_port);
+
+  if (ip_addr != NULL) {
+    char host_str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, ip_addr, host_str, INET_ADDRSTRLEN);
+    lf_print_info("Connected to %s:%d.", host_str, used_port);
+  } else {
+    lf_print_info("Connected to %s:%d.", hostname, used_port);
+  }
   return ret;
 }
 
