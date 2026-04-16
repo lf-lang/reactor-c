@@ -30,6 +30,10 @@ css_style = ' <style> \
     .DNET       { stroke: #7b2d8b; fill: #7b2d8b; } \
     .TIMESTAMP  { stroke: #888888; fill: #888888; } \
     .FED_ID     { stroke: #80DD99; fill: #80DD99; } \
+    .UPSTREAM_CONNECTED { stroke: #f4a261; fill: #f4a261; } \
+    .UPSTREAM_DISCONNECTED { stroke: #e76f51; fill: #e76f51; } \
+    .OUTBOUND_CONNECTED { stroke: #2a9d8f; fill: #2a9d8f; } \
+    .OUTBOUND_DISCONNECTED { stroke: #264653; fill: #264653; } \
     .ACK        { stroke: #52b788; fill: #52b788; } \
     .FAILED     { stroke: #c1121f; fill: #c1121f; } \
     .STOP       {stroke: #d0b7eb; fill: #d0b7eb} \
@@ -66,6 +70,10 @@ prune_event_name = {
     "Sending STOP_REQ_REP": "STOP_REQ_REP",
     "Sending STOP_GRN": "STOP_GRN",
     "Sending FED_ID": "FED_ID",
+    "Sending UPSTREAM_CONNECTED": "UPSTREAM_CONNECTED",
+    "Sending UPSTREAM_DISCONNECTED": "UPSTREAM_DISCONNECTED",
+    "Sending OUTBOUND_CONNECTED": "OUTBOUND_CONNECTED",
+    "Sending OUTBOUND_DISCONNECTED": "OUTBOUND_DISCONNECTED",
     "Sending PTAG": "PTAG",
     "Sending TAG": "TAG",
     "Sending REJECT": "REJECT",
@@ -89,6 +97,10 @@ prune_event_name = {
     "Receiving STOP_REQ_REP": "STOP_REQ_REP",
     "Receiving STOP_GRN": "STOP_GRN",
     "Receiving FED_ID": "FED_ID",
+    "Receiving UPSTREAM_CONNECTED": "UPSTREAM_CONNECTED",
+    "Receiving UPSTREAM_DISCONNECTED": "UPSTREAM_DISCONNECTED",
+    "Receiving OUTBOUND_CONNECTED": "OUTBOUND_CONNECTED",
+    "Receiving OUTBOUND_DISCONNECTED": "OUTBOUND_DISCONNECTED",
     "Receiving PTAG": "PTAG",
     "Receiving TAG": "TAG",
     "Receiving REJECT": "REJECT",
@@ -150,7 +162,8 @@ parser.add_argument('-e', '--end', type=str, nargs=2,
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
 # Set of non-tagged events (messages)
-non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG', 'STOP'}
+non_tagged_messages = {'FED_ID', 'UPSTREAM_CONNECTED', 'UPSTREAM_DISCONNECTED', 'OUTBOUND_CONNECTED', 'OUTBOUND_DISCONNECTED',
+                       'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG', 'STOP'}
 
 
 ################################################################################
@@ -645,6 +658,25 @@ if __name__ == '__main__':
                     (trace_df['logical_time'] == logical_time) & \
                     (trace_df['microstep'] == microstep) \
                 ]
+            elif (event == 'P2P_MSG'):
+                # P2P messages travel directly between federates without going through the
+                # RTI, so partner_id in the trace is typically -1 on both sides (the RTI is
+                # not involved and the tracepoint has no partner). We therefore cannot use
+                # partner_id for matching. Instead we match each 'out' to the first pending
+                # 'in' whose physical_time >= the sender's physical_time (causality guarantee:
+                # the receive cannot precede the send).
+                physical_time = trace_df.at[index, 'physical_time']
+                if (inout == 'out'):
+                    matching_df = trace_df[\
+                        (trace_df['inout'] == 'in') & \
+                        (trace_df['arrow'] == 'pending') & \
+                        (trace_df['event'] == event) & \
+                        (trace_df['physical_time'] >= physical_time) \
+                    ]
+                else:
+                    # 'in' rows are claimed by the corresponding 'out' pass above.
+                    # If we reach an 'in' here it means no 'out' claimed it; render as dot.
+                    matching_df = trace_df[0:0]
             else :
                 matching_df = trace_df[\
                     (trace_df['inout'] != inout) & \
