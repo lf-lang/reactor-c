@@ -1040,6 +1040,7 @@ static void handle_outbound_disconnected_message(void) {
   LF_PRINT_DEBUG("Received notification that downstream transient federate %d has disconnected.", remote_federate_id);
 
   shutdown_net(_fed.net_for_outbound_p2p_connections[remote_federate_id], false);
+  _fed.net_for_outbound_p2p_connections[remote_federate_id] = NULL;
 }
 
 /**
