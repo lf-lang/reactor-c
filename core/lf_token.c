@@ -243,15 +243,24 @@ lf_token_t* _lf_get_token(token_template_t* tmplt) {
   if (tmplt->token != NULL && tmplt->token->ref_count == 1) {
     LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu", (void*)tmplt->token,
                    tmplt->token->ref_count);
-    // Free any previous value in the token.
     _lf_free_token_value(tmplt->token);
     LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
     return tmplt->token;
   }
+  // The existing template token is shared (ref_count > 1) or NULL.
+  // Drop the template's reference to the old token and install a new one
+  // so that the invariant "template holds exactly one reference" is preserved.
+  // Without this, the old token is left with an unreleasable extra reference
+  // and its payload leaks on every subsequent cycle.
+  lf_token_t* old = tmplt->token;
   LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
-  // If we get here, we need a new token.
+
   lf_token_t* result = _lf_new_token((token_type_t*)tmplt, NULL, 0);
   result->ref_count = 1;
+  tmplt->token = result;
+  if (old != NULL) {
+    _lf_done_using(old);
+  }
   return result;
 }
 
