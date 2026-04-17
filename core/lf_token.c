@@ -202,10 +202,10 @@ token_freed _lf_free_token(lf_token_t* token) {
   return result;
 }
 
-lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
+/** Implementation of _lf_new_token that is called only within a critical section. */
+static lf_token_t* _lf_new_token_locked(token_type_t* type, void* value, size_t length) {
   lf_token_t* result = NULL;
   // Check the recycling bin.
-  LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
   if (_lf_token_recycling_bin != NULL) {
     hashset_itr_t iterator = hashset_iterator(_lf_token_recycling_bin);
     if (hashset_iterator_next(iterator) >= 0) {
@@ -223,8 +223,6 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
   _lf_count_token_allocations++;
 #endif
 
-  LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
-
   if (result == NULL) {
     // Nothing found on the recycle bin.
     result = (lf_token_t*)calloc(1, sizeof(lf_token_t));
@@ -235,6 +233,13 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
   result->length = length;
   result->value = value;
   result->ref_count = 0;
+  return result;
+}
+
+lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
+  LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
+  lf_token_t* result = _lf_new_token_locked(type, value, length);
+  LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
   return result;
 }
 
@@ -253,11 +258,11 @@ lf_token_t* _lf_get_token(token_template_t* tmplt) {
   // Without this, the old token is left with an unreleasable extra reference
   // and its payload leaks on every subsequent cycle.
   lf_token_t* old = tmplt->token;
-  LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
 
-  lf_token_t* result = _lf_new_token((token_type_t*)tmplt, NULL, 0);
+  lf_token_t* result = _lf_new_token_locked((token_type_t*)tmplt, NULL, 0);
   result->ref_count = 1;
   tmplt->token = result;
+  LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
   if (old != NULL) {
     _lf_done_using(old);
   }
