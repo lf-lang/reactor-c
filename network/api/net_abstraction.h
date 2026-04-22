@@ -210,13 +210,44 @@ void write_to_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, uns
 bool is_net_open(net_abstraction_t net_abs);
 
 /**
- * @brief Gracefully shut down and close a network abstraction.
+ * @brief Close the underlying connection of a network abstraction without freeing its memory.
  * @ingroup Network
+ *
+ * This function closes the connection (making it unusable for I/O) but leaves the
+ * net_abstraction_t memory allocated. This is needed when another thread may still hold
+ * a pointer to the same network abstraction; the socket is closed to unblock any pending
+ * reads, but the memory remains valid. Call free_net() to release the memory after ensuring
+ * no other thread holds a reference. This function is idempotent.
+ *
+ * @param net_abs The network abstraction whose connection should be closed, or NULL (no-op).
+ * @param read_before_closing If true, read until EOF before closing.
+ * @return int Returns 0 on success, -1 on failure.
+ */
+int close_net(net_abstraction_t net_abs, bool read_before_closing);
+
+/**
+ * @brief Free the memory associated with a network abstraction.
+ * @ingroup Network
+ *
+ * The connection should already have been closed via close_net() or shutdown_net().
+ * Safe to call with NULL (no-op).
+ *
+ * @param net_abs The network abstraction to free, or NULL.
+ */
+void free_net(net_abstraction_t net_abs);
+
+/**
+ * @brief Gracefully shut down, close, and free a network abstraction.
+ * @ingroup Network
+ *
+ * Equivalent to calling close_net() followed by free_net(). Do not use this function
+ * if another thread may still be using the same net_abstraction_t pointer; use close_net()
+ * to unblock the other thread first, join it, and then call free_net().
  *
  * If read_before_closing is false, call shutdown() with SHUT_RDWR and then close(). If true, call shutdown() with
  * SHUT_WR, then read() until EOF and discard received bytes before closing.
  *
- * @param net_abs The network abstraction to shut down and close.
+ * @param net_abs The network abstraction to shut down and close, or NULL (no-op).
  * @param read_before_closing If true, read until EOF before closing the network abstraction.
  * @return int Returns 0 on success, -1 on failure (errno will indicate the error).
  */

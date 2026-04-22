@@ -30,7 +30,6 @@ net_abstraction_t initialize_net() {
   priv->socket_descriptor = -1;
 
   // Federate initialization
-  strncpy(priv->server_hostname, "localhost", INET_ADDRSTRLEN);
   priv->server_ip_addr.s_addr = 0;
   priv->server_port = -1;
 
@@ -83,11 +82,11 @@ net_abstraction_t connect_to_net(net_params_t params) {
   socket_priv_t* priv = (socket_priv_t*)net;
   socket_connection_params_t* sock_params = (socket_connection_params_t*)params;
   priv->server_port = sock_params->port;
-  memcpy(priv->server_hostname, sock_params->server_hostname, INET_ADDRSTRLEN);
   // Create the client network abstraction.
   create_client(net);
   // Connect to the target server.
-  if (connect_to_socket(priv->socket_descriptor, priv->server_hostname, priv->server_port) != 0) {
+  if (connect_to_socket(priv->socket_descriptor, sock_params->server_hostname, sock_params->server_ip_addr,
+                        priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
     return NULL;
   }
@@ -176,13 +175,16 @@ bool is_net_open(net_abstraction_t net_abs) {
   return is_socket_open(priv->socket_descriptor);
 }
 
-int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
+int close_net(net_abstraction_t net_abs, bool read_before_closing) {
   if (net_abs == NULL) {
-    LF_PRINT_LOG("Socket already closed.");
     return 0;
   }
   socket_priv_t* priv = (socket_priv_t*)net_abs;
-  int ret = shutdown_socket(&priv->socket_descriptor, read_before_closing);
+  return shutdown_socket(&priv->socket_descriptor, read_before_closing);
+}
+
+int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
+  int ret = close_net(net_abs, read_before_closing);
   free_net(net_abs);
   return ret;
 }
