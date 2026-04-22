@@ -641,11 +641,16 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
                      "    Discarding message and closing the network connection.",
                      env->current_tag.time - start_time, env->current_tag.microstep, intended_tag.time - start_time,
                      intended_tag.microstep);
-      // Free the allocated memory before returning
-      _lf_done_using(message_token);
-      // Close network abstraction, reading any incoming data and discarding it.
-      shutdown_net(_fed.net_for_inbound_p2p_connections[fed_id], false);
-      _fed.net_for_inbound_p2p_connections[fed_id] = NULL;
+      // The token was freshly allocated by _lf_new_token with ref_count 0 and was never
+      // scheduled, so _lf_done_using would incorrectly treat it as already freed.
+      // Use _lf_free_token directly, which handles ref_count == 0 correctly.
+      _lf_free_token(message_token);
+#ifdef FEDERATED_DECENTRALIZED
+      _lf_decrement_tag_barrier_locked(env);
+#endif
+      // Close the connection to unblock the listener, but do not free the memory;
+      // lf_terminate_execution will free it after joining the listener thread.
+      close_net(net, false);
       LF_MUTEX_UNLOCK(&env->mutex);
       return -1;
     } else {
@@ -723,7 +728,6 @@ static int handle_port_absent_message(net_abstraction_t net, int fed_id) {
  * network abstraction in _fed.net_for_inbound_p2p_connections
  * to -1 and returns, terminating the thread.
  * @param _args The remote federate ID (cast to void*).
- * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
  *  This procedure frees the memory pointed to before returning.
  */
 static void* listen_to_federates(void* _args) {
@@ -1508,8 +1512,8 @@ static void* listen_to_rti_net(void* args) {
   // Listen for messages from the federate.
   while (!_lf_termination_executed) {
     // Check whether the RTI network abstraction is still valid.
-    if (_fed.net_to_RTI == NULL) {
-      lf_print_warning("network abstraction to the RTI unexpectedly closed.");
+    if (_fed.net_to_RTI == NULL || !is_net_open(_fed.net_to_RTI)) {
+      lf_print_warning("network connection to the RTI unexpectedly closed.");
       return NULL;
     }
     // Read one byte to get the message type.
@@ -1517,14 +1521,12 @@ static void* listen_to_rti_net(void* args) {
     int read_failed = read_from_net(_fed.net_to_RTI, 1, buffer);
     if (read_failed < 0) {
       lf_print_error("Connection to the RTI was closed by the RTI with an error. Considering this a soft error.");
-      shutdown_net(_fed.net_to_RTI, false);
-      _fed.net_to_RTI = NULL;
+      close_net(_fed.net_to_RTI, false);
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
       lf_print_info("Connection to the RTI closed with an EOF.");
-      shutdown_net(_fed.net_to_RTI, false);
-      _fed.net_to_RTI = NULL;
+      close_net(_fed.net_to_RTI, false);
       return NULL;
     }
     switch (buffer[0]) {
@@ -1647,11 +1649,10 @@ void lf_terminate_execution(environment_t* env) {
   }
 
   LF_PRINT_DEBUG("Closing incoming P2P network abstractions.");
-  // Close any incoming P2P network abstractions that are still open.
+  // Close connections to unblock any listener threads that are blocking on reads,
+  // but do NOT free the memory yet because listener threads hold local pointers.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
-    shutdown_net(_fed.net_for_inbound_p2p_connections[i], false);
-    // Ignore errors. Mark the network abstraction closed.
-    _fed.net_for_inbound_p2p_connections[i] = NULL;
+    close_net(_fed.net_for_inbound_p2p_connections[i], false);
   }
 
   // Check for all outgoing physical connections in
@@ -1659,10 +1660,6 @@ void lf_terminate_execution(environment_t* env) {
   // if the network abstraction ID is not NULL, the connection is still open.
   // Send an EOF by closing the network abstraction here.
   for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
-
-    // Close outbound connections, in case they have not closed themselves.
-    // This will result in EOF being sent to the remote federate, except for
-    // abnormal termination, in which case it will just close the network abstraction.
     close_outbound_net(i);
   }
 
@@ -1680,6 +1677,14 @@ void lf_terminate_execution(environment_t* env) {
   LF_PRINT_DEBUG("Waiting for RTI's network abstraction listener threads.");
   // Wait for the thread listening for messages from the RTI to close.
   lf_thread_join(_fed.RTI_net_listener, NULL);
+
+  // All listener threads have now exited. Safe to free network abstraction memory.
+  for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
+    free_net(_fed.net_for_inbound_p2p_connections[i]);
+    _fed.net_for_inbound_p2p_connections[i] = NULL;
+  }
+  free_net(_fed.net_to_RTI);
+  _fed.net_to_RTI = NULL;
 
   // For abnormal termination, there is no need to free memory.
   if (_lf_normal_termination) {
@@ -1753,13 +1758,24 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   assert(port > 0);
   uint16_t uport = (uint16_t)port;
 
-  char hostname[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, &host_ip_addr, hostname, INET_ADDRSTRLEN);
-
-  socket_connection_params_t params;
+#ifdef COMM_TYPE_TCP
+  socket_connection_params_t params = {0};
   params.type = TCP;
   params.port = uport;
-  params.server_hostname = hostname;
+  params.server_ip_addr = &host_ip_addr;
+#elif defined(COMM_TYPE_SST)
+  sst_connection_params_t params = {0};
+  params.socket_params.type = TCP;
+  params.socket_params.port = uport;
+  params.socket_params.server_ip_addr = &host_ip_addr;
+  params.target = 1;
+#elif defined(COMM_TYPE_TLS)
+  tls_connection_params_t params = {0};
+  params.socket_params.type = TCP;
+  params.socket_params.port = uport;
+  params.socket_params.server_ip_addr = &host_ip_addr;
+#endif
+
   net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to federate.");
@@ -1837,10 +1853,24 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
-  socket_connection_params_t params;
+#ifdef COMM_TYPE_TCP
+  socket_connection_params_t params = {0};
   params.type = TCP;
   params.port = port;
   params.server_hostname = hostname;
+#elif defined(COMM_TYPE_SST)
+  sst_connection_params_t params = {0};
+  params.socket_params.type = TCP;
+  params.socket_params.port = port;
+  params.socket_params.server_hostname = hostname;
+  params.target = 0;
+#elif defined(COMM_TYPE_TLS)
+  tls_connection_params_t params = {0};
+  params.socket_params.type = TCP;
+  params.socket_params.port = port;
+  params.socket_params.server_hostname = hostname;
+#endif
+
   net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to RTI.");
@@ -1949,14 +1979,13 @@ void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
   net_abstraction_t server_net = initialize_net();
-  ((socket_priv_t*)server_net)->port = (uint16_t)specified_port;
-
+  set_my_port(server_net, specified_port);
   if (create_server(server_net)) {
     lf_print_error_system_failure("Failed to create server: %s.", strerror(errno));
   };
   _fed.server_net = server_net;
   // Get the final server port to send to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message.
-  int32_t server_port = ((socket_priv_t*)server_net)->port;
+  int32_t server_port = get_my_port(server_net);
 
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", server_port);
 
@@ -2007,13 +2036,14 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   _fed.inbound_net_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
   while (received_federates < _fed.number_of_inbound_p2p_connections && !_lf_termination_executed) {
     if (rti_failed()) {
-      break;
+      return NULL;
     }
     // Wait for an incoming connection request.
     net_abstraction_t net = accept_net(_fed.server_net);
     if (net == NULL) {
       lf_print_warning("Federate failed to accept the network abstraction.");
-      return NULL;
+      lf_sleep(CONNECT_RETRY_INTERVAL);
+      continue;
     }
     LF_PRINT_LOG("Accepted new connection from remote federate.");
 
@@ -2034,7 +2064,6 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         write_to_net(net, 2, response);
       }
       shutdown_net(net, false);
-      net = NULL;
       continue;
     }
 
@@ -2055,7 +2084,6 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
         write_to_net(net, 2, response);
       }
       shutdown_net(net, false);
-      net = NULL;
       continue;
     }
 

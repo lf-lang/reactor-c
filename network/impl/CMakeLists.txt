@@ -10,6 +10,20 @@ target_sources(lf-network-impl PUBLIC
 
 if(COMM_TYPE MATCHES TCP)
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/lf_socket_support.c)
+elseif(COMM_TYPE MATCHES SST)
+    find_package(OpenSSL REQUIRED)
+    find_package(sst-lib REQUIRED)
+    target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/lf_sst_support.c)
+    target_link_libraries(lf-network-impl PUBLIC sst-lib::sst-c-api)
+elseif(COMM_TYPE MATCHES TLS)
+    find_package(OpenSSL REQUIRED)
+    target_sources(lf-network-impl PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/src/lf_tls_support.c
+    )
+    target_link_libraries(lf-network-impl PUBLIC
+        OpenSSL::SSL
+        OpenSSL::Crypto
+    )
 else()
     message(FATAL_ERROR "Your communication type is not supported! The C target supports TCP.")
 endif()
