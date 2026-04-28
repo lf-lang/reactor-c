@@ -195,6 +195,9 @@ bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
       return true;
     }
 
+    // Set highest priority before sleeping so we wake up quickly
+    lf_thread_set_priority(lf_thread_self(), LF_SLEEP_PRIORITY);
+
     // We do the sleep on the cond var so we can be awakened by the
     // asynchronous scheduling of a physical action. lf_clock_cond_timedwait
     // returns 0 if it is awakened before the timeout. Hence, we want to run
@@ -339,8 +342,6 @@ void _lf_next_locked(environment_t* env) {
     wait_until_time = lf_wait_until_time(next_tag);
 #endif // FEDERATED_DECENTRALIZED
     LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (wait_until_time - start_time));
-    // Set highest priority before sleeping so we wake up quickly
-    lf_thread_set_priority(lf_thread_self(), LF_SLEEP_PRIORITY);
     if (wait_until(wait_until_time, &env->event_q_changed)) {
       // Waited the full time.
       break;
@@ -826,9 +827,6 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
   lf_stall_advance_level_federation(env, 0);
 #endif
   while ((current_reaction_to_execute = lf_sched_get_ready_reaction(env->scheduler, worker_number)) != NULL) {
-#ifdef LF_THREAD_POLICY
-    int assigned_priority = 0;
-#endif
     // Got a reaction that is ready to run.
     LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
                    "level: %lld, is input reaction: %d, and deadline " PRINTF_TIME ".",
@@ -844,20 +842,21 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
     }
 #endif // FEDERATED_CENTRALIZED
 
+#ifdef LF_THREAD_POLICY
+    // Use scheduling deadline (packed inferred deadline in reaction->index; see
+    // lf_reaction_scheduling_deadline_ns). reaction->deadline stays the LF-declared value for
+    // violation checks.
+    interval_t scheduling_deadline = lf_reaction_scheduling_deadline_ns(current_reaction_to_execute);
+    int assigned_priority = get_priority_value(scheduling_deadline);
+    LF_PRINT_LOG("Worker %d: Setting priority %d to execute reaction %s with scheduling deadline " PRINTF_TIME
+                 "ns.",
+                 worker_number, assigned_priority, current_reaction_to_execute->name, scheduling_deadline);
+    lf_thread_set_priority(lf_thread_self(), assigned_priority);
+#endif
+
     bool violation = _lf_worker_handle_violations(env, worker_number, current_reaction_to_execute);
 
     if (!violation) {
-#ifdef LF_THREAD_POLICY
-      // Use scheduling deadline (packed inferred deadline in reaction->index; see
-      // lf_reaction_scheduling_deadline_ns). reaction->deadline stays the LF-declared value for
-      // violation checks.
-      interval_t scheduling_deadline = lf_reaction_scheduling_deadline_ns(current_reaction_to_execute);
-      assigned_priority = get_priority_value(scheduling_deadline);
-      LF_PRINT_LOG("Worker %d: Setting priority %d to execute reaction %s with scheduling deadline " PRINTF_TIME
-                   "ns.",
-                   worker_number, assigned_priority, current_reaction_to_execute->name, scheduling_deadline);
-      lf_thread_set_priority(lf_thread_self(), assigned_priority);
-#endif
       // Invoke the reaction function.
       _lf_worker_invoke_reaction(env, worker_number, current_reaction_to_execute);
     }
