@@ -1127,7 +1127,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
 
 #ifdef MINIMAL_STDLIB
-  lf_print("---- Start execution ----");
+  lf_print_info("---- Start execution ----");
 #else
   struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
   struct tm* time_info = localtime(&physical_time_timespec.tv_sec);
@@ -1135,7 +1135,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   // Use strftime rather than ctime because as of C23, ctime is deprecated.
   strftime(buffer, sizeof(buffer), "%a %b %d %H:%M:%S %Y", time_info);
 
-  lf_print("---- Start execution on %s ---- plus %ld nanoseconds", buffer, physical_time_timespec.tv_nsec);
+  lf_print_info("---- Start execution on %s ---- plus %ld nanoseconds", buffer, physical_time_timespec.tv_nsec);
 #endif // MINIMAL_STDLIB
 
   // Create and initialize the environments for each enclave

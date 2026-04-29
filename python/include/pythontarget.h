@@ -103,6 +103,23 @@ PyObject* py_package_directory(PyObject* self, PyObject* args);
 PyObject* py_check_deadline(PyObject* self, PyObject* args);
 
 /**
+ * @brief Update the deadline of the currently executing reaction.
+ *
+ * Updating the deadline with this function does not affect
+ * the deadline check that has been performed (at the beginning
+ * of the caller reaction or check_deadline called before).
+ * Therefore, you may want to invoke check_deadline after
+ * updating the deadline through this function to confirm
+ * whether the newly updated deadline has been violated.
+ *
+ * @param self The Python object of the reactor.
+ * @param args contains:
+ *      - updated_deadline: The updated deadline.
+ * @return Py_None or NULL if an error occurs.
+ */
+PyObject* py_update_deadline(PyObject* self, PyObject* args);
+
+/**
  * @brief Register a user trace event. Returns an opaque handle for use with
  * tracepoint_user_event and tracepoint_user_value.
  *
