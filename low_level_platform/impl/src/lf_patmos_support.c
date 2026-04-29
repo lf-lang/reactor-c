@@ -16,6 +16,9 @@
 #include <machine/exceptions.h>
 #include <stdio.h>
 
+int lf_disable_interrupts_nested(void);
+int lf_enable_interrupts_nested(void);
+
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
 // Keep track of whether we are in a critical section or not
@@ -114,19 +117,32 @@ int _lf_single_threaded_notify_of_event() {
 }
 #else // LF_SINGLE_THREADED 
 
+#define LF_PATMOS_MAX_CORES 64
+static volatile int _lf_num_nested_critical_sections_by_core[LF_PATMOS_MAX_CORES] = {0};
+
+static inline volatile int* _lf_current_core_nested_counter() {
+  int cpuid = (int)get_cpuid();
+  if (cpuid < 0 || cpuid >= LF_PATMOS_MAX_CORES) {
+    return &_lf_num_nested_critical_sections_by_core[0];
+  }
+  return &_lf_num_nested_critical_sections_by_core[cpuid];
+}
+
 int lf_disable_interrupts_nested() {
-  if (_lf_num_nested_critical_sections++ == 0) {
+  volatile int* nested_counter = _lf_current_core_nested_counter();
+  if ((*nested_counter)++ == 0) {
     intr_disable();
   }
   return 0;
 }
 
 int lf_enable_interrupts_nested() {
-  if (_lf_num_nested_critical_sections <= 0) {
+  volatile int* nested_counter = _lf_current_core_nested_counter();
+  if (*nested_counter <= 0) {
     return 1;
   }
 
-  if (--_lf_num_nested_critical_sections == 0) {
+  if (--(*nested_counter) == 0) {
     intr_enable();
   }
   return 0;
@@ -154,53 +170,67 @@ int lf_thread_id() { return (int)get_cpuid(); }
 void initialize_lf_thread_id() {}
 
 int lf_mutex_init(lf_mutex_t* mutex) {
+  int result;
+  pthread_mutexattr_t attr;
+
   assert(mutex != NULL);
-  *mutex = (lf_mutex_t)malloc(sizeof(pthread_mutex_t));
-  if (*mutex == NULL) return -1;
-  return pthread_mutex_init((pthread_mutex_t*)*mutex, NULL);
+
+  result = pthread_mutexattr_init(&attr);
+  if (result != 0) {
+    return result;
+  }
+
+  result = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+  if (result != 0) {
+    pthread_mutexattr_destroy(&attr);
+    return result;
+  }
+
+  result = pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
+  pthread_mutexattr_destroy(&attr);
+  return result;
 }
 
 int lf_mutex_lock(lf_mutex_t* mutex) {
-  assert(mutex != NULL && *mutex != NULL);
-  return pthread_mutex_lock((pthread_mutex_t*)*mutex);
+  assert(mutex != NULL);
+  return pthread_mutex_lock((pthread_mutex_t*)mutex);
 }
 
 int lf_mutex_unlock(lf_mutex_t* mutex) {
-  assert(mutex != NULL && *mutex != NULL);
-  return pthread_mutex_unlock((pthread_mutex_t*)*mutex);
+  assert(mutex != NULL);
+  return pthread_mutex_unlock((pthread_mutex_t*)mutex);
 }
 
 int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
   assert(cond != NULL);
-  *cond = (lf_cond_t)malloc(sizeof(pthread_cond_t));
-  if (*cond == NULL) return -1;
-  return pthread_cond_init((pthread_cond_t*)*cond, NULL);
+  assert(mutex != NULL);
+  cond->mutex = mutex;
+  return pthread_cond_init((pthread_cond_t*)&cond->condition, NULL);
 }
 
 int lf_cond_signal(lf_cond_t* cond) {
-  assert(cond != NULL && *cond != NULL);
-  return pthread_cond_signal((pthread_cond_t*)*cond);
+  assert(cond != NULL);
+  return pthread_cond_signal((pthread_cond_t*)&cond->condition);
 }
 
 int lf_cond_broadcast(lf_cond_t* cond) {
-  assert(cond != NULL && *cond != NULL);
-  return pthread_cond_broadcast((pthread_cond_t*)*cond);
+  assert(cond != NULL);
+  return pthread_cond_broadcast((pthread_cond_t*)&cond->condition);
 }
 
 int lf_cond_wait(lf_cond_t* cond) {
-  assert(cond != NULL && *cond != NULL);
-  // Note: This requires that the caller has locked the associated mutex.
-  // For bare-metal Patmos, we assume the calling code maintains this invariant.
-  // In practice, cond_wait should be used with a mutex like:
-  //   pthread_mutex_lock(&mutex);
-  //   while (!condition) pthread_cond_wait(&cond, &mutex);
-  //   pthread_mutex_unlock(&mutex);
-  // Since we don't track the associated mutex here, the caller must manage it.
-  return -1;  // Not directly supported; use architecture-specific approach
+  assert(cond != NULL);
+  assert(cond->mutex != NULL);
+  return pthread_cond_wait((pthread_cond_t*)&cond->condition, (pthread_mutex_t*)cond->mutex);
 }
 
 int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
-  assert(cond != NULL && *cond != NULL);
+  struct timespec ts;
+  int rc;
+
+  assert(cond != NULL);
+  assert(cond->mutex != NULL);
+
   instant_t now;
   _lf_clock_gettime(&now);
   
@@ -208,8 +238,14 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
     return LF_TIMEOUT;
   }
 
-  // Patmos does not provide a native blocking condition-variable timeout here.
-  return LF_TIMEOUT;  // Treat expired or unsupported waits as timeout on Patmos.
+  ts.tv_sec = wakeup_time / 1000000000LL;
+  ts.tv_nsec = wakeup_time % 1000000000LL;
+
+  rc = pthread_cond_timedwait((pthread_cond_t*)&cond->condition, (pthread_mutex_t*)cond->mutex, &ts);
+  if (rc == ETIMEDOUT) {
+    return LF_TIMEOUT;
+  }
+  return rc;
 }
 
 #endif
