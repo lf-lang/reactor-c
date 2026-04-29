@@ -112,6 +112,106 @@ int _lf_single_threaded_notify_of_event() {
   _lf_async_event = true;
   return 0;
 }
-#endif // LF_SINGLE_THREADED
+#else // LF_SINGLE_THREADED 
+
+int lf_disable_interrupts_nested() {
+  if (_lf_num_nested_critical_sections++ == 0) {
+    intr_disable();
+  }
+  return 0;
+}
+
+int lf_enable_interrupts_nested() {
+  if (_lf_num_nested_critical_sections <= 0) {
+    return 1;
+  }
+
+  if (--_lf_num_nested_critical_sections == 0) {
+    intr_enable();
+  }
+  return 0;
+}
+
+int lf_available_cores() { return (int)get_cpucnt(); }
+
+lf_thread_t lf_thread_self() {
+  lf_thread_t self = {0};
+  self.cpuid = (int)get_cpuid();
+  return self;
+}
+
+int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
+  assert(thread != NULL);
+  return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
+}
+
+int lf_thread_join(lf_thread_t thread, void** thread_return) {
+  return pthread_join((pthread_t)thread, thread_return);
+}
+
+int lf_thread_id() { return (int)get_cpuid(); }
+
+void initialize_lf_thread_id() {}
+
+int lf_mutex_init(lf_mutex_t* mutex) {
+  assert(mutex != NULL);
+  *mutex = (lf_mutex_t)malloc(sizeof(pthread_mutex_t));
+  if (*mutex == NULL) return -1;
+  return pthread_mutex_init((pthread_mutex_t*)*mutex, NULL);
+}
+
+int lf_mutex_lock(lf_mutex_t* mutex) {
+  assert(mutex != NULL && *mutex != NULL);
+  return pthread_mutex_lock((pthread_mutex_t*)*mutex);
+}
+
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+  assert(mutex != NULL && *mutex != NULL);
+  return pthread_mutex_unlock((pthread_mutex_t*)*mutex);
+}
+
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+  assert(cond != NULL);
+  *cond = (lf_cond_t)malloc(sizeof(pthread_cond_t));
+  if (*cond == NULL) return -1;
+  return pthread_cond_init((pthread_cond_t*)*cond, NULL);
+}
+
+int lf_cond_signal(lf_cond_t* cond) {
+  assert(cond != NULL && *cond != NULL);
+  return pthread_cond_signal((pthread_cond_t*)*cond);
+}
+
+int lf_cond_broadcast(lf_cond_t* cond) {
+  assert(cond != NULL && *cond != NULL);
+  return pthread_cond_broadcast((pthread_cond_t*)*cond);
+}
+
+int lf_cond_wait(lf_cond_t* cond) {
+  assert(cond != NULL && *cond != NULL);
+  // Note: This requires that the caller has locked the associated mutex.
+  // For bare-metal Patmos, we assume the calling code maintains this invariant.
+  // In practice, cond_wait should be used with a mutex like:
+  //   pthread_mutex_lock(&mutex);
+  //   while (!condition) pthread_cond_wait(&cond, &mutex);
+  //   pthread_mutex_unlock(&mutex);
+  // Since we don't track the associated mutex here, the caller must manage it.
+  return -1;  // Not directly supported; use architecture-specific approach
+}
+
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+  assert(cond != NULL && *cond != NULL);
+  instant_t now;
+  _lf_clock_gettime(&now);
+  
+  if (now >= wakeup_time) {
+    return LF_TIMEOUT;
+  }
+
+  // Patmos does not provide a native blocking condition-variable timeout here.
+  return LF_TIMEOUT;  // Treat expired or unsupported waits as timeout on Patmos.
+}
+
+#endif
 
 #endif // PLATFORM_PATMOS
