@@ -22,5 +22,11 @@
 #define PRINTF_TIME "%" PRId64
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
+#if !defined(LF_SINGLE_THREADED)
+#include <pthread.h>
+typedef pthread_t lf_thread_t;
+typedef void* lf_mutex_t;
+typedef void* lf_cond_t;
+#endif
 
 #endif // LF_PATMOS_SUPPORT_H
