@@ -207,12 +207,6 @@ struct in_addr* get_ip_addr(net_abstraction_t net_abs) {
   return &priv->server_ip_addr;
 }
 
-char* get_server_hostname(net_abstraction_t net_abs) {
-  LF_ASSERT_NON_NULL(net_abs);
-  socket_priv_t* priv = (socket_priv_t*)net_abs;
-  return priv->server_hostname;
-}
-
 void set_my_port(net_abstraction_t net_abs, int32_t port) {
   LF_ASSERT_NON_NULL(net_abs);
   socket_priv_t* priv = (socket_priv_t*)net_abs;
@@ -223,10 +217,4 @@ void set_server_port(net_abstraction_t net_abs, int32_t port) {
   LF_ASSERT_NON_NULL(net_abs);
   socket_priv_t* priv = (socket_priv_t*)net_abs;
   priv->server_port = port;
-}
-
-void set_server_hostname(net_abstraction_t net_abs, const char* hostname) {
-  LF_ASSERT_NON_NULL(net_abs);
-  socket_priv_t* priv = (socket_priv_t*)net_abs;
-  memcpy(priv->server_hostname, hostname, INET_ADDRSTRLEN);
 }

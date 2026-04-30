@@ -298,11 +298,6 @@ struct in_addr* get_ip_addr(net_abstraction_t net_abs) {
   return &priv->socket_priv->server_ip_addr;
 }
 
-char* get_server_hostname(net_abstraction_t net_abs) {
-  sst_priv_t* priv = (sst_priv_t*)net_abs;
-  return priv->socket_priv->server_hostname;
-}
-
 void set_my_port(net_abstraction_t net_abs, int32_t port) {
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   priv->socket_priv->user_specified_port = port;
@@ -311,9 +306,4 @@ void set_my_port(net_abstraction_t net_abs, int32_t port) {
 void set_server_port(net_abstraction_t net_abs, int32_t port) {
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   priv->socket_priv->server_port = port;
-}
-
-void set_server_hostname(net_abstraction_t net_abs, const char* hostname) {
-  sst_priv_t* priv = (sst_priv_t*)net_abs;
-  memcpy(priv->socket_priv->server_hostname, hostname, INET_ADDRSTRLEN);
 }

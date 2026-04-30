@@ -291,17 +291,6 @@ int32_t get_server_port(net_abstraction_t net_abs);
 struct in_addr* get_ip_addr(net_abstraction_t net_abs);
 
 /**
- * @brief Get the connected peer's hostname.
- * @ingroup Network
- *
- * Get the hostname of the connected peer.
- *
- * @param net_abs The network abstraction.
- * @return Pointer to the server hostname.
- */
-char* get_server_hostname(net_abstraction_t net_abs);
-
-/**
  * @brief Set the user-specified port for this network abstraction.
  * @ingroup Network
  *
@@ -325,16 +314,5 @@ void set_my_port(net_abstraction_t net_abs, int32_t port);
  * @param port The target server's port.
  */
 void set_server_port(net_abstraction_t net_abs, int32_t port);
-
-/**
- * @brief Set the target server's port number for this network abstraction.
- * @ingroup Network
- *
- * Set the target server's hostname to the network abstraction.
- *
- * @param net_abs The network abstraction.
- * @param hostname The target server's hostname.
- */
-void set_server_hostname(net_abstraction_t net_abs, const char* hostname);
 
 #endif /* NET_ABSTRACTION_H */

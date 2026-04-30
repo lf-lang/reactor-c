@@ -650,7 +650,6 @@ void handle_address_query(uint16_t fed_id) {
     // returned port number might still be -1.
     server_port = get_server_port(remote_fed->net);
     ip_address = (uint32_t*)get_ip_addr(remote_fed->net);
-    server_host_name = get_server_hostname(remote_fed->net);
   }
 
   encode_int32(server_port, (unsigned char*)&buffer[1]);
