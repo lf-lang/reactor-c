@@ -133,6 +133,9 @@ typedef struct socket_connection_params_t {
 
   /** @brief Hostname of the remote server. */
   const char* server_hostname;
+
+  /** @brief IP address of the remote server. If provided, bypasses DNS resolution. */
+  const struct in_addr* server_ip_addr;
 } socket_connection_params_t;
 
 /**
@@ -149,8 +152,6 @@ typedef struct socket_priv_t {
   uint16_t port;
   /** @brief The desired port specified by the user on the command line. */
   uint16_t user_specified_port;
-  /** @brief Human-readable IP address of the federate's socket server. */
-  char server_hostname[INET_ADDRSTRLEN];
   /** @brief Port number of the socket server of the federate. The port number will be -1 if there is no server or if
    * the RTI has not been informed of the port number. */
   int32_t server_port;
@@ -215,10 +216,11 @@ int accept_socket(int socket);
  *
  * @param sock The socket file descriptor that has already been created (using `socket()`).
  * @param hostname The hostname or IP address of the server to connect to.
+ * @param ip_addr The IPv4 address to connect to. If non-NULL, bypasses DNS lookup of hostname.
  * @param port The port number to connect to. If 0 is specified, a default port range will be used.
  * @return 0 on success, -1 on failure, and `errno` is set to indicate the specific error.
  */
-int connect_to_socket(int sock, const char* hostname, int port);
+int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_addr, int port);
 
 /**
  * @brief Read the specified number of bytes from the specified socket into the specified buffer.
@@ -296,7 +298,7 @@ bool is_socket_open(int socket);
  * @ingroup Network
  *
  * Get the connected peer name from the connected socket.
- * Set it to the server_ip_addr. Also, set server_hostname if LOG_LEVEL is higher than LOG_LEVEL_DEBUG.
+ * Set it to the server_ip_addr. Also, print server's hostname if LOG_LEVEL is higher than LOG_LEVEL_DEBUG.
  *
  * @param priv The socket_priv struct.
  * @return 0 for success, -1 for failure.

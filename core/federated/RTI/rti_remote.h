@@ -271,7 +271,7 @@ void handle_address_query(uint16_t fed_id);
  * byte. The RTI will keep a record of this number in the .server_port
  * field of the _RTI.federates[federate_id] array of structs.
  *
- * The server_hostname and server_ip_addr fields are assigned
+ * The server_ip_addr field is assigned
  * in lf_connect_to_federates() upon accepting the socket
  * from the remote federate.
  *

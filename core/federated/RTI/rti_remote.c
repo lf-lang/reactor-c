@@ -636,23 +636,20 @@ void handle_address_query(uint16_t fed_id) {
 
   int32_t server_port;
   uint32_t* ip_address;
-  char* server_host_name;
+  uint32_t temp = 0;
 
   LF_MUTEX_LOCK(&rti_mutex);
   // Check if the RTI has initialized the remote federate's network abstraction.
   if (remote_fed->net == NULL) {
     // RTI has not set up the remote federate. Respond with -1 to indicate an unknown port number.
     server_port = -1;
-    uint32_t temp = 0;
     ip_address = &temp;
-    server_host_name = "localhost";
   } else {
     // The network abstraction is initialized, but the RTI might still not know the port number. This can happen if the
     // RTI has not yet received a MSG_TYPE_ADDRESS_ADVERTISEMENT message from the remote federate. In such cases, the
     // returned port number might still be -1.
-    server_port = ((socket_priv_t*)remote_fed->net)->server_port;
-    ip_address = (uint32_t*)&((socket_priv_t*)remote_fed->net)->server_ip_addr;
-    server_host_name = ((socket_priv_t*)remote_fed->net)->server_hostname;
+    server_port = get_server_port(remote_fed->net);
+    ip_address = (uint32_t*)get_ip_addr(remote_fed->net);
   }
 
   encode_int32(server_port, (unsigned char*)&buffer[1]);
@@ -669,8 +666,7 @@ void handle_address_query(uint16_t fed_id) {
     tracepoint_rti_to_federate(send_ADR_QR_REP, fed_id, NULL);
   }
 
-  LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.", fed_id, server_host_name,
-                 server_port);
+  LF_PRINT_DEBUG("Replied to address query from federate %d", fed_id);
 }
 
 void handle_address_ad(uint16_t federate_id) {
@@ -687,7 +683,8 @@ void handle_address_ad(uint16_t federate_id) {
   assert(server_port < 65536);
 
   LF_MUTEX_LOCK(&rti_mutex);
-  ((socket_priv_t*)fed->net)->server_port = server_port;
+  // (((sst_priv_t*)fed->net)->socket_priv)->server_port = server_port;
+  set_server_port(fed->net, server_port);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);
@@ -1057,7 +1054,6 @@ void send_reject(net_abstraction_t net_abs, unsigned char error_code) {
   }
   // Close the network abstraction without reading until EOF.
   shutdown_net(net_abs, false);
-  net_abs = NULL;
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
@@ -1325,7 +1321,7 @@ static int receive_udp_message_and_set_up_clock_sync(net_abstraction_t fed_net, 
           // Initialize the UDP_addr field of the federate struct
           fed->UDP_addr.sin_family = AF_INET;
           fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
-          fed->UDP_addr.sin_addr = ((socket_priv_t*)fed_net)->server_ip_addr;
+          fed->UDP_addr.sin_addr = *get_ip_addr(fed_net);
         }
       } else {
         // Disable clock sync after initial round.
@@ -1427,7 +1423,6 @@ void lf_connect_to_federates(net_abstraction_t rti_net) {
         lf_print_warning("RTI failed to authenticate the incoming federate.");
         // Close the network abstraction without reading until EOF.
         shutdown_net(fed_net, false);
-        fed_net = NULL;
         // Ignore the federate that failed authentication.
         i--;
         continue;
@@ -1496,7 +1491,6 @@ void* respond_to_erroneous_connections(void* nothing) {
     }
     // Close the network abstraction without reading until EOF.
     shutdown_net(fed_net, false);
-    fed_net = NULL;
   }
   return NULL;
 }
@@ -1513,7 +1507,7 @@ int start_rti_server() {
   // Initialize RTI's network abstraction.
   rti_remote->rti_net = initialize_net();
   // Set the user specified port to the network abstraction.
-  ((socket_priv_t*)rti_remote->rti_net)->user_specified_port = rti_remote->user_specified_port;
+  set_my_port(rti_remote->rti_net, rti_remote->user_specified_port);
   // Create the server
   if (create_server(rti_remote->rti_net)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
