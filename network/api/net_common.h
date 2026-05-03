@@ -23,10 +23,10 @@
  * When it has successfully opened a TCP connection, the first message it sends
  * to the RTI is a @ref MSG_TYPE_FED_IDS message, which contains the ID of this federate
  * within the federation, contained in the global variable _lf_my_fed_id
- * in the federate code
- * (which is initialized by the code generator) and the unique ID of
- * the federation, a GUID that is created at run time by the generated script
- * that launches the federation.
+ * in the federate code (which is initialized by the code generator),
+ * the type of this federate (persistent (0) or transient (1)),
+ * and the unique ID of the federation, a GUID that is created at run time by the
+ * generated script that launches the federation.
  * If you launch the federates and the RTI manually, rather than using the script,
  * then the federation ID is a string that is optionally given to the federate
  * on the command line when it is launched. The federate will connect
@@ -261,16 +261,32 @@
  *  * Two bytes (ushort) giving the federate ID.
  *  * One byte (uchar) giving the length N of the federation ID.
  *  * N bytes containing the federation ID.
- *  Each federate needs to have a unique ID between 0 and
- *  NUMBER_OF_FEDERATES-1.
- *  Each federate, when starting up, should send this message
- *  to the RTI. This is its first message to the RTI.
+ *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
+ *  Each federate, when starting up, should send either this message, or MSG_TYPE_TRANSIENT_FED_IDS
+ *  to the RTI, as its first message to the RTI.
  *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
  *  If the federate is a C target LF program, the generated federate
  *  code does this by calling lf_synchronize_with_other_federates(),
  *  passing to it its federate ID.
  */
 #define MSG_TYPE_FED_IDS 1
+
+/** Byte identifying a message from a transient federate to an RTI containing
+ *  the federate ID and the federation ID. The message contains, in this order:
+ *  * One byte equal to MSG_TYPE_TRANSIENT_FED_IDS.
+ *  * Two bytes (ushort) giving the federate ID.
+ *  * One byte (uchar) giving the length N of the federation ID.
+ *  * One byte giving the type of the federate (1 if transient, 0 if persistent)
+ *  * N bytes containing the federation ID.
+ *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
+ *  Each federate, when starting up, should send either this message, or MSG_TYPE_FED_IDS
+ *  to the RTI, as its first message to the RTI.
+ *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
+ *  If the federate is a C target LF program, the generated federate
+ *  code does this by calling lf_synchronize_with_other_federates(),
+ *  passing to it its federate ID.
+ */
+#define MSG_TYPE_TRANSIENT_FED_IDS 103
 
 /////////// Messages used for authenticated federation. ///////////////
 /**
@@ -336,8 +352,9 @@
  * @ingroup Network
  *
  * Each federate sends its starting physical time as a message of this
- * type, and the RTI broadcasts to all the federates the starting logical
+ * type, and the RTI broadcasts to all persistent federates the starting
  * time as a message of this type.
+ * In case of a joining federate, the RTI will also send the effective start tag.
  */
 #define MSG_TYPE_TIMESTAMP 2
 
@@ -346,6 +363,12 @@
  * @ingroup Network
  */
 #define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(int64_t))
+
+/**
+ * @brief The length of a timestamp message with an effective start tag.
+ * @ingroup Federated
+ */
+#define MSG_TYPE_TIMESTAMP_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(tag_t))
 
 /**
  * @brief Byte identifying a message to forward to another federate.
@@ -737,55 +760,48 @@
 #define MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG 26
 
 /////////////////////////////////////////////
+//// Transient federate support
+
+/**
+ * A message the informs a downstream federate that a federate upstream of it
+ * is connected. The next 2 bytes are the federate ID of the upstream federate.
+ */
+#define MSG_TYPE_UPSTREAM_CONNECTED 27
+#define MSG_TYPE_UPSTREAM_CONNECTED_LENGTH (1 + sizeof(uint16_t))
+
+/**
+ * A message the informs a downstream federate that a federate upstream of it
+ * is no longer connected. The next 2 bytes are the federate ID of the upstream federate.
+ */
+#define MSG_TYPE_UPSTREAM_DISCONNECTED 28
+#define MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
+
+/**
+ * Byte sent by the RTI ordering the federate to stop. Upon receiving the message,
+ * the federate will call lf_stop(), which will make it resign at its current_tag
+ * plus 1 microstep.
+ * The next 8 bytes will be the time at which the federates will stop.
+ * The next 4 bytes will be the microstep at which the federates will stop..
+ */
+#define MSG_TYPE_STOP 29
+#define MSG_TYPE_STOP_LENGTH 1
+
+/////////////////////////////////////////////
 //// Rejection codes
 
 /**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * federation ID does not match.
- * @ingroup Network
+ * These codes are sent in a MSG_TYPE_REJECT message.
+ * They are limited to one byte (uchar).
  */
-#define FEDERATION_ID_DOES_NOT_MATCH 1
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * federate ID is already in use.
- * @ingroup Network
- */
-#define FEDERATE_ID_IN_USE 2
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * federate ID is out of range.
- * @ingroup Network
- */
-#define FEDERATE_ID_OUT_OF_RANGE 3
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * incoming message is not expected.
- * @ingroup Network
- */
-#define UNEXPECTED_MESSAGE 4
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * connected to the wrong server.
- * @ingroup Network
- */
-#define WRONG_SERVER 5
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * HMAC authentication failed.
- * @ingroup Network
- */
-#define HMAC_DOES_NOT_MATCH 6
-
-/**
- * @brief Code sent with a @ref MSG_TYPE_REJECT message indicating that the
- * RTI was not executed using the -a or --auth option.
- * @ingroup Network
- */
-#define RTI_NOT_EXECUTED_WITH_AUTH 7
+typedef enum {
+  FEDERATION_ID_DOES_NOT_MATCH = 1,
+  FEDERATE_ID_IN_USE = 2,
+  FEDERATE_ID_OUT_OF_RANGE = 3,
+  UNEXPECTED_MESSAGE = 4,
+  WRONG_SERVER = 5,
+  HMAC_DOES_NOT_MATCH = 6,
+  RTI_NOT_EXECUTED_WITH_AUTH = 7,
+  JOINING_TOO_LATE = 8
+} rejection_code_t;
 
 #endif /* NET_COMMON_H */
