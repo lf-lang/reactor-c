@@ -1139,6 +1139,13 @@ int lf_notify_of_event(environment_t* env) {
 
 int lf_critical_section_enter(environment_t* env) {
   if (env == GLOBAL_ENVIRONMENT) {
+    // disabling interrupts prevents possible deadlock
+    // when reaction is scheduled from an interrupt
+    // on a core that holds the global mutex
+    int ret_code = lf_disable_interrupts_nested();
+    if (ret_code != 0) {
+      return ret_code;
+    }
     return lf_mutex_lock(&global_mutex);
   } else {
     return lf_mutex_lock(&env->mutex);
@@ -1147,7 +1154,12 @@ int lf_critical_section_enter(environment_t* env) {
 
 int lf_critical_section_exit(environment_t* env) {
   if (env == GLOBAL_ENVIRONMENT) {
-    return lf_mutex_unlock(&global_mutex);
+    int ret_code = lf_mutex_unlock(&global_mutex);
+    if (ret_code != 0) {
+      lf_enable_interrupts_nested();
+      return ret_code;
+    }
+    return lf_enable_interrupts_nested();
   } else {
     return lf_mutex_unlock(&env->mutex);
   }
