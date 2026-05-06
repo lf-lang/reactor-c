@@ -53,25 +53,51 @@ PyObject* py_schedule(PyObject* self, PyObject* args) {
   }
 
   trigger_t* trigger = action->trigger;
+  environment_t* env = action->parent->environment;
   lf_token_t* t = NULL;
 
-  // Check to see if value exists and token is not NULL
-  if (value && (trigger->tmplt.token != NULL)) {
-    // DEBUG: adjust the element_size (might not be necessary)
-    trigger->tmplt.token->type->element_size = sizeof(PyObject*);
+  LF_CRITICAL_SECTION_ENTER(env);
+
+  // Check to see if value exists
+  if (value) {
+    // Allocate a fresh token for this schedule call rather than routing through
+    // _lf_initialize_token_with_value / _lf_get_token. Those paths may reuse
+    // or replace trigger->tmplt.token, which races with the reaction prologue
+    // that reads trigger->tmplt.token->value after an event pop:
+    //
+    //   1. The scheduler pops an event, sets trigger->tmplt.token = T, and
+    //      drops T->ref_count to 1 before releasing the environment lock.
+    //   2. A concurrent schedule acquires the environment lock and enters
+    //      _lf_get_token, which sees ref_count == 1 and reuses T, freeing
+    //      its payload and overwriting it with the new value.
+    //   3. The pending reaction finally runs and reads the corrupted value.
+    //
+    // Allocating a fresh token that lives only on the event queue until
+    // _lf_pop_events installs it into the template means schedule paths
+    // never write to trigger->tmplt.token, so concurrent schedulers cannot
+    // corrupt the payload of a token about to be consumed by a reaction.
     trigger->tmplt.type.element_size = sizeof(PyObject*);
-    t = _lf_initialize_token_with_value(&trigger->tmplt, value, 1);
+    t = lf_new_token((void*)&trigger->tmplt, value, 1);
+#if !defined NDEBUG
+    // Keep the payload allocation counter balanced with the decrement that
+    // occurs when the token's value is eventually freed.
+    LF_CRITICAL_SECTION_ENTER(GLOBAL_ENVIRONMENT);
+    extern int _lf_count_payload_allocations;
+    _lf_count_payload_allocations++;
+    LF_CRITICAL_SECTION_EXIT(GLOBAL_ENVIRONMENT);
+#endif
 
     // Also give the new value back to the Python action itself
     Py_INCREF(value);
     act->value = value;
   }
 
-  // Pass the token along
-  lf_schedule_token(action, offset, t);
+  lf_schedule_trigger(env, trigger, offset, t);
+  lf_notify_of_event(env);
+
+  LF_CRITICAL_SECTION_EXIT(env);
 
   // FIXME: handle is not passed to the Python side
-
   Py_INCREF(Py_None);
   return Py_None;
 }
