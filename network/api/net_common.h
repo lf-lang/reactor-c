@@ -174,9 +174,9 @@
  *  request). When the RTI has gathered all the stop tags
  *  from federates (that are still connected), it will decide on a common stop tag
  *  which is the maximum of the seen stop tag and answer with a MSG_TYPE_STOP_GRANTED. The federate
- *  sending the MSG_TYPE_STOP_REQUEST and federates sending the MSG_TYPE_STOP_REQUEST_REPLY will freeze
- *  the advancement of tag until they receive the MSG_TYPE_STOP_GRANTED message, in which
- *  case they might continue their execution until the stop tag has been reached.
+ *  sending the MSG_TYPE_STOP_REQUEST and federates sending the MSG_TYPE_STOP_REQUEST_REPLY will
+ * freeze the advancement of tag until they receive the MSG_TYPE_STOP_GRANTED message, in which case
+ * they might continue their execution until the stop tag has been reached.
  *
  */
 
@@ -193,7 +193,8 @@
 #define FED_COM_BUFFER_SIZE 256u
 
 /**
- * @brief Time that a federate waits before asking the RTI again for the port and IP address of a federate.
+ * @brief Time that a federate waits before asking the RTI again for the port and IP address of a
+ * federate.
  * @ingroup Network
  *
  * The federate repeatedly sends an MSG_TYPE_ADDRESS_QUERY message after the RTI responds that it
@@ -576,6 +577,7 @@
  * @ingroup Network
  *
  * The next two bytes are the other federate's ID.
+ * The following byte is 1 if the remote federate being queried is transient, 0 otherwise.
  */
 #define MSG_TYPE_ADDRESS_QUERY 13
 
@@ -775,6 +777,24 @@
  */
 #define MSG_TYPE_UPSTREAM_DISCONNECTED 28
 #define MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
+
+/**
+ * A message that informs an upstream federate that a transient federate downstream of it
+ * has (re-)connected. The next 2 bytes are the federate ID of the downstream federate.
+ * Upon receiving this, the upstream federate should query the RTI for the downstream's
+ * address and establish (or re-establish) the outbound P2P connection.
+ */
+#define MSG_TYPE_OUTBOUND_CONNECTED 30
+#define MSG_TYPE_OUTBOUND_CONNECTED_LENGTH (1 + sizeof(uint16_t))
+
+/**
+ * A message that informs an upstream federate that a transient federate downstream of it
+ * has disconnected. The next 2 bytes are the federate ID of the downstream federate.
+ * Upon receiving this, the upstream federate should close its outbound P2P connection
+ * to the downstream.
+ */
+#define MSG_TYPE_OUTBOUND_DISCONNECTED 31
+#define MSG_TYPE_OUTBOUND_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
 
 /**
  * Byte sent by the RTI ordering the federate to stop. Upon receiving the message,

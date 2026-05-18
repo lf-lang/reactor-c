@@ -198,7 +198,10 @@ int accept_socket(int socket) {
       // Got a socket
       break;
     } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK || errno != EINTR)) {
-      if (errno != ECONNABORTED) {
+      // ECONNABORTED: a connection was aborted before accept() could complete — not fatal.
+      // EINVAL: the socket was shut down (e.g., shutdown_socket() was called to unblock this
+      // accept() intentionally when the RTI is shutting down) — expected, not an error.
+      if (errno != ECONNABORTED && errno != EINVAL) {
         lf_print_warning("Failed to accept the socket. %s.", strerror(errno));
       }
       break;
@@ -311,7 +314,6 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
   }
   return 0;
 }
-
 ssize_t peek_from_socket(int socket, unsigned char* result) {
   ssize_t bytes_read = recv(socket, result, 1, MSG_DONTWAIT | MSG_PEEK);
   if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK))

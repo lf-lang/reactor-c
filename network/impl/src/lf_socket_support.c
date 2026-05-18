@@ -122,8 +122,12 @@ void read_from_net_fail_on_error(net_abstraction_t net_abs, size_t num_bytes, un
     // Read failed.
     if (format != NULL) {
       va_start(args, format);
-      lf_print_error_system_failure(format, args);
+      // Use lf_vprint_error (va_list variant) rather than lf_print_error_system_failure
+      // (variadic variant). Passing a va_list to a '...' function is undefined behaviour
+      // and manifests as garbage argument values on macOS due to ABI differences.
+      lf_vprint_error(format, args);
       va_end(args);
+      lf_print_error_and_exit("Error %d: %s", errno, strerror(errno));
     } else {
       lf_print_error_system_failure("Failed to read from socket.");
     }
