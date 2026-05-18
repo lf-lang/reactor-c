@@ -69,7 +69,6 @@ net_abstraction_t initialize_net() {
   priv->socket_priv->port = 0;
   priv->socket_priv->user_specified_port = 0;
   priv->socket_priv->socket_descriptor = -1;
-  strncpy(priv->socket_priv->server_hostname, "localhost", INET_ADDRSTRLEN);
   priv->socket_priv->server_ip_addr.s_addr = 0;
   priv->socket_priv->server_port = -1;
 
@@ -166,7 +165,7 @@ void create_client(net_abstraction_t net_abs) {
   priv->ctx = global_client_ctx;
 }
 
-net_abstraction_t connect_to_net(net_params_t* params) {
+net_abstraction_t connect_to_net(net_params_t params) {
   tls_connection_params_t* tls_params = (tls_connection_params_t*)params;
 
   net_abstraction_t net = initialize_net();
@@ -174,12 +173,11 @@ net_abstraction_t connect_to_net(net_params_t* params) {
 
   // Set socket params
   priv->socket_priv->server_port = tls_params->socket_params.port;
-  memcpy(priv->socket_priv->server_hostname, tls_params->socket_params.server_hostname, INET_ADDRSTRLEN);
 
   create_client(net);
 
   // TCP Connect
-  if (connect_to_socket(priv->socket_priv->socket_descriptor, priv->socket_priv->server_hostname,
+  if (connect_to_socket(priv->socket_priv->socket_descriptor, tls_params->socket_params.server_hostname, tls_params->socket_params.server_ip_addr,
                         priv->socket_priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
     free_net(net);
@@ -333,7 +331,7 @@ bool is_net_open(net_abstraction_t net_abs) {
   return is_socket_open(priv->socket_priv->socket_descriptor);
 }
 
-int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
+int close_net(net_abstraction_t net_abs, bool read_before_closing) {
   if (net_abs == NULL)
     return 0;
   tls_priv_t* priv = (tls_priv_t*)net_abs;
@@ -345,12 +343,18 @@ int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
   }
 
   // Shutdown underlying socket
+  int ret = 0;
   if (priv->socket_priv) {
-    shutdown_socket(&priv->socket_priv->socket_descriptor, read_before_closing);
+    ret = shutdown_socket(&priv->socket_priv->socket_descriptor, read_before_closing);
   }
 
+  return ret;
+}
+
+int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
+  int ret = close_net(net_abs, read_before_closing);
   free_net(net_abs);
-  return 0;
+  return ret;
 }
 
 int32_t get_my_port(net_abstraction_t net_abs) {

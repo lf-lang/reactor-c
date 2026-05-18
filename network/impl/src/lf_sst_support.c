@@ -28,7 +28,6 @@ net_abstraction_t initialize_net() {
   socket_priv->socket_descriptor = -1;
 
   // Federate initialization
-  strncpy(socket_priv->server_hostname, "localhost", INET_ADDRSTRLEN);
   socket_priv->server_ip_addr.s_addr = 0;
   socket_priv->server_port = -1;
 
@@ -107,17 +106,16 @@ void create_client(net_abstraction_t net_abs) {
   priv->sst_ctx = ctx;
 }
 
-net_abstraction_t connect_to_net(net_params_t* params) {
+net_abstraction_t connect_to_net(net_params_t params) {
   // Create a network abstraction.
   net_abstraction_t net = initialize_net();
   sst_priv_t* priv = (sst_priv_t*)net;
   sst_connection_params_t* sst_params = (sst_connection_params_t*)params;
   priv->socket_priv->server_port = sst_params->socket_params.port;
-  memcpy(priv->socket_priv->server_hostname, sst_params->socket_params.server_hostname, INET_ADDRSTRLEN);
   // Create the client network abstraction.
   create_client(net);
   // Connect to the target server.
-  if (connect_to_socket(priv->socket_priv->socket_descriptor, priv->socket_priv->server_hostname,
+  if (connect_to_socket(priv->socket_priv->socket_descriptor, sst_params->socket_params.server_hostname, sst_params->socket_params.server_ip_addr,
                         priv->socket_priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
     return NULL;
@@ -268,13 +266,16 @@ bool is_net_open(net_abstraction_t net_abs) {
   return is_socket_open(priv->socket_priv->socket_descriptor);
 }
 
-int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
+int close_net(net_abstraction_t net_abs, bool read_before_closing) {
   if (net_abs == NULL) {
-    LF_PRINT_LOG("Socket already closed.");
     return 0;
   }
   sst_priv_t* priv = (sst_priv_t*)net_abs;
-  int ret = shutdown_socket(&priv->socket_priv->socket_descriptor, read_before_closing);
+  return shutdown_socket(&priv->socket_priv->socket_descriptor, read_before_closing);
+}
+
+int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
+  int ret = close_net(net_abs, read_before_closing);
   free_net(net_abs);
   return ret;
 }
