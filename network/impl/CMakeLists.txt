@@ -12,7 +12,28 @@ if(COMM_TYPE MATCHES TCP)
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/lf_socket_support.c)
 elseif(COMM_TYPE MATCHES SST)
     find_package(OpenSSL REQUIRED)
-    find_package(sst-lib REQUIRED)
+    find_package(sst-lib QUIET)
+
+    if(NOT sst-lib_FOUND)
+        message(STATUS "sst-lib not found locally, falling back to FetchContent...")
+        include(FetchContent)
+        
+        # Share the download cache across all LF builds to prevent re-downloading
+        set(FETCHCONTENT_BASE_DIR "$ENV{HOME}/.lf/sst-cache")
+        
+        FetchContent_Declare(
+            sst-lib
+            GIT_REPOSITORY https://github.com/iotauth/sst-c-api.git
+            GIT_TAG        master
+        )
+        FetchContent_MakeAvailable(sst-lib)
+
+        # Create an ALIAS to match the find_package namespace
+        if(TARGET sst-c-api AND NOT TARGET sst-lib::sst-c-api)
+            add_library(sst-lib::sst-c-api ALIAS sst-c-api)
+        endif()
+    endif()
+
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/lf_sst_support.c)
     target_link_libraries(lf-network-impl PUBLIC sst-lib::sst-c-api)
 elseif(COMM_TYPE MATCHES TLS)
