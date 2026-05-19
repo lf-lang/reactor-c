@@ -177,8 +177,8 @@ net_abstraction_t connect_to_net(net_params_t params) {
   create_client(net);
 
   // TCP Connect
-  if (connect_to_socket(priv->socket_priv->socket_descriptor, tls_params->socket_params.server_hostname, tls_params->socket_params.server_ip_addr,
-                        priv->socket_priv->server_port) != 0) {
+  if (connect_to_socket(priv->socket_priv->socket_descriptor, tls_params->socket_params.server_hostname,
+                        tls_params->socket_params.server_ip_addr, priv->socket_priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
     free_net(net);
     return NULL;

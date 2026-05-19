@@ -115,8 +115,8 @@ net_abstraction_t connect_to_net(net_params_t params) {
   // Create the client network abstraction.
   create_client(net);
   // Connect to the target server.
-  if (connect_to_socket(priv->socket_priv->socket_descriptor, sst_params->socket_params.server_hostname, sst_params->socket_params.server_ip_addr,
-                        priv->socket_priv->server_port) != 0) {
+  if (connect_to_socket(priv->socket_priv->socket_descriptor, sst_params->socket_params.server_hostname,
+                        sst_params->socket_params.server_ip_addr, priv->socket_priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
     return NULL;
   }
