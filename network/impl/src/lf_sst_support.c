@@ -48,7 +48,6 @@ void free_net(net_abstraction_t net_abs) {
   }
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   free(priv->socket_priv);
-  free_SST_ctx_t(priv->sst_ctx);
   free_session_ctx(priv->session_ctx);
   free(priv);
 }
