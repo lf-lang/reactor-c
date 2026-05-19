@@ -86,7 +86,7 @@ net_abstraction_t accept_net(net_abstraction_t server_chan) {
     SST_session_ctx_t* session_ctx =
         server_secure_comm_setup(serv_priv->sst_ctx, client_priv->socket_priv->socket_descriptor, s_key_list);
     if (session_ctx == NULL) {
-        lf_print_error_and_exit("Failed server_secure_comm_setup().");
+      lf_print_error_and_exit("Failed server_secure_comm_setup().");
     }
     // Session key used is copied to the session_ctx.
     free_session_key_list_t(s_key_list);
@@ -133,14 +133,14 @@ net_abstraction_t connect_to_net(net_params_t params) {
   }
   session_key_list_t* s_key_list = get_session_key(priv->sst_ctx, NULL);
   if (s_key_list == NULL) {
-      free_net(net);
-      lf_print_error_and_exit("Failed get_session_key().");
+    free_net(net);
+    lf_print_error_and_exit("Failed get_session_key().");
   }
   SST_session_ctx_t* session_ctx =
       secure_connect_to_server_with_socket(&s_key_list->s_key[0], priv->socket_priv->socket_descriptor);
   if (session_ctx == NULL) {
-      free_net(net);
-      lf_print_error_and_exit("Failed secure_connect_to_server_with_socket().");
+    free_net(net);
+    lf_print_error_and_exit("Failed secure_connect_to_server_with_socket().");
   }
   free_session_key_list_t(s_key_list);
   priv->session_ctx = session_ctx;
