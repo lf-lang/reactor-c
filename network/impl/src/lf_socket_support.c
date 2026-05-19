@@ -88,6 +88,7 @@ net_abstraction_t connect_to_net(net_params_t params) {
   if (connect_to_socket(priv->socket_descriptor, sock_params->server_hostname, sock_params->server_ip_addr,
                         priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
+    free_net(net);
     return NULL;
   }
   return net;

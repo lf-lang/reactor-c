@@ -8,18 +8,18 @@
 
 const char* sst_config_path; // The SST's configuration file path.
 
-SST_ctx_t* ctx;
+SST_ctx_t* ctx = NULL;
 
 net_abstraction_t initialize_net() {
   // Initialize sst_priv.
   sst_priv_t* sst_priv = malloc(sizeof(sst_priv_t));
   if (sst_priv == NULL) {
-    lf_print_error_and_exit("Falied to malloc sst_priv_t.");
+    lf_print_error_and_exit("Failed to malloc sst_priv_t.");
   }
   // Initialize socket_priv.
   socket_priv_t* socket_priv = malloc(sizeof(socket_priv_t));
   if (socket_priv == NULL) {
-    lf_print_error_and_exit("Falied to malloc socket_priv_t.");
+    lf_print_error_and_exit("Failed to malloc socket_priv_t.");
   }
 
   // Server initialization.
@@ -48,6 +48,8 @@ void free_net(net_abstraction_t net_abs) {
   }
   sst_priv_t* priv = (sst_priv_t*)net_abs;
   free(priv->socket_priv);
+  free_SST_ctx_t(priv->sst_ctx);
+  free_session_ctx(priv->session_ctx);
   free(priv);
 }
 
@@ -57,7 +59,7 @@ int create_server(net_abstraction_t net_abs) {
   if (ctx == NULL) {
     ctx = init_SST(sst_config_path);
     if (ctx == NULL) {
-      lf_print_error_and_exit("Failed to initialze SST settings.");
+      lf_print_error_and_exit("Failed to initialize SST settings.");
     }
   }
   priv->sst_ctx = ctx;
@@ -83,6 +85,9 @@ net_abstraction_t accept_net(net_abstraction_t server_chan) {
     session_key_list_t* s_key_list = init_empty_session_key_list();
     SST_session_ctx_t* session_ctx =
         server_secure_comm_setup(serv_priv->sst_ctx, client_priv->socket_priv->socket_descriptor, s_key_list);
+    if (session_ctx == NULL) {
+        lf_print_error_and_exit("Failed server_secure_comm_setup().");
+    }
     // Session key used is copied to the session_ctx.
     free_session_key_list_t(s_key_list);
     client_priv->session_ctx = session_ctx;
@@ -118,6 +123,7 @@ net_abstraction_t connect_to_net(net_params_t params) {
   if (connect_to_socket(priv->socket_priv->socket_descriptor, sst_params->socket_params.server_hostname,
                         sst_params->socket_params.server_ip_addr, priv->socket_priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
+    free_net(net);
     return NULL;
   }
   if (sst_params->target == 1) {
@@ -126,8 +132,17 @@ net_abstraction_t connect_to_net(net_params_t params) {
              sizeof(ctx->config.purpose[ctx->config.purpose_index]), "{\"group\":\"Federates\"}");
   }
   session_key_list_t* s_key_list = get_session_key(priv->sst_ctx, NULL);
+  if (s_key_list == NULL) {
+      free_net(net);
+      lf_print_error_and_exit("Failed get_session_key().");
+  }
   SST_session_ctx_t* session_ctx =
       secure_connect_to_server_with_socket(&s_key_list->s_key[0], priv->socket_priv->socket_descriptor);
+  if (session_ctx == NULL) {
+      free_net(net);
+      lf_print_error_and_exit("Failed secure_connect_to_server_with_socket().");
+  }
+  free_session_key_list_t(s_key_list);
   priv->session_ctx = session_ctx;
   return net;
 }
