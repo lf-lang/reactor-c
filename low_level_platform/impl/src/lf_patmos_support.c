@@ -22,7 +22,7 @@ int lf_enable_interrupts_nested(void);
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
 // Keep track of whether we are in a critical section or not
-static volatile int _lf_num_nested_critical_sections = 0;
+
 /**
  * @brief Sleep until an absolute time.
  * Since there is no sleep mode in Patmos, and energy saving is not important for real-time systems,
@@ -92,6 +92,8 @@ int _lf_clock_gettime(instant_t* t) {
 }
 
 #if defined(LF_SINGLE_THREADED)
+
+static volatile int _lf_num_nested_critical_sections = 0;
 
 int lf_disable_interrupts_nested() {
   if (_lf_num_nested_critical_sections++ == 0) {
