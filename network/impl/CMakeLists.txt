@@ -28,11 +28,6 @@ elseif(COMM_TYPE MATCHES SST)
         )
         FetchContent_MakeAvailable(sst-lib)
 
-        # Mirror the installed layout for header files so client code can include <sst-c-api/c_api.h>
-        file(GLOB sst_headers "${sst-lib_SOURCE_DIR}/src/*.h")
-        file(COPY ${sst_headers} DESTINATION "${sst-lib_BINARY_DIR}/include/sst-c-api")
-        target_include_directories(sst-c-api PUBLIC "${sst-lib_BINARY_DIR}/include")
-
         # Create an ALIAS to match the find_package namespace
         if(TARGET sst-c-api AND NOT TARGET sst-lib::sst-c-api)
             add_library(sst-lib::sst-c-api ALIAS sst-c-api)
