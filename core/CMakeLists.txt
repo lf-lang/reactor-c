@@ -80,7 +80,7 @@ if(DEFINED FEDERATED)
     include(${LF_ROOT}/network/api/CMakeLists.txt)
     include(${LF_ROOT}/network/impl/CMakeLists.txt)
     target_link_libraries(reactor-c PUBLIC lf::network-api)
-    target_link_libraries(reactor-c PRIVATE lf::network-impl)
+    target_link_libraries(reactor-c PUBLIC lf::network-impl)
 endif()
 
 target_include_directories(reactor-c PUBLIC ../include)

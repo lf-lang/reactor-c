@@ -32,11 +32,22 @@ elseif(COMM_TYPE MATCHES SST)
         if(TARGET sst-c-api AND NOT TARGET sst-lib::sst-c-api)
             add_library(sst-lib::sst-c-api ALIAS sst-c-api)
         endif()
+
+        # Emulate the installed directory structure for FetchContent so that <sst-c-api/c_api.h> is resolved.
+        file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/include/sst-c-api")
+        configure_file(
+            "${sst-lib_SOURCE_DIR}/src/c_api.h"
+            "${CMAKE_BINARY_DIR}/include/sst-c-api/c_api.h"
+            COPYONLY
+        )
+        target_include_directories(sst-c-api PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
+        )
     endif()
 
     target_sources(lf-network-impl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/lf_sst_support.c)
     target_link_libraries(lf-network-impl PUBLIC sst-lib::sst-c-api)
-elseif(COMM_TYPE MATCHES TLS)
+    elseif(COMM_TYPE MATCHES TLS)
     find_package(OpenSSL REQUIRED)
     target_sources(lf-network-impl PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/src/lf_tls_support.c
