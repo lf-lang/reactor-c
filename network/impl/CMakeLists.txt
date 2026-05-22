@@ -33,6 +33,15 @@ elseif(COMM_TYPE MATCHES SST)
             add_library(sst-lib::sst-c-api ALIAS sst-c-api)
         endif()
 
+        # Remove the DEBUG compile definition from sst-c-api to avoid extremely verbose debug logs.
+        if(TARGET sst-c-api)
+            get_target_property(sst_defs sst-c-api COMPILE_DEFINITIONS)
+            if(sst_defs)
+                list(REMOVE_ITEM sst_defs "DEBUG=1" "DEBUG")
+                set_target_properties(sst-c-api PROPERTIES COMPILE_DEFINITIONS "${sst_defs}")
+            endif()
+        endif()
+
         # Emulate the installed directory structure for FetchContent so that <sst-c-api/c_api.h> is resolved.
         file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/include/sst-c-api")
         configure_file(
