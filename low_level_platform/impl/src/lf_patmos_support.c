@@ -15,6 +15,7 @@
 #include <machine/rtc.h>
 #include <machine/exceptions.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int lf_disable_interrupts_nested(void);
 int lf_enable_interrupts_nested(void);
@@ -122,14 +123,36 @@ int _lf_single_threaded_notify_of_event() {
 }
 #else // multi threaded Patmos implementation
 
-#define LF_PATMOS_MAX_CORES 64
-static volatile int _lf_num_nested_critical_sections_by_core[LF_PATMOS_MAX_CORES] = {0};
+/* Dynamically allocate per-core nesting counters based on get_cpucnt().
+ * This avoids a hard-coded upper bound and prevents accidental aliasing
+ * of core IDs to index 0 if the platform reports more cores than the
+ * compile-time constant. Allocation happens once during validation. */
+static volatile int* _lf_num_nested_critical_sections_by_core = NULL;
+static int _lf_patmos_max_cores = 0;
+
+static inline void _lf_validate_patmos_core_configuration(void) {
+  static bool _lf_patmos_core_configuration_validated = false;
+  if (!_lf_patmos_core_configuration_validated) {
+    int cpucnt = (int)get_cpucnt();
+    assert(cpucnt > 0);
+    /* Allocate the per-core nesting counter array on first use. Use calloc
+     * to initialize counters to zero. Fail-fast on allocation error. */
+    _lf_num_nested_critical_sections_by_core = (volatile int*)calloc((size_t)cpucnt, sizeof(int));
+    assert(_lf_num_nested_critical_sections_by_core != NULL);
+    _lf_patmos_max_cores = cpucnt;
+    _lf_patmos_core_configuration_validated = true;
+  }
+}
 
 static inline volatile int* _lf_current_core_nested_counter() {
-  int cpuid = (int)get_cpuid();
-  if (cpuid < 0 || cpuid >= LF_PATMOS_MAX_CORES) {
-    return &_lf_num_nested_critical_sections_by_core[0];
-  }
+  int cpucnt;
+  int cpuid;
+
+  _lf_validate_patmos_core_configuration();
+  cpucnt = (int)get_cpucnt();
+  cpuid = (int)get_cpuid();
+  assert(cpuid >= 0);
+  assert(cpuid < cpucnt);
   return &_lf_num_nested_critical_sections_by_core[cpuid];
 }
 
@@ -180,7 +203,17 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
 
 int lf_thread_id() { return (int)get_cpuid(); }
 
-void initialize_lf_thread_id() {}
+/* Forward declaration for the runtime core-count check. */
+void initialize_lf_thread_id_check(void);
+
+void initialize_lf_thread_id() { initialize_lf_thread_id_check(); }
+
+// Validate platform assumptions at initialization time.
+void initialize_lf_thread_id_check() {
+  // Ensure per-core counters are allocated and runtime core count remains stable.
+  _lf_validate_patmos_core_configuration();
+  assert((int)get_cpucnt() == _lf_patmos_max_cores);
+}
 
 int lf_mutex_init(lf_mutex_t* mutex) {
   int result;
