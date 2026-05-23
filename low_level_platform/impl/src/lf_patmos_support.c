@@ -96,8 +96,11 @@ int _lf_clock_gettime(instant_t* t) {
 static volatile int _lf_num_nested_critical_sections = 0;
 
 int lf_disable_interrupts_nested() {
+  // For the single-threaded path, disable interrupts first then increment
+  // the nesting counter to avoid preemption windows on this core.
+  intr_disable();
   if (_lf_num_nested_critical_sections++ == 0) {
-    intr_disable();
+    // already disabled above
   }
   return 0;
 }
@@ -117,7 +120,7 @@ int _lf_single_threaded_notify_of_event() {
   _lf_async_event = true;
   return 0;
 }
-#else // LF_SINGLE_THREADED 
+#else // multi threaded Patmos implementation
 
 #define LF_PATMOS_MAX_CORES 64
 static volatile int _lf_num_nested_critical_sections_by_core[LF_PATMOS_MAX_CORES] = {0};
@@ -130,11 +133,19 @@ static inline volatile int* _lf_current_core_nested_counter() {
   return &_lf_num_nested_critical_sections_by_core[cpuid];
 }
 
+// Global (cross-core) lock for atomic operations.
+
+static pthread_mutex_t _lf_patmos_global_lock = PTHREAD_MUTEX_INITIALIZER;
+
+void _lf_patmos_global_lock_acquire(void) { pthread_mutex_lock(&_lf_patmos_global_lock); }
+void _lf_patmos_global_lock_release(void) { pthread_mutex_unlock(&_lf_patmos_global_lock); }
+
+
 int lf_disable_interrupts_nested() {
+  // Disable interrupts first and increment the per-core nesting counter.
+  intr_disable();
   volatile int* nested_counter = _lf_current_core_nested_counter();
-  if ((*nested_counter)++ == 0) {
-    intr_disable();
-  }
+  (*nested_counter)++;
   return 0;
 }
 
