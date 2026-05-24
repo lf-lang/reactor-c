@@ -57,10 +57,13 @@ extern int _lf_count_payload_allocations;
  * @brief Global STA (safe to advance) offset uniformly applied to advancement of each
  * time step in federated execution.
  *
- * This can be retrieved in user code by calling lf_get_sta() and adjusted by
- * calling lf_set_sta(interval_t offset).
+ * The default is FOREVER, meaning that, by default, a decentralized federate will
+ * wait indefinitely for inputs to become known before declaring them absent. The
+ * value can be overridden either via the `@maxwait` attribute on the federate
+ * instantiation or in user code by calling lf_set_sta(interval_t offset). It can
+ * be retrieved in user code by calling lf_get_sta().
  */
-interval_t lf_fed_STA_offset = 0LL;
+interval_t lf_fed_STA_offset = FOREVER;
 
 #endif // FEDERATED_DECENTRALIZED
 
