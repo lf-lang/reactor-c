@@ -1768,7 +1768,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   params.socket_params.type = TCP;
   params.socket_params.port = uport;
   params.socket_params.server_ip_addr = &host_ip_addr;
-  params.target = 1;
+  params.target = SST_FEDERATE;
 #elif defined(COMM_TYPE_TLS)
   tls_connection_params_t params = {0};
   params.socket_params.type = TCP;
@@ -1863,7 +1863,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   params.socket_params.type = TCP;
   params.socket_params.port = port;
   params.socket_params.server_hostname = hostname;
-  params.target = 0;
+  params.target = SST_RTI;
 #elif defined(COMM_TYPE_TLS)
   tls_connection_params_t params = {0};
   params.socket_params.type = TCP;

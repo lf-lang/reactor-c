@@ -125,7 +125,7 @@ net_abstraction_t connect_to_net(net_params_t params) {
     free_net(net);
     return NULL;
   }
-  if (sst_params->target == 1) {
+  if (sst_params->target == SST_FEDERATE) {
     // Override target group to federates.
     snprintf(priv->sst_ctx->config.purpose[ctx->config.purpose_index],
              sizeof(ctx->config.purpose[ctx->config.purpose_index]), "{\"group\":\"Federates\"}");
