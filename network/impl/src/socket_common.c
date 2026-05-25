@@ -408,4 +408,3 @@ void lf_initialize_socket_priv(socket_priv_t* priv) {
   priv->server_ip_addr.s_addr = 0;
   priv->server_port = -1;
 }
-

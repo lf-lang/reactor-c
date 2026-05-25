@@ -13,10 +13,7 @@ typedef struct sst_priv_t {
   size_t buf_off;
 } sst_priv_t;
 
-typedef enum {
-  SST_RTI = 0,
-  SST_FEDERATE = 1
-} sst_target_t;
+typedef enum { SST_RTI = 0, SST_FEDERATE = 1 } sst_target_t;
 
 typedef struct sst_connection_params_t {
   socket_connection_params_t socket_params;
