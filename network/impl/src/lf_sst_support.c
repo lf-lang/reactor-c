@@ -22,14 +22,7 @@ net_abstraction_t initialize_net() {
     lf_print_error_and_exit("Failed to malloc socket_priv_t.");
   }
 
-  // Server initialization.
-  socket_priv->port = 0;
-  socket_priv->user_specified_port = 0;
-  socket_priv->socket_descriptor = -1;
-
-  // Federate initialization
-  socket_priv->server_ip_addr.s_addr = 0;
-  socket_priv->server_port = -1;
+  lf_initialize_socket_priv(socket_priv);
 
   sst_priv->socket_priv = socket_priv;
   sst_priv->buf_filled = 0;

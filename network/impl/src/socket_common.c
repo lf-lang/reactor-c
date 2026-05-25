@@ -394,3 +394,18 @@ int shutdown_socket(int* socket, bool read_before_closing) {
   LF_MUTEX_UNLOCK(&shutdown_mutex);
   return result;
 }
+
+void lf_initialize_socket_priv(socket_priv_t* priv) {
+  if (priv == NULL) {
+    return;
+  }
+  // Server initialization.
+  priv->port = 0;
+  priv->user_specified_port = 0;
+  priv->socket_descriptor = -1;
+
+  // Federate initialization
+  priv->server_ip_addr.s_addr = 0;
+  priv->server_port = -1;
+}
+

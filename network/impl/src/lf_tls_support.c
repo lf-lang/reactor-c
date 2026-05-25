@@ -65,12 +65,7 @@ net_abstraction_t initialize_net() {
     lf_print_error_and_exit("Failed to allocate memory for socket_priv_t.");
   }
 
-  // Default initialization for socket_priv
-  priv->socket_priv->port = 0;
-  priv->socket_priv->user_specified_port = 0;
-  priv->socket_priv->socket_descriptor = -1;
-  priv->socket_priv->server_ip_addr.s_addr = 0;
-  priv->socket_priv->server_port = -1;
+  lf_initialize_socket_priv(priv->socket_priv);
 
   priv->ctx = NULL;
   priv->ssl = NULL;
