@@ -25,6 +25,7 @@
 
 // Global variable defined in tag.c:
 extern instant_t start_time;
+extern tag_t effective_start_tag;
 
 int lf_thread_id() { return 0; }
 int lf_mutex_unlock(lf_mutex_t* mutex) {
@@ -330,6 +331,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     initialize_global();
     // Set start time
     start_time = lf_time_physical();
+    effective_start_tag = (tag_t){.time = start_time, .microstep = 0};
 #ifndef FEDERATED
     lf_tracing_set_start_time(start_time);
 #endif
