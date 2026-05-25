@@ -295,7 +295,8 @@ static void mark_inputs_known_absent(int fed_id) {
 
   for (size_t i = 0; i < _lf_action_table_size; i++) {
     lf_action_base_t* action = _lf_action_table[i];
-    if (action->source_id == fed_id) {
+    // If the action is NULL, initialization was not completed.
+    if (action && action->source_id == fed_id) {
       update_last_known_status_on_input_port(env, FOREVER_TAG, i, true);
     }
   }
@@ -2203,6 +2204,11 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
 
   net_abstraction_t net = _fed.net_for_outbound_p2p_connections[federate];
 
+  if (net == NULL) {
+    lf_print_warning("Network connection to %s is closed. Dropping the message.", next_destination_str);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    return -1;
+  }
   // Trace the event when tracing is enabled
   tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
 
@@ -2399,7 +2405,9 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   encode_uint16(fed_ID, &(buffer[1 + sizeof(port_ID)]));
   encode_tag(&(buffer[1 + sizeof(port_ID) + sizeof(fed_ID)]), current_message_intended_tag);
 
-#ifdef FEDERATED_CENTRALIZED
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+
+  #ifdef FEDERATED_CENTRALIZED
   // Send the absent message through the RTI
   net_abstraction_t net = _fed.net_to_RTI;
   tracepoint_federate_to_rti(send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
@@ -2409,7 +2417,11 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   tracepoint_federate_to_federate(send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
 #endif
 
-  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  if (net == NULL) {
+    lf_print_warning("Network connection to federate %hu is closed. Dropping the message.", fed_ID);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    return;
+  }
   int result = write_to_net_close_on_error(net, message_length, buffer);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
 
