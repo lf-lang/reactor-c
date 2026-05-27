@@ -113,6 +113,14 @@ int lf_reactor_c_main(int argc, const char* argv[]);
  */
 void lf_request_stop(void);
 
+#ifdef FEDERATED_DECENTRALIZED
+/**
+ * Prototype for lf_set_fed_maxwait().
+ * @see reactor.h
+ */
+void lf_set_fed_maxwait(interval_t offset);
+#endif // FEDERATED_DECENTRALIZED
+
 ///////////////// Other useful functions /////////////////////
 /**
  * Stop execution at the conclusion of the current logical time.
@@ -122,6 +130,37 @@ PyObject* py_request_stop(PyObject* self, PyObject* args) {
 
   Py_INCREF(Py_None);
   return Py_None;
+}
+
+/**
+ * Set the global maxwait for the current federate (only available in
+ * decentralized federated execution).
+ */
+PyObject* py_set_fed_maxwait(PyObject* self, PyObject* args) {
+#ifdef FEDERATED_DECENTRALIZED
+  double offset_in_double =
+      0.0; // Offset may be passed as a floating-point value in nanoseconds, e.g., SEC(0.5) → 0.5 * 1e9.
+
+  if (!PyArg_ParseTuple(args, "d", &offset_in_double)) {
+    return NULL;
+  }
+
+  // Check overflow before converting a double to int64_t (interval_t).
+  if (offset_in_double > (double)INT64_MAX || offset_in_double < (double)INT64_MIN) {
+    PyErr_SetString(PyExc_OverflowError, "The maxwait offset value is out of int64 range");
+    return NULL;
+  }
+
+  lf_set_fed_maxwait((interval_t)offset_in_double);
+
+  Py_INCREF(Py_None);
+  return Py_None;
+#else
+  (void)self;
+  (void)args;
+  PyErr_SetString(PyExc_RuntimeError, "lf.set_fed_maxwait() is only available in decentralized federated execution.");
+  return NULL;
+#endif // FEDERATED_DECENTRALIZED
 }
 
 PyObject* py_source_directory(PyObject* self, PyObject* args) {
@@ -437,6 +476,8 @@ static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"tag", py_lf_tag, METH_NOARGS, NULL},
     {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
     {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
+    {"set_fed_maxwait", (PyCFunction)py_set_fed_maxwait, METH_VARARGS,
+     "Set the global maxwait for the current federate (decentralized federated execution only)"},
     {"source_directory", py_source_directory, METH_NOARGS, "Source directory path for .lf file"},
     {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
     {"check_deadline", (PyCFunction)py_check_deadline, METH_VARARGS,

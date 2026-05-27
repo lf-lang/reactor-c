@@ -74,6 +74,20 @@ PyObject* py_schedule(PyObject* self, PyObject* args);
 PyObject* py_request_stop(PyObject* self, PyObject* args);
 
 /**
+ * @brief Set the global maxwait for the current federate.
+ *
+ * Only meaningful in decentralized federated execution. If the program is not
+ * compiled with FEDERATED_DECENTRALIZED, calling this from Python raises a
+ * RuntimeError.
+ *
+ * @param self The calling Python object
+ * @param args A tuple containing a single number (the maxwait offset in
+ *  nanoseconds, may be int or float, e.g. MSEC(100)).
+ * @return Py_None on success, NULL on error.
+ */
+PyObject* py_set_fed_maxwait(PyObject* self, PyObject* args);
+
+/**
  * @brief Return the source directory path (where the main .lf file is) as a string.
  * @param self The lf object.
  * @param args Empty.
