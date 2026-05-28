@@ -284,6 +284,8 @@ int write_to_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buf
     } else {
       int err = SSL_get_error(priv->ssl, ret);
       if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
+        // Sleep briefly to avoid spinning at 100% CPU while the socket is busy
+        lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
         continue;
       }
       lf_print_error("SSL_write failed with error %d", err);
