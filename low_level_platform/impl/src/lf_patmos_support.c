@@ -130,19 +130,28 @@ int _lf_single_threaded_notify_of_event() {
  * compile-time constant. Allocation happens once during validation. */
 static volatile int* _lf_num_nested_critical_sections_by_core = NULL;
 static int _lf_patmos_max_cores = 0;
+static pthread_mutex_t _lf_patmos_core_configuration_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static void _lf_initialize_patmos_core_configuration(void) {
+  int cpucnt = (int)get_cpucnt();
+  assert(cpucnt > 0);
+  /* Allocate the per-core nesting counter array once and publish it atomically
+   * via pthread_once so all cores observe the same initialized state. */
+  _lf_num_nested_critical_sections_by_core = (volatile int*)calloc((size_t)cpucnt, sizeof(int));
+  assert(_lf_num_nested_critical_sections_by_core != NULL);
+  _lf_patmos_max_cores = cpucnt;
+}
 
 static inline void _lf_validate_patmos_core_configuration(void) {
-  static bool _lf_patmos_core_configuration_validated = false;
-  if (!_lf_patmos_core_configuration_validated) {
-    int cpucnt = (int)get_cpucnt();
-    assert(cpucnt > 0);
-    /* Allocate the per-core nesting counter array on first use. Use calloc
-     * to initialize counters to zero. Fail-fast on allocation error. */
-    _lf_num_nested_critical_sections_by_core = (volatile int*)calloc((size_t)cpucnt, sizeof(int));
-    assert(_lf_num_nested_critical_sections_by_core != NULL);
-    _lf_patmos_max_cores = cpucnt;
-    _lf_patmos_core_configuration_validated = true;
+  int result = pthread_mutex_lock(&_lf_patmos_core_configuration_mutex);
+  assert(result == 0);
+  if (_lf_num_nested_critical_sections_by_core == NULL) {
+    _lf_initialize_patmos_core_configuration();
+  } else {
+    assert((int)get_cpucnt() == _lf_patmos_max_cores);
   }
+  result = pthread_mutex_unlock(&_lf_patmos_core_configuration_mutex);
+  assert(result == 0);
 }
 
 static inline volatile int* _lf_current_core_nested_counter() {
