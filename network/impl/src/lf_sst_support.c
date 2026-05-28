@@ -97,7 +97,7 @@ void create_client(net_abstraction_t net_abs) {
   if (ctx == NULL) {
     ctx = init_SST(sst_config_path);
     if (ctx == NULL) {
-      lf_print_error_and_exit("Failed to initialze SST settings.");
+      lf_print_error_and_exit("Failed to initialize SST settings.");
     }
   }
   priv->sst_ctx = ctx;
