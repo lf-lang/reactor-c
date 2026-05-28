@@ -107,26 +107,6 @@ PyObject* py_schedule(PyObject* self, PyObject* args) {
  */
 int lf_reactor_c_main(int argc, const char* argv[]);
 
-/**
- * Prototype for lf_request_stop().
- * @see reactor.h
- */
-void lf_request_stop(void);
-
-#ifdef FEDERATED_DECENTRALIZED
-/**
- * Prototype for lf_get_fed_maxwait().
- * @see reactor.h
- */
-interval_t lf_get_fed_maxwait(void);
-
-/**
- * Prototype for lf_set_fed_maxwait().
- * @see reactor.h
- */
-void lf_set_fed_maxwait(interval_t offset);
-#endif // FEDERATED_DECENTRALIZED
-
 ///////////////// Other useful functions /////////////////////
 /**
  * Stop execution at the conclusion of the current logical time.
