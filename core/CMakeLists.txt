@@ -102,7 +102,13 @@ endif()
 # Link with OpenSSL library
 if(DEFINED FEDERATED_AUTHENTICATED)
     if(APPLE)
-        set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
+        # Apple Silicon Mac
+        if(EXISTS "/opt/homebrew/opt/openssl")
+            set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl")
+        # Intel Mac
+        elseif(EXISTS "/usr/local/opt/openssl")
+            set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
+        endif()
     endif()
 
     find_package(OpenSSL REQUIRED)
