@@ -115,6 +115,12 @@ void lf_request_stop(void);
 
 #ifdef FEDERATED_DECENTRALIZED
 /**
+ * Prototype for lf_get_fed_maxwait().
+ * @see reactor.h
+ */
+interval_t lf_get_fed_maxwait(void);
+
+/**
  * Prototype for lf_set_fed_maxwait().
  * @see reactor.h
  */
@@ -130,6 +136,24 @@ PyObject* py_request_stop(PyObject* self, PyObject* args) {
 
   Py_INCREF(Py_None);
   return Py_None;
+}
+
+/**
+ * Return the global maxwait for the current federate (only available in
+ * decentralized federated execution).
+ */
+PyObject* py_get_fed_maxwait(PyObject* self, PyObject* args) {
+#ifdef FEDERATED_DECENTRALIZED
+  (void)self;
+  (void)args;
+  return PyLong_FromLongLong(lf_get_fed_maxwait());
+#else
+  (void)self;
+  (void)args;
+  PyErr_SetString(PyExc_RuntimeError,
+                  "lf.get_fed_maxwait() is only available in decentralized federated execution.");
+  return NULL;
+#endif // FEDERATED_DECENTRALIZED
 }
 
 /**
@@ -476,6 +500,8 @@ static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"tag", py_lf_tag, METH_NOARGS, NULL},
     {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
     {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
+    {"get_fed_maxwait", py_get_fed_maxwait, METH_NOARGS,
+     "Get the global maxwait for the current federate (decentralized federated execution only)"},
     {"set_fed_maxwait", (PyCFunction)py_set_fed_maxwait, METH_VARARGS,
      "Set the global maxwait for the current federate (decentralized federated execution only)"},
     {"source_directory", py_source_directory, METH_NOARGS, "Source directory path for .lf file"},

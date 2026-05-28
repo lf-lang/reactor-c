@@ -74,6 +74,19 @@ PyObject* py_schedule(PyObject* self, PyObject* args);
 PyObject* py_request_stop(PyObject* self, PyObject* args);
 
 /**
+ * @brief Return the global maxwait for the current federate.
+ *
+ * Only meaningful in decentralized federated execution. If the program is not
+ * compiled with FEDERATED_DECENTRALIZED, calling this from Python raises a
+ * RuntimeError.
+ *
+ * @param self The calling Python object
+ * @param args Empty
+ * @return PyLong (the maxwait in nanoseconds) on success, NULL on error.
+ */
+PyObject* py_get_fed_maxwait(PyObject* self, PyObject* args);
+
+/**
  * @brief Set the global maxwait for the current federate.
  *
  * Only meaningful in decentralized federated execution. If the program is not
