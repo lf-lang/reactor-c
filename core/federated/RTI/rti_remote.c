@@ -683,7 +683,6 @@ void handle_address_ad(uint16_t federate_id) {
   assert(server_port < 65536);
 
   LF_MUTEX_LOCK(&rti_mutex);
-  // (((sst_priv_t*)fed->net)->socket_priv)->server_port = server_port;
   set_server_port(fed->net, server_port);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
