@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <errno.h>
 
 #include "net_abstraction.h"
 #include "lf_tls_support.h"
