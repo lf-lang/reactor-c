@@ -16,6 +16,7 @@
 #include <machine/exceptions.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 int lf_disable_interrupts_nested(void);
 int lf_enable_interrupts_nested(void);
@@ -194,11 +195,11 @@ lf_thread_t lf_thread_self() {
 
 int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
   assert(thread != NULL);
-  return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
+  return pthread_create(&thread->handle, NULL, lf_thread, arguments);
 }
 
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
-  return pthread_join((pthread_t)thread, thread_return);
+  return pthread_join(thread.handle, thread_return);
 }
 
 int lf_thread_id() { return (int)get_cpuid(); }
