@@ -66,7 +66,7 @@ elseif(COMM_TYPE MATCHES SST)
         OpenSSL::Crypto
     )
 else()
-    message(FATAL_ERROR "Your communication type is not supported! The C target supports TCP.")
+    message(FATAL_ERROR "Your communication type is not supported! The C target supports TCP, TLS and SST.")
 endif()
 
 # Link necessary libraries
