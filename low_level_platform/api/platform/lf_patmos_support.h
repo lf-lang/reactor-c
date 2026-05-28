@@ -24,7 +24,10 @@
 #define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
 #if !defined(LF_SINGLE_THREADED)
 #include <pthread.h>
-typedef pthread_t lf_thread_t;
+typedef struct {
+	pthread_t handle;
+	int cpuid;
+} lf_thread_t;
 typedef pthread_mutex_t lf_mutex_t;
 typedef struct {
 	lf_mutex_t* mutex;
