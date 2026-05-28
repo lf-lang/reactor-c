@@ -150,8 +150,7 @@ PyObject* py_get_fed_maxwait(PyObject* self, PyObject* args) {
 #else
   (void)self;
   (void)args;
-  PyErr_SetString(PyExc_RuntimeError,
-                  "lf.get_fed_maxwait() is only available in decentralized federated execution.");
+  PyErr_SetString(PyExc_RuntimeError, "lf.get_fed_maxwait() is only available in decentralized federated execution.");
   return NULL;
 #endif // FEDERATED_DECENTRALIZED
 }
