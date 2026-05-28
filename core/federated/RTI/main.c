@@ -260,6 +260,11 @@ int process_args(int argc, const char* argv[]) {
       usage(argc, argv);
       return 0;
 #else
+      if (argc < i + 2) {
+        lf_print_error("--sst needs one argument: <sst_config_path>.");
+        usage(argc, argv);
+        return 0;
+      }
       i++;
       lf_set_sst_config_path(argv[i]);
 #endif
