@@ -189,9 +189,8 @@ static bool convert_python_number_to_interval_t(PyObject* py_number, interval_t*
 PyObject* py_set_fed_maxwait(PyObject* self, PyObject* args) {
 #ifdef FEDERATED_DECENTRALIZED
   interval_t interval;
-  PyObject* py_offset = PyTuple_GetItem(args, 0);
-  if (py_offset == NULL) {
-    PyErr_SetString(PyExc_TypeError, "lf.set_fed_maxwait() requires one argument");
+  PyObject* py_offset = NULL;
+  if (!PyArg_ParseTuple(args, "O", &py_offset)) {
     return NULL;
   }
   if (!convert_python_number_to_interval_t(py_offset, &interval)) {
