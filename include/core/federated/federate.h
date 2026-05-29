@@ -8,11 +8,11 @@
  * @author Edward A. Lee
  * @author Anirudh Rengarajsm
  *
- * This file defines the core data structures and functions used in federated Lingua Franca programs.
- * It includes the federate instance structure that tracks the state of a federate, including its
- * connections to the RTI and other federates, message handling, and coordination mechanisms.
- * The file also provides functions for managing these connections, sending and receiving messages,
- * and handling various aspects of federated execution.
+ * This file defines the core data structures and functions used in federated Lingua Franca
+ * programs. It includes the federate instance structure that tracks the state of a federate,
+ * including its connections to the RTI and other federates, message handling, and coordination
+ * mechanisms. The file also provides functions for managing these connections, sending and
+ * receiving messages, and handling various aspects of federated execution.
  */
 
 #ifndef FEDERATE_H
@@ -20,11 +20,11 @@
 
 #include <stdbool.h>
 
-#include "tag.h"
-#include "lf_types.h"
 #include "environment.h"
+#include "lf_types.h"
 #include "low_level_platform.h"
 #include "net_abstraction.h"
+#include "tag.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)
@@ -58,6 +58,11 @@ typedef struct federate_instance_t {
   size_t number_of_inbound_p2p_connections;
 
   /**
+   * Number of inbound peer-to-peer connections from transient federates.
+   */
+  size_t number_of_inbound_p2p_transients;
+
+  /**
    * Array of thread IDs for threads that listen for incoming messages.
    * This is NULL if there are none and otherwise has size given by
    * number_of_inbound_p2p_connections.
@@ -70,6 +75,18 @@ typedef struct federate_instance_t {
    * in the decentralized coordination, or both.
    */
   size_t number_of_outbound_p2p_connections;
+
+  /**
+   * Number of outbound peer-to-peer connections to transient federates.
+   */
+  size_t number_of_outbound_p2p_transients;
+
+  /**
+   * An array of IDs of transient federates to which this federate has outbound
+   * peer-to-peer connections. The array has size number_of_outbound_p2p_transients
+   * and is allocated at startup by the generated _lf_executable_preamble().
+   */
+  bool outbound_p2p_connection_is_transient[NUMBER_OF_FEDERATES];
 
   /**
    * An array that holds the network abstractions for inbound
@@ -87,6 +104,15 @@ typedef struct federate_instance_t {
   net_abstraction_t net_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
   /**
+   * An array indexed by federate ID indicating whether the corresponding
+   * inbound peer-to-peer federate is transient. Initialized to false.
+   * Set in lf_handle_p2p_connections_from_federates() when the handshake
+   * reveals the remote federate's type. Used by mark_inputs_known_absent()
+   * to avoid permanently stamping FOREVER_TAG on ports whose source may rejoin.
+   */
+  bool inbound_p2p_connection_is_transient[NUMBER_OF_FEDERATES];
+
+  /**
    * An array that holds the network abstractions for outbound direct
    * connections to each remote federate. The index will be the federate
    * ID of the remote receiving federate. This is initialized at startup
@@ -100,6 +126,13 @@ typedef struct federate_instance_t {
    * connections to the same remote federate will use the same network abstractions.
    */
   net_abstraction_t net_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+
+  /**
+   * An array indicating whether each federate is transient.
+   * The index is the federate ID.
+   * This is initialized at startup by the generated _lf_executable_preamble().
+   */
+  bool transients[NUMBER_OF_FEDERATES];
 
   /**
    * Thread ID for a thread that accepts network abstractions and then supervises
@@ -255,7 +288,7 @@ extern lf_cond_t lf_port_status_changed;
 // Public functions (in alphabetical order)
 
 /**
- * @brief Connect to the federate with the specified id.
+ * @brief Connect to the federate with the specified id, based if it is transient or not.
  * @ingroup Federated
  *
  * The established connection will then be used in functions such as lf_send_tagged_message()
@@ -268,8 +301,12 @@ extern lf_cond_t lf_port_status_changed;
  * refer to the network abstraction for communicating directly with the federate.
  *
  * @param remote_federate_id The ID of the remote federate.
+ * @param is_transient Whether the remote federate is transient. This affects
+ *   connection behavior: a transient remote federate may not be immediately
+ *   available, so the connection attempt is handled differently than for a
+ *   persistent federate.
  */
-void lf_connect_to_federate(uint16_t remote_federate_id);
+void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient);
 
 /**
  * @brief Connect to the RTI at the specified host and port.
@@ -487,9 +524,10 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  * @brief Send a tagged message to the specified port of the specified federate.
  * @ingroup Federated
  *
- * The tag will be the current tag of the specified environment delayed by the specified additional_delay.
- * If the delayed tag falls after the timeout time, then the message is not sent and -1 is returned.
- * The caller can reuse or free the memory storing the message after this returns.
+ * The tag will be the current tag of the specified environment delayed by the specified
+ * additional_delay. If the delayed tag falls after the timeout time, then the message is not sent
+ * and -1 is returned. The caller can reuse or free the memory storing the message after this
+ * returns.
  *
  * If the message fails to send (e.g. the network abstraction connection is broken), then the
  * response depends on the message_type.  For MSG_TYPE_TAGGED_MESSAGE, the message is
@@ -556,7 +594,8 @@ void lf_spawn_staa_thread(void);
 void lf_stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
- * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex lock.
+ * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex
+ * lock.
  * @ingroup Federated
  *
  * @param level The level to which we would like to advance.
