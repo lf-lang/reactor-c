@@ -136,26 +136,68 @@ PyObject* py_get_fed_maxwait(PyObject* self, PyObject* args) {
 }
 
 /**
+ * @brief Convert a non-negativePython number to an interval_t.
+ * @param py_number The Python number (a long long or a double).
+ * @param interval Pointer to the interval_t to store the result.
+ * @return True if the conversion was successful, false otherwise or if the number is negative or NaN.
+ */
+bool convert_python_number_to_interval_t(PyObject* py_number, interval_t* interval) {
+  // Check if the number is a long long
+  if (PyLong_Check(py_number)) {
+    long long number_ll = PyLong_AsLongLong(py_number);
+    if (number_ll == -1 && PyErr_Occurred()) {
+      return false;
+    }
+    if (number_ll < 0) {
+      PyErr_SetString(PyExc_ValueError, "A time interval must be non-negative");
+      return false;
+    }
+    if (number_ll > INT64_MAX) {
+      PyErr_SetString(PyExc_OverflowError, "The time interval value is out of int64 range");
+      return false;
+    }
+    *interval = (interval_t)number_ll;
+    return true;
+  } else {
+    double number_in_double = PyFloat_AsDouble(py_number);
+    if (number_in_double == -1.0 && PyErr_Occurred()) {
+      PyErr_SetString(PyExc_TypeError, "Python object is neither a long long nor a double.");
+      return false;
+    }
+    // Reject NaN explicitly (NaN comparisons are always false).
+    if (number_in_double != number_in_double) {
+      PyErr_SetString(PyExc_ValueError, "A time interval cannot be NaN");
+      return false;
+    }
+    if (number_in_double < 0.0) {
+      PyErr_SetString(PyExc_ValueError, "A time interval must be non-negative");
+      return false;
+    }
+    if (number_in_double > (double)INT64_MAX) {
+      PyErr_SetString(PyExc_OverflowError, "The time interval value is out of int64 range");
+      return false;
+    }
+    *interval = (interval_t)number_in_double;
+    return true;
+  }
+}
+
+/**
  * Set the global maxwait for the current federate (only available in
  * decentralized federated execution).
  */
 PyObject* py_set_fed_maxwait(PyObject* self, PyObject* args) {
 #ifdef FEDERATED_DECENTRALIZED
-  double offset_in_double =
-      0.0; // Offset may be passed as a floating-point value in nanoseconds, e.g., SEC(0.5) → 0.5 * 1e9.
-
-  if (!PyArg_ParseTuple(args, "d", &offset_in_double)) {
+  interval_t interval;
+  PyObject* py_offset = PyTuple_GetItem(args, 0);
+  if (py_offset == NULL) {
+    PyErr_SetString(PyExc_TypeError, "lf.set_fed_maxwait() requires one argument");
     return NULL;
   }
-
-  // Check overflow before converting a double to int64_t (interval_t).
-  if (offset_in_double > (double)INT64_MAX || offset_in_double < (double)INT64_MIN) {
-    PyErr_SetString(PyExc_OverflowError, "The maxwait offset value is out of int64 range");
+  if (!convert_python_number_to_interval_t(py_offset, &interval)) {
     return NULL;
   }
-
-  lf_set_fed_maxwait((interval_t)offset_in_double);
-
+  lf_set_fed_maxwait(interval);
   Py_INCREF(Py_None);
   return Py_None;
 #else
@@ -312,22 +354,16 @@ PyObject* py_check_deadline(PyObject* self, PyObject* args) {
 
 PyObject* py_update_deadline(PyObject* self, PyObject* args) {
   PyObject* py_self;
-  int64_t updated_deadline = 0; // Default to 0
-  double updated_deadline_in_double =
-      0.0; // Deadline may be passed as a floating-point value in nanoseconds, e.g., SEC(0.5) → 0.5 * 1e9.
+  PyObject* py_deadline;
 
-  if (!PyArg_ParseTuple(args, "O|d", &py_self, &updated_deadline_in_double)) {
+  if (!PyArg_ParseTuple(args, "OO", &py_self, &py_deadline)) {
     return NULL;
   }
 
-  // Check overflow before converting a double to int64_t (interval_t).
-  if (updated_deadline_in_double > (double)INT64_MAX || updated_deadline_in_double < (double)INT64_MIN) {
-    PyErr_SetString(PyExc_OverflowError, "The updated deadline value is out of int64 range");
+  interval_t updated_deadline;
+  if (!convert_python_number_to_interval_t(py_deadline, &updated_deadline)) {
     return NULL;
   }
-
-  // Convert double to int64_t
-  updated_deadline = (int64_t)updated_deadline_in_double;
 
   void* self_ptr = get_lf_self_pointer(py_self);
   if (self_ptr == NULL) {
