@@ -95,7 +95,7 @@ PyObject* py_get_fed_maxwait(PyObject* self, PyObject* args);
  *
  * @param self The calling Python object
  * @param args A tuple containing a single number (the maxwait offset in
- *  nanoseconds, may be int or float, e.g. MSEC(100)).
+ *  nanoseconds, may be a non-negative integer or a double, e.g. MSEC(100)).
  * @return Py_None on success, NULL on error.
  */
 PyObject* py_set_fed_maxwait(PyObject* self, PyObject* args);
