@@ -141,7 +141,7 @@ PyObject* py_get_fed_maxwait(PyObject* self, PyObject* args) {
  * @param interval Pointer to the interval_t to store the result.
  * @return True if the conversion was successful, false otherwise or if the number is negative or NaN.
  */
-bool convert_python_number_to_interval_t(PyObject* py_number, interval_t* interval) {
+static bool convert_python_number_to_interval_t(PyObject* py_number, interval_t* interval) {
   // Check if the number is a long long
   if (PyLong_Check(py_number)) {
     long long number_ll = PyLong_AsLongLong(py_number);
