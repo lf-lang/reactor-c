@@ -136,7 +136,7 @@ PyObject* py_get_fed_maxwait(PyObject* self, PyObject* args) {
 }
 
 /**
- * @brief Convert a non-negativePython number to an interval_t.
+ * @brief Convert a non-negative Python number to an interval_t.
  * @param py_number The Python number (a long long or a double).
  * @param interval Pointer to the interval_t to store the result.
  * @return True if the conversion was successful, false otherwise or if the number is negative or NaN.
