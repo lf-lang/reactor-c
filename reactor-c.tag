@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile doxygen_version="1.16.1">
+<tagfile doxygen_version="1.17.0">
   <compound kind="file">
     <name>rti_common.h</name>
     <path>/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/</path>
@@ -8226,12 +8226,12 @@
     <name>API</name>
     <title>API for Reactions</title>
     <filename>group__API.html</filename>
-    <file>logging.h</file>
-    <file>port.h</file>
-    <file>reaction_macros.h</file>
-    <file>reactor.h</file>
-    <file>schedule.h</file>
-    <file>tag.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/logging/api/">logging.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/">port.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/api/">reaction_macros.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/">reactor.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/api/">schedule.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/tag/api/">tag.h</file>
     <class kind="struct">lf_multiport_iterator_t</class>
     <class kind="struct">lf_token_t</class>
     <class kind="struct">tag_t</class>
@@ -8994,17 +8994,17 @@
     <name>Utilities</name>
     <title>Utilities</title>
     <filename>group__Utilities.html</filename>
-    <file>audio_loop.h</file>
-    <file>deque.h</file>
-    <file>generics.h</file>
-    <file>hashmap.h</file>
-    <file>hashset.h</file>
-    <file>hashset_itr.h</file>
-    <file>initialize_from_file.h</file>
-    <file>pointer_hashmap.h</file>
-    <file>sensor_simulator.h</file>
-    <file>type_converter.h</file>
-    <file>wave_file_reader.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/util/">audio_loop.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/util/">deque.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/util/">generics.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/utils/impl/">hashmap.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/utils/hashset/">hashset.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/utils/hashset/">hashset_itr.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/util/">initialize_from_file.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/utils/impl/">pointer_hashmap.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/util/">sensor_simulator.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/util/">type_converter.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/util/">wave_file_reader.h</file>
     <class kind="struct">deque_t</class>
     <class kind="struct">hashmap_entry_t</class>
     <class kind="struct">hashmap_t</class>
@@ -9465,9 +9465,9 @@
     <name>Platform</name>
     <title>Platform API</title>
     <filename>group__Platform.html</filename>
-    <file>clock.h</file>
-    <file>low_level_platform.h</file>
-    <file>platform.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/">clock.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/low_level_platform/api/">low_level_platform.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/platform/api/">platform.h</file>
     <class kind="struct">lf_scheduling_policy_t</class>
     <member kind="typedef">
       <type>void *</type>
@@ -9723,23 +9723,23 @@
     <name>Internal</name>
     <title>Internal</title>
     <filename>group__Internal.html</filename>
-    <file>environment.h</file>
-    <file>lf_semaphore.h</file>
-    <file>lf_token.h</file>
-    <file>lf_types.h</file>
-    <file>logging_macros.h</file>
-    <file>mixed_radix.h</file>
-    <file>pqueue.h</file>
-    <file>pqueue_base.h</file>
-    <file>pqueue_tag.h</file>
-    <file>reactor_common.h</file>
-    <file>reactor_threaded.h</file>
-    <file>scheduler.h</file>
-    <file>scheduler_instance.h</file>
-    <file>scheduler_sync_tag_advance.h</file>
-    <file>tracepoint.h</file>
-    <file>util.h</file>
-    <file>watchdog.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/">environment.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/utils/">lf_semaphore.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/">lf_token.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/">lf_types.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/logging/api/">logging_macros.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/">mixed_radix.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/utils/">pqueue.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/utils/">pqueue_base.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/utils/">pqueue_tag.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/">reactor_common.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/threaded/">reactor_threaded.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/threaded/">scheduler.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/threaded/">scheduler_instance.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/threaded/">scheduler_sync_tag_advance.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/">tracepoint.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/utils/">util.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/threaded/">watchdog.h</file>
     <class kind="struct">allocation_record_t</class>
     <class kind="struct">environment_t</class>
     <class kind="struct">event_t</class>
@@ -11208,7 +11208,7 @@
     <name>Modal</name>
     <title>Modal</title>
     <filename>group__Modal.html</filename>
-    <file>modes.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/modal_models/">modes.h</file>
     <class kind="struct">mode_environment_t</class>
     <class kind="struct">mode_state_variable_reset_data_t</class>
     <class kind="struct">reactor_mode_state_t</class>
@@ -11320,8 +11320,8 @@
     <name>Federated</name>
     <title>Federated</title>
     <filename>group__Federated.html</filename>
-    <file>clock-sync.h</file>
-    <file>federate.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/federated/">clock-sync.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/include/core/federated/">federate.h</file>
     <class kind="struct">federate_instance_t</class>
     <class kind="struct">federation_metadata_t</class>
     <class kind="struct">lf_stat_ll</class>
@@ -11747,10 +11747,10 @@
     <name>Tracing</name>
     <title>Tracing</title>
     <filename>group__Tracing.html</filename>
-    <file>influxdb.h</file>
-    <file>trace.h</file>
-    <file>trace_types.h</file>
-    <file>trace_util.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/util/tracing/">influxdb.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/trace/api/">trace.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/trace/api/types/">trace_types.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/util/tracing/">trace_util.h</file>
     <class kind="struct">influx_client_t</class>
     <class kind="struct">influx_v2_client_t</class>
     <class kind="struct">trace_record_nodeps_t</class>
@@ -12327,10 +12327,10 @@
     <name>RTI</name>
     <title>RTI</title>
     <filename>group__RTI.html</filename>
-    <file>README.md</file>
-    <file>rti_common.h</file>
-    <file>rti_local.h</file>
-    <file>rti_remote.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/">README.md</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/">rti_common.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/">rti_local.h</file>
+    <file path="/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/">rti_remote.h</file>
     <class kind="struct">enclave_info_t</class>
     <class kind="struct">federate_info_t</class>
     <class kind="struct">minimum_delay_t</class>
