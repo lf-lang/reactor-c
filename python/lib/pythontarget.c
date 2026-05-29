@@ -161,7 +161,7 @@ static bool convert_python_number_to_interval_t(PyObject* py_number, interval_t*
   } else {
     double number_in_double = PyFloat_AsDouble(py_number);
     if (number_in_double == -1.0 && PyErr_Occurred()) {
-      PyErr_SetString(PyExc_TypeError, "Python object is neither a long long nor a double.");
+      PyErr_SetString(PyExc_TypeError, "expected a non-negative int or float");
       return false;
     }
     // Reject NaN explicitly (NaN comparisons are always false).
