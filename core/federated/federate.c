@@ -728,7 +728,6 @@ static int handle_port_absent_message(net_abstraction_t net, int fed_id) {
  * network abstraction in _fed.net_for_inbound_p2p_connections
  * to -1 and returns, terminating the thread.
  * @param _args The remote federate ID (cast to void*).
- * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
  *  This procedure frees the memory pointed to before returning.
  */
 static void* listen_to_federates(void* _args) {
@@ -1759,10 +1758,24 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
   assert(port > 0);
   uint16_t uport = (uint16_t)port;
 
+#ifdef COMM_TYPE_TCP
   socket_connection_params_t params = {0};
   params.type = TCP;
   params.port = uport;
   params.server_ip_addr = &host_ip_addr;
+#elif defined(COMM_TYPE_SST)
+  sst_connection_params_t params = {0};
+  params.socket_params.type = TCP;
+  params.socket_params.port = uport;
+  params.socket_params.server_ip_addr = &host_ip_addr;
+  params.target = SST_FEDERATE;
+#elif defined(COMM_TYPE_TLS)
+  tls_connection_params_t params = {0};
+  params.socket_params.type = TCP;
+  params.socket_params.port = uport;
+  params.socket_params.server_ip_addr = &host_ip_addr;
+#endif
+
   net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to federate.");
@@ -1840,10 +1853,24 @@ void lf_connect_to_rti(const char* hostname, int port) {
   hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
   port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
 
+#ifdef COMM_TYPE_TCP
   socket_connection_params_t params = {0};
   params.type = TCP;
   params.port = port;
   params.server_hostname = hostname;
+#elif defined(COMM_TYPE_SST)
+  sst_connection_params_t params = {0};
+  params.socket_params.type = TCP;
+  params.socket_params.port = port;
+  params.socket_params.server_hostname = hostname;
+  params.target = SST_RTI;
+#elif defined(COMM_TYPE_TLS)
+  tls_connection_params_t params = {0};
+  params.socket_params.type = TCP;
+  params.socket_params.port = port;
+  params.socket_params.server_hostname = hostname;
+#endif
+
   net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to RTI.");
@@ -1952,14 +1979,13 @@ void lf_create_server(int specified_port) {
   assert(specified_port <= UINT16_MAX && specified_port >= 0);
 
   net_abstraction_t server_net = initialize_net();
-  ((socket_priv_t*)server_net)->port = (uint16_t)specified_port;
-
+  set_my_port(server_net, specified_port);
   if (create_server(server_net)) {
     lf_print_error_system_failure("Failed to create server: %s.", strerror(errno));
   };
   _fed.server_net = server_net;
   // Get the final server port to send to the RTI on an MSG_TYPE_ADDRESS_ADVERTISEMENT message.
-  int32_t server_port = ((socket_priv_t*)server_net)->port;
+  int32_t server_port = get_my_port(server_net);
 
   LF_PRINT_LOG("Server for communicating with other federates started using port %d.", server_port);
 

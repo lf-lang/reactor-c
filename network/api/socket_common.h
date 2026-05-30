@@ -162,6 +162,16 @@ typedef struct socket_priv_t {
 } socket_priv_t;
 
 /**
+ * @brief Initialize socket_priv_t structure with default values.
+ * @ingroup Network
+ *
+ * Sets socket_descriptor to -1, ports to 0 or -1, and server_ip_addr to 0.
+ *
+ * @param priv Pointer to the socket_priv_t structure to initialize.
+ */
+void lf_initialize_socket_priv(socket_priv_t* priv);
+
+/**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled.
  * @ingroup Network
  *
