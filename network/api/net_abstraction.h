@@ -16,6 +16,12 @@
 #define NET_ABSTRACTION_H
 
 #include "socket_common.h"
+#ifdef COMM_TYPE_SST
+#include "lf_sst_support.h"
+#endif
+#ifdef COMM_TYPE_TLS
+#include "lf_tls_support.h"
+#endif
 
 /**
  * @brief Pointer to whatever data structure is used to maintain the state of a network connection or service.
@@ -246,5 +252,67 @@ void free_net(net_abstraction_t net_abs);
  * @return int Returns 0 on success, -1 on failure (errno will indicate the error).
  */
 int shutdown_net(net_abstraction_t net_abs, bool read_before_closing);
+
+/**
+ * @brief Get the server port number of this network abstraction.
+ * @ingroup Network
+ *
+ * Get the open port number from the network abstraction.
+ * This is used when the federate sends a MSG_TYPE_ADDRESS_ADVERTISEMENT to the RTI, informing its port number. The RTI
+ * will save this port number, and send it to the other federate in a MSG_TYPE_ADDRESS_QUERY_REPLY message.
+ *
+ * @param net_abs The network abstraction.
+ * @return The port number of a server network abstraction.
+ */
+int32_t get_my_port(net_abstraction_t net_abs);
+
+/**
+ * @brief Get the connected peer's port number.
+ * @ingroup Network
+ *
+ * Get the port number of the connected peer.
+ * This is used by the RTI, when there is a request from the federate to the RTI, for the MSG_TYPE_ADDRESS_QUERY
+ * message.
+ *
+ * @param net_abs The network abstraction.
+ * @return Port number of the connected peer.
+ */
+int32_t get_server_port(net_abstraction_t net_abs);
+
+/**
+ * @brief Get the connected peer's IP address.
+ * @ingroup Network
+ *
+ * Get the IP address of the connected peer.
+ *
+ * @param net_abs The network abstraction.
+ * @return Pointer to the server IP address.
+ */
+struct in_addr* get_ip_addr(net_abstraction_t net_abs);
+
+/**
+ * @brief Set the user-specified port for this network abstraction.
+ * @ingroup Network
+ *
+ * Set the user specified port to the created network abstraction.
+ *
+ * @param net_abs The network abstraction.
+ * @param port The user specified port.
+ */
+void set_my_port(net_abstraction_t net_abs, int32_t port);
+
+/**
+ * @brief Set the target server's port number for this network abstraction.
+ * @ingroup Network
+ *
+ * Set server port number to the target network abstraction.
+ * The federate and RTI receives the port number from another
+ * federate MSG_TYPE_ADDRESS_ADVERTISEMENT message.
+ * This function is used to set the network abstraction's target server port number.
+ *
+ * @param net_abs The network abstraction.
+ * @param port The target server's port.
+ */
+void set_server_port(net_abstraction_t net_abs, int32_t port);
 
 #endif /* NET_ABSTRACTION_H */

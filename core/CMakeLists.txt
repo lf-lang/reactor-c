@@ -80,7 +80,7 @@ if(DEFINED FEDERATED)
     include(${LF_ROOT}/network/api/CMakeLists.txt)
     include(${LF_ROOT}/network/impl/CMakeLists.txt)
     target_link_libraries(reactor-c PUBLIC lf::network-api)
-    target_link_libraries(reactor-c PRIVATE lf::network-impl)
+    target_link_libraries(reactor-c PUBLIC lf::network-impl)
 endif()
 
 target_include_directories(reactor-c PUBLIC ../include)
@@ -102,7 +102,13 @@ endif()
 # Link with OpenSSL library
 if(DEFINED FEDERATED_AUTHENTICATED)
     if(APPLE)
-        set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
+        # Apple Silicon Mac
+        if(EXISTS "/opt/homebrew/opt/openssl")
+            set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl")
+        # Intel Mac
+        elseif(EXISTS "/usr/local/opt/openssl")
+            set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
+        endif()
     endif()
 
     find_package(OpenSSL REQUIRED)
