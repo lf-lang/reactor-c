@@ -2433,7 +2433,7 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
 
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
 
-  #ifdef FEDERATED_CENTRALIZED
+#ifdef FEDERATED_CENTRALIZED
   // Send the absent message through the RTI
   net_abstraction_t net = _fed.net_to_RTI;
   tracepoint_federate_to_rti(send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
