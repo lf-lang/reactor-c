@@ -526,8 +526,8 @@ static void _lf_initialize_start_tag(environment_t* env) {
 
   // If we have a non-zero STA offset, then we need to allow messages to arrive
   // at the start time.  To avoid spurious STP violations, we temporarily
-  // set the current time back by the STA offset.
-  env->current_tag.time = lf_time_subtract(env->current_tag.time, lf_fed_STA_offset);
+  // set the current time back to just prior to the start time.
+  env->current_tag.time -= 1;
 #else
   _lf_initialize_timers(env);
   // For other than federated decentralized execution, there is no lf_fed_STA_offset variable defined.
