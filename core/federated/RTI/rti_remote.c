@@ -1065,6 +1065,13 @@ void handle_address_query(uint16_t fed_id) {
 
 void handle_address_ad(uint16_t federate_id) {
   federate_info_t* fed = GET_FED_INFO(federate_id);
+  // Guard against late messages arriving after the federate resigned or was hot-swapped out.
+  // After a hot-swap redirect, GET_FED_INFO returns the new federate struct; the old thread
+  // must not attempt I/O on a closed or redirected socket.
+  if (fed->net == NULL || fed->enclave.state == NOT_CONNECTED) {
+    LF_PRINT_LOG("RTI: Ignoring address advertisement from federate %d: socket already closed.", federate_id);
+    return;
+  }
   // Read the port number of the federate that can be used for physical
   // connections to other federates
   int32_t server_port = -1;
@@ -2248,6 +2255,10 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         while (!hot_swap_old_resigned) {
         }
 
+        // Join the old thread so we know it has fully exited before redirecting or freeing.
+        // Without this, free(fed_old) races with the old thread's post-resign cleanup code.
+        lf_thread_join(fed_old->thread_id, NULL);
+
         // The latest LTC is the tag at which the old federate resigned. This is useful
         // for computing the effective_start_time of the new joining federate.
         hot_swap_federate->enclave.completed = fed_old->enclave.completed;
@@ -2258,10 +2269,11 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // synchronization messages.
         lf_thread_create(&(hot_swap_federate->thread_id), federate_info_thread_TCP, hot_swap_federate);
 
-        // Redirect the federate in rti_remote
+        // Redirect the federate in rti_remote. Done after joining the old thread so no other
+        // code still uses fed_old before we free it.
         rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*)hot_swap_federate;
 
-        // Free the old federate memory and reset the Hot wap indicators
+        // Free the old federate memory and reset the Hot swap indicators.
         // FIXME: Is this enough to free the memory allocated to the federate?
         free(fed_old);
         lf_mutex_lock(&rti_mutex);
