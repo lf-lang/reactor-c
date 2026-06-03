@@ -1475,7 +1475,7 @@ static void send_resign_signal() {
   write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_net_mutex,
                              "Failed to send MSG_TYPE_RESIGN.");
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
-  LF_PRINT_LOG("Resigned.");
+  LF_PRINT_LOG("Sent resign signal to the RTI.");
 }
 
 /**
@@ -1485,8 +1485,10 @@ static void send_failed_signal() {
   size_t bytes_to_write = 1;
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_FAILED;
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
   write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, &(buffer[0]), NULL, "Failed to send MSG_TYPE_FAILED.");
-  LF_PRINT_LOG("Failed.");
+  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  LF_PRINT_LOG("Sent failed signal to the RTI.");
 }
 
 /**
