@@ -53,7 +53,7 @@ typedef struct {
   /** The cumsum of the sizes of the groups of workers corresponding to each successive cond. */
   size_t* cumsum_of_worker_group_sizes;
   /** The number of non-waiting threads. */
-  volatile size_t num_loose_threads;
+  volatile int num_loose_threads;
   /** The number of threads that were awakened for the purpose of executing the current level. */
   volatile size_t num_awakened;
   /** Whether the mutex is held by each worker via this module's API. */
@@ -64,7 +64,7 @@ typedef struct {
   /** The queued reactions. */
   reaction_t**** reactions_by_worker_by_level;
   /** The number of queued reactions currently assigned to each worker at each level. */
-  size_t** num_reactions_by_worker_by_level;
+  int** num_reactions_by_worker_by_level;
   /** The maximum number of workers that could possibly be kept simultaneously busy at each level. */
   size_t* max_num_workers_by_level;
   /** The number of workers that will be used to execute each level. */
@@ -76,7 +76,7 @@ typedef struct {
   /** The following values apply to the current level. */
   size_t current_level;
   /** The number of reactions each worker still has to execute, indexed by worker. */
-  size_t* num_reactions_by_worker;
+  int* num_reactions_by_worker;
   /** The reactions to be executed, indexed by assigned worker. */
   reaction_t*** reactions_by_worker;
   /** The total number of workers active, including those who have finished their work. */
@@ -164,7 +164,7 @@ static void worker_assignments_init(lf_scheduler_t* scheduler, size_t number_of_
   worker_assignments->reactions_by_worker_by_level =
       (reaction_t****)malloc(sizeof(reaction_t***) * worker_assignments->num_levels);
   worker_assignments->num_reactions_by_worker_by_level =
-      (size_t**)malloc(sizeof(size_t*) * worker_assignments->num_levels);
+      (int**)malloc(sizeof(int*) * worker_assignments->num_levels);
   worker_assignments->num_workers_by_level = (size_t*)malloc(sizeof(size_t) * worker_assignments->num_levels);
   worker_assignments->max_num_workers_by_level = (size_t*)malloc(sizeof(size_t) * worker_assignments->num_levels);
   for (size_t level = 0; level < worker_assignments->num_levels; level++) {
@@ -176,7 +176,7 @@ static void worker_assignments_init(lf_scheduler_t* scheduler, size_t number_of_
     worker_assignments->reactions_by_worker_by_level[level] =
         (reaction_t***)malloc(sizeof(reaction_t**) * worker_assignments->max_num_workers);
     worker_assignments->num_reactions_by_worker_by_level[level] =
-        (size_t*)calloc(worker_assignments->max_num_workers, sizeof(size_t));
+        (int*)calloc(worker_assignments->max_num_workers, sizeof(int));
     for (size_t worker = 0; worker < worker_assignments->max_num_workers_by_level[level]; worker++) {
       worker_assignments->reactions_by_worker_by_level[level][worker] =
           (reaction_t**)malloc(sizeof(reaction_t*) * num_reactions); // Warning: This wastes space.
@@ -303,7 +303,7 @@ static void worker_states_init(lf_scheduler_t* scheduler, size_t number_of_worke
   for (size_t i = 0; i < num_conds; i++) {
     LF_COND_INIT(worker_states->worker_conds + i, &scheduler->env->mutex);
   }
-  worker_states->num_loose_threads = scheduler->number_of_workers;
+  worker_states->num_loose_threads = (int)scheduler->number_of_workers;
 }
 
 static void worker_states_free(lf_scheduler_t* scheduler) {
@@ -336,8 +336,8 @@ static void worker_states_awaken_locked(lf_scheduler_t* scheduler, size_t worker
   }
   // The predicate of the condition variable depends on num_awakened and level_counter, so
   // this is a critical section.
-  worker_states->num_loose_threads = worker_states->cumsum_of_worker_group_sizes[max_cond];
-  worker_states->num_loose_threads += worker >= worker_states->num_loose_threads;
+  worker_states->num_loose_threads = (int)worker_states->cumsum_of_worker_group_sizes[max_cond];
+  worker_states->num_loose_threads += worker >= (size_t)worker_states->num_loose_threads;
   worker_states->num_awakened = worker_states->num_loose_threads;
   scheduler->custom_data->level_counter++;
   for (size_t cond = 0; cond <= max_cond; cond++) {
