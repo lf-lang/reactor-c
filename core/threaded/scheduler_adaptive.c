@@ -163,8 +163,7 @@ static void worker_assignments_init(lf_scheduler_t* scheduler, size_t number_of_
   worker_assignments->max_num_workers = number_of_workers;
   worker_assignments->reactions_by_worker_by_level =
       (reaction_t****)malloc(sizeof(reaction_t***) * worker_assignments->num_levels);
-  worker_assignments->num_reactions_by_worker_by_level =
-      (int**)malloc(sizeof(int*) * worker_assignments->num_levels);
+  worker_assignments->num_reactions_by_worker_by_level = (int**)malloc(sizeof(int*) * worker_assignments->num_levels);
   worker_assignments->num_workers_by_level = (size_t*)malloc(sizeof(size_t) * worker_assignments->num_levels);
   worker_assignments->max_num_workers_by_level = (size_t*)malloc(sizeof(size_t) * worker_assignments->num_levels);
   for (size_t level = 0; level < worker_assignments->num_levels; level++) {
