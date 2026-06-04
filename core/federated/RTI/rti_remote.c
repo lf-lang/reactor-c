@@ -56,6 +56,7 @@ lf_mutex_t rti_mutex;
 static lf_cond_t received_start_times;
 static lf_cond_t sent_start_time;
 static lf_cond_t updated_delayed_grants;
+static lf_cond_t hot_swap_old_resigned_cond;
 
 extern int lf_critical_section_enter(environment_t* env) { return lf_mutex_lock(&rti_mutex); }
 
@@ -1633,6 +1634,7 @@ void* federate_info_thread_TCP(void* fed) {
   // Signal the hot swap mechanism, if needed
   if (hot_swap_in_progress && hot_swap_federate->enclave.id == my_fed->enclave.id) {
     hot_swap_old_resigned = true;
+    lf_cond_signal(&hot_swap_old_resigned_cond);
   }
   LF_MUTEX_UNLOCK(&rti_mutex);
   return NULL;
@@ -1794,6 +1796,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
 
     // Set that hot swap is in progress
     hot_swap_in_progress = true;
+    hot_swap_old_resigned = false;
     // free(fed);  // Free the old memory to prevent memory leak
     fed = hot_swap_federate;
     lf_print_info("RTI: Hot Swap starting for federate %d.", fed_id);
@@ -2251,9 +2254,11 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
 
         // Wait for the old federate to send MSG_TYPE_RESIGN
         LF_PRINT_LOG("RTI: Waiting for old federate %d to send resign.", fed_id);
-        // FIXME: This is a busy wait!  Need instead a lf_cond_wait on a condition variable.
+        LF_MUTEX_LOCK(&rti_mutex);
         while (!hot_swap_old_resigned) {
+          lf_cond_wait(&hot_swap_old_resigned_cond, &rti_mutex);
         }
+        LF_MUTEX_UNLOCK(&rti_mutex);
 
         // Join the old thread so we know it has fully exited before redirecting or freeing.
         // Without this, free(fed_old) races with the old thread's post-resign cleanup code.
@@ -2594,6 +2599,7 @@ void initialize_RTI(rti_remote_t* rti) {
   LF_COND_INIT(&received_start_times, &rti_mutex);
   LF_COND_INIT(&sent_start_time, &rti_mutex);
   LF_COND_INIT(&updated_delayed_grants, &rti_mutex);
+  LF_COND_INIT(&hot_swap_old_resigned_cond, &rti_mutex);
 
   initialize_rti_common(&rti_remote->base);
   rti_remote->base.mutex = &rti_mutex;
