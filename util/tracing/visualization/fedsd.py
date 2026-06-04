@@ -557,9 +557,8 @@ if __name__ == '__main__':
                 # Get the federate id number
                 fed_id = fed_df.iloc[-1]['self_id']
 
-                ### Check that the federate id have not been entrered yet.
-                ### This is particlurly useful for transient actors, when
-                ### they leave and join several times
+                ### Check that the federate id has not been entered yet.
+                ### This is particularly useful for transient actors, when
                 if (actors.count(fed_id) == 0): 
                     # Add to the list of sequence diagram actors and add the name
                     actors.append(fed_id)

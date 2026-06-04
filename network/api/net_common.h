@@ -369,7 +369,7 @@
  * @brief The length of a timestamp message with an effective start tag.
  * @ingroup Federated
  */
-#define MSG_TYPE_TIMESTAMP_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(tag_t))
+#define MSG_TYPE_TIMESTAMP_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
  * @brief Byte identifying a message to forward to another federate.
@@ -800,7 +800,6 @@
  * Byte sent by the RTI ordering the federate to stop. Upon receiving the message,
  * the federate will call lf_stop(), which will make it resign at its current_tag
  * plus 1 microstep.
- * The next 8 bytes will be the time at which the federates will stop.
  * The next 4 bytes will be the microstep at which the federates will stop..
  */
 #define MSG_TYPE_STOP 29

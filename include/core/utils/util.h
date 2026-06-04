@@ -202,6 +202,6 @@ void lf_vprint_error_and_exit(const char* format, va_list args) ATTRIBUTE_FORMAT
  *
  * This function is particularly useful for testing transient federates.
  */
-void lf_stop();
+void lf_stop(void);
 
 #endif /* UTIL_H */

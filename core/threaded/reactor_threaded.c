@@ -540,7 +540,7 @@ static void _lf_initialize_start_tag(environment_t* env) {
   // Wait until the effective start time. This is required for federates because the startup procedure
   // in lf_synchronize_with_other_federates() can decide on a new start_time, or the effective start time if it is a
   // transient federate, that is larger than the current physical time.
-  // This wait_until() is deliberately called after most precursor operations for tag (0,0), or effective_start_tag,q
+  // This wait_until() is deliberately called after most precursor operations for tag (0,0), or effective_start_tag
   // are performed (e.g., injecting startup reactions, etc.). This has two benefits: First, the startup overheads will
   // reduce the required waiting time. Second, this call releases the mutex lock and allows other threads (specifically,
   // federate threads that handle incoming p2p messages from other federates) to hold the lock and possibly raise a tag

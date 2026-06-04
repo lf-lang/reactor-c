@@ -263,7 +263,7 @@ static void send_upstream_disconnected_locked(federate_info_t* destination, fede
   buffer[0] = MSG_TYPE_UPSTREAM_DISCONNECTED;
   encode_uint16(disconnected->enclave.id, &buffer[1]);
   if (write_to_net_close_on_error(destination->net, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
-    lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.", disconnected->enclave.id);
+    lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.", destination->enclave.id);
   }
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_to_federate(send_UPSTREAM_DISCONNECTED, destination->enclave.id, NULL);

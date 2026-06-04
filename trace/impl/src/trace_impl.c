@@ -273,9 +273,9 @@ void lf_tracing_global_init(char* process_name, char* process_names, int fedid, 
     FILE* file;
     do {
       if (iter == 0) {
-        sprintf(filename, "%s_%d.lft", process_name, process_id);
+        snprintf(filename, sizeof(filename), "%s_%d.lft", process_name, process_id);
       } else {
-        sprintf(filename, "%s_%d_%d.lft", process_name, process_id, iter);
+        snprintf(filename, sizeof(filename), "%s_%d_%d.lft", process_name, process_id, iter);
       }
       file = fopen(filename, "r");
       if (file) {
