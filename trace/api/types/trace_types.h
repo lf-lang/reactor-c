@@ -53,8 +53,6 @@ typedef enum {
   send_ADR_QR,
   send_ADR_QR_REP,
   send_DNET,
-  send_UPSTREAM_CONNECTED,
-  send_UPSTREAM_DISCONNECTED,
   // Receiving messages
   receive_ACK,
   receive_FAILED,
@@ -79,12 +77,14 @@ typedef enum {
   receive_ADR_QR,
   receive_ADR_QR_REP,
   receive_DNET,
-  receive_UPSTREAM_CONNECTED,
-  receive_UPSTREAM_DISCONNECTED,
   receive_UNIDENTIFIED,
+  // New entries must be added here, at the end, to avoid shifting existing indices.
+  send_UPSTREAM_CONNECTED,
+  receive_UPSTREAM_CONNECTED,
+  send_UPSTREAM_DISCONNECTED,
+  receive_UPSTREAM_DISCONNECTED,
   send_STOP,
   receive_STOP,
-  // New entries must be added here, at the end, to avoid shifting existing indices.
   send_OUTBOUND_CONNECTED,
   receive_OUTBOUND_CONNECTED,
   send_OUTBOUND_DISCONNECTED,
@@ -132,8 +132,6 @@ static const char* trace_event_names[] = {
     "Sending ADR_QR",
     "Sending ADR_QR_REP",
     "Sending DNET",
-    "Sending UPSTREAM_CONNECTED",
-    "Sending UPSTREAM_DISCONNECTED",
     // Receiving messages
     "Receiving ACK",
     "Receiving FAILED",
@@ -158,12 +156,14 @@ static const char* trace_event_names[] = {
     "Receiving ADR_QR",
     "Receiving ADR_QR_REP",
     "Receiving DNET",
-    "Receiving UPSTREAM_CONNECTED",
-    "Receiving UPSTREAM_DISCONNECTED",
     "Receiving UNIDENTIFIED",
+    // New entries appended at the end to avoid shifting existing indices.
+    "Sending UPSTREAM_CONNECTED",
+    "Receiving UPSTREAM_CONNECTED",
+    "Sending UPSTREAM_DISCONNECTED",
+    "Receiving UPSTREAM_DISCONNECTED",
     "Sending STOP",
     "Receiving STOP",
-    // New entries appended at the end to avoid shifting existing indices.
     "Sending OUTBOUND_CONNECTED",
     "Receiving OUTBOUND_CONNECTED",
     "Sending OUTBOUND_DISCONNECTED",
