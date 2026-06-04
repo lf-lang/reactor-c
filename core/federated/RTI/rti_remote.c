@@ -2256,7 +2256,7 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         LF_PRINT_LOG("RTI: Waiting for old federate %d to send resign.", fed_id);
         LF_MUTEX_LOCK(&rti_mutex);
         while (!hot_swap_old_resigned) {
-          lf_cond_wait(&hot_swap_old_resigned_cond, &rti_mutex);
+          lf_cond_wait(&hot_swap_old_resigned_cond);
         }
         LF_MUTEX_UNLOCK(&rti_mutex);
 
