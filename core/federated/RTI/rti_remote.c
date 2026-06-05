@@ -1758,6 +1758,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
         //  - or hot_swap is already in progress (Only 1 hot swap at a time!), for that
         //    particular federate
         //  - or it is a hot swap, but it is not the execution phase yet
+        lf_mutex_lock(&rti_mutex);
         if ((rti_remote->base.scheduling_nodes[fed_id])->state != NOT_CONNECTED) {
           if (!is_transient) {
             lf_print_error("RTI received duplicate federate ID: %d.", fed_id);
@@ -1778,6 +1779,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
             return -1;
           }
         }
+        lf_mutex_unlock(&rti_mutex);
       }
     }
   }
@@ -1795,7 +1797,9 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     initialize_federate(hot_swap_federate, fed_id);
 
     // Set that hot swap is in progress
+    lf_mutex_lock(&rti_mutex);
     hot_swap_in_progress = true;
+    lf_mutex_unlock(&rti_mutex);
     hot_swap_old_resigned = false;
     // free(fed);  // Free the old memory to prevent memory leak
     fed = hot_swap_federate;
