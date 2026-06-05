@@ -2307,6 +2307,15 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
   size_t received_federates = 0;
   // Allocate memory to store thread IDs.
   _fed.inbound_net_listeners = (lf_thread_t*)calloc(_fed.number_of_inbound_p2p_connections, sizeof(lf_thread_t));
+
+  // Map each remote federate ID to its slot in inbound_net_listeners.
+  // Allows transient reconnections to reuse the same slot rather than
+  // overrunning the array. -1 means no slot has been assigned yet.
+  int fed_id_to_slot[NUMBER_OF_FEDERATES];
+  for (int k = 0; k < NUMBER_OF_FEDERATES; k++) {
+    fed_id_to_slot[k] = -1;
+  }
+
   while (!_lf_termination_executed) {
     // Case where all inbound connections are to persistent federates
     if (received_federates == _fed.number_of_inbound_p2p_connections && _fed.number_of_inbound_p2p_transients == 0) {
@@ -2392,10 +2401,37 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
                                &lf_outbound_net_mutex, "Failed to write MSG_TYPE_ACK in response to federate %d.",
                                remote_fed_id);
 
+    // Determine the listener-array slot for this federate.
+    // Transient reconnections reuse the existing slot (and join the old, already-exited
+    // listener thread) so that inbound_net_listeners stays within its allocated bounds.
+    // First connections from any federate claim the next available slot.
+    size_t listener_slot;
+    if (remote_fed_is_transient && fed_id_to_slot[remote_fed_id] >= 0) {
+      // Reuse the existing slot. The previous listener exited when the transient
+      // resigned and closed its socket; join it to reclaim the thread handle.
+      listener_slot = (size_t)fed_id_to_slot[remote_fed_id];
+      // Join outside the mutex: the old thread reads from the (now-closed) previous
+      // socket, so it will exit promptly without needing any lock.
+      LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+      lf_thread_join(_fed.inbound_net_listeners[listener_slot], NULL);
+      LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+    } else {
+      // First connection from this federate: guard against array overrun, then
+      // claim the next slot.
+      if (received_federates >= _fed.number_of_inbound_p2p_connections) {
+        LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+        lf_print_error_and_exit("More inbound P2P connections than expected (%zu).",
+                                _fed.number_of_inbound_p2p_connections);
+      }
+      listener_slot = received_federates;
+      fed_id_to_slot[remote_fed_id] = (int)listener_slot;
+      received_federates++;
+    }
+
     // Start a thread to listen for incoming messages from other federates.
     // The fed_id is a uint16_t, which we assume can be safely cast to and from void*.
     void* fed_id_arg = (void*)(uintptr_t)remote_fed_id;
-    int result = lf_thread_create(&_fed.inbound_net_listeners[received_federates], listen_to_federates, fed_id_arg);
+    int result = lf_thread_create(&_fed.inbound_net_listeners[listener_slot], listen_to_federates, fed_id_arg);
     if (result != 0) {
       // Failed to create a listening thread.
       shutdown_net(_fed.net_for_inbound_p2p_connections[remote_fed_id], false);
@@ -2404,8 +2440,6 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
                               result);
     }
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
-
-    received_federates++;
   }
 
   LF_PRINT_LOG("All %zu remote federates are connected.", _fed.number_of_inbound_p2p_connections);
