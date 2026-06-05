@@ -2272,19 +2272,25 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // for computing the effective_start_time of the new joining federate.
         hot_swap_federate->enclave.completed = fed_old->enclave.completed;
 
-        // Create a thread to communicate with the federate.
-        // This has to be done after clock synchronization is finished
-        // or that thread may end up attempting to handle incoming clock
-        // synchronization messages.
-        lf_thread_create(&(hot_swap_federate->thread_id), federate_info_thread_TCP, hot_swap_federate);
-
-        // Redirect the federate in rti_remote. Done after joining the old thread so no other
-        // code still uses fed_old before we free it.
+        // Redirect the federate in rti_remote BEFORE creating the new thread.
+        // The old thread is already joined above, so fed_old is no longer reachable
+        // via GET_FED_INFO. Redirecting first ensures that when the new thread runs
+        // and calls handle_address_ad / handle_address_query, GET_FED_INFO(fed_id)
+        // returns hot_swap_federate (with a valid net), not fed_old (net == NULL).
+        // Without this ordering, the new thread may enter a handler, see net == NULL,
+        // skip consuming the message payload, and desync the protocol stream — causing
+        // garbage message types, read errors, and a fatal ENOTTY in CI.
         rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*)hot_swap_federate;
 
         // Free the old federate memory and reset the Hot swap indicators.
         // FIXME: Is this enough to free the memory allocated to the federate?
         free(fed_old);
+
+        // Create a thread to communicate with the federate.
+        // This has to be done after clock synchronization is finished
+        // or that thread may end up attempting to handle incoming clock
+        // synchronization messages.
+        lf_thread_create(&(hot_swap_federate->thread_id), federate_info_thread_TCP, hot_swap_federate);
         lf_mutex_lock(&rti_mutex);
         hot_swap_in_progress = false;
         lf_mutex_unlock(&rti_mutex);
