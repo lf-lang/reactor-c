@@ -2669,7 +2669,6 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
     // connection, then there is no need to block progress waiting for this
     // port status.  This is irrelevant for centralized because blocking only
     // occurs on zero-delay cycles.
-    //
     if ((_lf_action_delay_table[i] == 0 && env->current_tag.time == start_time && env->current_tag.microstep == 0) ||
         (_lf_action_delay_table[i] > 0 &&
          lf_tag_compare(env->current_tag, lf_delay_strict((tag_t){.time = start_time, .microstep = 0},
