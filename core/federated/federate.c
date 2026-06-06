@@ -2390,16 +2390,10 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // two threads attempt to simultaneously close the network abstraction.
     _fed.net_for_inbound_p2p_connections[remote_fed_id] = net;
 
-    // Send an MSG_TYPE_ACK message.
-    unsigned char response = MSG_TYPE_ACK;
-
-    // Trace the event when tracing is enabled
-    tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
-
+    // Determine the listener-array slot and start the listener thread BEFORE sending the
+    // ACK. This ensures the source cannot start delivering messages (at start_time) before
+    // the inbound listener thread exists.
     LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-    write_to_net_fail_on_error(_fed.net_for_inbound_p2p_connections[remote_fed_id], 1, (unsigned char*)&response,
-                               &lf_outbound_net_mutex, "Failed to write MSG_TYPE_ACK in response to federate %d.",
-                               remote_fed_id);
 
     // Determine the listener-array slot for this federate.
     // Transient reconnections reuse the existing slot (and join the old, already-exited
@@ -2439,6 +2433,14 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       lf_print_error_and_exit("Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                               result);
     }
+
+    // Send ACK after the listener thread exists so the source cannot start sending
+    // messages before this federate has a thread ready to receive them.
+    unsigned char response = MSG_TYPE_ACK;
+    tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
+    write_to_net_fail_on_error(_fed.net_for_inbound_p2p_connections[remote_fed_id], 1, (unsigned char*)&response,
+                               &lf_outbound_net_mutex, "Failed to write MSG_TYPE_ACK in response to federate %d.",
+                               remote_fed_id);
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
   }
 
