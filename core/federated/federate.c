@@ -295,7 +295,8 @@ static void mark_inputs_known_absent(int fed_id) {
 
   for (size_t i = 0; i < _lf_action_table_size; i++) {
     lf_action_base_t* action = _lf_action_table[i];
-    if (action->source_id == fed_id) {
+    // If the action is NULL, initialization was not completed.
+    if (action && action->source_id == fed_id) {
       update_last_known_status_on_input_port(env, FOREVER_TAG, i, true);
     }
   }
@@ -1474,7 +1475,7 @@ static void send_resign_signal() {
   write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_net_mutex,
                              "Failed to send MSG_TYPE_RESIGN.");
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
-  LF_PRINT_LOG("Resigned.");
+  LF_PRINT_LOG("Sent resign signal to the RTI.");
 }
 
 /**
@@ -1484,8 +1485,11 @@ static void send_failed_signal() {
   size_t bytes_to_write = 1;
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_FAILED;
-  write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, &(buffer[0]), NULL, "Failed to send MSG_TYPE_FAILED.");
-  LF_PRINT_LOG("Failed.");
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_net_mutex,
+                             "Failed to send MSG_TYPE_FAILED.");
+  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  LF_PRINT_LOG("Sent failed signal to the RTI.");
 }
 
 /**
@@ -2229,6 +2233,11 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
 
   net_abstraction_t net = _fed.net_for_outbound_p2p_connections[federate];
 
+  if (net == NULL) {
+    lf_print_warning("Network connection to %s is closed. Dropping the message.", next_destination_str);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    return -1;
+  }
   // Trace the event when tracing is enabled
   tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
 
@@ -2425,17 +2434,28 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   encode_uint16(fed_ID, &(buffer[1 + sizeof(port_ID)]));
   encode_tag(&(buffer[1 + sizeof(port_ID) + sizeof(fed_ID)]), current_message_intended_tag);
 
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+
 #ifdef FEDERATED_CENTRALIZED
   // Send the absent message through the RTI
   net_abstraction_t net = _fed.net_to_RTI;
+  if (net == NULL) {
+    lf_print_warning("Network connection to federate %hu is closed. Dropping the message.", fed_ID);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    return;
+  }
   tracepoint_federate_to_rti(send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
 #else
   // Send the absent message directly to the federate
   net_abstraction_t net = _fed.net_for_outbound_p2p_connections[fed_ID];
+  if (net == NULL) {
+    lf_print_warning("Network connection to federate %hu is closed. Dropping the message.", fed_ID);
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    return;
+  }
   tracepoint_federate_to_federate(send_PORT_ABS, _lf_my_fed_id, fed_ID, &current_message_intended_tag);
 #endif
 
-  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
   int result = write_to_net_close_on_error(net, message_length, buffer);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
 

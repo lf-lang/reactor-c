@@ -526,8 +526,8 @@ static void _lf_initialize_start_tag(environment_t* env) {
 
   // If we have a non-zero STA offset, then we need to allow messages to arrive
   // at the start time.  To avoid spurious STP violations, we temporarily
-  // set the current time back by the STA offset.
-  env->current_tag.time = lf_time_subtract(env->current_tag.time, lf_fed_STA_offset);
+  // set the current time back to just prior to the start time.
+  env->current_tag.time -= 1;
 #else
   _lf_initialize_timers(env);
   // For other than federated decentralized execution, there is no lf_fed_STA_offset variable defined.
@@ -570,6 +570,19 @@ static void _lf_initialize_start_tag(environment_t* env) {
   // once the complete message has been read. Here, we wait for that barrier
   // to be removed, if appropriate before proceeding to executing tag (0,0).
   _lf_wait_on_tag_barrier(env, (tag_t){.time = start_time, .microstep = 0});
+
+  // Recompute MLAA now that current_tag has been restored to the start tag.
+  // While current_tag was set back by lf_fed_STA_offset (above), any incoming
+  // messages would have updated last_known_status_tag on their input ports,
+  // but lf_update_max_level was computed with current_tag in the past of those
+  // ports' last_known_status_tag, so MLAA was left unblocked. Now that
+  // current_tag is at the start tag, recompute MLAA so that any input ports
+  // whose status is still unknown at the start tag block reactions until they
+  // become known (or the STAA thread marks them absent).
+  {
+    extern federate_instance_t _fed;
+    lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+  }
 
   // In addition, if the earliest event on the event queue has a tag greater
   // than (0,0), then wait until the time of that tag. This prevents the runtime
