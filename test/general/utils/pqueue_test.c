@@ -23,6 +23,8 @@ static void insert_on_queue(pqueue_tag_t* q) {
   assert(!pqueue_tag_insert_tag(q, t2));
   assert(!pqueue_tag_insert_tag(q, t3));
 
+  assert(lf_tag_compare(pqueue_tag_max_tag(q), t1) == 0);
+
   assert(!pqueue_tag_insert_if_no_match(q, t4));
   assert(pqueue_tag_insert_if_no_match(q, t1));
   assert(pqueue_tag_insert_if_no_match(q, t4));
