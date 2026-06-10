@@ -91,8 +91,29 @@ unsigned int _lf_number_of_workers = 0u;
  */
 instant_t duration = -1LL;
 
+/**
+ * If nonzero, the start of the program is delayed so that the starting logical
+ * time is an integer multiple of this value (in nanoseconds). The default of 0
+ * means that no such alignment is performed and the program starts as soon as
+ * possible. This is set by the `-m` or `--start-time-multiple` command-line
+ * option. In federated execution, this alignment is performed by the RTI (which
+ * receives the option from the generated launch script), not by the individual
+ * federates, so this variable is unused in federates.
+ */
+instant_t start_time_multiple = 0LL;
+
 /** Indicator of whether the keepalive command-line option was given. */
 bool keepalive_specified = false;
+
+instant_t lf_align_to_start_time_multiple(instant_t time) {
+  if (start_time_multiple > 0LL) {
+    instant_t remainder = time % start_time_multiple;
+    if (remainder != 0LL) {
+      time += start_time_multiple - remainder;
+    }
+  }
+  return time;
+}
 
 void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head) {
   void* mem = calloc(count, size);
@@ -989,6 +1010,9 @@ void usage(int argc, const char* argv[]) {
   printf("  -o, --timeout <duration> <units>\n");
   printf("      Stop after the specified amount of logical time, where units are one of\n");
   printf("      nsec, usec, msec, sec, minute, hour, day, week, or the plurals of those.\n\n");
+  printf("  -m, --start-time-multiple <value> <units>\n");
+  printf("      Delay the start of the program so that the starting logical time is a\n");
+  printf("      multiple of the specified time, where units are one of ns, us, ms, s, min, hour, day, or week.\n\n");
   printf("  -k, --keepalive <true|false>\n");
   printf("      Whether to continue execution even when there are no events to process.\n\n");
   printf("  -w, --workers <n>\n");
@@ -1150,6 +1174,26 @@ int process_args(int argc, const char* argv[]) {
       if (parse_result != 0) {
         lf_print_error(parse_result == -1 ? "Invalid time value: %s" : "Invalid time units: %s",
                        parse_result == -1 ? time_spec : units);
+        usage(argc, argv);
+        return 0;
+      }
+    } else if (strcmp(arg, "-m") == 0 || strcmp(arg, "--start-time-multiple") == 0) {
+      if (argc < i + 2) {
+        lf_print_error("--start-time-multiple needs time and units.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* time_spec = argv[i++];
+      const char* units = argv[i++];
+      int parse_result = lf_time_parse(time_spec, units, &start_time_multiple);
+      if (parse_result != 0) {
+        lf_print_error(parse_result == -1 ? "Invalid time value: %s" : "Invalid time units: %s",
+                       parse_result == -1 ? time_spec : units);
+        usage(argc, argv);
+        return 0;
+      }
+      if (start_time_multiple < 0LL) {
+        lf_print_error("--start-time-multiple needs a non-negative time value.");
         usage(argc, argv);
         return 0;
       }

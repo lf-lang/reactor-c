@@ -1061,7 +1061,24 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   _lf_initialize_clock();
   start_time = lf_time_physical();
 #ifndef FEDERATED
+  // Optionally delay the start so that the starting logical time is a multiple
+  // of the value given with the -m/--start-time-multiple command-line option.
+  // In federated execution, this alignment is performed by the RTI instead, so
+  // it is only applied here for unfederated programs.
+  start_time = lf_align_to_start_time_multiple(start_time);
   lf_tracing_set_start_time(start_time);
+  // If the start time has been pushed into the future to align it to a multiple,
+  // sleep until that physical time before any tag (0,0) reactions execute. The
+  // threaded runtime does not otherwise wait before executing the startup
+  // reactions at the start tag, and this is done here, on the main thread,
+  // before the worker threads are created. In fast mode, the wait is skipped so
+  // that logical time is allowed to run ahead of physical time.
+  if (!fast && start_time_multiple > 0LL) {
+    interval_t wait_duration = start_time - lf_time_physical();
+    if (wait_duration > 0LL) {
+      lf_sleep(wait_duration);
+    }
+  }
 #endif
 
   LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
