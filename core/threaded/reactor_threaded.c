@@ -1071,9 +1071,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   // sleep until that physical time before any tag (0,0) reactions execute. The
   // threaded runtime does not otherwise wait before executing the startup
   // reactions at the start tag, and this is done here, on the main thread,
-  // before the worker threads are created. In fast mode, the wait is skipped so
-  // that logical time is allowed to run ahead of physical time.
-  if (!fast && start_time_multiple > 0LL) {
+  // before the worker threads are created. If the aligned start time is in the
+  // future, sleep until then to keep lf_time_start()/lf_time_physical_elapsed() consistent.
+  if (start_time_multiple > 0LL) {
     interval_t wait_duration = start_time - lf_time_physical();
     if (wait_duration > 0LL) {
       lf_sleep(wait_duration);
