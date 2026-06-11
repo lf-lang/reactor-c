@@ -24,7 +24,7 @@ elseif(COMM_TYPE MATCHES SST)
         FetchContent_Declare(
             sst-lib
             GIT_REPOSITORY https://github.com/iotauth/sst-c-api.git
-            GIT_TAG        master
+            GIT_TAG        main
         )
         FetchContent_MakeAvailable(sst-lib)
 
