@@ -337,10 +337,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     start_time = lf_align_to_start_time_multiple(start_time);
     lf_tracing_set_start_time(start_time);
     // The single-threaded runtime does not wait for the start time elsewhere, so
-    // if the start time has been pushed into the future, sleep until then. In
-    // fast mode, the wait is skipped so that logical time may run ahead of
-    // physical time.
-    if (!fast && start_time_multiple > 0LL) {
+    // if the start time has been pushed into the future, sleep until then. This keeps
+    // lf_time_start() and lf_time_physical_elapsed() consistent with the physical start time.
+    // (This applies even when running with --fast.)
+    if (start_time_multiple > 0LL) {
       interval_t wait_duration = start_time - lf_time_physical();
       if (wait_duration > 0LL) {
         lf_sleep(wait_duration);
