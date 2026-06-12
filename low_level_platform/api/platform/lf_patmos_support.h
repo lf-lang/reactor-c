@@ -22,5 +22,22 @@
 #define PRINTF_TIME "%" PRId64
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
+#if !defined(LF_SINGLE_THREADED)
+#include <pthread.h>
+typedef struct {
+	pthread_t handle;
+	int cpuid;
+} lf_thread_t;
+typedef pthread_mutex_t lf_mutex_t;
+typedef struct {
+	lf_mutex_t* mutex;
+	pthread_cond_t condition;
+} lf_cond_t;
+#if !defined(LF_SINGLE_THREADED)
+// Cross-core global lock used by atomic implementations on Patmos.
+void _lf_patmos_global_lock_acquire(void);
+void _lf_patmos_global_lock_release(void);
+#endif
+#endif
 
 #endif // LF_PATMOS_SUPPORT_H
