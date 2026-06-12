@@ -331,7 +331,21 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Set start time
     start_time = lf_time_physical();
 #ifndef FEDERATED
+    // Optionally delay the start so that the starting logical time is a multiple
+    // of the value given with the -m/--start-time-multiple command-line option.
+    // In federated execution, this alignment is performed by the RTI instead.
+    start_time = lf_align_to_start_time_multiple(start_time);
     lf_tracing_set_start_time(start_time);
+    // The single-threaded runtime does not wait for the start time elsewhere, so
+    // if the start time has been pushed into the future, sleep until then. This keeps
+    // lf_time_start() and lf_time_physical_elapsed() consistent with the physical start time.
+    // (This applies even when running with --fast.)
+    if (start_time_multiple > 0LL) {
+      interval_t wait_duration = start_time - lf_time_physical();
+      if (wait_duration > 0LL) {
+        lf_sleep(wait_duration);
+      }
+    }
 #endif
 
     LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,

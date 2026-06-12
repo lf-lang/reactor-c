@@ -112,6 +112,9 @@ void usage(int argc, const char* argv[]) {
   lf_print("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.");
   lf_print("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each");
   lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
+  lf_print("  -m, --start-time-multiple <value> <units>");
+  lf_print("   Delay the federation start so that the starting logical time is a multiple of the");
+  lf_print("   specified time, where units are one of ns, us, ms, s, min, hour, day, or week.\n");
   lf_print("  -a, --auth Turn on HMAC authentication options.\n");
   lf_print("  -t, --tracing Turn on tracing.\n");
   lf_print("  -d, --disable_dnet Turn off the use of DNET signals.\n");
@@ -295,6 +298,27 @@ int process_args(int argc, const char* argv[]) {
       lf_print_debug("RTI: TLS key path : %s", key_path);
       i += 2;
 #endif
+    } else if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--start-time-multiple") == 0) {
+      if (argc < i + 3) {
+        lf_print_error("--start-time-multiple needs a time value and units.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* time_spec = argv[i + 1];
+      const char* units = argv[i + 2];
+      int parse_result = lf_time_parse(time_spec, units, &rti.start_time_multiple);
+      if (parse_result != 0) {
+        lf_print_error("--start-time-multiple has an invalid time value or units: %s %s", time_spec, units);
+        usage(argc, argv);
+        return 0;
+      }
+      if (rti.start_time_multiple < 0LL) {
+        lf_print_error("--start-time-multiple needs a non-negative time value.");
+        usage(argc, argv);
+        return 0;
+      }
+      i += 2;
+      lf_print_info("RTI: Start time multiple: " PRINTF_TIME " ns", rti.start_time_multiple);
     } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
       rti.base.tracing_enabled = true;
     } else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dnet_disabled") == 0) {

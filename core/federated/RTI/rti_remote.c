@@ -730,6 +730,14 @@ void handle_timestamp(federate_info_t* my_fed) {
   start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
   // Add an offset to this start time to get everyone starting together.
   start_time = rti_remote->max_start_time + DELAY_START;
+  // If requested via the -m/--start-time-multiple command-line option, delay the
+  // start so that the starting logical time is a multiple of the given value.
+  if (rti_remote->start_time_multiple > 0LL) {
+    int64_t remainder = start_time % rti_remote->start_time_multiple;
+    if (remainder != 0LL) {
+      start_time += rti_remote->start_time_multiple - remainder;
+    }
+  }
   lf_tracing_set_start_time(start_time);
   encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
 
@@ -1575,6 +1583,7 @@ void initialize_RTI(rti_remote_t* rti) {
 
   // federation_rti related initializations
   rti_remote->max_start_time = 0LL;
+  rti_remote->start_time_multiple = 0LL;
   rti_remote->num_feds_proposed_start = 0;
   rti_remote->all_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";

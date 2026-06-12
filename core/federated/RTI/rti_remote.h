@@ -90,6 +90,16 @@ typedef struct rti_remote_t {
   /** @brief Maximum start time seen so far from the federates. */
   int64_t max_start_time;
 
+  /**
+   * @brief If nonzero, the federation start time is delayed so that the
+   * starting logical time is an integer multiple of this value (in nanoseconds).
+   *
+   * The default of 0 means that no such alignment is performed. This is set by
+   * the `-m` or `--start-time-multiple` command-line option, which the generated
+   * launch script forwards to the RTI.
+   */
+  int64_t start_time_multiple;
+
   /** @brief Number of federates that have proposed start times. */
   int num_feds_proposed_start;
 
