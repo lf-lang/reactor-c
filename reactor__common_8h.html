@@ -197,6 +197,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gafd3a0abded3adbc25ab7dbc261e7b16c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger all the startup reactions in the specified environment.  <br /></td></tr>
 <tr class="memitem:ga42d0bf55641d6ff4390081175de65496" id="r_ga42d0bf55641d6ff4390081175de65496"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga42d0bf55641d6ff4390081175de65496">initialize_global</a> ()</td></tr>
 <tr class="memdesc:ga42d0bf55641d6ff4390081175de65496"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize global variables and start tracing before calling the <a class="el" href="group__Internal.html#ga52ffa06ff177dc19d33713beb2ff344e" title="_lf_initialize_trigger_objects()">_lf_initialize_trigger_objects()</a> function.  <br /></td></tr>
+<tr class="memitem:ga37a69368a291005bbd4b89658439c944" id="r_ga37a69368a291005bbd4b89658439c944"><td class="memItemLeft"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga37a69368a291005bbd4b89658439c944">lf_align_to_start_time_multiple</a> (<a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> time)</td></tr>
+<tr class="memdesc:ga37a69368a291005bbd4b89658439c944"><td class="mdescLeft">&#160;</td><td class="mdescRight">Round the given time up to the next integer multiple of <span class="tt"><a class="el" href="#abf841e831e686a46c9ce39772c02555f">start_time_multiple</a></span>.  <br /></td></tr>
 <tr class="memitem:ga6876ddf559d9ecf14ae78f76e6ff2045" id="r_ga6876ddf559d9ecf14ae78f76e6ff2045"><td class="memItemLeft"><a class="el" href="group__Internal.html#ga4448d06be794d3f5412d0edb412dc00e">index_t</a>&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga6876ddf559d9ecf14ae78f76e6ff2045">lf_combine_deadline_and_level</a> (<a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> deadline, int level)</td></tr>
 <tr class="memdesc:ga6876ddf559d9ecf14ae78f76e6ff2045"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine a deadline and a level into a single index for sorting in the reaction queue.  <br /></td></tr>
 <tr class="memitem:gaf2a6b2663dca116472afc45b50040a3d" id="r_gaf2a6b2663dca116472afc45b50040a3d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#gaf2a6b2663dca116472afc45b50040a3d">lf_create_environments</a> (void)</td></tr>
@@ -237,6 +239,7 @@ Variables</h2></td></tr>
 <tr class="memitem:a9c91e5c84c3910df17c909ccdea074db" id="r_a9c91e5c84c3910df17c909ccdea074db"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a9c91e5c84c3910df17c909ccdea074db">fast</a></td></tr>
 <tr class="memitem:a3e69bf5802b3968ed00af688cc7a8006" id="r_a3e69bf5802b3968ed00af688cc7a8006"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a3e69bf5802b3968ed00af688cc7a8006">keepalive_specified</a></td></tr>
 <tr class="memitem:a21ebb201d06c3d2e564e7a4867ff3a7d" id="r_a21ebb201d06c3d2e564e7a4867ff3a7d"><td class="memItemLeft"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#a21ebb201d06c3d2e564e7a4867ff3a7d">lf_fed_STA_offset</a></td></tr>
+<tr class="memitem:abf841e831e686a46c9ce39772c02555f" id="r_abf841e831e686a46c9ce39772c02555f"><td class="memItemLeft"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#abf841e831e686a46c9ce39772c02555f">start_time_multiple</a></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Declarations of functions with implementations in reactor.c and reactor_threaded.c. </p>
@@ -484,6 +487,28 @@ Erling Rennemo Jellum</dd></dl>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> lf_fed_STA_offset</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel extern">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="abf841e831e686a46c9ce39772c02555f" name="abf841e831e686a46c9ce39772c02555f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf841e831e686a46c9ce39772c02555f">&#9670;&#160;</a></span>start_time_multiple</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> start_time_multiple</td>
         </tr>
       </table>
   </td>

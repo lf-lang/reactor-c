@@ -2143,6 +2143,13 @@
       <arglist>()</arglist>
     </member>
     <member kind="function">
+      <type>instant_t</type>
+      <name>lf_align_to_start_time_multiple</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga37a69368a291005bbd4b89658439c944</anchor>
+      <arglist>(instant_t time)</arglist>
+    </member>
+    <member kind="function">
       <type>index_t</type>
       <name>lf_combine_deadline_and_level</name>
       <anchorfile>group__Internal.html</anchorfile>
@@ -2308,6 +2315,13 @@
       <name>lf_fed_STA_offset</name>
       <anchorfile>reactor__common_8h.html</anchorfile>
       <anchor>a21ebb201d06c3d2e564e7a4867ff3a7d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>instant_t</type>
+      <name>start_time_multiple</name>
+      <anchorfile>reactor__common_8h.html</anchorfile>
+      <anchor>abf841e831e686a46c9ce39772c02555f</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -7508,6 +7522,13 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>int64_t</type>
+      <name>start_time_multiple</name>
+      <anchorfile>structrti__remote__t.html</anchorfile>
+      <anchor>ad8c101c770d488d097991c5f0ceede68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>bool</type>
       <name>stop_in_progress</name>
       <anchorfile>structrti__remote__t.html</anchorfile>
@@ -10621,6 +10642,13 @@
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga42d0bf55641d6ff4390081175de65496</anchor>
       <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>instant_t</type>
+      <name>lf_align_to_start_time_multiple</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga37a69368a291005bbd4b89658439c944</anchor>
+      <arglist>(instant_t time)</arglist>
     </member>
     <member kind="function">
       <type>void *</type>

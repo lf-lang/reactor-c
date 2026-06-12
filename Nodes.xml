@@ -3127,6 +3127,11 @@
             <Anchor>ga42d0bf55641d6ff4390081175de65496</Anchor>
            </Node>
            <Node>
+            <Name>lf_align_to_start_time_multiple</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga37a69368a291005bbd4b89658439c944</Anchor>
+           </Node>
+           <Node>
             <Name>lf_allocate</Name>
             <Path>group__Internal.html</Path>
             <Anchor>ga1a5fdb69bc112879d4014bb0790e843c</Anchor>
@@ -5129,6 +5134,11 @@
               <Anchor>acdd54a055b69ed96feef48423e7e0496</Anchor>
              </Node>
              <Node>
+              <Name>start_time_multiple</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>ad8c101c770d488d097991c5f0ceede68</Anchor>
+             </Node>
+             <Node>
               <Name>stop_in_progress</Name>
               <Path>structrti__remote__t.html</Path>
               <Anchor>a498c079c9b24587dccb394f17a3fdc2c</Anchor>
@@ -7107,6 +7117,11 @@
               <Name>socket_descriptor_UDP</Name>
               <Path>structrti__remote__t.html</Path>
               <Anchor>acdd54a055b69ed96feef48423e7e0496</Anchor>
+             </Node>
+             <Node>
+              <Name>start_time_multiple</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>ad8c101c770d488d097991c5f0ceede68</Anchor>
              </Node>
              <Node>
               <Name>stop_in_progress</Name>
@@ -10377,6 +10392,11 @@
                             <Anchor>ga42d0bf55641d6ff4390081175de65496</Anchor>
                            </Node>
                            <Node>
+                            <Name>lf_align_to_start_time_multiple</Name>
+                            <Path>group__Internal.html</Path>
+                            <Anchor>ga37a69368a291005bbd4b89658439c944</Anchor>
+                           </Node>
+                           <Node>
                             <Name>lf_combine_deadline_and_level</Name>
                             <Path>group__Internal.html</Path>
                             <Anchor>ga6876ddf559d9ecf14ae78f76e6ff2045</Anchor>
@@ -10495,6 +10515,11 @@
                             <Name>lf_fed_STA_offset</Name>
                             <Path>reactor__common_8h.html</Path>
                             <Anchor>a21ebb201d06c3d2e564e7a4867ff3a7d</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>start_time_multiple</Name>
+                            <Path>reactor__common_8h.html</Path>
+                            <Anchor>abf841e831e686a46c9ce39772c02555f</Anchor>
                            </Node>
                           </Subnodes>
                          </Node>

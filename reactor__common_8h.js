@@ -25,6 +25,7 @@ var reactor__common_8h =
     [ "_lf_trigger_shutdown_reactions", "group__Internal.html#ga282a342efac4fc3e198fb9656f0a9adc", null ],
     [ "_lf_trigger_startup_reactions", "group__Internal.html#gafd3a0abded3adbc25ab7dbc261e7b16c", null ],
     [ "initialize_global", "group__Internal.html#ga42d0bf55641d6ff4390081175de65496", null ],
+    [ "lf_align_to_start_time_multiple", "group__Internal.html#ga37a69368a291005bbd4b89658439c944", null ],
     [ "lf_combine_deadline_and_level", "group__Internal.html#ga6876ddf559d9ecf14ae78f76e6ff2045", null ],
     [ "lf_create_environments", "group__Internal.html#gaf2a6b2663dca116472afc45b50040a3d", null ],
     [ "lf_free", "group__Internal.html#gaa028b6b458854278bb2a2de486e40268", null ],
@@ -48,5 +49,6 @@ var reactor__common_8h =
     [ "duration", "reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77", null ],
     [ "fast", "reactor__common_8h.html#a9c91e5c84c3910df17c909ccdea074db", null ],
     [ "keepalive_specified", "reactor__common_8h.html#a3e69bf5802b3968ed00af688cc7a8006", null ],
-    [ "lf_fed_STA_offset", "reactor__common_8h.html#a21ebb201d06c3d2e564e7a4867ff3a7d", null ]
+    [ "lf_fed_STA_offset", "reactor__common_8h.html#a21ebb201d06c3d2e564e7a4867ff3a7d", null ],
+    [ "start_time_multiple", "reactor__common_8h.html#abf841e831e686a46c9ce39772c02555f", null ]
 ];

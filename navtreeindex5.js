@@ -1,5 +1,7 @@
 var NAVTREEINDEX5 =
 {
+"topics.html":[3],
+"trace_8h.html":[3,7,1],
 "trace__types_8h.html":[3,7,2],
 "trace__util_8h.html":[3,7,3],
 "tracepoint_8h.html":[3,4,14],

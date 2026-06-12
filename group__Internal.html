@@ -455,6 +455,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga19d650d18c331602f44c642bce2456e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if the first argument is greater than the second and zero otherwise.  <br /></td></tr>
 <tr class="memitem:ga42d0bf55641d6ff4390081175de65496" id="r_ga42d0bf55641d6ff4390081175de65496"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga42d0bf55641d6ff4390081175de65496">initialize_global</a> ()</td></tr>
 <tr class="memdesc:ga42d0bf55641d6ff4390081175de65496"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize global variables and start tracing before calling the <a class="el" href="#ga52ffa06ff177dc19d33713beb2ff344e" title="_lf_initialize_trigger_objects()">_lf_initialize_trigger_objects()</a> function.  <br /></td></tr>
+<tr class="memitem:ga37a69368a291005bbd4b89658439c944" id="r_ga37a69368a291005bbd4b89658439c944"><td class="memItemLeft"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga37a69368a291005bbd4b89658439c944">lf_align_to_start_time_multiple</a> (<a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> time)</td></tr>
+<tr class="memdesc:ga37a69368a291005bbd4b89658439c944"><td class="mdescLeft">&#160;</td><td class="mdescRight">Round the given time up to the next integer multiple of <span class="tt"><a class="el" href="reactor__common_8h.html#abf841e831e686a46c9ce39772c02555f">start_time_multiple</a></span>.  <br /></td></tr>
 <tr class="memitem:ga1a5fdb69bc112879d4014bb0790e843c" id="r_ga1a5fdb69bc112879d4014bb0790e843c"><td class="memItemLeft">void *&#160;</td><td class="memItemRight"><a class="el" href="#ga1a5fdb69bc112879d4014bb0790e843c">lf_allocate</a> (size_t count, size_t size, struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> **head)</td></tr>
 <tr class="memdesc:ga1a5fdb69bc112879d4014bb0790e843c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate memory and record on the specified allocation record (a self struct).  <br /></td></tr>
 <tr class="memitem:ga6876ddf559d9ecf14ae78f76e6ff2045" id="r_ga6876ddf559d9ecf14ae78f76e6ff2045"><td class="memItemLeft"><a class="el" href="#ga4448d06be794d3f5412d0edb412dc00e">index_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#ga6876ddf559d9ecf14ae78f76e6ff2045">lf_combine_deadline_and_level</a> (<a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> deadline, int level)</td></tr>
@@ -3650,6 +3652,35 @@ The running state does not seem to be read. </dd></dl>
 <p><code>#include &lt;<a class="el" href="reactor__common_8h.html">reactor_common.h</a>&gt;</code></p>
 
 <p>Initialize global variables and start tracing before calling the <a class="el" href="#ga52ffa06ff177dc19d33713beb2ff344e" title="_lf_initialize_trigger_objects()">_lf_initialize_trigger_objects()</a> function. </p>
+
+</div>
+</div>
+<a id="ga37a69368a291005bbd4b89658439c944" name="ga37a69368a291005bbd4b89658439c944"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga37a69368a291005bbd4b89658439c944">&#9670;&#160;</a></span>lf_align_to_start_time_multiple()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> lf_align_to_start_time_multiple </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a></td>          <td class="paramname"><span class="paramname"><em>time</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor__common_8h.html">reactor_common.h</a>&gt;</code></p>
+
+<p>Round the given time up to the next integer multiple of <span class="tt"><a class="el" href="reactor__common_8h.html#abf841e831e686a46c9ce39772c02555f">start_time_multiple</a></span>. </p>
+<p>If <span class="tt"><a class="el" href="reactor__common_8h.html#abf841e831e686a46c9ce39772c02555f">start_time_multiple</a></span> is 0 (the default), the time is returned unchanged. Otherwise, the smallest multiple of <span class="tt"><a class="el" href="reactor__common_8h.html#abf841e831e686a46c9ce39772c02555f">start_time_multiple</a></span> that is greater than or equal to <span class="tt">time</span> is returned. This is used to implement the <span class="tt">-m</span>/<span class="tt">--start-time-multiple</span> command-line option, which delays the start of the program so that the starting logical time is a multiple of the specified value.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">time</td><td>The time to align. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The aligned time. </dd></dl>
 
 </div>
 </div>

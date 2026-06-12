@@ -3463,6 +3463,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>start_time_multiple</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>rti_remote_t</Scope>
+    </TokenIdentifier>
+    <Path>structrti__remote__t.html</Path>
+    <Anchor>ad8c101c770d488d097991c5f0ceede68</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>startup_reactions</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -6639,6 +6649,16 @@
     </TokenIdentifier>
     <Path>reactor__common_8h.html</Path>
     <Anchor>a3e69bf5802b3968ed00af688cc7a8006</Anchor>
+    <DeclaredIn>reactor_common.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_align_to_start_time_multiple</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga37a69368a291005bbd4b89658439c944</Anchor>
     <DeclaredIn>reactor_common.h</DeclaredIn>
   </Token>
   <Token>
@@ -11240,6 +11260,16 @@
     <Path>trace__util_8h.html</Path>
     <Anchor>a20b56e8fb05c017508f1c4fa2e311a87</Anchor>
     <DeclaredIn>trace_util.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>start_time_multiple</Name>
+      <APILanguage>c</APILanguage>
+      <Type>data</Type>
+    </TokenIdentifier>
+    <Path>reactor__common_8h.html</Path>
+    <Anchor>abf841e831e686a46c9ce39772c02555f</Anchor>
+    <DeclaredIn>reactor_common.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>

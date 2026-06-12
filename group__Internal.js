@@ -348,6 +348,7 @@ var group__Internal =
     [ "in_no_particular_order", "group__Internal.html#ga987e40d356a70d4799d6fe56920d3b8f", null ],
     [ "in_reverse_order", "group__Internal.html#ga19d650d18c331602f44c642bce2456e8", null ],
     [ "initialize_global", "group__Internal.html#ga42d0bf55641d6ff4390081175de65496", null ],
+    [ "lf_align_to_start_time_multiple", "group__Internal.html#ga37a69368a291005bbd4b89658439c944", null ],
     [ "lf_allocate", "group__Internal.html#ga1a5fdb69bc112879d4014bb0790e843c", null ],
     [ "lf_combine_deadline_and_level", "group__Internal.html#ga6876ddf559d9ecf14ae78f76e6ff2045", null ],
     [ "lf_create_environments", "group__Internal.html#gaf2a6b2663dca116472afc45b50040a3d", null ],

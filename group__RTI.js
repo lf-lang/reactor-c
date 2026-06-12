@@ -49,6 +49,7 @@ var group__RTI =
       [ "num_feds_proposed_start", "structrti__remote__t.html#a1c695fdf2ff3d64f7599887ce525d64d", null ],
       [ "rti_net", "structrti__remote__t.html#abf6767b1b9d02eb2f868900104dfd8c0", null ],
       [ "socket_descriptor_UDP", "structrti__remote__t.html#acdd54a055b69ed96feef48423e7e0496", null ],
+      [ "start_time_multiple", "structrti__remote__t.html#ad8c101c770d488d097991c5f0ceede68", null ],
       [ "stop_in_progress", "structrti__remote__t.html#a498c079c9b24587dccb394f17a3fdc2c", null ],
       [ "user_specified_port", "structrti__remote__t.html#a2f275409a0e4a1a537c3028e674bada3", null ]
     ] ],

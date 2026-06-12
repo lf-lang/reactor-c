@@ -159,6 +159,8 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:abf6767b1b9d02eb2f868900104dfd8c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The rti's network abstraction.  <br /></td></tr>
 <tr class="memitem:acdd54a055b69ed96feef48423e7e0496" id="r_acdd54a055b69ed96feef48423e7e0496"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#acdd54a055b69ed96feef48423e7e0496">socket_descriptor_UDP</a></td></tr>
 <tr class="memdesc:acdd54a055b69ed96feef48423e7e0496"><td class="mdescLeft">&#160;</td><td class="mdescRight">The UDP socket descriptor for the socket server.  <br /></td></tr>
+<tr class="memitem:ad8c101c770d488d097991c5f0ceede68" id="r_ad8c101c770d488d097991c5f0ceede68"><td class="memItemLeft">int64_t&#160;</td><td class="memItemRight"><a class="el" href="#ad8c101c770d488d097991c5f0ceede68">start_time_multiple</a></td></tr>
+<tr class="memdesc:ad8c101c770d488d097991c5f0ceede68"><td class="mdescLeft">&#160;</td><td class="mdescRight">If nonzero, the federation start time is delayed so that the starting logical time is an integer multiple of this value (in nanoseconds).  <br /></td></tr>
 <tr class="memitem:a498c079c9b24587dccb394f17a3fdc2c" id="r_a498c079c9b24587dccb394f17a3fdc2c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a498c079c9b24587dccb394f17a3fdc2c">stop_in_progress</a></td></tr>
 <tr class="memdesc:a498c079c9b24587dccb394f17a3fdc2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boolean indicating that a stop request is already in progress.  <br /></td></tr>
 <tr class="memitem:a2f275409a0e4a1a537c3028e674bada3" id="r_a2f275409a0e4a1a537c3028e674bada3"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#a2f275409a0e4a1a537c3028e674bada3">user_specified_port</a></td></tr>
@@ -377,6 +379,23 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The UDP socket descriptor for the socket server. </p>
+
+</div>
+</div>
+<a id="ad8c101c770d488d097991c5f0ceede68" name="ad8c101c770d488d097991c5f0ceede68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad8c101c770d488d097991c5f0ceede68">&#9670;&#160;</a></span>start_time_multiple</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int64_t rti_remote_t::start_time_multiple</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>If nonzero, the federation start time is delayed so that the starting logical time is an integer multiple of this value (in nanoseconds). </p>
+<p>The default of 0 means that no such alignment is performed. This is set by the <span class="tt">-m</span> or <span class="tt">--start-time-multiple</span> command-line option, which the generated launch script forwards to the RTI. </p>
 
 </div>
 </div>
