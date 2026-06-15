@@ -113,6 +113,16 @@ typedef struct federate_instance_t {
   bool inbound_p2p_connection_is_transient[NUMBER_OF_FEDERATES];
 
   /**
+   * An array indexed by federate ID indicating whether the corresponding
+   * inbound peer-to-peer connection is currently active. Initialized to false.
+   * Set to true in lf_handle_p2p_connections_from_federates() when a connection
+   * is accepted, and to false in listen_to_federates() when the connection closes.
+   * Used by a_port_is_unknown() to skip waiting for ports whose transient upstream
+   * federate is currently disconnected.
+   */
+  bool inbound_p2p_is_connected[NUMBER_OF_FEDERATES];
+
+  /**
    * An array that holds the network abstractions for outbound direct
    * connections to each remote federate. The index will be the federate
    * ID of the remote receiving federate. This is initialized at startup

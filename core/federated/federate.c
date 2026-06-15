@@ -849,8 +849,9 @@ static void* listen_to_federates(void* _args) {
     }
     if (net_closed) {
       // For decentralized execution, once this network abstraction is closed, we
-      // update last known tags of all ports connected to the specified federate to FOREVER_TAG,
+      // update last known tags of all ports connected to the specified federate,
       // which would eliminate the need to wait for STAA to assume an input is absent.
+      _fed.inbound_p2p_is_connected[fed_id] = false;
       mark_inputs_known_absent(fed_id);
 
       break; // while loop
@@ -1243,16 +1244,22 @@ static int id_of_action(lf_action_base_t* input_port_action) {
 #ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Return true if all network input ports are known up to the specified tag.
- * @param tag The tag.
+ *
+ * Ports from a currently-disconnected transient upstream are skipped: they are
+ * considered permanently absent while disconnected and must not block advancement.
+ * Used by lf_wait_until_time to decide whether to add the STA offset before
+ * advancing to the next tag.
+ *
+ * @param tag The tag up to which all ports must be known.
+ * @return true if every eligible port has last_known_status_tag >= tag.
  */
 static bool inputs_known_to(tag_t tag) {
   for (size_t i = 0; i < _lf_action_table_size; i++) {
+    int src = _lf_action_table[i]->source_id;
+    if (src >= 0 && _fed.inbound_p2p_connection_is_transient[src] && !_fed.inbound_p2p_is_connected[src])
+      continue;  // absent transient: known to be absent for all time
     tag_t known_to = _lf_action_table[i]->trigger->last_known_status_tag;
-    if (lf_tag_compare(known_to, tag) < 0) {
-      // There is a network input port for which it is not known whether a message with tag earlier
-      // than or equal to the specified tag may later arrive.
-      return false;
-    }
+    if (lf_tag_compare(known_to, tag) < 0) return false;
   }
   return true;
 }
@@ -1307,6 +1314,22 @@ static void* update_ports_from_staa_offsets(void* args) {
       // if the STAA and STA are extremely small.
       if (wait_time < 5 * MIN_SLEEP_DURATION) {
         wait_until_time += 5 * MIN_SLEEP_DURATION;
+      }
+      // Before waiting, immediately resolve ports whose upstream transient is absent.
+      // These do not need to wait for the STAA timeout.
+      for (size_t j = 0; j < staa_elem->num_actions; ++j) {
+        lf_action_base_t* input_port_action = staa_elem->actions[j];
+        int src = input_port_action->source_id;
+        
+        bool upstream_is_absent_transient = _fed.inbound_p2p_connection_is_transient[src] &&
+                                            !_fed.inbound_p2p_is_connected[src];
+        if (upstream_is_absent_transient){ //} && input_port_action->trigger->status == unknown) {
+          input_port_action->trigger->status = absent;
+          LF_PRINT_DEBUG("**** (update thread) Transient absent, marking port absent at tag " PRINTF_TAG,
+                         lf_tag(env).time - start_time, lf_tag(env).microstep);
+          update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action), false);
+          lf_cond_broadcast(&lf_port_status_changed);
+        }
       }
       while (!_lf_termination_executed && a_port_is_unknown(staa_elem)) {
         LF_PRINT_DEBUG("**** (update thread) waiting until: " PRINTF_TIME, wait_until_time - lf_time_start());
@@ -2393,6 +2416,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Otherwise, there can be race condition where, during termination,
     // two threads attempt to simultaneously close the network abstraction.
     _fed.net_for_inbound_p2p_connections[remote_fed_id] = net;
+    _fed.inbound_p2p_is_connected[remote_fed_id] = true;
 
     // Determine the listener-array slot and start the listener thread BEFORE sending the
     // ACK. This ensures the source cannot start delivering messages (at start_time) before
