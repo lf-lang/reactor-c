@@ -1257,9 +1257,10 @@ static bool inputs_known_to(tag_t tag) {
   for (size_t i = 0; i < _lf_action_table_size; i++) {
     int src = _lf_action_table[i]->source_id;
     if (src >= 0 && _fed.inbound_p2p_connection_is_transient[src] && !_fed.inbound_p2p_is_connected[src])
-      continue;  // absent transient: known to be absent for all time
+      continue; // absent transient: known to be absent for all time
     tag_t known_to = _lf_action_table[i]->trigger->last_known_status_tag;
-    if (lf_tag_compare(known_to, tag) < 0) return false;
+    if (lf_tag_compare(known_to, tag) < 0)
+      return false;
   }
   return true;
 }
@@ -1320,10 +1321,10 @@ static void* update_ports_from_staa_offsets(void* args) {
       for (size_t j = 0; j < staa_elem->num_actions; ++j) {
         lf_action_base_t* input_port_action = staa_elem->actions[j];
         int src = input_port_action->source_id;
-        
-        bool upstream_is_absent_transient = _fed.inbound_p2p_connection_is_transient[src] &&
-                                            !_fed.inbound_p2p_is_connected[src];
-        if (upstream_is_absent_transient){ //} && input_port_action->trigger->status == unknown) {
+
+        bool upstream_is_absent_transient =
+            _fed.inbound_p2p_connection_is_transient[src] && !_fed.inbound_p2p_is_connected[src];
+        if (upstream_is_absent_transient) { //} && input_port_action->trigger->status == unknown) {
           input_port_action->trigger->status = absent;
           LF_PRINT_DEBUG("**** (update thread) Transient absent, marking port absent at tag " PRINTF_TAG,
                          lf_tag(env).time - start_time, lf_tag(env).microstep);
