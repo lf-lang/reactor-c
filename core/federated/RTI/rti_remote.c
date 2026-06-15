@@ -2616,6 +2616,7 @@ void initialize_RTI(rti_remote_t* rti) {
 
   // federation_rti related initializations
   rti_remote->max_start_time = 0LL;
+  rti_remote->start_time_multiple = 0LL;
   rti_remote->num_feds_proposed_start = 0;
   rti_remote->all_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";

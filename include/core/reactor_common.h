@@ -91,6 +91,23 @@ extern const char** default_argv;
 extern instant_t duration;
 extern bool fast;
 extern bool keepalive_specified;
+extern instant_t start_time_multiple;
+
+/**
+ * @brief Round the given time up to the next integer multiple of `start_time_multiple`.
+ * @ingroup Internal
+ *
+ * If `start_time_multiple` is 0 (the default), the time is returned unchanged.
+ * Otherwise, the smallest multiple of `start_time_multiple` that is greater than
+ * or equal to `time` is returned. This is used to implement the
+ * `-m`/`--start-time-multiple` command-line option, which delays the start of
+ * the program so that the starting logical time is a multiple of the specified
+ * value.
+ *
+ * @param time The time to align.
+ * @return The aligned time.
+ */
+instant_t lf_align_to_start_time_multiple(instant_t time);
 
 #ifdef FEDERATED_DECENTRALIZED
 extern interval_t lf_fed_STA_offset;
