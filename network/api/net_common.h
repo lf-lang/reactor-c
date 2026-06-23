@@ -785,7 +785,8 @@
  * address and establish (or re-establish) the outbound P2P connection.
  */
 #define MSG_TYPE_OUTBOUND_CONNECTED 30
-#define MSG_TYPE_OUTBOUND_CONNECTED_LENGTH (1 + sizeof(uint16_t))
+#define MSG_TYPE_OUTBOUND_CONNECTED_LENGTH                                                                             \
+  (1 + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t) + sizeof(int32_t) + sizeof(uint32_t))
 
 /**
  * A message that informs an upstream federate that a transient federate downstream of it
