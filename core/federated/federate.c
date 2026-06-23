@@ -1008,13 +1008,13 @@ static void handle_upstream_disconnected_message(void) {
 /**
  * @brief Handle message from the RTI that a transient outbound federate has connected.
  *
- * Reads the outbound federate's ID, then synchronously queries the RTI for its address
- * and establishes (or re-establishes) the outbound P2P connection to it.
+ * Reads the outbound federate's ID, together with the its effective start tag, port and 
+ * address. Then establish (or re-establish) the outbound P2P connection to it.
  * This function is called inline from listen_to_rti_TCP or get_start_time_from_rti,
  * so it reads the address-query reply directly from net_to_RTI.
  */
 static void handle_outbound_connected_message(void) {
-  size_t bytes_to_read = sizeof(uint16_t);
+  size_t bytes_to_read = MSG_TYPE_OUTBOUND_CONNECTED_LENGTH - 1;
   unsigned char buffer[bytes_to_read];
   read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer, NULL,
                               "Failed to read outbound connected message from RTI.");
@@ -1022,8 +1022,15 @@ static void handle_outbound_connected_message(void) {
   tracepoint_federate_from_rti(receive_OUTBOUND_CONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that outbound transient federate %d has connected.", remote_federate_id);
 
-  //
-  lf_connect_to_federate(remote_federate_id, true);
+  // Set the effective start tag of the connectng transient, so that a message is not sent.
+  tag_t t = extract_tag(&buffer[2]);
+  _fed.outbound_p2p_connection_is_transient[remote_federate_id] = t;
+
+  // Read the port numbr and ip_address
+  int32_t server_port = extract_int32(&buffer[2 + 12]);
+  uint32_t ip_address = extract_uint32(&buffer[2 + 12 + 4]);
+
+  lf_connect_to_federate(remote_federate_id, true, server_port, ip_address);
 }
 
 /**
@@ -1148,7 +1155,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
   for (size_t i = 0; i < num_pending_downstream; i++) {
     LF_PRINT_DEBUG("Establishing deferred P2P connection to downstream transient federate %d.",
                    pending_downstream_ids[i]);
-    lf_connect_to_federate(pending_downstream_ids[i], true);
+    lf_connect_to_federate(pending_downstream_ids[i], true, -1, 0);
   }
 
   return timestamp;
