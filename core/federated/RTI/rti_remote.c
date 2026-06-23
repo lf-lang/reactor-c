@@ -1122,10 +1122,8 @@ void handle_address_ad(uint16_t federate_id) {
  * This function assumes that the mutex lock is already held.
  *
  * @param my_fed the federate to send the start time to.
- * @param federation_start_time the federation start_time
- * @param federate_start_tag the federate effective start tag
  */
-static void send_start_tag_locked(federate_info_t* my_fed, instant_t federation_start_time, tag_t federate_start_tag) {
+static void send_start_tag_locked(federate_info_t* my_fed) {
   // Notify my_fed of any upstream transient federates that are connected.
   // This has to occur before sending the start tag so that my_fed does not begin executing thinking
   // that these upstream federates are not connected.
@@ -1144,19 +1142,19 @@ static void send_start_tag_locked(federate_info_t* my_fed, instant_t federation_
   size_t buffer_size = (my_fed->is_transient) ? MSG_TYPE_TIMESTAMP_TAG_LENGTH : MSG_TYPE_TIMESTAMP_LENGTH;
   unsigned char start_time_buffer[buffer_size];
   start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
-  encode_int64(swap_bytes_if_big_endian_int64(federation_start_time), &start_time_buffer[1]);
+  encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
   if (my_fed->is_transient) {
-    encode_tag(&(start_time_buffer[1 + sizeof(instant_t)]), federate_start_tag);
+    encode_tag(&(start_time_buffer[1 + sizeof(instant_t)]), my_fed->effective_start_tag);
   }
   if (rti_remote->base.tracing_enabled) {
-    tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &federate_start_tag);
+    tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &(my_fed->effective_start_tag));
   }
   if (write_to_net(my_fed->net, buffer_size, start_time_buffer)) {
     lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
   } else {
     // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP_START
     // message has been sent. That MSG_TYPE_TIMESTAMP_START message grants time advance to
-    // the federate to the federate_start_tag.time.
+    // the federate to the my_fed->effective_start_tag.time.
     my_fed->enclave.state = GRANTED;
     lf_cond_broadcast(&sent_start_time);
     LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
