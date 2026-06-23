@@ -272,11 +272,12 @@ static void send_upstream_disconnected_locked(federate_info_t* destination, fede
 }
 
 /**
- * @brief Send MSG_TYPE_OUTBOUND_CONNECTED to the specified inbound federate.
+ * @brief Send MSG_TYPE_OUTBOUND_CONNECTED to the inbound of the specified federate.
  *
- * This notifies inbound federates that are transient outbound federates of that it has
- * (re-)connected, so the inbound should query the RTI for its address and establish
- * (or re-establish) the outbound P2P connection.
+ * This notifies federates that have the specified transient federate as an outbound
+ * peer that it has (re-)connected. The notification also includes the effective_start_tag
+ * of the federate and shares its IP address and port, so they the destination establishes
+ * (or re-establishs) the P2P connection.
  *
  * This function assumes that the mutex lock is already held.
  * @param my_fed The transient federate that has just connected.
@@ -293,6 +294,16 @@ static void send_outbound_connected_locked(federate_info_t* my_fed) {
     }
     for (int32_t j = 0; j < fed->number_of_outbound_transients; j++) {
       if (fed->outbound_transients[j] == (int32_t)my_fed->enclave.id) {
+        // Encode the effective start_tag
+        encode_tag(&buffer[3], my_fed->effective_start_tag);
+        // Encode the port and IP address
+        // At this point, the RTI should have initialized the remote federate's network abstraction.
+        assert(fed->net != NULL);
+        int32_t server_port = get_server_port(my_fed->net);
+        uint32_t* ip_address = (uint32_t*)get_ip_addr(my_fed->net);
+        encode_int32(server_port, &buffer[3+12]);
+        encode_uint32(*ip_address, &buffer[3+12+4]);
+
         if (write_to_net_close_on_error(fed->net, MSG_TYPE_OUTBOUND_CONNECTED_LENGTH, buffer)) {
           lf_print_warning("RTI: Failed to send outbound connected message to federate %d.", fed->enclave.id);
         }
