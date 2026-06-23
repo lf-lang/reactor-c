@@ -301,8 +301,8 @@ static void send_outbound_connected_locked(federate_info_t* my_fed) {
         assert(fed->net != NULL);
         int32_t server_port = get_server_port(my_fed->net);
         uint32_t* ip_address = (uint32_t*)get_ip_addr(my_fed->net);
-        encode_int32(server_port, &buffer[3+12]);
-        encode_uint32(*ip_address, &buffer[3+12+4]);
+        encode_int32(server_port, &buffer[3 + 12]);
+        encode_uint32(*ip_address, &buffer[3 + 12 + 4]);
 
         if (write_to_net_close_on_error(fed->net, MSG_TYPE_OUTBOUND_CONNECTED_LENGTH, buffer)) {
           lf_print_warning("RTI: Failed to send outbound connected message to federate %d.", fed->enclave.id);
@@ -1218,7 +1218,7 @@ void handle_timestamp(federate_info_t* my_fed) {
 
     // Notify the federate of its start tag.
     // This has to be done while still holding the mutex.
-    send_start_tag_locked(my_fed, start_time, my_fed->effective_start_tag);
+    send_start_tag_locked(my_fed);
 
     LF_MUTEX_UNLOCK(&rti_mutex);
   } else if (rti_remote->phase == shutdown_phase || !my_fed->is_transient) {
@@ -1233,12 +1233,27 @@ void handle_timestamp(federate_info_t* my_fed) {
     // At this point, we already hold the mutex.
 
     //// Algorithm for computing the effective_start_time of a joining transient
+    //// =======================================================================
+
+    //// If the coordination is centralized:
     // The effective_start_time will be the max among all the following tags:
     //  1. At tag: (joining time, 0 microstep)
     //  2. (start_time, 0 microstep)
     //  3. The latest completed logical tag + 1 microstep
     //  4. The latest granted (P)TAG + 1 microstep, of every downstream federate
     //  5. The maximun tag of messages from the upstream federates + 1 microstep
+
+    //// If the coordination is decentralized:
+    //  1. If the transient has no inbound federates, then the effective_start_time
+    //     will be (joining time, 0 microstep)
+    //  2. Otherwise, a DELAY_START is added to the effective_start_time. Under
+    //     the asumption that DELAY_START is sufficiently larger than the clock
+    //     synchronzation error + the network latency, this ensures that the
+    //     outbound federate will not advance his tag after my_fed receive any
+    //     message from the upstream federates before its effective_start_time.
+
+    // The RTI is coordination agnostic. The code, however, naturally flows to follow
+    // the aforementioned behavior.
 
     // Condition 1.
     my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
@@ -1314,12 +1329,38 @@ void handle_timestamp(federate_info_t* my_fed) {
       }
     }
 
+    // If the coordination is decentralized, then this point is reached with the effective_start_tag
+    // being equal to the joining time. Consequently, we need to decide if the offset should be added.
+    // For this, we check first if the transient has inbound connected peers.
+    if (my_fed->enclave.num_immediate_upstreams == 0 && my_fed->enclave.num_immediate_downstreams == 0 &&
+        start_time < my_fed->effective_start_tag.time) {
+      bool found_inbound_of_my_fed = false;
+      for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+        federate_info_t* fed = GET_FED_INFO(i);
+        if (fed->enclave.state == NOT_CONNECTED) {
+          continue;
+        }
+        for (int32_t j = 0; j < fed->number_of_outbound_transients; j++) {
+          if (fed->outbound_transients[j] == (int32_t)my_fed->enclave.id) {
+            found_inbound_of_my_fed = true;
+            break;
+          }
+        }
+        if (found_inbound_of_my_fed) {
+          my_fed->effective_start_tag =
+              lf_tag_add(my_fed->effective_start_tag, (tag_t){.time = DELAY_START, .microstep = 0u});
+          printf("----------------------ADD\n");
+          break;
+        }
+      }
+    }
+
     // Once the effective start time set, sent it to the joining transient,
     // together with the start time of the federation.
 
     // Have to send the start tag while still holding the mutex to ensure that no message
     // from an upstream federate is forwarded before the start tag.
-    send_start_tag_locked(my_fed, start_time, my_fed->effective_start_tag);
+    send_start_tag_locked(my_fed);
 
     // Whenver a transient joins, invalidate all federates, so that all min_delays_upstream
     // get re-computed.
