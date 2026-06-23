@@ -82,11 +82,11 @@ typedef struct federate_instance_t {
   size_t number_of_outbound_p2p_transients;
 
   /**
-   * An array of IDs of transient federates to which this federate has outbound
-   * peer-to-peer connections. The array has size number_of_outbound_p2p_transients
-   * and is allocated at startup by the generated _lf_executable_preamble().
+   * An array indexed by federate ID. For persistent federates, the value is
+   * NEVER_TAG. For transient federates, the value is either FOREVER_TAG
+   * (not yet joined) or the tag at which the transient federate joined.
    */
-  bool outbound_p2p_connection_is_transient[NUMBER_OF_FEDERATES];
+  tag_t outbound_p2p_connection_is_transient[NUMBER_OF_FEDERATES];
 
   /**
    * An array that holds the network abstractions for inbound
