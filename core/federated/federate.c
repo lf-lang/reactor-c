@@ -1963,15 +1963,16 @@ void lf_terminate_execution(environment_t* env) {
 //////////////////////////////////////////////////////////////////////////////////
 // Public functions (declared in federate.h, in alphabetical order)
 
-void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient) {
+void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient, int p, uint32_t adr) {
   int result = -1;
 
   // Ask the RTI for port number of the remote federate.
   // The buffer is used for both sending and receiving replies.
   // The size is what is needed for receiving replies.
   unsigned char buffer[sizeof(int32_t) + INET_ADDRSTRLEN + 1];
-  int port = -1;
+  int port = p;
   struct in_addr host_ip_addr;
+  host_ip_addr.s_addr = (in_addr_t)adr;
   instant_t start_connect = lf_time_physical();
   // If the remote federate if oersistent, iterate until we get a valid port number from the RTI,
   // If not, execute only once, as a request registration.

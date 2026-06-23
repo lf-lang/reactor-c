@@ -315,8 +315,11 @@ extern lf_cond_t lf_port_status_changed;
  *   connection behavior: a transient remote federate may not be immediately
  *   available, so the connection attempt is handled differently than for a
  *   persistent federate.
+ * @param port The port number of the remote federate. Pass -1 if it is to be queried.
+ * @param ip_address The IP address of the remote federate, in network byte order. Pass 0
+ *   if it is to be queried.
  */
-void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient);
+void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient, int32_t port, uint32_t ip_address);
 
 /**
  * @brief Connect to the RTI at the specified host and port.
