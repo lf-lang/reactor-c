@@ -1022,7 +1022,7 @@ static void handle_outbound_connected_message(void) {
   tracepoint_federate_from_rti(receive_OUTBOUND_CONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that outbound transient federate %d has connected.", remote_federate_id);
 
-  // Set the effective start tag of the connectng transient, so that a message is not sent.
+  // Set the effective start tag of the connectng trasient, so that a message is not sent.
   tag_t t = extract_tag(&buffer[2]);
   _fed.outbound_p2p_connection_is_transient[remote_federate_id] = t;
 
@@ -2564,11 +2564,21 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   }
 
   // If there are outbound transients, check whether the destination is one of them.
-  // If it is and its net_abs is shut, gracefully skip the send.
-  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.net_for_outbound_p2p_connections[federate] == NULL) {
-    lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
-    return 0;
+  // If it is and its net_abs is shut, or the transient did not start yet, gracefully skip the send.
+#ifdef FEDERATED_DECENTRALIZED
+  if ((lf_tag_compare(_fed.outbound_p2p_connection_is_transient[federate], NEVER_TAG) > 0)) {
+    if (_fed.net_for_outbound_p2p_connections[federate] == NULL) {
+      lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
+      return 0;
+    } else if (lf_tag_compare(_fed.outbound_p2p_connection_is_transient[federate],
+                              (tag_t){.time = lf_time_physical(), .microstep = 0u}) > 0) {
+      // Check that the message tag is not earlier than than the effective start tag of the destination
+      lf_print_info("The destination transient federate %d is connected but did not start yet. Abort sending!",
+                    federate);
+      return 0;
+    }
   }
+#endif
 
   header_buffer[0] = (unsigned char)message_type;
   // Next two bytes identify the destination port.
@@ -2880,11 +2890,32 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     lf_print_error("lf_send_message: Unsupported message type (%d).", message_type);
     return -1;
   }
-  if (_fed.outbound_p2p_connection_is_transient[federate] && _fed.net_for_outbound_p2p_connections[federate] == NULL) {
-    // Only print a warning if the destination is a known outbound transient.
-    lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
-    return 0;
+
+  // Apply the additional delay to the current tag and use that as the intended
+  // tag of the outgoing message.
+  tag_t current_message_intended_tag = lf_delay_tag(env->current_tag, additional_delay);
+
+  if (lf_is_tag_after_stop_tag(env, current_message_intended_tag)) {
+    // Message tag is past the timeout time (the stop time) so it should not be sent.
+    LF_PRINT_LOG("Dropping message because it will be after the timeout time.");
+    return -1;
   }
+
+  // If there are outbound transients, check whether the destination is one of them.
+  // If it is and its net_abs is shut, or the transient did not start yet, gracefully skip the send.
+#ifdef FEDERATED_DECENTRALIZED
+  if ((lf_tag_compare(_fed.outbound_p2p_connection_is_transient[federate], NEVER_TAG) > 0)) {
+    if (_fed.net_for_outbound_p2p_connections[federate] == NULL) {
+      lf_print_info("The destination transient federate %d is not connected. Abort sending!", federate);
+      return 0;
+    } else if (lf_tag_compare(_fed.outbound_p2p_connection_is_transient[federate], current_message_intended_tag) > 0) {
+      // Check that the message tag is not earlier than than the effective start tag of the destination
+      lf_print_info("The destination transient federate %d is connected but did not start yet. Abort sending!",
+                    federate);
+      return 0;
+    }
+  }
+#endif
 
   size_t buffer_head = 0;
   // First byte is the message type.
@@ -2902,16 +2933,6 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   // The next four bytes are the message length.
   encode_uint32((uint32_t)length, &(header_buffer[buffer_head]));
   buffer_head += sizeof(uint32_t);
-
-  // Apply the additional delay to the current tag and use that as the intended
-  // tag of the outgoing message.
-  tag_t current_message_intended_tag = lf_delay_tag(env->current_tag, additional_delay);
-
-  if (lf_is_tag_after_stop_tag(env, current_message_intended_tag)) {
-    // Message tag is past the timeout time (the stop time) so it should not be sent.
-    LF_PRINT_LOG("Dropping message because it will be after the timeout time.");
-    return -1;
-  }
 
   // Next 8 + 4 will be the tag (timestamp, microstep)
   encode_tag(&(header_buffer[buffer_head]), current_message_intended_tag);
