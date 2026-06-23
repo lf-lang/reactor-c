@@ -1008,7 +1008,7 @@ static void handle_upstream_disconnected_message(void) {
 /**
  * @brief Handle message from the RTI that a transient outbound federate has connected.
  *
- * Reads the outbound federate's ID, together with the its effective start tag, port and 
+ * Reads the outbound federate's ID, together with the its effective start tag, port and
  * address. Then establish (or re-establish) the outbound P2P connection to it.
  * This function is called inline from listen_to_rti_TCP or get_start_time_from_rti,
  * so it reads the address-query reply directly from net_to_RTI.
