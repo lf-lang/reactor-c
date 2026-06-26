@@ -1349,7 +1349,6 @@ void handle_timestamp(federate_info_t* my_fed) {
         if (found_inbound_of_my_fed) {
           my_fed->effective_start_tag =
               lf_tag_add(my_fed->effective_start_tag, (tag_t){.time = DELAY_START, .microstep = 0u});
-          printf("----------------------ADD\n");
           break;
         }
       }
