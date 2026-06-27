@@ -298,7 +298,7 @@ static void send_outbound_connected_locked(federate_info_t* my_fed) {
         encode_tag(&buffer[3], my_fed->effective_start_tag);
         // Encode the port and IP address
         // At this point, the RTI should have initialized the remote federate's network abstraction.
-        assert(fed->net != NULL);
+        assert(my_fed->net != NULL);
         int32_t server_port = get_server_port(my_fed->net);
         uint32_t* ip_address = (uint32_t*)get_ip_addr(my_fed->net);
         encode_int32(server_port, &buffer[3 + 12]);
