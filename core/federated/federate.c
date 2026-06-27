@@ -1158,6 +1158,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
     LF_PRINT_DEBUG("Establishing deferred P2P connection to downstream transient federate %d.",
                    pending_downstream_ids[i]);
     lf_connect_to_federate(pending_downstream_ids[i], true, -1, 0);
+    _fed.outbound_p2p_connection_is_transient[pending_downstream_ids[i]] = effective_start_tag;
   }
 
   return timestamp;
