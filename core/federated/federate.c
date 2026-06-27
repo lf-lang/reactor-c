@@ -1119,7 +1119,7 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
         if (num_pending_downstream < _fed.number_of_outbound_p2p_transients) {
           pending_downstream_ids[num_pending_downstream++] = remote_federate_id;
         }
-        // We do not save the remaining inforamation
+        // We do not save the remaining information
         continue;
       } else {
         lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP message from the RTI. Got %u (see net_common.h).",
