@@ -1107,17 +1107,19 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
         // right after MSG_TYPE_OUTBOUND_CONNECTED (from send_start_tag_locked running
         // concurrently for the joining transient), so any read inside lf_connect_to_federate
         // would consume those bytes and crash with "Unexpected reply of type 2".
-        unsigned char id_buf[sizeof(uint16_t)];
-        read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(uint16_t), id_buf, NULL,
+        // Drain the start_tag, as well as the port and IP address
+        unsigned char oc_buf[MSG_TYPE_OUTBOUND_CONNECTED_LENGTH - 1];
+        read_from_net_fail_on_error(_fed.net_to_RTI, MSG_TYPE_OUTBOUND_CONNECTED_LENGTH - 1, oc_buf, NULL,
                                     "Failed to read outbound connected federate ID.");
         tracepoint_federate_from_rti(receive_OUTBOUND_CONNECTED, _lf_my_fed_id, NULL);
-        uint16_t remote_federate_id = extract_uint16(id_buf);
+        uint16_t remote_federate_id = extract_uint16(oc_buf);
         LF_PRINT_DEBUG("Deferring P2P connection to downstream transient federate %d until after "
                        "start time is received.",
                        remote_federate_id);
         if (num_pending_downstream < _fed.number_of_outbound_p2p_transients) {
           pending_downstream_ids[num_pending_downstream++] = remote_federate_id;
         }
+        // We do not save the remaining inforamation
         continue;
       } else {
         lf_print_error_and_exit("Expected a MSG_TYPE_TIMESTAMP message from the RTI. Got %u (see net_common.h).",
