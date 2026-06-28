@@ -2132,6 +2132,11 @@ void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient, int 
                        remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
       continue;
     } else {
+      // Drain the tag payload from the ACK message.
+      unsigned char tag_buffer[sizeof(instant_t) + sizeof(microstep_t)];
+      read_from_net_fail_on_error(net, sizeof(tag_buffer), tag_buffer,
+                                  "Failed to read tag from MSG_TYPE_ACK from federate %d.", remote_federate_id);
+      extract_tag(tag_buffer);
       lf_print_info("Connected to federate %d, port %hu.", remote_federate_id, uport);
       // Trace the event when tracing is enabled
       tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
@@ -2254,6 +2259,11 @@ void lf_connect_to_rti(const char* hostname, int port) {
         continue;
       }
     } else if (response == MSG_TYPE_ACK) {
+      // Drain the tag payload from the ACK message.
+      unsigned char tag_buffer[sizeof(instant_t) + sizeof(microstep_t)];
+      read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(tag_buffer), tag_buffer,
+                                  "Failed to read tag from MSG_TYPE_ACK from the RTI.");
+      extract_tag(tag_buffer);
       // Trace the event when tracing is enabled
       tracepoint_federate_from_rti(receive_ACK, _lf_my_fed_id, NULL);
       LF_PRINT_LOG("Received acknowledgment from the RTI.");
@@ -2476,9 +2486,11 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 
     // Send ACK after the listener thread exists so the source cannot start sending
     // messages before this federate has a thread ready to receive them.
-    unsigned char response = MSG_TYPE_ACK;
+    unsigned char response[MSG_TYPE_ACK_LENGTH];
+    response[0] = MSG_TYPE_ACK;
+    encode_tag(&response[1], NEVER_TAG);
     tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
-    write_to_net_fail_on_error(_fed.net_for_inbound_p2p_connections[remote_fed_id], 1, (unsigned char*)&response,
+    write_to_net_fail_on_error(_fed.net_for_inbound_p2p_connections[remote_fed_id], MSG_TYPE_ACK_LENGTH, response,
                                &lf_outbound_net_mutex, "Failed to write MSG_TYPE_ACK in response to federate %d.",
                                remote_fed_id);
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
