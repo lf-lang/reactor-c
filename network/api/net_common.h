@@ -238,8 +238,8 @@
  * @ingroup Network
  *
  * This message carries a tag as payload (instant_t + microstep_t).
- * The tag is useful in decentralized coordination. When a transient joins, it 
- * learns about outbound federates' current tags, so that it does not set its 
+ * The tag is useful in decentralized coordination. When a transient joins, it
+ * learns about outbound federates' current tags, so that it does not set its
  * effective_start_tag to be before theirs.
  */
 #define MSG_TYPE_ACK 255
