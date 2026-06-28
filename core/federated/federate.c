@@ -2144,7 +2144,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient, int 
       read_from_net_fail_on_error(net, sizeof(tag_buffer), tag_buffer,
                                   "Failed to read tag from MSG_TYPE_ACK from federate %d.", remote_federate_id);
       tag_t t = extract_tag(tag_buffer);
-      if (lf_tag_compare(t, temp_effective_start_tag) > 0){
+      if (lf_tag_compare(t, temp_effective_start_tag) > 0) {
         temp_effective_start_tag = t;
       }
       lf_print_info("Connected to federate %d, port %hu.", remote_federate_id, uport);
@@ -3040,6 +3040,7 @@ void lf_synchronize_with_other_federates(void) {
 
   // Reset the start time to the coordinated start time for all federates.
   // Note that this does not grant execution to this federate.
+
   start_time = get_start_time_from_rti(lf_time_physical());
 
   lf_print_info("Starting timestamp is: " PRINTF_TIME " and effective start tag is: " PRINTF_TAG ".", lf_time_start(),
