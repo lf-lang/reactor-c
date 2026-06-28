@@ -873,16 +873,17 @@ static void close_outbound_net(int fed_id) {
   // Close outbound connections, in case they have not closed themselves.
   // This will result in EOF being sent to the remote federate, except for
   // abnormal termination, in which case it will just close the network abstraction.
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  net_abstraction_t net = _fed.net_for_outbound_p2p_connections[fed_id];
+  _fed.net_for_outbound_p2p_connections[fed_id] = NULL;
+  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  if (net == NULL) {
+    return;
+  }
   if (_lf_normal_termination) {
-    if (_fed.net_for_outbound_p2p_connections[fed_id] != NULL) {
-      // Close the network abstraction by sending a FIN packet indicating that no further writes
-      // are expected.  Then read until we get an EOF indication.
-      shutdown_net(_fed.net_for_outbound_p2p_connections[fed_id], true);
-      _fed.net_for_outbound_p2p_connections[fed_id] = NULL;
-    }
+    shutdown_net(net, true);
   } else {
-    shutdown_net(_fed.net_for_outbound_p2p_connections[fed_id], false);
-    _fed.net_for_outbound_p2p_connections[fed_id] = NULL;
+    shutdown_net(net, false);
   }
 }
 
@@ -1048,8 +1049,13 @@ static void handle_outbound_disconnected_message(void) {
   tracepoint_federate_from_rti(receive_OUTBOUND_DISCONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that downstream transient federate %d has disconnected.", remote_federate_id);
 
-  shutdown_net(_fed.net_for_outbound_p2p_connections[remote_federate_id], false);
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  net_abstraction_t net = _fed.net_for_outbound_p2p_connections[remote_federate_id];
   _fed.net_for_outbound_p2p_connections[remote_federate_id] = NULL;
+  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  if (net != NULL) {
+    shutdown_net(net, false);
+  }
 }
 
 /**
@@ -2137,7 +2143,10 @@ void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient, int 
       unsigned char tag_buffer[sizeof(instant_t) + sizeof(microstep_t)];
       read_from_net_fail_on_error(net, sizeof(tag_buffer), tag_buffer,
                                   "Failed to read tag from MSG_TYPE_ACK from federate %d.", remote_federate_id);
-      extract_tag(tag_buffer);
+      tag_t t = extract_tag(tag_buffer);
+      if (lf_tag_compare(t, temp_effective_start_tag) > 0){
+        temp_effective_start_tag = t;
+      }
       lf_print_info("Connected to federate %d, port %hu.", remote_federate_id, uport);
       // Trace the event when tracing is enabled
       tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
