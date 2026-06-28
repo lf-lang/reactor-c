@@ -48,6 +48,7 @@ extern bool _lf_termination_executed;
 lf_mutex_t lf_outbound_net_mutex;
 
 lf_cond_t lf_port_status_changed;
+tag_t temp_effective_start_tag = NEVER_TAG_INITIALIZER;
 
 /**
  * The max level allowed to advance (MLAA) is a variable that tracks how far in the reaction
@@ -2488,7 +2489,13 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // messages before this federate has a thread ready to receive them.
     unsigned char response[MSG_TYPE_ACK_LENGTH];
     response[0] = MSG_TYPE_ACK;
-    encode_tag(&response[1], NEVER_TAG);
+    if (remote_fed_is_transient && (lf_tag_compare(effective_start_tag, NEVER_TAG) != 0)) {
+      environment_t* env;
+      _lf_get_environments(&env);
+      encode_tag(&response[1], env->current_tag);
+    } else {
+      encode_tag(&response[1], NEVER_TAG);
+    }
     tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
     write_to_net_fail_on_error(_fed.net_for_inbound_p2p_connections[remote_fed_id], MSG_TYPE_ACK_LENGTH, response,
                                &lf_outbound_net_mutex, "Failed to write MSG_TYPE_ACK in response to federate %d.",
