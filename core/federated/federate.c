@@ -101,16 +101,25 @@ federation_metadata_t federation_metadata = {
  * Send a time to the RTI. This acquires the lf_outbound_net_mutex.
  * @param type The message type (MSG_TYPE_TIMESTAMP).
  * @param time The time.
+ * @param microstep The microstep.
  */
-static void send_time(unsigned char type, instant_t time) {
+static void send_time(unsigned char type, instant_t time, microstep_t microstep) {
   LF_PRINT_DEBUG("Sending time " PRINTF_TIME " to the RTI.", time);
-  size_t bytes_to_write = 1 + sizeof(instant_t);
+
+  size_t bytes_to_write;
+  if (type == MSG_TYPE_TIMESTAMP_WITH_MICROSTEP) {
+    bytes_to_write = MSG_TYPE_TIMESTAMP_WITH_MICROSTEP_LENGTH;
+  } else {
+    bytes_to_write = MSG_TYPE_TIMESTAMP_LENGTH;
+  }
   unsigned char buffer[bytes_to_write];
   buffer[0] = type;
   encode_int64(time, &(buffer[1]));
+  if (type == MSG_TYPE_TIMESTAMP_WITH_MICROSTEP) {
+    encode_uint32((microstep_t)microstep, &(buffer[1 + sizeof(instant_t)]));
+  }
 
-  // Trace the event when tracing is enabled
-  tag_t tag = {.time = time, .microstep = 0};
+  tag_t tag = {.time = time, .microstep = microstep};
   tracepoint_federate_to_rti(send_TIMESTAMP, _lf_my_fed_id, &tag);
 
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
@@ -1062,14 +1071,24 @@ static void handle_outbound_disconnected_message(void) {
  * Send the specified timestamp to the RTI and wait for a response.
  * The specified timestamp should be current physical time of the
  * federate, and the response will be the designated start time for
- * the federate. This procedure blocks until the response is
+ * the federate. In case of decentralized coordination, the federate
+ * may suggest a different timestamp, that is the max tag + microstep of the conetced outboud federates.
+ * In such a case, it will be higher than the actual physical time.
+ *
+ *
+ * This procedure blocks until the response is
  * received from the RTI.
- * @param my_physical_time The physical time at this federate.
+ * @param my_physical_time The physical time at this federate, or the time in the tag
+ * @param my_microstep microstep
  * @return The designated start time for the federate.
  */
-static instant_t get_start_time_from_rti(instant_t my_physical_time) {
+static instant_t get_start_time_from_rti(instant_t my_physical_time, microstep_t my_microstep) {
   // Send the timestamp marker first.
-  send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
+#ifdef FEDERATED_DECENTRALIZED
+  send_time(MSG_TYPE_TIMESTAMP_WITH_MICROSTEP, my_physical_time, my_microstep);
+#else
+  send_time(MSG_TYPE_TIMESTAMP, my_physical_time, my_microstep);
+#endif
 
   // Read bytes from the network abstraction. We need 9 bytes.
   // Buffer for message ID plus timestamp.
@@ -3040,8 +3059,18 @@ void lf_synchronize_with_other_federates(void) {
 
   // Reset the start time to the coordinated start time for all federates.
   // Note that this does not grant execution to this federate.
-
-  start_time = get_start_time_from_rti(lf_time_physical());
+  instant_t t_physical = lf_time_physical();
+  microstep_t m = 0u;
+#ifdef FEDERATED_DECENTRALIZED
+  if (_fed.is_transient) {
+    if (temp_effective_start_tag.time >= t_physical) {
+      t_physical = temp_effective_start_tag.time;
+      m = temp_effective_start_tag.microstep;
+      m++;
+    }
+  }
+#endif
+  start_time = get_start_time_from_rti(t_physical, m);
 
   lf_print_info("Starting timestamp is: " PRINTF_TIME " and effective start tag is: " PRINTF_TAG ".", lf_time_start(),
                 effective_start_tag.time - lf_time_start(), effective_start_tag.microstep);

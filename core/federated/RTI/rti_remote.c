@@ -1169,13 +1169,19 @@ static void send_start_tag_locked(federate_info_t* my_fed) {
   }
 }
 
-void handle_timestamp(federate_info_t* my_fed) {
-  unsigned char buffer[sizeof(int64_t)];
-  // Read bytes from the network abstraction. We need 8 bytes.
-  read_from_net_fail_on_error(my_fed->net, sizeof(int64_t), (unsigned char*)&buffer,
+void handle_timestamp(federate_info_t* my_fed, int type) {
+  size_t buffer_length =
+      (type == MSG_TYPE_TIMESTAMP) ? MSG_TYPE_TIMESTAMP_LENGTH : MSG_TYPE_TIMESTAMP_WITH_MICROSTEP_LENGTH;
+  unsigned char buffer[--buffer_length];
+  // Read bytes from the network abstraction. We need 8 bytes, at least
+  read_from_net_fail_on_error(my_fed->net, buffer_length, (unsigned char*)&buffer,
                               "ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
 
-  int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t*)(&buffer)));
+  instant_t timestamp = swap_bytes_if_big_endian_int64(*((instant_t*)(&buffer)));
+  microstep_t microstep = 0u;
+  if (type == MSG_TYPE_TIMESTAMP_WITH_MICROSTEP) {
+    microstep = extract_uint32(&buffer[sizeof(instant_t)]);
+  }
   if (rti_remote->base.tracing_enabled) {
     tag_t tag = {.time = timestamp, .microstep = 0};
     tracepoint_rti_from_federate(receive_TIMESTAMP, my_fed->enclave.id, &tag);
@@ -1245,111 +1251,112 @@ void handle_timestamp(federate_info_t* my_fed) {
 
     //// If the coordination is decentralized:
     //  1. If the transient has no inbound federates, then the effective_start_time
-    //     will be (joining time, 0 microstep)
-    //  2. Otherwise, a DELAY_START is added to the effective_start_time. Under
-    //     the asumption that DELAY_START is sufficiently larger than the clock
-    //     synchronzation error + the network latency, this ensures that the
-    //     outbound federate will not advance his tag after my_fed receive any
-    //     message from the upstream federates before its effective_start_time.
+    //     will be whatever (timestamp, microstep) received.
+    //  2. Otherwise, a DELAY_START is added to the timestamp and the microstep is
+    //     reset to 0. Under the asumption that DELAY_START is sufficiently larger
+    //     than the clock synchronzation error + the network latency, this ensures
+    //     that the outbound federate will not advance his tag after my_fed receive
+    //     any message from the upstream federates before its effective_start_time.
 
-    // The RTI is coordination agnostic. The code, however, naturally flows to follow
-    // the aforementioned behavior.
+    // Despite taht the RTI is coordination agnostic, the message type is an indicator.
 
-    // Condition 1.
-    my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
+    if (type == MSG_TYPE_TIMESTAMP) {
+      // Condition 1.
+      my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
 
-    // Condition 2.
-    if (timestamp < start_time) {
-      my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
-    }
+      // Condition 2.
+      if (timestamp < start_time) {
+        my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
+      }
 
-    // Condition 3.
-    if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) >= 0) {
-      my_fed->effective_start_tag = my_fed->enclave.completed;
-      my_fed->effective_start_tag.microstep++;
-    }
-
-    // Condition 4. Iterate over the downstream federates
-    for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
-      federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
-
-      // Get the max over the TAG of the downstreams
-      if (lf_tag_compare(downstream->enclave.last_granted, my_fed->effective_start_tag) >= 0) {
-        my_fed->effective_start_tag = downstream->enclave.last_granted;
+      // Condition 3.
+      if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) >= 0) {
+        my_fed->effective_start_tag = my_fed->enclave.completed;
         my_fed->effective_start_tag.microstep++;
       }
 
-      // Get the max over the PTAG of the downstreams
-      if (lf_tag_compare(downstream->enclave.last_provisionally_granted, my_fed->effective_start_tag) >= 0) {
-        my_fed->effective_start_tag = downstream->enclave.last_provisionally_granted;
-        my_fed->effective_start_tag.microstep++;
-      }
-    }
+      // Condition 4. Iterate over the downstream federates
+      for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
+        federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
 
-    // Condition 5.
-    // This one is a bit subtle. Any messages from upstream federates that the RTI has
-    // not yet seen will be sent to this joining federate after the effective_start_tag
-    // because the effective_start_tag is sent while still holding the mutex.
+        // Get the max over the TAG of the downstreams
+        if (lf_tag_compare(downstream->enclave.last_granted, my_fed->effective_start_tag) >= 0) {
+          my_fed->effective_start_tag = downstream->enclave.last_granted;
+          my_fed->effective_start_tag.microstep++;
+        }
 
-    // Iterate over the messages from the upstream federates
-    for (int j = 0; j < my_fed->enclave.num_immediate_upstreams; j++) {
-      federate_info_t* upstream = GET_FED_INFO(my_fed->enclave.immediate_upstreams[j]);
-
-      size_t queue_size = pqueue_tag_size(upstream->in_transit_message_tags);
-      if (queue_size != 0) {
-        tag_t max_tag = pqueue_tag_max_tag(upstream->in_transit_message_tags);
-
-        if (lf_tag_compare(max_tag, my_fed->effective_start_tag) >= 0) {
-          my_fed->effective_start_tag = max_tag;
+        // Get the max over the PTAG of the downstreams
+        if (lf_tag_compare(downstream->enclave.last_provisionally_granted, my_fed->effective_start_tag) >= 0) {
+          my_fed->effective_start_tag = downstream->enclave.last_provisionally_granted;
           my_fed->effective_start_tag.microstep++;
         }
       }
-    }
 
-    // For every downstream that has a pending grant that is higher than the
-    // effective_start_time of the federate, cancel it.
-    // FIXME: Should this be higher-than or equal to?
-    // FIXME: Also, won't the grant simply be lost?
-    // If the joining federate doesn't send anything, the downstream federate won't issue another
-    // NET.
-    for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
-      federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
+      // Condition 5.
+      // This one is a bit subtle. Any messages from upstream federates that the RTI has
+      // not yet seen will be sent to this joining federate after the effective_start_tag
+      // because the effective_start_tag is sent while still holding the mutex.
 
-      // Ignore this federate if it has resigned.
-      if (downstream->enclave.state == NOT_CONNECTED) {
-        continue;
-      }
+      // Iterate over the messages from the upstream federates
+      for (int j = 0; j < my_fed->enclave.num_immediate_upstreams; j++) {
+        federate_info_t* upstream = GET_FED_INFO(my_fed->enclave.immediate_upstreams[j]);
 
-      // Check the pending grants, if any, and keep it only if it is
-      // sooner than the effective start tag.
-      pqueue_delayed_grant_element_t* dge =
-          pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, downstream->enclave.id);
-      if (dge != NULL && lf_tag_compare(dge->base.tag, my_fed->effective_start_tag) > 0) {
-        pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
-      }
-    }
+        size_t queue_size = pqueue_tag_size(upstream->in_transit_message_tags);
+        if (queue_size != 0) {
+          tag_t max_tag = pqueue_tag_max_tag(upstream->in_transit_message_tags);
 
-    // If the coordination is decentralized, then this point is reached with the effective_start_tag
-    // being equal to the joining time. Consequently, we need to decide if the offset should be added.
-    // For this, we check first if the transient has inbound connected peers.
-    if (my_fed->enclave.num_immediate_upstreams == 0 && my_fed->enclave.num_immediate_downstreams == 0 &&
-        start_time < my_fed->effective_start_tag.time) {
-      bool found_inbound_of_my_fed = false;
-      for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-        federate_info_t* fed = GET_FED_INFO(i);
-        if (fed->enclave.state == NOT_CONNECTED) {
-          continue;
-        }
-        for (int32_t j = 0; j < fed->number_of_outbound_transients; j++) {
-          if (fed->outbound_transients[j] == (int32_t)my_fed->enclave.id) {
-            found_inbound_of_my_fed = true;
-            break;
+          if (lf_tag_compare(max_tag, my_fed->effective_start_tag) >= 0) {
+            my_fed->effective_start_tag = max_tag;
+            my_fed->effective_start_tag.microstep++;
           }
         }
-        if (found_inbound_of_my_fed) {
-          my_fed->effective_start_tag =
-              lf_tag_add(my_fed->effective_start_tag, (tag_t){.time = DELAY_START, .microstep = 0u});
-          break;
+      }
+
+      // For every downstream that has a pending grant that is higher than the
+      // effective_start_time of the federate, cancel it.
+      // FIXME: Should this be higher-than or equal to?
+      // FIXME: Also, won't the grant simply be lost?
+      // If the joining federate doesn't send anything, the downstream federate won't issue another
+      // NET.
+      for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
+        federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
+
+        // Ignore this federate if it has resigned.
+        if (downstream->enclave.state == NOT_CONNECTED) {
+          continue;
+        }
+
+        // Check the pending grants, if any, and keep it only if it is
+        // sooner than the effective start tag.
+        pqueue_delayed_grant_element_t* dge =
+            pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, downstream->enclave.id);
+        if (dge != NULL && lf_tag_compare(dge->base.tag, my_fed->effective_start_tag) > 0) {
+          pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
+        }
+      }
+    } else {
+      // Case of decentralized coordination
+      my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = microstep};
+
+      if (timestamp < start_time) {
+        my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
+      } else if (timestamp > start_time) {
+        bool found_inbound_of_my_fed = false;
+        for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+          federate_info_t* fed = GET_FED_INFO(i);
+          if (fed->enclave.state == NOT_CONNECTED) {
+            continue;
+          }
+          for (int32_t j = 0; j < fed->number_of_outbound_transients; j++) {
+            if (fed->outbound_transients[j] == (int32_t)my_fed->enclave.id) {
+              found_inbound_of_my_fed = true;
+              break;
+            }
+          }
+          if (found_inbound_of_my_fed) {
+            my_fed->effective_start_tag = (tag_t){.time = timestamp + DELAY_START, .microstep = 0u};
+            break;
+          }
         }
       }
     }
@@ -1619,7 +1626,8 @@ void* federate_info_thread_TCP(void* fed) {
     LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->enclave.id);
     switch (buffer[0]) {
     case MSG_TYPE_TIMESTAMP:
-      handle_timestamp(my_fed);
+    case MSG_TYPE_TIMESTAMP_WITH_MICROSTEP:
+      handle_timestamp(my_fed, buffer[0]);
       break;
     case MSG_TYPE_ADDRESS_QUERY:
       handle_address_query(my_fed->enclave.id);

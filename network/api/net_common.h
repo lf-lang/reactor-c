@@ -376,6 +376,22 @@
 #define MSG_TYPE_TIMESTAMP_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
+ * @brief Byte identifying a timestamp message with a microstep, which is 64 + 32 bits long.
+ * @ingroup Network
+ *
+ * Like MSG_TYPE_TIMESTAMP, but carries an additional microstep field (microstep_t)
+ * after the 64-bit timestamp. This is useful for decentralized coordination, when a
+ * transient federate with outbound P2P connections wants to join.
+ */
+#define MSG_TYPE_TIMESTAMP_WITH_MICROSTEP 32
+
+/**
+ * @brief The length of a timestamp-with-microstep message.
+ * @ingroup Network
+ */
+#define MSG_TYPE_TIMESTAMP_WITH_MICROSTEP_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
+
+/**
  * @brief Byte identifying a message to forward to another federate.
  * @ingroup Network
  *

@@ -363,7 +363,7 @@ void handle_address_ad(uint16_t federate_id);
  *
  * This function assumes the caller does not hold the mutex.
  */
-void handle_timestamp(federate_info_t* my_fed);
+void handle_timestamp(federate_info_t* my_fed, int type);
 
 /**
  * @brief Take a snapshot of the physical clock time and send it to federate fed_id.
