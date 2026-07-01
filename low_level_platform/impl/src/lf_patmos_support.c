@@ -108,9 +108,7 @@ int lf_disable_interrupts_nested() {
   // For the single-threaded path, disable interrupts first then increment
   // the nesting counter to avoid preemption windows on this core.
   intr_disable();
-  if (_lf_num_nested_critical_sections++ == 0) {
-    // already disabled above
-  }
+  _lf_num_nested_critical_sections++;
   return 0;
 }
 
