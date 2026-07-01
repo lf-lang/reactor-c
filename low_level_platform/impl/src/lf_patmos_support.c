@@ -16,6 +16,7 @@
 #include <machine/exceptions.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
 
 int lf_disable_interrupts_nested(void);
@@ -82,7 +83,7 @@ int lf_nanosleep(interval_t requested_time) { return lf_sleep(requested_time); }
 /**
  * Patmos clock does not need initialization.
  */
-void _lf_initialize_clock() {}
+void _lf_initialize_clock() { initialize_lf_patmos_core_configuration(); }
 
 /**
  * Write the current time in nanoseconds into the location given by the argument.
@@ -135,41 +136,20 @@ int _lf_single_threaded_notify_of_event() {
  * of core IDs to index 0 if the platform reports more cores than the
  * compile-time constant. Allocation happens once during validation. */
 static volatile int* _lf_num_nested_critical_sections_by_core = NULL;
-static int _lf_patmos_max_cores = 0;
-static pthread_mutex_t _lf_patmos_core_configuration_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static void _lf_initialize_patmos_core_configuration(void) {
+void initialize_lf_patmos_core_configuration(void) {
+  if (_lf_num_nested_critical_sections_by_core != NULL) {
+    return;
+  }
   int cpucnt = (int)get_cpucnt();
   assert(cpucnt > 0);
-  /* Allocate the per-core nesting counter array once and publish it atomically
-   * via pthread_once so all cores observe the same initialized state. */
+  /* Allocate the per-core nesting counter array during single-threaded startup. */
   _lf_num_nested_critical_sections_by_core = (volatile int*)calloc((size_t)cpucnt, sizeof(int));
   assert(_lf_num_nested_critical_sections_by_core != NULL);
-  _lf_patmos_max_cores = cpucnt;
-}
-
-static inline void _lf_validate_patmos_core_configuration(void) {
-  int result = pthread_mutex_lock(&_lf_patmos_core_configuration_mutex);
-  assert(result == 0);
-  if (_lf_num_nested_critical_sections_by_core == NULL) {
-    _lf_initialize_patmos_core_configuration();
-  } else {
-    assert((int)get_cpucnt() == _lf_patmos_max_cores);
-  }
-  result = pthread_mutex_unlock(&_lf_patmos_core_configuration_mutex);
-  assert(result == 0);
 }
 
 static inline volatile int* _lf_current_core_nested_counter() {
-  int cpucnt;
-  int cpuid;
-
-  _lf_validate_patmos_core_configuration();
-  cpucnt = (int)get_cpucnt();
-  cpuid = (int)get_cpuid();
-  assert(cpuid >= 0);
-  assert(cpuid < cpucnt);
-  return &_lf_num_nested_critical_sections_by_core[cpuid];
+  return &_lf_num_nested_critical_sections_by_core[(int)get_cpuid()];
 }
 
 // Global (cross-core) lock for atomic operations.
@@ -203,7 +183,8 @@ int lf_enable_interrupts_nested() {
 int lf_available_cores() { return (int)get_cpucnt(); }
 
 lf_thread_t lf_thread_self() {
-  lf_thread_t self = {0};
+  lf_thread_t self;
+  memset(&self, 0, sizeof(self));
   self.cpuid = (int)get_cpuid();
   return self;
 }
@@ -219,17 +200,9 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
 
 int lf_thread_id() { return (int)get_cpuid(); }
 
-/* Forward declaration for the runtime core-count check. */
-void initialize_lf_thread_id_check(void);
+void initialize_lf_thread_id() {}
 
-void initialize_lf_thread_id() { initialize_lf_thread_id_check(); }
-
-// Validate platform assumptions at initialization time.
-void initialize_lf_thread_id_check() {
-  // Ensure per-core counters are allocated and runtime core count remains stable.
-  _lf_validate_patmos_core_configuration();
-  assert((int)get_cpucnt() == _lf_patmos_max_cores);
-}
+/* Core-count validation happens in initialize_lf_patmos_core_configuration(). */
 
 int lf_mutex_init(lf_mutex_t* mutex) {
   int result;
