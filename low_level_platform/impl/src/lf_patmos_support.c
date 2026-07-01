@@ -153,10 +153,18 @@ static inline volatile int* _lf_current_core_nested_counter() {
 }
 
 // Global (cross-core) lock for atomic operations.
-
+// This lock is only taken with interrupts already disabled, and acquisition
+// is done with trylock spinning so it never blocks or sleeps.
 static pthread_mutex_t _lf_patmos_global_lock = PTHREAD_MUTEX_INITIALIZER;
 
-void _lf_patmos_global_lock_acquire(void) { pthread_mutex_lock(&_lf_patmos_global_lock); }
+void _lf_patmos_global_lock_acquire(void) {
+  int result;
+  while ((result = pthread_mutex_trylock(&_lf_patmos_global_lock)) == EBUSY) {
+    // Busy-wait until the lock is released by the owning core.
+  }
+  assert(result == 0);
+}
+
 void _lf_patmos_global_lock_release(void) { pthread_mutex_unlock(&_lf_patmos_global_lock); }
 
 
