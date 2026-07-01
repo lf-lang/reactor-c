@@ -165,7 +165,6 @@ void _lf_patmos_global_lock_acquire(void) {
 
 void _lf_patmos_global_lock_release(void) { pthread_mutex_unlock(&_lf_patmos_global_lock); }
 
-
 int lf_disable_interrupts_nested() {
   // Disable interrupts first and increment the per-core nesting counter.
   intr_disable();
@@ -200,9 +199,7 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
   return pthread_create(&thread->handle, NULL, lf_thread, arguments);
 }
 
-int lf_thread_join(lf_thread_t thread, void** thread_return) {
-  return pthread_join(thread.handle, thread_return);
-}
+int lf_thread_join(lf_thread_t thread, void** thread_return) { return pthread_join(thread.handle, thread_return); }
 
 int lf_thread_id() { return (int)get_cpuid(); }
 
@@ -274,7 +271,7 @@ int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
 
   instant_t now;
   _lf_clock_gettime(&now);
-  
+
   if (now >= wakeup_time) {
     return LF_TIMEOUT;
   }

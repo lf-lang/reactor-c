@@ -25,13 +25,13 @@
 #if !defined(LF_SINGLE_THREADED)
 #include <pthread.h>
 typedef struct {
-	pthread_t handle;
-	int cpuid;
+  pthread_t handle;
+  int cpuid;
 } lf_thread_t;
 typedef pthread_mutex_t lf_mutex_t;
 typedef struct {
-	lf_mutex_t* mutex;
-	pthread_cond_t condition;
+  lf_mutex_t* mutex;
+  pthread_cond_t condition;
 } lf_cond_t;
 // Cross-core global lock used by atomic implementations on Patmos.
 void _lf_patmos_global_lock_acquire(void);
