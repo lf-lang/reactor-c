@@ -1687,7 +1687,27 @@ void* federate_info_thread_TCP(void* fed) {
 
     // Reset the status of the leaving federate
     reset_transient_federate(my_fed);
+  } else {
+    // This federate is not coming back. Unlike a transient federate (whose
+    // next_event is reset to NEVER_TAG since it may reconnect and send more
+    // events later), indicate that there will be no further events from it,
+    // mirroring what handle_federate_resign() does for a graceful shutdown.
+    my_fed->enclave.next_event = FOREVER_TAG;
   }
+
+  // A federate's departure, graceful or not, may be exactly what unblocks a
+  // TAG grant for a downstream federate (e.g., its next event bound was only
+  // pending on this federate). Unlike handle_federate_resign(), reaching this
+  // point via an abrupt disconnect does not otherwise trigger this check, so
+  // a federate that closes its connection without sending MSG_TYPE_RESIGN
+  // first (as happens, e.g., when a transient federate calls lf_stop(),
+  // which involves no RTI handshake) would otherwise leave federates
+  // downstream of it waiting forever for a grant that will never come.
+  bool* visited =
+      (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
+  notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
+  free(visited);
+
   // Signal the hot swap mechanism, if needed
   if (hot_swap_in_progress && hot_swap_federate->enclave.id == my_fed->enclave.id) {
     hot_swap_old_resigned = true;
