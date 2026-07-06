@@ -21,6 +21,9 @@
 #include "environment.h"
 #include "api/schedule.h"
 #include "tracepoint.h"
+#ifdef FEDERATED
+#include "federate.h"
+#endif
 
 ////////////// Global variables ///////////////
 // The global Python object that holds the .py module that the
@@ -113,6 +116,23 @@ int lf_reactor_c_main(int argc, const char* argv[]);
  */
 PyObject* py_request_stop(PyObject* self, PyObject* args) {
   lf_request_stop();
+
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+/**
+ * Stop only this federate at one microstep later than its current tag. Unlike
+ * request_stop(), this does not involve the RTI or require consensus among
+ * federates. This is particularly useful for testing transient federates.
+ */
+PyObject* py_lf_stop(PyObject* self, PyObject* args) {
+  // lf_stop() locks the environment mutex, which may be held by a scheduler
+  // thread that is itself blocked trying to acquire the GIL to invoke a
+  // reaction. Release the GIL here to avoid an AB-BA deadlock between the two.
+  Py_BEGIN_ALLOW_THREADS
+  lf_stop();
+  Py_END_ALLOW_THREADS
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -225,6 +245,23 @@ PyObject* py_package_directory(PyObject* self, PyObject* args) {
 #else
   return PyUnicode_DecodeFSDefault(LF_PACKAGE_DIRECTORY);
 #endif
+}
+
+/**
+ * Return the ID of the federation that this federate belongs to.
+ * Only meaningful in federated execution.
+ */
+PyObject* py_get_federation_id(PyObject* self, PyObject* args) {
+#ifdef FEDERATED
+  (void)self;
+  (void)args;
+  return PyUnicode_DecodeFSDefault(lf_get_federation_id());
+#else
+  (void)self;
+  (void)args;
+  PyErr_SetString(PyExc_RuntimeError, "lf.get_federation_id() is only available in federated execution.");
+  return NULL;
+#endif // FEDERATED
 }
 
 /**
@@ -512,14 +549,20 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
 static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"start", py_main, METH_VARARGS, NULL},
     {"tag", py_lf_tag, METH_NOARGS, NULL},
+    {"tag_start_effective", py_lf_tag_start_effective, METH_NOARGS,
+     "Get the effective start tag of this federate"},
     {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
     {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
+    {"stop", py_lf_stop, METH_NOARGS,
+     "Stop only this federate, at one microstep later than its current tag, without RTI involvement"},
     {"get_fed_maxwait", py_get_fed_maxwait, METH_NOARGS,
      "Get the global maxwait for the current federate (decentralized federated execution only)"},
     {"set_fed_maxwait", (PyCFunction)py_set_fed_maxwait, METH_VARARGS,
      "Set the global maxwait for the current federate (decentralized federated execution only)"},
     {"source_directory", py_source_directory, METH_NOARGS, "Source directory path for .lf file"},
     {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
+    {"get_federation_id", py_get_federation_id, METH_NOARGS,
+     "Get the ID of the federation this federate belongs to (federated execution only)"},
     {"check_deadline", (PyCFunction)py_check_deadline, METH_VARARGS,
      "Check whether the deadline of the currently executing reaction has passed"},
     {"update_deadline", (PyCFunction)py_update_deadline, METH_VARARGS,

@@ -29,6 +29,7 @@ typedef struct {
 py_tag_t* convert_C_tag_to_py(tag_t c_tag);
 
 PyObject* py_lf_tag(PyObject* self, PyObject* args);
+PyObject* py_lf_tag_start_effective(PyObject* self, PyObject* args);
 PyObject* py_tag_compare(PyObject* self, PyObject* args);
 
 #endif
