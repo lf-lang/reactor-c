@@ -39,6 +39,6 @@ then `lfc` will generate a Python program that uses this reactor-c runtime under
 
 The C, CCpp, and Python targets are tested nightly on Linux, macOS, and Windows (with WSL). The federated programs are tested on Linux and macOS only.
 
-For embedded platforms, there is support for C on Arduino and Zephyr, plus bare-metal (unthreaded) execution on the Raspberry Pi RP2040, nRF52, FlexPRET, and Patmos. For bare-metal, Zephyr, and RIoT, consider using the [reactor-uc](https://github.com/lf-lang/reactor-uc) target instead.
+For embedded platforms, there is support for C on Arduino and Zephyr, plus bare-metal (unthreaded) execution on the Raspberry Pi RP2040, nRF52, FlexPRET, and Patmos. For bare-metal, Zephyr, and RIoT, consider using the [micro-LF](https://github.com/lf-lang/reactor-uc) instead.
 
 
