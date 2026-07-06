@@ -1703,8 +1703,7 @@ void* federate_info_thread_TCP(void* fed) {
   // first (as happens, e.g., when a transient federate calls lf_stop(),
   // which involves no RTI handshake) would otherwise leave federates
   // downstream of it waiting forever for a grant that will never come.
-  bool* visited =
-      (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
+  bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
   notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
   free(visited);
 

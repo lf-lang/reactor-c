@@ -130,11 +130,10 @@ PyObject* py_lf_stop(PyObject* self, PyObject* args) {
   // lf_stop() locks the environment mutex, which may be held by a scheduler
   // thread that is itself blocked trying to acquire the GIL to invoke a
   // reaction. Release the GIL here to avoid an AB-BA deadlock between the two.
-  Py_BEGIN_ALLOW_THREADS
-  lf_stop();
+  Py_BEGIN_ALLOW_THREADS lf_stop();
   Py_END_ALLOW_THREADS
 
-  Py_INCREF(Py_None);
+      Py_INCREF(Py_None);
   return Py_None;
 }
 
@@ -549,8 +548,7 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
 static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"start", py_main, METH_VARARGS, NULL},
     {"tag", py_lf_tag, METH_NOARGS, NULL},
-    {"tag_start_effective", py_lf_tag_start_effective, METH_NOARGS,
-     "Get the effective start tag of this federate"},
+    {"tag_start_effective", py_lf_tag_start_effective, METH_NOARGS, "Get the effective start tag of this federate"},
     {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
     {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
     {"stop", py_lf_stop, METH_NOARGS,
