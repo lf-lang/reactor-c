@@ -2445,7 +2445,7 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   net_abstraction_t net = _fed.net_to_RTI;
   if (net == NULL) {
     if (!_lf_termination_executed) {
-      lf_print_warning("Network connection to federate %hu is closed. Dropping the message.", fed_ID);
+      lf_print_warning("Network connection to RTI %hu is closed. Dropping the message.", fed_ID);
     }
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
     return;
