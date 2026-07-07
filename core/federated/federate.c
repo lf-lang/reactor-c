@@ -892,7 +892,8 @@ static void close_outbound_net(int fed_id) {
     }
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
   } else {
-    shutdown_net(net, false);
+    shutdown_net(_fed.net_for_outbound_p2p_connections[fed_id], false);
+    _fed.net_for_outbound_p2p_connections[fed_id] = NULL;
   }
 }
 
