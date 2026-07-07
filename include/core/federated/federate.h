@@ -571,19 +571,6 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
                            unsigned short federate, const char* next_destination_str, size_t length,
                            unsigned char* message);
 
-/**
- * @brief Set the federation_id of this federate.
- * @ingroup Federated
- *
- * @param fid The federation ID.
- */
-void lf_set_federation_id(const char* fid);
-
-/**
- * @brief Return the federation id.
- */
-const char* lf_get_federation_id();
-
 #ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Spawn a thread to iterate through STAA structs.
