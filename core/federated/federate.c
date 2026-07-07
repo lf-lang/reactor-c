@@ -882,15 +882,15 @@ static void close_outbound_net(int fed_id) {
   // Close outbound connections, in case they have not closed themselves.
   // This will result in EOF being sent to the remote federate, except for
   // abnormal termination, in which case it will just close the network abstraction.
-  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-  net_abstraction_t net = _fed.net_for_outbound_p2p_connections[fed_id];
-  _fed.net_for_outbound_p2p_connections[fed_id] = NULL;
-  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
-  if (net == NULL) {
-    return;
-  }
   if (_lf_normal_termination) {
-    shutdown_net(net, true);
+    LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+    if (_fed.net_for_outbound_p2p_connections[fed_id] != NULL) {
+      // Close the network abstraction by sending a FIN packet indicating that no further writes
+      // are expected.  Then read until we get an EOF indication.
+      shutdown_net(_fed.net_for_outbound_p2p_connections[fed_id], true);
+      _fed.net_for_outbound_p2p_connections[fed_id] = NULL;
+    }
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
   } else {
     shutdown_net(net, false);
   }
@@ -2652,7 +2652,9 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
   net_abstraction_t net = _fed.net_for_outbound_p2p_connections[federate];
 
   if (net == NULL) {
-    lf_print_warning("Network connection to %s is closed. Dropping the message.", next_destination_str);
+    if (!_lf_termination_executed) {
+      lf_print_warning("Network connection to %s is closed. Dropping the message.", next_destination_str);
+    }
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
     return -1;
   }
@@ -2860,7 +2862,9 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   // Send the absent message through the RTI
   net_abstraction_t net = _fed.net_to_RTI;
   if (net == NULL) {
-    lf_print_warning("Network connection to federate %hu is closed. Dropping the message.", fed_ID);
+    if (!_lf_termination_executed) {
+      lf_print_warning("Network connection to RTI %hu is closed. Dropping the message.", fed_ID);
+    }
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
     return;
   }
@@ -2869,7 +2873,9 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   // Send the absent message directly to the federate
   net_abstraction_t net = _fed.net_for_outbound_p2p_connections[fed_ID];
   if (net == NULL) {
-    lf_print_warning("Network connection to federate %hu is closed. Dropping the message.", fed_ID);
+    if (!_lf_termination_executed) {
+      lf_print_warning("Network connection to federate %hu is closed. Dropping the message.", fed_ID);
+    }
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
     return;
   }
@@ -3000,6 +3006,13 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   } else {
     net = _fed.net_to_RTI;
     tracepoint_federate_to_rti(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
+  }
+  if (net == NULL) {
+    if (!_lf_termination_executed) {
+      lf_print_warning("Network connection to %s is closed. Dropping the message.", next_destination_str);
+    }
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    return -1;
   }
 
   if (lf_tag_compare(_fed.last_DNET, current_message_intended_tag) > 0) {

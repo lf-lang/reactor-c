@@ -287,11 +287,19 @@ int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_a
   return ret;
 }
 
+/**
+ * Return true if errno indicates the connection is no longer usable.
+ * This includes peer disconnect (RST/FIN) and local close (e.g. during termination
+ * to unblock a thread blocked in read()).
+ */
+static bool is_disconnect_errno(void) {
+  return errno == ECONNRESET || errno == EPIPE || errno == ENOTCONN || errno == EBADF;
+}
+
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
   if (socket < 0) {
-    // Socket is not open.
-    errno = EBADF;
-    return -1;
+    // Socket is already closed.
+    return 1;
   }
   ssize_t bytes_read = 0;
   while (bytes_read < (ssize_t)num_bytes) {
@@ -302,6 +310,10 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
       LF_PRINT_DEBUG("Reading from socket %d failed with error: `%s`. Will try again.", socket, strerror(errno));
       lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
       continue;
+    } else if (more < 0 && is_disconnect_errno()) {
+      // Connection closed (by peer or locally during shutdown).
+      LF_PRINT_DEBUG("Socket %d closed during read.", socket);
+      return 1;
     } else if (more < 0) {
       // A more serious error occurred.
       lf_print_error("Reading from socket %d failed. With error: `%s`", socket, strerror(errno));
@@ -338,6 +350,10 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
       LF_PRINT_DEBUG("Writing to socket %d was blocked. Will try again.", socket);
       lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
       continue;
+    } else if (more < 0 && is_disconnect_errno()) {
+      // Connection closed (by peer or locally during shutdown).
+      LF_PRINT_DEBUG("Socket %d closed during write.", socket);
+      return -1;
     } else if (more < 0) {
       // A more serious error occurred.
       lf_print_error("Writing to socket %d failed. With error: `%s`", socket, strerror(errno));
