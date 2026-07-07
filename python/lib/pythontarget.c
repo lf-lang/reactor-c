@@ -127,10 +127,20 @@ PyObject* py_request_stop(PyObject* self, PyObject* args) {
  * federates. This is particularly useful for testing transient federates.
  */
 PyObject* py_lf_stop(PyObject* self, PyObject* args) {
+  (void)self;
+  (void)args;
   // lf_stop() locks the environment mutex, which may be held by a scheduler
   // thread that is itself blocked trying to acquire the GIL to invoke a
   // reaction. Release the GIL here to avoid an AB-BA deadlock between the two.
-  Py_BEGIN_ALLOW_THREADS lf_stop();
+  Py_BEGIN_ALLOW_THREADS
+#ifdef FEDERATED
+  lf_stop();
+#else
+  // lf_stop() (stop this federate only, without RTI involvement) is only
+  // defined in federated builds. In a non-federated program there is only
+  // one federate, so requesting a (global) stop is equivalent.
+  lf_request_stop();
+#endif // FEDERATED
   Py_END_ALLOW_THREADS
 
       Py_INCREF(Py_None);
