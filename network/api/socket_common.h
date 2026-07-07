@@ -238,7 +238,7 @@ int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_a
  *
  * If an error occurs during this reading, return -1 and set errno to indicate
  * the cause of the error. If the read succeeds in reading the specified number of bytes,
- * return 0. If an EOF occurs before reading the specified number of bytes, return 1.
+ * return 0. If an EOF occurs before reading the specified number of bytes or the connection is closed, return 1.
  * This function repeats the read attempt until the specified number of bytes
  * have been read, an EOF is read, or an error occurs. Specifically, errors EAGAIN,
  * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
@@ -246,7 +246,7 @@ int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_a
  * @param socket The socket ID.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to put the bytes.
- * @return 0 for success, 1 for EOF, and -1 for an error.
+ * @return 0 for success, 1 for EOF or connection closed, and -1 for an error.
  */
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 

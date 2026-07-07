@@ -105,12 +105,12 @@ net_abstraction_t connect_to_net(net_params_t params);
  * Read the specified number of bytes from the specified network abstraction into the specified buffer.
  * If an error occurs during reading, return -1 and set errno to indicate the cause.
  * If the read succeeds in reading the specified number of bytes, return 0.
- * If an EOF occurs before reading the specified number of bytes, return 1.
+ * If an EOF occurs before reading the specified number of bytes or the connection is closed, return 1.
  *
  * @param net_abs The network abstraction.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to put the bytes.
- * @return 0 for success, 1 for EOF, and -1 for an error.
+ * @return 0 for success, 1 for EOF or connection closed, and -1 for an error.
  */
 int read_from_net(net_abstraction_t net_abs, size_t num_bytes, unsigned char* buffer);
 
