@@ -34,7 +34,6 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
   _lf_async_event = false;
   lf_enable_interrupts_nested();
 
-  // Debug logging removed to avoid excessive stdout output.
   // Do busy sleep
   do {
     _lf_clock_gettime(&now);
@@ -44,10 +43,8 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
 
   if (_lf_async_event) {
     _lf_async_event = false;
-    // Debug logging removed.
     return -1;
   } else {
-    // Debug logging removed.
     return 0;
   }
 }
@@ -57,14 +54,10 @@ int lf_sleep(interval_t sleep_duration) {
   _lf_clock_gettime(&now);
   instant_t wakeup = now + sleep_duration;
 
-  // Debug logging removed to avoid excessive stdout output.
-
   // Do busy sleep
   do {
     _lf_clock_gettime(&now);
   } while ((now < wakeup));
-
-  // Debug logging removed.
   return 0;
 }
 
