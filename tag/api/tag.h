@@ -306,6 +306,7 @@ instant_t lf_time_physical_elapsed(void);
  */
 instant_t lf_time_start(void);
 
+#ifdef FEDERATED
 /**
  * Return the tag at which the execution effectively started.
  * Most of the time, this will default to {.time = start_time, .microstep: 0}.
@@ -313,6 +314,7 @@ instant_t lf_time_start(void);
  * @return A tag.
  */
 tag_t lf_tag_start_effective(void);
+#endif
 
 /**
  * @brief For user-friendly reporting of time values, the buffer length required.
