@@ -7,6 +7,7 @@
  * @author Peter Donovan
  * @author Edward A. Lee
  * @author Anirudh Rengarajsm
+ * @author Chadlia Jerad
  *
  * This file defines the core data structures and functions used in federated Lingua Franca
  * programs. It includes the federate instance structure that tracks the state of a federate,

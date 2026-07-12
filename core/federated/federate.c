@@ -4,6 +4,7 @@
  * @author Peter Donovan
  * @author Edward A. Lee
  * @author Anirudh Rengarajsm
+ * @author Chadlia Jerad
  *
  * @brief Utility functions for a federate in a federated execution.
  */
