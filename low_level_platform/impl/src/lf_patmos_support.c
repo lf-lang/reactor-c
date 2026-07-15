@@ -83,7 +83,11 @@ int lf_nanosleep(interval_t requested_time) { return lf_sleep(requested_time); }
 /**
  * Patmos clock does not need initialization.
  */
-void _lf_initialize_clock() { initialize_lf_patmos_core_configuration(); }
+void _lf_initialize_clock() {
+#if !defined(LF_SINGLE_THREADED)
+  initialize_lf_patmos_core_configuration();
+#endif
+}
 
 /**
  * Write the current time in nanoseconds into the location given by the argument.
