@@ -154,26 +154,22 @@ static inline volatile int* _lf_current_core_nested_counter() {
   return &_lf_num_nested_critical_sections_by_core[(int)get_cpuid()];
 }
 
-// Global (cross-core) lock for atomic operations.
-// This lock is only taken with interrupts already disabled, and acquisition
-// is done with trylock spinning so it never blocks or sleeps.
+// Global (cross-core) lock used to make the outermost critical section
+// mutually exclusive across Patmos cores. The lock is acquired only on the
+// 0 -> 1 transition and released only on the 1 -> 0 transition.
 static pthread_mutex_t _lf_patmos_global_lock = PTHREAD_MUTEX_INITIALIZER;
-
-void _lf_patmos_global_lock_acquire(void) {
-  int result;
-  while ((result = pthread_mutex_trylock(&_lf_patmos_global_lock)) == EBUSY) {
-    // Busy-wait until the lock is released by the owning core.
-  }
-  assert(result == 0);
-}
-
-void _lf_patmos_global_lock_release(void) { pthread_mutex_unlock(&_lf_patmos_global_lock); }
 
 int lf_disable_interrupts_nested() {
   // Disable interrupts first and increment the per-core nesting counter.
   intr_disable();
   volatile int* nested_counter = _lf_current_core_nested_counter();
-  (*nested_counter)++;
+  if ((*nested_counter)++ == 0) {
+    int result;
+    while ((result = pthread_mutex_trylock(&_lf_patmos_global_lock)) == EBUSY) {
+      // Busy-wait until the lock is released by the owning core.
+    }
+    assert(result == 0);
+  }
   return 0;
 }
 
@@ -184,6 +180,7 @@ int lf_enable_interrupts_nested() {
   }
 
   if (--(*nested_counter) == 0) {
+    pthread_mutex_unlock(&_lf_patmos_global_lock);
     intr_enable();
   }
   return 0;
