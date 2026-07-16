@@ -34,9 +34,7 @@ typedef struct {
   pthread_cond_t condition;
 } lf_cond_t;
 // Cross-core global lock used by atomic implementations on Patmos.
-void _lf_patmos_global_lock_acquire(void);
 void initialize_lf_patmos_core_configuration(void);
-void _lf_patmos_global_lock_release(void);
 #endif
 
 #endif // LF_PATMOS_SUPPORT_H
