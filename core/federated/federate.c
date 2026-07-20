@@ -2612,8 +2612,7 @@ void lf_reset_status_fields_on_input_port_triggers() {
   lf_cond_broadcast(&lf_port_status_changed);
 }
 
-int lf_send_message(int message_type, unsigned short port, unsigned short federate,
-                    const char* next_destination_str,
+int lf_send_message(int message_type, unsigned short port, unsigned short federate, const char* next_destination_str,
                     size_t length, unsigned char* message) {
   unsigned char header_buffer[1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(uint32_t)];
   // First byte identifies this as a timed message.
@@ -2995,14 +2994,15 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   if (lf_tag_compare(_fed.downstream_p2p_joined_tag[federate], NEVER_TAG) > 0) {
     // Downstream is transient.
     if (_fed.net_for_outbound_p2p_connections[federate] == NULL) {
-      lf_print_info("The destination transient federate %d is not connected. Dropping message at tag "
-         PRINTF_TAG ".", federate, env->current_tag.time - start_time, env->current_tag.microstep);
+      lf_print_info("The destination transient federate %d is not connected. Dropping message at tag " PRINTF_TAG ".",
+                    federate, env->current_tag.time - start_time, env->current_tag.microstep);
       LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
       return 0;
     } else if (lf_tag_compare(_fed.downstream_p2p_joined_tag[federate], current_message_intended_tag) > 0) {
       // The message is earlier than than the effective start tag of the destination.
-      lf_print_info("The destination transient federate %d is connected but did not start yet. Dropping message with intended tag "
-         PRINTF_TAG ".", federate, current_message_intended_tag.time - start_time, current_message_intended_tag.microstep);
+      lf_print_info("The destination transient federate %d is connected but did not start yet. Dropping message with "
+                    "intended tag " PRINTF_TAG ".",
+                    federate, current_message_intended_tag.time - start_time, current_message_intended_tag.microstep);
       LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
       return 0;
     }

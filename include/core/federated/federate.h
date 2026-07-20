@@ -432,7 +432,8 @@ void lf_reset_status_fields_on_input_port_triggers(void);
  * @param next_destination_str The name of the next destination in string format (for reporting).
  * @param length The message length.
  * @param message The message.
- * @return 0 if the message has been sent or the destination is a transient federate that is not connected, -1 otherwise.
+ * @return 0 if the message has been sent or the destination is a transient federate that is not connected, -1
+ * otherwise.
  */
 int lf_send_message(int message_type, unsigned short port, unsigned short federate, const char* next_destination_str,
                     size_t length, unsigned char* message);
@@ -568,7 +569,8 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  *  (used for reporting errors).
  * @param length The message length.
  * @param message The message.
- * @return 0 if the message has been sent or the destination is a transient federate that is not connected, -1 otherwise.
+ * @return 0 if the message has been sent or the destination is a transient federate that is not connected, -1
+ * otherwise.
  */
 int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int message_type, unsigned short port,
                            unsigned short federate, const char* next_destination_str, size_t length,

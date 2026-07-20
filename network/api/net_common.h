@@ -805,7 +805,7 @@
  * address and establish (or re-establish) the outbound P2P connection.
  */
 #define MSG_TYPE_DOWNSTREAM_CONNECTED 30
-#define MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH                                                                             \
+#define MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH                                                                           \
   (1 + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t) + sizeof(int32_t) + sizeof(uint32_t))
 
 /**
