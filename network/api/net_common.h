@@ -21,12 +21,15 @@
  * use DEFAULT_PORT.
  *
  * When it has successfully opened a TCP connection, the first message it sends
- * to the RTI is a @ref MSG_TYPE_FED_IDS message, which contains the ID of this federate
- * within the federation, contained in the global variable _lf_my_fed_id
- * in the federate code (which is initialized by the code generator),
- * the type of this federate (persistent (0) or transient (1)),
- * and the unique ID of the federation, a GUID that is created at run time by the
- * generated script that launches the federation.
+ * to the RTI is either a @ref MSG_TYPE_FED_IDS message, if it is a persistent
+ * federate, or a @ref MSG_TYPE_TRANSIENT_FED_IDS message, if it is a transient
+ * federate (see "Transient federates" below). Either message contains the ID
+ * of this federate within the federation, contained in the global variable
+ * _lf_my_fed_id in the federate code (which is initialized by the code
+ * generator), and the unique ID of the federation, a GUID that is created at
+ * run time by the generated script that launches the federation. The
+ * transient variant additionally carries a byte giving the federate's type
+ * (persistent (0) or transient (1)).
  * If you launch the federates and the RTI manually, rather than using the script,
  * then the federation ID is a string that is optionally given to the federate
  * on the command line when it is launched. The federate will connect
@@ -143,6 +146,34 @@
  * each federate report a reading of its physical clock to the RTI on a
  * `MSG_TYPE_TIMESTAMP`. The RTI broadcasts the maximum of these readings plus
  * `DELAY_START` to all federates as the start time, again on a `MSG_TYPE_TIMESTAMP`.
+ *
+ * ### Transient federates
+ *
+ * A federate may be marked transient, meaning it is allowed to join the
+ * federation after execution has begun, and to disconnect and later rejoin.
+ * A transient identifies itself with @ref MSG_TYPE_TRANSIENT_FED_IDS instead
+ * of @ref MSG_TYPE_FED_IDS. If it joins during the RTI's startup phase
+ * (before all persistent federates have proposed a start time), it is
+ * treated like any other federate and simply receives the common start time.
+ *
+ * If a transient joins later, the RTI computes an effective start tag for it
+ * that is no earlier than the tag of any message already routed to it and no
+ * earlier than the federation's current tag. This tag is returned together
+ * with the common start time in an extended @ref MSG_TYPE_TIMESTAMP message
+ * (see MSG_TYPE_TIMESTAMP_TAG_LENGTH); the transient does not begin
+ * executing tags until then.
+ *
+ * Because a transient can appear or disappear at any point, its neighbors
+ * must be told when to treat it as absent versus when to wait for it. When a
+ * transient (re-)connects, the RTI notifies downstream neighbors with
+ * @ref MSG_TYPE_UPSTREAM_CONNECTED and upstream neighbors with
+ * @ref MSG_TYPE_OUTBOUND_CONNECTED so that they (re-)establish P2P
+ * connections to it. When it disconnects, @ref MSG_TYPE_UPSTREAM_DISCONNECTED
+ * and @ref MSG_TYPE_OUTBOUND_DISCONNECTED are sent instead, so neighbors
+ * treat it as absent rather than blocking on it. Under decentralized
+ * coordination, the @ref MSG_TYPE_ACK a transient receives on (re-)connect
+ * also carries the current tag of each of its outbound federates, so its
+ * effective start tag is never set earlier than theirs.
  *
  * The next step depends on the coordination type.
  *
