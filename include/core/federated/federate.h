@@ -83,18 +83,20 @@ typedef struct federate_instance_t {
   size_t number_of_outbound_p2p_transients;
 
   /**
-   * An array indexed by federate ID. For persistent federates, the value is
-   * NEVER_TAG. For transient federates, the value is either FOREVER_TAG
-   * (not yet joined) or the tag at which the transient federate joined.
+   * An array that holds the tag at which the downstream federate joined.
+   * For persistent federates, the value is NEVER_TAG. For transient federates,
+   * the value is either FOREVER_TAG (not yet joined) or the tag at which the
+   * transient federate joined.
+   * This is an array indexed by federate ID.
    */
-  tag_t outbound_p2p_connection_is_transient[NUMBER_OF_FEDERATES];
+  tag_t downstream_p2p_joined_tag[NUMBER_OF_FEDERATES];
 
   /**
    * An array that holds the network abstractions for inbound
    * connections from each federate. The index will be the federate
    * ID of the remote sending federate. This is initialized at startup
    * to NULL and is set to the pointer of the network abstraction by lf_connect_to_federate()
-   * when the network abstractions is opened.
+   * when the network abstraction is opened.
    *
    * @note There will not be an inbound network abstraction unless a physical connection
    * or a p2p logical connection (by setting the coordination target property
@@ -128,7 +130,7 @@ typedef struct federate_instance_t {
    * connections to each remote federate. The index will be the federate
    * ID of the remote receiving federate. This is initialized at startup
    * to NULL and is set to the pointer of the network abstraction by lf_connect_to_federate()
-   * when the network abstractions is opened.
+   * when the network abstraction is opened.
    *
    * @note This federate will not open an outbound network abstractions unless a physical
    * connection or a p2p logical connection (by setting the coordination target
@@ -299,7 +301,7 @@ extern lf_cond_t lf_port_status_changed;
 // Public functions (in alphabetical order)
 
 /**
- * @brief Connect to the federate with the specified id, based if it is transient or not.
+ * @brief Connect to the federate with the specified id.
  * @ingroup Federated
  *
  * The established connection will then be used in functions such as lf_send_tagged_message()
@@ -312,15 +314,13 @@ extern lf_cond_t lf_port_status_changed;
  * refer to the network abstraction for communicating directly with the federate.
  *
  * @param remote_federate_id The ID of the remote federate.
- * @param is_transient Whether the remote federate is transient. This affects
- *   connection behavior: a transient remote federate may not be immediately
- *   available, so the connection attempt is handled differently than for a
- *   persistent federate.
+ * @param joined_tag The tag at which the remote federate joined. This is NEVER_TAG for persistent federates,
+ *   and either FOREVER_TAG (not yet joined) or the tag at which the transient federate joined for transient federates.
  * @param port The port number of the remote federate. Pass -1 if it is to be queried.
  * @param ip_address The IP address of the remote federate, in network byte order. Pass 0
  *   if it is to be queried.
  */
-void lf_connect_to_federate(uint16_t remote_federate_id, bool is_transient, int32_t port, uint32_t ip_address);
+void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32_t port, uint32_t ip_address);
 
 /**
  * @brief Connect to the RTI at the specified host and port.
@@ -420,7 +420,8 @@ void lf_reset_status_fields_on_input_port_triggers(void);
  *
  * This function is used for physical connections
  * between federates. If the connection to the remote federate or the RTI has been broken,
- * then this returns -1 without sending. Otherwise, it returns 0.
+ * then this returns -1 without sending, unless the destination is a transient federate
+ * that is not connected, in which case it returns 0. Otherwise, it returns 0.
  *
  * This method assumes that the caller does not hold the lf_outbound_net_mutex lock,
  * which it acquires to perform the send.
@@ -431,7 +432,7 @@ void lf_reset_status_fields_on_input_port_triggers(void);
  * @param next_destination_str The name of the next destination in string format (for reporting).
  * @param length The message length.
  * @param message The message.
- * @return 0 if the message has been sent, -1 otherwise.
+ * @return 0 if the message has been sent or the destination is a transient federate that is not connected, -1 otherwise.
  */
 int lf_send_message(int message_type, unsigned short port, unsigned short federate, const char* next_destination_str,
                     size_t length, unsigned char* message);
@@ -550,7 +551,8 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  * MSG_TYPE_P2P_TAGGED_MESSAGE, then the failure is not critical. It may be due to the
  * remote federate having exited, for example, because its safe-to-process offset led it
  * to believe that there were no messages forthcoming.  In this case, on failure to send
- * the message, this function returns -11.
+ * the message, this function returns -1. If the destination is a transient federate that is not connected,
+ * then this function returns 0.
  *
  * This method assumes that the caller does not hold the lf_outbound_net_mutex lock,
  * which it acquires to perform the send.
@@ -566,7 +568,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag);
  *  (used for reporting errors).
  * @param length The message length.
  * @param message The message.
- * @return 0 if the message has been sent, 1 otherwise.
+ * @return 0 if the message has been sent or the destination is a transient federate that is not connected, -1 otherwise.
  */
 int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int message_type, unsigned short port,
                            unsigned short federate, const char* next_destination_str, size_t length,

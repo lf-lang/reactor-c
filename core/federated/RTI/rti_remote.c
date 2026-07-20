@@ -272,9 +272,9 @@ static void send_upstream_disconnected_locked(federate_info_t* destination, fede
 }
 
 /**
- * @brief Send MSG_TYPE_OUTBOUND_CONNECTED to the inbound of the specified federate.
+ * @brief Send MSG_TYPE_DOWNSTREAM_CONNECTED to the upstream federates of the specified transient federate.
  *
- * This notifies federates that have the specified transient federate as an outbound
+ * This notifies federates that have the specified transient federate as a downstream transient
  * peer that it has (re-)connected. The notification also includes the effective_start_tag
  * of the federate and shares its IP address and port, so they the destination establishes
  * (or re-establishs) the P2P connection.
@@ -283,8 +283,8 @@ static void send_upstream_disconnected_locked(federate_info_t* destination, fede
  * @param my_fed The transient federate that has just connected.
  */
 static void send_outbound_connected_locked(federate_info_t* my_fed) {
-  unsigned char buffer[MSG_TYPE_OUTBOUND_CONNECTED_LENGTH];
-  buffer[0] = MSG_TYPE_OUTBOUND_CONNECTED;
+  unsigned char buffer[MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_DOWNSTREAM_CONNECTED;
   encode_uint16(my_fed->enclave.id, &buffer[1]);
   // Iterate over all federates and notify those that have my_fed as an outbound transient.
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
@@ -304,7 +304,7 @@ static void send_outbound_connected_locked(federate_info_t* my_fed) {
         encode_int32(server_port, &buffer[3 + 12]);
         encode_uint32(*ip_address, &buffer[3 + 12 + 4]);
 
-        if (write_to_net_close_on_error(fed->net, MSG_TYPE_OUTBOUND_CONNECTED_LENGTH, buffer)) {
+        if (write_to_net_close_on_error(fed->net, MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH, buffer)) {
           lf_print_warning("RTI: Failed to send outbound connected message to federate %d.", fed->enclave.id);
         }
         if (rti_remote->base.tracing_enabled) {
@@ -317,7 +317,7 @@ static void send_outbound_connected_locked(federate_info_t* my_fed) {
 }
 
 /**
- * @brief Send MSG_TYPE_OUTBOUND_DISCONNECTED to the upstream federates of a transient federate.
+ * @brief Send MSG_TYPE_DOWNSTREAM_DISCONNECTED to the upstream federates of a transient federate.
  *
  * This notifies upstream federates that a transient federate downstream of them has
  * disconnected, so they can close the outbound P2P connection to it.
@@ -326,8 +326,8 @@ static void send_outbound_connected_locked(federate_info_t* my_fed) {
  * @param my_fed The transient federate that has just disconnected.
  */
 static void send_outbound_disconnected_locked(federate_info_t* my_fed) {
-  unsigned char buffer[MSG_TYPE_OUTBOUND_DISCONNECTED_LENGTH];
-  buffer[0] = MSG_TYPE_OUTBOUND_DISCONNECTED;
+  unsigned char buffer[MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_DOWNSTREAM_DISCONNECTED;
   encode_uint16(my_fed->enclave.id, &buffer[1]);
   // Iterate over all federates and notify those that have my_fed as an outbound transient.
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
@@ -337,7 +337,7 @@ static void send_outbound_disconnected_locked(federate_info_t* my_fed) {
     }
     for (int32_t j = 0; j < fed->number_of_outbound_transients; j++) {
       if (fed->outbound_transients[j] == (int32_t)my_fed->enclave.id) {
-        if (write_to_net_close_on_error(fed->net, MSG_TYPE_OUTBOUND_DISCONNECTED_LENGTH, buffer)) {
+        if (write_to_net_close_on_error(fed->net, MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH, buffer)) {
           lf_print_warning("RTI: Failed to send outbound disconnected message to federate %d.", fed->enclave.id);
         }
         if (rti_remote->base.tracing_enabled) {

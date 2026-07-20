@@ -86,7 +86,7 @@ typedef enum {
   send_STOP,
   receive_STOP,
   send_OUTBOUND_CONNECTED,
-  receive_OUTBOUND_CONNECTED,
+  receive_DOWNSTREAM_CONNECTED,
   send_OUTBOUND_DISCONNECTED,
   receive_OUTBOUND_DISCONNECTED,
   NUM_EVENT_TYPES
