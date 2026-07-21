@@ -169,7 +169,7 @@
  * and upstream neighbors with @ref MSG_TYPE_DOWNSTREAM_CONNECTED. The upstream
  * neighbors will (re-)establish P2P connections to the transient, while the
  * transient will (re-)establish P2P connections to its downstream neighbors.
- * 
+ *
  * Under decentralized coordination, downstream neighbors acknowledge the
  * (re)connection with a @ref MSG_TYPE_ACK that carries the current tag (when
  * it (re)connects) of the downstream federate. The transient federate
@@ -178,7 +178,7 @@
  * assumed to not prematurely advance its tag beyond this current tag by using
  * its `maxwait` parameter because, now that its upstream transient is connected,
  * it cannot simply assume that the input from the transient is absent.
- * 
+ *
  * When a transient disconnects, @ref MSG_TYPE_UPSTREAM_DISCONNECTED
  * and @ref MSG_TYPE_DOWNSTREAM_DISCONNECTED are sent to neighbors.
  * Downstream neighbors will then treat inputs from the transient as absent
