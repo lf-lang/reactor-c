@@ -517,6 +517,7 @@ static void _lf_initialize_start_tag(environment_t* env) {
 
   // The start time will likely have changed. Adjust the current tag and stop tag.
   env->current_tag = effective_start_tag;
+  env->start_tag = effective_start_tag;
   if (duration >= 0LL) {
     // A duration has been specified. Recalculate the stop time.
     env->stop_tag = ((tag_t){.time = start_time + duration, .microstep = 0});
