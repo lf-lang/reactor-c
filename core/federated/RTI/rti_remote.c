@@ -1170,8 +1170,7 @@ static void send_start_tag_locked(federate_info_t* my_fed) {
 }
 
 void handle_timestamp(federate_info_t* my_fed, int type) {
-  size_t buffer_length =
-      (type == MSG_TYPE_TIMESTAMP) ? MSG_TYPE_TIMESTAMP_LENGTH : MSG_TYPE_TAG_LENGTH;
+  size_t buffer_length = (type == MSG_TYPE_TIMESTAMP) ? MSG_TYPE_TIMESTAMP_LENGTH : MSG_TYPE_TAG_LENGTH;
   unsigned char buffer[--buffer_length];
   // Read bytes from the network abstraction. We need 8 bytes, at least
   read_from_net_fail_on_error(my_fed->net, buffer_length, (unsigned char*)&buffer,

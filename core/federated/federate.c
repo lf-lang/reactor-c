@@ -132,8 +132,10 @@ static void send_tag(unsigned char type, tag_t tag) {
   encode_tag(&(buffer[1]), tag);
 
   trace_event_t event_type = send_TAG;
-  if (type == MSG_TYPE_NEXT_EVENT_TAG) event_type = send_NET;
-  if (type == MSG_TYPE_LATEST_TAG_CONFIRMED) event_type = send_LTC;
+  if (type == MSG_TYPE_NEXT_EVENT_TAG)
+    event_type = send_NET;
+  if (type == MSG_TYPE_LATEST_TAG_CONFIRMED)
+    event_type = send_LTC;
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
