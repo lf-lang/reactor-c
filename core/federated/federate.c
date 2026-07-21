@@ -108,15 +108,15 @@ static void send_time(unsigned char type, instant_t time, microstep_t microstep)
   LF_PRINT_DEBUG("Sending time " PRINTF_TIME " to the RTI.", time);
 
   size_t bytes_to_write;
-  if (type == MSG_TYPE_TIMESTAMP_WITH_MICROSTEP) {
-    bytes_to_write = MSG_TYPE_TIMESTAMP_WITH_MICROSTEP_LENGTH;
+  if (type == MSG_TYPE_TAG) {
+    bytes_to_write = MSG_TYPE_TAG_LENGTH;
   } else {
     bytes_to_write = MSG_TYPE_TIMESTAMP_LENGTH;
   }
   unsigned char buffer[bytes_to_write];
   buffer[0] = type;
   encode_int64(time, &(buffer[1]));
-  if (type == MSG_TYPE_TIMESTAMP_WITH_MICROSTEP) {
+  if (type == MSG_TYPE_TAG) {
     encode_uint32((microstep_t)microstep, &(buffer[1 + sizeof(instant_t)]));
   }
 
@@ -1083,7 +1083,7 @@ static void handle_downstream_disconnected_message(void) {
 static instant_t get_start_time_from_rti(instant_t my_physical_time, microstep_t my_microstep) {
   // Send the timestamp marker first.
 #ifdef FEDERATED_DECENTRALIZED
-  send_time(MSG_TYPE_TIMESTAMP_WITH_MICROSTEP, my_physical_time, my_microstep);
+  send_time(MSG_TYPE_TAG, my_physical_time, my_microstep);
 #else
   send_time(MSG_TYPE_TIMESTAMP, my_physical_time, my_microstep);
 #endif

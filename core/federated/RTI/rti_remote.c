@@ -1171,7 +1171,7 @@ static void send_start_tag_locked(federate_info_t* my_fed) {
 
 void handle_timestamp(federate_info_t* my_fed, int type) {
   size_t buffer_length =
-      (type == MSG_TYPE_TIMESTAMP) ? MSG_TYPE_TIMESTAMP_LENGTH : MSG_TYPE_TIMESTAMP_WITH_MICROSTEP_LENGTH;
+      (type == MSG_TYPE_TIMESTAMP) ? MSG_TYPE_TIMESTAMP_LENGTH : MSG_TYPE_TAG_LENGTH;
   unsigned char buffer[--buffer_length];
   // Read bytes from the network abstraction. We need 8 bytes, at least
   read_from_net_fail_on_error(my_fed->net, buffer_length, (unsigned char*)&buffer,
@@ -1179,7 +1179,7 @@ void handle_timestamp(federate_info_t* my_fed, int type) {
 
   instant_t timestamp = swap_bytes_if_big_endian_int64(*((instant_t*)(&buffer)));
   microstep_t microstep = 0u;
-  if (type == MSG_TYPE_TIMESTAMP_WITH_MICROSTEP) {
+  if (type == MSG_TYPE_TAG) {
     microstep = extract_uint32(&buffer[sizeof(instant_t)]);
   }
   if (rti_remote->base.tracing_enabled) {
@@ -1626,7 +1626,7 @@ void* federate_info_thread_TCP(void* fed) {
     LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->enclave.id);
     switch (buffer[0]) {
     case MSG_TYPE_TIMESTAMP:
-    case MSG_TYPE_TIMESTAMP_WITH_MICROSTEP:
+    case MSG_TYPE_TAG:
       handle_timestamp(my_fed, buffer[0]);
       break;
     case MSG_TYPE_ADDRESS_QUERY:
@@ -1862,11 +1862,11 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
   federate_info_t* fed;
   // If the federate is already connected (making the request a duplicate), and that
   // the federate is transient, and it is the execution phase, then  mark that a hot
-  // swap is in progreass and initialize the hot_swap_federate.
+  // swap is in progress and initialize the hot_swap_federate.
   // Otherwise, proceed with a normal transinet connection
   if (fed_twin->enclave.state != NOT_CONNECTED && is_transient && fed_twin->is_transient &&
       rti_remote->phase == execution_phase && !hot_swap_in_progress) {
-    // Allocate memory for the new federate and initilize it
+    // Allocate memory for the new federate and initialize it
     hot_swap_federate = (federate_info_t*)malloc(sizeof(federate_info_t));
     initialize_federate(hot_swap_federate, fed_id);
 
@@ -1875,7 +1875,6 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     hot_swap_in_progress = true;
     lf_mutex_unlock(&rti_mutex);
     hot_swap_old_resigned = false;
-    // free(fed);  // Free the old memory to prevent memory leak
     fed = hot_swap_federate;
     lf_print_info("RTI: Hot Swap starting for federate %d.", fed_id);
   } else {

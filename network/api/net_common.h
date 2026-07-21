@@ -153,12 +153,14 @@
  * (before all persistent federates have proposed a start time), it is
  * treated like any other federate and simply receives the common start time.
  *
+ * FIXME: This is about centralized coordination only? Also, should be "no later" rather than "no earlier"?
  * If a transient joins later, the RTI computes an effective start tag for it
  * that is no earlier than the tag of any message already routed to it and no
  * earlier than the federation's current tag. This tag is returned together
  * with the common start time in an extended @ref MSG_TYPE_TIMESTAMP message
  * (see MSG_TYPE_TIMESTAMP_TAG_LENGTH); the transient does not begin
  * executing tags until then.
+ * FIXME: I don't like MSG_TYPE_TIMESTAMP having two different lengths.
  *
  * Because a transient can appear or disappear at any point, its neighbors
  * must be told when to treat it as absent. When a transient (re-)connects,
@@ -310,6 +312,7 @@
  *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
  *  Each federate, when starting up, should send this message to the RTI.
  *  This is its first message to the RTI.
+ *  FIXME: Does it really send MSG_TYPE_UDP_PORT?
  *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
  *  If the federate is a C target LF program, the generated federate
  *  code does this by calling lf_synchronize_with_other_federates(),
@@ -401,20 +404,19 @@
 #define MSG_TYPE_TIMESTAMP_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
- * @brief Byte identifying a timestamp message with a microstep, which is 64 + 32 bits long.
+ * @brief Byte identifying a message with a tag, which is 64 + 32 bits long.
  * @ingroup Network
  *
  * Like MSG_TYPE_TIMESTAMP, but carries an additional microstep field (microstep_t)
- * after the 64-bit timestamp. This is useful for decentralized coordination, when a
- * transient federate with outbound P2P connections wants to join.
+ * after the 64-bit timestamp.
  */
-#define MSG_TYPE_TIMESTAMP_WITH_MICROSTEP 32
+#define MSG_TYPE_TAG 32
 
 /**
- * @brief The length of a timestamp-with-microstep message.
+ * @brief The length of a tag message.
  * @ingroup Network
  */
-#define MSG_TYPE_TIMESTAMP_WITH_MICROSTEP_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
+#define MSG_TYPE_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
  * @brief Byte identifying a message to forward to another federate.
