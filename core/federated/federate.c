@@ -2031,7 +2031,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
       _fed.downstream_p2p_joined_tag[remote_federate_id] = joined_tag;
 
       write_to_net_fail_on_error(_fed.net_to_RTI, 1 + sizeof(uint16_t) + 1, buffer, &lf_outbound_net_mutex,
-                                "Failed to send address query for federate %d to RTI.", remote_federate_id);
+                                 "Failed to send address query for federate %d to RTI.", remote_federate_id);
       LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
 
       // Read RTI's response.
