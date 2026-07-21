@@ -1990,79 +1990,81 @@ void lf_terminate_execution(environment_t* env) {
 //////////////////////////////////////////////////////////////////////////////////
 // Public functions (declared in federate.h, in alphabetical order)
 
-void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int p, uint32_t adr) {
-  int result = -1;
+void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32_t port, uint32_t ip_address) {
 
   bool is_transient = lf_tag_compare(joined_tag, NEVER_TAG) > 0;
 
-  // Ask the RTI for port number of the remote federate.
-  // The buffer is used for both sending and receiving replies.
-  // The size is what is needed for receiving replies.
-  unsigned char buffer[sizeof(int32_t) + INET_ADDRSTRLEN + 1];
-  int port = p;
   struct in_addr host_ip_addr;
-  host_ip_addr.s_addr = (in_addr_t)adr;
+  host_ip_addr.s_addr = (in_addr_t)ip_address;
   instant_t start_connect = lf_time_physical();
+
+  // If the port number is provided, then simply record the joined tag.
+  // Otherwise, ask the RTI for the port number and IP address.
   if (port != -1) {
     LF_MUTEX_LOCK(&lf_outbound_net_mutex);
     // This should be set while holding the mutex.
     _fed.downstream_p2p_joined_tag[remote_federate_id] = joined_tag;
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
-  }
-  // If the remote federate if persistent, iterate until we get a valid port number from the RTI,
-  // If not, execute only once, as a request registration.
-  while (port == -1 && !_lf_termination_executed) {
-    buffer[0] = MSG_TYPE_ADDRESS_QUERY;
-    // NOTE: Sending messages in little endian.
-    encode_uint16(remote_federate_id, &(buffer[1]));
-    // Indicate whether the remote federate being queried is transient.
-    buffer[1 + sizeof(uint16_t)] = is_transient ? 1 : 0;
+  } else {
+    // Iterate until we get a valid port number from the RTI or time out.
+    // If the remote federate is transient, execute only once, even if the RTI
+    // does not reply with a valid port number.
+    while (port == -1 && !_lf_termination_executed) {
+      // The buffer is used for both sending and receiving replies.
+      // The size is what is needed for receiving replies.
+      unsigned char buffer[sizeof(int32_t) + INET_ADDRSTRLEN + 1];
 
-    LF_PRINT_DEBUG("Sending address query for federate %d.", remote_federate_id);
-    // Trace the event when tracing is enabled
-    tracepoint_federate_to_rti(send_ADR_QR, _lf_my_fed_id, NULL);
+      buffer[0] = MSG_TYPE_ADDRESS_QUERY;
+      encode_uint16(remote_federate_id, &(buffer[1]));
+      // Indicate whether the remote federate being queried is transient.
+      buffer[1 + sizeof(uint16_t)] = is_transient ? 1 : 0;
 
-    LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-    // This should be set while holding the mutex.
-    _fed.downstream_p2p_joined_tag[remote_federate_id] = joined_tag;
+      LF_PRINT_DEBUG("Sending address query for federate %d.", remote_federate_id);
+      // Trace the event when tracing is enabled
+      tracepoint_federate_to_rti(send_ADR_QR, _lf_my_fed_id, NULL);
 
-    write_to_net_fail_on_error(_fed.net_to_RTI, 1 + sizeof(uint16_t) + 1, buffer, &lf_outbound_net_mutex,
-                               "Failed to send address query for federate %d to RTI.", remote_federate_id);
-    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+      LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+      // This should be set while holding the mutex.
+      _fed.downstream_p2p_joined_tag[remote_federate_id] = joined_tag;
 
-    // Read RTI's response.
-    read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(int32_t) + 1, buffer,
-                                "Failed to read the requested port number for federate %d from RTI.",
-                                remote_federate_id);
+      write_to_net_fail_on_error(_fed.net_to_RTI, 1 + sizeof(uint16_t) + 1, buffer, &lf_outbound_net_mutex,
+                                "Failed to send address query for federate %d to RTI.", remote_federate_id);
+      LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
 
-    if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
-      // Unexpected reply. Could be that RTI has failed and sent a resignation.
-      if (buffer[0] == MSG_TYPE_FAILED) {
-        lf_print_error_and_exit("RTI has failed.");
-      } else {
-        lf_print_error_and_exit("Unexpected reply of type %hhu from RTI (see net_common.h).", buffer[0]);
+      // Read RTI's response.
+      read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(int32_t) + 1, buffer,
+                                  "Failed to read the requested port number for federate %d from RTI.",
+                                  remote_federate_id);
+
+      if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
+        // Unexpected reply. Could be that RTI has failed and sent a resignation.
+        if (buffer[0] == MSG_TYPE_FAILED) {
+          lf_print_error_and_exit("RTI has failed.");
+        } else {
+          lf_print_error_and_exit("Unexpected reply of type %hhu from RTI (see net_common.h).", buffer[0]);
+        }
       }
-    }
-    port = extract_int32(&buffer[1]);
+      port = extract_int32(&buffer[1]);
 
-    read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(host_ip_addr), (unsigned char*)&host_ip_addr,
-                                "Failed to read the IP address for federate %d from RTI.", remote_federate_id);
-    tracepoint_federate_from_rti(receive_ADR_QR_REP, _lf_my_fed_id, NULL);
+      read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(host_ip_addr), (unsigned char*)&host_ip_addr,
+                                  "Failed to read the IP address for federate %d from RTI.", remote_federate_id);
+      tracepoint_federate_from_rti(receive_ADR_QR_REP, _lf_my_fed_id, NULL);
 
-    // A reply of -1 for the port means that the RTI does not know
-    // the port number of the remote federate, presumably because the
-    // remote federate has not yet sent an MSG_TYPE_ADDRESS_ADVERTISEMENT message to the RTI.
-    // Sleep for some time before retrying.
-    if (port == -1 && !is_transient) {
-      if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
-        lf_print_error_and_exit("TIMEOUT obtaining IP/port for federate %d from the RTI.", remote_federate_id);
+      // A reply of -1 for the port means that the RTI does not know
+      // the port number of the remote federate, presumably because the
+      // remote federate has not yet sent an MSG_TYPE_ADDRESS_ADVERTISEMENT message to the RTI.
+      // Sleep for some time before retrying, but only if the remote federate is not transient.
+      if (port == -1 && !is_transient) {
+        if (CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT)) {
+          lf_print_error_and_exit("TIMEOUT obtaining IP/port for federate %d from the RTI.", remote_federate_id);
+        }
+        // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
+        lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
+      } else if (port == -1 && is_transient) {
+        // For transient federates, we only execute once, as a request registration. If the RTI does
+        // not reply with a valid port number, we treat it normally and return.
+        return;
       }
-      // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
-      lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
-    } else if (port == -1 && is_transient) {
-      // For transient federates, we only execute once, as a request registration. If the RTI does
-      // not reply with a valid port number, we treat it normally and return.
-      return;
     }
   }
   assert(port < 65536);
@@ -2092,8 +2094,10 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int p
     lf_print_error_and_exit("Failed to connect to federate.");
   }
 
+  // Now that we have an IP address and port number, we can connect to the remote federate.
   // Iterate until we either successfully connect or we exceed the CONNECT_TIMEOUT
   start_connect = lf_time_physical();
+  int result = -1;
   while (result < 0 && !_lf_termination_executed) {
     // Try again after some time if the connection failed.
     // Note that this should not really happen since the remote federate should be
@@ -2111,7 +2115,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int p
     if (rti_failed()) {
       break;
     }
-    // Connect was successful.
+    // Send the federate ID to the remote federate.
     size_t buffer_length = 1 + sizeof(uint16_t) + 1 + 1;
     unsigned char buffer[buffer_length];
     buffer[0] = MSG_TYPE_P2P_SENDING_FED_ID;
@@ -2131,7 +2135,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int p
     write_to_net_fail_on_error(net, federation_id_length, (unsigned char*)federation_metadata.federation_id, NULL,
                                "Failed to send federation id to federate %d.", remote_federate_id);
 
-    // For transient outbound connections, a connection reset from the remote side
+    // For transient downstream connections, a connection reset from the remote side
     // (e.g. macOS resets the TCP connection if the accept loop hasn't run yet) is
     // a soft error: the RTI will resend MSG_TYPE_DOWNSTREAM_CONNECTED when the transient
     // is ready. Using the non-fatal read here prevents a spurious fatal exit on macOS.
@@ -2139,7 +2143,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int p
     if (ack_read_failed) {
       if (is_transient) {
         lf_print_warning("Failed to read MSG_TYPE_ACK from transient federate %d. Connection may have been reset. "
-                         "Will retry when RTI notifies reconnection.",
+                         "Will retry when RTI notifies of reconnection.",
                          remote_federate_id);
         return;
       }
