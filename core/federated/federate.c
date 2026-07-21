@@ -100,27 +100,16 @@ federation_metadata_t federation_metadata = {
 
 /**
  * Send a time to the RTI. This acquires the lf_outbound_net_mutex.
- * @param type The message type (MSG_TYPE_TIMESTAMP).
  * @param time The time.
- * @param microstep The microstep.
  */
-static void send_time(unsigned char type, instant_t time, microstep_t microstep) {
+static void send_time(instant_t time) {
   LF_PRINT_DEBUG("Sending time " PRINTF_TIME " to the RTI.", time);
 
-  size_t bytes_to_write;
-  if (type == MSG_TYPE_TAG) {
-    bytes_to_write = MSG_TYPE_TAG_LENGTH;
-  } else {
-    bytes_to_write = MSG_TYPE_TIMESTAMP_LENGTH;
-  }
+  size_t bytes_to_write = MSG_TYPE_TIMESTAMP_LENGTH;
   unsigned char buffer[bytes_to_write];
-  buffer[0] = type;
+  buffer[0] = MSG_TYPE_TIMESTAMP;
   encode_int64(time, &(buffer[1]));
-  if (type == MSG_TYPE_TAG) {
-    encode_uint32((microstep_t)microstep, &(buffer[1 + sizeof(instant_t)]));
-  }
-
-  tag_t tag = {.time = time, .microstep = microstep};
+  tag_t tag = {.time = time, .microstep = 0};
   tracepoint_federate_to_rti(send_TIMESTAMP, _lf_my_fed_id, &tag);
 
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
@@ -132,22 +121,24 @@ static void send_time(unsigned char type, instant_t time, microstep_t microstep)
 /**
  * Send a tag to the RTI.
  * This function acquires the lf_outbound_net_mutex.
- * @param type The message type (MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LATEST_TAG_CONFIRMED).
+ * @param type The message type (MSG_TYPE_TAG or MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LATEST_TAG_CONFIRMED).
  * @param tag The tag.
  */
 static void send_tag(unsigned char type, tag_t tag) {
-  LF_PRINT_DEBUG("Sending tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
+  LF_PRINT_DEBUG("Sending tag " PRINTF_TAG " to the RTI.", tag.time, tag.microstep);
   size_t bytes_to_write = 1 + sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_write];
   buffer[0] = type;
   encode_tag(&(buffer[1]), tag);
 
-  trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
+  trace_event_t event_type = send_TAG;
+  if (type == MSG_TYPE_NEXT_EVENT_TAG) event_type = send_NET;
+  if (type == MSG_TYPE_LATEST_TAG_CONFIRMED) event_type = send_LTC;
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
   write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, buffer, &lf_outbound_net_mutex,
-                             "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time - start_time, tag.microstep);
+                             "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time, tag.microstep);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
 }
 
@@ -1033,7 +1024,7 @@ static void handle_downstream_connected_message(void) {
   tracepoint_federate_from_rti(receive_DOWNSTREAM_CONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that downstream transient federate %d has connected.", remote_federate_id);
 
-  // Set the effective start tag of the connecting transient, so that a message is not sent.
+  // Get the effective start tag to be recorded in lf_connect_to_federate() after acquiring the lock.
   tag_t joined_tag = extract_tag(&buffer[2]);
 
   // Read the port number and IP address
@@ -1083,9 +1074,9 @@ static void handle_downstream_disconnected_message(void) {
 static instant_t get_start_time_from_rti(instant_t my_physical_time, microstep_t my_microstep) {
   // Send the timestamp marker first.
 #ifdef FEDERATED_DECENTRALIZED
-  send_time(MSG_TYPE_TAG, my_physical_time, my_microstep);
+  send_time(my_physical_time);
 #else
-  send_time(MSG_TYPE_TIMESTAMP, my_physical_time, my_microstep);
+  send_tag(MSG_TYPE_TAG, my_physical_time, my_microstep);
 #endif
 
   // Read bytes from the network abstraction. We need 9 bytes.
