@@ -308,7 +308,7 @@
  *  * One byte giving the type of the federate (1 if transient, 0 if persistent)
  *  * N bytes containing the federation ID.
  *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
- *  Each federate, when starting up, should send this message to the RTI. 
+ *  Each federate, when starting up, should send this message to the RTI.
  *  This is its first message to the RTI.
  *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
  *  If the federate is a C target LF program, the generated federate
