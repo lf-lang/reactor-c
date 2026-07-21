@@ -98,6 +98,7 @@ federation_metadata_t federation_metadata = {
 //////////////////////////////////////////////////////////////////////////////////
 // Static functions (used only internally)
 
+#ifdef FEDERATED_DECENTRALIZED
 /**
  * Send a time to the RTI. This acquires the lf_outbound_net_mutex.
  * @param time The time.
@@ -117,6 +118,7 @@ static void send_time(instant_t time) {
                              "Failed to send time " PRINTF_TIME " to the RTI.", time - start_time);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
 }
+#endif // FEDERATED_DECENTRALIZED
 
 /**
  * Send a tag to the RTI.
@@ -1076,6 +1078,7 @@ static void handle_downstream_disconnected_message(void) {
 static instant_t get_start_time_from_rti(instant_t my_physical_time, microstep_t my_microstep) {
   // Send the timestamp marker first.
 #ifdef FEDERATED_DECENTRALIZED
+  SUPPRESS_UNUSED_WARNING(my_microstep);
   send_time(my_physical_time);
 #else
   send_tag(MSG_TYPE_TAG, my_physical_time, my_microstep);
