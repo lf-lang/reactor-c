@@ -2220,7 +2220,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   while (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT) && !_lf_termination_executed) {
 
     // Have connected to an RTI, but not sure it's the right RTI.
-    // Send a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS message and wait for a reply.
+    // Send a MSG_TYPE_FED_IDS message and wait for a reply.
     // Notify the RTI of the ID of this federate and its federation.
 
 #ifdef FEDERATED_AUTHENTICATED
@@ -2237,19 +2237,16 @@ void lf_connect_to_rti(const char* hostname, int port) {
     LF_PRINT_LOG("Connected to an RTI. Sending federation ID for authentication.");
 #endif
 
-    unsigned char buffer[5];
+    unsigned char buffer[MSG_TYPE_FED_IDS_LENGTH];
     // Send the message type first.
-    if (_fed.is_transient) {
-      buffer[0] = MSG_TYPE_TRANSIENT_FED_IDS;
-    } else {
-      buffer[0] = MSG_TYPE_FED_IDS;
-    }
+    buffer[0] = MSG_TYPE_FED_IDS;
 
     // Next send the federate ID.
     if (_lf_my_fed_id == UINT16_MAX) {
       lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX - 1);
     }
     encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
+
     // Next send the federation ID length.
     // The federation ID is limited to 255 bytes.
     size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
@@ -2258,14 +2255,11 @@ void lf_connect_to_rti(const char* hostname, int port) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_FED_ID, _lf_my_fed_id, NULL);
 
-    size_t size = 1 + sizeof(uint16_t) + 1;
-    if (_fed.is_transient) {
-      // Next send the federate type (persistent or transient)
-      buffer[2 + sizeof(uint16_t)] = _fed.is_transient ? 1 : 0;
-      size++;
-    }
+    // Next send the federate type (persistent or transient)
+    buffer[2 + sizeof(uint16_t)] = _fed.is_transient ? 1 : 0;
+
     // No need for a mutex here because no other threads are writing to this network abstraction.
-    if (write_to_net(_fed.net_to_RTI, size, buffer)) {
+    if (write_to_net(_fed.net_to_RTI, MSG_TYPE_FED_IDS_LENGTH, buffer)) {
       continue; // Try again, possibly on a new port.
     }
 

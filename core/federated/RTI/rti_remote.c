@@ -1754,7 +1754,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
   bool is_transient = false;
 
   // First byte received is the message type.
-  if (buffer[0] != MSG_TYPE_FED_IDS && buffer[0] != MSG_TYPE_TRANSIENT_FED_IDS) {
+  if (buffer[0] != MSG_TYPE_FED_IDS) {
     if (rti_remote->base.tracing_enabled) {
       tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
     }
@@ -1780,11 +1780,9 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     fed_id = extract_uint16(buffer + 1);
     // Read the federation ID length, which is one byte.
     size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
-    if (buffer[0] == MSG_TYPE_TRANSIENT_FED_IDS) {
-      unsigned char buf;
-      read_from_net_close_on_error(fed_net, 1, &buf);
-      is_transient = (buf == 1) ? true : false;
-    }
+    unsigned char buf;
+    read_from_net_close_on_error(fed_net, 1, &buf);
+    is_transient = (buf == 1) ? true : false;
 
     if (is_transient) {
       LF_PRINT_LOG("RTI received federate ID: %d, which is transient.", fed_id);

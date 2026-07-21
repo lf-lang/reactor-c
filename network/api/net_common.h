@@ -21,14 +21,12 @@
  * use DEFAULT_PORT.
  *
  * When it has successfully opened a TCP connection, the first message it sends
- * to the RTI is either a @ref MSG_TYPE_FED_IDS message, if it is a persistent
- * federate, or a @ref MSG_TYPE_TRANSIENT_FED_IDS message, if it is a transient
- * federate (see "Transient federates" below). Either message contains the ID
+ * to the RTI is a @ref MSG_TYPE_FED_IDS message. The message contains the ID
  * of this federate within the federation, contained in the global variable
  * _lf_my_fed_id in the federate code (which is initialized by the code
  * generator), and the unique ID of the federation, a GUID that is created at
  * run time by the generated script that launches the federation. The
- * transient variant additionally carries a byte giving the federate's type
+ * transient additionally carries a byte giving the federate's type
  * (persistent (0) or transient (1)).
  * If you launch the federates and the RTI manually, rather than using the script,
  * then the federation ID is a string that is optionally given to the federate
@@ -151,8 +149,7 @@
  *
  * A federate may be marked transient, meaning it is allowed to join the
  * federation after execution has begun, and to disconnect and later rejoin.
- * A transient identifies itself with @ref MSG_TYPE_TRANSIENT_FED_IDS instead
- * of @ref MSG_TYPE_FED_IDS. If it joins during the RTI's startup phase
+ * If a transient federate joins during the RTI's startup phase
  * (before all persistent federates have proposed a start time), it is
  * treated like any other federate and simply receives the common start time.
  *
@@ -301,40 +298,25 @@
 
 /**
  * @brief Byte identifying a message from a federate to an RTI containing
- * the federation ID and the federate ID.
+ * the federation ID, the federate ID, and th federate type (persistent or transient).
  * @ingroup Network
  *
  * The message contains, in this order:
  *  * One byte equal to MSG_TYPE_FED_IDS.
  *  * Two bytes (ushort) giving the federate ID.
  *  * One byte (uchar) giving the length N of the federation ID.
+ *  * One byte giving the type of the federate (1 if transient, 0 if persistent)
  *  * N bytes containing the federation ID.
  *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
- *  Each federate, when starting up, should send either this message, or MSG_TYPE_TRANSIENT_FED_IDS
- *  to the RTI, as its first message to the RTI.
+ *  Each federate, when starting up, should send this message to the RTI. 
+ *  This is its first message to the RTI.
  *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
  *  If the federate is a C target LF program, the generated federate
  *  code does this by calling lf_synchronize_with_other_federates(),
  *  passing to it its federate ID.
  */
 #define MSG_TYPE_FED_IDS 1
-
-/** Byte identifying a message from a transient federate to an RTI containing
- *  the federate ID and the federation ID. The message contains, in this order:
- *  * One byte equal to MSG_TYPE_TRANSIENT_FED_IDS.
- *  * Two bytes (ushort) giving the federate ID.
- *  * One byte (uchar) giving the length N of the federation ID.
- *  * One byte giving the type of the federate (1 if transient, 0 if persistent)
- *  * N bytes containing the federation ID.
- *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
- *  Each federate, when starting up, should send either this message, or MSG_TYPE_FED_IDS
- *  to the RTI, as its first message to the RTI.
- *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
- *  If the federate is a C target LF program, the generated federate
- *  code does this by calling lf_synchronize_with_other_federates(),
- *  passing to it its federate ID.
- */
-#define MSG_TYPE_TRANSIENT_FED_IDS 103
+#define MSG_TYPE_FED_IDS_LENGTH (1 + sizeof(uint16_t) + 1 + 1)
 
 /////////// Messages used for authenticated federation. ///////////////
 /**
