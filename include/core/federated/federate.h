@@ -301,24 +301,24 @@ extern lf_cond_t lf_port_status_changed;
 // Public functions (in alphabetical order)
 
 /**
- * @brief Connect to the federate with the specified id.
+ * @brief Connect to the downstreamfederate with the specified id.
  * @ingroup Federated
  *
  * The established connection will then be used in functions such as lf_send_tagged_message()
  * to send messages directly to the specified federate.
  * This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain
  * the IP address and port number of the specified federate. It then attempts
- * to establish a network abstraction connection to the specified federate.
- * If this fails, the program exits. If it succeeds, it sets element [id] of
- * the _fed.net_for_outbound_p2p_connections global array to
+ * to establish a network connection to the specified federate.
+ * If this fails, the program exits. If it succeeds, it sets
+ * _fed.net_for_outbound_p2p_connections[remote_federate_id] to
  * refer to the network abstraction for communicating directly with the federate.
  *
  * @param remote_federate_id The ID of the remote federate.
  * @param joined_tag The tag at which the remote federate joined. This is NEVER_TAG for persistent federates,
  *   and either FOREVER_TAG (not yet joined) or the tag at which the transient federate joined for transient federates.
- * @param port The port number of the remote federate. Pass -1 if it is to be queried.
- * @param ip_address The IP address of the remote federate, in network byte order. Pass 0
- *   if it is to be queried.
+ * @param port The port number of the remote federate or -1 to ask for the port number from the RTI.
+ * @param ip_address The IP address of the remote federate, in network byte order, or 0
+ *   to ask for the IP address from the RTI.
  */
 void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32_t port, uint32_t ip_address);
 

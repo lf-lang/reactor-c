@@ -1074,7 +1074,6 @@ static void handle_downstream_disconnected_message(void) {
  * may suggest a different timestamp, that is the max tag + microstep of the conetced outboud federates.
  * In such a case, it will be higher than the actual physical time.
  *
- *
  * This procedure blocks until the response is
  * received from the RTI.
  * @param my_physical_time The physical time at this federate, or the time in the tag
@@ -1094,7 +1093,8 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time, microstep_t
   size_t buffer_length = (_fed.is_transient) ? MSG_TYPE_TIMESTAMP_TAG_LENGTH : MSG_TYPE_TIMESTAMP_LENGTH;
   unsigned char buffer[buffer_length];
 
-  // Deferred OUTBOUND_CONNECTED notifications: calling lf_connect_to_federate() inline
+  // FIXME: This comment is hard to understand.
+  // Deferred DOWNSTREAM_CONNECTED notifications: calling lf_connect_to_federate() inline
   // here is unsafe because the RTI may have already written MSG_TYPE_TIMESTAMP into this
   // federate's TCP stream immediately after MSG_TYPE_DOWNSTREAM_CONNECTED (from a concurrent
   // send_start_tag_locked call for the transient federate). If we call lf_connect_to_federate()
@@ -2158,7 +2158,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int p
       read_from_net_fail_on_error(net, 1, (unsigned char*)buffer,
                                   "Failed to read error code from federate %d in response to sending fed_id.",
                                   remote_federate_id);
-      lf_print_error("Received MSG_TYPE_REJECT message from remote federate (%d).", buffer[0]);
+      lf_print_error("Received MSG_TYPE_REJECT message from remote federate (error code: %d).", buffer[0]);
       result = -1;
       // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
       lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);

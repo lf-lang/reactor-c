@@ -213,8 +213,8 @@ tag_t get_next_event_tag(environment_t* env) {
   if (event != NULL) {
     // There is an event in the event queue.
     if (lf_tag_compare(event->base.tag, env->current_tag) < 0) {
-      lf_print_error_and_exit("get_next_event_tag(): Earliest event on the event queue (" PRINTF_TAG ") is "
-                              "earlier than the current tag (" PRINTF_TAG ").",
+      lf_print_error_and_exit("get_next_event_tag(): Earliest event on the event queue " PRINTF_TAG " is "
+                              "earlier than the current tag " PRINTF_TAG ".",
                               event->base.tag.time - start_time, event->base.tag.microstep,
                               env->current_tag.time - start_time, env->current_tag.microstep);
     }

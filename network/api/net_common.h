@@ -164,19 +164,30 @@
  * executing tags until then.
  *
  * Because a transient can appear or disappear at any point, its neighbors
- * must be told when to treat it as absent versus when to wait for it. When a
- * transient (re-)connects, the RTI notifies downstream neighbors with
- * @ref MSG_TYPE_UPSTREAM_CONNECTED and upstream neighbors with
- * @ref MSG_TYPE_OUTBOUND_CONNECTED so that they (re-)establish P2P
- * connections to it. When it disconnects, @ref MSG_TYPE_UPSTREAM_DISCONNECTED
- * and @ref MSG_TYPE_OUTBOUND_DISCONNECTED are sent instead, so neighbors
- * treat it as absent rather than blocking on it. Under decentralized
- * coordination, the @ref MSG_TYPE_ACK a transient receives on (re-)connect
- * also carries the current tag of each of its outbound federates, so its
- * effective start tag is never set earlier than theirs.
+ * must be told when to treat it as absent. When a transient (re-)connects,
+ * the RTI notifies downstream neighbors with @ref MSG_TYPE_UPSTREAM_CONNECTED
+ * and upstream neighbors with @ref MSG_TYPE_DOWNSTREAM_CONNECTED. The upstream
+ * neighbors will (re-)establish P2P connections to the transient, while the
+ * transient will (re-)establish P2P connections to its downstream neighbors.
+ * 
+ * Under decentralized coordination, downstream neighbors acknowledge the
+ * (re)connection with a @ref MSG_TYPE_ACK that carries the current tag (when
+ * it (re)connects) of the downstream federate. The transient federate
+ * uses this to ensure that its effective start tag is never set earlier than
+ * the current tag of its downstream neighbors.  The downstream federate is
+ * assumed to not prematurely advance its tag beyond this current tag by using
+ * its `maxwait` parameter because, now that its upstream transient is connected,
+ * it cannot simply assume that the input from the transient is absent.
+ * 
+ * When a transient disconnects, @ref MSG_TYPE_UPSTREAM_DISCONNECTED
+ * and @ref MSG_TYPE_DOWNSTREAM_DISCONNECTED are sent to neighbors.
+ * Downstream neighbors will then treat inputs from the transient as absent
+ * rather than blocking on them, and upstream neighbors will refrain from sending
+ * messages to the transient.
  *
  * The next step depends on the coordination type.
  *
+ * FIXME: Unclear:
  * Under centralized coordination, each federate will send a
  * `MSG_TYPE_NEXT_EVENT_TAG` to the RTI with the start tag. That is to say that
  * each federate has a valid event at the start tag (start time, 0) and it will
@@ -188,6 +199,7 @@
  * `MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT` before it can advance to a
  * particular tag.
  *
+ * FIXME: Obsolete:
  * Under decentralized coordination, the coordination is governed by STA and
  * STAAs, as further explained in https://doi.org/10.48550/arXiv.2109.07771.
  *
