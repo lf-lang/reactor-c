@@ -1066,22 +1066,21 @@ static void handle_downstream_disconnected_message(void) {
  * The specified timestamp should be current physical time of the
  * federate, and the response will be the designated start time for
  * the federate. In case of decentralized coordination, the federate
- * may suggest a different timestamp, that is the max tag + microstep of the conetced outboud federates.
+ * may suggest a different timestamp, that is the max tag and microstep
+ * of the connected downstream federates.
  * In such a case, it will be higher than the actual physical time.
  *
  * This procedure blocks until the response is
  * received from the RTI.
- * @param my_physical_time The physical time at this federate, or the time in the tag
- * @param my_microstep microstep
+ * @param suggested_start_tag The suggested start tag by the federate.
  * @return The designated start time for the federate.
  */
-static instant_t get_start_time_from_rti(instant_t my_physical_time, microstep_t my_microstep) {
+static instant_t get_start_time_from_rti(tag_t suggested_start_tag) {
   // Send the timestamp marker first.
 #ifdef FEDERATED_DECENTRALIZED
-  SUPPRESS_UNUSED_WARNING(my_microstep);
-  send_time(my_physical_time);
+  send_time(suggested_start_tag.time);
 #else
-  send_tag(MSG_TYPE_TAG, my_physical_time, my_microstep);
+  send_tag(MSG_TYPE_TAG, suggested_start_tag);
 #endif
 
   // Read bytes from the network abstraction. We need 9 bytes.
@@ -3076,18 +3075,16 @@ void lf_synchronize_with_other_federates(void) {
 
   // Reset the start time to the coordinated start time for all federates.
   // Note that this does not grant execution to this federate.
-  instant_t t_physical = lf_time_physical();
-  microstep_t m = 0u;
+  tag_t suggested_start_tag = {.time = lf_time_physical(), .microstep = 0u};
 #ifdef FEDERATED_DECENTRALIZED
   if (_fed.is_transient) {
-    if (temp_effective_start_tag.time >= t_physical) {
-      t_physical = temp_effective_start_tag.time;
-      m = temp_effective_start_tag.microstep;
-      m++;
+    if (temp_effective_start_tag.time >= suggested_start_tag.time) {
+      suggested_start_tag = temp_effective_start_tag;
+      suggested_start_tag.microstep++;
     }
   }
 #endif
-  start_time = get_start_time_from_rti(t_physical, m);
+  start_time = get_start_time_from_rti(suggested_start_tag);
 
   lf_print_info("Starting timestamp is: " PRINTF_TIME " and effective start tag is: " PRINTF_TAG ".", lf_time_start(),
                 effective_start_tag.time - lf_time_start(), effective_start_tag.microstep);
