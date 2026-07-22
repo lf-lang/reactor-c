@@ -189,8 +189,15 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
       min_upstream_completed = candidate;
     }
   }
-  LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is " PRINTF_TAG "(adjusted by after delay).", e->id,
-               min_upstream_completed.time - start_time, min_upstream_completed.microstep);
+  if (lf_tag_compare(min_upstream_completed, NEVER_TAG) == 0) {
+    LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is NEVER (no LTC from connected upstreams).",
+                 e->id);
+  } else if (lf_tag_compare(min_upstream_completed, FOREVER_TAG) == 0) {
+    LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is FOREVER.", e->id);
+  } else {
+    LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is " PRINTF_TAG "(adjusted by after delay).", e->id,
+                 min_upstream_completed.time - start_time, min_upstream_completed.microstep);
+  }
 
   if (num_connected_upstream == 0) {
     // When none of the upstream federates is connected (case of transients),
@@ -212,6 +219,32 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
   // Find the tag of the earliest event that may be later received from an upstream enclave
   // or federate (which includes any after delays on the connections).
   tag_t t_d = earliest_future_incoming_message_tag(e);
+
+  // Tighten EIMT using immediate upstreams: an upstream with NET=FOREVER (no local
+  // events) may still forward messages from further upstream. The transitive NET
+  // walk above usually captures that, but only while further upstreams remain
+  // connected and reflected in min_delays. Using min(NET, EIMT) per immediate
+  // upstream matches eimt_strict's bound (but includes ZDC nodes) and prevents
+  // over-granting when an intermediate's NET is FOREVER.
+  for (int j = 0; j < e->num_immediate_upstreams; j++) {
+    scheduling_node_t* upstream = rti_common->scheduling_nodes[e->immediate_upstreams[j]];
+    if (upstream->state == NOT_CONNECTED) {
+      continue;
+    }
+    if (lf_tag_compare(upstream->next_event, NEVER_TAG) == 0) {
+      tag_t start_tag = {.time = start_time, .microstep = 0};
+      upstream->next_event = start_tag;
+    }
+    tag_t earliest = earliest_future_incoming_message_tag(upstream);
+    if (lf_tag_compare(upstream->next_event, earliest) < 0) {
+      earliest = upstream->next_event;
+    }
+    tag_t candidate = lf_delay_tag(earliest, e->immediate_upstream_delays[j]);
+    if (lf_tag_compare(candidate, t_d) < 0) {
+      t_d = candidate;
+    }
+  }
+
   // Non-ZDC version of the above. This is a tag that must be strictly greater than
   // that of the next granted PTAG.
   tag_t t_d_strict = eimt_strict(e);

@@ -1156,6 +1156,12 @@ static void send_start_tag_locked(federate_info_t* my_fed) {
     // message has been sent. That MSG_TYPE_TIMESTAMP_START message grants time advance to
     // the federate to the my_fed->effective_start_tag.time.
     my_fed->enclave.state = GRANTED;
+    // Until the transient reports its first NET, bound downstream EIMT by its
+    // effective start (startup reactions, etc.). Otherwise NEVER is treated as
+    // federation start_time, which is wrong for late joiners.
+    if (my_fed->is_transient && lf_tag_compare(my_fed->enclave.next_event, NEVER_TAG) == 0) {
+      my_fed->enclave.next_event = my_fed->effective_start_tag;
+    }
     lf_cond_broadcast(&sent_start_time);
     LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
 
@@ -1311,12 +1317,12 @@ void handle_timestamp(federate_info_t* my_fed, int type) {
         }
       }
 
-      // For every downstream that has a pending grant that is higher than the
-      // effective_start_time of the federate, cancel it.
-      // FIXME: Should this be higher-than or equal to?
-      // FIXME: Also, won't the grant simply be lost?
-      // If the joining federate doesn't send anything, the downstream federate won't issue another
-      // NET.
+      // For every downstream that has a pending delayed grant at or after this
+      // federate's effective start tag, cancel it. Those grants were computed while
+      // this transient was absent and must not be sent once it can produce events
+      // at the effective start tag (e.g. TAG(t) must not race with a message at t).
+      // Grants strictly earlier than the effective start remain valid.
+      // TAG re-evaluation for downstreams happens after send_start_tag_locked below.
       for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
         federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
 
@@ -1325,12 +1331,18 @@ void handle_timestamp(federate_info_t* my_fed, int type) {
           continue;
         }
 
-        // Check the pending grants, if any, and keep it only if it is
-        // sooner than the effective start tag.
         pqueue_delayed_grant_element_t* dge =
             pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, downstream->enclave.id);
-        if (dge != NULL && lf_tag_compare(dge->base.tag, my_fed->effective_start_tag) > 0) {
+        if (dge != NULL && lf_tag_compare(dge->base.tag, my_fed->effective_start_tag) >= 0) {
+          LF_PRINT_LOG("RTI: Canceling delayed grant of " PRINTF_TAG
+                       " for federate %d because transient federate %d rejoined with "
+                       "effective start " PRINTF_TAG ".",
+                       dge->base.tag.time - start_time, dge->base.tag.microstep, downstream->enclave.id,
+                       my_fed->enclave.id, my_fed->effective_start_tag.time - start_time,
+                       my_fed->effective_start_tag.microstep);
           pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
+          free(dge);
+          lf_cond_signal(&updated_delayed_grants);
         }
       }
     } else {
@@ -1371,6 +1383,17 @@ void handle_timestamp(federate_info_t* my_fed, int type) {
     // get re-computed.
     // FIXME: Maybe optimize it to only invalidate those affected by the transient
     invalidate_min_delays();
+
+    // With the transient granted and min_delays refreshed, re-evaluate TAG/PTAG for
+    // downstreams (delayed grants at or after the effective start were canceled above).
+    if (type == MSG_TYPE_TIMESTAMP) {
+      for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
+        federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
+        if (downstream->enclave.state != NOT_CONNECTED) {
+          notify_advance_grant_if_safe(&(downstream->enclave));
+        }
+      }
+    }
 
     LF_MUTEX_UNLOCK(&rti_mutex);
   }
@@ -2428,12 +2451,28 @@ static void* lf_delayed_grants_thread(void* nothing) {
         if (next == new_next) {
           pqueue_delayed_grants_pop(rti_remote->delayed_grants);
           federate_info_t* fed = GET_FED_INFO(next->fed_id);
-          if (next->is_provisional) {
+          // If all upstream transients have reconnected, this delayed grant is stale:
+          // it was queued while an upstream was absent and must not bypass EIMT checks.
+          // Drop it and let the normal TAG/PTAG logic decide.
+          if (get_num_absent_upstream_transients(fed) == 0) {
+            LF_PRINT_LOG("RTI: Dropping delayed grant of " PRINTF_TAG
+                         " for federate %d because upstream transient(s) reconnected.",
+                         next->base.tag.time - start_time, next->base.tag.microstep, next->fed_id);
+            free(next);
+            notify_advance_grant_if_safe(&(fed->enclave));
+          } else if (lf_tag_compare(next->base.tag, fed->enclave.last_granted) <= 0 ||
+                     lf_tag_compare(next->base.tag, fed->enclave.last_provisionally_granted) <= 0) {
+            // Redundant with a grant already sent (e.g. while the transient was absent).
+            LF_PRINT_LOG("RTI: Dropping redundant delayed grant of " PRINTF_TAG " for federate %d.",
+                         next->base.tag.time - start_time, next->base.tag.microstep, next->fed_id);
+            free(next);
+          } else if (next->is_provisional) {
             notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+            free(next);
           } else {
             notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+            free(next);
           }
-          free(next);
         }
       } else if (ret != 0) {
         // An error occurred.
