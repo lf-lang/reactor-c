@@ -149,62 +149,43 @@
  *
  * A federate may be marked transient, meaning it is allowed to join the
  * federation after execution has begun, and to disconnect and later rejoin.
+ * While a transient federate is absent, its downstream neighbors will treat
+ * inputs from it as absent. Its upstream neighbors will not send messages to
+ * it.
+ *
  * If a transient federate joins during the RTI's startup phase
  * (before all persistent federates have proposed a start time), it is
  * treated like any other federate and simply receives the common start time.
  *
- * FIXME: This is about centralized coordination only? Also, should be "no later" rather than "no earlier"?
- * If a transient joins later, the RTI computes an effective start tag for it
- * that is no earlier than the tag of any message already routed to it and no
- * earlier than the federation's current tag. This tag is returned together
- * with the common start time in an extended @ref MSG_TYPE_TIMESTAMP message
- * (see MSG_TYPE_TIMESTAMP_TAG_LENGTH); the transient does not begin
- * executing tags until then.
- * FIXME: I don't like MSG_TYPE_TIMESTAMP having two different lengths.
+ * How a later joining is handled depends on the coordination type.
  *
- * Because a transient can appear or disappear at any point, its neighbors
- * must be told when to treat it as absent. When a transient (re-)connects,
- * the RTI notifies downstream neighbors with @ref MSG_TYPE_UPSTREAM_CONNECTED
- * and upstream neighbors with @ref MSG_TYPE_DOWNSTREAM_CONNECTED. The upstream
- * neighbors will (re-)establish P2P connections to the transient, while the
- * transient will (re-)establish P2P connections to its downstream neighbors.
+ * Under centralized coordination, when a transient federate joins during execution,
+ * the RTI sets its effective start tag to the maximum of several candidates, then
+ * advances the microstep by one wherever that candidate is taken from an
+ * already-observed tag. It starts from the join timestamp at microstep 0,
+ * but never earlier than the federation start time `(start_time, 0)`. It then
+ * raises that tag if needed so it is strictly after the joining federate's
+ * latest completed logical tag, after every immediate downstream's latest
+ * TAG or PTAG, and after the latest in-transit message tag known from any
+ * immediate upstream. The result is sent while the RTI still holds its mutex,
+ * so no upstream message can be forwarded before that start tag, and any pending
+ * delayed grants to downstreams at or after the new effective start are canceled
+ * so they cannot race with messages the rejoined transient may produce at that tag.
  *
- * Under decentralized coordination, downstream neighbors acknowledge the
- * (re)connection with a @ref MSG_TYPE_ACK that carries the current tag (when
- * it (re)connects) of the downstream federate. The transient federate
- * uses this to ensure that its effective start tag is never set earlier than
- * the current tag of its downstream neighbors.  The downstream federate is
- * assumed to not prematurely advance its tag beyond this current tag by using
- * its `maxwait` parameter because, now that its upstream transient is connected,
- * it cannot simply assume that the input from the transient is absent.
- *
- * When a transient disconnects, @ref MSG_TYPE_UPSTREAM_DISCONNECTED
- * and @ref MSG_TYPE_DOWNSTREAM_DISCONNECTED are sent to neighbors.
- * Downstream neighbors will then treat inputs from the transient as absent
- * rather than blocking on them, and upstream neighbors will refrain from sending
- * messages to the transient.
- *
- * The next step depends on the coordination type.
- *
- * FIXME: Unclear:
- * Under centralized coordination, each federate will send a
- * `MSG_TYPE_NEXT_EVENT_TAG` to the RTI with the start tag. That is to say that
- * each federate has a valid event at the start tag (start time, 0) and it will
- * inform the RTI of this event.
- * Subsequently, at the conclusion of each tag, each federate will send a
- * `MSG_TYPE_LATEST_TAG_CONFIRMED` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
- * the comment for each message for further explanation). Each federate would
- * have to wait for a `MSG_TYPE_TAG_ADVANCE_GRANT` or a
- * `MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT` before it can advance to a
- * particular tag.
- *
- * FIXME: Obsolete:
- * Under decentralized coordination, the coordination is governed by STA and
- * STAAs, as further explained in https://doi.org/10.48550/arXiv.2109.07771.
- *
- * FIXME: Expand this. Explain port absent reactions.
+ * Under decentralized coordination, when a transient federate joins during execution,
+ * the RTI takes the `(timestamp, microstep)` the federate proposed as its candidate
+ * effective start tag. If that timestamp is earlier than the federation start time,
+ * the tag is raised to (start_time, 0). Otherwise, if the federate has any upstream
+ * peer (some connected federate lists it among its downstream transients), the RTI
+ * instead uses `(timestamp + DELAY_START, 0)`, under the assumption that `DELAY_START`
+ * is large enough to cover clock-synchronization error plus network latency so
+ * upstreams cannot advance past the join before the newcomer's start. If there are
+ * no upstream peers, the proposed `(timestamp, microstep)` is kept (or the federation
+ * start floor above). As with centralized joins, the RTI sends this effective start
+ * tag while still holding the mutex.
  *
  * ### Requesting a stop
+ *
  * Overview of the algorithm:
  *  When any federate calls lf_request_stop(), it will
  *  send a MSG_TYPE_STOP_REQUEST message to the RTI, which will then
@@ -312,8 +293,7 @@
  *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
  *  Each federate, when starting up, should send this message to the RTI.
  *  This is its first message to the RTI.
- *  FIXME: Does it really send MSG_TYPE_UDP_PORT?
- *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
+ *  The RTI will respond with either MSG_TYPE_REJECT or MSG_TYPE_ACK.
  *  If the federate is a C target LF program, the generated federate
  *  code does this by calling lf_synchronize_with_other_federates(),
  *  passing to it its federate ID.

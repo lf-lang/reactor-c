@@ -216,7 +216,7 @@ static void update_last_known_status_on_input_ports(tag_t tag, environment_t* en
       notify = true;
     }
   }
-  // FIXME: We could put a condition variable into the trigger_t
+  // NOTE: We could put a condition variable into the trigger_t
   // struct for each network input port, in which case this won't
   // be a broadcast but rather a targetted signal.
   if (notify && lf_update_max_level(tag, false)) {
@@ -314,7 +314,7 @@ static void mark_inputs_known_absent(int fed_id) {
   // current_tag is equivalent to "absent at the current logical time" — sufficient
   // to unblock the scheduler, but small enough that any future message from the
   // rejoining federate at a tag >= current_tag will update the port normally.
-  bool is_transient = _fed.inbound_p2p_connection_is_transient[fed_id];
+  bool is_transient = _fed.upstream_fed_is_transient[fed_id];
   tag_t absent_until = is_transient ? env->current_tag : FOREVER_TAG;
 
   for (size_t i = 0; i < _lf_action_table_size; i++) {
@@ -857,7 +857,7 @@ static void* listen_to_federates(void* _args) {
       // For decentralized execution, once this network abstraction is closed, we
       // update last known tags of all ports connected to the specified federate,
       // which would eliminate the need to wait for STAA to assume an input is absent.
-      _fed.inbound_p2p_is_connected[fed_id] = false;
+      _fed.upstream_fed_is_connected[fed_id] = false;
       mark_inputs_known_absent(fed_id);
 
       break; // while loop
@@ -1047,9 +1047,9 @@ static void handle_downstream_disconnected_message(void) {
   size_t bytes_to_read = sizeof(uint16_t);
   unsigned char buffer[bytes_to_read];
   read_from_net_fail_on_error(_fed.net_to_RTI, bytes_to_read, buffer, NULL,
-                              "Failed to read outbound disconnected message from RTI.");
+                              "Failed to read downstream disconnected message from RTI.");
   uint16_t remote_federate_id = extract_uint16(buffer);
-  tracepoint_federate_from_rti(receive_OUTBOUND_DISCONNECTED, _lf_my_fed_id, NULL);
+  tracepoint_federate_from_rti(receive_DOWNSTREAM_DISCONNECTED, _lf_my_fed_id, NULL);
   LF_PRINT_DEBUG("Received notification that downstream transient federate %d has disconnected.", remote_federate_id);
 
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
@@ -1062,13 +1062,10 @@ static void handle_downstream_disconnected_message(void) {
 }
 
 /**
- * Send the specified timestamp to the RTI and wait for a response.
- * The specified timestamp should be current physical time of the
+ * Send the specified tag to the RTI and wait for a response.
+ * The timestamp in the specified tag should be current physical time of the
  * federate, and the response will be the designated start time for
- * the federate. In case of decentralized coordination, the federate
- * may suggest a different timestamp, that is the max tag and microstep
- * of the connected downstream federates.
- * In such a case, it will be higher than the actual physical time.
+ * the federate. See net_common.h for more details.
  *
  * This procedure blocks until the response is
  * received from the RTI.
@@ -1088,17 +1085,9 @@ static instant_t get_start_time_from_rti(tag_t suggested_start_tag) {
   size_t buffer_length = (_fed.is_transient) ? MSG_TYPE_TIMESTAMP_TAG_LENGTH : MSG_TYPE_TIMESTAMP_LENGTH;
   unsigned char buffer[buffer_length];
 
-  // FIXME: This comment is hard to understand.
-  // Deferred DOWNSTREAM_CONNECTED notifications: calling lf_connect_to_federate() inline
-  // here is unsafe because the RTI may have already written MSG_TYPE_TIMESTAMP into this
-  // federate's TCP stream immediately after MSG_TYPE_DOWNSTREAM_CONNECTED (from a concurrent
-  // send_start_tag_locked call for the transient federate). If we call lf_connect_to_federate()
-  // now it will read from the net_abs expecting MSG_TYPE_ADDRESS_QUERY_REPLY but will instead
-  // consume the queued MSG_TYPE_TIMESTAMP bytes, causing a fatal "Unexpected reply of type 2".
-  // Fix: read and save each downstream federate ID, then call lf_connect_to_federate() for
-  // each one only after MSG_TYPE_TIMESTAMP has been received and the loop has exited.
-  uint16_t
-      pending_downstream_ids[_fed.number_of_outbound_p2p_transients > 0 ? _fed.number_of_outbound_p2p_transients : 1];
+  uint16_t pending_downstream_ids[_fed.number_of_downstream_p2p_transients > 0
+                                      ? _fed.number_of_downstream_p2p_transients
+                                      : 1];
   size_t num_pending_downstream = 0;
 
   while (true) {
@@ -1116,7 +1105,7 @@ static instant_t get_start_time_from_rti(tag_t suggested_start_tag) {
         handle_upstream_disconnected_message();
         continue;
       } else if (buffer[0] == MSG_TYPE_DOWNSTREAM_DISCONNECTED) {
-        // A transient outbound federate disconnected before we even got our start time.
+        // A transient downstream federate disconnected before we even got our start time.
         // Drain the federate ID payload and continue waiting for MSG_TYPE_TIMESTAMP.
         handle_downstream_disconnected_message();
         continue;
@@ -1130,13 +1119,13 @@ static instant_t get_start_time_from_rti(tag_t suggested_start_tag) {
         // Drain the start_tag, as well as the port and IP address
         unsigned char oc_buf[MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH - 1];
         read_from_net_fail_on_error(_fed.net_to_RTI, MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH - 1, oc_buf, NULL,
-                                    "Failed to read outbound connected federate ID.");
+                                    "Failed to read downstream connected federate ID.");
         tracepoint_federate_from_rti(receive_DOWNSTREAM_CONNECTED, _lf_my_fed_id, NULL);
         uint16_t remote_federate_id = extract_uint16(oc_buf);
         LF_PRINT_DEBUG("Deferring P2P connection to downstream transient federate %d until after "
                        "start time is received.",
                        remote_federate_id);
-        if (num_pending_downstream < _fed.number_of_outbound_p2p_transients) {
+        if (num_pending_downstream < _fed.number_of_downstream_p2p_transients) {
           pending_downstream_ids[num_pending_downstream++] = remote_federate_id;
         }
         // We do not save the remaining information
@@ -1172,7 +1161,7 @@ static instant_t get_start_time_from_rti(tag_t suggested_start_tag) {
 
   // Now that MSG_TYPE_TIMESTAMP has been received and the start time is known, it is safe
   // to establish outbound P2P connections to any transient downstream federates that sent
-  // OUTBOUND_CONNECTED notifications while we were waiting. The ADDRESS_QUERY round-trip
+  // DOWNSTREAM_CONNECTED notifications while we were waiting. The ADDRESS_QUERY round-trip
   // can proceed without risk of consuming queued TIMESTAMP bytes.
   for (size_t i = 0; i < num_pending_downstream; i++) {
     LF_PRINT_DEBUG("Establishing deferred P2P connection to downstream transient federate %d.",
@@ -1285,7 +1274,7 @@ static int id_of_action(lf_action_base_t* input_port_action) {
 static bool inputs_known_to(tag_t tag) {
   for (size_t i = 0; i < _lf_action_table_size; i++) {
     int src = _lf_action_table[i]->source_id;
-    if (src >= 0 && _fed.inbound_p2p_connection_is_transient[src] && !_fed.inbound_p2p_is_connected[src])
+    if (src >= 0 && _fed.upstream_fed_is_transient[src] && !_fed.upstream_fed_is_connected[src])
       continue; // absent transient: known to be absent for all time
     tag_t known_to = _lf_action_table[i]->trigger->last_known_status_tag;
     if (lf_tag_compare(known_to, tag) < 0)
@@ -1351,8 +1340,7 @@ static void* update_ports_from_staa_offsets(void* args) {
         lf_action_base_t* input_port_action = staa_elem->actions[j];
         int src = input_port_action->source_id;
 
-        bool upstream_is_absent_transient =
-            _fed.inbound_p2p_connection_is_transient[src] && !_fed.inbound_p2p_is_connected[src];
+        bool upstream_is_absent_transient = _fed.upstream_fed_is_transient[src] && !_fed.upstream_fed_is_connected[src];
         if (upstream_is_absent_transient) { //} && input_port_action->trigger->status == unknown) {
           input_port_action->trigger->status = absent;
           LF_PRINT_DEBUG("**** (update thread) Transient absent, marking port absent at tag " PRINTF_TAG,
@@ -2269,8 +2257,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
     // Wait for a response.
     // The response will be MSG_TYPE_REJECT if the federation ID doesn't match.
-    // Otherwise, it will be either MSG_TYPE_ACK or MSG_TYPE_UDP_PORT, where the latter
-    // is used if clock synchronization will be performed.
+    // Otherwise, it will be MSG_TYPE_ACK.
     unsigned char response;
 
     LF_PRINT_DEBUG("Waiting for response to federation ID from the RTI.");
@@ -2452,7 +2439,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Extract the ID of the sending federate.
     uint16_t remote_fed_id = extract_uint16((unsigned char*)&(buffer[1]));
     bool remote_fed_is_transient = buffer[1 + sizeof(uint16_t)];
-    _fed.inbound_p2p_connection_is_transient[remote_fed_id] = remote_fed_is_transient;
+    _fed.upstream_fed_is_transient[remote_fed_id] = remote_fed_is_transient;
     if (remote_fed_is_transient) {
       LF_PRINT_DEBUG("Received sending federate ID %d, which is transient.", remote_fed_id);
     } else {
@@ -2468,7 +2455,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
     // Otherwise, there can be race condition where, during termination,
     // two threads attempt to simultaneously close the network abstraction.
     _fed.net_for_inbound_p2p_connections[remote_fed_id] = net;
-    _fed.inbound_p2p_is_connected[remote_fed_id] = true;
+    _fed.upstream_fed_is_connected[remote_fed_id] = true;
 
     // Determine the listener-array slot and start the listener thread BEFORE sending the
     // ACK. This ensures the source cannot start delivering messages (at start_time) before

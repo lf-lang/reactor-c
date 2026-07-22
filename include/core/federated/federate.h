@@ -80,7 +80,7 @@ typedef struct federate_instance_t {
   /**
    * Number of outbound peer-to-peer connections to transient federates.
    */
-  size_t number_of_outbound_p2p_transients;
+  size_t number_of_downstream_p2p_transients;
 
   /**
    * An array that holds the tag at which the downstream federate joined.
@@ -113,7 +113,7 @@ typedef struct federate_instance_t {
    * reveals the remote federate's type. Used by mark_inputs_known_absent()
    * to avoid permanently stamping FOREVER_TAG on ports whose source may rejoin.
    */
-  bool inbound_p2p_connection_is_transient[NUMBER_OF_FEDERATES];
+  bool upstream_fed_is_transient[NUMBER_OF_FEDERATES];
 
   /**
    * An array indexed by federate ID indicating whether the corresponding
@@ -123,7 +123,7 @@ typedef struct federate_instance_t {
    * Used by a_port_is_unknown() to skip waiting for ports whose transient upstream
    * federate is currently disconnected.
    */
-  bool inbound_p2p_is_connected[NUMBER_OF_FEDERATES];
+  bool upstream_fed_is_connected[NUMBER_OF_FEDERATES];
 
   /**
    * An array that holds the network abstractions for outbound direct

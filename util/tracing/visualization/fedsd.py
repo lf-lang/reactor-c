@@ -32,7 +32,7 @@ css_style = ' <style> \
     .FED_ID     { stroke: #80DD99; fill: #80DD99; } \
     .UPSTREAM_CONNECTED { stroke: #f4a261; fill: #f4a261; } \
     .UPSTREAM_DISCONNECTED { stroke: #e76f51; fill: #e76f51; } \
-    .OUTBOUND_CONNECTED { stroke: #2a9d8f; fill: #2a9d8f; } \
+    .DOWNSTREAM_CONNECTED { stroke: #2a9d8f; fill: #2a9d8f; } \
     .OUTBOUND_DISCONNECTED { stroke: #264653; fill: #264653; } \
     .ACK        { stroke: #52b788; fill: #52b788; } \
     .FAILED     { stroke: #c1121f; fill: #c1121f; } \
@@ -72,7 +72,7 @@ prune_event_name = {
     "Sending FED_ID": "FED_ID",
     "Sending UPSTREAM_CONNECTED": "UPSTREAM_CONNECTED",
     "Sending UPSTREAM_DISCONNECTED": "UPSTREAM_DISCONNECTED",
-    "Sending OUTBOUND_CONNECTED": "OUTBOUND_CONNECTED",
+    "Sending DOWNSTREAM_CONNECTED": "DOWNSTREAM_CONNECTED",
     "Sending OUTBOUND_DISCONNECTED": "OUTBOUND_DISCONNECTED",
     "Sending PTAG": "PTAG",
     "Sending TAG": "TAG",
@@ -99,7 +99,7 @@ prune_event_name = {
     "Receiving FED_ID": "FED_ID",
     "Receiving UPSTREAM_CONNECTED": "UPSTREAM_CONNECTED",
     "Receiving UPSTREAM_DISCONNECTED": "UPSTREAM_DISCONNECTED",
-    "Receiving OUTBOUND_CONNECTED": "OUTBOUND_CONNECTED",
+    "Receiving DOWNSTREAM_CONNECTED": "DOWNSTREAM_CONNECTED",
     "Receiving OUTBOUND_DISCONNECTED": "OUTBOUND_DISCONNECTED",
     "Receiving PTAG": "PTAG",
     "Receiving TAG": "TAG",
@@ -162,7 +162,7 @@ parser.add_argument('-e', '--end', type=str, nargs=2,
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
 # Set of non-tagged events (messages)
-non_tagged_messages = {'FED_ID', 'UPSTREAM_CONNECTED', 'UPSTREAM_DISCONNECTED', 'OUTBOUND_CONNECTED', 'OUTBOUND_DISCONNECTED',
+non_tagged_messages = {'FED_ID', 'UPSTREAM_CONNECTED', 'UPSTREAM_DISCONNECTED', 'DOWNSTREAM_CONNECTED', 'OUTBOUND_DISCONNECTED',
                        'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_QR', 'ADR_QR_REP', 'ADR_AD', 'MSG', 'P2P_MSG', 'STOP'}
 
 
