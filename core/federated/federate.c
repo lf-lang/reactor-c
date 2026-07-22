@@ -2079,6 +2079,21 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
   params.socket_params.server_ip_addr = &host_ip_addr;
 #endif
 
+  // Avoid opening a duplicate outbound connection to the same federate. More than one trigger
+  // can request a connection to a transient downstream federate: the startup outbound loop may
+  // obtain a valid port and connect, and the RTI may (concurrently or subsequently) send a
+  // MSG_TYPE_DOWNSTREAM_CONNECTED notification for the same join. A duplicate connection would
+  // push the remote federate beyond its expected inbound P2P connection count and cause it to
+  // abort. If a connection already exists, do not open another one.
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  bool already_connected = _fed.net_for_outbound_p2p_connections[remote_federate_id] != NULL;
+  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  if (already_connected) {
+    LF_PRINT_LOG("Outbound P2P connection to federate %d is already established. Not reconnecting.",
+                 remote_federate_id);
+    return;
+  }
+
   net_abstraction_t net = connect_to_net((net_params_t)&params);
   if (net == NULL) {
     lf_print_error_and_exit("Failed to connect to federate.");
@@ -2098,6 +2113,9 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
       // treat it as a soft error condition and return.
       lf_print_error("Failed to connect to federate %d with timeout: " PRINTF_TIME ". Giving up.", remote_federate_id,
                      CONNECT_TIMEOUT);
+      if (net != NULL) {
+        shutdown_net(net, false);
+      }
       return;
     }
 
@@ -2105,6 +2123,17 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
     if (rti_failed()) {
       break;
     }
+
+    // (Re)establish the TCP connection. On the first iteration this is the connection opened
+    // above. After a connection reset by the remote federate (handled below), net is NULL and
+    // we open a fresh connection before retrying the handshake.
+    if (net == NULL) {
+      net = connect_to_net((net_params_t)&params);
+      if (net == NULL) {
+        lf_print_error_and_exit("Failed to connect to federate.");
+      }
+    }
+
     // Send the federate ID to the remote federate.
     size_t buffer_length = 1 + sizeof(uint16_t) + 1 + 1;
     unsigned char buffer[buffer_length];
@@ -2126,16 +2155,25 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
                                "Failed to send federation id to federate %d.", remote_federate_id);
 
     // For transient downstream connections, a connection reset from the remote side
-    // (e.g. macOS resets the TCP connection if the accept loop hasn't run yet) is
-    // a soft error: the RTI will resend MSG_TYPE_DOWNSTREAM_CONNECTED when the transient
-    // is ready. Using the non-fatal read here prevents a spurious fatal exit on macOS.
+    // (e.g. macOS resets the TCP connection if the accept loop hasn't run yet) is a soft
+    // error. Using the non-fatal read here prevents a spurious fatal exit on macOS.
     int ack_read_failed = read_from_net(net, 1, (unsigned char*)buffer);
     if (ack_read_failed) {
       if (is_transient) {
+        // The remote transient federate may not have run its accept loop yet, so its socket
+        // layer reset our connection. Close the reset connection and retry the handshake
+        // (bounded by CONNECT_TIMEOUT). We must retry here rather than give up: the RTI sends
+        // MSG_TYPE_DOWNSTREAM_CONNECTED only once per join and does not resend it, so waiting
+        // for another notification would leave this federate permanently unable to reach the
+        // transient, silently dropping every message addressed to it.
         lf_print_warning("Failed to read MSG_TYPE_ACK from transient federate %d. Connection may have been reset. "
-                         "Will retry when RTI notifies of reconnection.",
+                         "Retrying.",
                          remote_federate_id);
-        return;
+        shutdown_net(net, false);
+        net = NULL;
+        result = -1;
+        lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
+        continue;
       }
       lf_print_error_and_exit("Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.",
                               remote_federate_id);
