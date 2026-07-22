@@ -2082,16 +2082,27 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
   // Avoid opening a duplicate outbound connection to the same federate. More than one trigger
   // can request a connection to a transient downstream federate: the startup outbound loop may
   // obtain a valid port and connect, and the RTI may (concurrently or subsequently) send a
-  // MSG_TYPE_DOWNSTREAM_CONNECTED notification for the same join. A duplicate connection would
-  // push the remote federate beyond its expected inbound P2P connection count and cause it to
-  // abort. If a connection already exists, do not open another one.
+  // MSG_TYPE_DOWNSTREAM_CONNECTED notification for the same join. A duplicate live connection
+  // would push the remote federate beyond its expected inbound P2P connection count and cause it
+  // to abort. However, only skip when the recorded connection is still open: a stale, closed
+  // connection (e.g., left behind when the transient previously resigned) must be replaced so the
+  // transient can be reached again after it rejoins.
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-  bool already_connected = _fed.net_for_outbound_p2p_connections[remote_federate_id] != NULL;
+  net_abstraction_t existing = _fed.net_for_outbound_p2p_connections[remote_federate_id];
+  bool existing_is_open = existing != NULL && is_net_open(existing);
+  if (!existing_is_open) {
+    // Drop any stale reference so a fresh connection can be recorded below.
+    _fed.net_for_outbound_p2p_connections[remote_federate_id] = NULL;
+  }
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
-  if (already_connected) {
+  if (existing_is_open) {
     LF_PRINT_LOG("Outbound P2P connection to federate %d is already established. Not reconnecting.",
                  remote_federate_id);
     return;
+  }
+  if (existing != NULL) {
+    // The previously recorded connection is closed; release it before reconnecting.
+    shutdown_net(existing, false);
   }
 
   net_abstraction_t net = connect_to_net((net_params_t)&params);
@@ -2166,7 +2177,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
         // MSG_TYPE_DOWNSTREAM_CONNECTED only once per join and does not resend it, so waiting
         // for another notification would leave this federate permanently unable to reach the
         // transient, silently dropping every message addressed to it.
-        lf_print_warning("Failed to read MSG_TYPE_ACK from transient federate %d. Connection may have been reset. "
+        lf_print_warning("Failed to read response from transient federate %d. Connection may have been reset. "
                          "Retrying.",
                          remote_federate_id);
         shutdown_net(net, false);
@@ -2175,10 +2186,10 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
         lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
         continue;
       }
-      lf_print_error_and_exit("Failed to read MSG_TYPE_ACK from federate %d in response to sending fed_id.",
+      lf_print_error_and_exit("Failed to read response from federate %d in response to sending fed_id.",
                               remote_federate_id);
     }
-    if (buffer[0] != MSG_TYPE_ACK) {
+    if (buffer[0] == MSG_TYPE_REJECT) {
       // Get the error code.
       read_from_net_fail_on_error(net, 1, (unsigned char*)buffer,
                                   "Failed to read error code from federate %d in response to sending fed_id.",
@@ -2190,15 +2201,21 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
       lf_print_warning("Could not connect to federate %d. Will try again every " PRINTF_TIME "nanoseconds.\n",
                        remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
       continue;
-    } else {
-      // Drain the tag payload from the ACK message.
+    } else if (buffer[0] == MSG_TYPE_TAG) {
+      // Drain the tag payload from the tag message.
       unsigned char tag_buffer[sizeof(instant_t) + sizeof(microstep_t)];
       read_from_net_fail_on_error(net, sizeof(tag_buffer), tag_buffer,
-                                  "Failed to read tag from MSG_TYPE_ACK from federate %d.", remote_federate_id);
+                                  "Failed to read tag from MSG_TYPE_TAG from federate %d.", remote_federate_id);
       tag_t t = extract_tag(tag_buffer);
       if (lf_tag_compare(t, temp_effective_start_tag) > 0) {
         temp_effective_start_tag = t;
       }
+      lf_print_info("Connected to federate %d, port %hu.", remote_federate_id, uport);
+      // Trace the event when tracing is enabled
+      tracepoint_federate_to_federate(receive_TAG, _lf_my_fed_id, remote_federate_id, NULL);
+      break;
+    } else {
+      // Message type must be MSG_TYPE_ACK.
       lf_print_info("Connected to federate %d, port %hu.", remote_federate_id, uport);
       // Trace the event when tracing is enabled
       tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
@@ -2314,11 +2331,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
         continue;
       }
     } else if (response == MSG_TYPE_ACK) {
-      // Drain the tag payload from the ACK message.
-      unsigned char tag_buffer[sizeof(instant_t) + sizeof(microstep_t)];
-      read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(tag_buffer), tag_buffer,
-                                  "Failed to read tag from MSG_TYPE_ACK from the RTI.");
-      extract_tag(tag_buffer);
       // Trace the event when tracing is enabled
       tracepoint_federate_from_rti(receive_ACK, _lf_my_fed_id, NULL);
       LF_PRINT_LOG("Received acknowledgment from the RTI.");
@@ -2541,19 +2553,23 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 
     // Send ACK after the listener thread exists so the source cannot start sending
     // messages before this federate has a thread ready to receive them.
-    unsigned char response[MSG_TYPE_ACK_LENGTH];
-    response[0] = MSG_TYPE_ACK;
+    unsigned char response[MSG_TYPE_TAG_LENGTH];
     if (remote_fed_is_transient && (lf_tag_compare(effective_start_tag, NEVER_TAG) != 0)) {
       environment_t* env;
       _lf_get_environments(&env);
+      response[0] = MSG_TYPE_TAG;
       encode_tag(&response[1], env->current_tag);
+      tracepoint_federate_to_federate(send_TAG, _lf_my_fed_id, remote_fed_id, NULL);
+      write_to_net_fail_on_error(_fed.net_for_inbound_p2p_connections[remote_fed_id], MSG_TYPE_TAG_LENGTH, response,
+                                 &lf_outbound_net_mutex, "Failed to write MSG_TYPE_TAG in response to federate %d.",
+                                 remote_fed_id);
     } else {
-      encode_tag(&response[1], NEVER_TAG);
+      response[0] = MSG_TYPE_ACK;
+      tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
+      write_to_net_fail_on_error(_fed.net_for_inbound_p2p_connections[remote_fed_id], 1, response,
+                                 &lf_outbound_net_mutex, "Failed to write MSG_TYPE_ACK in response to federate %d.",
+                                 remote_fed_id);
     }
-    tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
-    write_to_net_fail_on_error(_fed.net_for_inbound_p2p_connections[remote_fed_id], MSG_TYPE_ACK_LENGTH, response,
-                               &lf_outbound_net_mutex, "Failed to write MSG_TYPE_ACK in response to federate %d.",
-                               remote_fed_id);
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
   }
 

@@ -1704,6 +1704,21 @@ void* federate_info_thread_TCP(void* fed) {
     // free_in_transit_message_q(my_fed->in_transit_message_tags);
     lf_print_info("RTI: Transient Federate %d thread exited.", my_fed->enclave.id);
 
+    // Notify downstream and upstream federates that this transient has disconnected, mirroring
+    // notify_federate_disconnected(). A transient typically leaves without a MSG_TYPE_RESIGN
+    // handshake (e.g., it calls lf_stop() and simply closes its socket), so this abrupt-disconnect
+    // path is reached instead of handle_federate_resign(). Without these notifications, upstream
+    // federates keep a stale outbound P2P connection to the transient and never reconnect to it
+    // when it rejoins, silently dropping every message addressed to it. The federate-side handlers
+    // are idempotent, so this is safe even if the notifications were already sent via a resign.
+    for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
+      federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
+      if (downstream->enclave.state != NOT_CONNECTED) {
+        send_upstream_disconnected_locked(downstream, my_fed);
+      }
+    }
+    send_outbound_disconnected_locked(my_fed);
+
     // Update the number of connected transient federates
     rti_remote->number_of_connected_transient_federates--;
 
@@ -1914,16 +1929,13 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
   fed->enclave.state = PENDING;
 
   LF_PRINT_DEBUG("RTI responding with MSG_TYPE_ACK to federate %d.", fed_id);
-  // Send an MSG_TYPE_ACK message with a tag payload.
-  // Use NEVER_TAG as filler, because it is unneeded in this case.
-  unsigned char ack_message[MSG_TYPE_ACK_LENGTH];
+  unsigned char ack_message[1];
   ack_message[0] = MSG_TYPE_ACK;
-  encode_tag(&ack_message[1], NEVER_TAG);
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_to_federate(send_ACK, fed_id, NULL);
   }
   LF_MUTEX_LOCK(&rti_mutex);
-  if (write_to_net_close_on_error(fed->net, MSG_TYPE_ACK_LENGTH, ack_message)) {
+  if (write_to_net_close_on_error(fed->net, 1, ack_message)) {
     LF_MUTEX_UNLOCK(&rti_mutex);
     lf_print_error("RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
     return -1;
