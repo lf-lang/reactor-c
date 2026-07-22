@@ -420,8 +420,8 @@ static trigger_handle_t schedule_message_received_from_network_locked(environmen
     _lf_done_using(token);
     LF_MUTEX_UNLOCK(&env->mutex);
     lf_print_error_and_exit(
-        "Received a message at tag " PRINTF_TAG " that has a tag " PRINTF_TAG " that has violated the STP offset. "
-        "Centralized coordination should not have these types of messages.",
+        "Received a message at current tag " PRINTF_TAG " that has a tag " PRINTF_TAG ". "
+        "Centralized coordination should not have tardy messages.",
         env->current_tag.time - start_time, env->current_tag.microstep, tag.time - start_time, tag.microstep);
 #else
     // Set the delay back to 0
