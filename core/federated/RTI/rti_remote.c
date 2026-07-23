@@ -1769,7 +1769,7 @@ void send_reject(net_abstraction_t net_abs, rejection_code_t error_code) {
 }
 
 /**
- * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
+ * Listen for a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDSmessage, which includes as a payload
  * a federate ID and a federation ID. If the federation ID
  * matches this federation, send an MSG_TYPE_ACK and otherwise send
  * a MSG_TYPE_REJECT message.
@@ -1778,11 +1778,10 @@ void send_reject(net_abstraction_t net_abs, rejection_code_t error_code) {
  */
 static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
   // Buffer for message ID, federate ID, type (persistent or transient), and federation ID length.
-  size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID and length of federation ID.
-  unsigned char buffer[length];
+  unsigned char buffer[MSG_TYPE_FED_IDS_LENGTH];
 
   // Read bytes from the network abstraction. We need 4 bytes.
-  if (read_from_net_close_on_error(fed_net, length, buffer)) {
+  if (read_from_net_close_on_error(fed_net, MSG_TYPE_FED_IDS_LENGTH, buffer)) {
     lf_print_error("RTI failed to read from accepted connection.");
     return -1;
   }
@@ -1791,7 +1790,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
   bool is_transient = false;
 
   // First byte received is the message type.
-  if (buffer[0] != MSG_TYPE_FED_IDS) {
+  if (buffer[0] != MSG_TYPE_FED_IDS && buffer[0] != MSG_TYPE_TRANSIENT_FED_IDS) {
     if (rti_remote->base.tracing_enabled) {
       tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
     }
@@ -1810,16 +1809,14 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     } else {
       send_reject(fed_net, UNEXPECTED_MESSAGE);
     }
-    lf_print_error("RTI expected a MSG_TYPE_FED_IDS message. Got %u (see net_common.h).", buffer[0]);
+    lf_print_error("RTI expected a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDSmessage. Got %u (see net_common.h).", buffer[0]);
     return -1;
   } else {
     // Received federate ID.
     fed_id = extract_uint16(buffer + 1);
     // Read the federation ID length, which is one byte.
     size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
-    unsigned char buf;
-    read_from_net_close_on_error(fed_net, 1, &buf);
-    is_transient = (buf == 1) ? true : false;
+    is_transient = (buffer[0] == MSG_TYPE_TRANSIENT_FED_IDS) ? true : false;
 
     if (is_transient) {
       LF_PRINT_LOG("RTI received federate ID: %d, which is transient.", fed_id);

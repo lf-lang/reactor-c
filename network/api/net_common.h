@@ -149,6 +149,8 @@
  *
  * A federate may be marked transient, meaning it is allowed to join the
  * federation after execution has begun, and to disconnect and later rejoin.
+ * A transient identifies itself with @ref MSG_TYPE_TRANSIENT_FED_IDS instead
+ * of @ref MSG_TYPE_FED_IDS.
  * While a transient federate is absent, its downstream neighbors will treat
  * inputs from it as absent. Its upstream neighbors will not send messages to
  * it.
@@ -265,7 +267,7 @@
 #define MSG_TYPE_ACK 255
 
 /**
- * @brief Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS message.
+ * @brief Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS message.
  * @ingroup Network
  *
  * This message is sent by the RTI to the federate with a payload indicating the UDP port to use
@@ -277,14 +279,13 @@
 
 /**
  * @brief Byte identifying a message from a federate to an RTI containing
- * the federation ID, the federate ID, and the federate type (persistent or transient).
+ * the federation ID, the federate ID.
  * @ingroup Network
  *
  * The message contains, in this order:
- *  * One byte equal to MSG_TYPE_FED_IDS.
+ *  * One byte equal to MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS, depending on the federate type.
  *  * Two bytes (ushort) giving the federate ID.
  *  * One byte (uchar) giving the length N of the federation ID.
- *  * One byte giving the type of the federate (1 if transient, 0 if persistent)
  *  * N bytes containing the federation ID.
  *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
  *  Each federate, when starting up, should send this message to the RTI.
@@ -295,7 +296,8 @@
  *  passing to it its federate ID.
  */
 #define MSG_TYPE_FED_IDS 1
-#define MSG_TYPE_FED_IDS_LENGTH (1 + sizeof(uint16_t) + 1 + 1)
+#define MSG_TYPE_TRANSIENT_FED_IDS 103
+#define MSG_TYPE_FED_IDS_LENGTH (1 + sizeof(uint16_t) + 1)
 
 /////////// Messages used for authenticated federation. ///////////////
 /**

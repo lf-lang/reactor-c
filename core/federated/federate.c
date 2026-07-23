@@ -2262,7 +2262,7 @@ void lf_connect_to_rti(const char* hostname, int port) {
   while (!CHECK_TIMEOUT(start_connect, CONNECT_TIMEOUT) && !_lf_termination_executed) {
 
     // Have connected to an RTI, but not sure it's the right RTI.
-    // Send a MSG_TYPE_FED_IDS message and wait for a reply.
+    // Send a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS message and wait for a reply.
     // Notify the RTI of the ID of this federate and its federation.
 
 #ifdef FEDERATED_AUTHENTICATED
@@ -2281,7 +2281,11 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
     unsigned char buffer[MSG_TYPE_FED_IDS_LENGTH];
     // Send the message type first.
-    buffer[0] = MSG_TYPE_FED_IDS;
+    if (_fed.is_transient) {
+      buffer[0] = MSG_TYPE_TRANSIENT_FED_IDS;
+    } else {
+      buffer[0] = MSG_TYPE_FED_IDS;
+    }
 
     // Next send the federate ID.
     if (_lf_my_fed_id == UINT16_MAX) {
@@ -2296,9 +2300,6 @@ void lf_connect_to_rti(const char* hostname, int port) {
 
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_FED_ID, _lf_my_fed_id, NULL);
-
-    // Next send the federate type (persistent or transient)
-    buffer[2 + sizeof(uint16_t)] = _fed.is_transient ? 1 : 0;
 
     // No need for a mutex here because no other threads are writing to this network abstraction.
     if (write_to_net(_fed.net_to_RTI, MSG_TYPE_FED_IDS_LENGTH, buffer)) {
