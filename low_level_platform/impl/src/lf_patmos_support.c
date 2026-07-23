@@ -29,10 +29,14 @@ static volatile int _lf_num_nested_critical_sections = 0;
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
 
-__attribute__((noinline)) int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
+int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
   instant_t now;
   _lf_async_event = false;
   lf_enable_interrupts_nested();
+
+  _lf_clock_gettime(&now);
+  printf("[PATMOS] interruptable_sleep_until_locked: now=%lld wakeup=%lld delta_ns=%lld\n", (long long)now,
+         (long long)wakeup, (long long)(wakeup - now));
 
   // Do busy sleep
   do {
@@ -43,8 +47,10 @@ __attribute__((noinline)) int _lf_interruptable_sleep_until_locked(environment_t
 
   if (_lf_async_event) {
     _lf_async_event = false;
+    printf("[PATMOS] interruptable_sleep_until_locked: woken by async event at now=%lld\n", (long long)now);
     return -1;
   } else {
+    printf("[PATMOS] interruptable_sleep_until_locked: wakeup reached at now=%lld\n", (long long)now);
     return 0;
   }
 }
@@ -54,11 +60,15 @@ int lf_sleep(interval_t sleep_duration) {
   _lf_clock_gettime(&now);
   instant_t wakeup = now + sleep_duration;
 
+  printf("[PATMOS] lf_sleep: now=%lld duration_ns=%lld wakeup=%lld\n", (long long)now, (long long)sleep_duration,
+         (long long)wakeup);
+
   // Do busy sleep
   do {
     _lf_clock_gettime(&now);
   } while ((now < wakeup));
 
+  printf("[PATMOS] lf_sleep: done at now=%lld\n", (long long)now);
   return 0;
 }
 
