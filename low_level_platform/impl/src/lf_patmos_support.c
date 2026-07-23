@@ -60,7 +60,8 @@ int lf_sleep(interval_t sleep_duration) {
   _lf_clock_gettime(&now);
   instant_t wakeup = now + sleep_duration;
 
-  printf("[PATMOS] lf_sleep: now=%lld duration_ns=%lld wakeup=%lld\n", (long long)now, (long long)sleep_duration, (long long)wakeup);
+  printf("[PATMOS] lf_sleep: now=%lld duration_ns=%lld wakeup=%lld\n", (long long)now, (long long)sleep_duration,
+         (long long)wakeup);
 
   // Do busy sleep
   do {
