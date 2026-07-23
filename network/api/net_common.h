@@ -267,7 +267,8 @@
 #define MSG_TYPE_ACK 255
 
 /**
- * @brief Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS message.
+ * @brief Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS
+ * message.
  * @ingroup Network
  *
  * This message is sent by the RTI to the federate with a payload indicating the UDP port to use

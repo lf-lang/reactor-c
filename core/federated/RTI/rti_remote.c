@@ -1809,7 +1809,8 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     } else {
       send_reject(fed_net, UNEXPECTED_MESSAGE);
     }
-    lf_print_error("RTI expected a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDSmessage. Got %u (see net_common.h).", buffer[0]);
+    lf_print_error("RTI expected a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDSmessage. Got %u (see net_common.h).",
+                   buffer[0]);
     return -1;
   } else {
     // Received federate ID.
