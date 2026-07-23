@@ -87,7 +87,7 @@ typedef enum {
   receive_STOP,
   send_DOWNSTREAM_CONNECTED,
   receive_DOWNSTREAM_CONNECTED,
-  send_OUTBOUND_DISCONNECTED,
+  send_DOWNSTREAM_DISCONNECTED,
   receive_DOWNSTREAM_DISCONNECTED,
   NUM_EVENT_TYPES
 } trace_event_t;
@@ -166,8 +166,8 @@ static const char* trace_event_names[] = {
     "Receiving STOP",
     "Sending DOWNSTREAM_CONNECTED",
     "Receiving DOWNSTREAM_CONNECTED",
-    "Sending OUTBOUND_DISCONNECTED",
-    "Receiving OUTBOUND_DISCONNECTED",
+    "Sending DOWNSTREAM_DISCONNECTED",
+    "Receiving DOWNSTREAM_DISCONNECTED",
 };
 
 static inline void _suppress_unused_variable_warning_for_static_variable() { (void)trace_event_names; }

@@ -341,7 +341,7 @@ static void send_outbound_disconnected_locked(federate_info_t* my_fed) {
           lf_print_warning("RTI: Failed to send outbound disconnected message to federate %d.", fed->enclave.id);
         }
         if (rti_remote->base.tracing_enabled) {
-          tracepoint_rti_to_federate(send_OUTBOUND_DISCONNECTED, fed->enclave.id, NULL);
+          tracepoint_rti_to_federate(send_DOWNSTREAM_DISCONNECTED, fed->enclave.id, NULL);
         }
         break;
       }

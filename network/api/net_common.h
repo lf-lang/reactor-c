@@ -277,7 +277,7 @@
 
 /**
  * @brief Byte identifying a message from a federate to an RTI containing
- * the federation ID, the federate ID, and th federate type (persistent or transient).
+ * the federation ID, the federate ID, and the federate type (persistent or transient).
  * @ingroup Network
  *
  * The message contains, in this order:

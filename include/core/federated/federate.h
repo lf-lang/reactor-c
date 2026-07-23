@@ -420,10 +420,7 @@ void lf_reset_status_fields_on_input_port_triggers(void);
  * @brief Send a message to another federate.
  * @ingroup Federated
  *
- * This function is used for physical connections
- * between federates. If the connection to the remote federate or the RTI has been broken,
- * then this returns -1 without sending, unless the destination is a transient federate
- * that is not connected, in which case it returns 0. Otherwise, it returns 0.
+ * This function is used for physical connections between federates.
  *
  * This method assumes that the caller does not hold the lf_outbound_net_mutex lock,
  * which it acquires to perform the send.
