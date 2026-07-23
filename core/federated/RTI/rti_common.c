@@ -213,10 +213,25 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
       return result;
     }
     // With transients, a disconnected upstream may be a transient that later reconnects and sends
-    // events, so we must not grant FOREVER (which would let this node terminate prematurely). Grant
-    // only a finite next event tag, preserving the original behavior.
-    if (lf_tag_compare(e->next_event, FOREVER_TAG) != 0) {
-      result.tag = e->next_event;
+    // events, so we must not grant FOREVER (which would let this node terminate prematurely and
+    // leave a rejoining transient with no downstream to receive its events). Granting this node's
+    // own next event is safe: a rejoining transient is assigned an effective_start_tag strictly
+    // greater than this node's last_granted (see the RTI join handler), so it can never send a
+    // message at or before a tag we have already granted here.
+    tag_t grant = e->next_event;
+    // With the DNET optimization e->next_event may be stale (behind last_granted) because the
+    // federate stopped sending NETs. During shutdown that stale value would make the grant
+    // redundant and get suppressed, stalling this node one microstep short of the stop tag (the
+    // same failure mode fixed above for the no-transient case). Once a stop tag has been
+    // established (max_stop_tag != NEVER), advance at least to it so the node can terminate. This
+    // is still bounded (never FOREVER while transients might rejoin) and safe for the same
+    // effective_start_tag reason.
+    if (lf_tag_compare(rti_common->max_stop_tag, NEVER_TAG) != 0 &&
+        lf_tag_compare(grant, rti_common->max_stop_tag) < 0) {
+      grant = rti_common->max_stop_tag;
+    }
+    if (lf_tag_compare(grant, FOREVER_TAG) != 0) {
+      result.tag = grant;
       return result;
     }
   } else if (lf_tag_compare(min_upstream_completed, e->last_granted) > 0 &&
