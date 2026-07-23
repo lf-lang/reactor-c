@@ -24,6 +24,7 @@ void initialize_rti_common(rti_common_t* _rti_common) {
   rti_common->max_stop_tag = NEVER_TAG;
   rti_common->number_of_scheduling_nodes = 0;
   rti_common->num_scheduling_nodes_handling_stop = 0;
+  rti_common->has_transients = false;
 }
 
 // FIXME: Should scheduling_nodes tracing use the same mechanism as federates?
@@ -200,7 +201,20 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
   }
 
   if (num_connected_upstream == 0) {
-    // When none of the upstream federates is connected (case of transients),
+    // None of the immediate upstream federates is currently connected.
+    if (!rti_common->has_transients) {
+      // With no transients, a disconnected upstream has resigned and can never send another
+      // message. Grant a tag advance all the way to FOREVER so this node can complete and shut
+      // down. Granting only e->next_event is not enough here: with the DNET optimization the
+      // federate may have stopped sending NETs, leaving e->next_event stale (behind last_granted),
+      // in which case the grant would be redundant and suppressed, stalling the federation at
+      // shutdown.
+      result.tag = FOREVER_TAG;
+      return result;
+    }
+    // With transients, a disconnected upstream may be a transient that later reconnects and sends
+    // events, so we must not grant FOREVER (which would let this node terminate prematurely). Grant
+    // only a finite next event tag, preserving the original behavior.
     if (lf_tag_compare(e->next_event, FOREVER_TAG) != 0) {
       result.tag = e->next_event;
       return result;

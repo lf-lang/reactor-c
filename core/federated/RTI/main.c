@@ -359,6 +359,7 @@ int process_args(int argc, const char* argv[]) {
     usage(argc, argv);
     return 0;
   }
+  rti.base.has_transients = (rti.number_of_transient_federates > 0);
   return 1;
 }
 int main(int argc, const char* argv[]) {
