@@ -30,7 +30,7 @@ static volatile int _lf_num_nested_critical_sections = 0;
  */
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
-  instant_t now;
+  volatile instant_t now;
   _lf_async_event = false;
   lf_enable_interrupts_nested();
 
@@ -56,7 +56,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
 }
 
 int lf_sleep(interval_t sleep_duration) {
-  instant_t now;
+  volatile instant_t now;
   _lf_clock_gettime(&now);
   instant_t wakeup = now + sleep_duration;
 
