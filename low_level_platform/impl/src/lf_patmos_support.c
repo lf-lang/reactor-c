@@ -53,7 +53,7 @@ int lf_sleep(interval_t sleep_duration) {
   if (sleep_duration <= 0LL) {
     return 0;
   }
-  
+
   instant_t now;
   _lf_clock_gettime(&now);
   instant_t wakeup = now + sleep_duration;
