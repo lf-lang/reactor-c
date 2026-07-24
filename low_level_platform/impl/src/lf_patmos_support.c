@@ -14,7 +14,6 @@
 #include "low_level_platform.h"
 #include <machine/rtc.h>
 #include <machine/exceptions.h>
-#include <stdio.h>
 
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
@@ -30,45 +29,38 @@ static volatile int _lf_num_nested_critical_sections = 0;
  */
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
+  (void)env;
   instant_t now;
   _lf_async_event = false;
   lf_enable_interrupts_nested();
 
   _lf_clock_gettime(&now);
-  printf("[PATMOS] interruptable_sleep_until_locked: now=%lld wakeup=%lld delta_ns=%lld\n", (long long)now,
-         (long long)wakeup, (long long)(wakeup - now));
-
-  // Do busy sleep
-  do {
+  // Match other platforms: skip the spin if wakeup is already in the past.
+  while ((now < wakeup) && !_lf_async_event) {
     _lf_clock_gettime(&now);
-  } while ((now < wakeup) && !_lf_async_event);
+  }
 
   lf_disable_interrupts_nested();
 
   if (_lf_async_event) {
     _lf_async_event = false;
-    printf("[PATMOS] interruptable_sleep_until_locked: woken by async event at now=%lld\n", (long long)now);
     return -1;
-  } else {
-    printf("[PATMOS] interruptable_sleep_until_locked: wakeup reached at now=%lld\n", (long long)now);
-    return 0;
   }
+  return 0;
 }
 
 int lf_sleep(interval_t sleep_duration) {
   instant_t now;
   _lf_clock_gettime(&now);
+  if (sleep_duration <= 0LL) {
+    return 0;
+  }
   instant_t wakeup = now + sleep_duration;
 
-  printf("[PATMOS] lf_sleep: now=%lld duration_ns=%lld wakeup=%lld\n", (long long)now, (long long)sleep_duration,
-         (long long)wakeup);
-
   // Do busy sleep
-  do {
+  while (now < wakeup) {
     _lf_clock_gettime(&now);
-  } while ((now < wakeup));
-
-  printf("[PATMOS] lf_sleep: done at now=%lld\n", (long long)now);
+  }
   return 0;
 }
 
@@ -94,7 +86,8 @@ int _lf_clock_gettime(instant_t* t) {
 
   assert(t != NULL);
 
-  *t = get_cpu_usecs() * 1000;
+  // Widen before multiplying so a 32-bit usec counter cannot overflow in int arithmetic.
+  *t = (instant_t)get_cpu_usecs() * 1000LL;
 
   return 0;
 }
