@@ -24,6 +24,7 @@ void initialize_rti_common(rti_common_t* _rti_common) {
   rti_common->max_stop_tag = NEVER_TAG;
   rti_common->number_of_scheduling_nodes = 0;
   rti_common->num_scheduling_nodes_handling_stop = 0;
+  rti_common->has_transients = false;
 }
 
 // FIXME: Should scheduling_nodes tracing use the same mechanism as federates?
@@ -189,13 +190,48 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
       min_upstream_completed = candidate;
     }
   }
-  LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is " PRINTF_TAG "(adjusted by after delay).", e->id,
-               min_upstream_completed.time - start_time, min_upstream_completed.microstep);
+  if (lf_tag_compare(min_upstream_completed, NEVER_TAG) == 0) {
+    LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is NEVER (no LTC from connected upstreams).",
+                 e->id);
+  } else if (lf_tag_compare(min_upstream_completed, FOREVER_TAG) == 0) {
+    LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is FOREVER.", e->id);
+  } else {
+    LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is " PRINTF_TAG "(adjusted by after delay).", e->id,
+                 min_upstream_completed.time - start_time, min_upstream_completed.microstep);
+  }
 
   if (num_connected_upstream == 0) {
-    // When none of the upstream federates is connected (case of transients),
-    if (lf_tag_compare(e->next_event, FOREVER_TAG) != 0) {
-      result.tag = e->next_event;
+    // None of the immediate upstream federates is currently connected.
+    if (!rti_common->has_transients) {
+      // With no transients, a disconnected upstream has resigned and can never send another
+      // message. Grant a tag advance all the way to FOREVER so this node can complete and shut
+      // down. Granting only e->next_event is not enough here: with the DNET optimization the
+      // federate may have stopped sending NETs, leaving e->next_event stale (behind last_granted),
+      // in which case the grant would be redundant and suppressed, stalling the federation at
+      // shutdown.
+      result.tag = FOREVER_TAG;
+      return result;
+    }
+    // With transients, a disconnected upstream may be a transient that later reconnects and sends
+    // events, so we must not grant FOREVER (which would let this node terminate prematurely and
+    // leave a rejoining transient with no downstream to receive its events). Granting this node's
+    // own next event is safe: a rejoining transient is assigned an effective_start_tag strictly
+    // greater than this node's last_granted (see the RTI join handler), so it can never send a
+    // message at or before a tag we have already granted here.
+    tag_t grant = e->next_event;
+    // With the DNET optimization e->next_event may be stale (behind last_granted) because the
+    // federate stopped sending NETs. During shutdown that stale value would make the grant
+    // redundant and get suppressed, stalling this node one microstep short of the stop tag (the
+    // same failure mode fixed above for the no-transient case). Once a stop tag has been
+    // established (max_stop_tag != NEVER), advance at least to it so the node can terminate. This
+    // is still bounded (never FOREVER while transients might rejoin) and safe for the same
+    // effective_start_tag reason.
+    if (lf_tag_compare(rti_common->max_stop_tag, NEVER_TAG) != 0 &&
+        lf_tag_compare(grant, rti_common->max_stop_tag) < 0) {
+      grant = rti_common->max_stop_tag;
+    }
+    if (lf_tag_compare(grant, FOREVER_TAG) != 0) {
+      result.tag = grant;
       return result;
     }
   } else if (lf_tag_compare(min_upstream_completed, e->last_granted) > 0 &&
@@ -212,6 +248,32 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
   // Find the tag of the earliest event that may be later received from an upstream enclave
   // or federate (which includes any after delays on the connections).
   tag_t t_d = earliest_future_incoming_message_tag(e);
+
+  // Tighten EIMT using immediate upstreams: an upstream with NET=FOREVER (no local
+  // events) may still forward messages from further upstream. The transitive NET
+  // walk above usually captures that, but only while further upstreams remain
+  // connected and reflected in min_delays. Using min(NET, EIMT) per immediate
+  // upstream matches eimt_strict's bound (but includes ZDC nodes) and prevents
+  // over-granting when an intermediate's NET is FOREVER.
+  for (int j = 0; j < e->num_immediate_upstreams; j++) {
+    scheduling_node_t* upstream = rti_common->scheduling_nodes[e->immediate_upstreams[j]];
+    if (upstream->state == NOT_CONNECTED) {
+      continue;
+    }
+    if (lf_tag_compare(upstream->next_event, NEVER_TAG) == 0) {
+      tag_t start_tag = {.time = start_time, .microstep = 0};
+      upstream->next_event = start_tag;
+    }
+    tag_t earliest = earliest_future_incoming_message_tag(upstream);
+    if (lf_tag_compare(upstream->next_event, earliest) < 0) {
+      earliest = upstream->next_event;
+    }
+    tag_t candidate = lf_delay_tag(earliest, e->immediate_upstream_delays[j]);
+    if (lf_tag_compare(candidate, t_d) < 0) {
+      t_d = candidate;
+    }
+  }
+
   // Non-ZDC version of the above. This is a tag that must be strictly greater than
   // that of the next granted PTAG.
   tag_t t_d_strict = eimt_strict(e);

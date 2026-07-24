@@ -21,14 +21,12 @@
  * use DEFAULT_PORT.
  *
  * When it has successfully opened a TCP connection, the first message it sends
- * to the RTI is either a @ref MSG_TYPE_FED_IDS message, if it is a persistent
- * federate, or a @ref MSG_TYPE_TRANSIENT_FED_IDS message, if it is a transient
- * federate (see "Transient federates" below). Either message contains the ID
+ * to the RTI is a @ref MSG_TYPE_FED_IDS message. The message contains the ID
  * of this federate within the federation, contained in the global variable
  * _lf_my_fed_id in the federate code (which is initialized by the code
  * generator), and the unique ID of the federation, a GUID that is created at
  * run time by the generated script that launches the federation. The
- * transient variant additionally carries a byte giving the federate's type
+ * transient additionally carries a byte giving the federate's type
  * (persistent (0) or transient (1)).
  * If you launch the federates and the RTI manually, rather than using the script,
  * then the federation ID is a string that is optionally given to the federate
@@ -152,48 +150,44 @@
  * A federate may be marked transient, meaning it is allowed to join the
  * federation after execution has begun, and to disconnect and later rejoin.
  * A transient identifies itself with @ref MSG_TYPE_TRANSIENT_FED_IDS instead
- * of @ref MSG_TYPE_FED_IDS. If it joins during the RTI's startup phase
+ * of @ref MSG_TYPE_FED_IDS.
+ * While a transient federate is absent, its downstream neighbors will treat
+ * inputs from it as absent. Its upstream neighbors will not send messages to
+ * it.
+ *
+ * If a transient federate joins during the RTI's startup phase
  * (before all persistent federates have proposed a start time), it is
  * treated like any other federate and simply receives the common start time.
  *
- * If a transient joins later, the RTI computes an effective start tag for it
- * that is no earlier than the tag of any message already routed to it and no
- * earlier than the federation's current tag. This tag is returned together
- * with the common start time in an extended @ref MSG_TYPE_TIMESTAMP message
- * (see MSG_TYPE_TIMESTAMP_TAG_LENGTH); the transient does not begin
- * executing tags until then.
+ * How a later joining is handled depends on the coordination type.
  *
- * Because a transient can appear or disappear at any point, its neighbors
- * must be told when to treat it as absent versus when to wait for it. When a
- * transient (re-)connects, the RTI notifies downstream neighbors with
- * @ref MSG_TYPE_UPSTREAM_CONNECTED and upstream neighbors with
- * @ref MSG_TYPE_OUTBOUND_CONNECTED so that they (re-)establish P2P
- * connections to it. When it disconnects, @ref MSG_TYPE_UPSTREAM_DISCONNECTED
- * and @ref MSG_TYPE_OUTBOUND_DISCONNECTED are sent instead, so neighbors
- * treat it as absent rather than blocking on it. Under decentralized
- * coordination, the @ref MSG_TYPE_ACK a transient receives on (re-)connect
- * also carries the current tag of each of its outbound federates, so its
- * effective start tag is never set earlier than theirs.
+ * Under centralized coordination, when a transient federate joins during execution,
+ * the RTI sets its effective start tag to the maximum of several candidates, then
+ * advances the microstep by one wherever that candidate is taken from an
+ * already-observed tag. It starts from the join timestamp at microstep 0,
+ * but never earlier than the federation start time `(start_time, 0)`. It then
+ * raises that tag if needed so it is strictly after the joining federate's
+ * latest completed logical tag, after every immediate downstream's latest
+ * TAG or PTAG, and after the latest in-transit message tag known from any
+ * immediate upstream. The result is sent while the RTI still holds its mutex,
+ * so no upstream message can be forwarded before that start tag, and any pending
+ * delayed grants to downstreams at or after the new effective start are canceled
+ * so they cannot race with messages the rejoined transient may produce at that tag.
  *
- * The next step depends on the coordination type.
- *
- * Under centralized coordination, each federate will send a
- * `MSG_TYPE_NEXT_EVENT_TAG` to the RTI with the start tag. That is to say that
- * each federate has a valid event at the start tag (start time, 0) and it will
- * inform the RTI of this event.
- * Subsequently, at the conclusion of each tag, each federate will send a
- * `MSG_TYPE_LATEST_TAG_CONFIRMED` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
- * the comment for each message for further explanation). Each federate would
- * have to wait for a `MSG_TYPE_TAG_ADVANCE_GRANT` or a
- * `MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT` before it can advance to a
- * particular tag.
- *
- * Under decentralized coordination, the coordination is governed by STA and
- * STAAs, as further explained in https://doi.org/10.48550/arXiv.2109.07771.
- *
- * FIXME: Expand this. Explain port absent reactions.
+ * Under decentralized coordination, when a transient federate joins during execution,
+ * the RTI takes the `(timestamp, microstep)` the federate proposed as its candidate
+ * effective start tag. If that timestamp is earlier than the federation start time,
+ * the tag is raised to (start_time, 0). Otherwise, if the federate has any upstream
+ * peer (some connected federate lists it among its downstream transients), the RTI
+ * instead uses `(timestamp + DELAY_START, 0)`, under the assumption that `DELAY_START`
+ * is large enough to cover clock-synchronization error plus network latency so
+ * upstreams cannot advance past the join before the newcomer's start. If there are
+ * no upstream peers, the proposed `(timestamp, microstep)` is kept (or the federation
+ * start floor above). As with centralized joins, the RTI sends this effective start
+ * tag while still holding the mutex.
  *
  * ### Requesting a stop
+ *
  * Overview of the algorithm:
  *  When any federate calls lf_request_stop(), it will
  *  send a MSG_TYPE_STOP_REQUEST message to the RTI, which will then
@@ -268,16 +262,13 @@
  * @brief Byte identifying an acknowledgment of the previously received message.
  * @ingroup Network
  *
- * This message carries a tag as payload (instant_t + microstep_t).
- * The tag is useful in decentralized coordination. When a transient joins, it
- * learns about outbound federates' current tags, so that it does not set its
- * effective_start_tag to be before theirs.
+ * This message carries no payload.
  */
 #define MSG_TYPE_ACK 255
-#define MSG_TYPE_ACK_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
- * @brief Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS message.
+ * @brief Byte identifying an acknowledgment of the previously received MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS
+ * message.
  * @ingroup Network
  *
  * This message is sent by the RTI to the federate with a payload indicating the UDP port to use
@@ -289,40 +280,25 @@
 
 /**
  * @brief Byte identifying a message from a federate to an RTI containing
- * the federation ID and the federate ID.
+ * the federation ID, the federate ID.
  * @ingroup Network
  *
  * The message contains, in this order:
- *  * One byte equal to MSG_TYPE_FED_IDS.
+ *  * One byte equal to MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS, depending on the federate type.
  *  * Two bytes (ushort) giving the federate ID.
  *  * One byte (uchar) giving the length N of the federation ID.
  *  * N bytes containing the federation ID.
  *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
- *  Each federate, when starting up, should send either this message, or MSG_TYPE_TRANSIENT_FED_IDS
- *  to the RTI, as its first message to the RTI.
- *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
+ *  Each federate, when starting up, should send this message to the RTI.
+ *  This is its first message to the RTI.
+ *  The RTI will respond with either MSG_TYPE_REJECT or MSG_TYPE_ACK.
  *  If the federate is a C target LF program, the generated federate
  *  code does this by calling lf_synchronize_with_other_federates(),
  *  passing to it its federate ID.
  */
 #define MSG_TYPE_FED_IDS 1
-
-/** Byte identifying a message from a transient federate to an RTI containing
- *  the federate ID and the federation ID. The message contains, in this order:
- *  * One byte equal to MSG_TYPE_TRANSIENT_FED_IDS.
- *  * Two bytes (ushort) giving the federate ID.
- *  * One byte (uchar) giving the length N of the federation ID.
- *  * One byte giving the type of the federate (1 if transient, 0 if persistent)
- *  * N bytes containing the federation ID.
- *  Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1.
- *  Each federate, when starting up, should send either this message, or MSG_TYPE_FED_IDS
- *  to the RTI, as its first message to the RTI.
- *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
- *  If the federate is a C target LF program, the generated federate
- *  code does this by calling lf_synchronize_with_other_federates(),
- *  passing to it its federate ID.
- */
 #define MSG_TYPE_TRANSIENT_FED_IDS 103
+#define MSG_TYPE_FED_IDS_LENGTH (1 + sizeof(uint16_t) + 1)
 
 /////////// Messages used for authenticated federation. ///////////////
 /**
@@ -407,20 +383,19 @@
 #define MSG_TYPE_TIMESTAMP_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
- * @brief Byte identifying a timestamp message with a microstep, which is 64 + 32 bits long.
+ * @brief Byte identifying a message with a tag, which is 64 + 32 bits long.
  * @ingroup Network
  *
  * Like MSG_TYPE_TIMESTAMP, but carries an additional microstep field (microstep_t)
- * after the 64-bit timestamp. This is useful for decentralized coordination, when a
- * transient federate with outbound P2P connections wants to join.
+ * after the 64-bit timestamp.
  */
-#define MSG_TYPE_TIMESTAMP_WITH_MICROSTEP 32
+#define MSG_TYPE_TAG 32
 
 /**
- * @brief The length of a timestamp-with-microstep message.
+ * @brief The length of a tag message.
  * @ingroup Network
  */
-#define MSG_TYPE_TIMESTAMP_WITH_MICROSTEP_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
+#define MSG_TYPE_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
 
 /**
  * @brief Byte identifying a message to forward to another federate.
@@ -835,8 +810,8 @@
  * Upon receiving this, the upstream federate should query the RTI for the downstream's
  * address and establish (or re-establish) the outbound P2P connection.
  */
-#define MSG_TYPE_OUTBOUND_CONNECTED 30
-#define MSG_TYPE_OUTBOUND_CONNECTED_LENGTH                                                                             \
+#define MSG_TYPE_DOWNSTREAM_CONNECTED 30
+#define MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH                                                                           \
   (1 + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t) + sizeof(int32_t) + sizeof(uint32_t))
 
 /**
@@ -845,8 +820,8 @@
  * Upon receiving this, the upstream federate should close its outbound P2P connection
  * to the downstream.
  */
-#define MSG_TYPE_OUTBOUND_DISCONNECTED 31
-#define MSG_TYPE_OUTBOUND_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
+#define MSG_TYPE_DOWNSTREAM_DISCONNECTED 31
+#define MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH (1 + sizeof(uint16_t))
 
 /**
  * Byte sent by the RTI ordering the federate to stop. Upon receiving the message,
