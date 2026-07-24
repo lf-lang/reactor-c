@@ -50,11 +50,12 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
 }
 
 int lf_sleep(interval_t sleep_duration) {
-  instant_t now;
-  _lf_clock_gettime(&now);
   if (sleep_duration <= 0LL) {
     return 0;
   }
+  
+  instant_t now;
+  _lf_clock_gettime(&now);
   instant_t wakeup = now + sleep_duration;
 
   // Do busy sleep
