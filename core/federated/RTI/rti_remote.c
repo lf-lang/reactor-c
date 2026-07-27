@@ -1461,7 +1461,6 @@ void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t s
 void* clock_synchronization_thread(void* noargs) {
   initialize_lf_thread_id();
   // Wait until all federates have been notified of the start time.
-  // FIXME: Use lf_ version of this when merged with master.
   LF_MUTEX_LOCK(&rti_mutex);
   while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_scheduling_nodes) {
     lf_cond_wait(&received_start_times);
@@ -1485,7 +1484,7 @@ void* clock_synchronization_thread(void* noargs) {
     for (int fed_id = 0; fed_id < rti_remote->base.number_of_scheduling_nodes; fed_id++) {
       federate_info_t* fed = GET_FED_INFO(fed_id);
       if (fed->enclave.state == NOT_CONNECTED) {
-        // FIXME: We need better error handling here, but clock sync failure
+        // NOTE: Better error handling is needed here, but clock sync failure
         // should not stop execution.
         lf_print_error("Clock sync failed with federate %d. Not connected.", fed_id);
         continue;
@@ -1651,7 +1650,6 @@ void* federate_info_thread_TCP(void* fed) {
       // Prevent multiple threads from closing the same network abstraction at the same time.
       shutdown_net(my_fed->net, false);
       my_fed->net = NULL;
-      // FIXME: We need better error handling here, but do not stop execution here.
       break;
     }
     LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->enclave.id);
@@ -1803,7 +1801,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       // The federate is trying to connect to a peer, not to the RTI.
       // It has connected to the RTI instead.
-      // FIXME: This should not happen, but apparently has been observed.
+      // NOTE: This should not happen, but apparently has been observed.
       // It should not happen because the peers get the port and IP address
       // of the peer they want to connect to from the RTI.
       // If the connection is a peer-to-peer connection between two
@@ -2072,9 +2070,13 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
       }
       if (reject) {
         if (temp_fed != hot_swap_federate) {
-          free(temp_fed);
+          free_federate_info(temp_fed);
         }
         return 0;
+      }
+      // Scratch federate used only to validate an unchanged neighborhood on rejoin.
+      if (temp_fed != hot_swap_federate) {
+        free_federate_info(temp_fed);
       }
     }
   }
@@ -2379,7 +2381,7 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         LF_MUTEX_UNLOCK(&rti_mutex);
 
         // Join the old thread so we know it has fully exited before redirecting or freeing.
-        // Without this, free(fed_old) races with the old thread's post-resign cleanup code.
+        // Without this, free_federate_info(fed_old) races with the old thread's post-resign cleanup code.
         lf_thread_join(fed_old->thread_id, NULL);
 
         // The latest LTC is the tag at which the old federate resigned. This is useful
@@ -2396,9 +2398,8 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // garbage message types, read errors, and a fatal ENOTTY in CI.
         rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*)hot_swap_federate;
 
-        // Free the old federate memory and reset the Hot swap indicators.
-        // FIXME: Is this enough to free the memory allocated to the federate?
-        free(fed_old);
+        // Free the old federate and all nested allocations.
+        free_federate_info(fed_old);
 
         // Create a thread to communicate with the federate.
         // This has to be done after clock synchronization is finished
@@ -2432,8 +2433,10 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         hot_swap_in_progress = false;
         lf_mutex_unlock(&rti_mutex);
 
-        // FIXME: Is this enough to free the memory of a federate_info_t data structure?
-        free(hot_swap_federate);
+        // Free the abandoned hot-swap federate and all nested allocations
+        // (including net, which was assigned during the failed join attempt).
+        free_federate_info(hot_swap_federate);
+        hot_swap_federate = NULL;
       }
     }
   }
@@ -2547,6 +2550,25 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   for (int32_t i = 0; i < num_transients; i++) {
     fed->downstream_transients[i] = -1;
   }
+}
+
+void free_federate_info(federate_info_t* fed) {
+  if (fed == NULL) {
+    return;
+  }
+  if (fed->net != NULL) {
+    shutdown_net(fed->net, false);
+    fed->net = NULL;
+  }
+  if (fed->in_transit_message_tags != NULL) {
+    pqueue_tag_free(fed->in_transit_message_tags);
+    fed->in_transit_message_tags = NULL;
+  }
+  free(fed->downstream_transients);
+  free(fed->enclave.immediate_upstreams);
+  free(fed->enclave.immediate_upstream_delays);
+  free(fed->enclave.immediate_downstreams);
+  free(fed);
 }
 
 void reset_transient_federate(federate_info_t* fed) {
@@ -2673,13 +2695,14 @@ void wait_for_federates() {
   }
 
   // Wait for persistent federate threads to exit.
+  // Nested allocations (including in_transit_message_tags) are freed later by
+  // free_scheduling_nodes() -> free_federate_info().
   void* thread_exit_status;
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
     if (!fed->is_transient) {
       LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
       lf_thread_join(fed->thread_id, &thread_exit_status);
-      pqueue_tag_free(fed->in_transit_message_tags);
       LF_PRINT_LOG("RTI: Persistent federate %d thread exited.", fed->enclave.id);
     }
   }
@@ -2712,7 +2735,6 @@ void wait_for_federates() {
       if (fed->is_transient && fed->enclave.state != NOT_CONNECTED) {
         LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
         lf_thread_join(fed->thread_id, &thread_exit_status);
-        pqueue_tag_free(fed->in_transit_message_tags);
         LF_PRINT_LOG("RTI: Transient federate %d thread exited.", fed->enclave.id);
       }
     }
@@ -2773,16 +2795,7 @@ void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   invalidate_min_delays();
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
-    // FIXME: Gives error freeing memory not allocated!!!!
-    scheduling_node_t* node = scheduling_nodes[i];
-    if (node->immediate_upstreams != NULL) {
-      free(node->immediate_upstreams);
-      free(node->immediate_upstream_delays);
-    }
-    if (node->immediate_downstreams != NULL) {
-      free(node->immediate_downstreams);
-    }
-    free(node);
+    free_federate_info((federate_info_t*)scheduling_nodes[i]);
   }
   free(scheduling_nodes);
 }

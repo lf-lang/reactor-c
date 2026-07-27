@@ -454,6 +454,18 @@ void* respond_to_erroneous_connections(void* nothing);
 void initialize_federate(federate_info_t* fed, uint16_t id);
 
 /**
+ * @brief Free a federate_info_t and all heap memory it owns.
+ * @ingroup RTI
+ *
+ * Frees nested allocations (`in_transit_message_tags`, `downstream_transients`,
+ * and the immediate upstream/downstream arrays), shuts down `net` if still open,
+ * then frees the struct itself. Safe to call with NULL.
+ *
+ * @param fed The federate to free.
+ */
+void free_federate_info(federate_info_t* fed);
+
+/**
  * @brief Reset the federate. The federate has to be transient.
  * @ingroup RTI
  *
