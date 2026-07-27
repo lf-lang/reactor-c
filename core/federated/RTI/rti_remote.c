@@ -721,9 +721,9 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     read_from_net_fail_on_error(sending_federate->net, bytes_to_read, buffer, "RTI failed to read message chunks.");
     total_bytes_read += bytes_to_read;
 
-    // FIXME: a mutex needs to be held for this so that other threads
+    // FIXME: The rti_mutex is held here so that other threads
     // do not write to destination_socket and cause interleaving. However,
-    // holding the rti_mutex might be very expensive. Instead, each outgoing
+    // holding the rti_mutex might be very expensive for large messages. Instead, each outgoing
     // network abstraction should probably have its own mutex.
     write_to_net_fail_on_error(fed->net, bytes_to_read, buffer, &rti_mutex, "RTI failed to send message chunks.");
   }
@@ -740,7 +740,6 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                    "This is going to cause an STP violation under centralized coordination.",
                    federate_id, fed->enclave.completed.time - lf_time_start(), fed->enclave.completed.microstep,
                    intended_tag.time - lf_time_start(), intended_tag.microstep, sending_federate->enclave.id);
-    // FIXME: Drop the federate?
   }
 
   // If the message tag is less than the most recently received NET from the federate,
@@ -778,7 +777,7 @@ void handle_next_event_tag(federate_info_t* fed) {
 
   // Acquire a mutex lock to ensure that this state does not change while a
   // message is in transport or being used to determine a TAG.
-  LF_MUTEX_LOCK(&rti_mutex); // FIXME: Instead of using a mutex, it might be more efficient to use a
+  LF_MUTEX_LOCK(&rti_mutex); // NOTE: Instead of using a mutex, it might be more efficient to use a
                              // select() mechanism to read and process federates' buffers in an
                              // orderly fashion.
 
@@ -1195,14 +1194,15 @@ static void send_start_tag_locked(federate_info_t* my_fed) {
  *   3. The latest completed logical tag + 1 microstep
  *   4. The latest granted (P)TAG + 1 microstep, of every downstream federate
  *   5. The maximun tag of messages from the upstream federates + 1 microstep
-
+ *
  * - If the coordination is decentralized:
  *  1. If the transient has no upstream federates, then the effective_start_time
  *     will be whatever (timestamp, microstep) received.
  *  2. Otherwise, add DELAY_START to the timestamp and reset microstep to 0.
- *     If DELAY_START is larger than (clock sync error + network latency),
- *     then downstream federates cannot advance past this tag before `my_fed`
- *     receives any upstream messages that arrive before `effective_start_time`.
+ *     If DELAY_START is larger than LEX (network latency + clock sync error + execution time),
+ *     then this federate will receive any messages from upstream federates
+ *     that have tags greater than or equal to the effective_start_time
+ *     before it advances past that effective start tag.
  *
  * This function assumes the caller does not hold the mutex.
  */
@@ -1390,7 +1390,7 @@ static void handle_timestamp_or_tag(federate_info_t* my_fed, int type) {
 
     // Whenver a transient joins, invalidate all federates, so that all min_delays_upstream
     // get re-computed.
-    // FIXME: Maybe optimize it to only invalidate those affected by the transient
+    // NOTE: It might be possible to optimize this to only invalidate those affected by the transient.
     invalidate_min_delays();
 
     // With the transient granted and min_delays refreshed, re-evaluate TAG/PTAG for
@@ -1588,7 +1588,7 @@ static void handle_federate_failed(federate_info_t* my_fed) {
 }
 
 /**
- * Handle MSG_TYPE_RESIGN sent by a federate. This message is sent at the time of termination
+ * Handle `MSG_TYPE_RESIGN` sent by a federate. This message is sent at the time of termination
  * after all shutdown events are processed on the federate.
  *
  * This function assumes the caller does not hold the mutex.
@@ -1679,10 +1679,7 @@ void* federate_info_thread_TCP(void* fed) {
       handle_latest_tag_confirmed(my_fed);
       break;
     case MSG_TYPE_STOP_REQUEST:
-      handle_stop_request_message(my_fed); // FIXME: Reviewed until here.
-                                           // Need to also look at
-                                           // notify_advance_grant_if_safe()
-                                           // and notify_downstream_advance_grant_if_safe()
+      handle_stop_request_message(my_fed);
       break;
     case MSG_TYPE_STOP_REQUEST_REPLY:
       handle_stop_request_reply(my_fed);
@@ -2574,7 +2571,7 @@ void reset_transient_federate(federate_info_t* fed) {
   }
   // Whenver a transient resigns or leaves, invalidate all federates, so that all
   // min_delays_upstream get re-computed.
-  // FIXME: Maybe optimize it to only invalidate those affected by the transient
+  // NOTE: It might be possible to optimize this to only invalidate those affected by the transient.
   invalidate_min_delays();
 }
 
@@ -2623,7 +2620,7 @@ static int set_has_upstream_transient_federates_parameter_and_check() {
   }
 
   // Now check that no transient has an upstream transient
-  // FIXME: Do we really need this? Or should it be the job of the validator?
+  // NOTE: This is not strictly necessary, as the validator will catch any violations.
   uint16_t max_number_of_delayed_grants = 0;
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
