@@ -1953,8 +1953,8 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
  * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
  * out the relevant information in the federate's struct.
  *
- * In case of a hot swap, check that no changes were made to the connections, compared
- * to the first instance that joigned. This means that the first instance to join
+ * In case of a hot swap or rejoin, check that no changes were made to the connections,
+ * compared to the first instance that joined. This means that the first instance to join
  * __is__ the reference.
  *
  * @return 1 on success and 0 on failure.
@@ -1973,19 +1973,21 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
     send_reject(fed_net, UNEXPECTED_MESSAGE);
     return 0;
   } else {
-    // In case of a transient federate that is joining again, or a hot swap, then
-    // check that the connection information did not change.
-    federate_info_t* fed = GET_FED_INFO(fed_id);
-    federate_info_t* temp_fed = NULL;
-    if (lf_tag_compare(fed->effective_start_tag, NEVER_TAG) != 0) {
-      if (hot_swap_in_progress) {
-        fed = hot_swap_federate;
-      } else {
-        temp_fed = (federate_info_t*)calloc(1, sizeof(federate_info_t));
-        initialize_federate(temp_fed, fed_id);
-        fed = temp_fed;
-      }
+    // The first accepted MSG_TYPE_NEIGHBOR_STRUCTURE for this federate ID is the reference.
+    // On hot swap or rejoin, parse into a separate struct and reject if it differs.
+    federate_info_t* reference = GET_FED_INFO(fed_id);
+    federate_info_t* fed = reference; // Where the incoming structure is stored.
+    federate_info_t* scratch = NULL;
+    bool validate = hot_swap_in_progress || reference->neighbor_structure_received;
+
+    if (hot_swap_in_progress) {
+      fed = hot_swap_federate;
+    } else if (validate) {
+      scratch = (federate_info_t*)calloc(1, sizeof(federate_info_t));
+      initialize_federate(scratch, fed_id);
+      fed = scratch;
     }
+
     // Read the number of upstream and downstream connections
     fed->enclave.num_immediate_upstreams = extract_int32(&(connection_info_header[1]));
     fed->enclave.num_immediate_downstreams = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
@@ -2039,21 +2041,17 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
     // NOTE: In this design, changes in the connections are not allowed. This means that the first
     //       instance to join __is__ the reference. If this policy is to be changed, then it is in
     //       the following lines will be updated accordingly.
-    if (hot_swap_in_progress || temp_fed != NULL) {
-      if (temp_fed == NULL) {
-        temp_fed = hot_swap_federate;
-      }
-      // Now, compare the previous and the new neighberhood structure
-      // Start with the number of upstreams and downstreams
+    if (validate) {
+      // Compare the incoming structure (fed) against the established reference.
       bool reject = false;
-      if ((fed->enclave.num_immediate_upstreams != temp_fed->enclave.num_immediate_upstreams) ||
-          (fed->enclave.num_immediate_downstreams != temp_fed->enclave.num_immediate_downstreams)) {
+      if ((fed->enclave.num_immediate_upstreams != reference->enclave.num_immediate_upstreams) ||
+          (fed->enclave.num_immediate_downstreams != reference->enclave.num_immediate_downstreams)) {
         reject = true;
       } else {
         // Then check all upstreams and their delays
         for (int i = 0; i < fed->enclave.num_immediate_upstreams; i++) {
-          if ((fed->enclave.immediate_upstreams[i] != temp_fed->enclave.immediate_upstreams[i]) ||
-              (fed->enclave.immediate_upstream_delays[i] != temp_fed->enclave.immediate_upstream_delays[i])) {
+          if ((fed->enclave.immediate_upstreams[i] != reference->enclave.immediate_upstreams[i]) ||
+              (fed->enclave.immediate_upstream_delays[i] != reference->enclave.immediate_upstream_delays[i])) {
             reject = true;
             break;
           }
@@ -2061,7 +2059,7 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
         if (!reject) {
           // Finally, check all downstream federates
           for (int i = 0; i < fed->enclave.num_immediate_downstreams; i++) {
-            if (fed->enclave.immediate_downstreams[i] != temp_fed->enclave.immediate_downstreams[i]) {
+            if (fed->enclave.immediate_downstreams[i] != reference->enclave.immediate_downstreams[i]) {
               reject = true;
               break;
             }
@@ -2069,15 +2067,23 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
         }
       }
       if (reject) {
-        if (temp_fed != hot_swap_federate) {
-          free_federate_info(temp_fed);
+        lf_print_error("RTI rejecting federate %d: neighbor structure differs from the reference.", fed_id);
+        if (scratch != NULL) {
+          free_federate_info(scratch);
         }
+        // hot_swap_federate is freed by the caller on failure.
         return 0;
       }
       // Scratch federate used only to validate an unchanged neighborhood on rejoin.
-      if (temp_fed != hot_swap_federate) {
-        free_federate_info(temp_fed);
+      if (scratch != NULL) {
+        free_federate_info(scratch);
+      } else {
+        // Hot swap: keep the validated copy on hot_swap_federate.
+        fed->neighbor_structure_received = true;
       }
+    } else {
+      // First join: the parsed structure is now the reference.
+      fed->neighbor_structure_received = true;
     }
   }
   LF_PRINT_DEBUG("RTI received neighbor structure from federate %d.", fed_id);
@@ -2544,6 +2550,7 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   fed->has_upstream_transient_federates = false;
   fed->is_transient = true;
   fed->effective_start_tag = NEVER_TAG;
+  fed->neighbor_structure_received = false;
   fed->number_of_downstream_transients = 0;
   int32_t num_transients = rti_remote->number_of_transient_federates;
   fed->downstream_transients = (int32_t*)malloc(num_transients * sizeof(int32_t));

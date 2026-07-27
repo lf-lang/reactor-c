@@ -68,6 +68,9 @@ typedef struct federate_info_t {
   bool is_transient;
   /** @brief Records the start time of the federate, which is mainly useful for transient federates. */
   tag_t effective_start_tag;
+  /** @brief True after the first MSG_TYPE_NEIGHBOR_STRUCTURE has been accepted for this federate ID.
+   *  Preserved across transient resign/reset so rejoins and hot swaps can validate against that reference. */
+  bool neighbor_structure_received;
   /** @brief Number of outbound connections to transient federates. */
   int32_t number_of_downstream_transients;
   /** @brief IDs of transient federates this federate has outbound connections to.
