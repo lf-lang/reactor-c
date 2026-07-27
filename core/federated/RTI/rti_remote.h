@@ -69,11 +69,11 @@ typedef struct federate_info_t {
   /** @brief Records the start time of the federate, which is mainly useful for transient federates. */
   tag_t effective_start_tag;
   /** @brief Number of outbound connections to transient federates. */
-  int32_t number_of_outbound_transients;
+  int32_t number_of_downstream_transients;
   /** @brief IDs of transient federates this federate has outbound connections to.
    *  The array has size equal to the total number of transient federates in the federation,
    *  and entries are initialized (and reset) to -1. */
-  int32_t* outbound_transients;
+  int32_t* downstream_transients;
 } federate_info_t;
 
 /**
@@ -356,14 +356,6 @@ void handle_address_query(uint16_t fed_id);
  * @param federate_id The id of the remote federate that is sending the address advertisement.
  */
 void handle_address_ad(uint16_t federate_id);
-
-/**
- * @brief A function to handle timestamp messages.
- * @ingroup RTI
- *
- * This function assumes the caller does not hold the mutex.
- */
-void handle_timestamp(federate_info_t* my_fed, int type);
 
 /**
  * @brief Take a snapshot of the physical clock time and send it to federate fed_id.
