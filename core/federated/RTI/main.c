@@ -179,11 +179,11 @@ int process_clock_sync_args(int argc, const char* argv[]) {
       }
       i++;
       long exchanges = (long)strtol(argv[i], NULL, 10);
-      if (exchanges == 0L || exchanges == LONG_MAX || exchanges == LONG_MIN) {
+      if (exchanges <= 0L || exchanges > INT32_MAX || exchanges == LONG_MAX || exchanges == LONG_MIN) {
         lf_print_error("clock sync exchanges-per-interval value is invalid.");
         continue; // Try to parse the rest of the arguments as clock sync args.
       }
-      rti.clock_sync_exchanges_per_interval = (int32_t)exchanges; // FIXME: Loses numbers on 64-bit machines
+      rti.clock_sync_exchanges_per_interval = (int32_t)exchanges;
       lf_print_info("RTI: Clock sync exchanges per interval: %d", rti.clock_sync_exchanges_per_interval);
     } else if (strcmp(argv[i], " ") == 0) {
       // Tolerate spaces
@@ -219,27 +219,29 @@ int process_args(int argc, const char* argv[]) {
       }
       i++;
       long num_federates = strtol(argv[i], NULL, 10);
-      if (num_federates <= 0L || num_federates == LONG_MAX || num_federates == LONG_MIN) {
+      if (num_federates <= 0L || num_federates >= UINT16_MAX || num_federates == LONG_MAX ||
+          num_federates == LONG_MIN) {
         lf_print_error("--number_of_federates needs a valid positive integer argument.");
         usage(argc, argv);
         return 0;
       }
-      rti.base.number_of_scheduling_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
+      rti.base.number_of_scheduling_nodes = (uint16_t)num_federates;
       lf_print_info("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
     } else if (strcmp(argv[i], "-nt") == 0 || strcmp(argv[i], "--number_of_transient_federates") == 0) {
       if (argc < i + 2) {
-        lf_print_error("--number_of_transient_federates needs a valid positive argument.");
+        lf_print_error("--number_of_transient_federates needs a positive integer argument.");
         usage(argc, argv);
         return 0;
       }
       i++;
       long num_transient_federates = strtol(argv[i], NULL, 10);
-      if (num_transient_federates == LONG_MAX || num_transient_federates == LONG_MIN) {
-        lf_print_error("--number_of_transient_federates needs a valid positive or null integer argument.");
+      if (num_transient_federates <= 0L || num_transient_federates > INT32_MAX ||
+          num_transient_federates == LONG_MAX || num_transient_federates == LONG_MIN) {
+        lf_print_error("--number_of_transient_federates needs a positive integer argument.");
         usage(argc, argv);
         return 0;
       }
-      rti.number_of_transient_federates = (int32_t)num_transient_federates; // FIXME: Loses numbers on 64-bit machines
+      rti.number_of_transient_federates = (int32_t)num_transient_federates;
       lf_print_info("RTI: Number of transient federates: %d", rti.number_of_transient_federates);
     } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
 #if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST) || defined(COMM_TYPE_TLS)
