@@ -221,7 +221,7 @@ int process_args(int argc, const char* argv[]) {
       long num_federates = strtol(argv[i], NULL, 10);
       if (num_federates <= 0L || num_federates >= UINT16_MAX || num_federates == LONG_MAX ||
           num_federates == LONG_MIN) {
-        lf_print_error("--number_of_federates needs a valid positive integer argument.");
+        lf_print_error("--number_of_federates needs a positive integer argument ( > 0 and < %d).", UINT16_MAX);
         usage(argc, argv);
         return 0;
       }
@@ -229,7 +229,7 @@ int process_args(int argc, const char* argv[]) {
       lf_print_info("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
     } else if (strcmp(argv[i], "-nt") == 0 || strcmp(argv[i], "--number_of_transient_federates") == 0) {
       if (argc < i + 2) {
-        lf_print_error("--number_of_transient_federates needs a positive integer argument.");
+        lf_print_error("--number_of_transient_federates needs a positive integer argument ( > 0 and < %d).", INT32_MAX);
         usage(argc, argv);
         return 0;
       }
@@ -237,7 +237,7 @@ int process_args(int argc, const char* argv[]) {
       long num_transient_federates = strtol(argv[i], NULL, 10);
       if (num_transient_federates <= 0L || num_transient_federates > INT32_MAX ||
           num_transient_federates == LONG_MAX || num_transient_federates == LONG_MIN) {
-        lf_print_error("--number_of_transient_federates needs a positive integer argument.");
+        lf_print_error("--number_of_transient_federates needs a positive integer argument ( > 0 and < %d).", INT32_MAX);
         usage(argc, argv);
         return 0;
       }
@@ -352,7 +352,7 @@ int process_args(int argc, const char* argv[]) {
     }
   }
   if (rti.base.number_of_scheduling_nodes == 0) {
-    lf_print_error("--number_of_federates needs a valid positive integer argument.");
+    lf_print_error("--number_of_federates needs a positive integer argument ( > 0 and < %d).", UINT16_MAX);
     usage(argc, argv);
     return 0;
   }
