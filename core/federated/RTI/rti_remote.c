@@ -1180,7 +1180,7 @@ static void send_start_tag_locked(federate_info_t* my_fed) {
  * These messages are sent when a federate joins the federation. The RTI uses them
  * to compute the start tag of the federation and the effective_start_time of a joining
  * transient federate.
- * 
+ *
  * When the federate is not transient, the message type is `MSG_TYPE_TIMESTAMP`.
  * In this case, the RTI waits until it has received such a message from all the persistent federates.
  * It selects the maximum of the proposed start times and adds DELAY_START to it.

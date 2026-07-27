@@ -235,8 +235,8 @@ int process_args(int argc, const char* argv[]) {
       }
       i++;
       long num_transient_federates = strtol(argv[i], NULL, 10);
-      if (num_transient_federates <= 0L || num_transient_federates > INT32_MAX ||
-          num_transient_federates == LONG_MAX || num_transient_federates == LONG_MIN) {
+      if (num_transient_federates <= 0L || num_transient_federates > INT32_MAX || num_transient_federates == LONG_MAX ||
+          num_transient_federates == LONG_MIN) {
         lf_print_error("--number_of_transient_federates needs a positive integer argument ( > 0 and < %d).", INT32_MAX);
         usage(argc, argv);
         return 0;
