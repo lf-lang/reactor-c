@@ -1461,7 +1461,6 @@ void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t s
 void* clock_synchronization_thread(void* noargs) {
   initialize_lf_thread_id();
   // Wait until all federates have been notified of the start time.
-  // FIXME: Use lf_ version of this when merged with master.
   LF_MUTEX_LOCK(&rti_mutex);
   while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_scheduling_nodes) {
     lf_cond_wait(&received_start_times);
@@ -1485,7 +1484,7 @@ void* clock_synchronization_thread(void* noargs) {
     for (int fed_id = 0; fed_id < rti_remote->base.number_of_scheduling_nodes; fed_id++) {
       federate_info_t* fed = GET_FED_INFO(fed_id);
       if (fed->enclave.state == NOT_CONNECTED) {
-        // FIXME: We need better error handling here, but clock sync failure
+        // NOTE: Better error handling is needed here, but clock sync failure
         // should not stop execution.
         lf_print_error("Clock sync failed with federate %d. Not connected.", fed_id);
         continue;
@@ -1651,7 +1650,6 @@ void* federate_info_thread_TCP(void* fed) {
       // Prevent multiple threads from closing the same network abstraction at the same time.
       shutdown_net(my_fed->net, false);
       my_fed->net = NULL;
-      // FIXME: We need better error handling here, but do not stop execution here.
       break;
     }
     LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->enclave.id);
@@ -1803,7 +1801,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       // The federate is trying to connect to a peer, not to the RTI.
       // It has connected to the RTI instead.
-      // FIXME: This should not happen, but apparently has been observed.
+      // NOTE: This should not happen, but apparently has been observed.
       // It should not happen because the peers get the port and IP address
       // of the peer they want to connect to from the RTI.
       // If the connection is a peer-to-peer connection between two
@@ -1955,8 +1953,8 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
  * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
  * out the relevant information in the federate's struct.
  *
- * In case of a hot swap, check that no changes were made to the connections, compared
- * to the first instance that joigned. This means that the first instance to join
+ * In case of a hot swap or rejoin, check that no changes were made to the connections,
+ * compared to the first instance that joined. This means that the first instance to join
  * __is__ the reference.
  *
  * @return 1 on success and 0 on failure.
@@ -1975,19 +1973,21 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
     send_reject(fed_net, UNEXPECTED_MESSAGE);
     return 0;
   } else {
-    // In case of a transient federate that is joining again, or a hot swap, then
-    // check that the connection information did not change.
-    federate_info_t* fed = GET_FED_INFO(fed_id);
-    federate_info_t* temp_fed = NULL;
-    if (lf_tag_compare(fed->effective_start_tag, NEVER_TAG) != 0) {
-      if (hot_swap_in_progress) {
-        fed = hot_swap_federate;
-      } else {
-        temp_fed = (federate_info_t*)calloc(1, sizeof(federate_info_t));
-        initialize_federate(temp_fed, fed_id);
-        fed = temp_fed;
-      }
+    // The first accepted MSG_TYPE_NEIGHBOR_STRUCTURE for this federate ID is the reference.
+    // On hot swap or rejoin, parse into a separate struct and reject if it differs.
+    federate_info_t* reference = GET_FED_INFO(fed_id);
+    federate_info_t* fed = reference; // Where the incoming structure is stored.
+    federate_info_t* scratch = NULL;
+    bool validate = hot_swap_in_progress || reference->neighbor_structure_received;
+
+    if (hot_swap_in_progress) {
+      fed = hot_swap_federate;
+    } else if (validate) {
+      scratch = (federate_info_t*)calloc(1, sizeof(federate_info_t));
+      initialize_federate(scratch, fed_id);
+      fed = scratch;
     }
+
     // Read the number of upstream and downstream connections
     fed->enclave.num_immediate_upstreams = extract_int32(&(connection_info_header[1]));
     fed->enclave.num_immediate_downstreams = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
@@ -2041,21 +2041,17 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
     // NOTE: In this design, changes in the connections are not allowed. This means that the first
     //       instance to join __is__ the reference. If this policy is to be changed, then it is in
     //       the following lines will be updated accordingly.
-    if (hot_swap_in_progress || temp_fed != NULL) {
-      if (temp_fed == NULL) {
-        temp_fed = hot_swap_federate;
-      }
-      // Now, compare the previous and the new neighberhood structure
-      // Start with the number of upstreams and downstreams
+    if (validate) {
+      // Compare the incoming structure (fed) against the established reference.
       bool reject = false;
-      if ((fed->enclave.num_immediate_upstreams != temp_fed->enclave.num_immediate_upstreams) ||
-          (fed->enclave.num_immediate_downstreams != temp_fed->enclave.num_immediate_downstreams)) {
+      if ((fed->enclave.num_immediate_upstreams != reference->enclave.num_immediate_upstreams) ||
+          (fed->enclave.num_immediate_downstreams != reference->enclave.num_immediate_downstreams)) {
         reject = true;
       } else {
         // Then check all upstreams and their delays
         for (int i = 0; i < fed->enclave.num_immediate_upstreams; i++) {
-          if ((fed->enclave.immediate_upstreams[i] != temp_fed->enclave.immediate_upstreams[i]) ||
-              (fed->enclave.immediate_upstream_delays[i] != temp_fed->enclave.immediate_upstream_delays[i])) {
+          if ((fed->enclave.immediate_upstreams[i] != reference->enclave.immediate_upstreams[i]) ||
+              (fed->enclave.immediate_upstream_delays[i] != reference->enclave.immediate_upstream_delays[i])) {
             reject = true;
             break;
           }
@@ -2063,7 +2059,7 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
         if (!reject) {
           // Finally, check all downstream federates
           for (int i = 0; i < fed->enclave.num_immediate_downstreams; i++) {
-            if (fed->enclave.immediate_downstreams[i] != temp_fed->enclave.immediate_downstreams[i]) {
+            if (fed->enclave.immediate_downstreams[i] != reference->enclave.immediate_downstreams[i]) {
               reject = true;
               break;
             }
@@ -2071,11 +2067,23 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
         }
       }
       if (reject) {
-        if (temp_fed != hot_swap_federate) {
-          free(temp_fed);
+        lf_print_error("RTI rejecting federate %d: neighbor structure differs from the reference.", fed_id);
+        if (scratch != NULL) {
+          free_federate_info(scratch);
         }
+        // hot_swap_federate is freed by the caller on failure.
         return 0;
       }
+      // Scratch federate used only to validate an unchanged neighborhood on rejoin.
+      if (scratch != NULL) {
+        free_federate_info(scratch);
+      } else {
+        // Hot swap: keep the validated copy on hot_swap_federate.
+        fed->neighbor_structure_received = true;
+      }
+    } else {
+      // First join: the parsed structure is now the reference.
+      fed->neighbor_structure_received = true;
     }
   }
   LF_PRINT_DEBUG("RTI received neighbor structure from federate %d.", fed_id);
@@ -2379,7 +2387,7 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         LF_MUTEX_UNLOCK(&rti_mutex);
 
         // Join the old thread so we know it has fully exited before redirecting or freeing.
-        // Without this, free(fed_old) races with the old thread's post-resign cleanup code.
+        // Without this, free_federate_info(fed_old) races with the old thread's post-resign cleanup code.
         lf_thread_join(fed_old->thread_id, NULL);
 
         // The latest LTC is the tag at which the old federate resigned. This is useful
@@ -2396,9 +2404,8 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         // garbage message types, read errors, and a fatal ENOTTY in CI.
         rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*)hot_swap_federate;
 
-        // Free the old federate memory and reset the Hot swap indicators.
-        // FIXME: Is this enough to free the memory allocated to the federate?
-        free(fed_old);
+        // Free the old federate and all nested allocations.
+        free_federate_info(fed_old);
 
         // Create a thread to communicate with the federate.
         // This has to be done after clock synchronization is finished
@@ -2432,8 +2439,10 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
         hot_swap_in_progress = false;
         lf_mutex_unlock(&rti_mutex);
 
-        // FIXME: Is this enough to free the memory of a federate_info_t data structure?
-        free(hot_swap_federate);
+        // Free the abandoned hot-swap federate and all nested allocations
+        // (including net, which was assigned during the failed join attempt).
+        free_federate_info(hot_swap_federate);
+        hot_swap_federate = NULL;
       }
     }
   }
@@ -2541,12 +2550,32 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   fed->has_upstream_transient_federates = false;
   fed->is_transient = true;
   fed->effective_start_tag = NEVER_TAG;
+  fed->neighbor_structure_received = false;
   fed->number_of_downstream_transients = 0;
   int32_t num_transients = rti_remote->number_of_transient_federates;
   fed->downstream_transients = (int32_t*)malloc(num_transients * sizeof(int32_t));
   for (int32_t i = 0; i < num_transients; i++) {
     fed->downstream_transients[i] = -1;
   }
+}
+
+void free_federate_info(federate_info_t* fed) {
+  if (fed == NULL) {
+    return;
+  }
+  if (fed->net != NULL) {
+    shutdown_net(fed->net, false);
+    fed->net = NULL;
+  }
+  if (fed->in_transit_message_tags != NULL) {
+    pqueue_tag_free(fed->in_transit_message_tags);
+    fed->in_transit_message_tags = NULL;
+  }
+  free(fed->downstream_transients);
+  free(fed->enclave.immediate_upstreams);
+  free(fed->enclave.immediate_upstream_delays);
+  free(fed->enclave.immediate_downstreams);
+  free(fed);
 }
 
 void reset_transient_federate(federate_info_t* fed) {
@@ -2673,13 +2702,14 @@ void wait_for_federates() {
   }
 
   // Wait for persistent federate threads to exit.
+  // Nested allocations (including in_transit_message_tags) are freed later by
+  // free_scheduling_nodes() -> free_federate_info().
   void* thread_exit_status;
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
     if (!fed->is_transient) {
       LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
       lf_thread_join(fed->thread_id, &thread_exit_status);
-      pqueue_tag_free(fed->in_transit_message_tags);
       LF_PRINT_LOG("RTI: Persistent federate %d thread exited.", fed->enclave.id);
     }
   }
@@ -2712,7 +2742,6 @@ void wait_for_federates() {
       if (fed->is_transient && fed->enclave.state != NOT_CONNECTED) {
         LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
         lf_thread_join(fed->thread_id, &thread_exit_status);
-        pqueue_tag_free(fed->in_transit_message_tags);
         LF_PRINT_LOG("RTI: Transient federate %d thread exited.", fed->enclave.id);
       }
     }
@@ -2773,16 +2802,7 @@ void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   invalidate_min_delays();
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
-    // FIXME: Gives error freeing memory not allocated!!!!
-    scheduling_node_t* node = scheduling_nodes[i];
-    if (node->immediate_upstreams != NULL) {
-      free(node->immediate_upstreams);
-      free(node->immediate_upstream_delays);
-    }
-    if (node->immediate_downstreams != NULL) {
-      free(node->immediate_downstreams);
-    }
-    free(node);
+    free_federate_info((federate_info_t*)scheduling_nodes[i]);
   }
   free(scheduling_nodes);
 }

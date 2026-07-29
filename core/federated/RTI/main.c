@@ -77,11 +77,15 @@ static void send_failed_signal(federate_info_t* fed) {
  */
 void termination() {
   if (!normal_termination) {
-    for (int i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
-      federate_info_t* f = (federate_info_t*)rti.base.scheduling_nodes[i];
-      if (!f || f->enclave.state == NOT_CONNECTED)
-        continue;
-      send_failed_signal(f);
+    // scheduling_nodes may still be NULL if we exit before federate allocation
+    // (e.g. after a command-line argument error).
+    if (rti.base.scheduling_nodes != NULL) {
+      for (int i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
+        federate_info_t* f = (federate_info_t*)rti.base.scheduling_nodes[i];
+        if (!f || f->enclave.state == NOT_CONNECTED)
+          continue;
+        send_failed_signal(f);
+      }
     }
     if (rti.base.tracing_enabled) {
       lf_tracing_global_shutdown();
@@ -229,15 +233,19 @@ int process_args(int argc, const char* argv[]) {
       lf_print_info("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
     } else if (strcmp(argv[i], "-nt") == 0 || strcmp(argv[i], "--number_of_transient_federates") == 0) {
       if (argc < i + 2) {
-        lf_print_error("--number_of_transient_federates needs a positive integer argument ( > 0 and < %d).", INT32_MAX);
+        lf_print_error("--number_of_transient_federates needs a non-negative integer argument ( >= 0 and < %d).",
+                       INT32_MAX);
         usage(argc, argv);
         return 0;
       }
       i++;
       long num_transient_federates = strtol(argv[i], NULL, 10);
-      if (num_transient_federates <= 0L || num_transient_federates > INT32_MAX || num_transient_federates == LONG_MAX ||
+      // Zero is valid: the launcher always passes -nt, including for federations
+      // with no transient federates.
+      if (num_transient_federates < 0L || num_transient_federates > INT32_MAX || num_transient_federates == LONG_MAX ||
           num_transient_federates == LONG_MIN) {
-        lf_print_error("--number_of_transient_federates needs a positive integer argument ( > 0 and < %d).", INT32_MAX);
+        lf_print_error("--number_of_transient_federates needs a non-negative integer argument ( >= 0 and < %d).",
+                       INT32_MAX);
         usage(argc, argv);
         return 0;
       }
@@ -356,8 +364,8 @@ int process_args(int argc, const char* argv[]) {
     usage(argc, argv);
     return 0;
   }
-  if (rti.number_of_transient_federates > rti.base.number_of_scheduling_nodes) {
-    lf_print_error("--number_of_transient_federates cannot be higher than the number of federates.");
+  if (rti.number_of_transient_federates >= rti.base.number_of_scheduling_nodes) {
+    lf_print_error("--number_of_transient_federates must be less than the number of federates.");
     usage(argc, argv);
     return 0;
   }
@@ -386,6 +394,8 @@ int main(int argc, const char* argv[]) {
 
   if (!process_args(argc, argv)) {
     // Processing command-line arguments failed.
+    // Avoid the atexit handler treating this as an abnormal runtime failure.
+    normal_termination = true;
     return -1;
   }
 

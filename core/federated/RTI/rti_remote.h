@@ -68,6 +68,9 @@ typedef struct federate_info_t {
   bool is_transient;
   /** @brief Records the start time of the federate, which is mainly useful for transient federates. */
   tag_t effective_start_tag;
+  /** @brief True after the first MSG_TYPE_NEIGHBOR_STRUCTURE has been accepted for this federate ID.
+   *  Preserved across transient resign/reset so rejoins and hot swaps can validate against that reference. */
+  bool neighbor_structure_received;
   /** @brief Number of outbound connections to transient federates. */
   int32_t number_of_downstream_transients;
   /** @brief IDs of transient federates this federate has outbound connections to.
@@ -452,6 +455,18 @@ void* respond_to_erroneous_connections(void* nothing);
  * @param id The federate ID.
  */
 void initialize_federate(federate_info_t* fed, uint16_t id);
+
+/**
+ * @brief Free a federate_info_t and all heap memory it owns.
+ * @ingroup RTI
+ *
+ * Frees nested allocations (`in_transit_message_tags`, `downstream_transients`,
+ * and the immediate upstream/downstream arrays), shuts down `net` if still open,
+ * then frees the struct itself. Safe to call with NULL.
+ *
+ * @param fed The federate to free.
+ */
+void free_federate_info(federate_info_t* fed);
 
 /**
  * @brief Reset the federate. The federate has to be transient.
