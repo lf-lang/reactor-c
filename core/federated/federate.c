@@ -2215,7 +2215,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
       }
       lf_print_info("Connected to federate %d, port %hu.", remote_federate_id, uport);
       // Trace the event when tracing is enabled
-      tracepoint_federate_to_federate(receive_TAG, _lf_my_fed_id, remote_federate_id, NULL);
+      tracepoint_federate_to_federate(receive_TAG, _lf_my_fed_id, remote_federate_id, &t);
       break;
     } else {
       // Message type must be MSG_TYPE_ACK.
@@ -2563,7 +2563,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
       _lf_get_environments(&env);
       response[0] = MSG_TYPE_TAG;
       encode_tag(&response[1], env->current_tag);
-      tracepoint_federate_to_federate(send_TAG, _lf_my_fed_id, remote_fed_id, NULL);
+      tracepoint_federate_to_federate(send_TAG, _lf_my_fed_id, remote_fed_id, &(env->current_tag));
       write_to_net_fail_on_error(_fed.net_for_inbound_p2p_connections[remote_fed_id], MSG_TYPE_TAG_LENGTH, response,
                                  &lf_outbound_net_mutex, "Failed to write MSG_TYPE_TAG in response to federate %d.",
                                  remote_fed_id);
