@@ -1073,12 +1073,15 @@ static void handle_downstream_disconnected_message(void) {
  * @return The designated start time for the federate.
  */
 static instant_t get_start_time_from_rti(tag_t suggested_start_tag) {
-  // Send the timestamp marker first.
+  if (!_fed.is_transient) {
+    send_time(suggested_start_tag.time);
+  } else {
 #ifdef FEDERATED_DECENTRALIZED
-  send_time(suggested_start_tag.time);
+    send_tag(MSG_TYPE_TAG, suggested_start_tag);
 #else
-  send_tag(MSG_TYPE_TAG, suggested_start_tag);
+    send_time(suggested_start_tag.time);
 #endif
+  }
 
   // Read bytes from the network abstraction. We need 9 bytes.
   // Buffer for message ID plus timestamp.
