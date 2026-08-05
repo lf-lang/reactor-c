@@ -125,15 +125,16 @@ static void send_time(instant_t time) {
  * This function acquires the lf_outbound_net_mutex.
  * @param type The message type (MSG_TYPE_TAG or MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LATEST_TAG_CONFIRMED).
  * @param tag The tag.
+ * @param trace_as_timestamp If true, trace the tag as a timestamp (send_TIMESTAMP) instead of as a tag (send_TAG).
  */
-static void send_tag(unsigned char type, tag_t tag) {
+static void send_tag(unsigned char type, tag_t tag, bool trace_as_timestamp) {
   LF_PRINT_DEBUG("Sending tag " PRINTF_TAG " to the RTI.", tag.time, tag.microstep);
   size_t bytes_to_write = 1 + sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[bytes_to_write];
   buffer[0] = type;
   encode_tag(&(buffer[1]), tag);
 
-  trace_event_t event_type = send_TAG;
+  trace_event_t event_type = trace_as_timestamp ? send_TIMESTAMP : send_TAG;
   if (type == MSG_TYPE_NEXT_EVENT_TAG)
     event_type = send_NET;
   if (type == MSG_TYPE_LATEST_TAG_CONFIRMED)
@@ -1077,7 +1078,7 @@ static instant_t get_start_time_from_rti(tag_t suggested_start_tag) {
     send_time(suggested_start_tag.time);
   } else {
 #ifdef FEDERATED_DECENTRALIZED
-    send_tag(MSG_TYPE_TAG, suggested_start_tag);
+    send_tag(MSG_TYPE_TAG, suggested_start_tag, true);
 #else
     send_time(suggested_start_tag.time);
 #endif
@@ -1721,7 +1722,7 @@ static void handle_downstream_next_event_tag() {
     LF_PRINT_LOG("The incoming DNET " PRINTF_TAG " is earlier than the last skipped NET " PRINTF_TAG
                  ". Send the skipped NET",
                  DNET.time - start_time, DNET.microstep, _fed.last_skipped_NET.time, _fed.last_skipped_NET.microstep);
-    send_tag(MSG_TYPE_NEXT_EVENT_TAG, _fed.last_skipped_NET);
+    send_tag(MSG_TYPE_NEXT_EVENT_TAG, _fed.last_skipped_NET, false);
     _fed.last_sent_NET = _fed.last_skipped_NET;
     _fed.last_skipped_NET = NEVER_TAG;
   }
@@ -2596,7 +2597,7 @@ void lf_latest_tag_confirmed(tag_t tag_to_send) {
   }
   LF_PRINT_LOG("Sending Latest Tag Confirmed (LTC) " PRINTF_TAG " to the RTI.", tag_to_send.time - start_time,
                tag_to_send.microstep);
-  send_tag(MSG_TYPE_LATEST_TAG_CONFIRMED, tag_to_send);
+  send_tag(MSG_TYPE_LATEST_TAG_CONFIRMED, tag_to_send, false);
   _fed.last_sent_LTC = tag_to_send;
 }
 
@@ -2748,7 +2749,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       // NET.
       if (!_fed.received_any_DNET ||
           (lf_tag_compare(_fed.last_DNET, tag) < 0 && lf_tag_compare(_fed.last_DNET, _fed.last_sent_NET) >= 0)) {
-        send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
+        send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, false);
         _fed.last_sent_NET = tag;
         _fed.last_skipped_NET = NEVER_TAG;
         LF_PRINT_LOG("Sent a next event tag (NET) " PRINTF_TAG " to RTI based on the last DNET " PRINTF_TAG ".",
@@ -2782,7 +2783,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       // NET is not bounded by physical time or has no downstream federates.
       // Normal case.
       if (lf_tag_compare(_fed.last_DNET, tag) < 0 || (_fed.has_upstream && lf_tag_compare(_fed.last_TAG, tag) < 0)) {
-        send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
+        send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, false);
         _fed.last_sent_NET = tag;
         _fed.last_skipped_NET = NEVER_TAG;
         LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.", tag.time - start_time, tag.microstep);
@@ -2823,7 +2824,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
           return _fed.last_TAG;
         }
         if (lf_tag_compare(next_tag, tag) != 0) {
-          send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag);
+          send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, false);
           _fed.last_sent_NET = next_tag;
           _fed.last_skipped_NET = NEVER_TAG;
           LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI from loop.", next_tag.time - lf_time_start(),
