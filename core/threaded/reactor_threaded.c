@@ -853,47 +853,13 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
     // lf_reaction_scheduling_deadline_ns). reaction->deadline stays the LF-declared value for
     // violation checks.
     interval_t scheduling_deadline = lf_reaction_scheduling_deadline_ns(current_reaction_to_execute);
-    
-    // Computing the time until the deadline. Computing first the absolute deadline
-    // as current_logical_time + relative_deadline, and then subtracting the current physical time.
-    interval_t current_physical_time = lf_time_physical();
-    interval_t time_until_deadline =
-        env->current_tag.time + scheduling_deadline - current_physical_time;
-    
-    // If the deadline has already passed, set the time until deadline to 1ns so that
-    // the violation handler is invoked with the highest priority.
-    if (time_until_deadline <= 0) {
-      time_until_deadline = 1;
-    }
 
-    // Using the time until the deadline to compute the priority.
-    int assigned_priority = get_priority_value(time_until_deadline);
-
-    // Handling the case when the thread was preempted by a higher priority thread.
-    // The case is verified by reading the physical time again: if this is too far from
-    // the physical time used to compute the time until deadline, then we have been preempted.
-    // In this case, we need to recompute the time until deadline to give the thread
-    // a more urgent priority value.
-    instant_t check_physical_time = lf_time_physical();
-    interval_t physical_time_gap = check_physical_time - current_physical_time;
-    if (physical_time_gap <= LF_PREEMPTION_DETECT_THRESHOLD) {
-      current_physical_time = lf_time_physical();
-      time_until_deadline =
-          env->current_tag.time + scheduling_deadline - current_physical_time;
-    
-      // If the deadline has already passed, set the time until deadline to 1ns so that
-      // the violation handler is invoked with the highest priority.
-      if (time_until_deadline <= 0) {
-        time_until_deadline = 1;
-      }
-      
-      assigned_priority = get_priority_value(time_until_deadline);
-    }
+    // Using the deadline to compute the priority.
+    int assigned_priority = get_priority_value(scheduling_deadline);
 
     LF_PRINT_LOG("Worker %d: Setting priority %d to execute reaction %s with relative deadline "
-                 PRINTF_TIME " ns and time until logical deadline " PRINTF_TIME " ns.",
-                 worker_number, assigned_priority, current_reaction_to_execute->name, scheduling_deadline,
-                 time_until_deadline);
+      PRINTF_TIME " ns.",
+      worker_number, assigned_priority, current_reaction_to_execute->name, scheduling_deadline);
     lf_thread_set_priority(lf_thread_self(), assigned_priority);
 #endif
 
