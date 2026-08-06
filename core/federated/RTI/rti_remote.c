@@ -37,7 +37,7 @@ extern instant_t start_time;
  */
 static rti_remote_t* rti_remote;
 
-// Referance to the federate instance to support hot swap
+// Reference to the federate instance to support hot swap
 static federate_info_t* hot_swap_federate;
 
 // Indicates if a hot swap process is in progress
@@ -130,16 +130,6 @@ static void pqueue_delayed_grants_free(pqueue_delayed_grants_t* q) { pqueue_tag_
  */
 static void pqueue_delayed_grants_remove(pqueue_delayed_grants_t* q, pqueue_delayed_grant_element_t* e) {
   pqueue_tag_remove((pqueue_tag_t*)q, (void*)e);
-}
-
-/**
- * @brief Return the first item with the specified tag or NULL if there is none.
- * @param q The queue.
- * @param t The tag.
- * @return An entry with the specified tag or NULL if there isn't one.
- */
-pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_with_tag(pqueue_delayed_grants_t* q, tag_t t) {
-  return (pqueue_delayed_grant_element_t*)pqueue_tag_find_with_tag((pqueue_tag_t*)q, t);
 }
 
 /**
