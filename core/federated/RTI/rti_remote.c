@@ -253,7 +253,7 @@ static void send_upstream_disconnected_locked(federate_info_t* upstream) {
   buffer[0] = MSG_TYPE_UPSTREAM_DISCONNECTED;
   encode_uint16(upstream->enclave.id, &buffer[1]);
   for (int j = 0; j < upstream->enclave.num_immediate_downstreams; j++) {
-    federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
+    federate_info_t* downstream = GET_FED_INFO(upstream->enclave.immediate_downstreams[j]);
     if (downstream->enclave.state != NOT_CONNECTED) {
       if (write_to_net_close_on_error(downstream->net, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
         lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.", downstream->enclave.id);
@@ -1570,10 +1570,7 @@ static void handle_federate_failed(federate_info_t* my_fed) {
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
   // track of which upstream federates have been visited.
-  bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes,
-                                sizeof(bool)); // Initializes to 0.
-  notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
-  free(visited);
+  notify_downstream_advance_grant_if_safe(&(my_fed->enclave));
 
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -1611,12 +1608,7 @@ static void handle_federate_resign(federate_info_t* my_fed) {
   my_fed->net = NULL;
 
   // Check downstream federates to see whether they should now be granted a TAG.
-  // To handle cycles, need to create a boolean array to keep
-  // track of which upstream federates have been visited.
-  bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes,
-                                sizeof(bool)); // Initializes to 0.
-  notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
-  free(visited);
+  notify_downstream_advance_grant_if_safe(&(my_fed->enclave));
 
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -1731,9 +1723,7 @@ void* federate_info_thread_TCP(void* fed) {
   // first (as happens, e.g., when a transient federate calls lf_stop(),
   // which involves no RTI handshake) would otherwise leave federates
   // downstream of it waiting forever for a grant that will never come.
-  bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
-  notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
-  free(visited);
+  notify_downstream_advance_grant_if_safe(&(my_fed->enclave));
 
   // Signal the hot swap mechanism, if needed
   if (hot_swap_in_progress && hot_swap_federate->enclave.id == my_fed->enclave.id) {

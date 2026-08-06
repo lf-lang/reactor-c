@@ -9,6 +9,7 @@
  */
 #if defined STANDALONE_RTI || defined LF_ENCLAVES
 #include "rti_common.h"
+#include <string.h> // for memset
 
 /**
  * Local reference to rti_common_t instance.
@@ -79,10 +80,8 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
     scheduling_node_t* downstream = rti_common->scheduling_nodes[enclave->immediate_downstreams[i]];
     // Notify downstream enclave if appropriate.
     notify_advance_grant_if_safe(downstream);
-    bool* visited = (bool*)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
     // Notify scheduling_nodes downstream of downstream if appropriate.
-    notify_downstream_advance_grant_if_safe(downstream, visited);
-    free(visited);
+    notify_downstream_advance_grant_if_safe(downstream);
   }
 
   LF_MUTEX_UNLOCK(rti_common->mutex);
@@ -321,15 +320,21 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
   return result;
 }
 
-void notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[]) {
+static void _notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[]) {
   visited[e->id] = true;
   for (int i = 0; i < e->num_immediate_downstreams; i++) {
     scheduling_node_t* downstream = rti_common->scheduling_nodes[e->immediate_downstreams[i]];
     if (visited[downstream->id])
       continue;
     notify_advance_grant_if_safe(downstream);
-    notify_downstream_advance_grant_if_safe(downstream, visited);
+    _notify_downstream_advance_grant_if_safe(downstream, visited);
   }
+}
+
+void notify_downstream_advance_grant_if_safe(scheduling_node_t* e) {
+  bool visited[rti_common->number_of_scheduling_nodes];
+  memset(visited, false, rti_common->number_of_scheduling_nodes * sizeof(bool));
+  _notify_downstream_advance_grant_if_safe(e, visited);
 }
 
 void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_event_tag) {
