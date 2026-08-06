@@ -200,7 +200,7 @@ static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provis
 }
 
 /**
- * @brief Return the number of non-connected upstream transients
+ * @brief Return the number of non-connected upstream transients.
  * @param fed The federate
  * @return The number of non-connected upstream transients
  */
@@ -222,9 +222,9 @@ static int get_num_absent_upstream_transients(federate_info_t* fed) {
  *
  * This function assumes that the mutex lock is already held.
  * @param destination The destination federate.
- * @param disconnected The connected federate.
+ * @param upstream The connected upstreamfederate.
  */
-static void send_upstream_connected_locked(federate_info_t* destination, federate_info_t* connected) {
+static void send_upstream_connected_locked(federate_info_t* destination, federate_info_t* upstream) {
   if (destination->enclave.state == NOT_CONNECTED) {
     LF_PRINT_LOG("RTI did not send upstream connected message to federate %d, because it is not connected.",
                  destination->enclave.id);
@@ -232,7 +232,7 @@ static void send_upstream_connected_locked(federate_info_t* destination, federat
   }
   unsigned char buffer[MSG_TYPE_UPSTREAM_CONNECTED_LENGTH];
   buffer[0] = MSG_TYPE_UPSTREAM_CONNECTED;
-  encode_uint16(connected->enclave.id, &buffer[1]);
+  encode_uint16(upstream->enclave.id, &buffer[1]);
   if (write_to_net_close_on_error(destination->net, MSG_TYPE_UPSTREAM_CONNECTED_LENGTH, buffer)) {
     lf_print_warning("RTI: Failed to send upstream connected message to federate %d.", destination->enclave.id);
   }
@@ -242,21 +242,26 @@ static void send_upstream_connected_locked(federate_info_t* destination, federat
 }
 
 /**
- * @brief Send MSG_TYPE_UPSTREAM_DISCONNECTED to the specified federate.
+ * @brief Send MSG_TYPE_UPSTREAM_DISCONNECTED to all federates downstream of the specified `upstream`
+ *  federate, telling them that the specified `upstream` federate is no longer connected.
  *
  * This function assumes that the mutex lock is already held.
- * @param destination The destination federate.
- * @param disconnected The disconnected federate.
+ * @param upstream The disconnected upstream federate.
  */
-static void send_upstream_disconnected_locked(federate_info_t* destination, federate_info_t* disconnected) {
+static void send_upstream_disconnected_locked(federate_info_t* upstream) {
   unsigned char buffer[MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH];
   buffer[0] = MSG_TYPE_UPSTREAM_DISCONNECTED;
-  encode_uint16(disconnected->enclave.id, &buffer[1]);
-  if (write_to_net_close_on_error(destination->net, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
-    lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.", destination->enclave.id);
-  }
-  if (rti_remote->base.tracing_enabled) {
-    tracepoint_rti_to_federate(send_UPSTREAM_DISCONNECTED, destination->enclave.id, NULL);
+  encode_uint16(upstream->enclave.id, &buffer[1]);
+  for (int j = 0; j < upstream->enclave.num_immediate_downstreams; j++) {
+    federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
+    if (downstream->enclave.state != NOT_CONNECTED) {
+      if (write_to_net_close_on_error(downstream->net, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
+        lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.", downstream->enclave.id);
+      }
+      if (rti_remote->base.tracing_enabled) {
+        tracepoint_rti_to_federate(send_UPSTREAM_DISCONNECTED, downstream->enclave.id, NULL);
+      }
+    }
   }
 }
 
@@ -271,11 +276,11 @@ static void send_upstream_disconnected_locked(federate_info_t* destination, fede
  * This function assumes that the mutex lock is already held.
  * @param my_fed The transient federate that has just connected.
  */
-static void send_outbound_connected_locked(federate_info_t* my_fed) {
+static void send_downstream_connected_locked(federate_info_t* my_fed) {
   unsigned char buffer[MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH];
   buffer[0] = MSG_TYPE_DOWNSTREAM_CONNECTED;
   encode_uint16(my_fed->enclave.id, &buffer[1]);
-  // Iterate over all federates and notify those that have my_fed as an outbound transient.
+  // Iterate over all federates and notify those that have my_fed as a downstream transient.
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
     if (fed->enclave.state == NOT_CONNECTED) {
@@ -294,7 +299,7 @@ static void send_outbound_connected_locked(federate_info_t* my_fed) {
         encode_uint32(*ip_address, &buffer[3 + 12 + 4]);
 
         if (write_to_net_close_on_error(fed->net, MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH, buffer)) {
-          lf_print_warning("RTI: Failed to send outbound connected message to federate %d.", fed->enclave.id);
+          lf_print_warning("RTI: Failed to send downstream connected message to federate %d.", fed->enclave.id);
         }
         if (rti_remote->base.tracing_enabled) {
           tracepoint_rti_to_federate(send_DOWNSTREAM_CONNECTED, fed->enclave.id, NULL);
@@ -318,7 +323,7 @@ static void send_downstream_disconnected_locked(federate_info_t* my_fed) {
   unsigned char buffer[MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH];
   buffer[0] = MSG_TYPE_DOWNSTREAM_DISCONNECTED;
   encode_uint16(my_fed->enclave.id, &buffer[1]);
-  // Iterate over all federates and notify those that have my_fed as an outbound transient.
+  // Iterate over all federates and notify those that have my_fed as a downstream transient.
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
     if (fed->enclave.state == NOT_CONNECTED) {
@@ -345,18 +350,10 @@ static void send_downstream_disconnected_locked(federate_info_t* my_fed) {
  */
 static void notify_federate_disconnected(federate_info_t* fed) {
   fed->enclave.state = NOT_CONNECTED;
-  // Notify downstream federates. Need to hold the mutex lock to do this.
   if (fed->is_transient) {
     LF_MUTEX_LOCK(&rti_mutex);
-    for (int j = 0; j < fed->enclave.num_immediate_downstreams; j++) {
-      federate_info_t* downstream = GET_FED_INFO(fed->enclave.immediate_downstreams[j]);
-      // Ignore this enclave if it no longer connected.
-      if (downstream->enclave.state != NOT_CONNECTED) {
-        // Notify the downstream enclave.
-        send_upstream_disconnected_locked(downstream, fed);
-      }
-    }
-    // Notify upstream federates that have fed in their list of outbound transients.
+    // Notify connected federates.
+    send_upstream_disconnected_locked(fed);
     send_downstream_disconnected_locked(fed);
     LF_MUTEX_UNLOCK(&rti_mutex);
   }
@@ -365,8 +362,7 @@ static void notify_federate_disconnected(federate_info_t* fed) {
 /**
  * @brief Send a tag advance grant (TAG) message to the specified federate immediately.
  *
- * This function will keep a record of this TAG in the enclave's `last_granted`
- * field.
+ * This function will keep a record of this TAG in the enclave's `last_granted` field.
  *
  * @param e The scheduling node.
  * @param tag The tag to grant.
@@ -407,8 +403,13 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     lf_cond_wait(&sent_start_time);
   }
 
-  // Check if sending the tag advance grant needs to be delayed or not
-  // Delay is needed when a federate has, at least one, absent upstream transient
+  // Check if sending the tag advance grant needs to be delayed or not.
+  // Delay is needed when a federate has at least one absent upstream transient.
+  // The delay allows physical time to catch up with the logical time of the grant.
+  // The reason for this is that the once a tag advance is sent, an upstream transient
+  // federate cannot join at a time earlier than the tag advance.
+  // If we send a grant well before the physical time catches up, the transient federate
+  // will be significantly delayed in joining the federation.
   federate_info_t* fed = GET_FED_INFO(e->id);
   if (!fed->has_upstream_transient_federates) {
     notify_tag_advance_grant_immediate(e, tag);
@@ -654,7 +655,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
 
   // If the destination federate is no longer connected, or it is a transient that has not started
   // executing yet (the delayed intended tag is less than the effective start tag of the
-  // destination), issue a warning, remove the message from the network abstraction, and return.
+  // destination), issue a warning, drop the message, and return.
   federate_info_t* fed = GET_FED_INFO(federate_id);
   interval_t delay = NEVER;
   for (int i = 0; i < fed->enclave.num_immediate_upstreams; i++) {
@@ -1100,7 +1101,7 @@ void handle_address_ad(uint16_t federate_id) {
  * For persistent federates and transient federates that happen to join during federation startup,
  * the `federation_start_time` will match the time in the `federate_start_tag`, and the microstep
  * will be 0. For a transient federate that joins later, the time in the `federate_start_tag` will
- * be greater than the federation_start_time`.
+ * be greater than the `federation_start_time`.
  *
  * Before sending the start time and tag, this function notifies `my_fed` of all upstream transient
  * federates that are connected. After sending the start time and tag, and if `my_fed` is transient,
@@ -1108,7 +1109,7 @@ void handle_address_ad(uint16_t federate_id) {
  *
  * This function assumes that the mutex lock is already held.
  *
- * @param my_fed The federate to send the start time to.
+ * @param my_fed The federate to send the start tag to.
  */
 static void send_start_tag_locked(federate_info_t* my_fed) {
   // Notify my_fed of any upstream transient federates that are connected.
@@ -1120,10 +1121,9 @@ static void send_start_tag_locked(federate_info_t* my_fed) {
       send_upstream_connected_locked(my_fed, fed);
     }
   }
-  send_outbound_connected_locked(my_fed);
+  send_downstream_connected_locked(my_fed);
 
-  // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
-  // message.
+  // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START message.
   // If it is a persistent federate, only the start_time is sent. If, however, it is a transient
   // federate, the effective_start_tag is also sent.
   size_t buffer_size = (my_fed->is_transient) ? MSG_TYPE_TIMESTAMP_TAG_LENGTH : MSG_TYPE_TIMESTAMP_LENGTH;
@@ -1164,7 +1164,6 @@ static void send_start_tag_locked(federate_info_t* my_fed) {
 
 /**
  * @brief Handle timestamp or tag messages from a federate.
- * @ingroup RTI
  *
  * These messages are sent when a federate joins the federation. The RTI uses them
  * to compute the start tag of the federation and the effective_start_time of a joining
@@ -1179,20 +1178,23 @@ static void send_start_tag_locked(federate_info_t* my_fed) {
  * The RTI uses the following algorithm to compute the effective_start_time of a joining transient:
  * - If the coordination is centralized:
  *   The effective_start_time will be the max among all the following tags:
- *   1. At tag: (joining time, 0 microstep)
- *   2. (start_time, 0 microstep)
- *   3. The latest completed logical tag + 1 microstep
- *   4. The latest granted (P)TAG + 1 microstep, of every downstream federate
- *   5. The maximun tag of messages from the upstream federates + 1 microstep
+ *   1. The tag received from the joining federate, which is (joining time, 0 microstep);
+ *   2. (start_time, 0 microstep);
+ *   3. The latest completed logical tag recorded in the RTI for this federate + 1 microstep;
+ *   4. The latest granted (P)TAG for every downstream federate + 1 microstep; or
+ *   5. The maximun tag of messages from the upstream federates + 1 microstep;
  *
  * - If the coordination is decentralized:
- *  1. If the transient has no upstream federates, then the effective_start_time
- *     will be whatever (timestamp, microstep) received.
- *  2. Otherwise, add DELAY_START to the timestamp and reset microstep to 0.
- *     If DELAY_START is larger than LEX (network latency + clock sync error + execution time),
- *     then this federate will receive any messages from upstream federates
- *     that have tags greater than or equal to the effective_start_time
- *     before it advances past that effective start tag.
+ *   The effective_start_time will be:
+ *   1. If the transient has no upstream federates, then the effective_start_time
+ *      will be whatever (timestamp, microstep) is received from the joining federate;
+ *   2. Otherwise, add DELAY_START to the received timestamp and reset the microstep to 0.
+ *      If DELAY_START is larger than LEX (network latency + clock sync error + execution time)
+ *      minus the `maxwait` of the joining federate,
+ *      then this joining federate will receive any messages from upstream federates
+ *      that have tags equal to the `effective_start_tag` before it advances to
+ *      that effective start tag. Otherwise, if LEX is larger than DELAY_START,
+ *      then a safe-to-process violation may occur.
  *
  * This function assumes the caller does not hold the mutex.
  */
@@ -1371,14 +1373,14 @@ static void handle_timestamp_or_tag(federate_info_t* my_fed, int type) {
       }
     }
 
-    // Once the effective start time set, sent it to the joining transient,
+    // Once the effective start time set, send it to the joining transient,
     // together with the start time of the federation.
 
     // Have to send the start tag while still holding the mutex to ensure that no message
     // from an upstream federate is forwarded before the start tag.
     send_start_tag_locked(my_fed);
 
-    // Whenver a transient joins, invalidate all federates, so that all min_delays_upstream
+    // Whenever a transient joins, invalidate all federates, so that all min_delays_upstream
     // get re-computed.
     // NOTE: It might be possible to optimize this to only invalidate those affected by the transient.
     invalidate_min_delays();
@@ -1705,12 +1707,7 @@ void* federate_info_thread_TCP(void* fed) {
     // federates keep a stale outbound P2P connection to the transient and never reconnect to it
     // when it rejoins, silently dropping every message addressed to it. The federate-side handlers
     // are idempotent, so this is safe even if the notifications were already sent via a resign.
-    for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
-      federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
-      if (downstream->enclave.state != NOT_CONNECTED) {
-        send_upstream_disconnected_locked(downstream, my_fed);
-      }
-    }
+    send_upstream_disconnected_locked(my_fed);
     send_downstream_disconnected_locked(my_fed);
 
     // Update the number of connected transient federates
@@ -2588,7 +2585,7 @@ void reset_transient_federate(federate_info_t* fed) {
   for (int32_t i = 0; i < num_transients; i++) {
     fed->downstream_transients[i] = -1;
   }
-  // Whenver a transient resigns or leaves, invalidate all federates, so that all
+  // Whenever a transient resigns or leaves, invalidate all federates, so that all
   // min_delays_upstream get re-computed.
   // NOTE: It might be possible to optimize this to only invalidate those affected by the transient.
   invalidate_min_delays();
