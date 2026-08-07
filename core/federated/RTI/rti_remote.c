@@ -222,7 +222,7 @@ static int get_num_absent_upstream_transients(federate_info_t* fed) {
  *
  * This function assumes that the mutex lock is already held.
  * @param destination The destination federate.
- * @param upstream The connected upstreamfederate.
+ * @param upstream The connected upstream federate.
  */
 static void send_upstream_connected_locked(federate_info_t* destination, federate_info_t* upstream) {
   if (destination->enclave.state == NOT_CONNECTED) {
