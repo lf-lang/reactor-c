@@ -332,9 +332,12 @@ static void _notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool 
 }
 
 void notify_downstream_advance_grant_if_safe(scheduling_node_t* e) {
-  bool visited[rti_common->number_of_scheduling_nodes];
-  memset(visited, false, rti_common->number_of_scheduling_nodes * sizeof(bool));
+  bool* visited = (bool*)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
+  if (visited == NULL) {
+    lf_print_error_and_exit("RTI: Out of memory allocating visited array.");
+  }
   _notify_downstream_advance_grant_if_safe(e, visited);
+  free(visited);
 }
 
 void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_event_tag) {
