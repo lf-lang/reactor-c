@@ -406,7 +406,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   // Check if sending the tag advance grant needs to be delayed or not.
   // Delay is needed when a federate has at least one absent upstream transient.
   // The delay allows physical time to catch up with the logical time of the grant.
-  // The reason for this is that the once a tag advance is sent, an upstream transient
+  // The reason for this is that once a tag advance is sent, an upstream transient
   // federate cannot join at a time earlier than the tag advance.
   // If we send a grant well before the physical time catches up, the transient federate
   // will be significantly delayed in joining the federation.
