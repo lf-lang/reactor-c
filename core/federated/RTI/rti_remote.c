@@ -1373,7 +1373,7 @@ static void handle_timestamp_or_tag(federate_info_t* my_fed, int type) {
       }
     }
 
-    // Once the effective start time set, send it to the joining transient,
+    // Once the effective start time is set, send it to the joining transient,
     // together with the start time of the federation.
 
     // Have to send the start tag while still holding the mutex to ensure that no message
