@@ -1750,8 +1750,8 @@ void send_reject(net_abstraction_t net_abs, rejection_code_t error_code) {
 }
 
 /**
- * Listen for a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDSmessage, which includes as a payload
- * a federate ID and a federation ID. If the federation ID
+ * Listen for a `MSG_TYPE_FED_IDS` or `MSG_TYPE_TRANSIENT_FED_IDS` message,
+ * which includes as a payload a federate ID and a federation ID. If the federation ID
  * matches this federation, send an MSG_TYPE_ACK and otherwise send
  * a MSG_TYPE_REJECT message.
  * @param fed_net Pointer to the network abstraction on which to listen.
@@ -1790,7 +1790,7 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     } else {
       send_reject(fed_net, UNEXPECTED_MESSAGE);
     }
-    lf_print_error("RTI expected a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDSmessage. Got %u (see net_common.h).",
+    lf_print_error("RTI expected a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS message. Got %u (see net_common.h).",
                    buffer[0]);
     return -1;
   } else {
@@ -2294,10 +2294,9 @@ void lf_connect_to_persistent_federates(net_abstraction_t rti_net) {
 /**
  * @brief A request for immediate stop to the federate
  *
- * @param fed: the deferate to stop
+ * @param fed: The federate to send the stop message to.
  */
 void send_stop(federate_info_t* fed) {
-  // Reply with a stop granted to all federates
   unsigned char outgoing_buffer[MSG_TYPE_STOP_LENGTH];
   outgoing_buffer[0] = MSG_TYPE_STOP;
   lf_print("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
@@ -2311,7 +2310,18 @@ void send_stop(federate_info_t* fed) {
   LF_PRINT_LOG("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
 }
 
-void* lf_connect_to_transient_federates_thread(void* nothing) {
+/**
+ * @brief Thread to wait for incoming connection request from transient federates.
+ * @ingroup RTI
+ *
+ * Upon receiving the connection request, check if a hot swap should start or
+ * simply create a thread to communicate with that federate.
+ * Stops if all persistent federates exited.
+ *
+ * @param nothing Nothing needed here.
+ */
+static void* lf_connect_to_transient_federates_thread(void* nothing) {
+  (void)nothing; // Suppress unused parameter warning.
   // This loop will continue to accept connections of transient federates, as soon as there is room,
   // or enable hot swap
   while (!rti_remote->all_persistent_federates_exited) {
@@ -2407,8 +2417,8 @@ void* lf_connect_to_transient_federates_thread(void* nothing) {
       }
       rti_remote->number_of_connected_transient_federates++;
     } else {
-      // If a hot swap was initialed, but the connection information or/and clock
-      // synchronization fail, then reset hot_swap_in_profress, and free the memory
+      // If a hot swap was initialized, but the connection information or/and clock
+      // synchronization fail, then reset hot_swap_in_progress, and free the memory
       // allocated for hot_swap_federate
       if (hot_swap_in_progress) {
         lf_print("RTI: Hot swap canceled for federate %d.", fed_id);
@@ -2460,21 +2470,18 @@ static void* lf_delayed_grants_thread(void* nothing) {
             LF_PRINT_LOG("RTI: Dropping delayed grant of " PRINTF_TAG
                          " for federate %d because upstream transient(s) reconnected.",
                          next->base.tag.time - start_time, next->base.tag.microstep, next->fed_id);
-            free(next);
             notify_advance_grant_if_safe(&(fed->enclave));
           } else if (lf_tag_compare(next->base.tag, fed->enclave.last_granted) <= 0 ||
                      lf_tag_compare(next->base.tag, fed->enclave.last_provisionally_granted) <= 0) {
             // Redundant with a grant already sent (e.g. while the transient was absent).
             LF_PRINT_LOG("RTI: Dropping redundant delayed grant of " PRINTF_TAG " for federate %d.",
                          next->base.tag.time - start_time, next->base.tag.microstep, next->fed_id);
-            free(next);
           } else if (next->is_provisional) {
             notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
-            free(next);
           } else {
             notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
-            free(next);
           }
+          free(next);
         }
       } else if (ret != 0) {
         // An error occurred.
@@ -2604,14 +2611,14 @@ int start_rti_server() {
 }
 
 /**
- * Iterate over the federates and sets 'has_upstream_transient_federates'.
+ * Iterate over the federates and set 'has_upstream_transient_federates'.
  * Once done, check that no transient federate has an upstream transient federate.
  * and compute the number of persistent federates that do have upstream transients,
  * which is the maximun number of delayed grants that can be pending at the same time.
- * This is useful for initialyzing the queue of delayed grants.
+ * This is useful for initializing the queue of delayed grants.
 
  * @return -1, if there is more than one level of transiency, else, the number of
- *          persistents that have an upstream transient
+ *          persistent federates that have an upstream transient
  */
 static int set_has_upstream_transient_federates_parameter_and_check() {
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
@@ -2649,7 +2656,7 @@ void wait_for_federates() {
   if (rti_remote->number_of_transient_federates > 0) {
     int max_number_of_pending_grants = set_has_upstream_transient_federates_parameter_and_check();
     if (max_number_of_pending_grants == -1) {
-      lf_print_error_and_exit("RTI: Transient federates cannot have transient upstreams!");
+      lf_print_error_and_exit("RTI: Transient federates cannot have transient upstream federates!");
     }
     rti_remote->delayed_grants = pqueue_delayed_grants_init(max_number_of_pending_grants);
   }

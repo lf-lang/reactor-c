@@ -85,7 +85,7 @@ typedef struct federate_instance_t {
   /**
    * An array that holds the tag at which the downstream federate joined.
    * For persistent federates, the value is NEVER_TAG. For transient federates,
-   * the value is either FOREVER_TAG (not yet joined) or the tag at which the
+   * the value is either `FOREVER_TAG` (not yet joined) or the tag at which the
    * transient federate joined.
    * This is an array indexed by federate ID.
    */
@@ -95,7 +95,7 @@ typedef struct federate_instance_t {
    * An array that holds the network abstractions for inbound
    * connections from each federate. The index will be the federate
    * ID of the remote sending federate. This is initialized at startup
-   * to NULL and is set to the pointer of the network abstraction by lf_connect_to_federate()
+   * to NULL and is set to the pointer of the network abstraction by `lf_connect_to_federate()`
    * when the network abstraction is opened.
    *
    * @note There will not be an inbound network abstraction unless a physical connection
@@ -109,19 +109,18 @@ typedef struct federate_instance_t {
   /**
    * An array indexed by federate ID indicating whether the corresponding
    * inbound peer-to-peer federate is transient. Initialized to false.
-   * Set in lf_handle_p2p_connections_from_federates() when the handshake
+   * Set in `lf_handle_p2p_connections_from_federates()` when the handshake
    * reveals the remote federate's type. Used by mark_inputs_known_absent()
-   * to avoid permanently stamping FOREVER_TAG on ports whose source may rejoin.
+   * to avoid permanently stamping `FOREVER_TAG` on ports whose source may rejoin.
    */
   bool upstream_fed_is_transient[NUMBER_OF_FEDERATES];
 
   /**
    * An array indexed by federate ID indicating whether the corresponding
    * inbound peer-to-peer connection is currently active. Initialized to false.
-   * Set to true in lf_handle_p2p_connections_from_federates() when a connection
-   * is accepted, and to false in listen_to_federates() when the connection closes.
-   * Used by a_port_is_unknown() to skip waiting for ports whose transient upstream
-   * federate is currently disconnected.
+   * Set to true in `lf_handle_p2p_connections_from_federates()` when a connection
+   * is accepted, and to false in `listen_to_federates()` when the connection closes.
+   * Used to skip waiting for ports whose transient upstream federate is currently disconnected.
    */
   bool upstream_fed_is_connected[NUMBER_OF_FEDERATES];
 
@@ -179,13 +178,15 @@ typedef struct federate_instance_t {
 
   /**
    * Indicator of whether this federate has upstream federates.
-   * The default value of false may be overridden in _lf_initialize_trigger_objects.
+   * The default value of false may be overridden by the generated function
+   * `_lf_initialize_trigger_objects()`.
    */
   bool has_upstream;
 
   /**
    * Indicator of whether this federate has downstream federates.
-   * The default value of false may be overridden in _lf_initialize_trigger_objects.
+   * The default value of false may be overridden by the generated function
+   * `_lf_initialize_trigger_objects()`.
    */
   bool has_downstream;
 
@@ -311,12 +312,12 @@ extern lf_cond_t lf_port_status_changed;
  * the IP address and port number of the specified federate. It then attempts
  * to establish a network connection to the specified federate.
  * If this fails, the program exits. If it succeeds, it sets
- * _fed.net_for_outbound_p2p_connections[remote_federate_id] to
+ * `_fed.net_for_outbound_p2p_connections[remote_federate_id]` to
  * refer to the network abstraction for communicating directly with the federate.
  *
  * @param remote_federate_id The ID of the remote federate.
  * @param joined_tag The tag at which the remote federate joined. This is NEVER_TAG
- *   for persistent federates, and either FOREVER_TAG (not yet joined) or the tag at
+ *   for persistent federates, and either `FOREVER_TAG` (not yet joined) or the tag at
  *   which the transient federate joined for transient federates (obtained from the RTI).
  * @param port The port number of the remote federate or -1 to ask for the port number from the RTI.
  * @param ip_address The IP address of the remote federate, in network byte order, or 0
@@ -598,7 +599,7 @@ void lf_spawn_staa_thread(void);
 void lf_stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
- * @brief Version of lf_stall_advance_level_federation() that assumes the caller holds the mutex
+ * @brief Version of `lf_stall_advance_level_federation()` that assumes the caller holds the mutex
  * lock.
  * @ingroup Federated
  *

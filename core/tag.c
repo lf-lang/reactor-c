@@ -33,8 +33,8 @@ typedef enum _lf_time_type { LF_LOGICAL, LF_PHYSICAL, LF_ELAPSED_LOGICAL, LF_ELA
 instant_t start_time = NEVER;
 
 /**
- * Only useful for transient federates. It records the effective start tag, to
- * be used at startup. Elapsed logical time calculations will use start_time.
+ * The effective start tag, which for persistent federates is the start tag of the federation
+ * and for transient federates is the start tag of the transient.
  */
 tag_t effective_start_tag = {.time = 0LL, .microstep = 0};
 
