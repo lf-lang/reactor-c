@@ -24,14 +24,7 @@ net_abstraction_t initialize_net() {
     lf_print_error_and_exit("Failed to malloc socket_priv_t.");
   }
 
-  // Server initialization.
-  priv->port = 0;
-  priv->user_specified_port = 0;
-  priv->socket_descriptor = -1;
-
-  // Federate initialization
-  priv->server_ip_addr.s_addr = 0;
-  priv->server_port = -1;
+  lf_initialize_socket_priv(priv);
 
   return (net_abstraction_t)priv;
 }
@@ -88,6 +81,7 @@ net_abstraction_t connect_to_net(net_params_t params) {
   if (connect_to_socket(priv->socket_descriptor, sock_params->server_hostname, sock_params->server_ip_addr,
                         priv->server_port) != 0) {
     lf_print_error("Failed to connect to socket.");
+    free_net(net);
     return NULL;
   }
   return net;
@@ -187,4 +181,34 @@ int shutdown_net(net_abstraction_t net_abs, bool read_before_closing) {
   int ret = close_net(net_abs, read_before_closing);
   free_net(net_abs);
   return ret;
+}
+
+int32_t get_my_port(net_abstraction_t net_abs) {
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
+  return priv->port;
+}
+
+int32_t get_server_port(net_abstraction_t net_abs) {
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
+  return priv->server_port;
+}
+
+struct in_addr* get_ip_addr(net_abstraction_t net_abs) {
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
+  return &priv->server_ip_addr;
+}
+
+void set_my_port(net_abstraction_t net_abs, int32_t port) {
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
+  priv->user_specified_port = port;
+}
+
+void set_server_port(net_abstraction_t net_abs, int32_t port) {
+  LF_ASSERT_NON_NULL(net_abs);
+  socket_priv_t* priv = (socket_priv_t*)net_abs;
+  priv->server_port = port;
 }

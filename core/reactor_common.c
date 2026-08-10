@@ -57,10 +57,13 @@ extern int _lf_count_payload_allocations;
  * @brief Global STA (safe to advance) offset uniformly applied to advancement of each
  * time step in federated execution.
  *
- * This can be retrieved in user code by calling lf_get_sta() and adjusted by
- * calling lf_set_sta(interval_t offset).
+ * The default is FOREVER, meaning that, by default, a decentralized federate will
+ * wait indefinitely for inputs to become known before declaring them absent. The
+ * value can be overridden either via the `@maxwait` attribute on the federate
+ * instantiation or in user code by calling lf_set_sta(interval_t offset). It can
+ * be retrieved in user code by calling lf_get_sta().
  */
-interval_t lf_fed_STA_offset = 0LL;
+interval_t lf_fed_STA_offset = FOREVER;
 
 #endif // FEDERATED_DECENTRALIZED
 
@@ -88,8 +91,29 @@ unsigned int _lf_number_of_workers = 0u;
  */
 instant_t duration = -1LL;
 
+/**
+ * If nonzero, the start of the program is delayed so that the starting logical
+ * time is an integer multiple of this value (in nanoseconds). The default of 0
+ * means that no such alignment is performed and the program starts as soon as
+ * possible. This is set by the `-m` or `--start-time-multiple` command-line
+ * option. In federated execution, this alignment is performed by the RTI (which
+ * receives the option from the generated launch script), not by the individual
+ * federates, so this variable is unused in federates.
+ */
+instant_t start_time_multiple = 0LL;
+
 /** Indicator of whether the keepalive command-line option was given. */
 bool keepalive_specified = false;
+
+instant_t lf_align_to_start_time_multiple(instant_t time) {
+  if (start_time_multiple > 0LL) {
+    instant_t remainder = time % start_time_multiple;
+    if (remainder != 0LL) {
+      time += start_time_multiple - remainder;
+    }
+  }
+  return time;
+}
 
 void* lf_allocate(size_t count, size_t size, struct allocation_record_t** head) {
   void* mem = calloc(count, size);
@@ -986,6 +1010,9 @@ void usage(int argc, const char* argv[]) {
   printf("  -o, --timeout <duration> <units>\n");
   printf("      Stop after the specified amount of logical time, where units are one of\n");
   printf("      nsec, usec, msec, sec, minute, hour, day, week, or the plurals of those.\n\n");
+  printf("  -m, --start-time-multiple <value> <units>\n");
+  printf("      Delay the start of the program so that the starting logical time is a\n");
+  printf("      multiple of the specified time, where units are one of ns, us, ms, s, min, hour, day, or week.\n\n");
   printf("  -k, --keepalive <true|false>\n");
   printf("      Whether to continue execution even when there are no events to process.\n\n");
   printf("  -w, --workers <n>\n");
@@ -999,6 +1026,14 @@ void usage(int argc, const char* argv[]) {
   printf("      The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
   printf("  -l\n");
   printf("      Send stdout to individual log files for each federate.\n\n");
+#ifdef COMM_TYPE_SST
+  printf("  -sst, --sst <n>\n");
+  printf("      Path to the SST configuration file.\n\n");
+#endif
+#ifdef COMM_TYPE_TLS
+  printf("  -tls, --tls <certificate_path> <private_key_path>\n");
+  printf("      Paths to the TLS certificate and private key to use.\n\n");
+#endif
 #endif
 #endif
   printf("Command given:\n");
@@ -1142,6 +1177,26 @@ int process_args(int argc, const char* argv[]) {
         usage(argc, argv);
         return 0;
       }
+    } else if (strcmp(arg, "-m") == 0 || strcmp(arg, "--start-time-multiple") == 0) {
+      if (argc < i + 2) {
+        lf_print_error("--start-time-multiple needs time and units.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* time_spec = argv[i++];
+      const char* units = argv[i++];
+      int parse_result = lf_time_parse(time_spec, units, &start_time_multiple);
+      if (parse_result != 0) {
+        lf_print_error(parse_result == -1 ? "Invalid time value: %s" : "Invalid time units: %s",
+                       parse_result == -1 ? time_spec : units);
+        usage(argc, argv);
+        return 0;
+      }
+      if (start_time_multiple < 0LL) {
+        lf_print_error("--start-time-multiple needs a non-negative time value.");
+        usage(argc, argv);
+        return 0;
+      }
     } else if (strcmp(arg, "-k") == 0 || strcmp(arg, "--keepalive") == 0) {
       if (argc < i + 1) {
         lf_print_error("--keepalive needs a boolean.");
@@ -1210,6 +1265,40 @@ int process_args(int argc, const char* argv[]) {
         usage(argc, argv);
         return 0;
       }
+    }
+#endif
+#ifdef COMM_TYPE_SST
+    else if (strcmp(arg, "-sst") == 0 || strcmp(arg, "--sst") == 0) {
+      if (argc < i + 1) {
+        lf_print_error("--sst needs a string argument.");
+        usage(argc, argv);
+        return 0;
+      }
+      const char* fid = argv[i++];
+      lf_set_sst_config_path(fid);
+    }
+#endif
+#ifdef COMM_TYPE_TLS
+    else if (strcmp(arg, "-tls") == 0 || strcmp(arg, "--tls") == 0) {
+      // Need two arguments: cert path and key path
+      if (argc < i + 2) {
+        lf_print_error("--tls needs two arguments: <certificate_path> <private_key_path>.");
+        usage(argc, argv);
+        return 0;
+      }
+
+      const char* cert_path = argv[i++];
+      const char* key_path = argv[i++];
+
+      if (cert_path[0] == '\0' || key_path[0] == '\0') {
+        lf_print_error("--tls certificate_path and private_key_path must be non-empty.");
+        usage(argc, argv);
+        return 0;
+      }
+
+      lf_set_tls_configuration(cert_path, key_path);
+      lf_print("TLS cert path: %s", cert_path);
+      lf_print("TLS key path : %s", key_path);
     }
 #endif
     else if (strcmp(arg, "--ros-args") == 0) {

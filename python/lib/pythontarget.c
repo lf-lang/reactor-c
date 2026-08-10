@@ -107,12 +107,6 @@ PyObject* py_schedule(PyObject* self, PyObject* args) {
  */
 int lf_reactor_c_main(int argc, const char* argv[]);
 
-/**
- * Prototype for lf_request_stop().
- * @see reactor.h
- */
-void lf_request_stop(void);
-
 ///////////////// Other useful functions /////////////////////
 /**
  * Stop execution at the conclusion of the current logical time.
@@ -122,6 +116,95 @@ PyObject* py_request_stop(PyObject* self, PyObject* args) {
 
   Py_INCREF(Py_None);
   return Py_None;
+}
+
+/**
+ * Return the global maxwait for the current federate (only available in
+ * decentralized federated execution).
+ */
+PyObject* py_get_fed_maxwait(PyObject* self, PyObject* args) {
+#ifdef FEDERATED_DECENTRALIZED
+  (void)self;
+  (void)args;
+  return PyLong_FromLongLong(lf_get_fed_maxwait());
+#else
+  (void)self;
+  (void)args;
+  PyErr_SetString(PyExc_RuntimeError, "lf.get_fed_maxwait() is only available in decentralized federated execution.");
+  return NULL;
+#endif // FEDERATED_DECENTRALIZED
+}
+
+/**
+ * @brief Convert a non-negative Python number to an interval_t.
+ * @param py_number The Python number (a long long or a double).
+ * @param interval Pointer to the interval_t to store the result.
+ * @return True if the conversion was successful, false otherwise or if the number is negative or NaN.
+ */
+static bool convert_python_number_to_interval_t(PyObject* py_number, interval_t* interval) {
+  // Check if the number is a long long
+  if (PyLong_Check(py_number)) {
+    long long number_ll = PyLong_AsLongLong(py_number);
+    if (number_ll == -1 && PyErr_Occurred()) {
+      return false;
+    }
+    if (number_ll < 0) {
+      PyErr_SetString(PyExc_ValueError, "A time interval must be non-negative");
+      return false;
+    }
+    if (number_ll > INT64_MAX) {
+      PyErr_SetString(PyExc_OverflowError, "The time interval value is out of int64 range");
+      return false;
+    }
+    *interval = (interval_t)number_ll;
+    return true;
+  } else {
+    double number_in_double = PyFloat_AsDouble(py_number);
+    if (number_in_double == -1.0 && PyErr_Occurred()) {
+      PyErr_SetString(PyExc_TypeError, "expected a non-negative int or float");
+      return false;
+    }
+    // Reject NaN explicitly (NaN comparisons are always false).
+    if (number_in_double != number_in_double) {
+      PyErr_SetString(PyExc_ValueError, "A time interval cannot be NaN");
+      return false;
+    }
+    if (number_in_double < 0.0) {
+      PyErr_SetString(PyExc_ValueError, "A time interval must be non-negative");
+      return false;
+    }
+    if (number_in_double > (double)INT64_MAX) {
+      PyErr_SetString(PyExc_OverflowError, "The time interval value is out of int64 range");
+      return false;
+    }
+    *interval = (interval_t)number_in_double;
+    return true;
+  }
+}
+
+/**
+ * Set the global maxwait for the current federate (only available in
+ * decentralized federated execution).
+ */
+PyObject* py_set_fed_maxwait(PyObject* self, PyObject* args) {
+#ifdef FEDERATED_DECENTRALIZED
+  interval_t interval;
+  PyObject* py_offset = NULL;
+  if (!PyArg_ParseTuple(args, "O", &py_offset)) {
+    return NULL;
+  }
+  if (!convert_python_number_to_interval_t(py_offset, &interval)) {
+    return NULL;
+  }
+  lf_set_fed_maxwait(interval);
+  Py_INCREF(Py_None);
+  return Py_None;
+#else
+  (void)self;
+  (void)args;
+  PyErr_SetString(PyExc_RuntimeError, "lf.set_fed_maxwait() is only available in decentralized federated execution.");
+  return NULL;
+#endif // FEDERATED_DECENTRALIZED
 }
 
 PyObject* py_source_directory(PyObject* self, PyObject* args) {
@@ -270,22 +353,16 @@ PyObject* py_check_deadline(PyObject* self, PyObject* args) {
 
 PyObject* py_update_deadline(PyObject* self, PyObject* args) {
   PyObject* py_self;
-  int64_t updated_deadline = 0; // Default to 0
-  double updated_deadline_in_double =
-      0.0; // Deadline may be passed as a floating-point value in nanoseconds, e.g., SEC(0.5) → 0.5 * 1e9.
+  PyObject* py_deadline;
 
-  if (!PyArg_ParseTuple(args, "O|d", &py_self, &updated_deadline_in_double)) {
+  if (!PyArg_ParseTuple(args, "OO", &py_self, &py_deadline)) {
     return NULL;
   }
 
-  // Check overflow before converting a double to int64_t (interval_t).
-  if (updated_deadline_in_double > (double)INT64_MAX || updated_deadline_in_double < (double)INT64_MIN) {
-    PyErr_SetString(PyExc_OverflowError, "The updated deadline value is out of int64 range");
+  interval_t updated_deadline;
+  if (!convert_python_number_to_interval_t(py_deadline, &updated_deadline)) {
     return NULL;
   }
-
-  // Convert double to int64_t
-  updated_deadline = (int64_t)updated_deadline_in_double;
 
   void* self_ptr = get_lf_self_pointer(py_self);
   if (self_ptr == NULL) {
@@ -437,6 +514,10 @@ static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"tag", py_lf_tag, METH_NOARGS, NULL},
     {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
     {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
+    {"get_fed_maxwait", py_get_fed_maxwait, METH_NOARGS,
+     "Get the global maxwait for the current federate (decentralized federated execution only)"},
+    {"set_fed_maxwait", (PyCFunction)py_set_fed_maxwait, METH_VARARGS,
+     "Set the global maxwait for the current federate (decentralized federated execution only)"},
     {"source_directory", py_source_directory, METH_NOARGS, "Source directory path for .lf file"},
     {"package_directory", py_package_directory, METH_NOARGS, "Root package directory path"},
     {"check_deadline", (PyCFunction)py_check_deadline, METH_VARARGS,

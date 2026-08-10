@@ -648,8 +648,8 @@ void handle_address_query(uint16_t fed_id) {
     // The network abstraction is initialized, but the RTI might still not know the port number. This can happen if the
     // RTI has not yet received a MSG_TYPE_ADDRESS_ADVERTISEMENT message from the remote federate. In such cases, the
     // returned port number might still be -1.
-    server_port = ((socket_priv_t*)remote_fed->net)->server_port;
-    ip_address = (uint32_t*)&((socket_priv_t*)remote_fed->net)->server_ip_addr;
+    server_port = get_server_port(remote_fed->net);
+    ip_address = (uint32_t*)get_ip_addr(remote_fed->net);
   }
 
   encode_int32(server_port, (unsigned char*)&buffer[1]);
@@ -683,7 +683,7 @@ void handle_address_ad(uint16_t federate_id) {
   assert(server_port < 65536);
 
   LF_MUTEX_LOCK(&rti_mutex);
-  ((socket_priv_t*)fed->net)->server_port = server_port;
+  set_server_port(fed->net, server_port);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);
@@ -730,6 +730,14 @@ void handle_timestamp(federate_info_t* my_fed) {
   start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
   // Add an offset to this start time to get everyone starting together.
   start_time = rti_remote->max_start_time + DELAY_START;
+  // If requested via the -m/--start-time-multiple command-line option, delay the
+  // start so that the starting logical time is a multiple of the given value.
+  if (rti_remote->start_time_multiple > 0LL) {
+    int64_t remainder = start_time % rti_remote->start_time_multiple;
+    if (remainder != 0LL) {
+      start_time += rti_remote->start_time_multiple - remainder;
+    }
+  }
   lf_tracing_set_start_time(start_time);
   encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
 
@@ -1320,7 +1328,7 @@ static int receive_udp_message_and_set_up_clock_sync(net_abstraction_t fed_net, 
           // Initialize the UDP_addr field of the federate struct
           fed->UDP_addr.sin_family = AF_INET;
           fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
-          fed->UDP_addr.sin_addr = ((socket_priv_t*)fed_net)->server_ip_addr;
+          fed->UDP_addr.sin_addr = *get_ip_addr(fed_net);
         }
       } else {
         // Disable clock sync after initial round.
@@ -1506,7 +1514,7 @@ int start_rti_server() {
   // Initialize RTI's network abstraction.
   rti_remote->rti_net = initialize_net();
   // Set the user specified port to the network abstraction.
-  ((socket_priv_t*)rti_remote->rti_net)->user_specified_port = rti_remote->user_specified_port;
+  set_my_port(rti_remote->rti_net, rti_remote->user_specified_port);
   // Create the server
   if (create_server(rti_remote->rti_net)) {
     lf_print_error_system_failure("RTI failed to create TCP server: %s.", strerror(errno));
@@ -1575,6 +1583,7 @@ void initialize_RTI(rti_remote_t* rti) {
 
   // federation_rti related initializations
   rti_remote->max_start_time = 0LL;
+  rti_remote->start_time_multiple = 0LL;
   rti_remote->num_feds_proposed_start = 0;
   rti_remote->all_federates_exited = false;
   rti_remote->federation_id = "Unidentified Federation";

@@ -105,6 +105,15 @@ ENDIF()
 
 IF(AUTH MATCHES ON)
   target_compile_definitions(${RTI_LIB} PUBLIC __RTI_AUTH__)
+  if(APPLE)
+      # Apple Silicon Mac
+      if(EXISTS "/opt/homebrew/opt/openssl")
+          set(OPENSSL_ROOT_DIR "/opt/homebrew/opt/openssl")
+      # Intel Mac
+      elseif(EXISTS "/usr/local/opt/openssl")
+          set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
+      endif()
+  endif()
   # Find OpenSSL and link to it
   find_package(OpenSSL REQUIRED)
   target_link_libraries(${RTI_LIB} PUBLIC OpenSSL::SSL)

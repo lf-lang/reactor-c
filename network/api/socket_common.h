@@ -162,6 +162,16 @@ typedef struct socket_priv_t {
 } socket_priv_t;
 
 /**
+ * @brief Initialize socket_priv_t structure with default values.
+ * @ingroup Network
+ *
+ * Sets socket_descriptor to -1, ports to 0 or -1, and server_ip_addr to 0.
+ *
+ * @param priv Pointer to the socket_priv_t structure to initialize.
+ */
+void lf_initialize_socket_priv(socket_priv_t* priv);
+
+/**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled.
  * @ingroup Network
  *
@@ -228,7 +238,7 @@ int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_a
  *
  * If an error occurs during this reading, return -1 and set errno to indicate
  * the cause of the error. If the read succeeds in reading the specified number of bytes,
- * return 0. If an EOF occurs before reading the specified number of bytes, return 1.
+ * return 0. If an EOF occurs before reading the specified number of bytes or the connection is closed, return 1.
  * This function repeats the read attempt until the specified number of bytes
  * have been read, an EOF is read, or an error occurs. Specifically, errors EAGAIN,
  * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
@@ -236,7 +246,7 @@ int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_a
  * @param socket The socket ID.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to put the bytes.
- * @return 0 for success, 1 for EOF, and -1 for an error.
+ * @return 0 for success, 1 for EOF or connection closed, and -1 for an error.
  */
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
