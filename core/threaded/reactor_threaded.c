@@ -870,9 +870,8 @@ static void _lf_worker_do_work(environment_t* env, int worker_number) {
     // Using the deadline to compute the priority.
     int assigned_priority = get_priority_value(scheduling_deadline);
 
-    LF_PRINT_LOG("Worker %d: Setting priority %d to execute reaction %s with relative deadline "
-      PRINTF_TIME " ns.",
-      worker_number, assigned_priority, current_reaction_to_execute->name, scheduling_deadline);
+    LF_PRINT_LOG("Worker %d: Setting priority %d to execute reaction %s with relative deadline " PRINTF_TIME " ns.",
+                 worker_number, assigned_priority, current_reaction_to_execute->name, scheduling_deadline);
     lf_thread_set_priority(lf_thread_self(), assigned_priority);
 #endif
 
@@ -912,7 +911,8 @@ static void* worker(void* arg) {
     if (ret != 0) {
       if (LF_THREAD_POLICY != LF_SCHED_FAIR) {
         lf_print_error_and_exit("Could not set real-time thread scheduling policy (error %d). "
-                     "Try re-launching the program with sudo privileges.", ret);
+                                "Try re-launching the program with sudo privileges.",
+                                ret);
       } else {
         LF_PRINT_LOG("Warning: Could not set thread scheduling policy (error %d).", ret);
       }
