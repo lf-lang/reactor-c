@@ -2821,10 +2821,18 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
         if (lf_tag_compare(_fed.last_TAG, next_tag) >= 0 || lf_tag_compare(_fed.last_TAG, tag) >= 0) {
           return _fed.last_TAG;
         }
-        if (lf_tag_compare(next_tag, tag) != 0) {
-          send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, false);
+        // Only revise the outstanding NET if an *earlier* event appeared.
+        // Port-absent (and other port-status) notifications also broadcast
+        // event_q_changed, but they cannot insert events. If the event queue is
+        // empty, get_next_event_tag() returns FOREVER (or the stop tag), and
+        // replacing the NET we are waiting on with that later tag can prevent
+        // the RTI from ever granting a PTAG/TAG for the original tag (e.g. a
+        // ZDC peer blocked on MLAA while this federate waits to execute (0,0)).
+        if (lf_tag_compare(next_tag, tag) < 0) {
+          send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag);
           _fed.last_sent_NET = next_tag;
           _fed.last_skipped_NET = NEVER_TAG;
+          tag = next_tag;
           LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI from loop.", next_tag.time - lf_time_start(),
                        next_tag.microstep);
         }
