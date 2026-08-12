@@ -2829,7 +2829,7 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
         // the RTI from ever granting a PTAG/TAG for the original tag (e.g. a
         // ZDC peer blocked on MLAA while this federate waits to execute (0,0)).
         if (lf_tag_compare(next_tag, tag) < 0) {
-          send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag);
+          send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, false);
           _fed.last_sent_NET = next_tag;
           _fed.last_skipped_NET = NEVER_TAG;
           tag = next_tag;
