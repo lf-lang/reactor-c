@@ -2366,11 +2366,8 @@ static void* lf_connect_to_transient_federates_thread(void* nothing) {
 
         LF_PRINT_LOG("RTI: Send MSG_TYPE_STOP to old federate %d.", fed_id);
         send_stop(fed_old);
-        LF_MUTEX_UNLOCK(&rti_mutex);
-
         // Wait for the old federate to send MSG_TYPE_RESIGN
         LF_PRINT_LOG("RTI: Waiting for old federate %d to send resign.", fed_id);
-        LF_MUTEX_LOCK(&rti_mutex);
         while (!hot_swap_old_resigned) {
           lf_cond_wait(&hot_swap_old_resigned_cond);
         }
