@@ -251,7 +251,7 @@ void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t);
 void pqueue_tag_dump(pqueue_tag_t* q);
 
 /**
- * @brief Return the maximum tag in the queue or NEVER_TAG if the queue is empty.
+ * @brief Return the maximum tag in the queue or `NEVER_TAG` if the queue is empty.
  *
  * @param q The queue.
  */

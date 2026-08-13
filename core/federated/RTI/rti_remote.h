@@ -426,18 +426,6 @@ void* federate_info_thread_TCP(void* fed);
 void send_reject(net_abstraction_t net_abs, rejection_code_t error_code);
 
 /**
- * @brief Thread to wait for incoming connection request from transient federates.
- * @ingroup RTI
- *
- * Upon receiving the connection request, check if a hot swap should start or
- * simply create a thread to communicate with that federate.
- * Stops if all persistent federates exited.
- *
- * @param nothing Nothing needed here.
- */
-void* lf_connect_to_transient_federates_thread(void* nothing);
-
-/**
  * @brief Thread to respond to new connections, which could be federates of other federations
  * who are attempting to join the wrong federation.
  * @ingroup RTI

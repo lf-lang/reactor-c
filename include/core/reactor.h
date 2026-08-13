@@ -61,7 +61,7 @@ void lf_set_stop_tag(environment_t* env, tag_t tag);
 #ifdef FEDERATED
 
 /**
- * @brief Set the federation_id of this federate.
+ * @brief Set the federation ID of this federate.
  * @ingroup Federated
  *
  * @param fid The federation ID.
@@ -69,7 +69,7 @@ void lf_set_stop_tag(environment_t* env, tag_t tag);
 void lf_set_federation_id(const char* fid);
 
 /**
- * @brief Return the federation id.
+ * @brief Return the federation ID.
  * @ingroup Federated
  */
 const char* lf_get_federation_id();

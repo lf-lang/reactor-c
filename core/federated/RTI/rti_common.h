@@ -174,10 +174,8 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id);
  * This assumes the caller holds the RTI mutex.
  *
  * @param e The upstream node.
- * @param visited An array of booleans used to determine whether a node has
- *  been visited (initially all false).
  */
-void notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[]);
+void notify_downstream_advance_grant_if_safe(scheduling_node_t* e);
 
 /**
  * @brief Notify a tag advance grant (TAG) message to the specified scheduling node.

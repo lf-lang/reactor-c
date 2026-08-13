@@ -11,9 +11,6 @@
 
 PyTypeObject PyTagType;
 
-/**
- * Return the current tag object.
- */
 PyObject* py_lf_tag(PyObject* self, PyObject* args) {
   py_tag_t* t = (py_tag_t*)PyType_GenericNew(&PyTagType, NULL, NULL);
   if (t == NULL) {
@@ -23,12 +20,6 @@ PyObject* py_lf_tag(PyObject* self, PyObject* args) {
   return (PyObject*)t;
 }
 
-/**
- * Return the effective start tag of this federate, i.e., the tag at which its
- * `startup` reactions actually fire. This can be later than the federation's
- * nominal start tag when the federate joins after the federation has begun
- * executing (e.g., a transient federate rejoining mid-execution).
- */
 PyObject* py_lf_tag_start_effective(PyObject* self, PyObject* args) {
   py_tag_t* t = (py_tag_t*)PyType_GenericNew(&PyTagType, NULL, NULL);
   if (t == NULL) {
@@ -38,16 +29,6 @@ PyObject* py_lf_tag_start_effective(PyObject* self, PyObject* args) {
   return (PyObject*)t;
 }
 
-/**
- * Compare two tags. Return -1 if the first is less than
- * the second, 0 if they are equal, and +1 if the first is
- * greater than the second. A tag is greater than another if
- * its time is greater or if its time is equal and its microstep
- * is greater.
- * @param tag1
- * @param tag2
- * @return -1, 0, or 1 depending on the relation.
- */
 PyObject* py_tag_compare(PyObject* self, PyObject* args) {
   PyObject* tag1;
   PyObject* tag2;
