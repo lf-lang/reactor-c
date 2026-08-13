@@ -1688,8 +1688,6 @@ void* federate_info_thread_TCP(void* fed) {
   my_fed->net = NULL;
   // Manual clean, in case of a transient federate
   if (my_fed->is_transient) {
-    // FIXME: Aren't there transit messages anymore???
-    // free_in_transit_message_q(my_fed->in_transit_message_tags);
     lf_print_info("RTI: Transient Federate %d thread exited.", my_fed->enclave.id);
 
     // Notify downstream and upstream federates that this transient has disconnected, mirroring
