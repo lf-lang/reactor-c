@@ -9,7 +9,6 @@
  */
 #if defined STANDALONE_RTI || defined LF_ENCLAVES
 #include "rti_common.h"
-#include <string.h> // for memset
 
 /**
  * Local reference to rti_common_t instance.
