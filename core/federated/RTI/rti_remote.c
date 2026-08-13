@@ -32,9 +32,10 @@
 // Global variables defined in tag.c:
 extern instant_t start_time;
 
-/**
- * Local reference to the rti_remote object
- */
+// indicates whether the start_time is set or not
+bool start_time_is_set = false;
+
+// Local reference to the rti_remote object
 static rti_remote_t* rti_remote;
 
 // Reference to the federate instance to support hot swap
@@ -1243,10 +1244,14 @@ static void handle_timestamp_or_tag(federate_info_t* my_fed, int type) {
       }
     }
     // Add an offset to the maximum tag to get everyone starting together.
-    start_time = rti_remote->max_start_time + DELAY_START;
-    // Set the start_time in the RTI trace
-    if (rti_remote->base.tracing_enabled) {
-      lf_tracing_set_start_time(start_time);
+    if (!start_time_is_set) {
+      start_time = rti_remote->max_start_time + DELAY_START;
+      start_time_is_set = true;
+
+      // Set the start_time in the RTI trace
+      if (rti_remote->base.tracing_enabled) {
+        lf_tracing_set_start_time(start_time);
+      }
     }
     my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
 
