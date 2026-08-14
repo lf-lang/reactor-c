@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['token_5ffreed_0',['token_freed',['../group__Internal.html#gabe23a36a87d2f0c076da417eb0114c7e',1,'lf_token.h']]],
-  ['trace_5fevent_5ft_1',['trace_event_t',['../group__Tracing.html#gab02e9e69539d60297cedb38c2193a453',1,'trace_types.h']]]
+  ['scheduling_5fnode_5fstate_5ft_0',['scheduling_node_state_t',['../group__RTI.html#ga2c9591789f1d6afd603e0330e13f3744',1,'rti_common.h']]]
 ];

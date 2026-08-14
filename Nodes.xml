@@ -3766,6 +3766,11 @@
             <Path>structfederate__instance__t.html</Path>
           <Subnodes>
              <Node>
+              <Name>downstream_p2p_joined_tag</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a2eab2776fd40200c4ce07cbc3f0a2179</Anchor>
+             </Node>
+             <Node>
               <Name>has_downstream</Name>
               <Path>structfederate__instance__t.html</Path>
               <Anchor>ac130c67ec68fe84d6753a54e6e73d59a</Anchor>
@@ -3789,6 +3794,11 @@
               <Name>is_last_TAG_provisional</Name>
               <Path>structfederate__instance__t.html</Path>
               <Anchor>a05a9586ad89b82d0bf5f969a194ef69c</Anchor>
+             </Node>
+             <Node>
+              <Name>is_transient</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a92c7d88579116747c89a0d4d4966bc9b</Anchor>
              </Node>
              <Node>
               <Name>last_DNET</Name>
@@ -3836,9 +3846,19 @@
               <Anchor>a434d15925fe4c0721a2c1685102ae823</Anchor>
              </Node>
              <Node>
+              <Name>number_of_downstream_p2p_transients</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>ab94cc3deb4b9036103489195861e7662</Anchor>
+             </Node>
+             <Node>
               <Name>number_of_inbound_p2p_connections</Name>
               <Path>structfederate__instance__t.html</Path>
               <Anchor>a6b728a970ccb1ef778dbb9779582d2f2</Anchor>
+             </Node>
+             <Node>
+              <Name>number_of_inbound_p2p_transients</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a745929586685c737b722f0deeacb3908</Anchor>
              </Node>
              <Node>
               <Name>number_of_outbound_p2p_connections</Name>
@@ -3869,6 +3889,21 @@
               <Name>staaSetter</Name>
               <Path>structfederate__instance__t.html</Path>
               <Anchor>a80101d5534e5444c0be0e08d4e65aaae</Anchor>
+             </Node>
+             <Node>
+              <Name>transients</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a1b846899290b0ac18c657bf427c2692b</Anchor>
+             </Node>
+             <Node>
+              <Name>upstream_fed_is_connected</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>ae46e99ac011580ca6abb31ecc8baeea7</Anchor>
+             </Node>
+             <Node>
+              <Name>upstream_fed_is_transient</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a331df614c72b00f3439ed01926fa6ec3</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -4131,7 +4166,7 @@
            <Node>
             <Name>lf_connect_to_federate</Name>
             <Path>group__Federated.html</Path>
-            <Anchor>ga26b7c3ab8c2a50f65e53997a6f26a0dc</Anchor>
+            <Anchor>ga1746f43c6f0125b04a5d9f523eba218d</Anchor>
            </Node>
            <Node>
             <Name>lf_connect_to_rti</Name>
@@ -4152,6 +4187,11 @@
             <Name>lf_get_fed_maxwait</Name>
             <Path>group__Federated.html</Path>
             <Anchor>gab4b57d55b69a4864eb694ed080b84d0e</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_get_federation_id</Name>
+            <Path>group__Federated.html</Path>
+            <Anchor>gaafe9373f05ab5ce8144950a04b3f31cb</Anchor>
            </Node>
            <Node>
             <Name>lf_get_sta</Name>
@@ -4796,6 +4836,56 @@
               <Anchor>ggab02e9e69539d60297cedb38c2193a453a48fffa45ebf3f03caa2dc044af72349f</Anchor>
              </Node>
              <Node>
+              <Name>send_UPSTREAM_CONNECTED</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453a47860caddbef8e45f632dbfc92091069</Anchor>
+             </Node>
+             <Node>
+              <Name>receive_UPSTREAM_CONNECTED</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453a9a54e2ad724124b43c2f74ac9c1ca738</Anchor>
+             </Node>
+             <Node>
+              <Name>send_UPSTREAM_DISCONNECTED</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453ad944544a6473e1b57450e96c0a61de64</Anchor>
+             </Node>
+             <Node>
+              <Name>receive_UPSTREAM_DISCONNECTED</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453ac3f3828d79b588f55798e529f78d696c</Anchor>
+             </Node>
+             <Node>
+              <Name>send_STOP</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453a35de0e6755500a96eb33ccbcd44142f3</Anchor>
+             </Node>
+             <Node>
+              <Name>receive_STOP</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453a24a9170a2485d2f1ae97fcbc291b30ac</Anchor>
+             </Node>
+             <Node>
+              <Name>send_DOWNSTREAM_CONNECTED</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453a422d32653d57d92e325f3339e6b2c537</Anchor>
+             </Node>
+             <Node>
+              <Name>receive_DOWNSTREAM_CONNECTED</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453aa795de9a6eed1ced0115a7d69395497d</Anchor>
+             </Node>
+             <Node>
+              <Name>send_DOWNSTREAM_DISCONNECTED</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453ad11688d7a116453c377a5879fc2a95b8</Anchor>
+             </Node>
+             <Node>
+              <Name>receive_DOWNSTREAM_DISCONNECTED</Name>
+              <Path>group__Tracing.html</Path>
+              <Anchor>ggab02e9e69539d60297cedb38c2193a453afe85f979f7d5a511f99590c254070ab6</Anchor>
+             </Node>
+             <Node>
               <Name>NUM_EVENT_TYPES</Name>
               <Path>group__Tracing.html</Path>
               <Anchor>ggab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134</Anchor>
@@ -4960,9 +5050,24 @@
               <Anchor>a792b3d59fe8438b370dcea4a9beff748</Anchor>
              </Node>
              <Node>
+              <Name>downstream_transients</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>a9552ace0a634c22d3a1d4485302128cd</Anchor>
+             </Node>
+             <Node>
+              <Name>effective_start_tag</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>af1b99af546e9dfc526248a5b3011ea60</Anchor>
+             </Node>
+             <Node>
               <Name>enclave</Name>
               <Path>structfederate__info__t.html</Path>
               <Anchor>acd6450143749bf7421c64b28d68a1e3e</Anchor>
+             </Node>
+             <Node>
+              <Name>has_upstream_transient_federates</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>a4239a72366a0eec1504346b3599d69bc</Anchor>
              </Node>
              <Node>
               <Name>in_transit_message_tags</Name>
@@ -4970,9 +5075,29 @@
               <Anchor>aa643bb07575eca7bf9c5665377442369</Anchor>
              </Node>
              <Node>
+              <Name>is_transient</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>a23965b433636275900b5b96dcae32a8e</Anchor>
+             </Node>
+             <Node>
+              <Name>max_intended_tag</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>a4cb46ef59a894924d4cf9e5b5931998c</Anchor>
+             </Node>
+             <Node>
+              <Name>neighbor_structure_received</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>ab4a42f9c235dd8efe3d00abcdd220031</Anchor>
+             </Node>
+             <Node>
               <Name>net</Name>
               <Path>structfederate__info__t.html</Path>
               <Anchor>a8afb9d8bb911680499970b1de3fbdf93</Anchor>
+             </Node>
+             <Node>
+              <Name>number_of_downstream_transients</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>ad63a018b06af0b850a6f8e6cf6ab1a03</Anchor>
              </Node>
              <Node>
               <Name>requested_stop</Name>
@@ -5015,6 +5140,11 @@
               <Name>dnet_disabled</Name>
               <Path>structrti__common__t.html</Path>
               <Anchor>a21547718724f363f1b684898535a6874</Anchor>
+             </Node>
+             <Node>
+              <Name>has_transients</Name>
+              <Path>structrti__common__t.html</Path>
+              <Anchor>a8215d24a558ab91e4f051d19eb88dde5</Anchor>
              </Node>
              <Node>
               <Name>max_stop_tag</Name>
@@ -5074,6 +5204,11 @@
               <Anchor>a6d72eef29e4ac1543971baed62c5df25</Anchor>
              </Node>
              <Node>
+              <Name>all_persistent_federates_exited</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>a932823e329ddfedca7712f45b4d82335</Anchor>
+             </Node>
+             <Node>
               <Name>authentication_enabled</Name>
               <Path>structrti__remote__t.html</Path>
               <Anchor>a75eec5d1f98a80feb8b84e2e4c5e6a2e</Anchor>
@@ -5104,6 +5239,11 @@
               <Anchor>ae82c97407ee17f16cd9e95cc4fade654</Anchor>
              </Node>
              <Node>
+              <Name>delayed_grants</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>ae55f378503e5dab01587e83787c53b03</Anchor>
+             </Node>
+             <Node>
               <Name>federation_id</Name>
               <Path>structrti__remote__t.html</Path>
               <Anchor>aa6ebdbc41ba330fc7d23f478bf62d7ea</Anchor>
@@ -5122,6 +5262,21 @@
               <Name>num_feds_proposed_start</Name>
               <Path>structrti__remote__t.html</Path>
               <Anchor>a1c695fdf2ff3d64f7599887ce525d64d</Anchor>
+             </Node>
+             <Node>
+              <Name>number_of_connected_transient_federates</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>a884c73a01bae5dc438228feb2f0274e1</Anchor>
+             </Node>
+             <Node>
+              <Name>number_of_transient_federates</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>ae47ba7e2daf5f73d007bdc51911acbda</Anchor>
+             </Node>
+             <Node>
+              <Name>phase</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>ad237e3dfcbf6c9d374f596cb8ca70a34</Anchor>
              </Node>
              <Node>
               <Name>rti_net</Name>
@@ -5368,6 +5523,11 @@
             <Anchor>gae0b396a4e41b93505274bbfb55b7a510</Anchor>
            </Node>
            <Node>
+            <Name>free_federate_info</Name>
+            <Path>group__RTI.html</Path>
+            <Anchor>gabc8af4a3b624a9dc4adfe7b636c66b9b</Anchor>
+           </Node>
+           <Node>
             <Name>free_local_rti</Name>
             <Path>group__RTI.html</Path>
             <Anchor>gaa202c053941549eb84d77776c67b5137</Anchor>
@@ -5428,11 +5588,6 @@
             <Anchor>ga9fca6a5c7e73b40db2f6ef6f50c7a112</Anchor>
            </Node>
            <Node>
-            <Name>handle_timestamp</Name>
-            <Path>group__RTI.html</Path>
-            <Anchor>ga0a2eadb2f35483bc7ce62a5845110330</Anchor>
-           </Node>
-           <Node>
             <Name>initialize_enclave_info</Name>
             <Path>group__RTI.html</Path>
             <Anchor>gaf934cc54979bcf640a7868377daab5e2</Anchor>
@@ -5478,11 +5633,6 @@
             <Anchor>ga94101c5bfb54d670a8f47f448e351a34</Anchor>
            </Node>
            <Node>
-            <Name>lf_connect_to_federates</Name>
-            <Path>group__RTI.html</Path>
-            <Anchor>ga14c897c9da2160d4aceff4751822eced</Anchor>
-           </Node>
-           <Node>
             <Name>lf_get_downstream_of</Name>
             <Path>group__RTI.html</Path>
             <Anchor>ga06003604b6defab443bdfe34f3ab17ee</Anchor>
@@ -5505,7 +5655,7 @@
            <Node>
             <Name>notify_downstream_advance_grant_if_safe</Name>
             <Path>group__RTI.html</Path>
-            <Anchor>ga0903cfa1c0fa064824b445c099cd2aa6</Anchor>
+            <Anchor>gacbad7c3241542402c0e2ad382d031c1c</Anchor>
            </Node>
            <Node>
             <Name>notify_downstream_next_event_tag</Name>
@@ -5531,6 +5681,11 @@
             <Name>process_clock_sync_args</Name>
             <Path>group__RTI.html</Path>
             <Anchor>gad7d4392b21b300612a5239fbb1ffa274</Anchor>
+           </Node>
+           <Node>
+            <Name>reset_transient_federate</Name>
+            <Path>group__RTI.html</Path>
+            <Anchor>ga2a232fec90c8bc1caa0f418f72c1daee</Anchor>
            </Node>
            <Node>
             <Name>respond_to_erroneous_connections</Name>
@@ -5560,7 +5715,7 @@
            <Node>
             <Name>send_reject</Name>
             <Path>group__RTI.html</Path>
-            <Anchor>ga614f81fe705224534d84b97254030fa1</Anchor>
+            <Anchor>gaeb4398ee4cdd473a6da76fb727bafdd9</Anchor>
            </Node>
            <Node>
             <Name>start_rti_server</Name>
@@ -5914,9 +6069,24 @@
               <Anchor>a792b3d59fe8438b370dcea4a9beff748</Anchor>
              </Node>
              <Node>
+              <Name>downstream_transients</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>a9552ace0a634c22d3a1d4485302128cd</Anchor>
+             </Node>
+             <Node>
+              <Name>effective_start_tag</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>af1b99af546e9dfc526248a5b3011ea60</Anchor>
+             </Node>
+             <Node>
               <Name>enclave</Name>
               <Path>structfederate__info__t.html</Path>
               <Anchor>acd6450143749bf7421c64b28d68a1e3e</Anchor>
+             </Node>
+             <Node>
+              <Name>has_upstream_transient_federates</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>a4239a72366a0eec1504346b3599d69bc</Anchor>
              </Node>
              <Node>
               <Name>in_transit_message_tags</Name>
@@ -5924,9 +6094,29 @@
               <Anchor>aa643bb07575eca7bf9c5665377442369</Anchor>
              </Node>
              <Node>
+              <Name>is_transient</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>a23965b433636275900b5b96dcae32a8e</Anchor>
+             </Node>
+             <Node>
+              <Name>max_intended_tag</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>a4cb46ef59a894924d4cf9e5b5931998c</Anchor>
+             </Node>
+             <Node>
+              <Name>neighbor_structure_received</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>ab4a42f9c235dd8efe3d00abcdd220031</Anchor>
+             </Node>
+             <Node>
               <Name>net</Name>
               <Path>structfederate__info__t.html</Path>
               <Anchor>a8afb9d8bb911680499970b1de3fbdf93</Anchor>
+             </Node>
+             <Node>
+              <Name>number_of_downstream_transients</Name>
+              <Path>structfederate__info__t.html</Path>
+              <Anchor>ad63a018b06af0b850a6f8e6cf6ab1a03</Anchor>
              </Node>
              <Node>
               <Name>requested_stop</Name>
@@ -5949,6 +6139,11 @@
             <Name>federate_instance_t</Name>
             <Path>structfederate__instance__t.html</Path>
           <Subnodes>
+             <Node>
+              <Name>downstream_p2p_joined_tag</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a2eab2776fd40200c4ce07cbc3f0a2179</Anchor>
+             </Node>
              <Node>
               <Name>has_downstream</Name>
               <Path>structfederate__instance__t.html</Path>
@@ -5973,6 +6168,11 @@
               <Name>is_last_TAG_provisional</Name>
               <Path>structfederate__instance__t.html</Path>
               <Anchor>a05a9586ad89b82d0bf5f969a194ef69c</Anchor>
+             </Node>
+             <Node>
+              <Name>is_transient</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a92c7d88579116747c89a0d4d4966bc9b</Anchor>
              </Node>
              <Node>
               <Name>last_DNET</Name>
@@ -6020,9 +6220,19 @@
               <Anchor>a434d15925fe4c0721a2c1685102ae823</Anchor>
              </Node>
              <Node>
+              <Name>number_of_downstream_p2p_transients</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>ab94cc3deb4b9036103489195861e7662</Anchor>
+             </Node>
+             <Node>
               <Name>number_of_inbound_p2p_connections</Name>
               <Path>structfederate__instance__t.html</Path>
               <Anchor>a6b728a970ccb1ef778dbb9779582d2f2</Anchor>
+             </Node>
+             <Node>
+              <Name>number_of_inbound_p2p_transients</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a745929586685c737b722f0deeacb3908</Anchor>
              </Node>
              <Node>
               <Name>number_of_outbound_p2p_connections</Name>
@@ -6053,6 +6263,21 @@
               <Name>staaSetter</Name>
               <Path>structfederate__instance__t.html</Path>
               <Anchor>a80101d5534e5444c0be0e08d4e65aaae</Anchor>
+             </Node>
+             <Node>
+              <Name>transients</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a1b846899290b0ac18c657bf427c2692b</Anchor>
+             </Node>
+             <Node>
+              <Name>upstream_fed_is_connected</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>ae46e99ac011580ca6abb31ecc8baeea7</Anchor>
+             </Node>
+             <Node>
+              <Name>upstream_fed_is_transient</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a331df614c72b00f3439ed01926fa6ec3</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -6758,6 +6983,27 @@
             </Subnodes>
            </Node>
            <Node>
+            <Name>pqueue_delayed_grant_element_t</Name>
+            <Path>structpqueue__delayed__grant__element__t.html</Path>
+          <Subnodes>
+             <Node>
+              <Name>base</Name>
+              <Path>structpqueue__delayed__grant__element__t.html</Path>
+              <Anchor>a4b14574584eb35a62abfbfedf15a987b</Anchor>
+             </Node>
+             <Node>
+              <Name>fed_id</Name>
+              <Path>structpqueue__delayed__grant__element__t.html</Path>
+              <Anchor>a4ed9bad1b2d405a2bab81caf7f08e145</Anchor>
+             </Node>
+             <Node>
+              <Name>is_provisional</Name>
+              <Path>structpqueue__delayed__grant__element__t.html</Path>
+              <Anchor>a095d475ff02c98204dcd8723ea2096d2</Anchor>
+             </Node>
+            </Subnodes>
+           </Node>
+           <Node>
             <Name>pqueue_t</Name>
             <Path>structpqueue__t.html</Path>
           <Subnodes>
@@ -7002,6 +7248,11 @@
               <Anchor>a21547718724f363f1b684898535a6874</Anchor>
              </Node>
              <Node>
+              <Name>has_transients</Name>
+              <Path>structrti__common__t.html</Path>
+              <Anchor>a8215d24a558ab91e4f051d19eb88dde5</Anchor>
+             </Node>
+             <Node>
               <Name>max_stop_tag</Name>
               <Path>structrti__common__t.html</Path>
               <Anchor>a415277bcbc13aabe238614b9a0d6d4de</Anchor>
@@ -7059,6 +7310,11 @@
               <Anchor>a6d72eef29e4ac1543971baed62c5df25</Anchor>
              </Node>
              <Node>
+              <Name>all_persistent_federates_exited</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>a932823e329ddfedca7712f45b4d82335</Anchor>
+             </Node>
+             <Node>
               <Name>authentication_enabled</Name>
               <Path>structrti__remote__t.html</Path>
               <Anchor>a75eec5d1f98a80feb8b84e2e4c5e6a2e</Anchor>
@@ -7089,6 +7345,11 @@
               <Anchor>ae82c97407ee17f16cd9e95cc4fade654</Anchor>
              </Node>
              <Node>
+              <Name>delayed_grants</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>ae55f378503e5dab01587e83787c53b03</Anchor>
+             </Node>
+             <Node>
               <Name>federation_id</Name>
               <Path>structrti__remote__t.html</Path>
               <Anchor>aa6ebdbc41ba330fc7d23f478bf62d7ea</Anchor>
@@ -7107,6 +7368,21 @@
               <Name>num_feds_proposed_start</Name>
               <Path>structrti__remote__t.html</Path>
               <Anchor>a1c695fdf2ff3d64f7599887ce525d64d</Anchor>
+             </Node>
+             <Node>
+              <Name>number_of_connected_transient_federates</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>a884c73a01bae5dc438228feb2f0274e1</Anchor>
+             </Node>
+             <Node>
+              <Name>number_of_transient_federates</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>ae47ba7e2daf5f73d007bdc51911acbda</Anchor>
+             </Node>
+             <Node>
+              <Name>phase</Name>
+              <Path>structrti__remote__t.html</Path>
+              <Anchor>ad237e3dfcbf6c9d374f596cb8ca70a34</Anchor>
              </Node>
              <Node>
               <Name>rti_net</Name>
@@ -8068,7 +8344,7 @@
                              <Node>
                               <Name>notify_downstream_advance_grant_if_safe</Name>
                               <Path>group__RTI.html</Path>
-                              <Anchor>ga0903cfa1c0fa064824b445c099cd2aa6</Anchor>
+                              <Anchor>gacbad7c3241542402c0e2ad382d031c1c</Anchor>
                              </Node>
                              <Node>
                               <Name>notify_downstream_next_event_tag</Name>
@@ -8163,6 +8439,27 @@
                             <Path>rti__remote_8h.html</Path>
                           <Subnodes>
                              <Node>
+                              <Name>pqueue_delayed_grant_element_t</Name>
+                              <Path>structpqueue__delayed__grant__element__t.html</Path>
+                            <Subnodes>
+                               <Node>
+                                <Name>base</Name>
+                                <Path>structpqueue__delayed__grant__element__t.html</Path>
+                                <Anchor>a4b14574584eb35a62abfbfedf15a987b</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>fed_id</Name>
+                                <Path>structpqueue__delayed__grant__element__t.html</Path>
+                                <Anchor>a4ed9bad1b2d405a2bab81caf7f08e145</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>is_provisional</Name>
+                                <Path>structpqueue__delayed__grant__element__t.html</Path>
+                                <Anchor>a095d475ff02c98204dcd8723ea2096d2</Anchor>
+                               </Node>
+                              </Subnodes>
+                             </Node>
+                             <Node>
                               <Name>MAX_TIME_FOR_REPLY_TO_STOP_REQUEST</Name>
                               <Path>group__RTI.html</Path>
                               <Anchor>ga0066544a32ab71d5601142354230452b</Anchor>
@@ -8176,6 +8473,21 @@
                               <Name>federate_info_t</Name>
                               <Path>group__RTI.html</Path>
                               <Anchor>gacd32a9389f9882becea414555263cde1</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>federation_life_cycle_phase</Name>
+                              <Path>rti__remote_8h.html</Path>
+                              <Anchor>a9651680687a1235f4ac357f1ed6fd305</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>pqueue_delayed_grant_element_t</Name>
+                              <Path>rti__remote_8h.html</Path>
+                              <Anchor>a5025b19dc05bbacb21dff6d4dc64c66c</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>pqueue_delayed_grants_t</Name>
+                              <Path>rti__remote_8h.html</Path>
+                              <Anchor>a8faca390e150bfca6affffe659434323</Anchor>
                              </Node>
                              <Node>
                               <Name>rti_remote_t</Name>
@@ -8205,6 +8517,28 @@
                               </Subnodes>
                              </Node>
                              <Node>
+                              <Name>federation_life_cycle_phase</Name>
+                              <Path>rti__remote_8h.html</Path>
+                              <Anchor>ad0812a06e0a63ac79c1cea0602244113</Anchor>
+                            <Subnodes>
+                               <Node>
+                                <Name>startup_phase</Name>
+                                <Path>rti__remote_8h.html</Path>
+                                <Anchor>ad0812a06e0a63ac79c1cea0602244113a657e627d87016b0fc888e72018bc0318</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>execution_phase</Name>
+                                <Path>rti__remote_8h.html</Path>
+                                <Anchor>ad0812a06e0a63ac79c1cea0602244113a83b86fcae2f635ef9addc5227e504105</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>shutdown_phase</Name>
+                                <Path>rti__remote_8h.html</Path>
+                                <Anchor>ad0812a06e0a63ac79c1cea0602244113ab0b7bae732519c2f4e1b51fe4dedbdce</Anchor>
+                               </Node>
+                              </Subnodes>
+                             </Node>
+                             <Node>
                               <Name>clock_synchronization_thread</Name>
                               <Path>group__RTI.html</Path>
                               <Anchor>ga272b481a0cc2f86f21c75e8efa19a551</Anchor>
@@ -8213,6 +8547,11 @@
                               <Name>federate_info_thread_TCP</Name>
                               <Path>group__RTI.html</Path>
                               <Anchor>gae0b396a4e41b93505274bbfb55b7a510</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>free_federate_info</Name>
+                              <Path>group__RTI.html</Path>
+                              <Anchor>gabc8af4a3b624a9dc4adfe7b636c66b9b</Anchor>
                              </Node>
                              <Node>
                               <Name>handle_address_ad</Name>
@@ -8260,11 +8599,6 @@
                               <Anchor>ga9fca6a5c7e73b40db2f6ef6f50c7a112</Anchor>
                              </Node>
                              <Node>
-                              <Name>handle_timestamp</Name>
-                              <Path>group__RTI.html</Path>
-                              <Anchor>ga0a2eadb2f35483bc7ce62a5845110330</Anchor>
-                             </Node>
-                             <Node>
                               <Name>initialize_federate</Name>
                               <Path>group__RTI.html</Path>
                               <Anchor>gab32a595d53f125832570251023d10c46</Anchor>
@@ -8273,11 +8607,6 @@
                               <Name>initialize_RTI</Name>
                               <Path>group__RTI.html</Path>
                               <Anchor>ga0aefafd71cb0b057a604a04f1af61174</Anchor>
-                             </Node>
-                             <Node>
-                              <Name>lf_connect_to_federates</Name>
-                              <Path>group__RTI.html</Path>
-                              <Anchor>ga14c897c9da2160d4aceff4751822eced</Anchor>
                              </Node>
                              <Node>
                               <Name>lf_critical_section_enter</Name>
@@ -8300,6 +8629,11 @@
                               <Anchor>gad7d4392b21b300612a5239fbb1ffa274</Anchor>
                              </Node>
                              <Node>
+                              <Name>reset_transient_federate</Name>
+                              <Path>group__RTI.html</Path>
+                              <Anchor>ga2a232fec90c8bc1caa0f418f72c1daee</Anchor>
+                             </Node>
+                             <Node>
                               <Name>respond_to_erroneous_connections</Name>
                               <Path>group__RTI.html</Path>
                               <Anchor>gac6af5f2343ecf9ed87cdbebd98b94271</Anchor>
@@ -8312,7 +8646,7 @@
                              <Node>
                               <Name>send_reject</Name>
                               <Path>group__RTI.html</Path>
-                              <Anchor>ga614f81fe705224534d84b97254030fa1</Anchor>
+                              <Anchor>gaeb4398ee4cdd473a6da76fb727bafdd9</Anchor>
                              </Node>
                              <Node>
                               <Name>start_rti_server</Name>
@@ -8658,7 +8992,7 @@
                              <Node>
                               <Name>lf_connect_to_federate</Name>
                               <Path>group__Federated.html</Path>
-                              <Anchor>ga26b7c3ab8c2a50f65e53997a6f26a0dc</Anchor>
+                              <Anchor>ga1746f43c6f0125b04a5d9f523eba218d</Anchor>
                              </Node>
                              <Node>
                               <Name>lf_connect_to_rti</Name>
@@ -8724,11 +9058,6 @@
                               <Name>lf_send_tagged_message</Name>
                               <Path>group__Federated.html</Path>
                               <Anchor>ga0931fe1bb9eac2a9beebe0c0ed03408e</Anchor>
-                             </Node>
-                             <Node>
-                              <Name>lf_set_federation_id</Name>
-                              <Path>group__Federated.html</Path>
-                              <Anchor>ga032d945ee3fd6995a5f7bb15b57f2ddf</Anchor>
                              </Node>
                              <Node>
                               <Name>lf_spawn_staa_thread</Name>
@@ -9498,6 +9827,11 @@
                               <Anchor>ga89084b69d8049630eebb8df759c666d0</Anchor>
                              </Node>
                              <Node>
+                              <Name>pqueue_tag_max_tag</Name>
+                              <Path>pqueue__tag_8h.html</Path>
+                              <Anchor>a824ff56d134143b24f37349162b1529c</Anchor>
+                             </Node>
+                             <Node>
                               <Name>pqueue_tag_peek</Name>
                               <Path>group__Internal.html</Path>
                               <Anchor>ga16cbdbb45d26bd5373e258de819cfdd3</Anchor>
@@ -9612,6 +9946,11 @@
                               <Name>lf_fed_id</Name>
                               <Path>group__Internal.html</Path>
                               <Anchor>ga6e9c2ed60ca5adec5ba3f43d4410dc75</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>lf_stop</Name>
+                              <Path>util_8h.html</Path>
+                              <Anchor>a06459a0f9ada564e206ec8a46e049b33</Anchor>
                              </Node>
                              <Node>
                               <Name>lf_vprint</Name>
@@ -10199,6 +10538,11 @@
                             <Anchor>gab4b57d55b69a4864eb694ed080b84d0e</Anchor>
                            </Node>
                            <Node>
+                            <Name>lf_get_federation_id</Name>
+                            <Path>group__Federated.html</Path>
+                            <Anchor>gaafe9373f05ab5ce8144950a04b3f31cb</Anchor>
+                           </Node>
+                           <Node>
                             <Name>lf_get_sta</Name>
                             <Path>group__Federated.html</Path>
                             <Anchor>gae03d197bf8d64f82be4a68c95a940195</Anchor>
@@ -10242,6 +10586,11 @@
                             <Name>lf_set_fed_maxwait</Name>
                             <Path>group__Federated.html</Path>
                             <Anchor>ga952c8552f9e327a465f3db2f72d8415e</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_set_federation_id</Name>
+                            <Path>group__Federated.html</Path>
+                            <Anchor>ga032d945ee3fd6995a5f7bb15b57f2ddf</Anchor>
                            </Node>
                            <Node>
                             <Name>lf_set_present</Name>
@@ -11243,6 +11592,11 @@
                             <Anchor>ga80abd9981c0375a0abbe47591204f18b</Anchor>
                            </Node>
                            <Node>
+                            <Name>lf_tag_start_effective</Name>
+                            <Path>tag_8h.html</Path>
+                            <Anchor>a9eace68faf021c0adf218d58f3172f44</Anchor>
+                           </Node>
+                           <Node>
                             <Name>lf_time_add</Name>
                             <Path>group__API.html</Path>
                             <Anchor>ga1789de56286aa33c086b194b544c2d91</Anchor>
@@ -11598,6 +11952,56 @@
                                 <Name>receive_UNIDENTIFIED</Name>
                                 <Path>group__Tracing.html</Path>
                                 <Anchor>ggab02e9e69539d60297cedb38c2193a453a48fffa45ebf3f03caa2dc044af72349f</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>send_UPSTREAM_CONNECTED</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453a47860caddbef8e45f632dbfc92091069</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>receive_UPSTREAM_CONNECTED</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453a9a54e2ad724124b43c2f74ac9c1ca738</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>send_UPSTREAM_DISCONNECTED</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453ad944544a6473e1b57450e96c0a61de64</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>receive_UPSTREAM_DISCONNECTED</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453ac3f3828d79b588f55798e529f78d696c</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>send_STOP</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453a35de0e6755500a96eb33ccbcd44142f3</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>receive_STOP</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453a24a9170a2485d2f1ae97fcbc291b30ac</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>send_DOWNSTREAM_CONNECTED</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453a422d32653d57d92e325f3339e6b2c537</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>receive_DOWNSTREAM_CONNECTED</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453aa795de9a6eed1ced0115a7d69395497d</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>send_DOWNSTREAM_DISCONNECTED</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453ad11688d7a116453c377a5879fc2a95b8</Anchor>
+                               </Node>
+                               <Node>
+                                <Name>receive_DOWNSTREAM_DISCONNECTED</Name>
+                                <Path>group__Tracing.html</Path>
+                                <Anchor>ggab02e9e69539d60297cedb38c2193a453afe85f979f7d5a511f99590c254070ab6</Anchor>
                                </Node>
                                <Node>
                                 <Name>NUM_EVENT_TYPES</Name>

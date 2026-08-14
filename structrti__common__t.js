@@ -1,6 +1,7 @@
 var structrti__common__t =
 [
     [ "dnet_disabled", "structrti__common__t.html#a21547718724f363f1b684898535a6874", null ],
+    [ "has_transients", "structrti__common__t.html#a8215d24a558ab91e4f051d19eb88dde5", null ],
     [ "max_stop_tag", "structrti__common__t.html#a415277bcbc13aabe238614b9a0d6d4de", null ],
     [ "min_delays", "structrti__common__t.html#affa919b013ef94b2ff61d1b82a2663fe", null ],
     [ "mutex", "structrti__common__t.html#a1a6c918ac1891377b8bd69c06a44e290", null ],

@@ -135,12 +135,26 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('structfederate
 Data Fields</h2></td></tr>
 <tr class="memitem:a792b3d59fe8438b370dcea4a9beff748" id="r_a792b3d59fe8438b370dcea4a9beff748"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a792b3d59fe8438b370dcea4a9beff748">clock_synchronization_enabled</a></td></tr>
 <tr class="memdesc:a792b3d59fe8438b370dcea4a9beff748"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates the status of clock synchronization for this federate.  <br /></td></tr>
+<tr class="memitem:a9552ace0a634c22d3a1d4485302128cd" id="r_a9552ace0a634c22d3a1d4485302128cd"><td class="memItemLeft">int32_t *&#160;</td><td class="memItemRight"><a class="el" href="#a9552ace0a634c22d3a1d4485302128cd">downstream_transients</a></td></tr>
+<tr class="memdesc:a9552ace0a634c22d3a1d4485302128cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">IDs of transient federates this federate has outbound connections to.  <br /></td></tr>
+<tr class="memitem:af1b99af546e9dfc526248a5b3011ea60" id="r_af1b99af546e9dfc526248a5b3011ea60"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#af1b99af546e9dfc526248a5b3011ea60">effective_start_tag</a></td></tr>
+<tr class="memdesc:af1b99af546e9dfc526248a5b3011ea60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Records the start time of the federate, which is mainly useful for transient federates.  <br /></td></tr>
 <tr class="memitem:acd6450143749bf7421c64b28d68a1e3e" id="r_acd6450143749bf7421c64b28d68a1e3e"><td class="memItemLeft"><a class="el" href="structscheduling__node__t.html">scheduling_node_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#acd6450143749bf7421c64b28d68a1e3e">enclave</a></td></tr>
 <tr class="memdesc:acd6450143749bf7421c64b28d68a1e3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The base scheduling node information for this federate.  <br /></td></tr>
+<tr class="memitem:a4239a72366a0eec1504346b3599d69bc" id="r_a4239a72366a0eec1504346b3599d69bc"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a4239a72366a0eec1504346b3599d69bc">has_upstream_transient_federates</a></td></tr>
+<tr class="memdesc:a4239a72366a0eec1504346b3599d69bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates whether the federate has upstream transient federates.  <br /></td></tr>
 <tr class="memitem:aa643bb07575eca7bf9c5665377442369" id="r_aa643bb07575eca7bf9c5665377442369"><td class="memItemLeft"><a class="el" href="group__Internal.html#gac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#aa643bb07575eca7bf9c5665377442369">in_transit_message_tags</a></td></tr>
 <tr class="memdesc:aa643bb07575eca7bf9c5665377442369"><td class="mdescLeft">&#160;</td><td class="mdescRight">Record of in-transit messages to this federate that are not yet processed.  <br /></td></tr>
+<tr class="memitem:a23965b433636275900b5b96dcae32a8e" id="r_a23965b433636275900b5b96dcae32a8e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a23965b433636275900b5b96dcae32a8e">is_transient</a></td></tr>
+<tr class="memdesc:a23965b433636275900b5b96dcae32a8e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates whether the federate is transient or persistent.  <br /></td></tr>
+<tr class="memitem:a4cb46ef59a894924d4cf9e5b5931998c" id="r_a4cb46ef59a894924d4cf9e5b5931998c"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#a4cb46ef59a894924d4cf9e5b5931998c">max_intended_tag</a></td></tr>
+<tr class="memdesc:a4cb46ef59a894924d4cf9e5b5931998c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The highest delay-adjusted intended tag of any message the RTI has received addressed to this federate, whether or not that message was actually forwarded (a message is not forwarded, e.g., if the destination is a transient that is absent or has not yet started).  <br /></td></tr>
+<tr class="memitem:ab4a42f9c235dd8efe3d00abcdd220031" id="r_ab4a42f9c235dd8efe3d00abcdd220031"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ab4a42f9c235dd8efe3d00abcdd220031">neighbor_structure_received</a></td></tr>
+<tr class="memdesc:ab4a42f9c235dd8efe3d00abcdd220031"><td class="mdescLeft">&#160;</td><td class="mdescRight">True after the first MSG_TYPE_NEIGHBOR_STRUCTURE has been accepted for this federate ID.  <br /></td></tr>
 <tr class="memitem:a8afb9d8bb911680499970b1de3fbdf93" id="r_a8afb9d8bb911680499970b1de3fbdf93"><td class="memItemLeft">net_abstraction_t&#160;</td><td class="memItemRight"><a class="el" href="#a8afb9d8bb911680499970b1de3fbdf93">net</a></td></tr>
 <tr class="memdesc:a8afb9d8bb911680499970b1de3fbdf93"><td class="mdescLeft">&#160;</td><td class="mdescRight">The network abstraction for communicating with this federate.  <br /></td></tr>
+<tr class="memitem:ad63a018b06af0b850a6f8e6cf6ab1a03" id="r_ad63a018b06af0b850a6f8e6cf6ab1a03"><td class="memItemLeft">int32_t&#160;</td><td class="memItemRight"><a class="el" href="#ad63a018b06af0b850a6f8e6cf6ab1a03">number_of_downstream_transients</a></td></tr>
+<tr class="memdesc:ad63a018b06af0b850a6f8e6cf6ab1a03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of outbound connections to transient federates.  <br /></td></tr>
 <tr class="memitem:af1264d573e3ada0d716c64cfa4f26b36" id="r_af1264d573e3ada0d716c64cfa4f26b36"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#af1264d573e3ada0d716c64cfa4f26b36">requested_stop</a></td></tr>
 <tr class="memdesc:af1264d573e3ada0d716c64cfa4f26b36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates that the federate has requested stop or has replied to a request for stop from the RTI.  <br /></td></tr>
 <tr class="memitem:aedcf9a6f3003d2a4f9c78f5601c463d8" id="r_aedcf9a6f3003d2a4f9c78f5601c463d8"><td class="memItemLeft">lf_thread_t&#160;</td><td class="memItemRight"><a class="el" href="#aedcf9a6f3003d2a4f9c78f5601c463d8">thread_id</a></td></tr>
@@ -169,6 +183,39 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
+<a id="a9552ace0a634c22d3a1d4485302128cd" name="a9552ace0a634c22d3a1d4485302128cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9552ace0a634c22d3a1d4485302128cd">&#9670;&#160;</a></span>downstream_transients</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t* federate_info_t::downstream_transients</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>IDs of transient federates this federate has outbound connections to. </p>
+<p>The array has size equal to the total number of transient federates in the federation, and entries are initialized (and reset) to -1. </p>
+
+</div>
+</div>
+<a id="af1b99af546e9dfc526248a5b3011ea60" name="af1b99af546e9dfc526248a5b3011ea60"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af1b99af546e9dfc526248a5b3011ea60">&#9670;&#160;</a></span>effective_start_tag</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> federate_info_t::effective_start_tag</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Records the start time of the federate, which is mainly useful for transient federates. </p>
+
+</div>
+</div>
 <a id="acd6450143749bf7421c64b28d68a1e3e" name="acd6450143749bf7421c64b28d68a1e3e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acd6450143749bf7421c64b28d68a1e3e">&#9670;&#160;</a></span>enclave</h2>
 
@@ -182,6 +229,22 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The base scheduling node information for this federate. </p>
+
+</div>
+</div>
+<a id="a4239a72366a0eec1504346b3599d69bc" name="a4239a72366a0eec1504346b3599d69bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4239a72366a0eec1504346b3599d69bc">&#9670;&#160;</a></span>has_upstream_transient_federates</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool federate_info_t::has_upstream_transient_federates</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Indicates whether the federate has upstream transient federates. </p>
 
 </div>
 </div>
@@ -202,6 +265,56 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
+<a id="a23965b433636275900b5b96dcae32a8e" name="a23965b433636275900b5b96dcae32a8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23965b433636275900b5b96dcae32a8e">&#9670;&#160;</a></span>is_transient</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool federate_info_t::is_transient</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Indicates whether the federate is transient or persistent. </p>
+
+</div>
+</div>
+<a id="a4cb46ef59a894924d4cf9e5b5931998c" name="a4cb46ef59a894924d4cf9e5b5931998c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4cb46ef59a894924d4cf9e5b5931998c">&#9670;&#160;</a></span>max_intended_tag</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> federate_info_t::max_intended_tag</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>The highest delay-adjusted intended tag of any message the RTI has received addressed to this federate, whether or not that message was actually forwarded (a message is not forwarded, e.g., if the destination is a transient that is absent or has not yet started). </p>
+<p>Unlike in_transit_message_tags, this is deliberately NOT cleared when a transient federate disconnects: it is used when the federate later rejoins to compute an effective_start_tag that accounts for messages that arrived while it was absent, even though those messages themselves were dropped rather than queued. </p>
+
+</div>
+</div>
+<a id="ab4a42f9c235dd8efe3d00abcdd220031" name="ab4a42f9c235dd8efe3d00abcdd220031"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4a42f9c235dd8efe3d00abcdd220031">&#9670;&#160;</a></span>neighbor_structure_received</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool federate_info_t::neighbor_structure_received</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>True after the first MSG_TYPE_NEIGHBOR_STRUCTURE has been accepted for this federate ID. </p>
+<p>Preserved across transient resign/reset so rejoins and hot swaps can validate against that reference. </p>
+
+</div>
+</div>
 <a id="a8afb9d8bb911680499970b1de3fbdf93" name="a8afb9d8bb911680499970b1de3fbdf93"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8afb9d8bb911680499970b1de3fbdf93">&#9670;&#160;</a></span>net</h2>
 
@@ -215,6 +328,22 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>The network abstraction for communicating with this federate. </p>
+
+</div>
+</div>
+<a id="ad63a018b06af0b850a6f8e6cf6ab1a03" name="ad63a018b06af0b850a6f8e6cf6ab1a03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad63a018b06af0b850a6f8e6cf6ab1a03">&#9670;&#160;</a></span>number_of_downstream_transients</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t federate_info_t::number_of_downstream_transients</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Number of outbound connections to transient federates. </p>
 
 </div>
 </div>

@@ -165,6 +165,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga067e8fdd88be6f660e79744350a74128"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert a tag into the queue if the tag is not already in the queue.  <br /></td></tr>
 <tr class="memitem:ga89084b69d8049630eebb8df759c666d0" id="r_ga89084b69d8049630eebb8df759c666d0"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga89084b69d8049630eebb8df759c666d0">pqueue_tag_insert_tag</a> (<a class="el" href="group__Internal.html#gac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *q, <a class="el" href="structtag__t.html">tag_t</a> t)</td></tr>
 <tr class="memdesc:ga89084b69d8049630eebb8df759c666d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert a tag into the queue.  <br /></td></tr>
+<tr class="memitem:a824ff56d134143b24f37349162b1529c" id="r_a824ff56d134143b24f37349162b1529c"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#a824ff56d134143b24f37349162b1529c">pqueue_tag_max_tag</a> (<a class="el" href="group__Internal.html#gac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *q)</td></tr>
+<tr class="memdesc:a824ff56d134143b24f37349162b1529c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the maximum tag in the queue or <span class="tt"><a class="el" href="group__Constants.html#gafc2f39e1818a6a8b68ca46e7c9dc2704" title="Tag earlier than all other tags.">NEVER_TAG</a></span> if the queue is empty.  <br /></td></tr>
 <tr class="memitem:ga16cbdbb45d26bd5373e258de819cfdd3" id="r_ga16cbdbb45d26bd5373e258de819cfdd3"><td class="memItemLeft"><a class="el" href="structpqueue__tag__element__t.html">pqueue_tag_element_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga16cbdbb45d26bd5373e258de819cfdd3">pqueue_tag_peek</a> (<a class="el" href="group__Internal.html#gac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *q)</td></tr>
 <tr class="memdesc:ga16cbdbb45d26bd5373e258de819cfdd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return highest-ranking item (the one with the least tag) without removing it.  <br /></td></tr>
 <tr class="memitem:ga9bcecb00b894ad00b07f84940fe7af95" id="r_ga9bcecb00b894ad00b07f84940fe7af95"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga9bcecb00b894ad00b07f84940fe7af95">pqueue_tag_peek_tag</a> (<a class="el" href="group__Internal.html#gac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *q)</td></tr>
@@ -206,6 +208,31 @@ Edward A. Lee</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">q</td><td>the queue </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a824ff56d134143b24f37349162b1529c" name="a824ff56d134143b24f37349162b1529c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a824ff56d134143b24f37349162b1529c">&#9670;&#160;</a></span>pqueue_tag_max_tag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> pqueue_tag_max_tag </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="group__Internal.html#gac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *</td>          <td class="paramname"><span class="paramname"><em>q</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the maximum tag in the queue or <span class="tt"><a class="el" href="group__Constants.html#gafc2f39e1818a6a8b68ca46e7c9dc2704" title="Tag earlier than all other tags.">NEVER_TAG</a></span> if the queue is empty. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">q</td><td>The queue. </td></tr>
   </table>
   </dd>
 </dl>

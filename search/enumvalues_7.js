@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['lf_5fsched_5ffair_0',['LF_SCHED_FAIR',['../group__Platform.html#ggadc74ec49eb5cc6eceda1447090d61ab6aad0c30324e2299f1ab579a9db51ae994',1,'low_level_platform.h']]],
-  ['lf_5fsched_5fpriority_1',['LF_SCHED_PRIORITY',['../group__Platform.html#ggadc74ec49eb5cc6eceda1447090d61ab6a31d917200c3ceb3735770c9acef3eb5e',1,'low_level_platform.h']]],
-  ['lf_5fsched_5ftimeslice_2',['LF_SCHED_TIMESLICE',['../group__Platform.html#ggadc74ec49eb5cc6eceda1447090d61ab6aa94c07b6d2e7cf9564d407bdb0d5eb3f',1,'low_level_platform.h']]]
+  ['inactive_0',['inactive',['../group__Internal.html#gga6e496c05213aa4bcbc0055ceee7808faa76c1253bb97844abbdf89af6dfc3c7d6',1,'lf_types.h']]],
+  ['invalid_5fhost_1',['INVALID_HOST',['../group__Federated.html#gga9acb70e6b48452bd9d146e35bafc535caea85d37354b294f21e7ab9c5c142a237',1,'federate.h']]],
+  ['invalid_5fport_2',['INVALID_PORT',['../group__Federated.html#gga9acb70e6b48452bd9d146e35bafc535cad65c958d0ccb000b69ef0ef4e3a5bfdf',1,'federate.h']]],
+  ['invalid_5fuser_3',['INVALID_USER',['../group__Federated.html#gga9acb70e6b48452bd9d146e35bafc535ca1dbf923bd60da7209a684ed484935973',1,'federate.h']]]
 ];

@@ -27,7 +27,7 @@ var rti__common_8h =
     [ "is_in_cycle", "group__RTI.html#gab38455d4faf77b4d86dcd77976afe1f1", null ],
     [ "is_in_zero_delay_cycle", "group__RTI.html#ga94101c5bfb54d670a8f47f448e351a34", null ],
     [ "notify_advance_grant_if_safe", "group__RTI.html#gaa057279652cc77f238cc73d0fc0e705e", null ],
-    [ "notify_downstream_advance_grant_if_safe", "group__RTI.html#ga0903cfa1c0fa064824b445c099cd2aa6", null ],
+    [ "notify_downstream_advance_grant_if_safe", "group__RTI.html#gacbad7c3241542402c0e2ad382d031c1c", null ],
     [ "notify_downstream_next_event_tag", "group__RTI.html#gae38c64692f527911c9cc748c03d2246d", null ],
     [ "notify_provisional_tag_advance_grant", "group__RTI.html#gab226921e491807e98a406487cfdf6335", null ],
     [ "notify_tag_advance_grant", "group__RTI.html#ga21a88113d348968980a137c9e4e4148e", null ],

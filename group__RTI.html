@@ -213,6 +213,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gadaad58c39361263d511f49b0952bcaee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given a node (enclave or federate), find the earliest incoming message tag (EIMT) from any immediately upstream node that is not part of zero-delay cycle (ZDC).  <br /></td></tr>
 <tr class="memitem:gae0b396a4e41b93505274bbfb55b7a510" id="r_gae0b396a4e41b93505274bbfb55b7a510"><td class="memItemLeft">void *&#160;</td><td class="memItemRight"><a class="el" href="#gae0b396a4e41b93505274bbfb55b7a510">federate_info_thread_TCP</a> (void *fed)</td></tr>
 <tr class="memdesc:gae0b396a4e41b93505274bbfb55b7a510"><td class="mdescLeft">&#160;</td><td class="mdescRight">Thread handling TCP communication with a federate.  <br /></td></tr>
+<tr class="memitem:gabc8af4a3b624a9dc4adfe7b636c66b9b" id="r_gabc8af4a3b624a9dc4adfe7b636c66b9b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gabc8af4a3b624a9dc4adfe7b636c66b9b">free_federate_info</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed)</td></tr>
+<tr class="memdesc:gabc8af4a3b624a9dc4adfe7b636c66b9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free a <a class="el" href="structfederate__info__t.html" title="Information about a federate known to the RTI, including its runtime state, mode of execution,...">federate_info_t</a> and all heap memory it owns.  <br /></td></tr>
 <tr class="memitem:gaa202c053941549eb84d77776c67b5137" id="r_gaa202c053941549eb84d77776c67b5137"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gaa202c053941549eb84d77776c67b5137">free_local_rti</a> ()</td></tr>
 <tr class="memdesc:gaa202c053941549eb84d77776c67b5137"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free memory associated with the local the RTI and the local RTI iself.  <br /></td></tr>
 <tr class="memitem:gaa8f3d17093904564d4a1eebd526a2164" id="r_gaa8f3d17093904564d4a1eebd526a2164"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gaa8f3d17093904564d4a1eebd526a2164">free_scheduling_nodes</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> **scheduling_nodes, uint16_t number_of_scheduling_nodes)</td></tr>
@@ -237,8 +239,6 @@ Functions</h2></td></tr>
 <tr class="memdesc:gac4d4e5a1df9c31133d942a6e50e4c163"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a MSG_TYPE_STOP_REQUEST_REPLY message.  <br /></td></tr>
 <tr class="memitem:ga9fca6a5c7e73b40db2f6ef6f50c7a112" id="r_ga9fca6a5c7e73b40db2f6ef6f50c7a112"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga9fca6a5c7e73b40db2f6ef6f50c7a112">handle_timed_message</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *sending_federate, unsigned char *buffer)</td></tr>
 <tr class="memdesc:ga9fca6a5c7e73b40db2f6ef6f50c7a112"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a timed message being received from a federate by the RTI to relay to another federate.  <br /></td></tr>
-<tr class="memitem:ga0a2eadb2f35483bc7ce62a5845110330" id="r_ga0a2eadb2f35483bc7ce62a5845110330"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga0a2eadb2f35483bc7ce62a5845110330">handle_timestamp</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *my_fed)</td></tr>
-<tr class="memdesc:ga0a2eadb2f35483bc7ce62a5845110330"><td class="mdescLeft">&#160;</td><td class="mdescRight">A function to handle timestamp messages.  <br /></td></tr>
 <tr class="memitem:gaf934cc54979bcf640a7868377daab5e2" id="r_gaf934cc54979bcf640a7868377daab5e2"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gaf934cc54979bcf640a7868377daab5e2">initialize_enclave_info</a> (<a class="el" href="structenclave__info__t.html">enclave_info_t</a> *enclave, int idx, <a class="el" href="structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="memdesc:gaf934cc54979bcf640a7868377daab5e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the enclave object.  <br /></td></tr>
 <tr class="memitem:gab32a595d53f125832570251023d10c46" id="r_gab32a595d53f125832570251023d10c46"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gab32a595d53f125832570251023d10c46">initialize_federate</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed, uint16_t id)</td></tr>
@@ -257,8 +257,6 @@ Functions</h2></td></tr>
 <tr class="memdesc:gab38455d4faf77b4d86dcd77976afe1f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the node is in a cycle (possibly a zero-delay cycle).  <br /></td></tr>
 <tr class="memitem:ga94101c5bfb54d670a8f47f448e351a34" id="r_ga94101c5bfb54d670a8f47f448e351a34"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ga94101c5bfb54d670a8f47f448e351a34">is_in_zero_delay_cycle</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *node)</td></tr>
 <tr class="memdesc:ga94101c5bfb54d670a8f47f448e351a34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the node is in a zero-delay cycle.  <br /></td></tr>
-<tr class="memitem:ga14c897c9da2160d4aceff4751822eced" id="r_ga14c897c9da2160d4aceff4751822eced"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga14c897c9da2160d4aceff4751822eced">lf_connect_to_federates</a> (net_abstraction_t rti_net)</td></tr>
-<tr class="memdesc:ga14c897c9da2160d4aceff4751822eced"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait for one incoming connection request from each federate, and, upon receiving it, create a thread to communicate with that federate.  <br /></td></tr>
 <tr class="memitem:ga06003604b6defab443bdfe34f3ab17ee" id="r_ga06003604b6defab443bdfe34f3ab17ee"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ga06003604b6defab443bdfe34f3ab17ee">lf_get_downstream_of</a> (int enclave_id, uint16_t **result)</td></tr>
 <tr class="memdesc:ga06003604b6defab443bdfe34f3ab17ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the array of ids of enclaves directly downstream of the specified enclave.  <br /></td></tr>
 <tr class="memitem:gaaba4ae9dd32581f9f34a7a81d9c7791c" id="r_gaaba4ae9dd32581f9f34a7a81d9c7791c"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gaaba4ae9dd32581f9f34a7a81d9c7791c">lf_get_upstream_delay_of</a> (int enclave_id, <a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> **result)</td></tr>
@@ -267,8 +265,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga8f432bb04e691f66f4f81cbbecb741ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the array of ids of enclaves directly upstream of the specified enclave.  <br /></td></tr>
 <tr class="memitem:gaa057279652cc77f238cc73d0fc0e705e" id="r_gaa057279652cc77f238cc73d0fc0e705e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gaa057279652cc77f238cc73d0fc0e705e">notify_advance_grant_if_safe</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *e)</td></tr>
 <tr class="memdesc:gaa057279652cc77f238cc73d0fc0e705e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Either send to a federate or unblock an enclave to give it a tag.  <br /></td></tr>
-<tr class="memitem:ga0903cfa1c0fa064824b445c099cd2aa6" id="r_ga0903cfa1c0fa064824b445c099cd2aa6"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga0903cfa1c0fa064824b445c099cd2aa6">notify_downstream_advance_grant_if_safe</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *e, bool visited[])</td></tr>
-<tr class="memdesc:ga0903cfa1c0fa064824b445c099cd2aa6"><td class="mdescLeft">&#160;</td><td class="mdescRight">For all scheduling nodes downstream of the specified node, determine whether they should be notified of a TAG or PTAG and notify them if so.  <br /></td></tr>
+<tr class="memitem:gacbad7c3241542402c0e2ad382d031c1c" id="r_gacbad7c3241542402c0e2ad382d031c1c"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gacbad7c3241542402c0e2ad382d031c1c">notify_downstream_advance_grant_if_safe</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *e)</td></tr>
+<tr class="memdesc:gacbad7c3241542402c0e2ad382d031c1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">For all scheduling nodes downstream of the specified node, determine whether they should be notified of a TAG or PTAG and notify them if so.  <br /></td></tr>
 <tr class="memitem:gae38c64692f527911c9cc748c03d2246d" id="r_gae38c64692f527911c9cc748c03d2246d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gae38c64692f527911c9cc748c03d2246d">notify_downstream_next_event_tag</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *e, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="memdesc:gae38c64692f527911c9cc748c03d2246d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify a downstream next event tag (DNET) signal to the specified scheduling node.  <br /></td></tr>
 <tr class="memitem:gab226921e491807e98a406487cfdf6335" id="r_gab226921e491807e98a406487cfdf6335"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gab226921e491807e98a406487cfdf6335">notify_provisional_tag_advance_grant</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *e, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
@@ -279,6 +277,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga80aaf4eeed3e2902f8fe9de80b45777d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process the command-line arguments.  <br /></td></tr>
 <tr class="memitem:gad7d4392b21b300612a5239fbb1ffa274" id="r_gad7d4392b21b300612a5239fbb1ffa274"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gad7d4392b21b300612a5239fbb1ffa274">process_clock_sync_args</a> (int argc, const char *argv[])</td></tr>
 <tr class="memdesc:gad7d4392b21b300612a5239fbb1ffa274"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process command-line arguments related to clock synchronization.  <br /></td></tr>
+<tr class="memitem:ga2a232fec90c8bc1caa0f418f72c1daee" id="r_ga2a232fec90c8bc1caa0f418f72c1daee"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga2a232fec90c8bc1caa0f418f72c1daee">reset_transient_federate</a> (<a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed)</td></tr>
+<tr class="memdesc:ga2a232fec90c8bc1caa0f418f72c1daee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the federate.  <br /></td></tr>
 <tr class="memitem:gac6af5f2343ecf9ed87cdbebd98b94271" id="r_gac6af5f2343ecf9ed87cdbebd98b94271"><td class="memItemLeft">void *&#160;</td><td class="memItemRight"><a class="el" href="#gac6af5f2343ecf9ed87cdbebd98b94271">respond_to_erroneous_connections</a> (void *nothing)</td></tr>
 <tr class="memdesc:gac6af5f2343ecf9ed87cdbebd98b94271"><td class="mdescLeft">&#160;</td><td class="mdescRight">Thread to respond to new connections, which could be federates of other federations who are attempting to join the wrong federation.  <br /></td></tr>
 <tr class="memitem:gafa27405a96dae1488b670aa25fc8ad1b" id="r_gafa27405a96dae1488b670aa25fc8ad1b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gafa27405a96dae1488b670aa25fc8ad1b">rti_logical_tag_complete_locked</a> (<a class="el" href="structenclave__info__t.html">enclave_info_t</a> *enclave, <a class="el" href="structtag__t.html">tag_t</a> completed)</td></tr>
@@ -289,10 +289,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaf921c9092b09500768f94e41b3a7c8f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify the local RTI to update the next event tag (NET) of a target enclave.  <br /></td></tr>
 <tr class="memitem:ga5b16bd2ead60426e3ace71eca1cfede5" id="r_ga5b16bd2ead60426e3ace71eca1cfede5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga5b16bd2ead60426e3ace71eca1cfede5">send_physical_clock</a> (unsigned char message_type, <a class="el" href="structfederate__info__t.html">federate_info_t</a> *fed, socket_type_t socket_type)</td></tr>
 <tr class="memdesc:ga5b16bd2ead60426e3ace71eca1cfede5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take a snapshot of the physical clock time and send it to federate fed_id.  <br /></td></tr>
-<tr class="memitem:ga614f81fe705224534d84b97254030fa1" id="r_ga614f81fe705224534d84b97254030fa1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga614f81fe705224534d84b97254030fa1">send_reject</a> (net_abstraction_t net_abs, unsigned char error_code)</td></tr>
-<tr class="memdesc:ga614f81fe705224534d84b97254030fa1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a MSG_TYPE_REJECT message to the specified channel and close the channel.  <br /></td></tr>
+<tr class="memitem:gaeb4398ee4cdd473a6da76fb727bafdd9" id="r_gaeb4398ee4cdd473a6da76fb727bafdd9"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gaeb4398ee4cdd473a6da76fb727bafdd9">send_reject</a> (net_abstraction_t net_abs, rejection_code_t error_code)</td></tr>
+<tr class="memdesc:gaeb4398ee4cdd473a6da76fb727bafdd9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a MSG_TYPE_REJECT message to the specified channel and close the channel.  <br /></td></tr>
 <tr class="memitem:gadfcb2fedc086ab63276bfc442efa488d" id="r_gadfcb2fedc086ab63276bfc442efa488d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gadfcb2fedc086ab63276bfc442efa488d">start_rti_server</a> ()</td></tr>
-<tr class="memdesc:gadfcb2fedc086ab63276bfc442efa488d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the socket server for the runtime infrastructure (RTI).  <br /></td></tr>
+<tr class="memdesc:gadfcb2fedc086ab63276bfc442efa488d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the server for the runtime infrastructure (RTI).  <br /></td></tr>
 <tr class="memitem:gaf849510938f837c74cfe8f843cb7dcb2" id="r_gaf849510938f837c74cfe8f843cb7dcb2"><td class="memItemLeft"><a class="el" href="structtag__advance__grant__t.html">tag_advance_grant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#gaf849510938f837c74cfe8f843cb7dcb2">tag_advance_grant_if_safe</a> (<a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *e)</td></tr>
 <tr class="memdesc:gaf849510938f837c74cfe8f843cb7dcb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine whether the specified scheduling node is eligible for a tag advance grant, (TAG) and, if so, return the details.  <br /></td></tr>
 <tr class="memitem:ga13560f0cae54155219f4d8d9c487b0ef" id="r_ga13560f0cae54155219f4d8d9c487b0ef"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga13560f0cae54155219f4d8d9c487b0ef">tracepoint_rti_from_federate</a> (<a class="el" href="group__Tracing.html#gab02e9e69539d60297cedb38c2193a453">trace_event_t</a> event_type, int fed_id, <a class="el" href="structtag__t.html">tag_t</a> *tag)</td></tr>
@@ -758,6 +758,34 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="gabc8af4a3b624a9dc4adfe7b636c66b9b" name="gabc8af4a3b624a9dc4adfe7b636c66b9b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabc8af4a3b624a9dc4adfe7b636c66b9b">&#9670;&#160;</a></span>free_federate_info()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void free_federate_info </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structfederate__info__t.html">federate_info_t</a> *</td>          <td class="paramname"><span class="paramname"><em>fed</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
+
+<p>Free a <a class="el" href="structfederate__info__t.html" title="Information about a federate known to the RTI, including its runtime state, mode of execution,...">federate_info_t</a> and all heap memory it owns. </p>
+<p>Frees nested allocations (<span class="tt">in_transit_message_tags</span>, <span class="tt">downstream_transients</span>, and the immediate upstream/downstream arrays), shuts down <span class="tt">net</span> if still open, then frees the struct itself. Safe to call with NULL.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fed</td><td>The federate to free. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="gaa202c053941549eb84d77776c67b5137" name="gaa202c053941549eb84d77776c67b5137"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gaa202c053941549eb84d77776c67b5137">&#9670;&#160;</a></span>free_local_rti()</h2>
 
@@ -864,7 +892,7 @@ Functions</h2></td></tr>
 <p>Handle address advertisement messages (. </p>
 <dl class="section see"><dt>See also</dt><dd>MSG_TYPE_ADDRESS_ADVERTISEMENT in net_common.h).</dd></dl>
 <p>The federate is expected to send its server port number as the next byte. The RTI will keep a record of this number in the .server_port field of the _RTI.federates[federate_id] array of structs.</p>
-<p>The server_ip_addr field is assigned in <a class="el" href="#ga14c897c9da2160d4aceff4751822eced" title="Wait for one incoming connection request from each federate, and, upon receiving it,...">lf_connect_to_federates()</a> upon accepting the socket from the remote federate.</p>
+<p>The server_ip_addr field is assigned in lf_connect_to_persistent_federates() upon accepting the socket from the remote federate.</p>
 <p>This function assumes the caller does not hold the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1113,28 +1141,6 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="ga0a2eadb2f35483bc7ce62a5845110330" name="ga0a2eadb2f35483bc7ce62a5845110330"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga0a2eadb2f35483bc7ce62a5845110330">&#9670;&#160;</a></span>handle_timestamp()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void handle_timestamp </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structfederate__info__t.html">federate_info_t</a> *</td>          <td class="paramname"><span class="paramname"><em>my_fed</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
-
-<p>A function to handle timestamp messages. </p>
-<p>This function assumes the caller does not hold the mutex. </p>
 
 </div>
 </div>
@@ -1403,34 +1409,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ga14c897c9da2160d4aceff4751822eced" name="ga14c897c9da2160d4aceff4751822eced"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga14c897c9da2160d4aceff4751822eced">&#9670;&#160;</a></span>lf_connect_to_federates()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void lf_connect_to_federates </td>
-          <td>(</td>
-          <td class="paramtype">net_abstraction_t</td>          <td class="paramname"><span class="paramname"><em>rti_net</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
-
-<p>Wait for one incoming connection request from each federate, and, upon receiving it, create a thread to communicate with that federate. </p>
-<p>Return when all federates have connected.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">rti_net</td><td>The rti's network abstraction on which to accept connections. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="ga06003604b6defab443bdfe34f3ab17ee" name="ga06003604b6defab443bdfe34f3ab17ee"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga06003604b6defab443bdfe34f3ab17ee">&#9670;&#160;</a></span>lf_get_downstream_of()</h2>
 
@@ -1562,8 +1540,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ga0903cfa1c0fa064824b445c099cd2aa6" name="ga0903cfa1c0fa064824b445c099cd2aa6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga0903cfa1c0fa064824b445c099cd2aa6">&#9670;&#160;</a></span>notify_downstream_advance_grant_if_safe()</h2>
+<a id="gacbad7c3241542402c0e2ad382d031c1c" name="gacbad7c3241542402c0e2ad382d031c1c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gacbad7c3241542402c0e2ad382d031c1c">&#9670;&#160;</a></span>notify_downstream_advance_grant_if_safe()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1571,12 +1549,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void notify_downstream_advance_grant_if_safe </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *</td>          <td class="paramname"><span class="paramname"><em>e</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype"><a class="el" href="structscheduling__node__t.html">scheduling_node_t</a> *</td>          <td class="paramname"><span class="paramname"><em>e</em></span></td><td>)</td>
           <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>visited</em></span>[]&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1588,7 +1562,6 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">e</td><td>The upstream node. </td></tr>
-    <tr><td class="paramname">visited</td><td>An array of booleans used to determine whether a node has been visited (initially all false). </td></tr>
   </table>
   </dd>
 </dl>
@@ -1755,6 +1728,34 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Current position (head) of argv. </dd></dl>
+
+</div>
+</div>
+<a id="ga2a232fec90c8bc1caa0f418f72c1daee" name="ga2a232fec90c8bc1caa0f418f72c1daee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2a232fec90c8bc1caa0f418f72c1daee">&#9670;&#160;</a></span>reset_transient_federate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void reset_transient_federate </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structfederate__info__t.html">federate_info_t</a> *</td>          <td class="paramname"><span class="paramname"><em>fed</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
+
+<p>Reset the federate. </p>
+<p>The federate has to be transient.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fed</td><td>A pointer to the federate </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1935,8 +1936,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ga614f81fe705224534d84b97254030fa1" name="ga614f81fe705224534d84b97254030fa1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga614f81fe705224534d84b97254030fa1">&#9670;&#160;</a></span>send_reject()</h2>
+<a id="gaeb4398ee4cdd473a6da76fb727bafdd9" name="gaeb4398ee4cdd473a6da76fb727bafdd9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaeb4398ee4cdd473a6da76fb727bafdd9">&#9670;&#160;</a></span>send_reject()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1949,7 +1950,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">unsigned char</td>          <td class="paramname"><span class="paramname"><em>error_code</em></span>&#160;)</td>
+          <td class="paramtype">rejection_code_t</td>          <td class="paramname"><span class="paramname"><em>error_code</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1984,7 +1985,7 @@ Functions</h2></td></tr>
 
 <p><code>#include &lt;<a class="el" href="rti__remote_8h.html">rti_remote.h</a>&gt;</code></p>
 
-<p>Start the socket server for the runtime infrastructure (RTI). </p>
+<p>Start the server for the runtime infrastructure (RTI). </p>
 
 </div>
 </div>

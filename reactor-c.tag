@@ -179,8 +179,8 @@
       <type>void</type>
       <name>notify_downstream_advance_grant_if_safe</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga0903cfa1c0fa064824b445c099cd2aa6</anchor>
-      <arglist>(scheduling_node_t *e, bool visited[])</arglist>
+      <anchor>gacbad7c3241542402c0e2ad382d031c1c</anchor>
+      <arglist>(scheduling_node_t *e)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -312,6 +312,7 @@
     <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
     <includes id="pqueue__tag_8h" name="pqueue_tag.h" local="yes" import="no" module="no" objc="no">pqueue_tag.h</includes>
     <class kind="struct">federate_info_t</class>
+    <class kind="struct">pqueue_delayed_grant_element_t</class>
     <class kind="struct">rti_remote_t</class>
     <member kind="define">
       <type>#define</type>
@@ -332,6 +333,27 @@
       <name>federate_info_t</name>
       <anchorfile>group__RTI.html</anchorfile>
       <anchor>gacd32a9389f9882becea414555263cde1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>enum federation_life_cycle_phase</type>
+      <name>federation_life_cycle_phase</name>
+      <anchorfile>rti__remote_8h.html</anchorfile>
+      <anchor>a9651680687a1235f4ac357f1ed6fd305</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>struct pqueue_delayed_grant_element_t</type>
+      <name>pqueue_delayed_grant_element_t</name>
+      <anchorfile>rti__remote_8h.html</anchorfile>
+      <anchor>a5025b19dc05bbacb21dff6d4dc64c66c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>pqueue_tag_t</type>
+      <name>pqueue_delayed_grants_t</name>
+      <anchorfile>rti__remote_8h.html</anchorfile>
+      <anchor>a8faca390e150bfca6affffe659434323</anchor>
       <arglist></arglist>
     </member>
     <member kind="typedef">
@@ -366,6 +388,31 @@
       <anchor>gga9705d612b9ce908ee485e92eb3f2769fa8423b23ffffdfc03fcb3f68cf4007531</anchor>
       <arglist></arglist>
     </member>
+    <member kind="enumeration">
+      <type></type>
+      <name>federation_life_cycle_phase</name>
+      <anchorfile>rti__remote_8h.html</anchorfile>
+      <anchor>ad0812a06e0a63ac79c1cea0602244113</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>startup_phase</name>
+      <anchorfile>rti__remote_8h.html</anchorfile>
+      <anchor>ad0812a06e0a63ac79c1cea0602244113a657e627d87016b0fc888e72018bc0318</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>execution_phase</name>
+      <anchorfile>rti__remote_8h.html</anchorfile>
+      <anchor>ad0812a06e0a63ac79c1cea0602244113a83b86fcae2f635ef9addc5227e504105</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>shutdown_phase</name>
+      <anchorfile>rti__remote_8h.html</anchorfile>
+      <anchor>ad0812a06e0a63ac79c1cea0602244113ab0b7bae732519c2f4e1b51fe4dedbdce</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function">
       <type>void *</type>
       <name>clock_synchronization_thread</name>
@@ -379,6 +426,13 @@
       <anchorfile>group__RTI.html</anchorfile>
       <anchor>gae0b396a4e41b93505274bbfb55b7a510</anchor>
       <arglist>(void *fed)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>free_federate_info</name>
+      <anchorfile>group__RTI.html</anchorfile>
+      <anchor>gabc8af4a3b624a9dc4adfe7b636c66b9b</anchor>
+      <arglist>(federate_info_t *fed)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -445,13 +499,6 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>handle_timestamp</name>
-      <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga0a2eadb2f35483bc7ce62a5845110330</anchor>
-      <arglist>(federate_info_t *my_fed)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>initialize_federate</name>
       <anchorfile>group__RTI.html</anchorfile>
       <anchor>gab32a595d53f125832570251023d10c46</anchor>
@@ -463,13 +510,6 @@
       <anchorfile>group__RTI.html</anchorfile>
       <anchor>ga0aefafd71cb0b057a604a04f1af61174</anchor>
       <arglist>(rti_remote_t *rti)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>lf_connect_to_federates</name>
-      <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga14c897c9da2160d4aceff4751822eced</anchor>
-      <arglist>(net_abstraction_t rti_net)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -500,6 +540,13 @@
       <arglist>(int argc, const char *argv[])</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>reset_transient_federate</name>
+      <anchorfile>group__RTI.html</anchorfile>
+      <anchor>ga2a232fec90c8bc1caa0f418f72c1daee</anchor>
+      <arglist>(federate_info_t *fed)</arglist>
+    </member>
+    <member kind="function">
       <type>void *</type>
       <name>respond_to_erroneous_connections</name>
       <anchorfile>group__RTI.html</anchorfile>
@@ -517,8 +564,8 @@
       <type>void</type>
       <name>send_reject</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga614f81fe705224534d84b97254030fa1</anchor>
-      <arglist>(net_abstraction_t net_abs, unsigned char error_code)</arglist>
+      <anchor>gaeb4398ee4cdd473a6da76fb727bafdd9</anchor>
+      <arglist>(net_abstraction_t net_abs, rejection_code_t error_code)</arglist>
     </member>
     <member kind="function">
       <type>int</type>
@@ -992,10 +1039,10 @@
     <name>federate.h</name>
     <path>/Users/runner/work/reactor-c/reactor-c/include/core/federated/</path>
     <filename>federate_8h.html</filename>
-    <includes id="tag_8h" name="tag.h" local="yes" import="no" module="no" objc="no">tag.h</includes>
-    <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
     <includes id="environment_8h" name="environment.h" local="yes" import="no" module="no" objc="no">environment.h</includes>
+    <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
     <includes id="low__level__platform_8h" name="low_level_platform.h" local="yes" import="no" module="no" objc="no">low_level_platform.h</includes>
+    <includes id="tag_8h" name="tag.h" local="yes" import="no" module="no" objc="no">tag.h</includes>
     <class kind="struct">federate_instance_t</class>
     <class kind="struct">federation_metadata_t</class>
     <class kind="struct">staa_t</class>
@@ -1075,8 +1122,8 @@
       <type>void</type>
       <name>lf_connect_to_federate</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga26b7c3ab8c2a50f65e53997a6f26a0dc</anchor>
-      <arglist>(uint16_t remote_federate_id)</arglist>
+      <anchor>ga1746f43c6f0125b04a5d9f523eba218d</anchor>
+      <arglist>(uint16_t remote_federate_id, tag_t joined_tag, int32_t port, uint32_t ip_address)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1168,13 +1215,6 @@
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga0931fe1bb9eac2a9beebe0c0ed03408e</anchor>
       <arglist>(environment_t *env, interval_t additional_delay, int message_type, unsigned short port, unsigned short federate, const char *next_destination_str, size_t length, unsigned char *message)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
-      <name>lf_set_federation_id</name>
-      <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga032d945ee3fd6995a5f7bb15b57f2ddf</anchor>
-      <arglist>(const char *fid)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -1876,6 +1916,13 @@
       <arglist>(void)</arglist>
     </member>
     <member kind="function">
+      <type>const char *</type>
+      <name>lf_get_federation_id</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gaafe9373f05ab5ce8144950a04b3f31cb</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
       <type>interval_t</type>
       <name>lf_get_sta</name>
       <anchorfile>group__Federated.html</anchorfile>
@@ -1937,6 +1984,13 @@
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga952c8552f9e327a465f3db2f72d8415e</anchor>
       <arglist>(interval_t offset)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_set_federation_id</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>ga032d945ee3fd6995a5f7bb15b57f2ddf</anchor>
+      <arglist>(const char *fid)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -3270,6 +3324,13 @@
       <arglist>(pqueue_tag_t *q, tag_t t)</arglist>
     </member>
     <member kind="function">
+      <type>tag_t</type>
+      <name>pqueue_tag_max_tag</name>
+      <anchorfile>pqueue__tag_8h.html</anchorfile>
+      <anchor>a824ff56d134143b24f37349162b1529c</anchor>
+      <arglist>(pqueue_tag_t *q)</arglist>
+    </member>
+    <member kind="function">
       <type>pqueue_tag_element_t *</type>
       <name>pqueue_tag_peek</name>
       <anchorfile>group__Internal.html</anchorfile>
@@ -3427,6 +3488,13 @@
       <name>lf_fed_id</name>
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga6e9c2ed60ca5adec5ba3f43d4410dc75</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_stop</name>
+      <anchorfile>util_8h.html</anchorfile>
+      <anchor>a06459a0f9ada564e206ec8a46e049b33</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function">
@@ -4323,6 +4391,13 @@
       <arglist>(tag_t tag1, tag_t tag2)</arglist>
     </member>
     <member kind="function">
+      <type>tag_t</type>
+      <name>lf_tag_start_effective</name>
+      <anchorfile>tag_8h.html</anchorfile>
+      <anchor>a9eace68faf021c0adf218d58f3172f44</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
       <type>instant_t</type>
       <name>lf_time_add</name>
       <anchorfile>group__API.html</anchorfile>
@@ -4817,6 +4892,66 @@
       <name>receive_UNIDENTIFIED</name>
       <anchorfile>group__Tracing.html</anchorfile>
       <anchor>ggab02e9e69539d60297cedb38c2193a453a48fffa45ebf3f03caa2dc044af72349f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>send_UPSTREAM_CONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a47860caddbef8e45f632dbfc92091069</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_UPSTREAM_CONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a9a54e2ad724124b43c2f74ac9c1ca738</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>send_UPSTREAM_DISCONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453ad944544a6473e1b57450e96c0a61de64</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_UPSTREAM_DISCONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453ac3f3828d79b588f55798e529f78d696c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>send_STOP</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a35de0e6755500a96eb33ccbcd44142f3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_STOP</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a24a9170a2485d2f1ae97fcbc291b30ac</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>send_DOWNSTREAM_CONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a422d32653d57d92e325f3339e6b2c537</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_DOWNSTREAM_CONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453aa795de9a6eed1ced0115a7d69395497d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>send_DOWNSTREAM_DISCONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453ad11688d7a116453c377a5879fc2a95b8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_DOWNSTREAM_DISCONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453afe85f979f7d5a511f99590c254070ab6</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
@@ -5989,10 +6124,31 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>int32_t *</type>
+      <name>downstream_transients</name>
+      <anchorfile>structfederate__info__t.html</anchorfile>
+      <anchor>a9552ace0a634c22d3a1d4485302128cd</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>tag_t</type>
+      <name>effective_start_tag</name>
+      <anchorfile>structfederate__info__t.html</anchorfile>
+      <anchor>af1b99af546e9dfc526248a5b3011ea60</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>scheduling_node_t</type>
       <name>enclave</name>
       <anchorfile>structfederate__info__t.html</anchorfile>
       <anchor>acd6450143749bf7421c64b28d68a1e3e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>has_upstream_transient_federates</name>
+      <anchorfile>structfederate__info__t.html</anchorfile>
+      <anchor>a4239a72366a0eec1504346b3599d69bc</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -6003,10 +6159,38 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>bool</type>
+      <name>is_transient</name>
+      <anchorfile>structfederate__info__t.html</anchorfile>
+      <anchor>a23965b433636275900b5b96dcae32a8e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>tag_t</type>
+      <name>max_intended_tag</name>
+      <anchorfile>structfederate__info__t.html</anchorfile>
+      <anchor>a4cb46ef59a894924d4cf9e5b5931998c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>neighbor_structure_received</name>
+      <anchorfile>structfederate__info__t.html</anchorfile>
+      <anchor>ab4a42f9c235dd8efe3d00abcdd220031</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>net_abstraction_t</type>
       <name>net</name>
       <anchorfile>structfederate__info__t.html</anchorfile>
       <anchor>a8afb9d8bb911680499970b1de3fbdf93</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int32_t</type>
+      <name>number_of_downstream_transients</name>
+      <anchorfile>structfederate__info__t.html</anchorfile>
+      <anchor>ad63a018b06af0b850a6f8e6cf6ab1a03</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -6034,6 +6218,13 @@
   <compound kind="struct">
     <name>federate_instance_t</name>
     <filename>structfederate__instance__t.html</filename>
+    <member kind="variable">
+      <type>tag_t</type>
+      <name>downstream_p2p_joined_tag</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a2eab2776fd40200c4ce07cbc3f0a2179</anchor>
+      <arglist>[NUMBER_OF_FEDERATES]</arglist>
+    </member>
     <member kind="variable">
       <type>bool</type>
       <name>has_downstream</name>
@@ -6067,6 +6258,13 @@
       <name>is_last_TAG_provisional</name>
       <anchorfile>structfederate__instance__t.html</anchorfile>
       <anchor>a05a9586ad89b82d0bf5f969a194ef69c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>is_transient</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a92c7d88579116747c89a0d4d4966bc9b</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -6134,9 +6332,23 @@
     </member>
     <member kind="variable">
       <type>size_t</type>
+      <name>number_of_downstream_p2p_transients</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>ab94cc3deb4b9036103489195861e7662</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>size_t</type>
       <name>number_of_inbound_p2p_connections</name>
       <anchorfile>structfederate__instance__t.html</anchorfile>
       <anchor>a6b728a970ccb1ef778dbb9779582d2f2</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>size_t</type>
+      <name>number_of_inbound_p2p_transients</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a745929586685c737b722f0deeacb3908</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -6180,6 +6392,27 @@
       <anchorfile>structfederate__instance__t.html</anchorfile>
       <anchor>a80101d5534e5444c0be0e08d4e65aaae</anchor>
       <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>transients</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a1b846899290b0ac18c657bf427c2692b</anchor>
+      <arglist>[NUMBER_OF_FEDERATES]</arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>upstream_fed_is_connected</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>ae46e99ac011580ca6abb31ecc8baeea7</anchor>
+      <arglist>[NUMBER_OF_FEDERATES]</arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>upstream_fed_is_transient</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a331df614c72b00f3439ed01926fa6ec3</anchor>
+      <arglist>[NUMBER_OF_FEDERATES]</arglist>
     </member>
   </compound>
   <compound kind="struct">
@@ -7050,6 +7283,31 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>pqueue_delayed_grant_element_t</name>
+    <filename>structpqueue__delayed__grant__element__t.html</filename>
+    <member kind="variable">
+      <type>pqueue_tag_element_t</type>
+      <name>base</name>
+      <anchorfile>structpqueue__delayed__grant__element__t.html</anchorfile>
+      <anchor>a4b14574584eb35a62abfbfedf15a987b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint16_t</type>
+      <name>fed_id</name>
+      <anchorfile>structpqueue__delayed__grant__element__t.html</anchorfile>
+      <anchor>a4ed9bad1b2d405a2bab81caf7f08e145</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>is_provisional</name>
+      <anchorfile>structpqueue__delayed__grant__element__t.html</anchorfile>
+      <anchor>a095d475ff02c98204dcd8723ea2096d2</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
     <name>pqueue_t</name>
     <filename>structpqueue__t.html</filename>
     <member kind="variable">
@@ -7367,6 +7625,13 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>bool</type>
+      <name>has_transients</name>
+      <anchorfile>structrti__common__t.html</anchorfile>
+      <anchor>a8215d24a558ab91e4f051d19eb88dde5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>tag_t</type>
       <name>max_stop_tag</name>
       <anchorfile>structrti__common__t.html</anchorfile>
@@ -7438,6 +7703,13 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>volatile bool</type>
+      <name>all_persistent_federates_exited</name>
+      <anchorfile>structrti__remote__t.html</anchorfile>
+      <anchor>a932823e329ddfedca7712f45b4d82335</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>bool</type>
       <name>authentication_enabled</name>
       <anchorfile>structrti__remote__t.html</anchorfile>
@@ -7480,6 +7752,13 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>pqueue_delayed_grants_t *</type>
+      <name>delayed_grants</name>
+      <anchorfile>structrti__remote__t.html</anchorfile>
+      <anchor>ae55f378503e5dab01587e83787c53b03</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>const char *</type>
       <name>federation_id</name>
       <anchorfile>structrti__remote__t.html</anchorfile>
@@ -7505,6 +7784,27 @@
       <name>num_feds_proposed_start</name>
       <anchorfile>structrti__remote__t.html</anchorfile>
       <anchor>a1c695fdf2ff3d64f7599887ce525d64d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int32_t</type>
+      <name>number_of_connected_transient_federates</name>
+      <anchorfile>structrti__remote__t.html</anchorfile>
+      <anchor>a884c73a01bae5dc438228feb2f0274e1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int32_t</type>
+      <name>number_of_transient_federates</name>
+      <anchorfile>structrti__remote__t.html</anchorfile>
+      <anchor>ae47ba7e2daf5f73d007bdc51911acbda</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>federation_life_cycle_phase</type>
+      <name>phase</name>
+      <anchorfile>structrti__remote__t.html</anchorfile>
+      <anchor>ad237e3dfcbf6c9d374f596cb8ca70a34</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -11536,8 +11836,8 @@
       <type>void</type>
       <name>lf_connect_to_federate</name>
       <anchorfile>group__Federated.html</anchorfile>
-      <anchor>ga26b7c3ab8c2a50f65e53997a6f26a0dc</anchor>
-      <arglist>(uint16_t remote_federate_id)</arglist>
+      <anchor>ga1746f43c6f0125b04a5d9f523eba218d</anchor>
+      <arglist>(uint16_t remote_federate_id, tag_t joined_tag, int32_t port, uint32_t ip_address)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -11566,6 +11866,13 @@
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>gab4b57d55b69a4864eb694ed080b84d0e</anchor>
       <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
+      <type>const char *</type>
+      <name>lf_get_federation_id</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gaafe9373f05ab5ce8144950a04b3f31cb</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>interval_t</type>
@@ -12198,6 +12505,66 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
+      <name>send_UPSTREAM_CONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a47860caddbef8e45f632dbfc92091069</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_UPSTREAM_CONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a9a54e2ad724124b43c2f74ac9c1ca738</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>send_UPSTREAM_DISCONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453ad944544a6473e1b57450e96c0a61de64</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_UPSTREAM_DISCONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453ac3f3828d79b588f55798e529f78d696c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>send_STOP</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a35de0e6755500a96eb33ccbcd44142f3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_STOP</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a24a9170a2485d2f1ae97fcbc291b30ac</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>send_DOWNSTREAM_CONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453a422d32653d57d92e325f3339e6b2c537</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_DOWNSTREAM_CONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453aa795de9a6eed1ced0115a7d69395497d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>send_DOWNSTREAM_DISCONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453ad11688d7a116453c377a5879fc2a95b8</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
+      <name>receive_DOWNSTREAM_DISCONNECTED</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ggab02e9e69539d60297cedb38c2193a453afe85f979f7d5a511f99590c254070ab6</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="enumvalue">
       <name>NUM_EVENT_TYPES</name>
       <anchorfile>group__Tracing.html</anchorfile>
       <anchor>ggab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134</anchor>
@@ -12549,6 +12916,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>free_federate_info</name>
+      <anchorfile>group__RTI.html</anchorfile>
+      <anchor>gabc8af4a3b624a9dc4adfe7b636c66b9b</anchor>
+      <arglist>(federate_info_t *fed)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>free_local_rti</name>
       <anchorfile>group__RTI.html</anchorfile>
       <anchor>gaa202c053941549eb84d77776c67b5137</anchor>
@@ -12633,13 +13007,6 @@
     </member>
     <member kind="function">
       <type>void</type>
-      <name>handle_timestamp</name>
-      <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga0a2eadb2f35483bc7ce62a5845110330</anchor>
-      <arglist>(federate_info_t *my_fed)</arglist>
-    </member>
-    <member kind="function">
-      <type>void</type>
       <name>initialize_enclave_info</name>
       <anchorfile>group__RTI.html</anchorfile>
       <anchor>gaf934cc54979bcf640a7868377daab5e2</anchor>
@@ -12702,13 +13069,6 @@
       <arglist>(scheduling_node_t *node)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
-      <name>lf_connect_to_federates</name>
-      <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga14c897c9da2160d4aceff4751822eced</anchor>
-      <arglist>(net_abstraction_t rti_net)</arglist>
-    </member>
-    <member kind="function">
       <type>int</type>
       <name>lf_get_downstream_of</name>
       <anchorfile>group__RTI.html</anchorfile>
@@ -12740,8 +13100,8 @@
       <type>void</type>
       <name>notify_downstream_advance_grant_if_safe</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga0903cfa1c0fa064824b445c099cd2aa6</anchor>
-      <arglist>(scheduling_node_t *e, bool visited[])</arglist>
+      <anchor>gacbad7c3241542402c0e2ad382d031c1c</anchor>
+      <arglist>(scheduling_node_t *e)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -12777,6 +13137,13 @@
       <anchorfile>group__RTI.html</anchorfile>
       <anchor>gad7d4392b21b300612a5239fbb1ffa274</anchor>
       <arglist>(int argc, const char *argv[])</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>reset_transient_federate</name>
+      <anchorfile>group__RTI.html</anchorfile>
+      <anchor>ga2a232fec90c8bc1caa0f418f72c1daee</anchor>
+      <arglist>(federate_info_t *fed)</arglist>
     </member>
     <member kind="function">
       <type>void *</type>
@@ -12817,8 +13184,8 @@
       <type>void</type>
       <name>send_reject</name>
       <anchorfile>group__RTI.html</anchorfile>
-      <anchor>ga614f81fe705224534d84b97254030fa1</anchor>
-      <arglist>(net_abstraction_t net_abs, unsigned char error_code)</arglist>
+      <anchor>gaeb4398ee4cdd473a6da76fb727bafdd9</anchor>
+      <arglist>(net_abstraction_t net_abs, rejection_code_t error_code)</arglist>
     </member>
     <member kind="function">
       <type>int</type>

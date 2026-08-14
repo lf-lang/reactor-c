@@ -15,6 +15,7 @@ var util_8h =
     [ "LF_MUTEX_UNLOCK", "group__Internal.html#ga2bb9c8d2b589a6eb4f72f6750a1133fc", null ],
     [ "error", "group__Internal.html#ga73dce66b0161fa5da8bb2a1bcc8d3101", null ],
     [ "lf_fed_id", "group__Internal.html#ga6e9c2ed60ca5adec5ba3f43d4410dc75", null ],
+    [ "lf_stop", "util_8h.html#a06459a0f9ada564e206ec8a46e049b33", null ],
     [ "lf_vprint", "group__Internal.html#ga1b64e4e645fbebb1a3b132280b2c5b35", null ],
     [ "lf_vprint_debug", "group__Internal.html#gaec240098951eda60632ee6283450dbf0", null ],
     [ "lf_vprint_error", "group__Internal.html#ga3d1b4e46f0394bbf2e74c4eabfd8923f", null ],

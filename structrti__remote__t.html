@@ -135,6 +135,8 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('structrti__rem
 Data Fields</h2></td></tr>
 <tr class="memitem:a6d72eef29e4ac1543971baed62c5df25" id="r_a6d72eef29e4ac1543971baed62c5df25"><td class="memItemLeft">volatile bool&#160;</td><td class="memItemRight"><a class="el" href="#a6d72eef29e4ac1543971baed62c5df25">all_federates_exited</a></td></tr>
 <tr class="memdesc:a6d72eef29e4ac1543971baed62c5df25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boolean indicating that all federates have exited.  <br /></td></tr>
+<tr class="memitem:a932823e329ddfedca7712f45b4d82335" id="r_a932823e329ddfedca7712f45b4d82335"><td class="memItemLeft">volatile bool&#160;</td><td class="memItemRight"><a class="el" href="#a932823e329ddfedca7712f45b4d82335">all_persistent_federates_exited</a></td></tr>
+<tr class="memdesc:a932823e329ddfedca7712f45b4d82335"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boolean indicating that all persistent federates have exited.  <br /></td></tr>
 <tr class="memitem:a75eec5d1f98a80feb8b84e2e4c5e6a2e" id="r_a75eec5d1f98a80feb8b84e2e4c5e6a2e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a75eec5d1f98a80feb8b84e2e4c5e6a2e">authentication_enabled</a></td></tr>
 <tr class="memdesc:a75eec5d1f98a80feb8b84e2e4c5e6a2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boolean indicating that authentication is enabled.  <br /></td></tr>
 <tr class="memitem:a3fac0d1830b8baebe13e3fc1366868c7" id="r_a3fac0d1830b8baebe13e3fc1366868c7"><td class="memItemLeft"><a class="el" href="structrti__common__t.html">rti_common_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#a3fac0d1830b8baebe13e3fc1366868c7">base</a></td></tr>
@@ -147,6 +149,8 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:a59948493be7f9c37c4d9e87fe794cc4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frequency (period in nanoseconds) between clock sync attempts.  <br /></td></tr>
 <tr class="memitem:ae82c97407ee17f16cd9e95cc4fade654" id="r_ae82c97407ee17f16cd9e95cc4fade654"><td class="memItemLeft">lf_thread_t&#160;</td><td class="memItemRight"><a class="el" href="#ae82c97407ee17f16cd9e95cc4fade654">clock_thread</a></td></tr>
 <tr class="memdesc:ae82c97407ee17f16cd9e95cc4fade654"><td class="mdescLeft">&#160;</td><td class="mdescRight">Thread performing PTP clock sync sessions periodically.  <br /></td></tr>
+<tr class="memitem:ae55f378503e5dab01587e83787c53b03" id="r_ae55f378503e5dab01587e83787c53b03"><td class="memItemLeft"><a class="el" href="rti__remote_8h.html#a8faca390e150bfca6affffe659434323">pqueue_delayed_grants_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#ae55f378503e5dab01587e83787c53b03">delayed_grants</a></td></tr>
+<tr class="memdesc:ae55f378503e5dab01587e83787c53b03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Queue of the pending grants, in case transient federates are absent and issuing grants to their downstreams need to be delayed.  <br /></td></tr>
 <tr class="memitem:aa6ebdbc41ba330fc7d23f478bf62d7ea" id="r_aa6ebdbc41ba330fc7d23f478bf62d7ea"><td class="memItemLeft">const char *&#160;</td><td class="memItemRight"><a class="el" href="#aa6ebdbc41ba330fc7d23f478bf62d7ea">federation_id</a></td></tr>
 <tr class="memdesc:aa6ebdbc41ba330fc7d23f478bf62d7ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">The ID of the federation that this RTI will supervise.  <br /></td></tr>
 <tr class="memitem:a313ec8858bdf1eb12c8a24c17290afb2" id="r_a313ec8858bdf1eb12c8a24c17290afb2"><td class="memItemLeft">uint16_t&#160;</td><td class="memItemRight"><a class="el" href="#a313ec8858bdf1eb12c8a24c17290afb2">final_port_UDP</a></td></tr>
@@ -155,6 +159,12 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:af8774b865d79565eff6296da5459ac83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum start time seen so far from the federates.  <br /></td></tr>
 <tr class="memitem:a1c695fdf2ff3d64f7599887ce525d64d" id="r_a1c695fdf2ff3d64f7599887ce525d64d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a1c695fdf2ff3d64f7599887ce525d64d">num_feds_proposed_start</a></td></tr>
 <tr class="memdesc:a1c695fdf2ff3d64f7599887ce525d64d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of federates that have proposed start times.  <br /></td></tr>
+<tr class="memitem:a884c73a01bae5dc438228feb2f0274e1" id="r_a884c73a01bae5dc438228feb2f0274e1"><td class="memItemLeft">int32_t&#160;</td><td class="memItemRight"><a class="el" href="#a884c73a01bae5dc438228feb2f0274e1">number_of_connected_transient_federates</a></td></tr>
+<tr class="memdesc:a884c73a01bae5dc438228feb2f0274e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of connected transient federates.  <br /></td></tr>
+<tr class="memitem:ae47ba7e2daf5f73d007bdc51911acbda" id="r_ae47ba7e2daf5f73d007bdc51911acbda"><td class="memItemLeft">int32_t&#160;</td><td class="memItemRight"><a class="el" href="#ae47ba7e2daf5f73d007bdc51911acbda">number_of_transient_federates</a></td></tr>
+<tr class="memdesc:ae47ba7e2daf5f73d007bdc51911acbda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of transient federates.  <br /></td></tr>
+<tr class="memitem:ad237e3dfcbf6c9d374f596cb8ca70a34" id="r_ad237e3dfcbf6c9d374f596cb8ca70a34"><td class="memItemLeft"><a class="el" href="rti__remote_8h.html#ad0812a06e0a63ac79c1cea0602244113">federation_life_cycle_phase</a>&#160;</td><td class="memItemRight"><a class="el" href="#ad237e3dfcbf6c9d374f596cb8ca70a34">phase</a></td></tr>
+<tr class="memdesc:ad237e3dfcbf6c9d374f596cb8ca70a34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicates the life cycle phase of the federation.  <br /></td></tr>
 <tr class="memitem:abf6767b1b9d02eb2f868900104dfd8c0" id="r_abf6767b1b9d02eb2f868900104dfd8c0"><td class="memItemLeft">net_abstraction_t&#160;</td><td class="memItemRight"><a class="el" href="#abf6767b1b9d02eb2f868900104dfd8c0">rti_net</a></td></tr>
 <tr class="memdesc:abf6767b1b9d02eb2f868900104dfd8c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The rti's network abstraction.  <br /></td></tr>
 <tr class="memitem:acdd54a055b69ed96feef48423e7e0496" id="r_acdd54a055b69ed96feef48423e7e0496"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#acdd54a055b69ed96feef48423e7e0496">socket_descriptor_UDP</a></td></tr>
@@ -185,6 +195,23 @@ Data Fields</h2></td></tr>
 
 <p>Boolean indicating that all federates have exited. </p>
 <p>This gets set to true exactly once before the program exits. It is marked volatile because the write is not guarded by a mutex. The main thread makes this true, then calls shutdown and close on the socket, which will cause accept() to return with an error code in <a class="el" href="group__RTI.html#gac6af5f2343ecf9ed87cdbebd98b94271" title="Thread to respond to new connections, which could be federates of other federations who are attemptin...">respond_to_erroneous_connections()</a>. </p>
+
+</div>
+</div>
+<a id="a932823e329ddfedca7712f45b4d82335" name="a932823e329ddfedca7712f45b4d82335"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a932823e329ddfedca7712f45b4d82335">&#9670;&#160;</a></span>all_persistent_federates_exited</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">volatile bool rti_remote_t::all_persistent_federates_exited</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Boolean indicating that all persistent federates have exited. </p>
+<p>This gets set to true exactly once before the program waits for persistent federates, then exits. It is marked volatile because the write is not guarded by a mutex. The main thread makes this true. </p>
 
 </div>
 </div>
@@ -285,6 +312,22 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
+<a id="ae55f378503e5dab01587e83787c53b03" name="ae55f378503e5dab01587e83787c53b03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae55f378503e5dab01587e83787c53b03">&#9670;&#160;</a></span>delayed_grants</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="rti__remote_8h.html#a8faca390e150bfca6affffe659434323">pqueue_delayed_grants_t</a>* rti_remote_t::delayed_grants</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Queue of the pending grants, in case transient federates are absent and issuing grants to their downstreams need to be delayed. </p>
+
+</div>
+</div>
 <a id="aa6ebdbc41ba330fc7d23f478bf62d7ea" name="aa6ebdbc41ba330fc7d23f478bf62d7ea"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa6ebdbc41ba330fc7d23f478bf62d7ea">&#9670;&#160;</a></span>federation_id</h2>
 
@@ -347,6 +390,54 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Number of federates that have proposed start times. </p>
+
+</div>
+</div>
+<a id="a884c73a01bae5dc438228feb2f0274e1" name="a884c73a01bae5dc438228feb2f0274e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a884c73a01bae5dc438228feb2f0274e1">&#9670;&#160;</a></span>number_of_connected_transient_federates</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t rti_remote_t::number_of_connected_transient_federates</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Number of connected transient federates. </p>
+
+</div>
+</div>
+<a id="ae47ba7e2daf5f73d007bdc51911acbda" name="ae47ba7e2daf5f73d007bdc51911acbda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae47ba7e2daf5f73d007bdc51911acbda">&#9670;&#160;</a></span>number_of_transient_federates</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32_t rti_remote_t::number_of_transient_federates</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Number of transient federates. </p>
+
+</div>
+</div>
+<a id="ad237e3dfcbf6c9d374f596cb8ca70a34" name="ad237e3dfcbf6c9d374f596cb8ca70a34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad237e3dfcbf6c9d374f596cb8ca70a34">&#9670;&#160;</a></span>phase</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="rti__remote_8h.html#ad0812a06e0a63ac79c1cea0602244113">federation_life_cycle_phase</a> rti_remote_t::phase</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Indicates the life cycle phase of the federation. </p>
 
 </div>
 </div>

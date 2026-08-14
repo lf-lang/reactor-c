@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['no_5ftransition_0',['no_transition',['../group__Modal.html#ggadd32beb39577775204a6f1ed1f947df9acbde8a6b8987eeb436dbcc6127b6f65d',1,'modes.h']]],
-  ['not_5fconnected_1',['NOT_CONNECTED',['../group__RTI.html#gga2c9591789f1d6afd603e0330e13f3744a96c582a5af213ca7fb34f970d83875f5',1,'rti_common.h']]],
-  ['not_5ffreed_2',['NOT_FREED',['../group__Internal.html#ggabe23a36a87d2f0c076da417eb0114c7ea3d7522b54086645e077eb70e78731c5c',1,'lf_token.h']]],
-  ['num_5fevent_5ftypes_3',['NUM_EVENT_TYPES',['../group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134',1,'trace_types.h']]]
+  ['lf_5fsched_5ffair_0',['LF_SCHED_FAIR',['../group__Platform.html#ggadc74ec49eb5cc6eceda1447090d61ab6aad0c30324e2299f1ab579a9db51ae994',1,'low_level_platform.h']]],
+  ['lf_5fsched_5fpriority_1',['LF_SCHED_PRIORITY',['../group__Platform.html#ggadc74ec49eb5cc6eceda1447090d61ab6a31d917200c3ceb3735770c9acef3eb5e',1,'low_level_platform.h']]],
+  ['lf_5fsched_5ftimeslice_2',['LF_SCHED_TIMESLICE',['../group__Platform.html#ggadc74ec49eb5cc6eceda1447090d61ab6aa94c07b6d2e7cf9564d407bdb0d5eb3f',1,'low_level_platform.h']]]
 ];

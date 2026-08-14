@@ -135,6 +135,8 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('structrti__com
 Data Fields</h2></td></tr>
 <tr class="memitem:a21547718724f363f1b684898535a6874" id="r_a21547718724f363f1b684898535a6874"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a21547718724f363f1b684898535a6874">dnet_disabled</a></td></tr>
 <tr class="memdesc:a21547718724f363f1b684898535a6874"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boolean indicating that DNET is enabled.  <br /></td></tr>
+<tr class="memitem:a8215d24a558ab91e4f051d19eb88dde5" id="r_a8215d24a558ab91e4f051d19eb88dde5"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a8215d24a558ab91e4f051d19eb88dde5">has_transients</a></td></tr>
+<tr class="memdesc:a8215d24a558ab91e4f051d19eb88dde5"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if the federation contains at least one transient federate.  <br /></td></tr>
 <tr class="memitem:a415277bcbc13aabe238614b9a0d6d4de" id="r_a415277bcbc13aabe238614b9a0d6d4de"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#a415277bcbc13aabe238614b9a0d6d4de">max_stop_tag</a></td></tr>
 <tr class="memdesc:a415277bcbc13aabe238614b9a0d6d4de"><td class="mdescLeft">&#160;</td><td class="mdescRight">RTI's decided stop tag for the scheduling nodes.  <br /></td></tr>
 <tr class="memitem:affa919b013ef94b2ff61d1b82a2663fe" id="r_affa919b013ef94b2ff61d1b82a2663fe"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#affa919b013ef94b2ff61d1b82a2663fe">min_delays</a></td></tr>
@@ -167,6 +169,23 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Boolean indicating that DNET is enabled. </p>
+
+</div>
+</div>
+<a id="a8215d24a558ab91e4f051d19eb88dde5" name="a8215d24a558ab91e4f051d19eb88dde5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8215d24a558ab91e4f051d19eb88dde5">&#9670;&#160;</a></span>has_transients</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool rti_common_t::has_transients</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>True if the federation contains at least one transient federate. </p>
+<p>When false, a NOT_CONNECTED upstream is permanently gone (resigned), so a node whose upstreams are all disconnected can never receive another message and may be granted a tag advance all the way to FOREVER so it can shut down. </p>
 
 </div>
 </div>

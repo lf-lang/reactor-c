@@ -332,6 +332,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>pqueue_delayed_grant_element_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>cl</Type>
+      <Scope>pqueue_delayed_grant_element_t</Scope>
+    </TokenIdentifier>
+    <Path>structpqueue__delayed__grant__element__t.html</Path>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>pqueue_t</Name>
       <APILanguage>c</APILanguage>
       <Type>cl</Type>
@@ -713,6 +723,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>all_persistent_federates_exited</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>rti_remote_t</Scope>
+    </TokenIdentifier>
+    <Path>structrti__remote__t.html</Path>
+    <Anchor>a932823e329ddfedca7712f45b4d82335</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>allocated</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -820,6 +840,16 @@
     </TokenIdentifier>
     <Path>structrti__local__t.html</Path>
     <Anchor>a26e44960e6bc517df43a9fd1e7dccdb0</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>base</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>pqueue_delayed_grant_element_t</Scope>
+    </TokenIdentifier>
+    <Path>structpqueue__delayed__grant__element__t.html</Path>
+    <Anchor>a4b14574584eb35a62abfbfedf15a987b</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1073,6 +1103,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>delayed_grants</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>rti_remote_t</Scope>
+    </TokenIdentifier>
+    <Path>structrti__remote__t.html</Path>
+    <Anchor>ae55f378503e5dab01587e83787c53b03</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>description</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1143,6 +1183,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>downstream_p2p_joined_tag</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a2eab2776fd40200c4ce07cbc3f0a2179</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>downstream_transients</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_info_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__info__t.html</Path>
+    <Anchor>a9552ace0a634c22d3a1d4485302128cd</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>dst_id</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1170,6 +1230,16 @@
     </TokenIdentifier>
     <Path>structenvironment__t.html</Path>
     <Anchor>ac03164e9ec8a8779c00c8986dcaa874f</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>effective_start_tag</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_info_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__info__t.html</Path>
+    <Anchor>af1b99af546e9dfc526248a5b3011ea60</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1353,6 +1423,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>fed_id</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>pqueue_delayed_grant_element_t</Scope>
+    </TokenIdentifier>
+    <Path>structpqueue__delayed__grant__element__t.html</Path>
+    <Anchor>a4ed9bad1b2d405a2bab81caf7f08e145</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>federation_id</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1483,6 +1563,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>has_transients</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>rti_common_t</Scope>
+    </TokenIdentifier>
+    <Path>structrti__common__t.html</Path>
+    <Anchor>a8215d24a558ab91e4f051d19eb88dde5</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>has_upstream</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1490,6 +1580,16 @@
     </TokenIdentifier>
     <Path>structfederate__instance__t.html</Path>
     <Anchor>a603662cf0155920b8a76659e7dacb9ef</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>has_upstream_transient_federates</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_info_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__info__t.html</Path>
+    <Anchor>a4239a72366a0eec1504346b3599d69bc</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1823,6 +1923,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>is_provisional</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>pqueue_delayed_grant_element_t</Scope>
+    </TokenIdentifier>
+    <Path>structpqueue__delayed__grant__element__t.html</Path>
+    <Anchor>a095d475ff02c98204dcd8723ea2096d2</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>is_STP_violated</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1840,6 +1950,26 @@
     </TokenIdentifier>
     <Path>structtrigger__t.html</Path>
     <Anchor>a6beec6375e3259c9ed1aa006074bd315</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>is_transient</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a92c7d88579116747c89a0d4d4966bc9b</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>is_transient</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_info_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__info__t.html</Path>
+    <Anchor>a23965b433636275900b5b96dcae32a8e</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2070,6 +2200,16 @@
     </TokenIdentifier>
     <Path>structlf__stat__ll.html</Path>
     <Anchor>a8841b6fc40c60f3f1b73ada60ce556b7</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>max_intended_tag</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_info_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__info__t.html</Path>
+    <Anchor>a4cb46ef59a894924d4cf9e5b5931998c</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2360,6 +2500,16 @@
     </TokenIdentifier>
     <Path>structenvironment__t.html</Path>
     <Anchor>aeef35dea438a853fc258631ea4a0e90c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>neighbor_structure_received</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_info_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__info__t.html</Path>
+    <Anchor>ab4a42f9c235dd8efe3d00abcdd220031</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2663,6 +2813,36 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>number_of_connected_transient_federates</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>rti_remote_t</Scope>
+    </TokenIdentifier>
+    <Path>structrti__remote__t.html</Path>
+    <Anchor>a884c73a01bae5dc438228feb2f0274e1</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>number_of_downstream_p2p_transients</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>ab94cc3deb4b9036103489195861e7662</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>number_of_downstream_transients</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_info_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__info__t.html</Path>
+    <Anchor>ad63a018b06af0b850a6f8e6cf6ab1a03</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>number_of_idle_workers</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2680,6 +2860,16 @@
     </TokenIdentifier>
     <Path>structfederate__instance__t.html</Path>
     <Anchor>a6b728a970ccb1ef778dbb9779582d2f2</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>number_of_inbound_p2p_transients</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a745929586685c737b722f0deeacb3908</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2710,6 +2900,16 @@
     </TokenIdentifier>
     <Path>structrti__common__t.html</Path>
     <Anchor>aca4395883c414d136a8bdafc1fbc871c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>number_of_transient_federates</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>rti_remote_t</Scope>
+    </TokenIdentifier>
+    <Path>structrti__remote__t.html</Path>
+    <Anchor>ae47ba7e2daf5f73d007bdc51911acbda</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2800,6 +3000,16 @@
     </TokenIdentifier>
     <Path>structmixed__radix__int__t.html</Path>
     <Anchor>ae267c25cb2c754b10d976709b6f2a740</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>phase</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>rti_remote_t</Scope>
+    </TokenIdentifier>
+    <Path>structrti__remote__t.html</Path>
+    <Anchor>ad237e3dfcbf6c9d374f596cb8ca70a34</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3793,6 +4003,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>transients</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a1b846899290b0ac18c657bf427c2692b</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>trigger</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -3940,6 +4160,26 @@
     </TokenIdentifier>
     <Path>structfederate__info__t.html</Path>
     <Anchor>a49e0905a7ff0b8c85d4e4c61ef4c25c6</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>upstream_fed_is_connected</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>ae46e99ac011580ca6abb31ecc8baeea7</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>upstream_fed_is_transient</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a331df614c72b00f3439ed01926fa6ec3</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -5613,6 +5853,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>execution_phase</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>ad0812a06e0a63ac79c1cea0602244113a83b86fcae2f635ef9addc5227e504105</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>FAILED_TO_PARSE</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -5683,6 +5933,56 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>federation_life_cycle_phase</Name>
+      <APILanguage>c</APILanguage>
+      <Type>enum</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>ad0812a06e0a63ac79c1cea0602244113</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>startup_phase</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>ad0812a06e0a63ac79c1cea0602244113a657e627d87016b0fc888e72018bc0318</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>execution_phase</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>ad0812a06e0a63ac79c1cea0602244113a83b86fcae2f635ef9addc5227e504105</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>shutdown_phase</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>ad0812a06e0a63ac79c1cea0602244113ab0b7bae732519c2f4e1b51fe4dedbdce</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>federation_life_cycle_phase</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>a9651680687a1235f4ac357f1ed6fd305</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>federation_metadata_t</Name>
       <APILanguage>c</APILanguage>
       <Type>tdef</Type>
@@ -5740,6 +6040,16 @@
     <Path>group__Tracing.html</Path>
     <Anchor>ga133af84dbff3d84a97044d8a89cf295d</Anchor>
     <DeclaredIn>influxdb.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>free_federate_info</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__RTI.html</Path>
+    <Anchor>gabc8af4a3b624a9dc4adfe7b636c66b9b</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -5949,16 +6259,6 @@
     </TokenIdentifier>
     <Path>group__RTI.html</Path>
     <Anchor>ga9fca6a5c7e73b40db2f6ef6f50c7a112</Anchor>
-    <DeclaredIn>rti_remote.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>handle_timestamp</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__RTI.html</Path>
-    <Anchor>ga0a2eadb2f35483bc7ce62a5845110330</Anchor>
     <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
@@ -6968,18 +7268,8 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Federated.html</Path>
-    <Anchor>ga26b7c3ab8c2a50f65e53997a6f26a0dc</Anchor>
+    <Anchor>ga1746f43c6f0125b04a5d9f523eba218d</Anchor>
     <DeclaredIn>federate.h</DeclaredIn>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>lf_connect_to_federates</Name>
-      <APILanguage>c</APILanguage>
-      <Type>func</Type>
-    </TokenIdentifier>
-    <Path>group__RTI.html</Path>
-    <Anchor>ga14c897c9da2160d4aceff4751822eced</Anchor>
-    <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -7179,6 +7469,16 @@
     </TokenIdentifier>
     <Path>group__Federated.html</Path>
     <Anchor>gab4b57d55b69a4864eb694ed080b84d0e</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_get_federation_id</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>gaafe9373f05ab5ce8144950a04b3f31cb</Anchor>
     <DeclaredIn>reactor.h</DeclaredIn>
   </Token>
   <Token>
@@ -8259,7 +8559,7 @@
     </TokenIdentifier>
     <Path>group__Federated.html</Path>
     <Anchor>ga032d945ee3fd6995a5f7bb15b57f2ddf</Anchor>
-    <DeclaredIn>federate.h</DeclaredIn>
+    <DeclaredIn>reactor.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -8473,6 +8773,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_stop</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>util_8h.html</Path>
+    <Anchor>a06459a0f9ada564e206ec8a46e049b33</Anchor>
+    <DeclaredIn>util.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_stop_audio_loop</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -8569,6 +8879,16 @@
     </TokenIdentifier>
     <Path>group__API.html</Path>
     <Anchor>ga80abd9981c0375a0abbe47591204f18b</Anchor>
+    <DeclaredIn>tag.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_tag_start_effective</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>tag_8h.html</Path>
+    <Anchor>a9eace68faf021c0adf218d58f3172f44</Anchor>
     <DeclaredIn>tag.h</DeclaredIn>
   </Token>
   <Token>
@@ -9338,7 +9658,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__RTI.html</Path>
-    <Anchor>ga0903cfa1c0fa064824b445c099cd2aa6</Anchor>
+    <Anchor>gacbad7c3241542402c0e2ad382d031c1c</Anchor>
     <DeclaredIn>rti_common.h</DeclaredIn>
   </Token>
   <Token>
@@ -9663,6 +9983,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>pqueue_delayed_grant_element_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>a5025b19dc05bbacb21dff6d4dc64c66c</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>pqueue_delayed_grants_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>a8faca390e150bfca6affffe659434323</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>pqueue_dump</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -9959,6 +10299,16 @@
     </TokenIdentifier>
     <Path>group__Internal.html</Path>
     <Anchor>ga89084b69d8049630eebb8df759c666d0</Anchor>
+    <DeclaredIn>pqueue_tag.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>pqueue_tag_max_tag</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>pqueue__tag_8h.html</Path>
+    <Anchor>a824ff56d134143b24f37349162b1529c</Anchor>
     <DeclaredIn>pqueue_tag.h</DeclaredIn>
   </Token>
   <Token>
@@ -10353,6 +10703,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>receive_DOWNSTREAM_CONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453aa795de9a6eed1ced0115a7d69395497d</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>receive_DOWNSTREAM_DISCONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453afe85f979f7d5a511f99590c254070ab6</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>receive_FAILED</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -10463,6 +10833,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>receive_STOP</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a24a9170a2485d2f1ae97fcbc291b30ac</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>receive_STOP_GRN</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -10533,6 +10913,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>receive_UPSTREAM_CONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a9a54e2ad724124b43c2f74ac9c1ca738</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>receive_UPSTREAM_DISCONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453ac3f3828d79b588f55798e529f78d696c</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>register_sensor_key</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -10570,6 +10970,16 @@
     <Path>group__Federated.html</Path>
     <Anchor>gae267d03a5f2263604459ca4c1aef2c2c</Anchor>
     <DeclaredIn>clock-sync.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>reset_transient_federate</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__RTI.html</Path>
+    <Anchor>ga2a232fec90c8bc1caa0f418f72c1daee</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -10953,6 +11363,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>send_DOWNSTREAM_CONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a422d32653d57d92e325f3339e6b2c537</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>send_DOWNSTREAM_DISCONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453ad11688d7a116453c377a5879fc2a95b8</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>send_FAILED</Name>
       <APILanguage>c</APILanguage>
       <Type>econst</Type>
@@ -11078,7 +11508,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__RTI.html</Path>
-    <Anchor>ga614f81fe705224534d84b97254030fa1</Anchor>
+    <Anchor>gaeb4398ee4cdd473a6da76fb727bafdd9</Anchor>
     <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
@@ -11089,6 +11519,16 @@
     </TokenIdentifier>
     <Path>group__Tracing.html</Path>
     <Anchor>ggab02e9e69539d60297cedb38c2193a453aaf479fd10fa46f06b11550611d3c610f</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>send_STOP</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a35de0e6755500a96eb33ccbcd44142f3</Anchor>
     <DeclaredIn>trace_types.h</DeclaredIn>
   </Token>
   <Token>
@@ -11173,6 +11613,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>send_UPSTREAM_CONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a47860caddbef8e45f632dbfc92091069</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>send_UPSTREAM_DISCONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453ad944544a6473e1b57450e96c0a61de64</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>set_reaction_position</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -11210,6 +11670,16 @@
     <Path>group__Utilities.html</Path>
     <Anchor>ga3c9ec0901afe8264c0e75d40c940bd5a</Anchor>
     <DeclaredIn>sensor_simulator.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>shutdown_phase</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>ad0812a06e0a63ac79c1cea0602244113ab0b7bae732519c2f4e1b51fe4dedbdce</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -11270,6 +11740,16 @@
     <Path>reactor__common_8h.html</Path>
     <Anchor>abf841e831e686a46c9ce39772c02555f</Anchor>
     <DeclaredIn>reactor_common.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>startup_phase</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>rti__remote_8h.html</Path>
+    <Anchor>ad0812a06e0a63ac79c1cea0602244113a657e627d87016b0fc888e72018bc0318</Anchor>
+    <DeclaredIn>rti_remote.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -12069,6 +12549,106 @@
     </TokenIdentifier>
     <Path>group__Tracing.html</Path>
     <Anchor>ggab02e9e69539d60297cedb38c2193a453a48fffa45ebf3f03caa2dc044af72349f</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>send_UPSTREAM_CONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a47860caddbef8e45f632dbfc92091069</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>receive_UPSTREAM_CONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a9a54e2ad724124b43c2f74ac9c1ca738</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>send_UPSTREAM_DISCONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453ad944544a6473e1b57450e96c0a61de64</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>receive_UPSTREAM_DISCONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453ac3f3828d79b588f55798e529f78d696c</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>send_STOP</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a35de0e6755500a96eb33ccbcd44142f3</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>receive_STOP</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a24a9170a2485d2f1ae97fcbc291b30ac</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>send_DOWNSTREAM_CONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453a422d32653d57d92e325f3339e6b2c537</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>receive_DOWNSTREAM_CONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453aa795de9a6eed1ced0115a7d69395497d</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>send_DOWNSTREAM_DISCONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453ad11688d7a116453c377a5879fc2a95b8</Anchor>
+    <DeclaredIn>trace_types.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>receive_DOWNSTREAM_DISCONNECTED</Name>
+      <APILanguage>c</APILanguage>
+      <Type>econst</Type>
+    </TokenIdentifier>
+    <Path>group__Tracing.html</Path>
+    <Anchor>ggab02e9e69539d60297cedb38c2193a453afe85f979f7d5a511f99590c254070ab6</Anchor>
     <DeclaredIn>trace_types.h</DeclaredIn>
   </Token>
   <Token>

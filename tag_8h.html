@@ -233,6 +233,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga4c39037bf099ff2c31a71fe96ac59a61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the greater out of two tags.  <br /></td></tr>
 <tr class="memitem:ga80abd9981c0375a0abbe47591204f18b" id="r_ga80abd9981c0375a0abbe47591204f18b"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="group__API.html#ga80abd9981c0375a0abbe47591204f18b">lf_tag_min</a> (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</td></tr>
 <tr class="memdesc:ga80abd9981c0375a0abbe47591204f18b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the lesser out of two tags.  <br /></td></tr>
+<tr class="memitem:a9eace68faf021c0adf218d58f3172f44" id="r_a9eace68faf021c0adf218d58f3172f44"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9eace68faf021c0adf218d58f3172f44">lf_tag_start_effective</a> (void)</td></tr>
+<tr class="memdesc:a9eace68faf021c0adf218d58f3172f44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the tag at which the execution effectively started.  <br /></td></tr>
 <tr class="memitem:ga1789de56286aa33c086b194b544c2d91" id="r_ga1789de56286aa33c086b194b544c2d91"><td class="memItemLeft"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="group__API.html#ga1789de56286aa33c086b194b544c2d91">lf_time_add</a> (<a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> a, <a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> b)</td></tr>
 <tr class="memdesc:ga1789de56286aa33c086b194b544c2d91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sum of an interval and an instant, saturating on overflow and underflow.  <br /></td></tr>
 <tr class="memitem:ga751c9fce12510f5bb98d862f57077396" id="r_ga751c9fce12510f5bb98d862f57077396"><td class="memItemLeft"><a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga751c9fce12510f5bb98d862f57077396">lf_time_logical</a> (void *env)</td></tr>
@@ -258,7 +260,28 @@ Soroush Bateni </dd>
 <dd>
 Hou Seng (Steven) Wong</dd></dl>
 <p>This file defines the core time and tag types and operations used throughout the Lingua Franca runtime. It provides functions for manipulating logical and physical time, as well as the tag structure that combines time with microsteps. </p>
-</div></div><!-- contents -->
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="a9eace68faf021c0adf218d58f3172f44" name="a9eace68faf021c0adf218d58f3172f44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9eace68faf021c0adf218d58f3172f44">&#9670;&#160;</a></span>lf_tag_start_effective()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> lf_tag_start_effective </td>
+          <td>(</td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the tag at which the execution effectively started. </p>
+<p>Most of the time, this will default to {.time = start_time, .microstep: 0}. When the reactor is a transient federate, however, the tag may be greater. </p><dl class="section return"><dt>Returns</dt><dd>A tag. </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
 <div id="page-nav-resize-handle"></div>

@@ -33,6 +33,7 @@ var annotated_dup =
     [ "mode_environment_t", "structmode__environment__t.html", "structmode__environment__t" ],
     [ "mode_state_variable_reset_data_t", "structmode__state__variable__reset__data__t.html", "structmode__state__variable__reset__data__t" ],
     [ "object_description_t", "structobject__description__t.html", "structobject__description__t" ],
+    [ "pqueue_delayed_grant_element_t", "structpqueue__delayed__grant__element__t.html", "structpqueue__delayed__grant__element__t" ],
     [ "pqueue_t", "structpqueue__t.html", "structpqueue__t" ],
     [ "pqueue_tag_element_t", "structpqueue__tag__element__t.html", "structpqueue__tag__element__t" ],
     [ "reaction_t", "structreaction__t.html", "structreaction__t" ],

@@ -12,6 +12,7 @@ var pqueue__tag_8h =
     [ "pqueue_tag_insert", "group__Internal.html#ga7db3de28c457287e689dedc3a6dc20da", null ],
     [ "pqueue_tag_insert_if_no_match", "group__Internal.html#ga067e8fdd88be6f660e79744350a74128", null ],
     [ "pqueue_tag_insert_tag", "group__Internal.html#ga89084b69d8049630eebb8df759c666d0", null ],
+    [ "pqueue_tag_max_tag", "pqueue__tag_8h.html#a824ff56d134143b24f37349162b1529c", null ],
     [ "pqueue_tag_peek", "group__Internal.html#ga16cbdbb45d26bd5373e258de819cfdd3", null ],
     [ "pqueue_tag_peek_tag", "group__Internal.html#ga9bcecb00b894ad00b07f84940fe7af95", null ],
     [ "pqueue_tag_pop", "group__Internal.html#gaf6709c3c3756e65205762a4cf33848be", null ],

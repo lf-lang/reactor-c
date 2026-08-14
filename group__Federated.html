@@ -210,8 +210,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga9a5e16b3705dd53c5a2e59a3acbf1edb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a clock synchroninzation message T1 coming from the RTI.  <br /></td></tr>
 <tr class="memitem:gaed582f6b18142dab9c3e607f240d9f62" id="r_gaed582f6b18142dab9c3e607f240d9f62"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gaed582f6b18142dab9c3e607f240d9f62">handle_T4_clock_sync_message</a> (unsigned char *buffer, void *socket_or_net, <a class="el" href="group__API.html#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> r4, socket_type_t socket_type)</td></tr>
 <tr class="memdesc:gaed582f6b18142dab9c3e607f240d9f62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a clock synchronization message T4 coming from the RTI.  <br /></td></tr>
-<tr class="memitem:ga26b7c3ab8c2a50f65e53997a6f26a0dc" id="r_ga26b7c3ab8c2a50f65e53997a6f26a0dc"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga26b7c3ab8c2a50f65e53997a6f26a0dc">lf_connect_to_federate</a> (uint16_t remote_federate_id)</td></tr>
-<tr class="memdesc:ga26b7c3ab8c2a50f65e53997a6f26a0dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Connect to the federate with the specified id.  <br /></td></tr>
+<tr class="memitem:ga1746f43c6f0125b04a5d9f523eba218d" id="r_ga1746f43c6f0125b04a5d9f523eba218d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga1746f43c6f0125b04a5d9f523eba218d">lf_connect_to_federate</a> (uint16_t remote_federate_id, <a class="el" href="structtag__t.html">tag_t</a> joined_tag, int32_t port, uint32_t ip_address)</td></tr>
+<tr class="memdesc:ga1746f43c6f0125b04a5d9f523eba218d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Connect to the downstream federate with the specified id.  <br /></td></tr>
 <tr class="memitem:ga92e8c30255091911a80601bf341cf0a2" id="r_ga92e8c30255091911a80601bf341cf0a2"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga92e8c30255091911a80601bf341cf0a2">lf_connect_to_rti</a> (const char *hostname, int port_number)</td></tr>
 <tr class="memdesc:ga92e8c30255091911a80601bf341cf0a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Connect to the RTI at the specified host and port.  <br /></td></tr>
 <tr class="memitem:ga926a4fb7f9b045acb13fee6c2b7192dd" id="r_ga926a4fb7f9b045acb13fee6c2b7192dd"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga926a4fb7f9b045acb13fee6c2b7192dd">lf_create_server</a> (int specified_port)</td></tr>
@@ -220,6 +220,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gae427b4c0340dbe19d46c93708fb6151a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enqueue port absent reactions.  <br /></td></tr>
 <tr class="memitem:gab4b57d55b69a4864eb694ed080b84d0e" id="r_gab4b57d55b69a4864eb694ed080b84d0e"><td class="memItemLeft"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#gab4b57d55b69a4864eb694ed080b84d0e">lf_get_fed_maxwait</a> (void)</td></tr>
 <tr class="memdesc:gab4b57d55b69a4864eb694ed080b84d0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the global maxwait for the current federate.  <br /></td></tr>
+<tr class="memitem:gaafe9373f05ab5ce8144950a04b3f31cb" id="r_gaafe9373f05ab5ce8144950a04b3f31cb"><td class="memItemLeft">const char *&#160;</td><td class="memItemRight"><a class="el" href="#gaafe9373f05ab5ce8144950a04b3f31cb">lf_get_federation_id</a> ()</td></tr>
+<tr class="memdesc:gaafe9373f05ab5ce8144950a04b3f31cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the federation ID.  <br /></td></tr>
 <tr class="memitem:gae03d197bf8d64f82be4a68c95a940195" id="r_gae03d197bf8d64f82be4a68c95a940195"><td class="memItemLeft"><a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#gae03d197bf8d64f82be4a68c95a940195">lf_get_sta</a> (void)</td></tr>
 <tr class="memdesc:gae03d197bf8d64f82be4a68c95a940195"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the global STA (safe to advance) offset for federated execution.  <br /></td></tr>
 <tr class="memitem:gaf7ba635fb6ffa82e4b05a51d4fc0020f" id="r_gaf7ba635fb6ffa82e4b05a51d4fc0020f"><td class="memItemLeft">void *&#160;</td><td class="memItemRight"><a class="el" href="#gaf7ba635fb6ffa82e4b05a51d4fc0020f">lf_handle_p2p_connections_from_federates</a> (void *ignored)</td></tr>
@@ -245,7 +247,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ga952c8552f9e327a465f3db2f72d8415e" id="r_ga952c8552f9e327a465f3db2f72d8415e"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga952c8552f9e327a465f3db2f72d8415e">lf_set_fed_maxwait</a> (<a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> offset)</td></tr>
 <tr class="memdesc:ga952c8552f9e327a465f3db2f72d8415e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the global maxwait for the current federate.  <br /></td></tr>
 <tr class="memitem:ga032d945ee3fd6995a5f7bb15b57f2ddf" id="r_ga032d945ee3fd6995a5f7bb15b57f2ddf"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga032d945ee3fd6995a5f7bb15b57f2ddf">lf_set_federation_id</a> (const char *fid)</td></tr>
-<tr class="memdesc:ga032d945ee3fd6995a5f7bb15b57f2ddf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the federation_id of this federate.  <br /></td></tr>
+<tr class="memdesc:ga032d945ee3fd6995a5f7bb15b57f2ddf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the federation ID of this federate.  <br /></td></tr>
 <tr class="memitem:gaccbc0981eff8f1f1726075d2ee4ba0ef" id="r_gaccbc0981eff8f1f1726075d2ee4ba0ef"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gaccbc0981eff8f1f1726075d2ee4ba0ef">lf_set_sta</a> (<a class="el" href="group__API.html#gaf5b4e62d03782997d813be6145316f4b">interval_t</a> offset)</td></tr>
 <tr class="memdesc:gaccbc0981eff8f1f1726075d2ee4ba0ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the global STA (safe to advance) offset for federated execution.  <br /></td></tr>
 <tr class="memitem:ga3aff644df1b85540aa6a3d2997f819c5" id="r_ga3aff644df1b85540aa6a3d2997f819c5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga3aff644df1b85540aa6a3d2997f819c5">lf_spawn_staa_thread</a> (void)</td></tr>
@@ -253,7 +255,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ga971322f63f26490a27bdd9006c05b8fe" id="r_ga971322f63f26490a27bdd9006c05b8fe"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga971322f63f26490a27bdd9006c05b8fe">lf_stall_advance_level_federation</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, size_t level)</td></tr>
 <tr class="memdesc:ga971322f63f26490a27bdd9006c05b8fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait until inputs statuses are known up to and including the specified level.  <br /></td></tr>
 <tr class="memitem:gab0f2188d27dfffa9fbbd417bed9305ea" id="r_gab0f2188d27dfffa9fbbd417bed9305ea"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gab0f2188d27dfffa9fbbd417bed9305ea">lf_stall_advance_level_federation_locked</a> (size_t level)</td></tr>
-<tr class="memdesc:gab0f2188d27dfffa9fbbd417bed9305ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Version of <a class="el" href="#ga971322f63f26490a27bdd9006c05b8fe" title="Wait until inputs statuses are known up to and including the specified level.">lf_stall_advance_level_federation()</a> that assumes the caller holds the mutex lock.  <br /></td></tr>
+<tr class="memdesc:gab0f2188d27dfffa9fbbd417bed9305ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Version of <span class="tt"><a class="el" href="#ga971322f63f26490a27bdd9006c05b8fe" title="Wait until inputs statuses are known up to and including the specified level.">lf_stall_advance_level_federation()</a></span> that assumes the caller holds the mutex lock.  <br /></td></tr>
 <tr class="memitem:ga36681c905141edace5d23ff8d5c8f205" id="r_ga36681c905141edace5d23ff8d5c8f205"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga36681c905141edace5d23ff8d5c8f205">lf_synchronize_with_other_federates</a> (void)</td></tr>
 <tr class="memdesc:ga36681c905141edace5d23ff8d5c8f205"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronize the start with other federates via the RTI.  <br /></td></tr>
 <tr class="memitem:ga84e5177d12e705274be1e6652b5d7c01" id="r_ga84e5177d12e705274be1e6652b5d7c01"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ga84e5177d12e705274be1e6652b5d7c01">lf_update_max_level</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, bool is_provisional)</td></tr>
@@ -766,8 +768,8 @@ synchronization." </dd></dl>
 
 </div>
 </div>
-<a id="ga26b7c3ab8c2a50f65e53997a6f26a0dc" name="ga26b7c3ab8c2a50f65e53997a6f26a0dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga26b7c3ab8c2a50f65e53997a6f26a0dc">&#9670;&#160;</a></span>lf_connect_to_federate()</h2>
+<a id="ga1746f43c6f0125b04a5d9f523eba218d" name="ga1746f43c6f0125b04a5d9f523eba218d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1746f43c6f0125b04a5d9f523eba218d">&#9670;&#160;</a></span>lf_connect_to_federate()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -775,19 +777,36 @@ synchronization." </dd></dl>
         <tr>
           <td class="memname">void lf_connect_to_federate </td>
           <td>(</td>
-          <td class="paramtype">uint16_t</td>          <td class="paramname"><span class="paramname"><em>remote_federate_id</em></span></td><td>)</td>
+          <td class="paramtype">uint16_t</td>          <td class="paramname"><span class="paramname"><em>remote_federate_id</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a></td>          <td class="paramname"><span class="paramname"><em>joined_tag</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int32_t</td>          <td class="paramname"><span class="paramname"><em>port</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>ip_address</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p><code>#include &lt;<a class="el" href="federate_8h.html">federate.h</a>&gt;</code></p>
 
-<p>Connect to the federate with the specified id. </p>
-<p>The established connection will then be used in functions such as <a class="el" href="#ga0931fe1bb9eac2a9beebe0c0ed03408e" title="Send a tagged message to the specified port of the specified federate.">lf_send_tagged_message()</a> to send messages directly to the specified federate. This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain the IP address and port number of the specified federate. It then attempts to establish a network abstraction connection to the specified federate. If this fails, the program exits. If it succeeds, it sets element [id] of the _fed.net_for_outbound_p2p_connections global array to refer to the network abstraction for communicating directly with the federate.</p>
+<p>Connect to the downstream federate with the specified id. </p>
+<p>The established connection will then be used in functions such as <a class="el" href="#ga2f330bfe2fdb03cbf49596bcc012bc58" title="Send a message to another federate.">lf_send_message()</a> (for physical connections) or <a class="el" href="#ga0931fe1bb9eac2a9beebe0c0ed03408e" title="Send a tagged message to the specified port of the specified federate.">lf_send_tagged_message()</a> (for logical connections with decentralized coordination) to send messages directly to the specified federate. This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain the IP address and port number of the specified federate. It then attempts to establish a network connection to the specified federate. If this fails, the program exits. If it succeeds, it sets <span class="tt">_fed.net_for_outbound_p2p_connections[remote_federate_id]</span> to refer to the network abstraction for communicating directly with the federate.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">remote_federate_id</td><td>The ID of the remote federate. </td></tr>
+    <tr><td class="paramname">joined_tag</td><td>The tag at which the remote federate joined. This is NEVER_TAG for persistent federates, and either <span class="tt"><a class="el" href="group__Constants.html#ga183109e082a793ae85cec00d72e70d4b" title="Tag later than all other tags.">FOREVER_TAG</a></span> (not yet joined) or the tag at which the transient federate joined for transient federates (obtained from the RTI). </td></tr>
+    <tr><td class="paramname">port</td><td>The port number of the remote federate or -1 to ask for the port number from the RTI. </td></tr>
+    <tr><td class="paramname">ip_address</td><td>The IP address of the remote federate, in network byte order, or 0 to ask for the IP address from the RTI. </td></tr>
   </table>
   </dd>
 </dl>
@@ -902,6 +921,27 @@ synchronization." </dd></dl>
 <p><code>#include &lt;<a class="el" href="reactor_8h.html">reactor.h</a>&gt;</code></p>
 
 <p>Return the global maxwait for the current federate. </p>
+
+</div>
+</div>
+<a id="gaafe9373f05ab5ce8144950a04b3f31cb" name="gaafe9373f05ab5ce8144950a04b3f31cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaafe9373f05ab5ce8144950a04b3f31cb">&#9670;&#160;</a></span>lf_get_federation_id()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char * lf_get_federation_id </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor_8h.html">reactor.h</a>&gt;</code></p>
+
+<p>Return the federation ID. </p>
 
 </div>
 </div>
@@ -1068,7 +1108,7 @@ synchronization." </dd></dl>
 <p><code>#include &lt;<a class="el" href="federate_8h.html">federate.h</a>&gt;</code></p>
 
 <p>Send a message to another federate. </p>
-<p>This function is used for physical connections between federates. If the connection to the remote federate or the RTI has been broken, then this returns -1 without sending. Otherwise, it returns 0.</p>
+<p>This function is used for physical connections between federates.</p>
 <p>This method assumes that the caller does not hold the lf_outbound_net_mutex lock, which it acquires to perform the send.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1081,7 +1121,7 @@ synchronization." </dd></dl>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>0 if the message has been sent, -1 otherwise. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if the message has been sent or the destination is a transient federate that is not connected, -1 otherwise. </dd></dl>
 
 </div>
 </div>
@@ -1281,7 +1321,7 @@ synchronization." </dd></dl>
 
 <p>Send a tagged message to the specified port of the specified federate. </p>
 <p>The tag will be the current tag of the specified environment delayed by the specified additional_delay. If the delayed tag falls after the timeout time, then the message is not sent and -1 is returned. The caller can reuse or free the memory storing the message after this returns.</p>
-<p>If the message fails to send (e.g. the network abstraction connection is broken), then the response depends on the message_type. For MSG_TYPE_TAGGED_MESSAGE, the message is supposed to go via the RTI, and failure to communicate with the RTI is a critical failure. In this case, the program will exit with an error message. If the message type is MSG_TYPE_P2P_TAGGED_MESSAGE, then the failure is not critical. It may be due to the remote federate having exited, for example, because its safe-to-process offset led it to believe that there were no messages forthcoming. In this case, on failure to send the message, this function returns -11.</p>
+<p>If the message fails to send (e.g. the network abstraction connection is broken), then the response depends on the message_type. For MSG_TYPE_TAGGED_MESSAGE, the message is supposed to go via the RTI, and failure to communicate with the RTI is a critical failure. In this case, the program will exit with an error message. If the message type is MSG_TYPE_P2P_TAGGED_MESSAGE, then the failure is not critical. It may be due to the remote federate having exited, for example, because its safe-to-process offset led it to believe that there were no messages forthcoming. In this case, on failure to send the message, this function returns -1. If the destination is a transient federate that is not connected, then this function returns 0.</p>
 <p>This method assumes that the caller does not hold the lf_outbound_net_mutex lock, which it acquires to perform the send.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1296,7 +1336,7 @@ synchronization." </dd></dl>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>0 if the message has been sent, 1 otherwise. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if the message has been sent or the destination is a transient federate that is not connected, -1 otherwise. </dd></dl>
 
 </div>
 </div>
@@ -1342,9 +1382,9 @@ synchronization." </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p><code>#include &lt;<a class="el" href="federate_8h.html">federate.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="reactor_8h.html">reactor.h</a>&gt;</code></p>
 
-<p>Set the federation_id of this federate. </p>
+<p>Set the federation ID of this federate. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fid</td><td>The federation ID. </td></tr>
@@ -1452,7 +1492,7 @@ synchronization." </dd></dl>
 
 <p><code>#include &lt;<a class="el" href="federate_8h.html">federate.h</a>&gt;</code></p>
 
-<p>Version of <a class="el" href="#ga971322f63f26490a27bdd9006c05b8fe" title="Wait until inputs statuses are known up to and including the specified level.">lf_stall_advance_level_federation()</a> that assumes the caller holds the mutex lock. </p>
+<p>Version of <span class="tt"><a class="el" href="#ga971322f63f26490a27bdd9006c05b8fe" title="Wait until inputs statuses are known up to and including the specified level.">lf_stall_advance_level_federation()</a></span> that assumes the caller holds the mutex lock. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">level</td><td>The level to which we would like to advance. </td></tr>

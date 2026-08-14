@@ -1,7 +1,8 @@
 var searchData=
 [
-  ['unknown_0',['unknown',['../group__Internal.html#gga759ba374f75ea0025b9af1bb35f14d7ea5b9f6d065e6e98483b3d3ed01f4f6cbe',1,'lf_types.h']]],
-  ['update_1',['update',['../group__Internal.html#gga0183c0b43037a172a1cd9aa6ed6b3822a15edc24cdf7dea17a43c6c50580eba2b',1,'lf_types.h']]],
-  ['user_5fevent_2',['user_event',['../group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453aeba45bd40c043d7a65ac7c5d31b9e187',1,'trace_types.h']]],
-  ['user_5fvalue_3',['user_value',['../group__Tracing.html#ggab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1',1,'trace_types.h']]]
+  ['token_5fand_5fvalue_5ffreed_0',['TOKEN_AND_VALUE_FREED',['../group__Internal.html#ggabe23a36a87d2f0c076da417eb0114c7ea02ef194d373714ee3ac62226729e0cb0',1,'lf_token.h']]],
+  ['token_5ffreed_1',['TOKEN_FREED',['../group__Internal.html#ggabe23a36a87d2f0c076da417eb0114c7ea0a6094445d7a54e61aa3a43f6d017e2b',1,'lf_token.h']]],
+  ['trace_5freactor_2',['trace_reactor',['../group__Tracing.html#ggaeec3d6d67240b942f12f5d8770698ae3ac970d1f28c60cf2b9de8353b284197b0',1,'trace.h']]],
+  ['trace_5ftrigger_3',['trace_trigger',['../group__Tracing.html#ggaeec3d6d67240b942f12f5d8770698ae3a5c05f73b365f900def1359524b9ce5a0',1,'trace.h']]],
+  ['trace_5fuser_4',['trace_user',['../group__Tracing.html#ggaeec3d6d67240b942f12f5d8770698ae3a8fa30d4c503d93cecf4234a4d648ed79',1,'trace.h']]]
 ];

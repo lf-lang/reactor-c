@@ -22,9 +22,10 @@ var searchData=
   ['is_5fpresent_5ffields_5fabbreviated_19',['is_present_fields_abbreviated',['../structenvironment__t.html#acc9c260bcc5e4782b1c73f2844588c6f',1,'environment_t']]],
   ['is_5fpresent_5ffields_5fabbreviated_5fsize_20',['is_present_fields_abbreviated_size',['../structenvironment__t.html#a0787a24fb8262fbe34b47046efe899a5',1,'environment_t']]],
   ['is_5fpresent_5ffields_5fsize_21',['is_present_fields_size',['../structenvironment__t.html#a2635fdfad1b72c79e00c28c21b9c2eaf',1,'environment_t']]],
-  ['is_5fprovisional_22',['is_provisional',['../structtag__advance__grant__t.html#ad4947e0481e99ff55c03e36acbe75fab',1,'tag_advance_grant_t']]],
+  ['is_5fprovisional_22',['is_provisional',['../structtag__advance__grant__t.html#ad4947e0481e99ff55c03e36acbe75fab',1,'tag_advance_grant_t::is_provisional'],['../structpqueue__delayed__grant__element__t.html#a095d475ff02c98204dcd8723ea2096d2',1,'pqueue_delayed_grant_element_t::is_provisional']]],
   ['is_5fstp_5fviolated_23',['is_STP_violated',['../structreaction__t.html#a2bc026e89d82a877a3b7224541c25d42',1,'reaction_t']]],
   ['is_5ftimer_24',['is_timer',['../structtrigger__t.html#a6beec6375e3259c9ed1aa006074bd315',1,'trigger_t']]],
-  ['is_5fwidth_25',['is_width',['../structlf__cli__param__t.html#a76314e729d4c6a7ed7fd5e709d25a481',1,'lf_cli_param_t']]],
-  ['items_26',['items',['../structhashset__st.html#a00ecfe733efa06a8ca1d7af8956c0e88',1,'hashset_st']]]
+  ['is_5ftransient_25',['is_transient',['../structfederate__instance__t.html#a92c7d88579116747c89a0d4d4966bc9b',1,'federate_instance_t::is_transient'],['../structfederate__info__t.html#a23965b433636275900b5b96dcae32a8e',1,'federate_info_t::is_transient']]],
+  ['is_5fwidth_26',['is_width',['../structlf__cli__param__t.html#a76314e729d4c6a7ed7fd5e709d25a481',1,'lf_cli_param_t']]],
+  ['items_27',['items',['../structhashset__st.html#a00ecfe733efa06a8ca1d7af8956c0e88',1,'hashset_st']]]
 ];

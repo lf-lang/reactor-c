@@ -12,7 +12,7 @@ var federate_8h =
       [ "INVALID_USER", "group__Federated.html#gga9acb70e6b48452bd9d146e35bafc535ca1dbf923bd60da7209a684ed484935973", null ],
       [ "FAILED_TO_PARSE", "group__Federated.html#gga9acb70e6b48452bd9d146e35bafc535ca3ad4ab464aba04397206e8b89aa1955a", null ]
     ] ],
-    [ "lf_connect_to_federate", "group__Federated.html#ga26b7c3ab8c2a50f65e53997a6f26a0dc", null ],
+    [ "lf_connect_to_federate", "group__Federated.html#ga1746f43c6f0125b04a5d9f523eba218d", null ],
     [ "lf_connect_to_rti", "group__Federated.html#ga92e8c30255091911a80601bf341cf0a2", null ],
     [ "lf_create_server", "group__Federated.html#ga926a4fb7f9b045acb13fee6c2b7192dd", null ],
     [ "lf_enqueue_port_absent_reactions", "group__Federated.html#gae427b4c0340dbe19d46c93708fb6151a", null ],
@@ -26,7 +26,6 @@ var federate_8h =
     [ "lf_send_port_absent_to_federate", "group__Federated.html#ga527e8cd401ba68b503403706815ed1a0", null ],
     [ "lf_send_stop_request_to_rti", "group__Federated.html#gab4d7e691d4b52f2c0dac90e772d86dd5", null ],
     [ "lf_send_tagged_message", "group__Federated.html#ga0931fe1bb9eac2a9beebe0c0ed03408e", null ],
-    [ "lf_set_federation_id", "group__Federated.html#ga032d945ee3fd6995a5f7bb15b57f2ddf", null ],
     [ "lf_spawn_staa_thread", "group__Federated.html#ga3aff644df1b85540aa6a3d2997f819c5", null ],
     [ "lf_stall_advance_level_federation", "group__Federated.html#ga971322f63f26490a27bdd9006c05b8fe", null ],
     [ "lf_stall_advance_level_federation_locked", "group__Federated.html#gab0f2188d27dfffa9fbbd417bed9305ea", null ],
