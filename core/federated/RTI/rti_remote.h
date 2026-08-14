@@ -68,6 +68,14 @@ typedef struct federate_info_t {
   bool is_transient;
   /** @brief Records the start time of the federate, which is mainly useful for transient federates. */
   tag_t effective_start_tag;
+  /** @brief The highest delay-adjusted intended tag of any message the RTI has received addressed
+   *  to this federate, whether or not that message was actually forwarded (a message is not
+   *  forwarded, e.g., if the destination is a transient that is absent or has not yet started).
+   *  Unlike in_transit_message_tags, this is deliberately NOT cleared when a transient federate
+   *  disconnects: it is used when the federate later rejoins to compute an effective_start_tag
+   *  that accounts for messages that arrived while it was absent, even though those messages
+   *  themselves were dropped rather than queued. */
+  tag_t max_intended_tag;
   /** @brief True after the first MSG_TYPE_NEIGHBOR_STRUCTURE has been accepted for this federate ID.
    *  Preserved across transient resign/reset so rejoins and hot swaps can validate against that reference. */
   bool neighbor_structure_received;

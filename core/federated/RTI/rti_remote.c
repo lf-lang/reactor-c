@@ -665,8 +665,13 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
       break;
     }
   }
-  if (fed->enclave.state == NOT_CONNECTED ||
-      lf_tag_compare(lf_delay_tag(intended_tag, delay), fed->effective_start_tag) < 0) {
+  tag_t arrival_tag = lf_delay_tag(intended_tag, delay);
+  if (fed->is_transient && lf_tag_compare(arrival_tag, fed->max_intended_tag) > 0) {
+    // Record this tag regardless of whether the message ends up being dropped below, so that a
+    // future effective_start_tag computation for a rejoining fed can account for it.
+    fed->max_intended_tag = arrival_tag;
+  }
+  if (fed->enclave.state == NOT_CONNECTED || lf_tag_compare(arrival_tag, fed->effective_start_tag) < 0) {
     lf_print_warning("RTI: Destination federate %d is not connected at logical time (" PRINTF_TAG
                      "). Dropping message.",
                      federate_id, intended_tag.time - start_time, intended_tag.microstep);
@@ -1304,23 +1309,14 @@ static void handle_timestamp_or_tag(federate_info_t* my_fed, int type) {
       }
 
       // Condition 5.
-      // This one is a bit subtle. Any messages from upstream federates that the RTI has
-      // not yet seen will be sent to this joining federate after the effective_start_tag
-      // because the effective_start_tag is sent while still holding the mutex.
-
-      // Iterate over the messages from the upstream federates
-      for (int j = 0; j < my_fed->enclave.num_immediate_upstreams; j++) {
-        federate_info_t* upstream = GET_FED_INFO(my_fed->enclave.immediate_upstreams[j]);
-
-        size_t queue_size = pqueue_tag_size(upstream->in_transit_message_tags);
-        if (queue_size != 0) {
-          tag_t max_tag = pqueue_tag_max_tag(upstream->in_transit_message_tags);
-
-          if (lf_tag_compare(max_tag, my_fed->effective_start_tag) >= 0) {
-            my_fed->effective_start_tag = max_tag;
-            my_fed->effective_start_tag.microstep++;
-          }
-        }
+      // Account for messages addressed to my_fed that the RTI has already received, whether or
+      // not they were actually forwarded (they are not forwarded, e.g., while my_fed is absent or
+      // has not yet started). max_intended_tag records the highest delay-adjusted tag of any such
+      // message and, unlike in_transit_message_tags, survives the absence window since it is not
+      // reset on disconnect.
+      if (lf_tag_compare(my_fed->max_intended_tag, my_fed->effective_start_tag) >= 0) {
+        my_fed->effective_start_tag = my_fed->max_intended_tag;
+        my_fed->effective_start_tag.microstep++;
       }
 
       // For every downstream that has a pending delayed grant at or after this
@@ -2534,6 +2530,7 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   fed->has_upstream_transient_federates = false;
   fed->is_transient = true;
   fed->effective_start_tag = NEVER_TAG;
+  fed->max_intended_tag = NEVER_TAG;
   fed->neighbor_structure_received = false;
   fed->number_of_downstream_transients = 0;
   int32_t num_transients = rti_remote->number_of_transient_federates;
@@ -2577,6 +2574,9 @@ void reset_transient_federate(federate_info_t* fed) {
   fed->in_transit_message_tags = pqueue_tag_init(10);
   fed->requested_stop = false;
   fed->effective_start_tag = NEVER_TAG;
+  // max_intended_tag is deliberately NOT reset here: it must survive the absence window so that
+  // the next effective_start_tag computation (Condition 5) can account for messages that were
+  // dropped while this federate was disconnected.
   fed->number_of_downstream_transients = 0;
   int32_t num_transients = rti_remote->number_of_transient_federates;
   for (int32_t i = 0; i < num_transients; i++) {
