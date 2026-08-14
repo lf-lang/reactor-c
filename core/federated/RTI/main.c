@@ -77,11 +77,15 @@ static void send_failed_signal(federate_info_t* fed) {
  */
 void termination() {
   if (!normal_termination) {
-    for (int i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
-      federate_info_t* f = (federate_info_t*)rti.base.scheduling_nodes[i];
-      if (!f || f->enclave.state == NOT_CONNECTED)
-        continue;
-      send_failed_signal(f);
+    // scheduling_nodes may still be NULL if we exit before federate allocation
+    // (e.g. after a command-line argument error).
+    if (rti.base.scheduling_nodes != NULL) {
+      for (int i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
+        federate_info_t* f = (federate_info_t*)rti.base.scheduling_nodes[i];
+        if (!f || f->enclave.state == NOT_CONNECTED)
+          continue;
+        send_failed_signal(f);
+      }
     }
     if (rti.base.tracing_enabled) {
       lf_tracing_global_shutdown();
@@ -99,6 +103,8 @@ void usage(int argc, const char* argv[]) {
   lf_print("   The ID of the federation that this RTI will control.\n");
   lf_print("  -n, --number_of_federates <n>");
   lf_print("   The number of federates in the federation that this RTI will control.\n");
+  lf_print("  -nt, --number_of_transient_federates <n>");
+  lf_print("   The number of transient federates in the federation that this RTI will control.\n");
   lf_print("  -p, --port <n>");
   lf_print("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n",
            UINT16_MAX, DEFAULT_PORT);
@@ -177,11 +183,11 @@ int process_clock_sync_args(int argc, const char* argv[]) {
       }
       i++;
       long exchanges = (long)strtol(argv[i], NULL, 10);
-      if (exchanges == 0L || exchanges == LONG_MAX || exchanges == LONG_MIN) {
+      if (exchanges <= 0L || exchanges > INT32_MAX || exchanges == LONG_MAX || exchanges == LONG_MIN) {
         lf_print_error("clock sync exchanges-per-interval value is invalid.");
         continue; // Try to parse the rest of the arguments as clock sync args.
       }
-      rti.clock_sync_exchanges_per_interval = (int32_t)exchanges; // FIXME: Loses numbers on 64-bit machines
+      rti.clock_sync_exchanges_per_interval = (int32_t)exchanges;
       lf_print_info("RTI: Clock sync exchanges per interval: %d", rti.clock_sync_exchanges_per_interval);
     } else if (strcmp(argv[i], " ") == 0) {
       // Tolerate spaces
@@ -217,13 +223,34 @@ int process_args(int argc, const char* argv[]) {
       }
       i++;
       long num_federates = strtol(argv[i], NULL, 10);
-      if (num_federates <= 0L || num_federates == LONG_MAX || num_federates == LONG_MIN) {
-        lf_print_error("--number_of_federates needs a valid positive integer argument.");
+      if (num_federates <= 0L || num_federates >= UINT16_MAX || num_federates == LONG_MAX ||
+          num_federates == LONG_MIN) {
+        lf_print_error("--number_of_federates needs a positive integer argument ( > 0 and < %d).", UINT16_MAX);
         usage(argc, argv);
         return 0;
       }
-      rti.base.number_of_scheduling_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
+      rti.base.number_of_scheduling_nodes = (uint16_t)num_federates;
       lf_print_info("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
+    } else if (strcmp(argv[i], "-nt") == 0 || strcmp(argv[i], "--number_of_transient_federates") == 0) {
+      if (argc < i + 2) {
+        lf_print_error("--number_of_transient_federates needs a non-negative integer argument ( >= 0 and < %d).",
+                       INT32_MAX);
+        usage(argc, argv);
+        return 0;
+      }
+      i++;
+      long num_transient_federates = strtol(argv[i], NULL, 10);
+      // Zero is valid: the launcher always passes -nt, including for federations
+      // with no transient federates.
+      if (num_transient_federates < 0L || num_transient_federates > INT32_MAX || num_transient_federates == LONG_MAX ||
+          num_transient_federates == LONG_MIN) {
+        lf_print_error("--number_of_transient_federates needs a non-negative integer argument ( >= 0 and < %d).",
+                       INT32_MAX);
+        usage(argc, argv);
+        return 0;
+      }
+      rti.number_of_transient_federates = (int32_t)num_transient_federates;
+      lf_print_info("RTI: Number of transient federates: %d", rti.number_of_transient_federates);
     } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
 #if defined(COMM_TYPE_TCP) || defined(COMM_TYPE_SST) || defined(COMM_TYPE_TLS)
       if (argc < i + 2) {
@@ -332,6 +359,17 @@ int process_args(int argc, const char* argv[]) {
       return 0;
     }
   }
+  if (rti.base.number_of_scheduling_nodes == 0) {
+    lf_print_error("--number_of_federates needs a positive integer argument ( > 0 and < %d).", UINT16_MAX);
+    usage(argc, argv);
+    return 0;
+  }
+  if (rti.number_of_transient_federates >= rti.base.number_of_scheduling_nodes) {
+    lf_print_error("--number_of_transient_federates must be less than the number of federates.");
+    usage(argc, argv);
+    return 0;
+  }
+  rti.base.has_transients = (rti.number_of_transient_federates > 0);
   return 1;
 }
 int main(int argc, const char* argv[]) {
@@ -356,6 +394,8 @@ int main(int argc, const char* argv[]) {
 
   if (!process_args(argc, argv)) {
     // Processing command-line arguments failed.
+    // Avoid the atexit handler treating this as an abnormal runtime failure.
+    normal_termination = true;
     return -1;
   }
 
@@ -371,8 +411,8 @@ int main(int argc, const char* argv[]) {
     lf_print_info("Tracing the RTI execution in %s file.", rti_trace_file_name);
   }
 
-  lf_print_log("Starting RTI for %d federates in federation ID %s.", rti.base.number_of_scheduling_nodes,
-               rti.federation_id);
+  lf_print_log("Starting RTI for a total of %d federates, with %d being transient, in federation ID %s",
+               rti.base.number_of_scheduling_nodes, rti.number_of_transient_federates, rti.federation_id);
   assert(rti.base.number_of_scheduling_nodes < UINT16_MAX);
 
   // Allocate memory for the federates

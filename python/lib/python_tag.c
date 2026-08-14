@@ -11,9 +11,6 @@
 
 PyTypeObject PyTagType;
 
-/**
- * Return the current tag object.
- */
 PyObject* py_lf_tag(PyObject* self, PyObject* args) {
   py_tag_t* t = (py_tag_t*)PyType_GenericNew(&PyTagType, NULL, NULL);
   if (t == NULL) {
@@ -23,16 +20,15 @@ PyObject* py_lf_tag(PyObject* self, PyObject* args) {
   return (PyObject*)t;
 }
 
-/**
- * Compare two tags. Return -1 if the first is less than
- * the second, 0 if they are equal, and +1 if the first is
- * greater than the second. A tag is greater than another if
- * its time is greater or if its time is equal and its microstep
- * is greater.
- * @param tag1
- * @param tag2
- * @return -1, 0, or 1 depending on the relation.
- */
+PyObject* py_lf_tag_start_effective(PyObject* self, PyObject* args) {
+  py_tag_t* t = (py_tag_t*)PyType_GenericNew(&PyTagType, NULL, NULL);
+  if (t == NULL) {
+    return NULL;
+  }
+  t->tag = lf_tag_start_effective();
+  return (PyObject*)t;
+}
+
 PyObject* py_tag_compare(PyObject* self, PyObject* args) {
   PyObject* tag1;
   PyObject* tag2;

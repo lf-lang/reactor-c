@@ -74,6 +74,19 @@ PyObject* py_schedule(PyObject* self, PyObject* args);
 PyObject* py_request_stop(PyObject* self, PyObject* args);
 
 /**
+ * @brief Stop only this federate, without requiring RTI involvement or consensus.
+ *
+ * Every enclave within the federate will stop at one microstep later than its
+ * current tag. Unlike py_request_stop, this does not require any involvement
+ * from the RTI. This is particularly useful for testing transient federates.
+ *
+ * @param self The calling Python object
+ * @param args Empty
+ * @return Py_None
+ */
+PyObject* py_lf_stop(PyObject* self, PyObject* args);
+
+/**
  * @brief Return the global maxwait for the current federate.
  *
  * Only meaningful in decentralized federated execution. If the program is not
@@ -115,6 +128,18 @@ PyObject* py_source_directory(PyObject* self, PyObject* args);
  * @return PyObject* A Python string.
  */
 PyObject* py_package_directory(PyObject* self, PyObject* args);
+
+/**
+ * @brief Return the ID of the federation this federate belongs to.
+ *
+ * Only meaningful in federated execution. If the program is not compiled with
+ * FEDERATED, calling this from Python raises a RuntimeError.
+ *
+ * @param self The lf object.
+ * @param args Empty.
+ * @return PyObject* A Python string on success, NULL on error.
+ */
+PyObject* py_get_federation_id(PyObject* self, PyObject* args);
 
 /**
  * @brief Check whether the deadline of the currently executing reaction has passed.

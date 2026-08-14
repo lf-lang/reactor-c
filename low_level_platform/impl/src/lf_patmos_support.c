@@ -14,7 +14,6 @@
 #include "low_level_platform.h"
 #include <machine/rtc.h>
 #include <machine/exceptions.h>
-#include <stdio.h>
 
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
@@ -30,34 +29,39 @@ static volatile int _lf_num_nested_critical_sections = 0;
  */
 
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
+  (void)env;
   instant_t now;
   _lf_async_event = false;
   lf_enable_interrupts_nested();
 
-  // Do busy sleep
-  do {
+  _lf_clock_gettime(&now);
+  // Match other platforms: skip the spin if wakeup is already in the past.
+  while ((now < wakeup) && !_lf_async_event) {
     _lf_clock_gettime(&now);
-  } while ((now < wakeup) && !_lf_async_event);
+  }
 
   lf_disable_interrupts_nested();
 
   if (_lf_async_event) {
     _lf_async_event = false;
     return -1;
-  } else {
-    return 0;
   }
+  return 0;
 }
 
 int lf_sleep(interval_t sleep_duration) {
+  if (sleep_duration <= 0LL) {
+    return 0;
+  }
+
   instant_t now;
   _lf_clock_gettime(&now);
   instant_t wakeup = now + sleep_duration;
 
   // Do busy sleep
-  do {
+  while (now < wakeup) {
     _lf_clock_gettime(&now);
-  } while ((now < wakeup));
+  }
   return 0;
 }
 
@@ -83,7 +87,8 @@ int _lf_clock_gettime(instant_t* t) {
 
   assert(t != NULL);
 
-  *t = get_cpu_usecs() * 1000;
+  // Widen before multiplying so a 32-bit usec counter cannot overflow in int arithmetic.
+  *t = (instant_t)get_cpu_usecs() * 1000LL;
 
   return 0;
 }
