@@ -146,6 +146,15 @@ int64_t extract_int64(unsigned char* bytes);
  */
 uint16_t extract_uint16(unsigned char* bytes);
 
+/**
+ * @brief Extract a uint32_t from the specified byte sequence.
+ * @ingroup Network
+ *
+ * This will swap the order of the bytes if this machine is big endian.
+ * @param bytes The address of the start of the sequence of bytes.
+ */
+uint32_t extract_uint32(unsigned char* bytes);
+
 #ifdef FEDERATED
 
 /**

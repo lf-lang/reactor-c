@@ -117,6 +117,10 @@ typedef struct rti_common_t {
   bool tracing_enabled;
   /** @brief Boolean indicating that DNET is enabled. */
   bool dnet_disabled;
+  /** @brief True if the federation contains at least one transient federate. When false, a NOT_CONNECTED
+   * upstream is permanently gone (resigned), so a node whose upstreams are all disconnected can never
+   * receive another message and may be granted a tag advance all the way to FOREVER so it can shut down. */
+  bool has_transients;
   /** @brief The RTI mutex for making thread-safe access to the shared state. */
   lf_mutex_t* mutex;
 } rti_common_t;
@@ -170,10 +174,8 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id);
  * This assumes the caller holds the RTI mutex.
  *
  * @param e The upstream node.
- * @param visited An array of booleans used to determine whether a node has
- *  been visited (initially all false).
  */
-void notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[]);
+void notify_downstream_advance_grant_if_safe(scheduling_node_t* e);
 
 /**
  * @brief Notify a tag advance grant (TAG) message to the specified scheduling node.

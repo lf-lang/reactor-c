@@ -25,16 +25,27 @@
  */
 
 #include "rti_remote.h"
+#include "clock.h" // For lf_clock_cond_timedwait()
 #include "net_util.h"
 #include <string.h>
 
 // Global variables defined in tag.c:
 extern instant_t start_time;
 
-/**
- * Local reference to the rti_remote object
- */
+// indicates whether the start_time is set or not
+bool start_time_is_set = false;
+
+// Local reference to the rti_remote object
 static rti_remote_t* rti_remote;
+
+// Reference to the federate instance to support hot swap
+static federate_info_t* hot_swap_federate;
+
+// Indicates if a hot swap process is in progress
+static bool hot_swap_in_progress = false;
+
+// Indicates that the old federate has stopped.
+static bool hot_swap_old_resigned = false;
 
 bool _lf_federate_reports_error = false;
 
@@ -43,24 +54,321 @@ bool _lf_federate_reports_error = false;
 #define GET_FED_INFO(_idx) (federate_info_t*)rti_remote->base.scheduling_nodes[_idx]
 
 lf_mutex_t rti_mutex;
-lf_cond_t received_start_times;
-lf_cond_t sent_start_time;
+static lf_cond_t received_start_times;
+static lf_cond_t sent_start_time;
+static lf_cond_t updated_delayed_grants;
+static lf_cond_t hot_swap_old_resigned_cond;
 
 extern int lf_critical_section_enter(environment_t* env) { return lf_mutex_lock(&rti_mutex); }
 
 extern int lf_critical_section_exit(environment_t* env) { return lf_mutex_unlock(&rti_mutex); }
 
-void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
-  if (e->state == NOT_CONNECTED || lf_tag_compare(tag, e->last_granted) <= 0 ||
-      lf_tag_compare(tag, e->last_provisionally_granted) < 0) {
+// Utility functions to simplify the call of pqueue_tag routines.
+// These functions are thin wrappers around pqueue_tag_ routines that cast the parameters for
+// better readability.
+
+/**
+ * @brief Create a priority queue of delayed grants that is sorted by tags.
+ *
+ * @param nbr_delayed_grants The size.
+ * @return The dynamically allocated queue or NULL.
+ */
+static pqueue_delayed_grants_t* pqueue_delayed_grants_init(uint16_t nbr_delayed_grants) {
+  return (pqueue_delayed_grants_t*)pqueue_tag_init((size_t)nbr_delayed_grants);
+}
+
+/**
+ * @brief Return the size of the queue.
+ *
+ * @param q The queue.
+ * @return The size.
+ */
+static size_t pqueue_delayed_grants_size(pqueue_delayed_grants_t* q) { return pqueue_tag_size((pqueue_tag_t*)q); }
+
+/**
+ * @brief Insert a delayed grant element into the queue.
+ *
+ * @param q The queue.
+ * @param e The delayed grant element to insert.
+ * @return 0 on success
+ */
+static int pqueue_delayed_grants_insert(pqueue_delayed_grants_t* q, pqueue_delayed_grant_element_t* d) {
+  return pqueue_tag_insert((pqueue_tag_t*)q, (void*)d);
+}
+
+/**
+ * @brief Pop the least-tag element from the queue.
+ *
+ * @param q The queue.
+ * @return NULL on error, otherwise the entry
+ */
+static pqueue_delayed_grant_element_t* pqueue_delayed_grants_pop(pqueue_delayed_grants_t* q) {
+  return (pqueue_delayed_grant_element_t*)pqueue_tag_pop((pqueue_tag_t*)q);
+}
+
+/**
+ * @brief Return highest-ranking element from the queue without removing it.
+ *
+ * @param q The queue.
+ * @return NULL on if the queue is empty, otherwise the delayed grant element.
+ */
+static pqueue_delayed_grant_element_t* pqueue_delayed_grants_peek(pqueue_delayed_grants_t* q) {
+  return (pqueue_delayed_grant_element_t*)pqueue_tag_peek((pqueue_tag_t*)q);
+}
+
+/**
+ * @brief Free all memory used by the queue including elements that are marked dynamic.
+ *
+ * @param q The queue.
+ */
+static void pqueue_delayed_grants_free(pqueue_delayed_grants_t* q) { pqueue_tag_free((pqueue_tag_t*)q); }
+
+/**
+ * @brief Remove an item from the delayed grants queue.
+ *
+ * @param q The queue.
+ * @param e The entry to remove.
+ */
+static void pqueue_delayed_grants_remove(pqueue_delayed_grants_t* q, pqueue_delayed_grant_element_t* e) {
+  pqueue_tag_remove((pqueue_tag_t*)q, (void*)e);
+}
+
+/**
+ * @brief Return the first item with the specified federate id or NULL if there is none.
+ * @param q The queue.
+ * @param fed_id The federate id.
+ * @return An entry with the specified federate if or NULL if there isn't one.
+ */
+static pqueue_delayed_grant_element_t* pqueue_delayed_grants_find_by_fed_id(pqueue_delayed_grants_t* q,
+                                                                            uint16_t fed_id) {
+  pqueue_delayed_grant_element_t* dge;
+  pqueue_t* _q = (pqueue_t*)q;
+  if (!q || q->size == 1)
+    return NULL;
+  for (int i = 1; i < q->size; i++) {
+    dge = (pqueue_delayed_grant_element_t*)q->d[i];
+    if (dge) {
+      if (dge->fed_id == fed_id) {
+        return dge;
+      }
+    }
+  }
+  return NULL;
+}
+
+/**
+ * @brief Insert the delayed grant into the delayed_grants queue and notify.
+ *
+ * This function assumes the caller holds the rti_mutex.
+ * @param fed The federate.
+ * @param tag The tag to grant.
+ * @param is_provisional State whther the grant is provisional.
+ */
+static void notify_grant_delayed(federate_info_t* fed, tag_t tag, bool is_provisional) {
+  // Check wether there is already a pending grant.
+  pqueue_delayed_grant_element_t* dge =
+      pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, fed->enclave.id);
+  if (dge == NULL) {
+    pqueue_delayed_grant_element_t* dge =
+        (pqueue_delayed_grant_element_t*)malloc(sizeof(pqueue_delayed_grant_element_t));
+    dge->base.is_dynamic = 1;
+    dge->base.tag = tag;
+    dge->fed_id = fed->enclave.id;
+    dge->is_provisional = is_provisional;
+    pqueue_delayed_grants_insert(rti_remote->delayed_grants, dge);
+    LF_PRINT_LOG("RTI: Inserting a delayed grant of " PRINTF_TAG " for federate %d.", dge->base.tag.time - start_time,
+                 dge->base.tag.microstep, dge->fed_id);
+    lf_cond_signal(&updated_delayed_grants);
+  } else {
+    // Note that there should never be more than one pending grant for a federate.
+    int compare = lf_tag_compare(dge->base.tag, tag);
+    if (compare > 0) {
+      // Update the pre-existing grant.
+      dge->base.tag = tag;
+      dge->is_provisional = is_provisional;
+      LF_PRINT_LOG("RTI: Updating a delayed grant of " PRINTF_TAG " for federate %d.", tag.time - start_time,
+                   tag.microstep, dge->fed_id);
+      lf_cond_signal(&updated_delayed_grants);
+    } else if (compare == 0) {
+      if (dge->is_provisional != is_provisional) {
+        // Update the grant to keep the most recent is_provisional status.
+        dge->is_provisional = is_provisional;
+        LF_PRINT_LOG("RTI: Changing status of a delayed grant of " PRINTF_TAG " for federate %d to provisional: %d.",
+                     dge->base.tag.time - start_time, dge->base.tag.microstep, dge->fed_id, is_provisional);
+      }
+    }
+  }
+}
+
+/**
+ * @brief Return the number of non-connected upstream transients.
+ * @param fed The federate
+ * @return The number of non-connected upstream transients
+ */
+static int get_num_absent_upstream_transients(federate_info_t* fed) {
+  int num_absent_upstream_transients = 0;
+  for (int j = 0; j < fed->enclave.num_immediate_upstreams; j++) {
+    federate_info_t* upstream = GET_FED_INFO(fed->enclave.immediate_upstreams[j]);
+    // Ignore this enclave if it no longer connected.
+    if ((upstream->enclave.state == NOT_CONNECTED) && (upstream->is_transient)) {
+      num_absent_upstream_transients++;
+    }
+  }
+  return num_absent_upstream_transients;
+}
+
+/**
+ * @brief Send MSG_TYPE_UPSTREAM_CONNECTED to the specified `destination` if it is connected to the
+ * RTI, telling it that the specified `upstream` federate is also now connected.
+ *
+ * This function assumes that the mutex lock is already held.
+ * @param destination The destination federate.
+ * @param upstream The connected upstream federate.
+ */
+static void send_upstream_connected_locked(federate_info_t* destination, federate_info_t* upstream) {
+  if (destination->enclave.state == NOT_CONNECTED) {
+    LF_PRINT_LOG("RTI did not send upstream connected message to federate %d, because it is not connected.",
+                 destination->enclave.id);
     return;
   }
-  // Need to make sure that the destination federate's thread has already
-  // sent the starting MSG_TYPE_TIMESTAMP message.
-  while (e->state == PENDING) {
-    // Need to wait here.
-    lf_cond_wait(&sent_start_time);
+  unsigned char buffer[MSG_TYPE_UPSTREAM_CONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_UPSTREAM_CONNECTED;
+  encode_uint16(upstream->enclave.id, &buffer[1]);
+  if (write_to_net_close_on_error(destination->net, MSG_TYPE_UPSTREAM_CONNECTED_LENGTH, buffer)) {
+    lf_print_warning("RTI: Failed to send upstream connected message to federate %d.", destination->enclave.id);
   }
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_UPSTREAM_CONNECTED, destination->enclave.id, NULL);
+  }
+}
+
+/**
+ * @brief Send MSG_TYPE_UPSTREAM_DISCONNECTED to all federates downstream of the specified `upstream`
+ *  federate, telling them that the specified `upstream` federate is no longer connected.
+ *
+ * This function assumes that the mutex lock is already held.
+ * @param upstream The disconnected upstream federate.
+ */
+static void send_upstream_disconnected_locked(federate_info_t* upstream) {
+  unsigned char buffer[MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_UPSTREAM_DISCONNECTED;
+  encode_uint16(upstream->enclave.id, &buffer[1]);
+  for (int j = 0; j < upstream->enclave.num_immediate_downstreams; j++) {
+    federate_info_t* downstream = GET_FED_INFO(upstream->enclave.immediate_downstreams[j]);
+    if (downstream->enclave.state != NOT_CONNECTED) {
+      if (write_to_net_close_on_error(downstream->net, MSG_TYPE_UPSTREAM_DISCONNECTED_LENGTH, buffer)) {
+        lf_print_warning("RTI: Failed to send upstream disconnected message to federate %d.", downstream->enclave.id);
+      }
+      if (rti_remote->base.tracing_enabled) {
+        tracepoint_rti_to_federate(send_UPSTREAM_DISCONNECTED, downstream->enclave.id, NULL);
+      }
+    }
+  }
+}
+
+/**
+ * @brief Send MSG_TYPE_DOWNSTREAM_CONNECTED to the upstream federates of the specified transient federate.
+ *
+ * This notifies federates that have the specified transient federate as a downstream transient
+ * peer that it has (re-)connected. The notification also includes the `effective_start_tag`
+ * of the federate and shares its IP address and port, so that the destination establishes
+ * (or re-establishes) the P2P connection.
+ *
+ * This function assumes that the mutex lock is already held.
+ * @param my_fed The transient federate that has just connected.
+ */
+static void send_downstream_connected_locked(federate_info_t* my_fed) {
+  unsigned char buffer[MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_DOWNSTREAM_CONNECTED;
+  encode_uint16(my_fed->enclave.id, &buffer[1]);
+  // Iterate over all federates and notify those that have my_fed as a downstream transient.
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+    federate_info_t* fed = GET_FED_INFO(i);
+    if (fed->enclave.state == NOT_CONNECTED) {
+      continue;
+    }
+    for (int32_t j = 0; j < fed->number_of_downstream_transients; j++) {
+      if (fed->downstream_transients[j] == (int32_t)my_fed->enclave.id) {
+        // Encode the effective start_tag
+        encode_tag(&buffer[3], my_fed->effective_start_tag);
+        // Encode the port and IP address
+        // At this point, the RTI should have initialized the remote federate's network abstraction.
+        assert(my_fed->net != NULL);
+        int32_t server_port = get_server_port(my_fed->net);
+        uint32_t* ip_address = (uint32_t*)get_ip_addr(my_fed->net);
+        encode_int32(server_port, &buffer[3 + 12]);
+        encode_uint32(*ip_address, &buffer[3 + 12 + 4]);
+
+        if (write_to_net_close_on_error(fed->net, MSG_TYPE_DOWNSTREAM_CONNECTED_LENGTH, buffer)) {
+          lf_print_warning("RTI: Failed to send downstream connected message to federate %d.", fed->enclave.id);
+        }
+        if (rti_remote->base.tracing_enabled) {
+          tracepoint_rti_to_federate(send_DOWNSTREAM_CONNECTED, fed->enclave.id, NULL);
+        }
+        break;
+      }
+    }
+  }
+}
+
+/**
+ * @brief Send MSG_TYPE_DOWNSTREAM_DISCONNECTED to the upstream federates of a transient federate.
+ *
+ * This notifies upstream federates that a transient federate downstream of them has
+ * disconnected, so they can close the outbound P2P connection to it.
+ *
+ * This function assumes that the mutex lock is already held.
+ * @param my_fed The transient federate that has just disconnected.
+ */
+static void send_downstream_disconnected_locked(federate_info_t* my_fed) {
+  unsigned char buffer[MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH];
+  buffer[0] = MSG_TYPE_DOWNSTREAM_DISCONNECTED;
+  encode_uint16(my_fed->enclave.id, &buffer[1]);
+  // Iterate over all federates and notify those that have my_fed as a downstream transient.
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+    federate_info_t* fed = GET_FED_INFO(i);
+    if (fed->enclave.state == NOT_CONNECTED) {
+      continue;
+    }
+    for (int32_t j = 0; j < fed->number_of_downstream_transients; j++) {
+      if (fed->downstream_transients[j] == (int32_t)my_fed->enclave.id) {
+        if (write_to_net_close_on_error(fed->net, MSG_TYPE_DOWNSTREAM_DISCONNECTED_LENGTH, buffer)) {
+          lf_print_warning("RTI: Failed to send downstream disconnected message to federate %d.", fed->enclave.id);
+        }
+        if (rti_remote->base.tracing_enabled) {
+          tracepoint_rti_to_federate(send_DOWNSTREAM_DISCONNECTED, fed->enclave.id, NULL);
+        }
+        break;
+      }
+    }
+  }
+}
+
+/**
+ * @brief Mark a federate as disconnected and, if this is a transient, inform downstream and
+ * upstream federates.
+ * @param fed The disconnected federate.
+ */
+static void notify_federate_disconnected(federate_info_t* fed) {
+  fed->enclave.state = NOT_CONNECTED;
+  if (fed->is_transient) {
+    LF_MUTEX_LOCK(&rti_mutex);
+    // Notify connected federates.
+    send_upstream_disconnected_locked(fed);
+    send_downstream_disconnected_locked(fed);
+    LF_MUTEX_UNLOCK(&rti_mutex);
+  }
+}
+
+/**
+ * @brief Send a tag advance grant (TAG) message to the specified federate immediately.
+ *
+ * This function will keep a record of this TAG in the enclave's `last_granted` field.
+ *
+ * @param e The scheduling node.
+ * @param tag The tag to grant.
+ */
+static void notify_tag_advance_grant_immediate(scheduling_node_t* e, tag_t tag) {
   size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
   unsigned char buffer[message_length];
   buffer[0] = MSG_TYPE_TAG_ADVANCE_GRANT;
@@ -75,7 +383,8 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   // to fail. Consider a failure here a soft failure and update the federate's status.
   if (write_to_net(((federate_info_t*)e)->net, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
-    e->state = NOT_CONNECTED;
+    // Mark a federate as disconnected and inform if necessary
+    notify_federate_disconnected(GET_FED_INFO(e->id));
   } else {
     e->last_granted = tag;
     LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) " PRINTF_TAG ".", e->id, tag.time - start_time,
@@ -83,7 +392,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   }
 }
 
-void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
+void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   if (e->state == NOT_CONNECTED || lf_tag_compare(tag, e->last_granted) <= 0 ||
       lf_tag_compare(tag, e->last_provisionally_granted) <= 0) {
     return;
@@ -94,6 +403,37 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     // Need to wait here.
     lf_cond_wait(&sent_start_time);
   }
+
+  // Check if sending the tag advance grant needs to be delayed or not.
+  // Delay is needed when a federate has at least one absent upstream transient.
+  // The delay allows physical time to catch up with the logical time of the grant.
+  // The reason for this is that once a tag advance is sent, an upstream transient
+  // federate cannot join at a time earlier than the tag advance.
+  // If we send a grant well before the physical time catches up, the transient federate
+  // will be significantly delayed in joining the federation.
+  federate_info_t* fed = GET_FED_INFO(e->id);
+  if (!fed->has_upstream_transient_federates) {
+    notify_tag_advance_grant_immediate(e, tag);
+  } else {
+    if (get_num_absent_upstream_transients(fed) > 0) {
+      notify_grant_delayed(fed, tag, false);
+    } else {
+      notify_tag_advance_grant_immediate(e, tag);
+    }
+  }
+}
+
+/**
+ * Notify a provisional tag advance grant (PTAG) message to the specified federate
+ * immediately.
+ *
+ * This function will keep a record of this PTAG in the enclave's last_provisionally_granted
+ * field.
+ *
+ * @param e The scheduling node.
+ * @param tag The tag to grant.
+ */
+static void notify_provisional_tag_advance_grant_immediate(scheduling_node_t* e, tag_t tag) {
   size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
   unsigned char buffer[message_length];
   buffer[0] = MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT;
@@ -108,7 +448,8 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
   // to fail. Consider a failure here a soft failure and update the federate's status.
   if (write_to_net(((federate_info_t*)e)->net, message_length, buffer)) {
     lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
-    e->state = NOT_CONNECTED;
+    // Mark a federate as disconnected and inform if necessary
+    notify_federate_disconnected(GET_FED_INFO(e->id));
   } else {
     e->last_provisionally_granted = tag;
     LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) " PRINTF_TAG ".", e->id,
@@ -140,6 +481,32 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
       } else if (lf_tag_compare(earliest, tag) == 0 && lf_tag_compare(strict_earliest, tag) > 0) {
         notify_provisional_tag_advance_grant(upstream, tag);
       }
+    }
+  }
+}
+
+void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
+  if (e->state == NOT_CONNECTED || lf_tag_compare(tag, e->last_granted) <= 0 ||
+      lf_tag_compare(tag, e->last_provisionally_granted) <= 0) {
+    return;
+  }
+  // Need to make sure that the destination federate's thread has already
+  // sent the starting MSG_TYPE_TIMESTAMP message.
+  while (e->state == PENDING) {
+    // Need to wait here.
+    lf_cond_wait(&sent_start_time);
+  }
+
+  // Check if sending the tag advance grant needs to be delayed or not
+  // Delay is needed when a federate has, at least one, absent upstream transient
+  federate_info_t* fed = GET_FED_INFO(e->id);
+  if (!fed->has_upstream_transient_federates) {
+    notify_provisional_tag_advance_grant_immediate(e, tag);
+  } else {
+    if (get_num_absent_upstream_transients(fed) > 0) {
+      notify_grant_delayed(fed, tag, true);
+    } else {
+      notify_provisional_tag_advance_grant_immediate(e, tag);
     }
   }
 }
@@ -287,20 +654,27 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
   // issue a TAG before this message has been forwarded.
   LF_MUTEX_LOCK(&rti_mutex);
 
-  // If the destination federate is no longer connected, issue a warning,
-  // remove the message from the network abstraction and return.
+  // If the destination federate is no longer connected, or it is a transient that has not started
+  // executing yet (the delayed intended tag is less than the effective start tag of the
+  // destination), issue a warning, drop the message, and return.
   federate_info_t* fed = GET_FED_INFO(federate_id);
-  if (fed->enclave.state == NOT_CONNECTED) {
-    lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.", federate_id);
-    LF_PRINT_LOG("Fed status: next_event " PRINTF_TAG ", "
-                 "completed " PRINTF_TAG ", "
-                 "last_granted " PRINTF_TAG ", "
-                 "last_provisionally_granted " PRINTF_TAG ".",
-                 fed->enclave.next_event.time - start_time, fed->enclave.next_event.microstep,
-                 fed->enclave.completed.time - start_time, fed->enclave.completed.microstep,
-                 fed->enclave.last_granted.time - start_time, fed->enclave.last_granted.microstep,
-                 fed->enclave.last_provisionally_granted.time - start_time,
-                 fed->enclave.last_provisionally_granted.microstep);
+  interval_t delay = NEVER;
+  for (int i = 0; i < fed->enclave.num_immediate_upstreams; i++) {
+    if (fed->enclave.immediate_upstreams[i] == sending_federate->enclave.id) {
+      delay = fed->enclave.immediate_upstream_delays[i];
+      break;
+    }
+  }
+  tag_t arrival_tag = lf_delay_tag(intended_tag, delay);
+  if (fed->is_transient && lf_tag_compare(arrival_tag, fed->max_intended_tag) > 0) {
+    // Record this tag regardless of whether the message ends up being dropped below, so that a
+    // future effective_start_tag computation for a rejoining fed can account for it.
+    fed->max_intended_tag = arrival_tag;
+  }
+  if (fed->enclave.state == NOT_CONNECTED || lf_tag_compare(arrival_tag, fed->effective_start_tag) < 0) {
+    lf_print_warning("RTI: Destination federate %d is not connected at logical time (" PRINTF_TAG
+                     "). Dropping message.",
+                     federate_id, intended_tag.time - start_time, intended_tag.microstep);
     // If the message was larger than the buffer, we must empty out the remainder also.
     size_t total_bytes_read = bytes_read;
     while (total_bytes_read < total_bytes_to_read) {
@@ -344,9 +718,9 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     read_from_net_fail_on_error(sending_federate->net, bytes_to_read, buffer, "RTI failed to read message chunks.");
     total_bytes_read += bytes_to_read;
 
-    // FIXME: a mutex needs to be held for this so that other threads
+    // FIXME: The rti_mutex is held here so that other threads
     // do not write to destination_socket and cause interleaving. However,
-    // holding the rti_mutex might be very expensive. Instead, each outgoing
+    // holding the rti_mutex might be very expensive for large messages. Instead, each outgoing
     // network abstraction should probably have its own mutex.
     write_to_net_fail_on_error(fed->net, bytes_to_read, buffer, &rti_mutex, "RTI failed to send message chunks.");
   }
@@ -363,7 +737,6 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
                    "This is going to cause an STP violation under centralized coordination.",
                    federate_id, fed->enclave.completed.time - lf_time_start(), fed->enclave.completed.microstep,
                    intended_tag.time - lf_time_start(), intended_tag.microstep, sending_federate->enclave.id);
-    // FIXME: Drop the federate?
   }
 
   // If the message tag is less than the most recently received NET from the federate,
@@ -401,8 +774,9 @@ void handle_next_event_tag(federate_info_t* fed) {
 
   // Acquire a mutex lock to ensure that this state does not change while a
   // message is in transport or being used to determine a TAG.
-  LF_MUTEX_LOCK(&rti_mutex); // FIXME: Instead of using a mutex, it might be more efficient to use a
-                             // select() mechanism to read and process federates' buffers in an orderly fashion.
+  LF_MUTEX_LOCK(&rti_mutex); // NOTE: Instead of using a mutex, it might be more efficient to use a
+                             // select() mechanism to read and process federates' buffers in an
+                             // orderly fashion.
 
   tag_t intended_tag = extract_tag(buffer);
   if (rti_remote->base.tracing_enabled) {
@@ -462,18 +836,21 @@ static void broadcast_stop_time_to_federates_locked() {
 }
 
 /**
- * Mark a federate requesting stop. If the number of federates handling stop reaches the
- * NUM_OF_FEDERATES, broadcast MSG_TYPE_STOP_GRANTED to every federate.
+ * Mark a federate requesting stop. If the number of federates handling stop reaches
+ * the number of persistent federates, broadcast MSG_TYPE_STOP_GRANTED to every federate.
  * This function assumes the _RTI.mutex is already locked.
  * @param fed The federate that has requested a stop.
  * @return 1 if stop time has been sent to all federates and 0 otherwise.
  */
 static int mark_federate_requesting_stop(federate_info_t* fed) {
   if (!fed->requested_stop) {
-    rti_remote->base.num_scheduling_nodes_handling_stop++;
+    // Increment the number of federates handling stop only if it is persistent
+    if (!fed->is_transient)
+      rti_remote->base.num_scheduling_nodes_handling_stop++;
     fed->requested_stop = true;
   }
-  if (rti_remote->base.num_scheduling_nodes_handling_stop == rti_remote->base.number_of_scheduling_nodes) {
+  if (rti_remote->base.num_scheduling_nodes_handling_stop ==
+      (rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates)) {
     // We now have information about the stop time of all
     // federates.
     broadcast_stop_time_to_federates_locked();
@@ -615,14 +992,38 @@ void handle_address_query(uint16_t fed_id) {
   // Use buffer both for reading and constructing the reply.
   // The length is what is needed for the reply.
   unsigned char buffer[1 + sizeof(int32_t)];
-  read_from_net_fail_on_error(fed->net, sizeof(uint16_t), (unsigned char*)buffer, "Failed to read address query.");
+  // Read remote_fed_id (2 bytes) + is_transient flag (1 byte).
+  read_from_net_fail_on_error(fed->net, sizeof(uint16_t) + 1, (unsigned char*)buffer, "Failed to read address query.");
   uint16_t remote_fed_id = extract_uint16(buffer);
+  bool remote_is_transient = (buffer[sizeof(uint16_t)] == 1);
 
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_from_federate(receive_ADR_QR, fed_id, NULL);
   }
 
   LF_PRINT_DEBUG("RTI received address query from %d for %d.", fed_id, remote_fed_id);
+
+  // If the queried federate is transient, record it in the querying federate's
+  // downstream_transients array (if not already present).
+  if (remote_is_transient) {
+    LF_MUTEX_LOCK(&rti_mutex);
+    bool already_registered = false;
+    int32_t i = 0;
+    for (; i < fed->number_of_downstream_transients; i++) {
+      if (fed->downstream_transients[i] == (int32_t)remote_fed_id) {
+        already_registered = true;
+        break;
+      } else if (fed->downstream_transients[i] == -1) {
+        // This means we have found an empty slot, so we can stop looking.
+        break;
+      }
+    }
+    if (!already_registered) {
+      fed->downstream_transients[i] = (int32_t)remote_fed_id;
+      fed->number_of_downstream_transients++;
+    }
+    LF_MUTEX_UNLOCK(&rti_mutex);
+  }
 
   // NOTE: server_port initializes to -1, which means the RTI does not know
   // the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message
@@ -671,6 +1072,13 @@ void handle_address_query(uint16_t fed_id) {
 
 void handle_address_ad(uint16_t federate_id) {
   federate_info_t* fed = GET_FED_INFO(federate_id);
+  // Guard against late messages arriving after the federate resigned or was hot-swapped out.
+  // After a hot-swap redirect, GET_FED_INFO returns the new federate struct; the old thread
+  // must not attempt I/O on a closed or redirected socket.
+  if (fed->net == NULL || fed->enclave.state == NOT_CONNECTED) {
+    LF_PRINT_LOG("RTI: Ignoring address advertisement from federate %d: socket already closed.", federate_id);
+    return;
+  }
   // Read the port number of the federate that can be used for physical
   // connections to other federates
   int32_t server_port = -1;
@@ -692,13 +1100,122 @@ void handle_address_ad(uint16_t federate_id) {
   }
 }
 
-void handle_timestamp(federate_info_t* my_fed) {
-  unsigned char buffer[sizeof(int64_t)];
-  // Read bytes from the network abstraction. We need 8 bytes.
-  read_from_net_fail_on_error(my_fed->net, sizeof(int64_t), (unsigned char*)&buffer,
+/**
+ * @brief Send the global federation start time and the federate-specific starting tag to the
+ * specified federate.
+ *
+ * For persistent federates and transient federates that happen to join during federation startup,
+ * the `federation_start_time` will match the time in the `federate_start_tag`, and the microstep
+ * will be 0. For a transient federate that joins later, the time in the `federate_start_tag` will
+ * be greater than the `federation_start_time`.
+ *
+ * Before sending the start time and tag, this function notifies `my_fed` of all upstream transient
+ * federates that are connected. After sending the start time and tag, and if `my_fed` is transient,
+ * notify federates downstream of its connection, ensuring proper handling of zero-delay cycles.
+ *
+ * This function assumes that the mutex lock is already held.
+ *
+ * @param my_fed The federate to send the start tag to.
+ */
+static void send_start_tag_locked(federate_info_t* my_fed) {
+  // Notify my_fed of any upstream transient federates that are connected.
+  // This has to occur before sending the start tag so that my_fed does not begin executing thinking
+  // that these upstream federates are not connected.
+  for (int i = 0; i < my_fed->enclave.num_immediate_upstreams; i++) {
+    federate_info_t* fed = GET_FED_INFO(my_fed->enclave.immediate_upstreams[i]);
+    if (fed->is_transient && fed->enclave.state == GRANTED) {
+      send_upstream_connected_locked(my_fed, fed);
+    }
+  }
+  send_downstream_connected_locked(my_fed);
+
+  // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START message.
+  // If it is a persistent federate, only the start_time is sent. If, however, it is a transient
+  // federate, the effective_start_tag is also sent.
+  size_t buffer_size = (my_fed->is_transient) ? MSG_TYPE_TIMESTAMP_TAG_LENGTH : MSG_TYPE_TIMESTAMP_LENGTH;
+  unsigned char start_time_buffer[buffer_size];
+  start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
+  encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+  if (my_fed->is_transient) {
+    encode_tag(&(start_time_buffer[1 + sizeof(instant_t)]), my_fed->effective_start_tag);
+  }
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &(my_fed->effective_start_tag));
+  }
+  if (write_to_net(my_fed->net, buffer_size, start_time_buffer)) {
+    lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
+  } else {
+    // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP_START
+    // message has been sent. That MSG_TYPE_TIMESTAMP_START message grants time advance to
+    // the federate to the my_fed->effective_start_tag.time.
+    my_fed->enclave.state = GRANTED;
+    // Until the transient reports its first NET, bound downstream EIMT by its
+    // effective start (startup reactions, etc.). Otherwise NEVER is treated as
+    // federation start_time, which is wrong for late joiners.
+    if (my_fed->is_transient && lf_tag_compare(my_fed->enclave.next_event, NEVER_TAG) == 0) {
+      my_fed->enclave.next_event = my_fed->effective_start_tag;
+    }
+    lf_cond_broadcast(&sent_start_time);
+    LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
+
+    // If this is a transient federate, notify its downstream federates that it is now connected.
+    if (my_fed->is_transient) {
+      // Notify downstreams: their upstream (my_fed) has connected.
+      for (int i = 0; i < my_fed->enclave.num_immediate_downstreams; i++) {
+        send_upstream_connected_locked(GET_FED_INFO(my_fed->enclave.immediate_downstreams[i]), my_fed);
+      }
+    }
+  }
+}
+
+/**
+ * @brief Handle timestamp or tag messages from a federate.
+ *
+ * These messages are sent when a federate joins the federation. The RTI uses them
+ * to compute the start tag of the federation and the effective_start_time of a joining
+ * transient federate.
+ *
+ * When the federate is not transient, the message type is `MSG_TYPE_TIMESTAMP`.
+ * In this case, the RTI waits until it has received such a message from all the persistent federates.
+ * It selects the maximum of the proposed start times and adds DELAY_START to it.
+ * It then sends the start tag to all federates.
+ *
+ * When the federate is transient, the message type is `MSG_TYPE_TAG`.
+ * The RTI uses the following algorithm to compute the effective_start_time of a joining transient:
+ * - If the coordination is centralized:
+ *   The effective_start_time will be the max among all the following tags:
+ *   1. The tag received from the joining federate, which is (joining time, 0 microstep);
+ *   2. (start_time, 0 microstep);
+ *   3. The latest completed logical tag recorded in the RTI for this federate + 1 microstep;
+ *   4. The latest granted (P)TAG for every downstream federate + 1 microstep; or
+ *   5. The maximun tag of messages from the upstream federates + 1 microstep;
+ *
+ * - If the coordination is decentralized:
+ *   The effective_start_time will be:
+ *   1. If the transient has no upstream federates, then the effective_start_time
+ *      will be whatever (timestamp, microstep) is received from the joining federate;
+ *   2. Otherwise, add DELAY_START to the received timestamp and reset the microstep to 0.
+ *      If DELAY_START is larger than LEX (network latency + clock sync error + execution time)
+ *      minus the `maxwait` of the joining federate,
+ *      then this joining federate will receive any messages from upstream federates
+ *      that have tags equal to the `effective_start_tag` before it advances to
+ *      that effective start tag. Otherwise, if LEX is larger than DELAY_START,
+ *      then a safe-to-process violation may occur.
+ *
+ * This function assumes the caller does not hold the mutex.
+ */
+static void handle_timestamp_or_tag(federate_info_t* my_fed, int type) {
+  size_t buffer_length = (type == MSG_TYPE_TIMESTAMP) ? MSG_TYPE_TIMESTAMP_LENGTH : MSG_TYPE_TAG_LENGTH;
+  unsigned char buffer[--buffer_length];
+  // Read bytes from the network abstraction. We need 8 bytes, at least
+  read_from_net_fail_on_error(my_fed->net, buffer_length, (unsigned char*)&buffer,
                               "ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
 
-  int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t*)(&buffer)));
+  instant_t timestamp = swap_bytes_if_big_endian_int64(*((instant_t*)(&buffer)));
+  microstep_t microstep = 0u;
+  if (type == MSG_TYPE_TAG) {
+    microstep = extract_uint32(&buffer[sizeof(instant_t)]);
+  }
   if (rti_remote->base.tracing_enabled) {
     tag_t tag = {.time = timestamp, .microstep = 0};
     tracepoint_rti_from_federate(receive_TIMESTAMP, my_fed->enclave.id, &tag);
@@ -706,57 +1223,182 @@ void handle_timestamp(federate_info_t* my_fed) {
   LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ".", timestamp);
 
   LF_MUTEX_LOCK(&rti_mutex);
-  rti_remote->num_feds_proposed_start++;
-  if (timestamp > rti_remote->max_start_time) {
-    rti_remote->max_start_time = timestamp;
-  }
-  if (rti_remote->num_feds_proposed_start == rti_remote->base.number_of_scheduling_nodes) {
-    // All federates have proposed a start time.
-    lf_cond_broadcast(&received_start_times);
+
+  // Processing the TIMESTAMP depends on whether it is in the startup phase.
+  if (rti_remote->phase == startup_phase) {
+    // Not all persistent federates have proposed a start time.
+    if (timestamp > rti_remote->max_start_time) {
+      rti_remote->max_start_time = timestamp;
+    }
+    // Note that if a transient federate's thread gets here during the startup phase,
+    // then it will be assigned the same global tag as its effective start tag and its
+    // timestamp will affect that start tag.
+    if (!my_fed->is_transient) {
+      rti_remote->num_feds_proposed_start++;
+    }
+    if (rti_remote->num_feds_proposed_start ==
+        (rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates)) {
+      // This federate is the last persistent federate to proposed a start time.
+      lf_cond_broadcast(&received_start_times);
+      rti_remote->phase = execution_phase;
+    } else {
+      // Wait until all persistent federates have proposed a start time.
+      while (rti_remote->num_feds_proposed_start <
+             (rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates)) {
+        lf_cond_wait(&received_start_times);
+      }
+    }
+    // Add an offset to the maximum tag to get everyone starting together.
+    if (!start_time_is_set) {
+      start_time = rti_remote->max_start_time + DELAY_START;
+      start_time_is_set = true;
+
+      // Set the start_time in the RTI trace
+      if (rti_remote->base.tracing_enabled) {
+        lf_tracing_set_start_time(start_time);
+      }
+    }
+    my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
+
+    // Notify the federate of its start tag.
+    // This has to be done while still holding the mutex.
+    send_start_tag_locked(my_fed);
+
+    LF_MUTEX_UNLOCK(&rti_mutex);
+  } else if (rti_remote->phase == shutdown_phase || !my_fed->is_transient) {
+    LF_MUTEX_UNLOCK(&rti_mutex);
+
+    // Send reject message if the federation is in shutdown phase or if
+    // it is in the execution phase but the federate is persistent.
+    send_reject(my_fed->net, JOINING_TOO_LATE);
+    return;
   } else {
-    // Some federates have not yet proposed a start time.
-    // wait for a notification.
-    while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_scheduling_nodes) {
-      // FIXME: Should have a timeout here?
-      lf_cond_wait(&received_start_times);
+    // The federate is transient and we are in the execution phase.
+    // At this point, we already hold the mutex.
+    if (type == MSG_TYPE_TIMESTAMP) {
+      // Case of centralized coordination.
+      // Condition 1.
+      my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
+
+      // Condition 2.
+      if (timestamp < start_time) {
+        my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
+      }
+
+      // Condition 3.
+      if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) >= 0) {
+        my_fed->effective_start_tag = my_fed->enclave.completed;
+        my_fed->effective_start_tag.microstep++;
+      }
+
+      // Condition 4. Iterate over the downstream federates
+      for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
+        federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
+
+        // Get the max over the TAG of the downstreams
+        if (lf_tag_compare(downstream->enclave.last_granted, my_fed->effective_start_tag) >= 0) {
+          my_fed->effective_start_tag = downstream->enclave.last_granted;
+          my_fed->effective_start_tag.microstep++;
+        }
+
+        // Get the max over the PTAG of the downstreams
+        if (lf_tag_compare(downstream->enclave.last_provisionally_granted, my_fed->effective_start_tag) >= 0) {
+          my_fed->effective_start_tag = downstream->enclave.last_provisionally_granted;
+          my_fed->effective_start_tag.microstep++;
+        }
+      }
+
+      // Condition 5.
+      // Account for messages addressed to my_fed that the RTI has already received, whether or
+      // not they were actually forwarded (they are not forwarded, e.g., while my_fed is absent or
+      // has not yet started). max_intended_tag records the highest delay-adjusted tag of any such
+      // message and, unlike in_transit_message_tags, survives the absence window since it is not
+      // reset on disconnect.
+      if (lf_tag_compare(my_fed->max_intended_tag, my_fed->effective_start_tag) >= 0) {
+        my_fed->effective_start_tag = my_fed->max_intended_tag;
+        my_fed->effective_start_tag.microstep++;
+      }
+
+      // For every downstream that has a pending delayed grant at or after this
+      // federate's effective start tag, cancel it. Those grants were computed while
+      // this transient was absent and must not be sent once it can produce events
+      // at the effective start tag (e.g. TAG(t) must not race with a message at t).
+      // Grants strictly earlier than the effective start remain valid.
+      // TAG re-evaluation for downstreams happens after send_start_tag_locked below.
+      for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
+        federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
+
+        // Ignore this federate if it has resigned.
+        if (downstream->enclave.state == NOT_CONNECTED) {
+          continue;
+        }
+
+        pqueue_delayed_grant_element_t* dge =
+            pqueue_delayed_grants_find_by_fed_id(rti_remote->delayed_grants, downstream->enclave.id);
+        if (dge != NULL && lf_tag_compare(dge->base.tag, my_fed->effective_start_tag) >= 0) {
+          LF_PRINT_LOG("RTI: Canceling delayed grant of " PRINTF_TAG
+                       " for federate %d because transient federate %d rejoined with "
+                       "effective start " PRINTF_TAG ".",
+                       dge->base.tag.time - start_time, dge->base.tag.microstep, downstream->enclave.id,
+                       my_fed->enclave.id, my_fed->effective_start_tag.time - start_time,
+                       my_fed->effective_start_tag.microstep);
+          pqueue_delayed_grants_remove(rti_remote->delayed_grants, dge);
+          free(dge);
+          lf_cond_signal(&updated_delayed_grants);
+        }
+      }
+    } else {
+      // Case of decentralized coordination
+      my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = microstep};
+
+      if (timestamp < start_time) {
+        my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
+      } else if (timestamp > start_time) {
+        bool found_upstream_of_my_fed = false;
+        for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+          federate_info_t* fed = GET_FED_INFO(i);
+          if (fed->enclave.state == NOT_CONNECTED) {
+            continue;
+          }
+          for (int32_t j = 0; j < fed->number_of_downstream_transients; j++) {
+            if (fed->downstream_transients[j] == (int32_t)my_fed->enclave.id) {
+              found_upstream_of_my_fed = true;
+              break;
+            }
+          }
+          if (found_upstream_of_my_fed) {
+            my_fed->effective_start_tag = (tag_t){.time = timestamp + DELAY_START, .microstep = 0u};
+            break;
+          }
+        }
+      }
     }
-  }
 
-  LF_MUTEX_UNLOCK(&rti_mutex);
+    // Once the effective start time is set, send it to the joining transient,
+    // together with the start time of the federation.
 
-  // Send back to the federate the maximum time plus an offset on a TIMESTAMP
-  // message.
-  unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
-  start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
-  // Add an offset to this start time to get everyone starting together.
-  start_time = rti_remote->max_start_time + DELAY_START;
-  // If requested via the -m/--start-time-multiple command-line option, delay the
-  // start so that the starting logical time is a multiple of the given value.
-  if (rti_remote->start_time_multiple > 0LL) {
-    int64_t remainder = start_time % rti_remote->start_time_multiple;
-    if (remainder != 0LL) {
-      start_time += rti_remote->start_time_multiple - remainder;
+    // Have to send the start tag while still holding the mutex to ensure that no message
+    // from an upstream federate is forwarded before the start tag.
+    send_start_tag_locked(my_fed);
+
+    // Whenever a transient joins, invalidate all federates, so that all min_delays_upstream
+    // get re-computed.
+    // NOTE: It might be possible to optimize this to only invalidate those affected by the transient.
+    invalidate_min_delays();
+
+    // With the transient granted and min_delays refreshed, re-evaluate TAG/PTAG for
+    // downstreams (delayed grants at or after the effective start were canceled above).
+    if (type == MSG_TYPE_TIMESTAMP) {
+      for (int j = 0; j < my_fed->enclave.num_immediate_downstreams; j++) {
+        federate_info_t* downstream = GET_FED_INFO(my_fed->enclave.immediate_downstreams[j]);
+        if (downstream->enclave.state != NOT_CONNECTED) {
+          notify_advance_grant_if_safe(&(downstream->enclave));
+        }
+      }
     }
-  }
-  lf_tracing_set_start_time(start_time);
-  encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
 
-  if (rti_remote->base.tracing_enabled) {
-    tag_t tag = {.time = start_time, .microstep = 0};
-    tracepoint_rti_to_federate(send_TIMESTAMP, my_fed->enclave.id, &tag);
+    LF_MUTEX_UNLOCK(&rti_mutex);
   }
-  if (write_to_net(my_fed->net, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
-    lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
-  }
-
-  LF_MUTEX_LOCK(&rti_mutex);
-  // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
-  // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
-  // the federate to the start time.
-  my_fed->enclave.state = GRANTED;
-  lf_cond_broadcast(&sent_start_time);
-  LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
-  LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
 void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type) {
@@ -812,7 +1454,6 @@ void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t s
 void* clock_synchronization_thread(void* noargs) {
   initialize_lf_thread_id();
   // Wait until all federates have been notified of the start time.
-  // FIXME: Use lf_ version of this when merged with master.
   LF_MUTEX_LOCK(&rti_mutex);
   while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_scheduling_nodes) {
     lf_cond_wait(&received_start_times);
@@ -836,7 +1477,7 @@ void* clock_synchronization_thread(void* noargs) {
     for (int fed_id = 0; fed_id < rti_remote->base.number_of_scheduling_nodes; fed_id++) {
       federate_info_t* fed = GET_FED_INFO(fed_id);
       if (fed->enclave.state == NOT_CONNECTED) {
-        // FIXME: We need better error handling here, but clock sync failure
+        // NOTE: Better error handling is needed here, but clock sync failure
         // should not stop execution.
         lf_print_error("Clock sync failed with federate %d. Not connected.", fed_id);
         continue;
@@ -908,17 +1549,18 @@ void* clock_synchronization_thread(void* noargs) {
  */
 static void handle_federate_failed(federate_info_t* my_fed) {
   // Nothing more to do. Close the network abstraction and exit.
-  LF_MUTEX_LOCK(&rti_mutex);
-
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_from_federate(receive_FAILED, my_fed->enclave.id, NULL);
   }
 
+  // First, mark a federate as disconnected and inform if necessary
+  notify_federate_disconnected(my_fed);
+
+  LF_MUTEX_LOCK(&rti_mutex);
+
   // Set the flag telling the RTI to exit with an error code when it exits.
   _lf_federate_reports_error = true;
   lf_print_error("RTI: Federate %d reports an error and has exited.", my_fed->enclave.id);
-
-  my_fed->enclave.state = NOT_CONNECTED;
 
   // Indicate that there will no further events from this federate.
   my_fed->enclave.next_event = FOREVER_TAG;
@@ -929,15 +1571,13 @@ static void handle_federate_failed(federate_info_t* my_fed) {
   // Check downstream federates to see whether they should now be granted a TAG.
   // To handle cycles, need to create a boolean array to keep
   // track of which upstream federates have been visited.
-  bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
-  notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
-  free(visited);
+  notify_downstream_advance_grant_if_safe(&(my_fed->enclave));
 
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
 
 /**
- * Handle MSG_TYPE_RESIGN sent by a federate. This message is sent at the time of termination
+ * Handle `MSG_TYPE_RESIGN` sent by a federate. This message is sent at the time of termination
  * after all shutdown events are processed on the federate.
  *
  * This function assumes the caller does not hold the mutex.
@@ -950,28 +1590,26 @@ static void handle_federate_failed(federate_info_t* my_fed) {
  */
 static void handle_federate_resign(federate_info_t* my_fed) {
   // Nothing more to do. Close the network abstraction and exit.
-  LF_MUTEX_LOCK(&rti_mutex);
-
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_from_federate(receive_RESIGN, my_fed->enclave.id, NULL);
   }
 
+  // First, mark a federate as disconnected and inform if necessary
+  notify_federate_disconnected(my_fed);
   lf_print_info("RTI: Federate %d has resigned.", my_fed->enclave.id);
 
-  my_fed->enclave.state = NOT_CONNECTED;
+  LF_MUTEX_LOCK(&rti_mutex);
 
   // Indicate that there will no further events from this federate.
   my_fed->enclave.next_event = FOREVER_TAG;
 
+  // Use shutdown_net to gracefully close the connection.
+  // This signals the other side that no further writes are forthcoming and waits for EOF.
   shutdown_net(my_fed->net, true);
   my_fed->net = NULL;
 
   // Check downstream federates to see whether they should now be granted a TAG.
-  // To handle cycles, need to create a boolean array to keep
-  // track of which upstream federates have been visited.
-  bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
-  notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
-  free(visited);
+  notify_downstream_advance_grant_if_safe(&(my_fed->enclave));
 
   LF_MUTEX_UNLOCK(&rti_mutex);
 }
@@ -997,13 +1635,13 @@ void* federate_info_thread_TCP(void* fed) {
       // Prevent multiple threads from closing the same network abstraction at the same time.
       shutdown_net(my_fed->net, false);
       my_fed->net = NULL;
-      // FIXME: We need better error handling here, but do not stop execution here.
       break;
     }
     LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->enclave.id);
     switch (buffer[0]) {
     case MSG_TYPE_TIMESTAMP:
-      handle_timestamp(my_fed);
+    case MSG_TYPE_TAG:
+      handle_timestamp_or_tag(my_fed, buffer[0]);
       break;
     case MSG_TYPE_ADDRESS_QUERY:
       handle_address_query(my_fed->enclave.id);
@@ -1016,7 +1654,7 @@ void* federate_info_thread_TCP(void* fed) {
       break;
     case MSG_TYPE_RESIGN:
       handle_federate_resign(my_fed);
-      return NULL;
+      break;
     case MSG_TYPE_NEXT_EVENT_TAG:
       handle_next_event_tag(my_fed);
       break;
@@ -1024,10 +1662,7 @@ void* federate_info_thread_TCP(void* fed) {
       handle_latest_tag_confirmed(my_fed);
       break;
     case MSG_TYPE_STOP_REQUEST:
-      handle_stop_request_message(my_fed); // FIXME: Reviewed until here.
-                                           // Need to also look at
-                                           // notify_advance_grant_if_safe()
-                                           // and notify_downstream_advance_grant_if_safe()
+      handle_stop_request_message(my_fed);
       break;
     case MSG_TYPE_STOP_REQUEST_REPLY:
       handle_stop_request_reply(my_fed);
@@ -1046,14 +1681,63 @@ void* federate_info_thread_TCP(void* fed) {
       }
     }
   }
+
+  // Nothing more to do. Close the net and exit.
+  // Prevent multiple threads from closing the same net at the same time.
+  LF_MUTEX_LOCK(&rti_mutex);
+  shutdown_net(my_fed->net, false);
+  my_fed->net = NULL;
+  // Manual clean, in case of a transient federate
+  if (my_fed->is_transient) {
+    lf_print_info("RTI: Transient Federate %d thread exited.", my_fed->enclave.id);
+
+    // Notify downstream and upstream federates that this transient has disconnected, mirroring
+    // notify_federate_disconnected(). A transient typically leaves without a MSG_TYPE_RESIGN
+    // handshake (e.g., it calls lf_stop() and simply closes its socket), so this abrupt-disconnect
+    // path is reached instead of handle_federate_resign(). Without these notifications, upstream
+    // federates keep a stale outbound P2P connection to the transient and never reconnect to it
+    // when it rejoins, silently dropping every message addressed to it. The federate-side handlers
+    // are idempotent, so this is safe even if the notifications were already sent via a resign.
+    send_upstream_disconnected_locked(my_fed);
+    send_downstream_disconnected_locked(my_fed);
+
+    // Update the number of connected transient federates
+    rti_remote->number_of_connected_transient_federates--;
+
+    // Reset the status of the leaving federate
+    reset_transient_federate(my_fed);
+  } else {
+    // This federate is not coming back. Unlike a transient federate (whose
+    // next_event is reset to NEVER_TAG since it may reconnect and send more
+    // events later), indicate that there will be no further events from it,
+    // mirroring what handle_federate_resign() does for a graceful shutdown.
+    my_fed->enclave.next_event = FOREVER_TAG;
+  }
+
+  // A federate's departure, graceful or not, may be exactly what unblocks a
+  // TAG grant for a downstream federate (e.g., its next event bound was only
+  // pending on this federate). Unlike handle_federate_resign(), reaching this
+  // point via an abrupt disconnect does not otherwise trigger this check, so
+  // a federate that closes its connection without sending MSG_TYPE_RESIGN
+  // first (as happens, e.g., when a transient federate calls lf_stop(),
+  // which involves no RTI handshake) would otherwise leave federates
+  // downstream of it waiting forever for a grant that will never come.
+  notify_downstream_advance_grant_if_safe(&(my_fed->enclave));
+
+  // Signal the hot swap mechanism, if needed
+  if (hot_swap_in_progress && hot_swap_federate->enclave.id == my_fed->enclave.id) {
+    hot_swap_old_resigned = true;
+    lf_cond_signal(&hot_swap_old_resigned_cond);
+  }
+  LF_MUTEX_UNLOCK(&rti_mutex);
   return NULL;
 }
 
-void send_reject(net_abstraction_t net_abs, unsigned char error_code) {
+void send_reject(net_abstraction_t net_abs, rejection_code_t error_code) {
   LF_PRINT_DEBUG("RTI sending MSG_TYPE_REJECT.");
   unsigned char response[2];
   response[0] = MSG_TYPE_REJECT;
-  response[1] = error_code;
+  response[1] = (unsigned char)error_code;
   LF_MUTEX_LOCK(&rti_mutex);
   // NOTE: Ignore errors on this response.
   if (write_to_net(net_abs, 2, response)) {
@@ -1065,35 +1749,35 @@ void send_reject(net_abstraction_t net_abs, unsigned char error_code) {
 }
 
 /**
- * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
- * a federate ID and a federation ID. If the federation ID
+ * Listen for a `MSG_TYPE_FED_IDS` or `MSG_TYPE_TRANSIENT_FED_IDS` message,
+ * which includes as a payload a federate ID and a federation ID. If the federation ID
  * matches this federation, send an MSG_TYPE_ACK and otherwise send
  * a MSG_TYPE_REJECT message.
  * @param fed_net Pointer to the network abstraction on which to listen.
  * @return The federate ID for success or -1 for failure.
  */
 static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
-  // Buffer for message ID, federate ID, and federation ID length.
-  size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
-  unsigned char buffer[length];
+  // Buffer for message ID, federate ID, type (persistent or transient), and federation ID length.
+  unsigned char buffer[MSG_TYPE_FED_IDS_LENGTH];
 
   // Read bytes from the network abstraction. We need 4 bytes.
-  if (read_from_net_close_on_error(fed_net, length, buffer)) {
+  if (read_from_net_close_on_error(fed_net, MSG_TYPE_FED_IDS_LENGTH, buffer)) {
     lf_print_error("RTI failed to read from accepted connection.");
     return -1;
   }
 
   uint16_t fed_id = rti_remote->base.number_of_scheduling_nodes; // Initialize to an invalid value.
+  bool is_transient = false;
 
   // First byte received is the message type.
-  if (buffer[0] != MSG_TYPE_FED_IDS) {
+  if (buffer[0] != MSG_TYPE_FED_IDS && buffer[0] != MSG_TYPE_TRANSIENT_FED_IDS) {
     if (rti_remote->base.tracing_enabled) {
       tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
     }
     if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       // The federate is trying to connect to a peer, not to the RTI.
       // It has connected to the RTI instead.
-      // FIXME: This should not happen, but apparently has been observed.
+      // NOTE: This should not happen, but apparently has been observed.
       // It should not happen because the peers get the port and IP address
       // of the peer they want to connect to from the RTI.
       // If the connection is a peer-to-peer connection between two
@@ -1105,15 +1789,23 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
     } else {
       send_reject(fed_net, UNEXPECTED_MESSAGE);
     }
-    lf_print_error("RTI expected a MSG_TYPE_FED_IDS message. Got %u (see net_common.h).", buffer[0]);
+    lf_print_error("RTI expected a MSG_TYPE_FED_IDS or MSG_TYPE_TRANSIENT_FED_IDS message. Got %u (see net_common.h).",
+                   buffer[0]);
     return -1;
   } else {
     // Received federate ID.
     fed_id = extract_uint16(buffer + 1);
-    LF_PRINT_DEBUG("RTI received federate ID: %d.", fed_id);
-
-    // Read the federation ID.  First read the length, which is one byte.
+    // Read the federation ID length, which is one byte.
     size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
+    is_transient = (buffer[0] == MSG_TYPE_TRANSIENT_FED_IDS) ? true : false;
+
+    if (is_transient) {
+      LF_PRINT_LOG("RTI received federate ID: %d, which is transient.", fed_id);
+    } else {
+      LF_PRINT_LOG("RTI received federate ID: %d, which is persistent.", fed_id);
+    }
+
+    // Read the federation ID.
     char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
     // Next read the actual federation ID.
     if (read_from_net_close_on_error(fed_net, federation_id_length, (unsigned char*)federation_id_received)) {
@@ -1149,18 +1841,62 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
         send_reject(fed_net, FEDERATE_ID_OUT_OF_RANGE);
         return -1;
       } else {
+        // Find out if it is a new connection or a hot swap.
+        // Reject if:
+        //  - duplicate of a connected persistent federate
+        //  - or hot_swap is already in progress (Only 1 hot swap at a time!), for that
+        //    particular federate
+        //  - or it is a hot swap, but it is not the execution phase yet
+        lf_mutex_lock(&rti_mutex);
         if ((rti_remote->base.scheduling_nodes[fed_id])->state != NOT_CONNECTED) {
-          lf_print_error("RTI received duplicate federate ID: %d.", fed_id);
-          if (rti_remote->base.tracing_enabled) {
-            tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
+          if (!is_transient) {
+            lf_print_error("RTI received duplicate federate ID: %d.", fed_id);
+            if (rti_remote->base.tracing_enabled) {
+              tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
+            }
+            send_reject(fed_net, FEDERATE_ID_IN_USE);
+            return -1;
+          } else if (hot_swap_in_progress || rti_remote->phase != execution_phase) {
+            lf_print_warning("RTI rejects the connection of transient federate %d, \
+                                        because a hot swap is already in progress for federate %d. \n\
+                                        Only one hot swap operation is allowed at a time.",
+                             fed_id, hot_swap_federate->enclave.id);
+            if (rti_remote->base.tracing_enabled) {
+              tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
+            }
+            send_reject(fed_net, FEDERATE_ID_IN_USE);
+            return -1;
           }
-          send_reject(fed_net, FEDERATE_ID_IN_USE);
-          return -1;
         }
+        lf_mutex_unlock(&rti_mutex);
       }
     }
   }
-  federate_info_t* fed = GET_FED_INFO(fed_id);
+
+  federate_info_t* fed_twin = GET_FED_INFO(fed_id);
+  federate_info_t* fed;
+  // If the federate is already connected (making the request a duplicate), and that
+  // the federate is transient, and it is the execution phase, then  mark that a hot
+  // swap is in progress and initialize the hot_swap_federate.
+  // Otherwise, proceed with a normal transinet connection
+  if (fed_twin->enclave.state != NOT_CONNECTED && is_transient && fed_twin->is_transient &&
+      rti_remote->phase == execution_phase && !hot_swap_in_progress) {
+    // Allocate memory for the new federate and initialize it
+    hot_swap_federate = (federate_info_t*)malloc(sizeof(federate_info_t));
+    initialize_federate(hot_swap_federate, fed_id);
+
+    // Set that hot swap is in progress
+    lf_mutex_lock(&rti_mutex);
+    hot_swap_in_progress = true;
+    lf_mutex_unlock(&rti_mutex);
+    hot_swap_old_resigned = false;
+    fed = hot_swap_federate;
+    lf_print_info("RTI: Hot Swap starting for federate %d.", fed_id);
+  } else {
+    fed = fed_twin;
+    fed->is_transient = is_transient;
+  }
+
   // The MSG_TYPE_FED_IDS message has the right federation ID.
 
   fed->net = fed_net;
@@ -1171,13 +1907,13 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
   fed->enclave.state = PENDING;
 
   LF_PRINT_DEBUG("RTI responding with MSG_TYPE_ACK to federate %d.", fed_id);
-  // Send an MSG_TYPE_ACK message.
-  unsigned char ack_message = MSG_TYPE_ACK;
+  unsigned char ack_message[1];
+  ack_message[0] = MSG_TYPE_ACK;
   if (rti_remote->base.tracing_enabled) {
     tracepoint_rti_to_federate(send_ACK, fed_id, NULL);
   }
   LF_MUTEX_LOCK(&rti_mutex);
-  if (write_to_net_close_on_error(fed->net, 1, &ack_message)) {
+  if (write_to_net_close_on_error(fed->net, 1, ack_message)) {
     LF_MUTEX_UNLOCK(&rti_mutex);
     lf_print_error("RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
     return -1;
@@ -1192,6 +1928,11 @@ static int32_t receive_and_check_fed_id_message(net_abstraction_t fed_net) {
 /**
  * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
  * out the relevant information in the federate's struct.
+ *
+ * In case of a hot swap or rejoin, check that no changes were made to the connections,
+ * compared to the first instance that joined. This means that the first instance to join
+ * __is__ the reference.
+ *
  * @return 1 on success and 0 on failure.
  */
 static int receive_connection_information(net_abstraction_t fed_net, uint16_t fed_id) {
@@ -1208,7 +1949,21 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
     send_reject(fed_net, UNEXPECTED_MESSAGE);
     return 0;
   } else {
-    federate_info_t* fed = GET_FED_INFO(fed_id);
+    // The first accepted MSG_TYPE_NEIGHBOR_STRUCTURE for this federate ID is the reference.
+    // On hot swap or rejoin, parse into a separate struct and reject if it differs.
+    federate_info_t* reference = GET_FED_INFO(fed_id);
+    federate_info_t* fed = reference; // Where the incoming structure is stored.
+    federate_info_t* scratch = NULL;
+    bool validate = hot_swap_in_progress || reference->neighbor_structure_received;
+
+    if (hot_swap_in_progress) {
+      fed = hot_swap_federate;
+    } else if (validate) {
+      scratch = (federate_info_t*)calloc(1, sizeof(federate_info_t));
+      initialize_federate(scratch, fed_id);
+      fed = scratch;
+    }
+
     // Read the number of upstream and downstream connections
     fed->enclave.num_immediate_upstreams = extract_int32(&(connection_info_header[1]));
     fed->enclave.num_immediate_downstreams = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
@@ -1258,6 +2013,54 @@ static int receive_connection_information(net_abstraction_t fed_net, uint16_t fe
 
       free(connections_info_body);
     }
+
+    // NOTE: In this design, changes in the connections are not allowed. This means that the first
+    //       instance to join __is__ the reference. If this policy is to be changed, then it is in
+    //       the following lines will be updated accordingly.
+    if (validate) {
+      // Compare the incoming structure (fed) against the established reference.
+      bool reject = false;
+      if ((fed->enclave.num_immediate_upstreams != reference->enclave.num_immediate_upstreams) ||
+          (fed->enclave.num_immediate_downstreams != reference->enclave.num_immediate_downstreams)) {
+        reject = true;
+      } else {
+        // Then check all upstreams and their delays
+        for (int i = 0; i < fed->enclave.num_immediate_upstreams; i++) {
+          if ((fed->enclave.immediate_upstreams[i] != reference->enclave.immediate_upstreams[i]) ||
+              (fed->enclave.immediate_upstream_delays[i] != reference->enclave.immediate_upstream_delays[i])) {
+            reject = true;
+            break;
+          }
+        }
+        if (!reject) {
+          // Finally, check all downstream federates
+          for (int i = 0; i < fed->enclave.num_immediate_downstreams; i++) {
+            if (fed->enclave.immediate_downstreams[i] != reference->enclave.immediate_downstreams[i]) {
+              reject = true;
+              break;
+            }
+          }
+        }
+      }
+      if (reject) {
+        lf_print_error("RTI rejecting federate %d: neighbor structure differs from the reference.", fed_id);
+        if (scratch != NULL) {
+          free_federate_info(scratch);
+        }
+        // hot_swap_federate is freed by the caller on failure.
+        return 0;
+      }
+      // Scratch federate used only to validate an unchanged neighborhood on rejoin.
+      if (scratch != NULL) {
+        free_federate_info(scratch);
+      } else {
+        // Hot swap: keep the validated copy on hot_swap_federate.
+        fed->neighbor_structure_received = true;
+      }
+    } else {
+      // First join: the parsed structure is now the reference.
+      fed->neighbor_structure_received = true;
+    }
   }
   LF_PRINT_DEBUG("RTI received neighbor structure from federate %d.", fed_id);
   return 1;
@@ -1290,7 +2093,12 @@ static int receive_udp_message_and_set_up_clock_sync(net_abstraction_t fed_net, 
     send_reject(fed_net, UNEXPECTED_MESSAGE);
     return 0;
   } else {
-    federate_info_t* fed = GET_FED_INFO(fed_id);
+    federate_info_t* fed;
+    if (hot_swap_in_progress) {
+      fed = hot_swap_federate;
+    } else {
+      fed = GET_FED_INFO(fed_id);
+    }
     if (rti_remote->clock_sync_global_status >= clock_sync_init) {
       // If no initial clock sync, no need perform initial clock sync.
       uint16_t federate_UDP_port_number = extract_uint16(&(response[1]));
@@ -1416,8 +2224,8 @@ static bool authenticate_federate(net_abstraction_t fed_net) {
 }
 #endif
 
-void lf_connect_to_federates(net_abstraction_t rti_net) {
-  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+void lf_connect_to_persistent_federates(net_abstraction_t rti_net) {
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates; i++) {
     net_abstraction_t fed_net = accept_net(rti_net);
     if (fed_net == NULL) {
       lf_print_warning("RTI failed to accept the federate.");
@@ -1448,13 +2256,21 @@ void lf_connect_to_federates(net_abstraction_t rti_net) {
       // synchronization messages.
       federate_info_t* fed = GET_FED_INFO(fed_id);
       lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
+
+      // If the federate is transient, then do not count it.
+      if (fed->is_transient) {
+        rti_remote->number_of_connected_transient_federates++;
+        assert(rti_remote->number_of_connected_transient_federates <= rti_remote->number_of_transient_federates);
+        i--;
+        lf_print_info("RTI: Transient federate %d joined.", fed->enclave.id);
+      }
     } else {
       // Received message was rejected. Try again.
       i--;
     }
   }
   // All federates have connected.
-  LF_PRINT_DEBUG("All federates have connected to RTI.");
+  LF_PRINT_DEBUG("All persistent federates have connected to RTI.");
 
   if (rti_remote->clock_sync_global_status >= clock_sync_on) {
     // Create the thread that performs periodic PTP clock synchronization sessions
@@ -1474,6 +2290,210 @@ void lf_connect_to_federates(net_abstraction_t rti_net) {
   }
 }
 
+/**
+ * @brief A request for immediate stop to the federate
+ *
+ * @param fed: The federate to send the stop message to.
+ */
+void send_stop(federate_info_t* fed) {
+  unsigned char outgoing_buffer[MSG_TYPE_STOP_LENGTH];
+  outgoing_buffer[0] = MSG_TYPE_STOP;
+  lf_print("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
+
+  if (rti_remote->base.tracing_enabled) {
+    tracepoint_rti_to_federate(send_STOP, fed->enclave.id, NULL);
+  }
+  write_to_net_fail_on_error(fed->net, MSG_TYPE_STOP_LENGTH, outgoing_buffer, NULL,
+                             "RTI failed to send MSG_TYPE_STOP message to federate %d.", fed->enclave.id);
+
+  LF_PRINT_LOG("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
+}
+
+/**
+ * @brief Thread to wait for incoming connection request from transient federates.
+ * @ingroup RTI
+ *
+ * Upon receiving the connection request, check if a hot swap should start or
+ * simply create a thread to communicate with that federate.
+ * Stops if all persistent federates exited.
+ *
+ * @param nothing Nothing needed here.
+ */
+static void* lf_connect_to_transient_federates_thread(void* nothing) {
+  (void)nothing; // Suppress unused parameter warning.
+  // This loop will continue to accept connections of transient federates, as soon as there is room,
+  // or enable hot swap
+  while (!rti_remote->all_persistent_federates_exited) {
+    // Continue waiting for an incoming connection requests from transients to join, or for hot
+    // swap. Wait for an incoming connection request.
+    net_abstraction_t fed_net = accept_net(rti_remote->rti_net);
+
+    // If accept failed (e.g., net was shut down), exit the loop.
+    if (fed_net == NULL) {
+      break;
+    }
+
+// Wait for the first message from the federate when RTI -a option is on.
+#ifdef __RTI_AUTH__
+    if (rti_remote->authentication_enabled) {
+      if (!authenticate_federate(fed_net)) {
+        lf_print_warning("RTI failed to authenticate the incoming federate.");
+        // Close the network abstraction without reading until EOF.
+        shutdown_net(fed_net, false);
+        fed_net = NULL;
+        continue;
+      }
+    }
+#endif
+
+    // The first message from the federate should contain its ID and the federation ID.
+    // The function also detects if a hot swap request is initiated.
+    int32_t fed_id = receive_and_check_fed_id_message(fed_net);
+
+    if (fed_id >= 0 && receive_connection_information(fed_net, (uint16_t)fed_id) &&
+        receive_udp_message_and_set_up_clock_sync(fed_net, (uint16_t)fed_id)) {
+      LF_MUTEX_LOCK(&rti_mutex);
+      if (hot_swap_in_progress) {
+        lf_print("RTI: Hot swap confirmed for federate %d.", fed_id);
+
+        // Then send STOP
+        federate_info_t* fed_old = GET_FED_INFO(fed_id);
+        hot_swap_federate->enclave.completed = fed_old->enclave.completed;
+
+        LF_PRINT_LOG("RTI: Send MSG_TYPE_STOP to old federate %d.", fed_id);
+        send_stop(fed_old);
+        // Wait for the old federate to send MSG_TYPE_RESIGN
+        LF_PRINT_LOG("RTI: Waiting for old federate %d to send resign.", fed_id);
+        while (!hot_swap_old_resigned) {
+          lf_cond_wait(&hot_swap_old_resigned_cond);
+        }
+        LF_MUTEX_UNLOCK(&rti_mutex);
+
+        // Join the old thread so we know it has fully exited before redirecting or freeing.
+        // Without this, free_federate_info(fed_old) races with the old thread's post-resign cleanup code.
+        lf_thread_join(fed_old->thread_id, NULL);
+
+        // The latest LTC is the tag at which the old federate resigned. This is useful
+        // for computing the effective_start_time of the new joining federate.
+        hot_swap_federate->enclave.completed = fed_old->enclave.completed;
+
+        // Redirect the federate in rti_remote BEFORE creating the new thread.
+        // The old thread is already joined above, so fed_old is no longer reachable
+        // via GET_FED_INFO. Redirecting first ensures that when the new thread runs
+        // and calls handle_address_ad / handle_address_query, GET_FED_INFO(fed_id)
+        // returns hot_swap_federate (with a valid net), not fed_old (net == NULL).
+        // Without this ordering, the new thread may enter a handler, see net == NULL,
+        // skip consuming the message payload, and desync the protocol stream — causing
+        // garbage message types, read errors, and a fatal ENOTTY in CI.
+        rti_remote->base.scheduling_nodes[fed_id] = (scheduling_node_t*)hot_swap_federate;
+
+        // Free the old federate and all nested allocations.
+        free_federate_info(fed_old);
+
+        // Create a thread to communicate with the federate.
+        // This has to be done after clock synchronization is finished
+        // or that thread may end up attempting to handle incoming clock
+        // synchronization messages.
+        lf_thread_create(&(hot_swap_federate->thread_id), federate_info_thread_TCP, hot_swap_federate);
+        lf_mutex_lock(&rti_mutex);
+        hot_swap_in_progress = false;
+        lf_mutex_unlock(&rti_mutex);
+
+        lf_print("RTI: Hot swap succeeded for federate %d.", fed_id);
+      } else {
+        lf_mutex_unlock(&rti_mutex);
+
+        // Create a thread to communicate with the federate.
+        // This has to be done after clock synchronization is finished
+        // or that thread may end up attempting to handle incoming clock
+        // synchronization messages.
+        federate_info_t* fed = GET_FED_INFO(fed_id);
+        lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
+        lf_print_info("RTI: Transient federate %d joined.", fed_id);
+      }
+      rti_remote->number_of_connected_transient_federates++;
+    } else {
+      // If a hot swap was initialized, but the connection information or/and clock
+      // synchronization fail, then reset hot_swap_in_progress, and free the memory
+      // allocated for hot_swap_federate
+      if (hot_swap_in_progress) {
+        lf_print("RTI: Hot swap canceled for federate %d.", fed_id);
+        lf_mutex_lock(&rti_mutex);
+        hot_swap_in_progress = false;
+        lf_mutex_unlock(&rti_mutex);
+
+        // Free the abandoned hot-swap federate and all nested allocations
+        // (including net, which was assigned during the failed join attempt).
+        free_federate_info(hot_swap_federate);
+        hot_swap_federate = NULL;
+      }
+    }
+  }
+  return NULL;
+}
+
+/**
+ * @brief Thread that manages the delayed grants using a priprity queue.
+ *
+ * This thread is responsible for managing the priority queue of delayed grants to be issued.
+ * It waits until the current time matches the highest priority tag time in the queue.
+ * If reached, it notifies the grant immediately. If, however, the current time has not yet
+ * reached the highest priority tag and the queue has been updated (either by inserting or
+ * canceling an entry), the thread stops waiting and restarts the process again.
+ */
+static void* lf_delayed_grants_thread(void* nothing) {
+  initialize_lf_thread_id();
+  // Hold the mutex when not waiting.
+  LF_MUTEX_LOCK(&rti_mutex);
+  while (!rti_remote->all_persistent_federates_exited) {
+    if (pqueue_delayed_grants_size(rti_remote->delayed_grants) > 0) {
+      // Do not pop, but rather peek.
+      pqueue_delayed_grant_element_t* next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
+      instant_t next_time = next->base.tag.time;
+      // Wait for expiration, or a signal to stop or terminate.
+      int ret = lf_clock_cond_timedwait(&updated_delayed_grants, next_time);
+      if (ret == LF_TIMEOUT) {
+        // Time reached to send the grant.
+        // However, the grant may have been canceled while we were waiting.
+        pqueue_delayed_grant_element_t* new_next = pqueue_delayed_grants_peek(rti_remote->delayed_grants);
+        if (next == new_next) {
+          pqueue_delayed_grants_pop(rti_remote->delayed_grants);
+          federate_info_t* fed = GET_FED_INFO(next->fed_id);
+          // If all upstream transients have reconnected, this delayed grant is stale:
+          // it was queued while an upstream was absent and must not bypass EIMT checks.
+          // Drop it and let the normal TAG/PTAG logic decide.
+          if (get_num_absent_upstream_transients(fed) == 0) {
+            LF_PRINT_LOG("RTI: Dropping delayed grant of " PRINTF_TAG
+                         " for federate %d because upstream transient(s) reconnected.",
+                         next->base.tag.time - start_time, next->base.tag.microstep, next->fed_id);
+            notify_advance_grant_if_safe(&(fed->enclave));
+          } else if (lf_tag_compare(next->base.tag, fed->enclave.last_granted) <= 0 ||
+                     lf_tag_compare(next->base.tag, fed->enclave.last_provisionally_granted) <= 0) {
+            // Redundant with a grant already sent (e.g. while the transient was absent).
+            LF_PRINT_LOG("RTI: Dropping redundant delayed grant of " PRINTF_TAG " for federate %d.",
+                         next->base.tag.time - start_time, next->base.tag.microstep, next->fed_id);
+          } else if (next->is_provisional) {
+            notify_provisional_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+          } else {
+            notify_tag_advance_grant_immediate(&(fed->enclave), next->base.tag);
+          }
+          free(next);
+        }
+      } else if (ret != 0) {
+        // An error occurred.
+        lf_print_error_and_exit("lf_delayed_grants_thread: lf_clock_cond_timedwait failed with code %d.", ret);
+      }
+    } else if (pqueue_delayed_grants_size(rti_remote->delayed_grants) == 0) {
+      // Wait for something to appear on the queue.
+      lf_cond_wait(&updated_delayed_grants);
+    }
+  }
+  // Free any delayed grants that are still on the queue.
+  pqueue_delayed_grants_free(rti_remote->delayed_grants);
+  LF_MUTEX_UNLOCK(&rti_mutex);
+  return NULL;
+}
+
 void* respond_to_erroneous_connections(void* nothing) {
   initialize_lf_thread_id();
   while (true) {
@@ -1491,7 +2511,7 @@ void* respond_to_erroneous_connections(void* nothing) {
     lf_print_error("RTI received an unexpected connection request. Federation is running.");
     unsigned char response[2];
     response[0] = MSG_TYPE_REJECT;
-    response[1] = FEDERATION_ID_DOES_NOT_MATCH;
+    response[1] = (unsigned char)FEDERATION_ID_DOES_NOT_MATCH;
     // Ignore errors on this response.
     if (write_to_net(fed_net, 2, response)) {
       lf_print_warning("RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
@@ -1507,6 +2527,65 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   fed->requested_stop = false;
   fed->clock_synchronization_enabled = true;
   fed->in_transit_message_tags = pqueue_tag_init(10);
+  fed->has_upstream_transient_federates = false;
+  fed->is_transient = true;
+  fed->effective_start_tag = NEVER_TAG;
+  fed->max_intended_tag = NEVER_TAG;
+  fed->neighbor_structure_received = false;
+  fed->number_of_downstream_transients = 0;
+  int32_t num_transients = rti_remote->number_of_transient_federates;
+  fed->downstream_transients = (int32_t*)malloc(num_transients * sizeof(int32_t));
+  for (int32_t i = 0; i < num_transients; i++) {
+    fed->downstream_transients[i] = -1;
+  }
+}
+
+void free_federate_info(federate_info_t* fed) {
+  if (fed == NULL) {
+    return;
+  }
+  if (fed->net != NULL) {
+    shutdown_net(fed->net, false);
+    fed->net = NULL;
+  }
+  if (fed->in_transit_message_tags != NULL) {
+    pqueue_tag_free(fed->in_transit_message_tags);
+    fed->in_transit_message_tags = NULL;
+  }
+  free(fed->downstream_transients);
+  free(fed->enclave.immediate_upstreams);
+  free(fed->enclave.immediate_upstream_delays);
+  free(fed->enclave.immediate_downstreams);
+  free(fed);
+}
+
+void reset_transient_federate(federate_info_t* fed) {
+  // Reset all the timing information from the previous run
+  fed->enclave.completed = NEVER_TAG;
+  fed->enclave.last_granted = NEVER_TAG;
+  fed->enclave.last_provisionally_granted = NEVER_TAG;
+  fed->enclave.next_event = NEVER_TAG;
+  // Reset of the federate-related attributes
+  shutdown_net(fed->net, false);
+  fed->net = NULL;
+  fed->clock_synchronization_enabled = true;
+  // FIXME: The following two lines can be improved?
+  pqueue_tag_free(fed->in_transit_message_tags);
+  fed->in_transit_message_tags = pqueue_tag_init(10);
+  fed->requested_stop = false;
+  fed->effective_start_tag = NEVER_TAG;
+  // max_intended_tag is deliberately NOT reset here: it must survive the absence window so that
+  // the next effective_start_tag computation (Condition 5) can account for messages that were
+  // dropped while this federate was disconnected.
+  fed->number_of_downstream_transients = 0;
+  int32_t num_transients = rti_remote->number_of_transient_federates;
+  for (int32_t i = 0; i < num_transients; i++) {
+    fed->downstream_transients[i] = -1;
+  }
+  // Whenever a transient resigns or leaves, invalidate all federates, so that all
+  // min_delays_upstream get re-computed.
+  // NOTE: It might be possible to optimize this to only invalidate those affected by the transient.
+  invalidate_min_delays();
 }
 
 int start_rti_server() {
@@ -1531,36 +2610,131 @@ int start_rti_server() {
   return 0;
 }
 
+/**
+ * Iterate over the federates and set 'has_upstream_transient_federates'.
+ * Once done, check that no transient federate has an upstream transient federate.
+ * and compute the number of persistent federates that do have upstream transients,
+ * which is the maximun number of delayed grants that can be pending at the same time.
+ * This is useful for initializing the queue of delayed grants.
+
+ * @return -1, if there is more than one level of transiency, else, the number of
+ *          persistent federates that have an upstream transient
+ */
+static int set_has_upstream_transient_federates_parameter_and_check() {
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+    federate_info_t* fed = GET_FED_INFO(i);
+    for (int j = 0; j < fed->enclave.num_immediate_upstreams; j++) {
+      federate_info_t* upstream_fed = GET_FED_INFO(fed->enclave.immediate_upstreams[j]);
+      if (upstream_fed->is_transient) {
+        fed->has_upstream_transient_federates = true;
+        break;
+      }
+    }
+  }
+
+  // Now check that no transient has an upstream transient
+  // NOTE: This is not strictly necessary, as the validator will catch any violations.
+  uint16_t max_number_of_delayed_grants = 0;
+  for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+    federate_info_t* fed = GET_FED_INFO(i);
+    if (fed->is_transient && fed->has_upstream_transient_federates) {
+      return -1;
+    }
+    if (!fed->is_transient && fed->has_upstream_transient_federates) {
+      max_number_of_delayed_grants++;
+    }
+  }
+  return max_number_of_delayed_grants;
+}
+
 void wait_for_federates() {
-  // Wait for connections from federates and create a thread for each.
-  lf_connect_to_federates(rti_remote->rti_net);
+  // Wait for connections from persistent federates and create a thread for each.
+  lf_connect_to_persistent_federates(rti_remote->rti_net);
 
-  // All federates have connected.
-  lf_print_info("RTI: All expected federates have connected. Starting execution.");
+  // Set has_upstream_transient_federates parameter in all federates and check
+  // that there is no more than one level of transiency
+  if (rti_remote->number_of_transient_federates > 0) {
+    int max_number_of_pending_grants = set_has_upstream_transient_federates_parameter_and_check();
+    if (max_number_of_pending_grants == -1) {
+      lf_print_error_and_exit("RTI: Transient federates cannot have transient upstream federates!");
+    }
+    rti_remote->delayed_grants = pqueue_delayed_grants_init(max_number_of_pending_grants);
+  }
 
-  // The network abstraction server will not continue to accept connections after all the federates
-  // have joined.
+  // All persistent federates have connected.
+  lf_print_info("RTI: All expected persistent federates have connected. Starting execution.");
+  if (rti_remote->number_of_transient_federates > 0) {
+    lf_print_info("RTI: Transient Federates can join and leave the federation at any time.");
+  }
+
+  // The network abstraction server will only continue to accept connections from transient
+  // federates.
   // In case some other federation's federates are trying to join the wrong
   // federation, need to respond. Start a separate thread to do that.
   lf_thread_t responder_thread;
-  lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
+  lf_thread_t transient_thread;
+  lf_thread_t delayed_grants_thread;
 
-  // Wait for federate threads to exit.
+  // If the federation does not include transient federates, then respond to
+  // erronous connections. Otherwise, continue to accept transients joining and
+  // respond to duplicate joing requests.
+  if (rti_remote->number_of_transient_federates == 0) {
+    lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
+  } else if (rti_remote->number_of_transient_federates > 0) {
+    lf_thread_create(&transient_thread, lf_connect_to_transient_federates_thread, NULL);
+    lf_thread_create(&delayed_grants_thread, lf_delayed_grants_thread, NULL);
+  }
+
+  // Wait for persistent federate threads to exit.
+  // Nested allocations (including in_transit_message_tags) are freed later by
+  // free_scheduling_nodes() -> free_federate_info().
   void* thread_exit_status;
   for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
     federate_info_t* fed = GET_FED_INFO(i);
-    LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
-    lf_thread_join(fed->thread_id, &thread_exit_status);
-    pqueue_tag_free(fed->in_transit_message_tags);
-    LF_PRINT_LOG("RTI: Federate %d thread exited.", fed->enclave.id);
+    if (!fed->is_transient) {
+      LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
+      lf_thread_join(fed->thread_id, &thread_exit_status);
+      LF_PRINT_LOG("RTI: Persistent federate %d thread exited.", fed->enclave.id);
+    }
+  }
+
+  rti_remote->all_persistent_federates_exited = true;
+  rti_remote->phase = shutdown_phase;
+  lf_print_info("RTI: All persistent threads exited.");
+
+  // Broadcast on updated_delayed_grants to wake up lf_delayed_grants_thread,
+  // which may be blocked in lf_cond_wait and uses all_persistent_federates_exited
+  // as its exit condition.
+  LF_MUTEX_LOCK(&rti_mutex);
+  lf_cond_broadcast(&updated_delayed_grants);
+  LF_MUTEX_UNLOCK(&rti_mutex);
+
+  // Shutdown and close the network abstraction that is listening for incoming connections.
+  // This must be done before joining transient threads so that the blocking
+  // accept_net() call in lf_connect_to_transient_federates_thread is
+  // unblocked, allowing that thread to see all_persistent_federates_exited
+  // and exit its loop.
+  shutdown_net(rti_remote->rti_net, false);
+
+  // Wait for transient federate threads to exit, if any.
+  if (rti_remote->number_of_transient_federates > 0) {
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+      federate_info_t* fed = GET_FED_INFO(i);
+      // Only join if the federate is currently connected (thread is running).
+      // If state is NOT_CONNECTED, either the federate never joined (thread was
+      // never created) or it already resigned and its thread already exited.
+      if (fed->is_transient && fed->enclave.state != NOT_CONNECTED) {
+        LF_PRINT_LOG("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
+        lf_thread_join(fed->thread_id, &thread_exit_status);
+        LF_PRINT_LOG("RTI: Transient federate %d thread exited.", fed->enclave.id);
+      }
+    }
+    // Join the transient listener and delayed grants threads to avoid leaking them.
+    lf_thread_join(transient_thread, &thread_exit_status);
+    lf_thread_join(delayed_grants_thread, &thread_exit_status);
   }
 
   rti_remote->all_federates_exited = true;
-
-  // Shutdown and close the network abstraction that is listening for incoming connections
-  // so that the accept() call in respond_to_erroneous_connections returns.
-  // That thread should then check rti->all_federates_exited and it should exit.
-  shutdown_net(rti_remote->rti_net, false);
   rti_remote->rti_net = NULL;
 
   if (rti_remote->socket_descriptor_UDP > 0) {
@@ -1577,6 +2751,8 @@ void initialize_RTI(rti_remote_t* rti) {
   init_shutdown_mutex();
   LF_COND_INIT(&received_start_times, &rti_mutex);
   LF_COND_INIT(&sent_start_time, &rti_mutex);
+  LF_COND_INIT(&updated_delayed_grants, &rti_mutex);
+  LF_COND_INIT(&hot_swap_old_resigned_cond, &rti_mutex);
 
   initialize_rti_common(&rti_remote->base);
   rti_remote->base.mutex = &rti_mutex;
@@ -1597,6 +2773,8 @@ void initialize_RTI(rti_remote_t* rti) {
   rti_remote->base.tracing_enabled = false;
   rti_remote->base.dnet_disabled = false;
   rti_remote->stop_in_progress = false;
+  rti_remote->number_of_transient_federates = 0;
+  rti_remote->phase = startup_phase;
 }
 
 // The RTI includes clock.c, which requires the following functions that are defined
@@ -1608,15 +2786,7 @@ void clock_sync_subtract_offset(instant_t* t) { (void)t; }
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
   invalidate_min_delays();
   for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
-    scheduling_node_t* node = scheduling_nodes[i];
-    if (node->immediate_upstreams != NULL) {
-      free(node->immediate_upstreams);
-      free(node->immediate_upstream_delays);
-    }
-    if (node->immediate_downstreams != NULL) {
-      free(node->immediate_downstreams);
-    }
-    free(node);
+    free_federate_info((federate_info_t*)scheduling_nodes[i]);
   }
   free(scheduling_nodes);
 }
