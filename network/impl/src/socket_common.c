@@ -278,7 +278,12 @@ int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_a
       // Retry on a fresh socket, preserving the fd number that the caller
       // holds via dup2(). See #595.
       int fresh = create_real_time_tcp_socket_errexit();
-      dup2(fresh, sock);
+      if (dup2(fresh, sock) < 0) {
+        int dup_errno = errno;
+        close(fresh);
+        errno = dup_errno;
+        lf_print_error_system_failure("Failed to recreate socket with dup2() after connect() failure.");
+      }
       close(fresh);
       lf_sleep(CONNECT_RETRY_INTERVAL);
       lf_print_warning("Could not connect (errno=%d: %s). Will try again every " PRINTF_TIME
