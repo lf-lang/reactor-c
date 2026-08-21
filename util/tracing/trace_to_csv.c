@@ -31,12 +31,14 @@ int table_size;
  * Print a usage message.
  */
 void usage() {
-  printf("\nUsage: trace_to_csv [options] trace_file_root (with .lft extension)\n\n");
+  printf("\nUsage: trace_to_csv [options] trace_file (with .lft extension)\n\n");
   printf("\nOptions: \n\n");
   printf("  -s, --start [time_spec] [units]\n");
-  printf("   The target time to begin tracing.\n\n");
+  printf("   The elapsed logical time to begin tracing (inclusive).\n");
+  printf("   Units: ns, us, ms, s, min, hour, day, week\n");
+  printf("   (or nsec, usec, msec, sec, second, minute, and their plurals).\n\n");
   printf("  -e, --end [time_spec] [units]\n");
-  printf("   The target time to stop tracing.\n\n");
+  printf("   The elapsed logical time to stop tracing (exclusive). Same units as -s.\n\n");
   printf("\n\n");
 }
 
@@ -76,6 +78,23 @@ instant_t latest_time = 0LL;
  * Read a trace in the trace_file and write it to the output_file as CSV.
  * @return The number of records read or 0 upon seeing an EOF.
  */
+/**
+ * Elapsed time of a trace record relative to start_time, used by -s/-e filtering.
+ * Untagged events (logical time NEVER or FOREVER) are filtered by physical time
+ * so that subtracting NEVER from start_time does not overflow.
+ */
+static interval_t elapsed_time_for_filter(const trace_record_t* rec) {
+  instant_t event_time = rec->logical_time;
+  if (event_time == NEVER || event_time == FOREVER) {
+    event_time = rec->physical_time;
+  }
+  if (event_time == NEVER || event_time == FOREVER || event_time < start_time) {
+    // Before start, or still unknown: treat as not in a positive time window.
+    return -1;
+  }
+  return event_time - start_time;
+}
+
 size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time) {
   int trace_length = read_trace();
   if (trace_length == 0)
@@ -93,20 +112,29 @@ size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time
     if (trigger_name == NULL) {
       trigger_name = "NO TRIGGER";
     }
-    if ((trace[i].logical_time - start_time) >= trace_start_time &&
-        (trace[i].logical_time - start_time) < trace_end_time) {
-      fprintf(output_file, "%s, %s, %d, %d, " PRINTF_TIME ", %d, " PRINTF_TIME ", %s, " PRINTF_TIME "\n",
-              trace_event_names[trace[i].event_type], reactor_name, trace[i].src_id, trace[i].dst_id,
-              trace[i].logical_time - start_time, trace[i].microstep, trace[i].physical_time - start_time, trigger_name,
-              trace[i].extra_delay);
+    interval_t elapsed_logical = elapsed_time_for_filter(&trace[i]);
+    if (elapsed_logical >= trace_start_time && elapsed_logical < trace_end_time) {
+      const char* event_name = "UNKNOWN";
+      if (trace[i].event_type >= 0 && trace[i].event_type < NUM_EVENT_TYPES) {
+        event_name = trace_event_names[trace[i].event_type];
+      }
+      interval_t csv_logical = elapsed_logical;
+      if (trace[i].logical_time != NEVER && trace[i].logical_time != FOREVER && trace[i].logical_time >= start_time) {
+        csv_logical = trace[i].logical_time - start_time;
+      }
+      fprintf(output_file, "%s, %s, %d, %d, " PRINTF_TIME ", %d, " PRINTF_TIME ", %s, " PRINTF_TIME "\n", event_name,
+              reactor_name, trace[i].src_id, trace[i].dst_id, csv_logical, trace[i].microstep,
+              trace[i].physical_time - start_time, trigger_name, trace[i].extra_delay);
       // Update summary statistics.
       if (trace[i].physical_time > latest_time) {
         latest_time = trace[i].physical_time;
       }
-      if (object_instance >= 0 && summary_stats[NUM_EVENT_TYPES + object_instance] == NULL) {
+      if (object_instance >= 0 && NUM_EVENT_TYPES + object_instance < table_size &&
+          summary_stats[NUM_EVENT_TYPES + object_instance] == NULL) {
         summary_stats[NUM_EVENT_TYPES + object_instance] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
       }
-      if (trigger_instance >= 0 && summary_stats[NUM_EVENT_TYPES + trigger_instance] == NULL) {
+      if (trigger_instance >= 0 && NUM_EVENT_TYPES + trigger_instance < table_size &&
+          summary_stats[NUM_EVENT_TYPES + trigger_instance] == NULL) {
         summary_stats[NUM_EVENT_TYPES + trigger_instance] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
       }
 
@@ -116,23 +144,32 @@ size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time
       int index;
 
       // Count of event type.
-      if (summary_stats[trace[i].event_type] == NULL) {
-        summary_stats[trace[i].event_type] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
+      if (trace[i].event_type >= 0 && trace[i].event_type < NUM_EVENT_TYPES) {
+        if (summary_stats[trace[i].event_type] == NULL) {
+          summary_stats[trace[i].event_type] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
+        }
+        summary_stats[trace[i].event_type]->event_type = trace[i].event_type;
+        summary_stats[trace[i].event_type]->description = event_name;
+        summary_stats[trace[i].event_type]->occurrences++;
       }
-      summary_stats[trace[i].event_type]->event_type = trace[i].event_type;
-      summary_stats[trace[i].event_type]->description = trace_event_names[trace[i].event_type];
-      summary_stats[trace[i].event_type]->occurrences++;
 
       switch (trace[i].event_type) {
       case reaction_starts:
       case reaction_ends:
         // This code relies on the mutual exclusion of reactions in a reactor
         // and the ordering of reaction_starts and reaction_ends events.
-        if (trace[i].dst_id >= MAX_NUM_REACTIONS) {
-          fprintf(stderr, "WARNING: Too many reactions. Not all will be shown in summary file.\n");
+        if (trace[i].dst_id < 0 || trace[i].dst_id >= MAX_NUM_REACTIONS) {
+          fprintf(stderr, "WARNING: Reaction number %d out of range. Not all will be shown in summary file.\n",
+                  trace[i].dst_id);
           continue;
         }
+        if (object_instance < 0) {
+          break;
+        }
         stats = summary_stats[NUM_EVENT_TYPES + object_instance];
+        if (stats == NULL) {
+          break;
+        }
         stats->description = reactor_name;
         if (trace[i].dst_id >= stats->num_reactions_seen) {
           stats->num_reactions_seen = trace[i].dst_id + 1;
@@ -159,18 +196,33 @@ size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time
           continue;
         }
         stats = summary_stats[NUM_EVENT_TYPES + trigger_instance];
+        if (stats == NULL) {
+          break;
+        }
         stats->description = trigger_name;
         break;
       case user_event:
         // Although these are not exec times and not reactions,
         // commandeer the first entry in the reactions array to track values.
+        if (object_instance < 0) {
+          break;
+        }
         stats = summary_stats[NUM_EVENT_TYPES + object_instance];
+        if (stats == NULL) {
+          break;
+        }
         stats->description = reactor_name;
         break;
       case user_value:
         // Although these are not exec times and not reactions,
         // commandeer the first entry in the reactions array to track values.
+        if (object_instance < 0) {
+          break;
+        }
         stats = summary_stats[NUM_EVENT_TYPES + object_instance];
+        if (stats == NULL) {
+          break;
+        }
         stats->description = reactor_name;
         rstats = &stats->reactions[0];
         rstats->occurrences++;
@@ -191,14 +243,22 @@ size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time
         // Use the reactions array to store data.
         // There will be two entries per worker, one for waits on the
         // reaction queue and one for waits while advancing time.
-        index = trace[i].src_id * 2;
-        // Even numbered indices are used for waits on reaction queue.
-        // Odd numbered indices for waits for time advancement.
-        if (trace[i].event_type == scheduler_advancing_time_starts ||
-            trace[i].event_type == scheduler_advancing_time_ends) {
-          index++;
+        // scheduler_advancing_time_* events are recorded with src_id == -1
+        // (no worker); treat them as worker 0 so we do not index reactions[-1].
+        {
+          int worker_id = trace[i].src_id;
+          if (worker_id < 0) {
+            worker_id = 0;
+          }
+          index = worker_id * 2;
+          // Even numbered indices are used for waits on reaction queue.
+          // Odd numbered indices for waits for time advancement.
+          if (trace[i].event_type == scheduler_advancing_time_starts ||
+              trace[i].event_type == scheduler_advancing_time_ends) {
+            index++;
+          }
         }
-        if (object_table_size + index >= table_size) {
+        if (index < 0 || index >= MAX_NUM_REACTIONS || object_table_size + index >= table_size) {
           fprintf(stderr, "WARNING: Too many workers. Not all will be shown in summary file.\n");
           continue;
         }
@@ -336,7 +396,7 @@ void write_summary_file() {
       if (stats->event_type == scheduler_advancing_time_ends || stats->event_type == scheduler_advancing_time_starts) {
         waitee = "advancing time";
       }
-      for (int j = 0; j <= stats->num_reactions_seen; j++) {
+      for (int j = 0; j <= stats->num_reactions_seen && j < MAX_NUM_REACTIONS; j++) {
         reaction_stats_t* rstats = &stats->reactions[j];
         if (rstats->occurrences > 0) {
           fprintf(summary_file, "%d, %s, %d, " PRINTF_TIME ", %f, " PRINTF_TIME ", " PRINTF_TIME ", " PRINTF_TIME "\n",
@@ -359,18 +419,19 @@ instant_t string_to_instant(const char* time_spec, const char* units) {
   // A parse error returns 0LL, so check to see whether that is what is meant.
   if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
     // Parse error.
-    printf("Invalid time value: %s", time_spec);
+    printf("Invalid time value: %s\n", time_spec);
     return -1;
   }
-  if (strncmp(units, "sec", 3) == 0) {
-    duration = SEC(duration);
-  } else if (strncmp(units, "msec", 4) == 0) {
-    duration = MSEC(duration);
-  } else if (strncmp(units, "usec", 4) == 0) {
-    duration = USEC(duration);
-  } else if (strncmp(units, "nsec", 4) == 0) {
+  // Accept the same unit names as lf_time_parse (LF time units, including SI aliases).
+  if (strncmp(units, "nsec", 4) == 0 || strcmp(units, "ns") == 0) {
     duration = NSEC(duration);
-  } else if (strncmp(units, "min", 3) == 0) {
+  } else if (strncmp(units, "usec", 4) == 0 || strcmp(units, "us") == 0) {
+    duration = USEC(duration);
+  } else if (strncmp(units, "msec", 4) == 0 || strcmp(units, "ms") == 0) {
+    duration = MSEC(duration);
+  } else if (strncmp(units, "second", 6) == 0 || strncmp(units, "sec", 3) == 0 || strcmp(units, "s") == 0) {
+    duration = SEC(duration);
+  } else if (strncmp(units, "minute", 6) == 0 || strncmp(units, "min", 3) == 0) {
     duration = MINUTE(duration);
   } else if (strncmp(units, "hour", 4) == 0) {
     duration = HOUR(duration);
@@ -379,8 +440,7 @@ instant_t string_to_instant(const char* time_spec, const char* units) {
   } else if (strncmp(units, "week", 4) == 0) {
     duration = WEEK(duration);
   } else {
-    // Invalid units.
-    printf("Invalid time units: %s", units);
+    printf("Invalid time units: %s\n", units);
     return -1;
   }
   return duration;
@@ -388,18 +448,19 @@ instant_t string_to_instant(const char* time_spec, const char* units) {
 
 int process_args(int argc, const char* argv[], char** root, instant_t* start_time, instant_t* end_time) {
   int i = 1;
+  *root = NULL;
   while (i < argc) {
     const char* arg = argv[i++];
-    if (strcmp(strrchr(arg, '\0') - 4, ".lft") == 0) {
+    size_t arg_len = strlen(arg);
+    if (arg_len >= 4 && strcmp(arg + arg_len - 4, ".lft") == 0) {
       // Open the trace file.
       trace_file = open_file(arg, "r");
       if (trace_file == NULL)
         exit(1);
       *root = root_name(arg);
-    } else if (strcmp(arg, "-s") == 0) {
-      // sscanf(argv[++i], "%ld", start_time);
+    } else if (strcmp(arg, "-s") == 0 || strcmp(arg, "--start") == 0) {
       if (argc < i + 2) {
-        printf("-s needs time value and unit.");
+        printf("-s/--start needs a time value and unit.\n");
         usage();
         return -1;
       }
@@ -410,9 +471,9 @@ int process_args(int argc, const char* argv[], char** root, instant_t* start_tim
         usage();
         return -1;
       }
-    } else if (strcmp(arg, "-e") == 0) {
+    } else if (strcmp(arg, "-e") == 0 || strcmp(arg, "--end") == 0) {
       if (argc < i + 2) {
-        printf("-e needs time value and unit.");
+        printf("-e/--end needs a time value and unit.\n");
         usage();
         return -1;
       }
@@ -425,8 +486,13 @@ int process_args(int argc, const char* argv[], char** root, instant_t* start_tim
       }
     } else {
       usage();
-      exit(0);
+      return -1;
     }
+  }
+  if (*root == NULL) {
+    printf("No .lft trace file specified.\n");
+    usage();
+    return -1;
   }
   return 0;
 }

@@ -155,10 +155,11 @@ parser.add_argument('-r','--rti', type=str,
                     help='RTI\'s lft trace file.')
 parser.add_argument('-f','--federates', nargs='+',
                     help='List of the federates\' lft trace files.')
-parser.add_argument('-s', '--start', type=str, nargs=2,
-                    help='Start time of visualization in elapsed logical time. [time_value time_unit]')
-parser.add_argument('-e', '--end', type=str, nargs=2,
-                    help='End time of visualization in elapsed logical time. [time_value time_unit]')
+parser.add_argument('-s', '--start', type=str, nargs=2, metavar=('TIME', 'UNIT'),
+                    help='Start time of visualization in elapsed logical time, e.g. 0 ms. '
+                         'Units: ns, us, ms, s, min, hour, day, week (or nsec, usec, msec, sec, ...).')
+parser.add_argument('-e', '--end', type=str, nargs=2, metavar=('TIME', 'UNIT'),
+                    help='End time of visualization in elapsed logical time, e.g. 20 ms. Same units as -s.')
 parser.add_argument('-v', '--svg', action='store_true',
                     help='Generate a pure SVG file (trace_svg.svg) instead of HTML (trace_svg.html).')
 
@@ -450,13 +451,16 @@ def convert_lft_file_to_csv(lft_file, start_time, end_time):
     if (end_time != None):
         subprocess_args.extend(['-e', end_time[0], end_time[1]])
 
-    convert_process = subprocess.run(subprocess_args, stdout=subprocess.DEVNULL)
+    convert_process = subprocess.run(subprocess_args, capture_output=True, text=True)
 
     if (convert_process.returncode == 0):
         csv_file = os.path.splitext(lft_file)[0] + '.csv'
         return csv_file, ''
     else:
-        return '', str(convert_process.stderr)
+        error = (convert_process.stderr or convert_process.stdout or '').strip()
+        if not error:
+            error = 'trace_to_csv exited with code ' + str(convert_process.returncode)
+        return '', error
 
 def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end_time):
     '''
@@ -495,10 +499,11 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
         sys.exit(1)
 
     # Now, convert lft files to csv
+    rti_csv_file = ''
     if (rti_lft_file):
         rti_csv_file, error = convert_lft_file_to_csv(rti_lft_file, start_time, end_time)
         if (not rti_csv_file):
-            print('Fedsf: Error converting the RTI\'s lft file: ' + error)
+            print('Fedsd: Error converting the RTI\'s lft file: ' + error)
         else:
             print('Fedsd: Successfully converted trace file ' + rti_lft_file + ' to ' + rti_csv_file + '.')
     
@@ -506,7 +511,7 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
     for file in federates_lft_files:
         fed_csv_file, error = convert_lft_file_to_csv(file, start_time, end_time)
         if (not fed_csv_file):
-            print('Fedsf: Error converting the federate lft file ' + file + ': ' + error)
+            print('Fedsd: Error converting the federate lft file ' + file + ': ' + error)
         else: 
             print('Fedsd: Successfully converted trace file ' + file + ' to ' + fed_csv_file + '.')
             federates_csv_files.append(fed_csv_file)
@@ -672,6 +677,10 @@ if __name__ == '__main__':
     # Look up the lft files and transform them to csv files
 
     rti_csv_file, federates_csv_files = get_and_convert_lft_files(args.rti, args.federates, args.start, args.end)
+
+    if (not rti_csv_file and not federates_csv_files):
+        print('Fedsd: Error: Failed to convert any lft files. Abort!')
+        sys.exit(1)
     
     # The RTI and each of the federates have a fixed x coordinate. They will be
     # saved in a dict
@@ -724,7 +733,7 @@ if __name__ == '__main__':
     if (rti_csv_file):
         rti_df = load_and_process_csv_file(rti_csv_file)
         rti_df['x1'] = x_coor[-1]
-    else:
+    elif (not trace_df.empty):
         # If there is no RTI, derive one.
         # This is particularly useful for tracing enclaves
         # FIXME: Currently, `fedsd` is used either for federates OR enclaves.
@@ -735,8 +744,15 @@ if __name__ == '__main__':
         rti_df.columns = ['event', 'partner_id', 'self_id', 'logical_time', 'microstep', 'physical_time', 'inout']
         rti_df['inout'] = rti_df['inout'].apply(lambda e: 'in' if 'out' in e else 'out')
         rti_df['x1'] = rti_df['self_id'].apply(lambda e: x_coor[int(e)])
+    else:
+        print('Fedsd: Error: No trace data to visualize. Abort!')
+        sys.exit(1)
 
     trace_df = pd.concat([trace_df, rti_df])
+
+    if trace_df.empty:
+        print('Fedsd: Error: No trace data to visualize. Abort!')
+        sys.exit(1)
 
     # Sort all traces by physical time and then reset the index
     trace_df = trace_df.sort_values(by=['physical_time'])
