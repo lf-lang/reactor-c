@@ -88,6 +88,10 @@ int lf_critical_section_exit(environment_t* env);
 // Worker priorities range from 0 to 99 where 99 is the highest priority.
 #define LF_SCHED_MAX_PRIORITY 99
 #define LF_SCHED_MIN_PRIORITY 0
+// Abstract LF priorities used by the threaded runtime; platforms map these via
+// lf_thread_set_priority() / map_priorities() into native OS priorities.
+#define LF_SLEEP_PRIORITY LF_SCHED_MAX_PRIORITY // Highest when waiting for physical time
+#define LF_NO_DEADLINE_PRIORITY 1               // Lowest for reactions without deadlines
 
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
@@ -188,12 +192,10 @@ typedef struct {
  * @brief Restrict the calling thread to run on the specified set of CPUs.
  * @ingroup Platform
  *
- * On platforms that support CPU affinity (e.g., Linux), the calling thread's
- * affinity mask is set to include ALL cores listed in `core_ids`. The OS
- * scheduler then decides which of those cores to run the thread on.
- *
- * On platforms that only support pinning to a single core (e.g., Zephyr),
- * a round-robin selection is used: `core_ids[lf_thread_id() % num_core_ids]`.
+ * On platforms that support CPU affinity (e.g., Linux, Zephyr), the calling
+ * thread's affinity mask is set to include ALL cores listed in `core_ids`. The
+ * OS scheduler then decides which of those cores to run the thread on.
+ * Platforms that do not support affinity return -1.
  *
  * @param core_ids An array of CPU core IDs to allow the thread to run on.
  * @param num_core_ids The number of entries in the core_ids array.

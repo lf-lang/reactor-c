@@ -155,6 +155,13 @@ int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
   k_tid_t thread = lf_thread_self();
   int available = lf_available_cores();
 
+  // Validate core IDs up-front so we don't clear the mask and leave the thread runnable on no cores.
+  for (size_t i = 0; i < num_core_ids; i++) {
+    if (core_ids[i] < 0 || core_ids[i] >= available) {
+      return -1;
+    }
+  }
+
   // Clear the CPU mask so the thread is initially allowed on no cores
   int ret = k_thread_cpu_mask_clear(thread);
   if (ret != 0) {
@@ -163,9 +170,6 @@ int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
 
   // Enable every specified core so the thread may run on any of them
   for (size_t i = 0; i < num_core_ids; i++) {
-    if (core_ids[i] < 0 || core_ids[i] >= available) {
-      continue; // Skip invalid core IDs
-    }
     ret = k_thread_cpu_mask_enable(thread, core_ids[i]);
     if (ret != 0) {
       return ret;

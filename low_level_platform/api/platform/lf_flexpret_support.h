@@ -48,11 +48,6 @@ typedef fp_cond_t lf_cond_t;
 #define NO_CLI
 #define MINIMAL_STDLIB
 
-// Priority values for the abstract LF scheduling API (no-ops on FlexPRET).
-// Range matches LF_SCHED_MIN_PRIORITY..LF_SCHED_MAX_PRIORITY.
-#define LF_SLEEP_PRIORITY 99      // Highest priority when waiting for physical time
-#define LF_NO_DEADLINE_PRIORITY 0 // Lowest priority for reactions without deadlines
-
 /**
  * Need to include `stdio` here, because we #define `fprintf` and `vfprintf` below.
  * Since stdio.h contains declarations for these functions, including it

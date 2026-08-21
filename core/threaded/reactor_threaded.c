@@ -47,12 +47,6 @@ extern int get_priority_value(interval_t rel_deadline);
 static inline interval_t lf_reaction_scheduling_deadline_ns(const reaction_t* reaction) {
   return (interval_t)(reaction->index >> 16);
 }
-
-/**
- * If two consecutive lf_time_physical() reads differ by more than this, assume the worker was
- * preempted between the reads and recompute time-until-deadline with the later timestamp.
- */
-#define LF_PREEMPTION_DETECT_THRESHOLD MSEC(1)
 #endif
 
 /**
@@ -204,6 +198,8 @@ bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
 
     // Set highest priority before sleeping so we wake up quickly
     lf_thread_set_priority(lf_thread_self(), LF_SLEEP_PRIORITY);
+    // Ignoring the return value: optimization for platforms that support priority setting,
+    // but it does not affect platforms that don't support it.
 
     // We do the sleep on the cond var so we can be awakened by the
     // asynchronous scheduling of a physical action. lf_clock_cond_timedwait
@@ -926,20 +922,6 @@ static void* worker(void* arg) {
   {
     static int core_ids[] = LF_CORE_IDS_INIT;
     int ret = lf_thread_set_cpu(core_ids, sizeof(core_ids) / sizeof(core_ids[0]));
-    if (ret != 0 && ret != -1) {
-      LF_PRINT_LOG("Warning: Could not set CPU affinity (error %d).", ret);
-    }
-  }
-#elif defined(LF_NUMBER_OF_CORES)
-  if (LF_NUMBER_OF_CORES > 0) {
-    // Generate a sequential list of core IDs from the highest CPU downward
-    int available = lf_available_cores();
-    int num = (LF_NUMBER_OF_CORES > available) ? available : LF_NUMBER_OF_CORES;
-    int auto_core_ids[num];
-    for (int i = 0; i < num; i++) {
-      auto_core_ids[i] = available - 1 - i;
-    }
-    int ret = lf_thread_set_cpu(auto_core_ids, num);
     if (ret != 0 && ret != -1) {
       LF_PRINT_LOG("Warning: Could not set CPU affinity (error %d).", ret);
     }

@@ -178,8 +178,8 @@ int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
   (void)thread;
   (void)priority;
-  // Real-time scheduling API not implemented for Arduino; return success as no-op.
-  return 0;
+  // Real-time scheduling API not implemented for Arduino.
+  return -1;
 }
 
 int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {

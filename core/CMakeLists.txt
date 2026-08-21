@@ -182,7 +182,6 @@ define(LF_FILE_SEPARATOR)
 define(WORKERS_NEEDED_FOR_FEDERATE)
 define(LF_ENCLAVES)
 define(LF_THREAD_POLICY)
-define(LF_NUMBER_OF_CORES)
 
 # LF_CORE_IDS_INIT needs special handling since it contains braces and commas.
 # It is set to e.g. {0,1,2,3} by the @cores attribute.

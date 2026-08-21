@@ -113,9 +113,4 @@ typedef void* lf_thread_t;
 // Arduinos are embedded platforms with no command line interface
 #define NO_CLI
 
-// Priority values for the abstract LF scheduling API (no-ops on Arduino).
-// Range matches LF_SCHED_MIN_PRIORITY..LF_SCHED_MAX_PRIORITY.
-#define LF_SLEEP_PRIORITY 99      // Highest priority when waiting for physical time
-#define LF_NO_DEADLINE_PRIORITY 0 // Lowest priority for reactions without deadlines
-
 #endif // LF_ARDUINO_SUPPORT_H
