@@ -268,9 +268,27 @@ int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_a
     }
 
     if (ret < 0) {
+      int connect_errno = errno;
+      // POSIX leaves the state of a socket unspecified after connect() fails:
+      // "If connect() fails, the state of the socket is unspecified. Conforming
+      // applications should close the file descriptor and create a new socket
+      // before attempting to reconnect." On some platforms (observed on macOS)
+      // retrying connect() on the same fd fails on every attempt, so a single
+      // transient failure otherwise becomes permanent until process restart.
+      // Retry on a fresh socket, preserving the fd number that the caller
+      // holds via dup2(). See #595.
+      int fresh = create_real_time_tcp_socket_errexit();
+      if (dup2(fresh, sock) < 0) {
+        int dup_errno = errno;
+        close(fresh);
+        errno = dup_errno;
+        lf_print_error_system_failure("Failed to recreate socket with dup2() after connect() failure.");
+      }
+      close(fresh);
       lf_sleep(CONNECT_RETRY_INTERVAL);
-      lf_print_warning("Could not connect. Will try again every " PRINTF_TIME " nanoseconds. Connecting to port %d.\n",
-                       CONNECT_RETRY_INTERVAL, used_port);
+      lf_print_warning("Could not connect (errno=%d: %s). Will try again every " PRINTF_TIME
+                       " nanoseconds. Connecting to port %d.\n",
+                       connect_errno, strerror(connect_errno), CONNECT_RETRY_INTERVAL, used_port);
       continue;
     } else {
       break;
