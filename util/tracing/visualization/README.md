@@ -44,4 +44,10 @@ If the trace is too long, the target time interval can be specified. Running `fe
 fedsd -s <start_time_value> <time_unit> -e <end_time_value> <time_unit>
 ```
 
-The output is an html file named `trace_svg.html` (in the current directory) that contains the sequence of interactions between the federates and the RTI.
+The output is an HTML file named `trace_svg.html` (in the current directory) that contains the sequence of interactions between the federates and the RTI.
+
+To generate a standalone SVG file (`trace_svg.svg`) instead of HTML, pass `-v` or `--svg`:
+
+```bash
+fedsd -v
+```

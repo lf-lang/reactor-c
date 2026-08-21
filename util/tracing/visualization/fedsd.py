@@ -3,7 +3,8 @@
 # Utility that reports the interactions (exchanged messages) between federates and the RTI in a 
 # sequence-diagram-like format, or between enclaves in an enclaved execution.
 # 
-# The utility operates on lft trace files and outputs an html file with a sticky header.
+# The utility operates on lft trace files and outputs an HTML file with a sticky
+# header, or a standalone SVG file if -v/--svg is given.
 
 '''
 In the dataframe, each row will be marked with one op these values:
@@ -158,6 +159,8 @@ parser.add_argument('-s', '--start', type=str, nargs=2,
                     help='Start time of visualization in elapsed logical time. [time_value time_unit]')
 parser.add_argument('-e', '--end', type=str, nargs=2,
                     help='End time of visualization in elapsed logical time. [time_value time_unit]')
+parser.add_argument('-v', '--svg', action='store_true',
+                    help='Generate a pure SVG file (trace_svg.svg) instead of HTML (trace_svg.html).')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
@@ -511,6 +514,150 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
     return rti_csv_file, federates_csv_files
 
 ################################################################################
+### Routines to write the sequence diagram
+################################################################################
+
+def write_actor_headers(f, x_coor, actors_names, padding):
+    '''
+    Write actor rectangles and labels (the sequence-diagram "lifeline" headers).
+
+    Args:
+     * f: Open file handle to write to
+     * x_coor: Dict mapping actor id to X coordinate
+     * actors_names: Dict mapping actor id to name
+     * padding: Int padding used to size and place the headers
+    '''
+    for key in x_coor:
+        title = format_actor_name(actors_names[key])
+        cx = x_coor[key]
+        cy = math.ceil(padding / 2)
+        r = 20  # original circle radius; diameter becomes the rect height
+        rect_w = max(r * 2, len(title) * 7 + 12)
+        rect_h = r * 2
+        # Draw rectangle then bold text centered on it (later = on top in SVG)
+        f.write('\t<rect x="'+str(cx - rect_w//2)+'" y="'+str(cy - rect_h//2)+'" '
+                +'width="'+str(rect_w)+'" height="'+str(rect_h)+'" fill="white" stroke="black" stroke-width="2"/>\n')
+        f.write('\t<text x="'+str(cx)+'" y="'+str(cy)+'" text-anchor="middle" dominant-baseline="central" '
+                +'font-weight="bold" fill="black">'+title+'</text>\n')
+
+
+def write_diagram_body(f, x_coor, actors_names, trace_df, svg_height):
+    '''
+    Write vertical actor lines and interaction arrows.
+
+    Args:
+     * f: Open file handle to write to
+     * x_coor: Dict mapping actor id to X coordinate
+     * actors_names: Dict mapping actor id to name
+     * trace_df: Dataframe of matched trace events
+     * svg_height: Int height of the diagram (not including the header)
+    '''
+    # Draw vertical lines for each actor (full diagram height)
+    for key in x_coor:
+        title = actors_names[key]
+        if (key == -1):
+            f.write(svg_string_comment('RTI Actor line'))
+        else:
+            f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor line'))
+        f.write(svg_string_draw_line(x_coor[key], 0, x_coor[key], svg_height, False))
+
+    # Draw interactions
+    f.write(svg_string_comment('Draw interactions'))
+    for index, row in trace_df.iterrows():
+        # formatted physical time.
+        # FIXME: Using microseconds is hardwired here.
+        physical_time = f'{int(row["physical_time"]/1000):,}'
+
+        if (row['event'] in non_tagged_messages):
+            label = row['event']
+        else:
+            label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
+
+        if (row['arrow'] == 'arrow'):
+            f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
+            if (row['inout'] in 'in'):
+                # Label at receiver (x2): goes outward — right if receiver is right of sender.
+                anchor = 'start' if row['x2'] > row['x1'] else 'end'
+                f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
+            else:
+                # Label at sender (x1): goes outward — left if receiver is right of sender.
+                anchor = 'end' if row['x2'] > row['x1'] else 'start'
+                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+        elif (row['arrow'] == 'dot'):
+            if (row['inout'] == 'in'):
+                label = "(in) from " + str(row['partner_id']) + ' ' + label
+            else:
+                label = "(out) to " + str(row['partner_id']) + ' ' + label
+
+            if (row['self_id'] < 0):
+                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, 'end'))
+                f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
+            else:
+                f.write(svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label))
+
+        elif (row['arrow'] == 'marked'):
+            # Label goes outward: right of receiver if receiver is right of sender, left otherwise.
+            partner_x = x_coor.get(int(row['partner_id']), row['x1'])
+            marked_anchor = 'start' if row['x1'] > partner_x else 'end'
+            f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, marked_anchor))
+
+        elif (row['arrow'] == 'adv'):
+            f.write(svg_string_draw_adv(row['x1'], row['y1'], label))
+
+
+def write_html_file(svg_width, svg_height, header_height, padding, x_coor, actors_names, trace_df):
+    '''
+    Write the sequence diagram as an HTML file with a sticky header and an embedded SVG.
+    '''
+    with open('trace_svg.html', 'w', encoding='utf-8') as f:
+        f.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n')
+        f.write('<style>\n')
+        f.write('  * { margin: 0; padding: 0; }\n')
+        # Allow horizontal scroll on the whole page when the diagram is wider than the window.
+        f.write('  body { overflow-x: auto; }\n')
+        # The sticky header div stays at the top of the viewport while the diagram scrolls.
+        f.write('  #sticky-header { position: sticky; top: 0; z-index: 100; display: block; }\n')
+        f.write('  svg { display: block; }\n')
+        f.write('</style>\n')
+        f.write('</head>\n<body>\n\n')
+
+        # ---- Sticky header: circles and actor labels only ----
+        f.write('<div id="sticky-header">\n')
+        f.write('<svg width="'+str(svg_width)+'" height="'+str(header_height)+'">\n')
+        f.write(css_style)
+        # White background so it occludes the diagram lines that scroll beneath it.
+        f.write('\t<rect x="0" y="0" width="'+str(svg_width)+'" height="'+str(header_height)+'" fill="white"/>\n')
+        write_actor_headers(f, x_coor, actors_names, padding)
+        f.write('</svg>\n')
+        f.write('</div>\n\n')
+
+        # ---- Main diagram SVG: vertical lines and all interactions ----
+        f.write('<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n')
+        f.write(css_style)
+        write_diagram_body(f, x_coor, actors_names, trace_df, svg_height)
+        f.write('\n</svg>\n\n')
+        f.write('</body>\n</html>\n')
+
+
+def write_svg_file(svg_width, svg_height, header_height, padding, x_coor, actors_names, trace_df):
+    '''
+    Write the sequence diagram as a standalone SVG file.
+    Actor headers and the diagram body are combined into a single SVG.
+    '''
+    total_height = header_height + svg_height
+    with open('trace_svg.svg', 'w', encoding='utf-8') as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write('<svg xmlns="http://www.w3.org/2000/svg" width="'+str(svg_width)+'" height="'+str(total_height)+'">\n')
+        f.write(css_style)
+        f.write('\t<rect x="0" y="0" width="'+str(svg_width)+'" height="'+str(total_height)+'" fill="white"/>\n')
+        write_actor_headers(f, x_coor, actors_names, padding)
+        f.write('<g transform="translate(0, '+str(header_height)+')">\n')
+        write_diagram_body(f, x_coor, actors_names, trace_df, svg_height)
+        f.write('</g>\n')
+        f.write('</svg>\n')
+
+
+################################################################################
 ### Main program to run
 ################################################################################
 
@@ -708,7 +855,7 @@ if __name__ == '__main__':
                 trace_df.at[index, 'arrow'] = 'arrow'
 
     ############################################################################
-    #### Write to html file
+    #### Write output file
     ############################################################################
     # svg_width is the natural pixel width of the diagram content.
     # The HTML body uses overflow-x: auto so a horizontal scrollbar appears
@@ -718,98 +865,13 @@ if __name__ == '__main__':
     # The sticky header is tall enough to contain the circles (centred at padding/2, r=20).
     header_height = padding
 
-    with open('trace_svg.html', 'w', encoding='utf-8') as f:
-        f.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n')
-        f.write('<style>\n')
-        f.write('  * { margin: 0; padding: 0; }\n')
-        # Allow horizontal scroll on the whole page when the diagram is wider than the window.
-        f.write('  body { overflow-x: auto; }\n')
-        # The sticky header div stays at the top of the viewport while the diagram scrolls.
-        f.write('  #sticky-header { position: sticky; top: 0; z-index: 100; display: block; }\n')
-        f.write('  svg { display: block; }\n')
-        f.write('</style>\n')
-        f.write('</head>\n<body>\n\n')
-
-        # ---- Sticky header: circles and actor labels only ----
-        f.write('<div id="sticky-header">\n')
-        f.write('<svg width="'+str(svg_width)+'" height="'+str(header_height)+'">\n')
-        f.write(css_style)
-        # White background so it occludes the diagram lines that scroll beneath it.
-        f.write('\t<rect x="0" y="0" width="'+str(svg_width)+'" height="'+str(header_height)+'" fill="white"/>\n')
-        for key in x_coor:
-            title = format_actor_name(actors_names[key])
-            cx = x_coor[key]
-            cy = math.ceil(padding / 2)
-            r = 20  # original circle radius; diameter becomes the rect height
-            rect_w = max(r * 2, len(title) * 7 + 12)
-            rect_h = r * 2
-            # Draw rectangle then bold text centered on it (later = on top in SVG)
-            f.write('\t<rect x="'+str(cx - rect_w//2)+'" y="'+str(cy - rect_h//2)+'" '
-                    +'width="'+str(rect_w)+'" height="'+str(rect_h)+'" fill="white" stroke="black" stroke-width="2"/>\n')
-            f.write('\t<text x="'+str(cx)+'" y="'+str(cy)+'" text-anchor="middle" dominant-baseline="central" '
-                    +'font-weight="bold" fill="black">'+title+'</text>\n')
-        f.write('</svg>\n')
-        f.write('</div>\n\n')
-
-        # ---- Main diagram SVG: vertical lines and all interactions ----
-        f.write('<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n')
-        f.write(css_style)
-
-        # Draw vertical lines for each actor (full diagram height)
-        for key in x_coor:
-            title = actors_names[key]
-            if (key == -1):
-                f.write(svg_string_comment('RTI Actor line'))
-            else:
-                f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor line'))
-            f.write(svg_string_draw_line(x_coor[key], 0, x_coor[key], svg_height, False))
-
-        # Draw interactions
-        f.write(svg_string_comment('Draw interactions'))
-        for index, row in trace_df.iterrows():
-            # formatted physical time.
-            # FIXME: Using microseconds is hardwired here.
-            physical_time = f'{int(row["physical_time"]/1000):,}'
-
-            if (row['event'] in non_tagged_messages):
-                label = row['event']
-            else:
-                label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
-
-            if (row['arrow'] == 'arrow'):
-                f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
-                if (row['inout'] in 'in'):
-                    # Label at receiver (x2): goes outward — right if receiver is right of sender.
-                    anchor = 'start' if row['x2'] > row['x1'] else 'end'
-                    f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
-                else:
-                    # Label at sender (x1): goes outward — left if receiver is right of sender.
-                    anchor = 'end' if row['x2'] > row['x1'] else 'start'
-                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
-            elif (row['arrow'] == 'dot'):
-                if (row['inout'] == 'in'):
-                    label = "(in) from " + str(row['partner_id']) + ' ' + label
-                else:
-                    label = "(out) to " + str(row['partner_id']) + ' ' + label
-
-                if (row['self_id'] < 0):
-                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, 'end'))
-                    f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
-                else:
-                    f.write(svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label))
-
-            elif (row['arrow'] == 'marked'):
-                # Label goes outward: right of receiver if receiver is right of sender, left otherwise.
-                partner_x = x_coor.get(int(row['partner_id']), row['x1'])
-                marked_anchor = 'start' if row['x1'] > partner_x else 'end'
-                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, marked_anchor))
-
-            elif (row['arrow'] == 'adv'):
-                f.write(svg_string_draw_adv(row['x1'], row['y1'], label))
-
-        f.write('\n</svg>\n\n')
-        f.write('</body>\n</html>\n')
+    if args.svg:
+        write_svg_file(svg_width, svg_height, header_height, padding, x_coor, actors_names, trace_df)
+        output_name = 'trace_svg.svg'
+    else:
+        write_html_file(svg_width, svg_height, header_height, padding, x_coor, actors_names, trace_df)
+        output_name = 'trace_svg.html'
 
     # Write to a csv file, just to double check
     trace_df.to_csv('all.csv', index=True)
-    print('Fedsd: Successfully generated the sequence diagram in trace_svg.html.')
+    print('Fedsd: Successfully generated the sequence diagram in ' + output_name + '.')
