@@ -63,3 +63,7 @@ By default the RTI is drawn at the left of the diagram. Pass `-c` or `--center-r
 ```bash
 fedsd -c
 ```
+
+Example generated with `fedsd -s 0 ms -e 20 ms --svg -np -c`:
+
+![Example sequence diagram](example.png)
