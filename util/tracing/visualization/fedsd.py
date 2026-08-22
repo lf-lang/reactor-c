@@ -220,14 +220,17 @@ parser.add_argument('-r','--rti', type=str,
 parser.add_argument('-f','--federates', nargs='+',
                     help='List of the federates\' lft trace files.')
 parser.add_argument('-s', '--start', type=str, nargs=2, metavar=('TIME', 'UNIT'),
-                    help='Start time of visualization in elapsed logical time, e.g. 0 ms. '
-                         'Units: ns, us, ms, s, min, hour, day, week (or nsec, usec, msec, sec, ...).')
+                    help='Start time of visualization (inclusive). By default this is elapsed logical time; '
+                         'with -p/--physical-start-end-times it is elapsed physical time. '
+                         'E.g. 0 ms. Units: ns, us, ms, s, min, hour, day, week (or nsec, usec, msec, sec, ...).')
 parser.add_argument('-e', '--end', type=str, nargs=2, metavar=('TIME', 'UNIT'),
-                    help='End time of visualization in elapsed logical time, e.g. 20 ms. Same units as -s.')
+                    help='End time of visualization (exclusive). Same time base and units as -s.')
 parser.add_argument('-v', '--svg', action='store_true',
                     help='Generate a pure SVG file (trace_svg.svg) instead of HTML (trace_svg.html).')
 parser.add_argument('-np', '--no-physical-times', action='store_true',
                     help='Omit physical time labels from the sequence diagram.')
+parser.add_argument('-p', '--physical-start-end-times', action='store_true',
+                    help='Interpret -s/--start and -e/--end as elapsed physical time instead of logical time.')
 parser.add_argument('-c', '--center-rti', action='store_true',
                     help='Place the RTI in the middle of the diagram instead of on the left.')
 
@@ -505,12 +508,15 @@ def command_is_in_path(command):
                 return True
     return False
 
-def convert_lft_file_to_csv(lft_file, start_time, end_time):
+def convert_lft_file_to_csv(lft_file, start_time, end_time, use_physical=False):
     '''
     Call trace_to_csv command to convert the given binary lft trace file to csv format.
 
     Args:
      * lft_file: the lft trace file
+     * start_time: optional [TIME, UNIT] pair for -s/--start
+     * end_time: optional [TIME, UNIT] pair for -e/--end
+     * use_physical: if True, pass -p so start/end are elapsed physical time
     Return:
      * File: the converted csv file, if the conversion succeeds, and empty string otherwise.
      * String: the error message, in case the conversion did not succeed, and empty string otherwise.
@@ -521,6 +527,8 @@ def convert_lft_file_to_csv(lft_file, start_time, end_time):
         subprocess_args.extend(['-s', start_time[0], start_time[1]])
     if (end_time != None):
         subprocess_args.extend(['-e', end_time[0], end_time[1]])
+    if use_physical:
+        subprocess_args.append('-p')
 
     convert_process = subprocess.run(subprocess_args, capture_output=True, text=True)
 
@@ -533,7 +541,7 @@ def convert_lft_file_to_csv(lft_file, start_time, end_time):
             error = 'trace_to_csv exited with code ' + str(convert_process.returncode)
         return '', error
 
-def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end_time):
+def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end_time, use_physical=False):
     '''
     Check if the passed arguments are valid, in the sense that the files do exist.
     If not arguments were passed, then look up the local lft files.
@@ -542,6 +550,9 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
     Args:
      * File: the argument passed at the command line as the rti lft trace file.
      * Array: the argument passed at the command line as array of federates lft trace files.
+     * start_time: optional [TIME, UNIT] pair for -s/--start
+     * end_time: optional [TIME, UNIT] pair for -e/--end
+     * use_physical: if True, interpret start/end as elapsed physical time
     Return:
      * File: the converted RTI trace csv file, or empty, if no RTI trace lft file is found
      * Array: Array of files of converted federates trace csv files
@@ -573,7 +584,7 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
     # Now, convert lft files to csv
     rti_csv_file = ''
     if (rti_lft_file):
-        rti_csv_file, error = convert_lft_file_to_csv(rti_lft_file, start_time, end_time)
+        rti_csv_file, error = convert_lft_file_to_csv(rti_lft_file, start_time, end_time, use_physical)
         if (not rti_csv_file):
             print('Fedsd: Error converting the RTI\'s lft file: ' + error)
             print('Fedsd: Error: Failed to convert the RTI trace file. Abort!')
@@ -583,7 +594,7 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
     
     federates_csv_files = []
     for file in federates_lft_files:
-        fed_csv_file, error = convert_lft_file_to_csv(file, start_time, end_time)
+        fed_csv_file, error = convert_lft_file_to_csv(file, start_time, end_time, use_physical)
         if (not fed_csv_file):
             print('Fedsd: Error converting the federate lft file ' + file + ': ' + error)
         else: 
@@ -762,7 +773,8 @@ if __name__ == '__main__':
 
     # Look up the lft files and transform them to csv files
 
-    rti_csv_file, federates_csv_files = get_and_convert_lft_files(args.rti, args.federates, args.start, args.end)
+    rti_csv_file, federates_csv_files = get_and_convert_lft_files(
+        args.rti, args.federates, args.start, args.end, args.physical_start_end_times)
 
     if (not rti_csv_file and not federates_csv_files):
         print('Fedsd: Error: Failed to convert any lft files. Abort!')

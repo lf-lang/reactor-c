@@ -34,11 +34,14 @@ void usage() {
   printf("\nUsage: trace_to_csv [options] trace_file (with .lft extension)\n\n");
   printf("\nOptions: \n\n");
   printf("  -s, --start [time_spec] [units]\n");
-  printf("   The elapsed logical time to begin tracing (inclusive).\n");
+  printf("   The elapsed time to begin tracing (inclusive).\n");
+  printf("   By default this is elapsed logical time; with -p it is elapsed physical time.\n");
   printf("   Units: ns, us, ms, s, min, hour, day, week\n");
   printf("   (or nsec, usec, msec, sec, second, minute, and their plurals).\n\n");
   printf("  -e, --end [time_spec] [units]\n");
-  printf("   The elapsed logical time to stop tracing (exclusive). Same units as -s.\n\n");
+  printf("   The elapsed time to stop tracing (exclusive). Same units as -s.\n\n");
+  printf("  -p, --physical, --physical-start-end-times\n");
+  printf("   Interpret -s/--start and -e/--end as elapsed physical time rather than logical time.\n\n");
   printf("\n\n");
 }
 
@@ -75,17 +78,14 @@ summary_stats_t** summary_stats;
 instant_t latest_time = 0LL;
 
 /**
- * Read a trace in the trace_file and write it to the output_file as CSV.
- * @return The number of records read or 0 upon seeing an EOF.
- */
-/**
  * Elapsed time of a trace record relative to start_time, used by -s/-e filtering.
- * Untagged events (logical time NEVER or FOREVER) are filtered by physical time
- * so that subtracting NEVER from start_time does not overflow.
+ * By default this is elapsed logical time; untagged events (logical time NEVER or
+ * FOREVER) fall back to physical time so that subtracting NEVER does not overflow.
+ * If use_physical is true, elapsed physical time is used instead.
  */
-static interval_t elapsed_time_for_filter(const trace_record_t* rec) {
-  instant_t event_time = rec->logical_time;
-  if (event_time == NEVER || event_time == FOREVER) {
+static interval_t elapsed_time_for_filter(const trace_record_t* rec, int use_physical) {
+  instant_t event_time = use_physical ? rec->physical_time : rec->logical_time;
+  if (!use_physical && (event_time == NEVER || event_time == FOREVER)) {
     event_time = rec->physical_time;
   }
   if (event_time == NEVER || event_time == FOREVER || event_time < start_time) {
@@ -95,7 +95,11 @@ static interval_t elapsed_time_for_filter(const trace_record_t* rec) {
   return event_time - start_time;
 }
 
-size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time) {
+/**
+ * Read a trace in the trace_file and write it to the output_file as CSV.
+ * @return The number of records read or 0 upon seeing an EOF.
+ */
+size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time, int use_physical) {
   int trace_length = read_trace();
   if (trace_length == 0)
     return 0;
@@ -112,13 +116,13 @@ size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time
     if (trigger_name == NULL) {
       trigger_name = "NO TRIGGER";
     }
-    interval_t elapsed_logical = elapsed_time_for_filter(&trace[i]);
-    if (elapsed_logical >= trace_start_time && elapsed_logical < trace_end_time) {
+    interval_t elapsed = elapsed_time_for_filter(&trace[i], use_physical);
+    if (elapsed >= trace_start_time && elapsed < trace_end_time) {
       const char* event_name = "UNKNOWN";
       if (trace[i].event_type >= 0 && trace[i].event_type < NUM_EVENT_TYPES) {
         event_name = trace_event_names[trace[i].event_type];
       }
-      interval_t csv_logical = elapsed_logical;
+      interval_t csv_logical = elapsed;
       if (trace[i].logical_time != NEVER && trace[i].logical_time != FOREVER && trace[i].logical_time >= start_time) {
         csv_logical = trace[i].logical_time - start_time;
       }
@@ -446,9 +450,11 @@ instant_t string_to_instant(const char* time_spec, const char* units) {
   return duration;
 }
 
-int process_args(int argc, const char* argv[], char** root, instant_t* start_time, instant_t* end_time) {
+int process_args(int argc, const char* argv[], char** root, instant_t* start_time, instant_t* end_time,
+                 int* use_physical) {
   int i = 1;
   *root = NULL;
+  *use_physical = 0;
   while (i < argc) {
     const char* arg = argv[i++];
     size_t arg_len = strlen(arg);
@@ -484,6 +490,9 @@ int process_args(int argc, const char* argv[], char** root, instant_t* start_tim
         usage();
         return -1;
       }
+    } else if (strcmp(arg, "-p") == 0 || strcmp(arg, "--physical") == 0 ||
+               strcmp(arg, "--physical-start-end-times") == 0) {
+      *use_physical = 1;
     } else {
       usage();
       return -1;
@@ -500,9 +509,10 @@ int process_args(int argc, const char* argv[], char** root, instant_t* start_tim
 int main(int argc, const char* argv[]) {
   instant_t trace_start_time = NEVER;
   instant_t trace_end_time = FOREVER;
+  int use_physical = 0;
   char* root;
 
-  if (process_args(argc, argv, &root, &trace_start_time, &trace_end_time) != 0) {
+  if (process_args(argc, argv, &root, &trace_start_time, &trace_end_time, &use_physical) != 0) {
     return -1;
   }
 
@@ -532,7 +542,7 @@ int main(int argc, const char* argv[]) {
     // Write a header line into the CSV file.
     fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, "
                          "Trigger, Extra Delay\n");
-    while (read_and_write_trace(trace_start_time, trace_end_time) != 0) {
+    while (read_and_write_trace(trace_start_time, trace_end_time, use_physical) != 0) {
     };
 
     write_summary_file();
