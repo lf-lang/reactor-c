@@ -643,7 +643,7 @@ def write_diagram_body(f, x_coor, actors_names, trace_df, svg_height, show_physi
     for index, row in trace_df.iterrows():
         # formatted physical time.
         # FIXME: Using microseconds is hardwired here.
-        physical_time = f'{int(row["physical_time"]/1000):,}us'
+        physical_time = f'{int(row["physical_time"]) // 1000:,}us'
 
         if (row['event'] in non_tagged_messages):
             label = row['event']
