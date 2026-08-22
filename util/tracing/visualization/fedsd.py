@@ -149,6 +149,49 @@ def format_actor_name(name):
         return m.group(1) + ': ' + m.group(2)
     return name
 
+# Nanoseconds per unit, for compact tag labels (seconds is the coarsest unit used).
+_USEC = 1000
+_MSEC = 1000000
+_SEC = 1000000000
+# UINT_MAX as written by trace_to_csv's %d, and the unsigned value itself.
+_MICROSTEP_MINUS_ONE = frozenset((-1, 0xFFFFFFFF))
+
+def format_time_value(time_ns):
+    '''
+    Format an elapsed time in nanoseconds using the coarsest unit among s, ms, and us
+    that divides the value evenly. Otherwise show nanoseconds.
+    Zero is shown as "0" with no unit.
+    '''
+    time_ns = int(time_ns)
+    sign = ''
+    if time_ns < 0:
+        sign = '-'
+        time_ns = -time_ns
+    if time_ns == 0:
+        return '0'
+    if time_ns % _SEC == 0:
+        return sign + str(time_ns // _SEC) + 's'
+    if time_ns % _MSEC == 0:
+        return sign + str(time_ns // _MSEC) + 'ms'
+    if time_ns % _USEC == 0:
+        return sign + str(time_ns // _USEC) + 'us'
+    return sign + f'{time_ns:,}ns'
+
+def format_tag(logical_time, microstep):
+    '''
+    Format a (logical_time, microstep) pair for a signal label.
+
+    A microstep of -1 (UINT_MAX printed as a signed int) is one microstep
+    earlier than (logical_time + 1 nsec, 0). Display that as (next_time, -1),
+    e.g. (9,999,999 ns, -1) becomes "(10ms, -1)".
+    '''
+    time_ns = int(logical_time)
+    step = int(microstep)
+    if step in _MICROSTEP_MINUS_ONE:
+        time_ns += 1
+        step = -1
+    return format_time_value(time_ns) + ', ' + str(step)
+
 # Define the arguments to pass in the command line
 parser = argparse.ArgumentParser(description='Set of the lft trace files to render.')
 parser.add_argument('-r','--rti', type=str, 
@@ -576,7 +619,7 @@ def write_diagram_body(f, x_coor, actors_names, trace_df, svg_height):
         if (row['event'] in non_tagged_messages):
             label = row['event']
         else:
-            label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
+            label = row['event'] + '(' + format_tag(row['logical_time'], row['microstep']) + ')'
 
         if (row['arrow'] == 'arrow'):
             f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
