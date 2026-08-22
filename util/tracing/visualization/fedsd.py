@@ -192,6 +192,27 @@ def format_tag(logical_time, microstep):
         step = -1
     return format_time_value(time_ns) + ', ' + str(step)
 
+def layout_actors(actors, padding, spacing, center_rti=False):
+    '''
+    Place actors left to right and return (ordered_actors, x_coor, extra_left).
+    If center_rti is True and there is more than one federate, the RTI (id -1)
+    is inserted in the middle of the federate list instead of at the left.
+    extra_left is additional left margin so AdvLT labels on the leftmost
+    federate are not clipped by the SVG viewport.
+    '''
+    ordered = list(actors)
+    extra_left = 0
+    if center_rti and -1 in ordered and len(ordered) > 2:
+        federates_only = [a for a in ordered if a != -1]
+        mid = len(federates_only) // 2
+        ordered = federates_only[:mid] + [-1] + federates_only[mid:]
+        # Match the extra space already reserved on the right for labels.
+        extra_left = 200
+    x_coor = {}
+    for i, actor_id in enumerate(ordered):
+        x_coor[actor_id] = extra_left + (padding * 2) + (spacing * i)
+    return ordered, x_coor, extra_left
+
 # Define the arguments to pass in the command line
 parser = argparse.ArgumentParser(description='Set of the lft trace files to render.')
 parser.add_argument('-r','--rti', type=str, 
@@ -207,6 +228,8 @@ parser.add_argument('-v', '--svg', action='store_true',
                     help='Generate a pure SVG file (trace_svg.svg) instead of HTML (trace_svg.html).')
 parser.add_argument('-np', '--no-physical-times', action='store_true',
                     help='Omit physical time labels from the sequence diagram.')
+parser.add_argument('-c', '--center-rti', action='store_true',
+                    help='Place the RTI in the middle of the diagram instead of on the left.')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
@@ -402,19 +425,20 @@ def svg_string_draw_dot_with_time(x, y, time, label) :
     str_line = str_line + '\t<text x="'+str(x+5)+'", y="'+str(y+5)+'"> <tspan class="time">'+time+':</tspan> <tspan fill="blue">'+label+'</tspan></text>\n'
     return str_line
 
-def svg_string_draw_adv(x, y, label) :
+def svg_string_draw_adv(x, y, label, anchor="start") :
     '''
     Constructs the svg html string to draw at a dash, meaning that logical time is advancing there.
 
     Args:
      * x: Int X coordinate of the dash
      * y: Int Y coordinate of the dash
-     * label: String to draw 
+     * label: String to draw
+     * anchor: "start" puts the label to the right of the line, "end" to the left.
     Returns:
      * String: the svg string of the triangle
     '''
     str_line1 = svg_string_draw_line(x-5, y, x+5, y, "ADV")
-    str_line2 = svg_string_draw_side_label(x, y, label)
+    str_line2 = svg_string_draw_side_label(x, y, label, anchor)
     return str_line1 + str_line2
 
 
@@ -658,7 +682,11 @@ def write_diagram_body(f, x_coor, actors_names, trace_df, svg_height, show_physi
                 f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, marked_anchor))
 
         elif (row['arrow'] == 'adv'):
-            f.write(svg_string_draw_adv(row['x1'], row['y1'], label))
+            # When the RTI is centered, put AdvLT labels on the left for federates
+            # that sit to the left of the RTI so they do not overlap the RTI column.
+            rti_x = x_coor.get(-1)
+            adv_anchor = 'end' if (rti_x is not None and row['x1'] < rti_x) else 'start'
+            f.write(svg_string_draw_adv(row['x1'], row['y1'], label, adv_anchor))
 
 
 def write_html_file(svg_width, svg_height, header_height, padding, x_coor, actors_names, trace_df,
@@ -737,14 +765,11 @@ if __name__ == '__main__':
     
     # The RTI and each of the federates have a fixed x coordinate. They will be
     # saved in a dict
-    x_coor = {}
     actors = []
     actors_names = {}
     padding = 50
     spacing = 200       # Spacing between federates
 
-    # Set the RTI x coordinate
-    x_coor[-1] = padding * 2
     actors.append(-1)
     actors_names[-1] = "RTI"
    
@@ -772,13 +797,13 @@ if __name__ == '__main__':
                     # Add to the list of sequence diagram actors and add the name
                     actors.append(fed_id)
                     actors_names[fed_id] = Path(fed_trace).stem
-                    # Derive the x coordinate of the actor
-                    x_coor[fed_id] = (padding * 2) + (spacing * (len(actors)-1))
 
-                fed_df['x1'] = x_coor[fed_id]
                 trace_df = pd.concat([trace_df, fed_df])
                 fed_df = fed_df[0:0]
     
+    actors, x_coor, extra_left = layout_actors(actors, padding, spacing, center_rti=args.center_rti)
+    if not trace_df.empty:
+        trace_df['x1'] = trace_df['self_id'].apply(lambda e: x_coor[int(e)])
         
     ############################################################################
     #### RTI trace processing, if any
@@ -929,7 +954,7 @@ if __name__ == '__main__':
     # svg_width is the natural pixel width of the diagram content.
     # The HTML body uses overflow-x: auto so a horizontal scrollbar appears
     # when the browser window is narrower than the diagram.
-    svg_width = padding * 2 + (len(actors) - 1) * spacing + padding * 2 + 200
+    svg_width = extra_left + padding * 2 + (len(actors) - 1) * spacing + padding * 2 + 200
     svg_height = padding + trace_df.iloc[-1]['y1']
     # The sticky header is tall enough to contain the circles (centred at padding/2, r=20).
     header_height = padding

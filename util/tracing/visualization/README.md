@@ -57,3 +57,9 @@ To omit physical time labels from the vertical actor lines, pass `-np` or `--no-
 ```bash
 fedsd -np
 ```
+
+By default the RTI is drawn at the left of the diagram. Pass `-c` or `--center-rti` to place it between the federates:
+
+```bash
+fedsd -c
+```
