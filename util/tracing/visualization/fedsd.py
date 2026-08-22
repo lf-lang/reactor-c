@@ -558,7 +558,8 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
         # If files were given, then check they exist
         if (rti_lft_file):
             if (not os.path.exists(rti_lft_file)):
-                print('Warning: Trace file ' + rti_lft_file + ' does not exist! Will resume though')
+                print('Fedsd: Error: Trace file ' + rti_lft_file + ' does not exist. Abort!')
+                sys.exit(1)
         else: 
             for file in federates_lft_files:
                 if (not os.path.exists(file)):
@@ -575,6 +576,8 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
         rti_csv_file, error = convert_lft_file_to_csv(rti_lft_file, start_time, end_time)
         if (not rti_csv_file):
             print('Fedsd: Error converting the RTI\'s lft file: ' + error)
+            print('Fedsd: Error: Failed to convert the RTI trace file. Abort!')
+            sys.exit(1)
         else:
             print('Fedsd: Successfully converted trace file ' + rti_lft_file + ' to ' + rti_csv_file + '.')
     
