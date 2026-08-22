@@ -862,6 +862,8 @@ if __name__ == '__main__':
             # But rather think it should be:
             if (cpt != ppt) :
                 py = math.ceil(py + min + (1 + math.log10(cpt - ppt) * scale))
+            else:
+                py = math.ceil(py + min)
             trace_df.at[index, 'y1'] = py
 
         ppt = row['physical_time']
