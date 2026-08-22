@@ -291,13 +291,15 @@ def svg_string_draw_arrow_head(x1, y1, x2, y2, type='') :
     
     str_line = ''
     if (x1 > x2) :
+        # SVG rotate(angle, cx, cy) is portable; CSS transform-origin is not
+        # (Adobe Illustrator ignores it and rotates around the document origin).
         str_line = '\t<path d="M'+str(x2)+' '+str(y2)+' L'+str(x2+10)+' '+str(y2+5)+' L'+str(x2+10)+' '+str(y2-5)+' Z"' \
-             + ' transform="rotate('+str(rotation)+')" transform-origin="'+str(x2)+' '+str(y2)+'"' \
+             + ' transform="rotate('+str(rotation)+' '+str(x2)+' '+str(y2)+')"' \
              + style \
              + '/>\n'
     else :
         str_line = '\t<path d="M'+str(x2)+' '+str(y2)+' L'+str(x2-10)+' '+str(y2+5)+' L'+str(x2-10)+' '+str(y2-5)+' Z"' \
-             + ' transform="rotate('+str( 180 + rotation)+')" transform-origin="'+str(x2)+' '+str(y2)+'"' \
+             + ' transform="rotate('+str( 180 + rotation)+' '+str(x2)+' '+str(y2)+')"' \
              + style \
              + '/>\n'
 
