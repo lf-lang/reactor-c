@@ -51,3 +51,9 @@ To generate a standalone SVG file (`trace_svg.svg`) instead of HTML, pass `-v` o
 ```bash
 fedsd -v
 ```
+
+To omit physical time labels from the vertical actor lines, pass `-np` or `--no-physical-times`:
+
+```bash
+fedsd -np
+```
