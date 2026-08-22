@@ -653,7 +653,7 @@ def write_diagram_body(f, x_coor, actors_names, trace_df, svg_height, show_physi
         if (row['arrow'] == 'arrow'):
             f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
             if show_physical_times:
-                if (row['inout'] in 'in'):
+                if (row['inout'] == 'in'):
                     # Label at receiver (x2): goes outward — right if receiver is right of sender.
                     anchor = 'start' if row['x2'] > row['x1'] else 'end'
                     f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
