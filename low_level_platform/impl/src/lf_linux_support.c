@@ -23,7 +23,7 @@
 #else
 #include "lf_POSIX_threads_support.c"
 
-int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
+int lf_thread_set_cpu(const int* core_ids, size_t num_core_ids) {
   if (core_ids == NULL || num_core_ids == 0) {
     return -1; // No pinning needed
   }
@@ -35,7 +35,7 @@ int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
   CPU_ZERO(&cpu_set);
   for (size_t i = 0; i < num_core_ids; i++) {
     if (core_ids[i] < 0 || core_ids[i] >= available) {
-      return -1; // Invalid core ID
+      return LF_THREAD_CPU_INVALID_CORE;
     }
     CPU_SET(core_ids[i], &cpu_set);
   }

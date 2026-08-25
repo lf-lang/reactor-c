@@ -40,9 +40,10 @@ extern tag_t effective_start_tag;
 extern int get_priority_value(interval_t rel_deadline);
 
 /**
- * Scheduling deadline (ns) for OS priority: upper bits of reaction->index, set by codegen via
- * lf_combine_deadline_and_level from the graph’s inferred deadline (same as declared when nothing
- * tighter is inherited from downstream).
+ * Return the deadline of the specified reaction in ns.
+ * This is extracted from the upper bits of `reaction->index`, which is set by code generator via
+ * `lf_combine_deadline_and_level` from the reaction's inferred deadline (which is the same as
+ * the declared deadline when nothing tighter is inherited from downstream).
  */
 static inline interval_t lf_reaction_scheduling_deadline_ns(const reaction_t* reaction) {
   return (interval_t)(reaction->index >> 16);
@@ -196,10 +197,12 @@ bool wait_until(instant_t wait_until_time, lf_cond_t* condition) {
       return true;
     }
 
-    // Set highest priority before sleeping so we wake up quickly
-    lf_thread_set_priority(lf_thread_self(), LF_SLEEP_PRIORITY);
+#ifdef LF_THREAD_POLICY
+    // Set highest priority before sleeping so we wake up quickly.
     // Ignoring the return value: optimization for platforms that support priority setting,
     // but it does not affect platforms that don't support it.
+    lf_thread_set_priority(lf_thread_self(), LF_SLEEP_PRIORITY);
+#endif
 
     // We do the sleep on the cond var so we can be awakened by the
     // asynchronous scheduling of a physical action. lf_clock_cond_timedwait
@@ -922,6 +925,7 @@ static void* worker(void* arg) {
   {
     static int core_ids[] = LF_CORE_IDS_INIT;
     int ret = lf_thread_set_cpu(core_ids, sizeof(core_ids) / sizeof(core_ids[0]));
+    // -1 means unsupported platform or no pinning; invalid core IDs return LF_THREAD_CPU_INVALID_CORE.
     if (ret != 0 && ret != -1) {
       LF_PRINT_LOG("Warning: Could not set CPU affinity (error %d).", ret);
     }

@@ -13,11 +13,16 @@
 int main() {
   int res;
 
-  // Set the CPU affinity using specific core IDs
+  // Set the CPU affinity using specific (valid) core IDs.
   {
+    int available = lf_available_cores();
+    if (available <= 0) {
+      lf_print_error_and_exit("lf_available_cores returned %d", available);
+    }
     int core_ids[] = {0, 1};
-    res = lf_thread_set_cpu(core_ids, 2);
-    if (res != 0 && res != -1) {
+    size_t n = (available > 1) ? 2u : 1u;
+    res = lf_thread_set_cpu(core_ids, n);
+    if (res != 0) {
       lf_print_error_and_exit("lf_thread_set_cpu failed with %d", res);
     }
   }
@@ -80,12 +85,12 @@ int main() {
     }
   }
 
-  // Try with an invalid core ID - should return -1
+  // Try with an invalid core ID
   {
     int bad_ids[] = {9999};
     res = lf_thread_set_cpu(bad_ids, 1);
-    if (res != -1) {
-      lf_print_error_and_exit("lf_thread_set_cpu should return -1 for invalid core ID");
+    if (res != LF_THREAD_CPU_INVALID_CORE) {
+      lf_print_error_and_exit("lf_thread_set_cpu should return LF_THREAD_CPU_INVALID_CORE for invalid core ID");
     }
   }
 

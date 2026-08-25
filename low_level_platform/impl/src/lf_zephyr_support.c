@@ -147,7 +147,7 @@ int lf_thread_id() { return *((int*)k_thread_custom_data_get()); }
 
 lf_thread_t lf_thread_self() { return k_current_get(); }
 
-int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
+int lf_thread_set_cpu(const int* core_ids, size_t num_core_ids) {
   if (core_ids == NULL || num_core_ids == 0) {
     return -1; // No pinning needed
   }
@@ -158,7 +158,7 @@ int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
   // Validate core IDs up-front so we don't clear the mask and leave the thread runnable on no cores.
   for (size_t i = 0; i < num_core_ids; i++) {
     if (core_ids[i] < 0 || core_ids[i] >= available) {
-      return -1;
+      return LF_THREAD_CPU_INVALID_CORE;
     }
   }
 

@@ -188,6 +188,10 @@ typedef struct {
   interval_t time_slice;              // The time-slice allocated, if applicable.
 } lf_scheduling_policy_t;
 
+/** @brief Return value when a core ID is out of range. Chosen outside the errno range to avoid
+ *  colliding with platform error codes (e.g. Zephyr's -ENOENT is -2). */
+#define LF_THREAD_CPU_INVALID_CORE -512
+
 /**
  * @brief Restrict the calling thread to run on the specified set of CPUs.
  * @ingroup Platform
@@ -200,9 +204,11 @@ typedef struct {
  * @param core_ids An array of CPU core IDs to allow the thread to run on.
  * @param num_core_ids The number of entries in the core_ids array.
  *                     If 0 or core_ids is NULL, no pinning is done.
- * @return 0 on success, -1 if no pinning needed or invalid, platform-specific error otherwise.
+ * @return 0 on success, -1 if no pinning needed or affinity is unsupported,
+ *         @ref LF_THREAD_CPU_INVALID_CORE if a core ID is out of range,
+ *         platform-specific error otherwise.
  */
-int lf_thread_set_cpu(int* core_ids, size_t num_core_ids);
+int lf_thread_set_cpu(const int* core_ids, size_t num_core_ids);
 
 /**
  * @brief Set the priority of a thread.

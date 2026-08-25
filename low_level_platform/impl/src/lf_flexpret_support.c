@@ -174,7 +174,7 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) { return fp_thread_
 /**
  * Real-time scheduling API not implemented for FlexPRET.
  */
-int lf_thread_set_cpu(int* core_ids, size_t num_core_ids) {
+int lf_thread_set_cpu(const int* core_ids, size_t num_core_ids) {
   (void)core_ids;
   (void)num_core_ids;
   return -1;
