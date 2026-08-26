@@ -264,8 +264,8 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     tag.microstep++;
   if (comparison >= 0) {
     LF_PRINT_DEBUG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
-                 input_port_action->last_known_status_tag.time - lf_time_start(),
-                 input_port_action->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
+                   input_port_action->last_known_status_tag.time - lf_time_start(),
+                   input_port_action->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
     input_port_action->last_known_status_tag = tag;
 
     // Check whether this port update implies a change to MLAA, which may unblock reactions.
@@ -354,9 +354,9 @@ static void update_last_known_status_on_action(environment_t* env, lf_action_bas
   trigger_t* input_port_trigger = action->trigger;
   if (lf_tag_compare(tag, input_port_trigger->last_known_status_tag) > 0) {
     LF_PRINT_DEBUG("Updating the last known status tag of port for upstream absent transient "
-                 "federate from " PRINTF_TAG " to " PRINTF_TAG ".",
-                 input_port_trigger->last_known_status_tag.time - lf_time_start(),
-                 input_port_trigger->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
+                   "federate from " PRINTF_TAG " to " PRINTF_TAG ".",
+                   input_port_trigger->last_known_status_tag.time - lf_time_start(),
+                   input_port_trigger->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
     input_port_trigger->last_known_status_tag = tag;
   }
 }
@@ -780,9 +780,9 @@ static int handle_port_absent_message(net_abstraction_t net, int fed_id) {
   trigger_t* input_port_action = action_for_port(port_id)->trigger;
   if (lf_tag_compare(intended_tag, input_port_action->last_known_status_tag) > 0) {
     LF_PRINT_DEBUG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
-                 input_port_action->last_known_status_tag.time - lf_time_start(),
-                 input_port_action->last_known_status_tag.microstep, intended_tag.time - lf_time_start(),
-                 intended_tag.microstep);
+                   input_port_action->last_known_status_tag.time - lf_time_start(),
+                   input_port_action->last_known_status_tag.microstep, intended_tag.time - lf_time_start(),
+                   intended_tag.microstep);
     input_port_action->last_known_status_tag = intended_tag;
     if (lf_tag_compare(intended_tag, env->current_tag) == 0) {
       set_network_port_status(port_id, absent);
