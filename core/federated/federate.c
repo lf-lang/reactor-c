@@ -241,7 +241,7 @@ static void update_last_known_status_on_input_ports(tag_t tag, environment_t* en
  * occur if a sequence of late messages (STP violations) are occurring all at
  * once during an execution of a logical tag.
  *
- * This function is called when a message or absent message arrives. For decentralized
+ * This function is called when a message arrives. For decentralized
  * coordination, it is also called by the background thread update_ports_from_staa_offsets
  * which uses physical time to determine when an input port can be assumed to be absent
  * if a message has not been received.
@@ -263,9 +263,9 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
   if (comparison == 0)
     tag.microstep++;
   if (comparison >= 0) {
-    LF_PRINT_LOG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
-                 input_port_action->last_known_status_tag.time - lf_time_start(),
-                 input_port_action->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
+    LF_PRINT_DEBUG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
+                   input_port_action->last_known_status_tag.time - lf_time_start(),
+                   input_port_action->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
     input_port_action->last_known_status_tag = tag;
 
     // Check whether this port update implies a change to MLAA, which may unblock reactions.
@@ -353,10 +353,10 @@ static void update_last_known_status_on_action(environment_t* env, lf_action_bas
     tag = env->current_tag;
   trigger_t* input_port_trigger = action->trigger;
   if (lf_tag_compare(tag, input_port_trigger->last_known_status_tag) > 0) {
-    LF_PRINT_LOG("Updating the last known status tag of port for upstream absent transient "
-                 "federate from " PRINTF_TAG " to " PRINTF_TAG ".",
-                 input_port_trigger->last_known_status_tag.time - lf_time_start(),
-                 input_port_trigger->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
+    LF_PRINT_DEBUG("Updating the last known status tag of port for upstream absent transient "
+                   "federate from " PRINTF_TAG " to " PRINTF_TAG ".",
+                   input_port_trigger->last_known_status_tag.time - lf_time_start(),
+                   input_port_trigger->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
     input_port_trigger->last_known_status_tag = tag;
   }
 }
@@ -735,8 +735,10 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
 
 /**
  * Handle a port absent message received from a remote federate.
- * This just sets the last known status tag of the port specified
- * in the message.
+ * This sets the last known status tag of the specified port. In decentralized
+ * coordination, if the absent tag is in the future, a dummy event is inserted
+ * so an idle federate advances to that tag and can emit its own port-absent
+ * messages (required to complete a zero-delay cycle).
  *
  * @param net Pointer to the network abstraction to read the message from
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
@@ -769,7 +771,42 @@ static int handle_port_absent_message(net_abstraction_t net, int fed_id) {
   _lf_get_environments(&env);
 
   LF_MUTEX_LOCK(&env->mutex);
-  update_last_known_status_on_input_port(env, intended_tag, port_id, true);
+
+  // Unlike update_last_known_status_on_input_port, here we do not clamp a late absent
+  // up to current_tag, and we set the port status to absent if the intended tag is
+  // equal to the current tag. Absence at an earlier tag does not imply absence at the
+  // current tag; clamping would unblock MLAA too early and let downstream reactions
+  // run before a present/absent for this tag arrives.
+  trigger_t* input_port_action = action_for_port(port_id)->trigger;
+  if (lf_tag_compare(intended_tag, input_port_action->last_known_status_tag) > 0) {
+    LF_PRINT_DEBUG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
+                   input_port_action->last_known_status_tag.time - lf_time_start(),
+                   input_port_action->last_known_status_tag.microstep, intended_tag.time - lf_time_start(),
+                   intended_tag.microstep);
+    input_port_action->last_known_status_tag = intended_tag;
+    if (lf_tag_compare(intended_tag, env->current_tag) == 0) {
+      set_network_port_status(port_id, absent);
+    }
+    lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+    lf_cond_broadcast(&lf_port_status_changed);
+    // Could be blocked waiting for physical time to advance to the STA, so unblock that too.
+    lf_cond_broadcast(&env->event_q_changed);
+  }
+
+#ifdef FEDERATED_DECENTRALIZED
+  // If this federate is idle (no local event at the absent tag), it would never
+  // execute that tag and therefore would never send its own port-absent messages.
+  // In a zero-delay cycle that stalls the peer until STAA expires. Insert a dummy
+  // event so time advances and port-absent reactions can run.
+  if (lf_tag_compare(intended_tag, env->current_tag) > 0 && !lf_is_tag_after_stop_tag(env, intended_tag)) {
+    LF_PRINT_DEBUG("Inserting dummy event at tag " PRINTF_TAG " to process port-absent.",
+                   intended_tag.time - lf_time_start(), intended_tag.microstep);
+    event_t* dummy = _lf_create_dummy_events(env, intended_tag);
+    pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)dummy);
+    lf_cond_broadcast(&env->event_q_changed);
+  }
+#endif
+
   LF_MUTEX_UNLOCK(&env->mutex);
 
   return 0;
