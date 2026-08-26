@@ -773,10 +773,10 @@ static int handle_port_absent_message(net_abstraction_t net, int fed_id) {
   LF_MUTEX_LOCK(&env->mutex);
 
   // Unlike update_last_known_status_on_input_port, here we do not clamp a late absent
-  // up to current_tag, do not notify of an event queue change, and set the port status
-  // to absent if the intended tag is equal to the current tag. Absence at an earlier tag does
-  // not imply absence at the current tag; clamping would unblock MLAA too early
-  // and let downstream reactions run before a present/absent for this tag arrives.
+  // up to current_tag, and we set the port status to absent if the intended tag is
+  // equal to the current tag. Absence at an earlier tag does not imply absence at the
+  // current tag; clamping would unblock MLAA too early and let downstream reactions
+  // run before a present/absent for this tag arrives.
   trigger_t* input_port_action = action_for_port(port_id)->trigger;
   if (lf_tag_compare(intended_tag, input_port_action->last_known_status_tag) > 0) {
     LF_PRINT_DEBUG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
@@ -789,6 +789,8 @@ static int handle_port_absent_message(net_abstraction_t net, int fed_id) {
     }
     lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
     lf_cond_broadcast(&lf_port_status_changed);
+    // Could be blocked waiting for physical time to advance to the STA, so unblock that too.
+    lf_cond_broadcast(&env->event_q_changed);
   }
 
 #ifdef FEDERATED_DECENTRALIZED
