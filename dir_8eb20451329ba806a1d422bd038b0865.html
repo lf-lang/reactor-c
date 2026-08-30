@@ -142,9 +142,18 @@ Running</h1>
 <p>Once the federation stopped executing, running <span class="tt">fedsd</span> will operate on all the <span class="tt">.lft</span> files in the current directory: </p><div class="fragment"><div class="line">fedsd</div>
 </div><!-- fragment --><p> It is also possible to operate on specific files. In such a case, run <span class="tt">fedsd</span> with <span class="tt">-r</span> flag to provide the RTI trace file, and <span class="tt">-f</span> flag to provide the list of federate.</p>
 <div class="fragment"><div class="line">fedsd -r &lt;rti.lft&gt; -f &lt;federate__f1.lft&gt; &lt;federate__f2.lft&gt;</div>
-</div><!-- fragment --><p>If the trace is too long, the target time interval can be specified. Running <span class="tt">fedsd</span> with <span class="tt">-s &lt;start_time_value&gt; &lt;time_unit&gt;</span> will show the messages with the tag later than or equal to the start time and with <span class="tt">-e &lt;end_time_value&gt; &lt;time_unit&gt;</span> will show the messages with the tag strictly earlier than the end_time.</p>
-<div class="fragment"><div class="line">fedsd -s &lt;start_time_value&gt; &lt;time_unit&gt; -e &lt;end_time_value&gt; &lt;time_unit&gt;</div>
-</div><!-- fragment --><p>The output is an html file named <span class="tt">trace_svg.html</span> (in the current directory) that contains the sequence of interactions between the federates and the RTI. </p>
+</div><!-- fragment --><p>If the trace is too long, the target time interval can be specified. Running <span class="tt">fedsd</span> with <span class="tt">-s &lt;start_time_value&gt; &lt;time_unit&gt;</span> will show the messages with the tag later than or equal to the start time and with <span class="tt">-e &lt;end_time_value&gt; &lt;time_unit&gt;</span> will show the messages with the tag strictly earlier than the end time. By default these are elapsed logical times. Pass <span class="tt">-p</span> or <span class="tt">--physical-start-end-times</span> to interpret them as elapsed physical times instead. Time units are the same as in Lingua Franca (<span class="tt">ms</span>, <span class="tt">msec</span>, <span class="tt">s</span>, <span class="tt">sec</span>, <span class="tt">us</span>, <span class="tt">ns</span>, <span class="tt">min</span>, <span class="tt">hour</span>, <span class="tt">day</span>, <span class="tt">week</span>, and their plurals).</p>
+<div class="fragment"><div class="line">fedsd -s 0 ms -e 20 ms</div>
+<div class="line">fedsd -p -s 0 ms -e 20 ms</div>
+</div><!-- fragment --><p>The output is an HTML file named <span class="tt">trace_svg.html</span> (in the current directory) that contains the sequence of interactions between the federates and the RTI.</p>
+<p>To generate a standalone SVG file (<span class="tt">trace_svg.svg</span>) instead of HTML, pass <span class="tt">-v</span> or <span class="tt">--svg</span>:</p>
+<div class="fragment"><div class="line">fedsd -v</div>
+</div><!-- fragment --><p>To omit physical time labels from the vertical actor lines, pass <span class="tt">-np</span> or <span class="tt">--no-physical-times</span>:</p>
+<div class="fragment"><div class="line">fedsd -np</div>
+</div><!-- fragment --><p>By default the RTI is drawn at the left of the diagram. Pass <span class="tt">-c</span> or <span class="tt">--center-rti</span> to place it between the federates:</p>
+<div class="fragment"><div class="line">fedsd -c</div>
+</div><!-- fragment --><p>Example generated with <span class="tt">fedsd -s 0 ms -e 20 ms --svg -np -c</span>:</p>
+<p><img src="example.png" alt="Example sequence diagram" class="inline"/> </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <div id="page-nav" class="page-nav-panel">
