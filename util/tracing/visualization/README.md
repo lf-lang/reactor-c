@@ -38,10 +38,33 @@ It is also possible to operate on specific files. In such a case, run `fedsd` wi
 fedsd -r <rti.lft> -f <federate__f1.lft> <federate__f2.lft>
 ```
 
-If the trace is too long, the target time interval can be specified. Running `fedsd` with `-s <start_time_value> <time_unit>` will show the messages with the tag later than or equal to the start time and with `-e <end_time_value> <time_unit>` will show the messages with the tag strictly earlier than the end_time.
+If the trace is too long, the target time interval can be specified. Running `fedsd` with `-s <start_time_value> <time_unit>` will show the messages with the tag later than or equal to the start time and with `-e <end_time_value> <time_unit>` will show the messages with the tag strictly earlier than the end time. By default these are elapsed logical times. Pass `-p` or `--physical-start-end-times` to interpret them as elapsed physical times instead. Time units are the same as in Lingua Franca (`ms`, `msec`, `s`, `sec`, `us`, `ns`, `min`, `hour`, `day`, `week`, and their plurals).
 
 ```bash
-fedsd -s <start_time_value> <time_unit> -e <end_time_value> <time_unit>
+fedsd -s 0 ms -e 20 ms
+fedsd -p -s 0 ms -e 20 ms
 ```
 
-The output is an html file named `trace_svg.html` (in the current directory) that contains the sequence of interactions between the federates and the RTI.
+The output is an HTML file named `trace_svg.html` (in the current directory) that contains the sequence of interactions between the federates and the RTI.
+
+To generate a standalone SVG file (`trace_svg.svg`) instead of HTML, pass `-v` or `--svg`:
+
+```bash
+fedsd -v
+```
+
+To omit physical time labels from the vertical actor lines, pass `-np` or `--no-physical-times`:
+
+```bash
+fedsd -np
+```
+
+By default the RTI is drawn at the left of the diagram. Pass `-c` or `--center-rti` to place it between the federates:
+
+```bash
+fedsd -c
+```
+
+Example generated with `fedsd -s 0 ms -e 20 ms --svg -np -c`:
+
+![Example sequence diagram](example.png)
