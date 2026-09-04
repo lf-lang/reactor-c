@@ -177,15 +177,16 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
 /**
  * Real-time scheduling API not implemented for Windows.
  */
-int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
-  (void)thread;     // Suppress unused variable warning.
-  (void)cpu_number; // Suppress unused variable warning.
+int lf_thread_set_cpu(const int* core_ids, size_t num_core_ids) {
+  (void)core_ids;     // Suppress unused variable warning.
+  (void)num_core_ids; // Suppress unused variable warning.
   return -1;
 }
 
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
   (void)thread;   // Suppress unused variable warning.
   (void)priority; // Suppress unused variable warning.
+  // Real-time scheduling API not implemented for Windows.
   return -1;
 }
 

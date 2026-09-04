@@ -181,6 +181,14 @@ define(SCHEDULER)
 define(LF_FILE_SEPARATOR)
 define(WORKERS_NEEDED_FOR_FEDERATE)
 define(LF_ENCLAVES)
+define(LF_THREAD_POLICY)
+
+# LF_CORE_IDS_INIT needs special handling since it contains braces and commas.
+# It is set to e.g. {0,1,2,3} by the @cores attribute.
+if(DEFINED LF_CORE_IDS_INIT)
+    message(STATUS "LF_CORE_IDS_INIT=${LF_CORE_IDS_INIT}")
+    target_compile_definitions(reactor-c PUBLIC "LF_CORE_IDS_INIT=${LF_CORE_IDS_INIT}")
+endif()
 defineString(LF_SOURCE_DIRECTORY)
 defineString(LF_SOURCE_GEN_DIRECTORY)
 defineString(LF_PACKAGE_DIRECTORY)
