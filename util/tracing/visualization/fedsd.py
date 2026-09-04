@@ -3,7 +3,8 @@
 # Utility that reports the interactions (exchanged messages) between federates and the RTI in a 
 # sequence-diagram-like format, or between enclaves in an enclaved execution.
 # 
-# The utility operates on lft trace files and outputs an html file with a sticky header.
+# The utility operates on lft trace files and outputs an HTML file with a sticky
+# header, or a standalone SVG file if -v/--svg is given.
 
 '''
 In the dataframe, each row will be marked with one op these values:
@@ -148,16 +149,90 @@ def format_actor_name(name):
         return m.group(1) + ': ' + m.group(2)
     return name
 
+# Nanoseconds per unit, for compact tag labels (seconds is the coarsest unit used).
+_USEC = 1000
+_MSEC = 1000000
+_SEC = 1000000000
+# UINT_MAX as written by trace_to_csv's %d, and the unsigned value itself.
+_MICROSTEP_MINUS_ONE = frozenset((-1, 0xFFFFFFFF))
+
+def format_time_value(time_ns):
+    '''
+    Format an elapsed time in nanoseconds using the coarsest unit among s, ms, and us
+    that divides the value evenly. Otherwise show nanoseconds.
+    Zero is shown as "0" with no unit.
+    '''
+    time_ns = int(time_ns)
+    sign = ''
+    if time_ns < 0:
+        sign = '-'
+        time_ns = -time_ns
+    if time_ns == 0:
+        return '0'
+    if time_ns % _SEC == 0:
+        return sign + str(time_ns // _SEC) + 's'
+    if time_ns % _MSEC == 0:
+        return sign + str(time_ns // _MSEC) + 'ms'
+    if time_ns % _USEC == 0:
+        return sign + str(time_ns // _USEC) + 'us'
+    return sign + f'{time_ns:,}ns'
+
+def format_tag(logical_time, microstep):
+    '''
+    Format a (logical_time, microstep) pair for a signal label.
+
+    A microstep of -1 (UINT_MAX printed as a signed int) is one microstep
+    earlier than (logical_time + 1 nsec, 0). Display that as (next_time, -1),
+    e.g. (9,999,999 ns, -1) becomes "(10ms, -1)".
+    '''
+    time_ns = int(logical_time)
+    step = int(microstep)
+    if step in _MICROSTEP_MINUS_ONE:
+        time_ns += 1
+        step = -1
+    return format_time_value(time_ns) + ', ' + str(step)
+
+def layout_actors(actors, padding, spacing, center_rti=False):
+    '''
+    Place actors left to right and return (ordered_actors, x_coor, extra_left).
+    If center_rti is True and there is more than one federate, the RTI (id -1)
+    is inserted in the middle of the federate list instead of at the left.
+    extra_left is additional left margin so AdvLT labels on the leftmost
+    federate are not clipped by the SVG viewport.
+    '''
+    ordered = list(actors)
+    extra_left = 0
+    if center_rti and -1 in ordered and len(ordered) > 2:
+        federates_only = [a for a in ordered if a != -1]
+        mid = len(federates_only) // 2
+        ordered = federates_only[:mid] + [-1] + federates_only[mid:]
+        # Match the extra space already reserved on the right for labels.
+        extra_left = 200
+    x_coor = {}
+    for i, actor_id in enumerate(ordered):
+        x_coor[actor_id] = extra_left + (padding * 2) + (spacing * i)
+    return ordered, x_coor, extra_left
+
 # Define the arguments to pass in the command line
 parser = argparse.ArgumentParser(description='Set of the lft trace files to render.')
 parser.add_argument('-r','--rti', type=str, 
                     help='RTI\'s lft trace file.')
 parser.add_argument('-f','--federates', nargs='+',
                     help='List of the federates\' lft trace files.')
-parser.add_argument('-s', '--start', type=str, nargs=2,
-                    help='Start time of visualization in elapsed logical time. [time_value time_unit]')
-parser.add_argument('-e', '--end', type=str, nargs=2,
-                    help='End time of visualization in elapsed logical time. [time_value time_unit]')
+parser.add_argument('-s', '--start', type=str, nargs=2, metavar=('TIME', 'UNIT'),
+                    help='Start time of visualization (inclusive). By default this is elapsed logical time; '
+                         'with -p/--physical-start-end-times it is elapsed physical time. '
+                         'E.g. 0 ms. Units: ns, us, ms, s, min, hour, day, week (or nsec, usec, msec, sec, ...).')
+parser.add_argument('-e', '--end', type=str, nargs=2, metavar=('TIME', 'UNIT'),
+                    help='End time of visualization (exclusive). Same time base and units as -s.')
+parser.add_argument('-v', '--svg', action='store_true',
+                    help='Generate a pure SVG file (trace_svg.svg) instead of HTML (trace_svg.html).')
+parser.add_argument('-np', '--no-physical-times', action='store_true',
+                    help='Omit physical time labels from the sequence diagram.')
+parser.add_argument('-p', '--physical-start-end-times', action='store_true',
+                    help='Interpret -s/--start and -e/--end as elapsed physical time instead of logical time.')
+parser.add_argument('-c', '--center-rti', action='store_true',
+                    help='Place the RTI in the middle of the diagram instead of on the left.')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
@@ -219,13 +294,15 @@ def svg_string_draw_arrow_head(x1, y1, x2, y2, type='') :
     
     str_line = ''
     if (x1 > x2) :
+        # SVG rotate(angle, cx, cy) is portable; CSS transform-origin is not
+        # (Adobe Illustrator ignores it and rotates around the document origin).
         str_line = '\t<path d="M'+str(x2)+' '+str(y2)+' L'+str(x2+10)+' '+str(y2+5)+' L'+str(x2+10)+' '+str(y2-5)+' Z"' \
-             + ' transform="rotate('+str(rotation)+')" transform-origin="'+str(x2)+' '+str(y2)+'"' \
+             + ' transform="rotate('+str(rotation)+' '+str(x2)+' '+str(y2)+')"' \
              + style \
              + '/>\n'
     else :
         str_line = '\t<path d="M'+str(x2)+' '+str(y2)+' L'+str(x2-10)+' '+str(y2+5)+' L'+str(x2-10)+' '+str(y2-5)+' Z"' \
-             + ' transform="rotate('+str( 180 + rotation)+')" transform-origin="'+str(x2)+' '+str(y2)+'"' \
+             + ' transform="rotate('+str( 180 + rotation)+' '+str(x2)+' '+str(y2)+')"' \
              + style \
              + '/>\n'
 
@@ -353,19 +430,20 @@ def svg_string_draw_dot_with_time(x, y, time, label) :
     str_line = str_line + '\t<text x="'+str(x+5)+'", y="'+str(y+5)+'"> <tspan class="time">'+time+':</tspan> <tspan fill="blue">'+label+'</tspan></text>\n'
     return str_line
 
-def svg_string_draw_adv(x, y, label) :
+def svg_string_draw_adv(x, y, label, anchor="start") :
     '''
     Constructs the svg html string to draw at a dash, meaning that logical time is advancing there.
 
     Args:
      * x: Int X coordinate of the dash
      * y: Int Y coordinate of the dash
-     * label: String to draw 
+     * label: String to draw
+     * anchor: "start" puts the label to the right of the line, "end" to the left.
     Returns:
      * String: the svg string of the triangle
     '''
     str_line1 = svg_string_draw_line(x-5, y, x+5, y, "ADV")
-    str_line2 = svg_string_draw_side_label(x, y, label)
+    str_line2 = svg_string_draw_side_label(x, y, label, anchor)
     return str_line1 + str_line2
 
 
@@ -430,12 +508,15 @@ def command_is_in_path(command):
                 return True
     return False
 
-def convert_lft_file_to_csv(lft_file, start_time, end_time):
+def convert_lft_file_to_csv(lft_file, start_time, end_time, use_physical=False):
     '''
     Call trace_to_csv command to convert the given binary lft trace file to csv format.
 
     Args:
      * lft_file: the lft trace file
+     * start_time: optional [TIME, UNIT] pair for -s/--start
+     * end_time: optional [TIME, UNIT] pair for -e/--end
+     * use_physical: if True, pass -p so start/end are elapsed physical time
     Return:
      * File: the converted csv file, if the conversion succeeds, and empty string otherwise.
      * String: the error message, in case the conversion did not succeed, and empty string otherwise.
@@ -446,16 +527,21 @@ def convert_lft_file_to_csv(lft_file, start_time, end_time):
         subprocess_args.extend(['-s', start_time[0], start_time[1]])
     if (end_time != None):
         subprocess_args.extend(['-e', end_time[0], end_time[1]])
+    if use_physical:
+        subprocess_args.append('-p')
 
-    convert_process = subprocess.run(subprocess_args, stdout=subprocess.DEVNULL)
+    convert_process = subprocess.run(subprocess_args, capture_output=True, text=True)
 
     if (convert_process.returncode == 0):
         csv_file = os.path.splitext(lft_file)[0] + '.csv'
         return csv_file, ''
     else:
-        return '', str(convert_process.stderr)
+        error = (convert_process.stderr or convert_process.stdout or '').strip()
+        if not error:
+            error = 'trace_to_csv exited with code ' + str(convert_process.returncode)
+        return '', error
 
-def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end_time):
+def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end_time, use_physical=False):
     '''
     Check if the passed arguments are valid, in the sense that the files do exist.
     If not arguments were passed, then look up the local lft files.
@@ -464,6 +550,9 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
     Args:
      * File: the argument passed at the command line as the rti lft trace file.
      * Array: the argument passed at the command line as array of federates lft trace files.
+     * start_time: optional [TIME, UNIT] pair for -s/--start
+     * end_time: optional [TIME, UNIT] pair for -e/--end
+     * use_physical: if True, interpret start/end as elapsed physical time
     Return:
      * File: the converted RTI trace csv file, or empty, if no RTI trace lft file is found
      * Array: Array of files of converted federates trace csv files
@@ -480,7 +569,8 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
         # If files were given, then check they exist
         if (rti_lft_file):
             if (not os.path.exists(rti_lft_file)):
-                print('Warning: Trace file ' + rti_lft_file + ' does not exist! Will resume though')
+                print('Fedsd: Error: Trace file ' + rti_lft_file + ' does not exist. Abort!')
+                sys.exit(1)
         else: 
             for file in federates_lft_files:
                 if (not os.path.exists(file)):
@@ -492,23 +582,185 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files, start_time, end
         sys.exit(1)
 
     # Now, convert lft files to csv
+    rti_csv_file = ''
     if (rti_lft_file):
-        rti_csv_file, error = convert_lft_file_to_csv(rti_lft_file, start_time, end_time)
+        rti_csv_file, error = convert_lft_file_to_csv(rti_lft_file, start_time, end_time, use_physical)
         if (not rti_csv_file):
-            print('Fedsf: Error converting the RTI\'s lft file: ' + error)
+            print('Fedsd: Error converting the RTI\'s lft file: ' + error)
+            print('Fedsd: Error: Failed to convert the RTI trace file. Abort!')
+            sys.exit(1)
         else:
             print('Fedsd: Successfully converted trace file ' + rti_lft_file + ' to ' + rti_csv_file + '.')
     
     federates_csv_files = []
     for file in federates_lft_files:
-        fed_csv_file, error = convert_lft_file_to_csv(file, start_time, end_time)
+        fed_csv_file, error = convert_lft_file_to_csv(file, start_time, end_time, use_physical)
         if (not fed_csv_file):
-            print('Fedsf: Error converting the federate lft file ' + file + ': ' + error)
+            print('Fedsd: Error converting the federate lft file ' + file + ': ' + error)
         else: 
             print('Fedsd: Successfully converted trace file ' + file + ' to ' + fed_csv_file + '.')
             federates_csv_files.append(fed_csv_file)
         
     return rti_csv_file, federates_csv_files
+
+################################################################################
+### Routines to write the sequence diagram
+################################################################################
+
+def write_actor_headers(f, x_coor, actors_names, padding):
+    '''
+    Write actor rectangles and labels (the sequence-diagram "lifeline" headers).
+
+    Args:
+     * f: Open file handle to write to
+     * x_coor: Dict mapping actor id to X coordinate
+     * actors_names: Dict mapping actor id to name
+     * padding: Int padding used to size and place the headers
+    '''
+    for key in x_coor:
+        title = format_actor_name(actors_names[key])
+        cx = x_coor[key]
+        cy = math.ceil(padding / 2)
+        r = 20  # original circle radius; diameter becomes the rect height
+        rect_w = max(r * 2, len(title) * 7 + 12)
+        rect_h = r * 2
+        # Draw rectangle then bold text centered on it (later = on top in SVG)
+        f.write('\t<rect x="'+str(cx - rect_w//2)+'" y="'+str(cy - rect_h//2)+'" '
+                +'width="'+str(rect_w)+'" height="'+str(rect_h)+'" fill="white" stroke="black" stroke-width="2"/>\n')
+        f.write('\t<text x="'+str(cx)+'" y="'+str(cy)+'" text-anchor="middle" dominant-baseline="central" '
+                +'font-weight="bold" fill="black">'+title+'</text>\n')
+
+
+def write_diagram_body(f, x_coor, actors_names, trace_df, svg_height, show_physical_times=True):
+    '''
+    Write vertical actor lines and interaction arrows.
+
+    Args:
+     * f: Open file handle to write to
+     * x_coor: Dict mapping actor id to X coordinate
+     * actors_names: Dict mapping actor id to name
+     * trace_df: Dataframe of matched trace events
+     * svg_height: Int height of the diagram (not including the header)
+     * show_physical_times: If False, omit physical time labels
+    '''
+    # Draw vertical lines for each actor (full diagram height)
+    for key in x_coor:
+        title = actors_names[key]
+        if (key == -1):
+            f.write(svg_string_comment('RTI Actor line'))
+        else:
+            f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor line'))
+        f.write(svg_string_draw_line(x_coor[key], 0, x_coor[key], svg_height, False))
+
+    # Draw interactions
+    f.write(svg_string_comment('Draw interactions'))
+    for index, row in trace_df.iterrows():
+        # formatted physical time.
+        # FIXME: Using microseconds is hardwired here.
+        physical_time_ns = int(row["physical_time"])
+       # Truncate toward zero (not floor) so negative startup timestamps aren't off by one
+       physical_time_us = physical_time_ns // 1000 if physical_time_ns >= 0 else -(-physical_time_ns // 1000)
+        physical_time = f'{physical_time_us:,}us'
+
+        if (row['event'] in non_tagged_messages):
+            label = row['event']
+        else:
+            label = row['event'] + '(' + format_tag(row['logical_time'], row['microstep']) + ')'
+
+        if (row['arrow'] == 'arrow'):
+            f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
+            if show_physical_times:
+                if (row['inout'] == 'in'):
+                    # Label at receiver (x2): goes outward — right if receiver is right of sender.
+                    anchor = 'start' if row['x2'] > row['x1'] else 'end'
+                    f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
+                else:
+                    # Label at sender (x1): goes outward — left if receiver is right of sender.
+                    anchor = 'end' if row['x2'] > row['x1'] else 'start'
+                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+        elif (row['arrow'] == 'dot'):
+            if (row['inout'] == 'in'):
+                label = "(in) from " + str(row['partner_id']) + ' ' + label
+            else:
+                label = "(out) to " + str(row['partner_id']) + ' ' + label
+
+            if (row['self_id'] < 0):
+                if show_physical_times:
+                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, 'end'))
+                f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
+            elif show_physical_times:
+                f.write(svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label))
+            else:
+                f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
+
+        elif (row['arrow'] == 'marked'):
+            if show_physical_times:
+                # Label goes outward: right of receiver if receiver is right of sender, left otherwise.
+                partner_x = x_coor.get(int(row['partner_id']), row['x1'])
+                marked_anchor = 'start' if row['x1'] > partner_x else 'end'
+                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, marked_anchor))
+
+        elif (row['arrow'] == 'adv'):
+            # When the RTI is centered, put AdvLT labels on the left for federates
+            # that sit to the left of the RTI so they do not overlap the RTI column.
+            rti_x = x_coor.get(-1)
+            adv_anchor = 'end' if (rti_x is not None and row['x1'] < rti_x) else 'start'
+            f.write(svg_string_draw_adv(row['x1'], row['y1'], label, adv_anchor))
+
+
+def write_html_file(svg_width, svg_height, header_height, padding, x_coor, actors_names, trace_df,
+                    show_physical_times=True):
+    '''
+    Write the sequence diagram as an HTML file with a sticky header and an embedded SVG.
+    '''
+    with open('trace_svg.html', 'w', encoding='utf-8') as f:
+        f.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n')
+        f.write('<style>\n')
+        f.write('  * { margin: 0; padding: 0; }\n')
+        # Allow horizontal scroll on the whole page when the diagram is wider than the window.
+        f.write('  body { overflow-x: auto; }\n')
+        # The sticky header div stays at the top of the viewport while the diagram scrolls.
+        f.write('  #sticky-header { position: sticky; top: 0; z-index: 100; display: block; }\n')
+        f.write('  svg { display: block; }\n')
+        f.write('</style>\n')
+        f.write('</head>\n<body>\n\n')
+
+        # ---- Sticky header: circles and actor labels only ----
+        f.write('<div id="sticky-header">\n')
+        f.write('<svg width="'+str(svg_width)+'" height="'+str(header_height)+'">\n')
+        f.write(css_style)
+        # White background so it occludes the diagram lines that scroll beneath it.
+        f.write('\t<rect x="0" y="0" width="'+str(svg_width)+'" height="'+str(header_height)+'" fill="white"/>\n')
+        write_actor_headers(f, x_coor, actors_names, padding)
+        f.write('</svg>\n')
+        f.write('</div>\n\n')
+
+        # ---- Main diagram SVG: vertical lines and all interactions ----
+        f.write('<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n')
+        f.write(css_style)
+        write_diagram_body(f, x_coor, actors_names, trace_df, svg_height, show_physical_times)
+        f.write('\n</svg>\n\n')
+        f.write('</body>\n</html>\n')
+
+
+def write_svg_file(svg_width, svg_height, header_height, padding, x_coor, actors_names, trace_df,
+                   show_physical_times=True):
+    '''
+    Write the sequence diagram as a standalone SVG file.
+    Actor headers and the diagram body are combined into a single SVG.
+    '''
+    total_height = header_height + svg_height
+    with open('trace_svg.svg', 'w', encoding='utf-8') as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write('<svg xmlns="http://www.w3.org/2000/svg" width="'+str(svg_width)+'" height="'+str(total_height)+'">\n')
+        f.write(css_style)
+        f.write('\t<rect x="0" y="0" width="'+str(svg_width)+'" height="'+str(total_height)+'" fill="white"/>\n')
+        write_actor_headers(f, x_coor, actors_names, padding)
+        f.write('<g transform="translate(0, '+str(header_height)+')">\n')
+        write_diagram_body(f, x_coor, actors_names, trace_df, svg_height, show_physical_times)
+        f.write('</g>\n')
+        f.write('</svg>\n')
+
 
 ################################################################################
 ### Main program to run
@@ -524,18 +776,20 @@ if __name__ == '__main__':
 
     # Look up the lft files and transform them to csv files
 
-    rti_csv_file, federates_csv_files = get_and_convert_lft_files(args.rti, args.federates, args.start, args.end)
+    rti_csv_file, federates_csv_files = get_and_convert_lft_files(
+        args.rti, args.federates, args.start, args.end, args.physical_start_end_times)
+
+    if (not rti_csv_file and not federates_csv_files):
+        print('Fedsd: Error: Failed to convert any lft files. Abort!')
+        sys.exit(1)
     
     # The RTI and each of the federates have a fixed x coordinate. They will be
     # saved in a dict
-    x_coor = {}
     actors = []
     actors_names = {}
     padding = 50
     spacing = 200       # Spacing between federates
 
-    # Set the RTI x coordinate
-    x_coor[-1] = padding * 2
     actors.append(-1)
     actors_names[-1] = "RTI"
    
@@ -563,13 +817,13 @@ if __name__ == '__main__':
                     # Add to the list of sequence diagram actors and add the name
                     actors.append(fed_id)
                     actors_names[fed_id] = Path(fed_trace).stem
-                    # Derive the x coordinate of the actor
-                    x_coor[fed_id] = (padding * 2) + (spacing * (len(actors)-1))
 
-                fed_df['x1'] = x_coor[fed_id]
                 trace_df = pd.concat([trace_df, fed_df])
                 fed_df = fed_df[0:0]
     
+    actors, x_coor, extra_left = layout_actors(actors, padding, spacing, center_rti=args.center_rti)
+    if not trace_df.empty:
+        trace_df['x1'] = trace_df['self_id'].apply(lambda e: x_coor[int(e)])
         
     ############################################################################
     #### RTI trace processing, if any
@@ -577,7 +831,7 @@ if __name__ == '__main__':
     if (rti_csv_file):
         rti_df = load_and_process_csv_file(rti_csv_file)
         rti_df['x1'] = x_coor[-1]
-    else:
+    elif (not trace_df.empty):
         # If there is no RTI, derive one.
         # This is particularly useful for tracing enclaves
         # FIXME: Currently, `fedsd` is used either for federates OR enclaves.
@@ -588,8 +842,15 @@ if __name__ == '__main__':
         rti_df.columns = ['event', 'partner_id', 'self_id', 'logical_time', 'microstep', 'physical_time', 'inout']
         rti_df['inout'] = rti_df['inout'].apply(lambda e: 'in' if 'out' in e else 'out')
         rti_df['x1'] = rti_df['self_id'].apply(lambda e: x_coor[int(e)])
+    else:
+        print('Fedsd: Error: No trace data to visualize. Abort!')
+        sys.exit(1)
 
     trace_df = pd.concat([trace_df, rti_df])
+
+    if trace_df.empty:
+        print('Fedsd: Error: No trace data to visualize. Abort!')
+        sys.exit(1)
 
     # Sort all traces by physical time and then reset the index
     trace_df = trace_df.sort_values(by=['physical_time'])
@@ -616,6 +877,8 @@ if __name__ == '__main__':
             # But rather think it should be:
             if (cpt != ppt) :
                 py = math.ceil(py + min + (1 + math.log10(cpt - ppt) * scale))
+            else:
+                py = math.ceil(py + min)
             trace_df.at[index, 'y1'] = py
 
         ppt = row['physical_time']
@@ -708,108 +971,25 @@ if __name__ == '__main__':
                 trace_df.at[index, 'arrow'] = 'arrow'
 
     ############################################################################
-    #### Write to html file
+    #### Write output file
     ############################################################################
     # svg_width is the natural pixel width of the diagram content.
     # The HTML body uses overflow-x: auto so a horizontal scrollbar appears
     # when the browser window is narrower than the diagram.
-    svg_width = padding * 2 + (len(actors) - 1) * spacing + padding * 2 + 200
+    svg_width = extra_left + padding * 2 + (len(actors) - 1) * spacing + padding * 2 + 200
     svg_height = padding + trace_df.iloc[-1]['y1']
     # The sticky header is tall enough to contain the circles (centred at padding/2, r=20).
     header_height = padding
 
-    with open('trace_svg.html', 'w', encoding='utf-8') as f:
-        f.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n')
-        f.write('<style>\n')
-        f.write('  * { margin: 0; padding: 0; }\n')
-        # Allow horizontal scroll on the whole page when the diagram is wider than the window.
-        f.write('  body { overflow-x: auto; }\n')
-        # The sticky header div stays at the top of the viewport while the diagram scrolls.
-        f.write('  #sticky-header { position: sticky; top: 0; z-index: 100; display: block; }\n')
-        f.write('  svg { display: block; }\n')
-        f.write('</style>\n')
-        f.write('</head>\n<body>\n\n')
-
-        # ---- Sticky header: circles and actor labels only ----
-        f.write('<div id="sticky-header">\n')
-        f.write('<svg width="'+str(svg_width)+'" height="'+str(header_height)+'">\n')
-        f.write(css_style)
-        # White background so it occludes the diagram lines that scroll beneath it.
-        f.write('\t<rect x="0" y="0" width="'+str(svg_width)+'" height="'+str(header_height)+'" fill="white"/>\n')
-        for key in x_coor:
-            title = format_actor_name(actors_names[key])
-            cx = x_coor[key]
-            cy = math.ceil(padding / 2)
-            r = 20  # original circle radius; diameter becomes the rect height
-            rect_w = max(r * 2, len(title) * 7 + 12)
-            rect_h = r * 2
-            # Draw rectangle then bold text centered on it (later = on top in SVG)
-            f.write('\t<rect x="'+str(cx - rect_w//2)+'" y="'+str(cy - rect_h//2)+'" '
-                    +'width="'+str(rect_w)+'" height="'+str(rect_h)+'" fill="white" stroke="black" stroke-width="2"/>\n')
-            f.write('\t<text x="'+str(cx)+'" y="'+str(cy)+'" text-anchor="middle" dominant-baseline="central" '
-                    +'font-weight="bold" fill="black">'+title+'</text>\n')
-        f.write('</svg>\n')
-        f.write('</div>\n\n')
-
-        # ---- Main diagram SVG: vertical lines and all interactions ----
-        f.write('<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n')
-        f.write(css_style)
-
-        # Draw vertical lines for each actor (full diagram height)
-        for key in x_coor:
-            title = actors_names[key]
-            if (key == -1):
-                f.write(svg_string_comment('RTI Actor line'))
-            else:
-                f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor line'))
-            f.write(svg_string_draw_line(x_coor[key], 0, x_coor[key], svg_height, False))
-
-        # Draw interactions
-        f.write(svg_string_comment('Draw interactions'))
-        for index, row in trace_df.iterrows():
-            # formatted physical time.
-            # FIXME: Using microseconds is hardwired here.
-            physical_time = f'{int(row["physical_time"]/1000):,}'
-
-            if (row['event'] in non_tagged_messages):
-                label = row['event']
-            else:
-                label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
-
-            if (row['arrow'] == 'arrow'):
-                f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
-                if (row['inout'] in 'in'):
-                    # Label at receiver (x2): goes outward — right if receiver is right of sender.
-                    anchor = 'start' if row['x2'] > row['x1'] else 'end'
-                    f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
-                else:
-                    # Label at sender (x1): goes outward — left if receiver is right of sender.
-                    anchor = 'end' if row['x2'] > row['x1'] else 'start'
-                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
-            elif (row['arrow'] == 'dot'):
-                if (row['inout'] == 'in'):
-                    label = "(in) from " + str(row['partner_id']) + ' ' + label
-                else:
-                    label = "(out) to " + str(row['partner_id']) + ' ' + label
-
-                if (row['self_id'] < 0):
-                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, 'end'))
-                    f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
-                else:
-                    f.write(svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label))
-
-            elif (row['arrow'] == 'marked'):
-                # Label goes outward: right of receiver if receiver is right of sender, left otherwise.
-                partner_x = x_coor.get(int(row['partner_id']), row['x1'])
-                marked_anchor = 'start' if row['x1'] > partner_x else 'end'
-                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, marked_anchor))
-
-            elif (row['arrow'] == 'adv'):
-                f.write(svg_string_draw_adv(row['x1'], row['y1'], label))
-
-        f.write('\n</svg>\n\n')
-        f.write('</body>\n</html>\n')
+    if args.svg:
+        write_svg_file(svg_width, svg_height, header_height, padding, x_coor, actors_names, trace_df,
+                       show_physical_times=not args.no_physical_times)
+        output_name = 'trace_svg.svg'
+    else:
+        write_html_file(svg_width, svg_height, header_height, padding, x_coor, actors_names, trace_df,
+                        show_physical_times=not args.no_physical_times)
+        output_name = 'trace_svg.html'
 
     # Write to a csv file, just to double check
     trace_df.to_csv('all.csv', index=True)
-    print('Fedsd: Successfully generated the sequence diagram in trace_svg.html.')
+    print('Fedsd: Successfully generated the sequence diagram in ' + output_name + '.')
