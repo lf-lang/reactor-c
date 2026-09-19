@@ -3,55 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#if !defined(NO_CLI) && !defined(_WIN32) && !defined(WIN32)
-#include <signal.h>
-#if defined(LF_SINGLE_THREADED)
-#define _LF_TRACE_SIGMASK sigprocmask
-#else
-#include <pthread.h>
-#define _LF_TRACE_SIGMASK pthread_sigmask
-#endif
-#define _LF_TRACE_BLOCK_TERMINATION_SIGNALS 1
-#endif
 
 #include "trace.h"
 #include "platform.h"
 #include "logging_macros.h"
 #include "trace_impl.h"
-
-/**
- * @brief Temporarily block SIGINT/SIGTERM so an in-progress write to the trace
- * file cannot be interrupted by signal(SIGINT, exit).
- *
- * `exit()` is registered as the SIGINT handler. If that signal is delivered to
- * the thread that is in the middle of fwrite(), the write is abandoned and the
- * process then kills remaining threads, so the in-memory trace is never fully
- * persisted. Blocking the signal for the duration of the write lets the flush
- * finish; the pending signal is delivered afterwards and atexit() can still run.
- */
-#ifdef _LF_TRACE_BLOCK_TERMINATION_SIGNALS
-typedef sigset_t _lf_trace_sigmask_t;
-
-static _lf_trace_sigmask_t _lf_trace_block_termination_signals(void) {
-  sigset_t block;
-  _lf_trace_sigmask_t previous;
-  sigemptyset(&block);
-  sigaddset(&block, SIGINT);
-#ifdef SIGTERM
-  sigaddset(&block, SIGTERM);
-#endif
-  _LF_TRACE_SIGMASK(SIG_BLOCK, &block, &previous);
-  return previous;
-}
-
-static void _lf_trace_restore_signals(_lf_trace_sigmask_t previous) { _LF_TRACE_SIGMASK(SIG_SETMASK, &previous, NULL); }
-#else
-typedef int _lf_trace_sigmask_t;
-
-static _lf_trace_sigmask_t _lf_trace_block_termination_signals(void) { return 0; }
-
-static void _lf_trace_restore_signals(_lf_trace_sigmask_t previous) { (void)previous; }
-#endif
 
 /** Macro to use when access to trace file fails. */
 #define _LF_TRACE_FAILURE(trace)                                                                                       \
@@ -136,17 +92,12 @@ static int write_trace_header(trace_t* t) {
  */
 static void flush_trace_locked(trace_t* trace, int worker) {
   if (trace->_lf_trace_stop == 0 && trace->_lf_trace_file != NULL && trace->_lf_trace_buffer_size[worker] > 0) {
-    // Prevent SIGINT/SIGTERM from killing this thread mid-write (see comment
-    // on _lf_trace_block_termination_signals).
-    _lf_trace_sigmask_t saved_mask = _lf_trace_block_termination_signals();
-
     // If the trace header has not been written, write it now.
     // This is deferred to here so that user trace objects can be
     // registered in startup reactions.
     if (!trace->_lf_trace_header_written) {
       if (write_trace_header(trace) < 0) {
         lf_print_error("Failed to write trace header. Trace file will be incomplete.");
-        _lf_trace_restore_signals(saved_mask);
         return;
       }
       trace->_lf_trace_header_written = true;
@@ -166,14 +117,9 @@ static void flush_trace_locked(trace_t* trace, int worker) {
         fprintf(stderr, "WARNING: Access to trace file failed.\n");
         fclose(trace->_lf_trace_file);
         trace->_lf_trace_file = NULL;
-      } else if (fflush(trace->_lf_trace_file) != 0) {
-        fprintf(stderr, "WARNING: Failed to flush trace file.\n");
-        fclose(trace->_lf_trace_file);
-        trace->_lf_trace_file = NULL;
       }
     }
     trace->_lf_trace_buffer_size[worker] = 0;
-    _lf_trace_restore_signals(saved_mask);
   }
 }
 
@@ -219,7 +165,7 @@ static void trace_new(char* filename) {
   // Copy it to the struct
   strncpy(trace.filename, filename, TRACE_MAX_FILENAME_LENGTH);
   // FIXME: location of trace file should be customizable.
-  trace._lf_trace_file = fopen(trace.filename, "wb");
+  trace._lf_trace_file = fopen(trace.filename, "w");
   if (trace._lf_trace_file == NULL) {
     fprintf(stderr,
             "WARNING: Failed to open log file with error code %d."
@@ -235,10 +181,6 @@ static void stop_trace_locked(trace_t* trace) {
     // Trace was already stopped. Nothing to do.
     return;
   }
-  // Block termination signals for the whole shutdown flush so that a SIGINT
-  // delivered to this thread cannot call exit() until every remaining buffer
-  // has been written and the file has been closed.
-  _lf_trace_sigmask_t saved_mask = _lf_trace_block_termination_signals();
   for (int i = -1; i < (int)trace->_lf_number_of_trace_buffers; i++) {
     // Flush the buffer if it has data.
     LF_PRINT_DEBUG("Trace buffer %d has %zu records.", i, trace->_lf_trace_buffer_size[i]);
@@ -251,7 +193,6 @@ static void stop_trace_locked(trace_t* trace) {
     fclose(trace->_lf_trace_file);
     trace->_lf_trace_file = NULL;
   }
-  _lf_trace_restore_signals(saved_mask);
   LF_PRINT_DEBUG("Stopped tracing.");
 }
 

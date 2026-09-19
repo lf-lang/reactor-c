@@ -1453,19 +1453,12 @@ void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t s
 
 void* clock_synchronization_thread(void* noargs) {
   initialize_lf_thread_id();
-  // Wait until all persistent federates have been notified of the start time,
-  // or until shutdown. The start-time broadcast is sent when every persistent
-  // federate (not every scheduling node) has proposed a start time.
-  int num_persistent = rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates;
+  // Wait until all federates have been notified of the start time.
   LF_MUTEX_LOCK(&rti_mutex);
-  while (rti_remote->num_feds_proposed_start < num_persistent && !rti_remote->all_persistent_federates_exited) {
+  while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_scheduling_nodes) {
     lf_cond_wait(&received_start_times);
   }
-  bool shutting_down = rti_remote->all_persistent_federates_exited;
   LF_MUTEX_UNLOCK(&rti_mutex);
-  if (shutting_down) {
-    return NULL;
-  }
 
   // Wait until the start time before starting clock synchronization.
   // The above wait ensures that start_time has been set.
@@ -1477,12 +1470,9 @@ void* clock_synchronization_thread(void* noargs) {
 
   // Initiate a clock synchronization every rti->clock_sync_period_ns
   bool any_federates_connected = true;
-  while (any_federates_connected && !rti_remote->all_federates_exited && !rti_remote->all_persistent_federates_exited) {
+  while (any_federates_connected) {
     // Sleep
     lf_sleep(rti_remote->clock_sync_period_ns); // Can be interrupted
-    if (rti_remote->all_federates_exited || rti_remote->all_persistent_federates_exited) {
-      break;
-    }
     any_federates_connected = false;
     for (int fed_id = 0; fed_id < rti_remote->base.number_of_scheduling_nodes; fed_id++) {
       federate_info_t* fed = GET_FED_INFO(fed_id);
@@ -1493,9 +1483,6 @@ void* clock_synchronization_thread(void* noargs) {
         continue;
       } else if (!fed->clock_synchronization_enabled) {
         continue;
-      }
-      if (rti_remote->socket_descriptor_UDP < 0) {
-        return NULL;
       }
       // Send the RTI's current physical time to the federate
       // Send on UDP.
@@ -2717,11 +2704,9 @@ void wait_for_federates() {
 
   // Broadcast on updated_delayed_grants to wake up lf_delayed_grants_thread,
   // which may be blocked in lf_cond_wait and uses all_persistent_federates_exited
-  // as its exit condition. Also wake clock_synchronization_thread if it is still
-  // waiting for start-time proposals.
+  // as its exit condition.
   LF_MUTEX_LOCK(&rti_mutex);
   lf_cond_broadcast(&updated_delayed_grants);
-  lf_cond_broadcast(&received_start_times);
   LF_MUTEX_UNLOCK(&rti_mutex);
 
   // Shutdown and close the network abstraction that is listening for incoming connections.
@@ -2730,12 +2715,6 @@ void wait_for_federates() {
   // unblocked, allowing that thread to see all_persistent_federates_exited
   // and exit its loop.
   shutdown_net(rti_remote->rti_net, false);
-
-  // The responder thread is unblocked by shutdown_net() above. Join it so
-  // it is not killed when main() returns.
-  if (rti_remote->number_of_transient_federates == 0) {
-    lf_thread_join(responder_thread, &thread_exit_status);
-  }
 
   // Wait for transient federate threads to exit, if any.
   if (rti_remote->number_of_transient_federates > 0) {

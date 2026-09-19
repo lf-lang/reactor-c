@@ -128,7 +128,7 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr);
  * Worker threads only write to disk when a per-thread buffer is full, so the
  * records from the end of an execution otherwise remain in memory until
  * shutdown. Call this after worker threads have joined so those remaining
- * records are persisted even if process teardown later interrupts shutdown.
+ * records are written before the process exits.
  */
 void lf_tracing_flush();
 
