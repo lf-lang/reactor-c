@@ -129,6 +129,11 @@ void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr);
  * records from the end of an execution otherwise remain in memory until
  * shutdown. Call this after worker threads have joined so those remaining
  * records are written before the process exits.
+ *
+ * This function is optional for trace plugins. The runtime provides a weak
+ * no-op default so plugins that do not buffer records (or that predate this
+ * API) continue to link. The default .lft implementation provides a strong
+ * definition.
  */
 void lf_tracing_flush();
 
