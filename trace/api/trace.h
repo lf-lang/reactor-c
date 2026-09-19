@@ -122,6 +122,17 @@ void lf_tracing_set_start_time(int64_t start_time);
 void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr);
 
 /**
+ * @brief Flush all in-memory trace buffers to disk without shutting tracing down.
+ * @ingroup Tracing
+ *
+ * Worker threads only write to disk when a per-thread buffer is full, so the
+ * records from the end of an execution otherwise remain in memory until
+ * shutdown. Call this after worker threads have joined so those remaining
+ * records are persisted even if process teardown later interrupts shutdown.
+ */
+void lf_tracing_flush();
+
+/**
  * @brief Shut down the tracing module.
  * @ingroup Tracing
  *

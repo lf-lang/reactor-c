@@ -429,6 +429,7 @@ static inline void lf_tracing_global_init(char* process_name, char* process_name
   (void)max_num_local_threads;
 }
 static inline void lf_tracing_global_shutdown() {}
+static inline void lf_tracing_flush() {}
 static inline void lf_tracing_set_start_time(int64_t start_time) { (void)start_time; }
 
 /// \endcond // INTERNAL
