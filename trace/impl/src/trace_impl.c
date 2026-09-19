@@ -44,9 +44,7 @@ static _lf_trace_sigmask_t _lf_trace_block_termination_signals(void) {
   return previous;
 }
 
-static void _lf_trace_restore_signals(_lf_trace_sigmask_t previous) {
-  _LF_TRACE_SIGMASK(SIG_SETMASK, &previous, NULL);
-}
+static void _lf_trace_restore_signals(_lf_trace_sigmask_t previous) { _LF_TRACE_SIGMASK(SIG_SETMASK, &previous, NULL); }
 #else
 typedef int _lf_trace_sigmask_t;
 

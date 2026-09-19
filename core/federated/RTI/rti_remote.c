@@ -1456,8 +1456,7 @@ void* clock_synchronization_thread(void* noargs) {
   // Wait until all persistent federates have been notified of the start time,
   // or until shutdown. The start-time broadcast is sent when every persistent
   // federate (not every scheduling node) has proposed a start time.
-  int num_persistent =
-      rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates;
+  int num_persistent = rti_remote->base.number_of_scheduling_nodes - rti_remote->number_of_transient_federates;
   LF_MUTEX_LOCK(&rti_mutex);
   while (rti_remote->num_feds_proposed_start < num_persistent && !rti_remote->all_persistent_federates_exited) {
     lf_cond_wait(&received_start_times);
