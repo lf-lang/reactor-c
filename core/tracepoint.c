@@ -261,4 +261,11 @@ void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* t
 
 #endif // RTI_TRACE
 
+// Optional plugin API. The default .lft implementation provides a strong
+// definition. Older plugins (and plugins that do not buffer records) may omit
+// it; this weak no-op keeps those programs linkable.
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((weak)) void lf_tracing_flush(void) {}
+#endif
+
 #endif // LF_TRACE

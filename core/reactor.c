@@ -17,6 +17,7 @@
 #include "low_level_platform.h"
 #include "reactor_common.h"
 #include "environment.h"
+#include "tracepoint.h"
 
 // Embedded platforms with no command line interface shouldnt have signals
 #if !defined(NO_CLI)
@@ -371,6 +372,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
       while (next(env) != 0)
         ;
     }
+    // Persist remaining in-memory trace records before returning from main().
+    lf_tracing_flush();
     _lf_normal_termination = true;
     return 0;
   } else {

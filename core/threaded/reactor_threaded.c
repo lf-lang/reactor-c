@@ -26,6 +26,7 @@
 #include "rti_local.h"
 #include "reactor_common.h"
 #include "watchdog.h"
+#include "tracepoint.h"
 
 #ifdef FEDERATED
 #include "federate.h"
@@ -1161,6 +1162,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   if (ret == 0) {
     LF_PRINT_LOG("---- All environment worker threads exited successfully.");
   }
+  // Worker threads only write a trace buffer to disk when it is full, so the
+  // records from the final tag(s) are still in memory. Flush them now, while
+  // those threads have already joined and before returning from main() causes
+  // the C runtime to tear the process down.
+  lf_tracing_flush();
   _lf_normal_termination = true;
   return ret;
 }
