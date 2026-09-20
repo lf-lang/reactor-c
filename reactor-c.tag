@@ -1,5 +1,25 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
-<tagfile doxygen_version="1.17.0">
+<tagfile doxygen_version="1.18.0">
+  <compound kind="file">
+    <name>README.md</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/</path>
+    <filename>core_2federated_2RTI_2README_8md.html</filename>
+  </compound>
+  <compound kind="file">
+    <name>README.md</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/util/</path>
+    <filename>util_2README_8md.html</filename>
+  </compound>
+  <compound kind="file">
+    <name>README.md</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/util/tracing/</path>
+    <filename>util_2tracing_2README_8md.html</filename>
+  </compound>
+  <compound kind="file">
+    <name>README.md</name>
+    <path>/Users/runner/work/reactor-c/reactor-c/util/tracing/visualization/</path>
+    <filename>util_2tracing_2visualization_2README_8md.html</filename>
+  </compound>
   <compound kind="file">
     <name>rti_common.h</name>
     <path>/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/</path>
@@ -1523,11 +1543,11 @@
       <arglist></arglist>
     </member>
     <member kind="typedef">
-      <type>void(*</type>
+      <type>void(*)</type>
       <name>reaction_function_t</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga149e5fee1c1841bcc96c72f200601d90</anchor>
-      <arglist>)(void *)</arglist>
+      <anchor>ga49fe403ed947f607266d3de1ced899bd</anchor>
+      <arglist>(void *)</arglist>
     </member>
     <member kind="typedef">
       <type>struct reaction_t</type>
@@ -2562,11 +2582,11 @@
     <includes id="platform_8h" name="platform.h" local="yes" import="no" module="no" objc="no">platform.h</includes>
     <class kind="struct">watchdog_t</class>
     <member kind="typedef">
-      <type>void(*</type>
+      <type>void(*)</type>
       <name>watchdog_function_t</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga4caef7fcd0476a936700512d28a23aa8</anchor>
-      <arglist>)(void *)</arglist>
+      <anchor>gac69671c8ed4d9efd1ea01bdd9f4addcc</anchor>
+      <arglist>(void *)</arglist>
     </member>
     <member kind="typedef">
       <type>struct watchdog_t</type>
@@ -3092,32 +3112,32 @@
     <filename>pqueue__base_8h.html</filename>
     <class kind="struct">pqueue_t</class>
     <member kind="typedef">
-      <type>int(*</type>
+      <type>int(*)</type>
       <name>pqueue_cmp_pri_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga1c3f02694b2a0ec19584c395a88bb6f9</anchor>
-      <arglist>)(pqueue_pri_t next, pqueue_pri_t curr)</arglist>
+      <anchor>gac9294031b7da57cd8c3636c5bcf3f524</anchor>
+      <arglist>(pqueue_pri_t next, pqueue_pri_t curr)</arglist>
     </member>
     <member kind="typedef">
-      <type>int(*</type>
+      <type>int(*)</type>
       <name>pqueue_eq_elem_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga664f0abcd86c8089468869aa3dc6e535</anchor>
-      <arglist>)(void *next, void *curr)</arglist>
+      <anchor>gafcf377b6bcd30c4b9d18b5d46cdffdc9</anchor>
+      <arglist>(void *next, void *curr)</arglist>
     </member>
     <member kind="typedef">
-      <type>size_t(*</type>
+      <type>size_t(*)</type>
       <name>pqueue_get_pos_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga31ca7927983005bd7866021819ad7037</anchor>
-      <arglist>)(void *a)</arglist>
+      <anchor>ga05f4c778f7ee42f7acf3eb1d360f879c</anchor>
+      <arglist>(void *a)</arglist>
     </member>
     <member kind="typedef">
-      <type>pqueue_pri_t(*</type>
+      <type>pqueue_pri_t(*)</type>
       <name>pqueue_get_pri_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>gaa84f0100faf971295df5aed226c390a6</anchor>
-      <arglist>)(void *a)</arglist>
+      <anchor>ga9790b3ed5e525ab485078ff8f5e2f3ac</anchor>
+      <arglist>(void *a)</arglist>
     </member>
     <member kind="typedef">
       <type>unsigned long long</type>
@@ -3127,18 +3147,18 @@
       <arglist></arglist>
     </member>
     <member kind="typedef">
-      <type>void(*</type>
+      <type>void(*)</type>
       <name>pqueue_print_entry_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga884902da135214a6167f1536ad4ed4bc</anchor>
-      <arglist>)(void *a)</arglist>
+      <anchor>ga49ba4647b50d31501d6c0f5731d7b472</anchor>
+      <arglist>(void *a)</arglist>
     </member>
     <member kind="typedef">
-      <type>void(*</type>
+      <type>void(*)</type>
       <name>pqueue_set_pos_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>gafdc8f52cbc45181ef375df22917bc4f9</anchor>
-      <arglist>)(void *a, size_t pos)</arglist>
+      <anchor>ga1e2b52dca88d0dcae0e62c0b72510f8a</anchor>
+      <arglist>(void *a, size_t pos)</arglist>
     </member>
     <member kind="typedef">
       <type>struct pqueue_t</type>
@@ -4494,6 +4514,13 @@
     </member>
     <member kind="function">
       <type>void</type>
+      <name>lf_tracing_flush</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ga58c6386d35ddd901027140768c0da22f</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
       <name>lf_tracing_global_init</name>
       <anchorfile>group__Tracing.html</anchorfile>
       <anchor>ga1098d9744b99a07d115e48d873de000d</anchor>
@@ -5669,26 +5696,6 @@
       <anchor>a3fc7a0b0ac649ffc4c4d3d36df52f5b0</anchor>
       <arglist></arglist>
     </member>
-  </compound>
-  <compound kind="file">
-    <name>README.md</name>
-    <path>/Users/runner/work/reactor-c/reactor-c/core/federated/RTI/</path>
-    <filename>core_2federated_2RTI_2README_8md.html</filename>
-  </compound>
-  <compound kind="file">
-    <name>README.md</name>
-    <path>/Users/runner/work/reactor-c/reactor-c/util/</path>
-    <filename>util_2README_8md.html</filename>
-  </compound>
-  <compound kind="file">
-    <name>README.md</name>
-    <path>/Users/runner/work/reactor-c/reactor-c/util/tracing/</path>
-    <filename>util_2tracing_2README_8md.html</filename>
-  </compound>
-  <compound kind="file">
-    <name>README.md</name>
-    <path>/Users/runner/work/reactor-c/reactor-c/util/tracing/visualization/</path>
-    <filename>util_2tracing_2visualization_2README_8md.html</filename>
   </compound>
   <compound kind="file">
     <name>type_converter.h</name>
@@ -8180,18 +8187,18 @@
     <name>token_type_t</name>
     <filename>structtoken__type__t.html</filename>
     <member kind="variable">
-      <type>void *(*</type>
+      <type>void *(*)</type>
       <name>copy_constructor</name>
       <anchorfile>structtoken__type__t.html</anchorfile>
-      <anchor>a4e5da2b59631b75ace560f9812a11824</anchor>
-      <arglist>)(void *value)</arglist>
+      <anchor>adaac248fcdb0685e0eeb0c2f2cd5461c</anchor>
+      <arglist>(void *value)</arglist>
     </member>
     <member kind="variable">
-      <type>void(*</type>
+      <type>void(*)</type>
       <name>destructor</name>
       <anchorfile>structtoken__type__t.html</anchorfile>
-      <anchor>a304b9805bf712b9e1745432f8bd9796c</anchor>
-      <arglist>)(void *value)</arglist>
+      <anchor>ab936e0d6fd3ddaa63d640e4348d20e9c</anchor>
+      <arglist>(void *value)</arglist>
     </member>
     <member kind="variable">
       <type>size_t</type>
@@ -10320,32 +10327,32 @@
       <arglist></arglist>
     </member>
     <member kind="typedef">
-      <type>int(*</type>
+      <type>int(*)</type>
       <name>pqueue_cmp_pri_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga1c3f02694b2a0ec19584c395a88bb6f9</anchor>
-      <arglist>)(pqueue_pri_t next, pqueue_pri_t curr)</arglist>
+      <anchor>gac9294031b7da57cd8c3636c5bcf3f524</anchor>
+      <arglist>(pqueue_pri_t next, pqueue_pri_t curr)</arglist>
     </member>
     <member kind="typedef">
-      <type>int(*</type>
+      <type>int(*)</type>
       <name>pqueue_eq_elem_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga664f0abcd86c8089468869aa3dc6e535</anchor>
-      <arglist>)(void *next, void *curr)</arglist>
+      <anchor>gafcf377b6bcd30c4b9d18b5d46cdffdc9</anchor>
+      <arglist>(void *next, void *curr)</arglist>
     </member>
     <member kind="typedef">
-      <type>size_t(*</type>
+      <type>size_t(*)</type>
       <name>pqueue_get_pos_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga31ca7927983005bd7866021819ad7037</anchor>
-      <arglist>)(void *a)</arglist>
+      <anchor>ga05f4c778f7ee42f7acf3eb1d360f879c</anchor>
+      <arglist>(void *a)</arglist>
     </member>
     <member kind="typedef">
-      <type>pqueue_pri_t(*</type>
+      <type>pqueue_pri_t(*)</type>
       <name>pqueue_get_pri_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>gaa84f0100faf971295df5aed226c390a6</anchor>
-      <arglist>)(void *a)</arglist>
+      <anchor>ga9790b3ed5e525ab485078ff8f5e2f3ac</anchor>
+      <arglist>(void *a)</arglist>
     </member>
     <member kind="typedef">
       <type>unsigned long long</type>
@@ -10355,18 +10362,18 @@
       <arglist></arglist>
     </member>
     <member kind="typedef">
-      <type>void(*</type>
+      <type>void(*)</type>
       <name>pqueue_print_entry_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga884902da135214a6167f1536ad4ed4bc</anchor>
-      <arglist>)(void *a)</arglist>
+      <anchor>ga49ba4647b50d31501d6c0f5731d7b472</anchor>
+      <arglist>(void *a)</arglist>
     </member>
     <member kind="typedef">
-      <type>void(*</type>
+      <type>void(*)</type>
       <name>pqueue_set_pos_f</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>gafdc8f52cbc45181ef375df22917bc4f9</anchor>
-      <arglist>)(void *a, size_t pos)</arglist>
+      <anchor>ga1e2b52dca88d0dcae0e62c0b72510f8a</anchor>
+      <arglist>(void *a, size_t pos)</arglist>
     </member>
     <member kind="typedef">
       <type>struct pqueue_t</type>
@@ -10383,11 +10390,11 @@
       <arglist></arglist>
     </member>
     <member kind="typedef">
-      <type>void(*</type>
+      <type>void(*)</type>
       <name>reaction_function_t</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga149e5fee1c1841bcc96c72f200601d90</anchor>
-      <arglist>)(void *)</arglist>
+      <anchor>ga49fe403ed947f607266d3de1ced899bd</anchor>
+      <arglist>(void *)</arglist>
     </member>
     <member kind="typedef">
       <type>struct self_base_t</type>
@@ -10439,11 +10446,11 @@
       <arglist></arglist>
     </member>
     <member kind="typedef">
-      <type>void(*</type>
+      <type>void(*)</type>
       <name>watchdog_function_t</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>ga4caef7fcd0476a936700512d28a23aa8</anchor>
-      <arglist>)(void *)</arglist>
+      <anchor>gac69671c8ed4d9efd1ea01bdd9f4addcc</anchor>
+      <arglist>(void *)</arglist>
     </member>
     <member kind="typedef">
       <type>struct watchdog_t</type>
@@ -12590,6 +12597,13 @@
       <anchorfile>group__Tracing.html</anchorfile>
       <anchor>gaa3ab4dc2202a6bc21f29e14f232301c4</anchor>
       <arglist>(void *trigger, int *index)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_tracing_flush</name>
+      <anchorfile>group__Tracing.html</anchorfile>
+      <anchor>ga58c6386d35ddd901027140768c0da22f</anchor>
+      <arglist>()</arglist>
     </member>
     <member kind="function">
       <type>void</type>

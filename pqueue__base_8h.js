@@ -1,12 +1,12 @@
 var pqueue__base_8h =
 [
-    [ "pqueue_cmp_pri_f", "group__Internal.html#ga1c3f02694b2a0ec19584c395a88bb6f9", null ],
-    [ "pqueue_eq_elem_f", "group__Internal.html#ga664f0abcd86c8089468869aa3dc6e535", null ],
-    [ "pqueue_get_pos_f", "group__Internal.html#ga31ca7927983005bd7866021819ad7037", null ],
-    [ "pqueue_get_pri_f", "group__Internal.html#gaa84f0100faf971295df5aed226c390a6", null ],
+    [ "pqueue_cmp_pri_f", "group__Internal.html#gac9294031b7da57cd8c3636c5bcf3f524", null ],
+    [ "pqueue_eq_elem_f", "group__Internal.html#gafcf377b6bcd30c4b9d18b5d46cdffdc9", null ],
+    [ "pqueue_get_pos_f", "group__Internal.html#ga05f4c778f7ee42f7acf3eb1d360f879c", null ],
+    [ "pqueue_get_pri_f", "group__Internal.html#ga9790b3ed5e525ab485078ff8f5e2f3ac", null ],
     [ "pqueue_pri_t", "group__Internal.html#gad8239ddc32134716f57e54bb972f6bf0", null ],
-    [ "pqueue_print_entry_f", "group__Internal.html#ga884902da135214a6167f1536ad4ed4bc", null ],
-    [ "pqueue_set_pos_f", "group__Internal.html#gafdc8f52cbc45181ef375df22917bc4f9", null ],
+    [ "pqueue_print_entry_f", "group__Internal.html#ga49ba4647b50d31501d6c0f5731d7b472", null ],
+    [ "pqueue_set_pos_f", "group__Internal.html#ga1e2b52dca88d0dcae0e62c0b72510f8a", null ],
     [ "pqueue_t", "group__Internal.html#ga05e211b59fd9be5939218e11d1132167", null ],
     [ "pqueue_dump", "pqueue__base_8h.html#add0fae8523cca210f1574586e82cf7dd", null ],
     [ "pqueue_empty_into", "group__Internal.html#gaa0f5e3d63138880461b1f04dc2d4f48a", null ],

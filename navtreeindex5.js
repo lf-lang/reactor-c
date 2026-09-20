@@ -1,5 +1,6 @@
 var NAVTREEINDEX5 =
 {
+"structtrace__record__t.html#adc712673588c62b3a2c5e9970ba953fd":[3,4,34,8],
 "structtrace__record__t.html#ae9e3d3538bf7109339a117b85cf28738":[3,4,34,1],
 "structtrace__record__t.html#aecd3b41b7fef7c78bdd0da4e19ce7048":[3,4,34,2],
 "structtrace__record__t.html#afb3aaa3d422442ca97f25df32d403fd1":[3,4,34,5],

@@ -9,7 +9,7 @@ var lf__types_8h =
     [ "event_t", "group__Internal.html#ga59f5f6b9c6023baebf9c49c328b639a1", null ],
     [ "index_t", "group__Internal.html#ga4448d06be794d3f5412d0edb412dc00e", null ],
     [ "lf_tag_advancement_barrier_t", "group__Internal.html#ga18d624d162daca00e24d1d528ec3c18f", null ],
-    [ "reaction_function_t", "group__Internal.html#ga149e5fee1c1841bcc96c72f200601d90", null ],
+    [ "reaction_function_t", "group__Internal.html#ga49fe403ed947f607266d3de1ced899bd", null ],
     [ "reaction_t", "lf__types_8h.html#a1f0f71b6c8e0c54c65cbfaa154b40694", null ],
     [ "self_base_t", "group__Internal.html#ga6202eb05c29c30bfd6a8fc203de6422f", null ],
     [ "string", "group__API.html#ga4505c08c065b48840a30eedd9845cce2", null ],

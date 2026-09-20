@@ -175,8 +175,8 @@ var group__Internal =
       [ "type", "structtoken__template__t.html#a7a7e76104c33f7d019670420033d5d12", null ]
     ] ],
     [ "token_type_t", "structtoken__type__t.html", [
-      [ "copy_constructor", "structtoken__type__t.html#a4e5da2b59631b75ace560f9812a11824", null ],
-      [ "destructor", "structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c", null ],
+      [ "copy_constructor", "structtoken__type__t.html#adaac248fcdb0685e0eeb0c2f2cd5461c", null ],
+      [ "destructor", "structtoken__type__t.html#ab936e0d6fd3ddaa63d640e4348d20e9c", null ],
       [ "element_size", "structtoken__type__t.html#a68cbb1b9a12c72df5dd5e7f356f50eba", null ]
     ] ],
     [ "trace_record_t", "structtrace__record__t.html", [
@@ -251,16 +251,16 @@ var group__Internal =
     [ "lf_sparse_io_record_t", "group__Internal.html#gaa6696d69bef6bb4bdd52ef9ab9d2c614", null ],
     [ "lf_tag_advancement_barrier_t", "group__Internal.html#ga18d624d162daca00e24d1d528ec3c18f", null ],
     [ "mixed_radix_int_t", "group__Internal.html#ga7d95374fb5368705263c2f1ac2579183", null ],
-    [ "pqueue_cmp_pri_f", "group__Internal.html#ga1c3f02694b2a0ec19584c395a88bb6f9", null ],
-    [ "pqueue_eq_elem_f", "group__Internal.html#ga664f0abcd86c8089468869aa3dc6e535", null ],
-    [ "pqueue_get_pos_f", "group__Internal.html#ga31ca7927983005bd7866021819ad7037", null ],
-    [ "pqueue_get_pri_f", "group__Internal.html#gaa84f0100faf971295df5aed226c390a6", null ],
+    [ "pqueue_cmp_pri_f", "group__Internal.html#gac9294031b7da57cd8c3636c5bcf3f524", null ],
+    [ "pqueue_eq_elem_f", "group__Internal.html#gafcf377b6bcd30c4b9d18b5d46cdffdc9", null ],
+    [ "pqueue_get_pos_f", "group__Internal.html#ga05f4c778f7ee42f7acf3eb1d360f879c", null ],
+    [ "pqueue_get_pri_f", "group__Internal.html#ga9790b3ed5e525ab485078ff8f5e2f3ac", null ],
     [ "pqueue_pri_t", "group__Internal.html#gad8239ddc32134716f57e54bb972f6bf0", null ],
-    [ "pqueue_print_entry_f", "group__Internal.html#ga884902da135214a6167f1536ad4ed4bc", null ],
-    [ "pqueue_set_pos_f", "group__Internal.html#gafdc8f52cbc45181ef375df22917bc4f9", null ],
+    [ "pqueue_print_entry_f", "group__Internal.html#ga49ba4647b50d31501d6c0f5731d7b472", null ],
+    [ "pqueue_set_pos_f", "group__Internal.html#ga1e2b52dca88d0dcae0e62c0b72510f8a", null ],
     [ "pqueue_t", "group__Internal.html#ga05e211b59fd9be5939218e11d1132167", null ],
     [ "pqueue_tag_t", "group__Internal.html#gac52d056c47d9595f94d37e95484b3acd", null ],
-    [ "reaction_function_t", "group__Internal.html#ga149e5fee1c1841bcc96c72f200601d90", null ],
+    [ "reaction_function_t", "group__Internal.html#ga49fe403ed947f607266d3de1ced899bd", null ],
     [ "self_base_t", "group__Internal.html#ga6202eb05c29c30bfd6a8fc203de6422f", null ],
     [ "token_freed", "group__Internal.html#ga0cb4f0fedba2f1e1fd3893440ab53647", null ],
     [ "token_template_t", "group__Internal.html#gad0befcbc6fe23c8dd0b6f483d4067e45", null ],
@@ -268,7 +268,7 @@ var group__Internal =
     [ "trace_record_t", "group__Internal.html#ga7804d825257e1eb4296de7da8fec62f6", null ],
     [ "trigger_handle_t", "group__Internal.html#ga3608c2ed78ba97535f8d82a489846305", null ],
     [ "ushort", "group__Internal.html#ga3fa7784c89589b49764048e9909d0e07", null ],
-    [ "watchdog_function_t", "group__Internal.html#ga4caef7fcd0476a936700512d28a23aa8", null ],
+    [ "watchdog_function_t", "group__Internal.html#gac69671c8ed4d9efd1ea01bdd9f4addcc", null ],
     [ "watchdog_t", "group__Internal.html#gaee1cd2bc521f76fa428cc659474d9570", null ],
     [ "lf_cli_type_t", "group__Internal.html#gab6749d3dbb42ebbff86bd3cb3c5355d1", [
       [ "CLI_TIME", "group__Internal.html#ggab6749d3dbb42ebbff86bd3cb3c5355d1a09d6a14cdb0766e765c2c7ca8b2af5bb", null ],

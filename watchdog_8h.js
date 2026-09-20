@@ -1,6 +1,6 @@
 var watchdog_8h =
 [
-    [ "watchdog_function_t", "group__Internal.html#ga4caef7fcd0476a936700512d28a23aa8", null ],
+    [ "watchdog_function_t", "group__Internal.html#gac69671c8ed4d9efd1ea01bdd9f4addcc", null ],
     [ "watchdog_t", "group__Internal.html#gaee1cd2bc521f76fa428cc659474d9570", null ],
     [ "_lf_initialize_watchdogs", "group__Internal.html#gaa6a016400f119168b48505e51baaaa55", null ],
     [ "_lf_watchdog_terminate_all", "group__Internal.html#gab3957d31bade9b6ebcbc27aae6be3f14", null ],

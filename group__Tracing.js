@@ -117,6 +117,7 @@ var group__Tracing =
     [ "format_line", "group__Tracing.html#ga133af84dbff3d84a97044d8a89cf295d", null ],
     [ "get_object_description", "group__Tracing.html#ga14da003f17f3fb32043a735158a234c5", null ],
     [ "get_trigger_name", "group__Tracing.html#gaa3ab4dc2202a6bc21f29e14f232301c4", null ],
+    [ "lf_tracing_flush", "group__Tracing.html#ga58c6386d35ddd901027140768c0da22f", null ],
     [ "lf_tracing_global_init", "group__Tracing.html#ga1098d9744b99a07d115e48d873de000d", null ],
     [ "lf_tracing_global_shutdown", "group__Tracing.html#ga8a5d5ec80d2716ea7848193647cdadcd", null ],
     [ "lf_tracing_register_trace_event", "group__Tracing.html#ga15969599d7817596e12dcceb8c145551", null ],
