@@ -1791,10 +1791,14 @@ static void handle_rti_failed_message(void) {
     new_stop_tag.microstep = env[i].current_tag.microstep + 1;
     lf_set_stop_tag(&env[i], new_stop_tag);
 
-    // Drop every outstanding barrier. The listener that would have released
-    // them is about to return, and a leftover requestor would block shutdown.
-    while (env[i].barrier.requestors > 0) {
-      _lf_decrement_tag_barrier_locked(&env[i]);
+    // Let a thread blocked in _lf_wait_on_tag_barrier() reach the stop tag.
+    // Leave requestors alone. handle_tagged_message() increments the count
+    // before reading a payload and decrements it when that read finishes.
+    // Consuming those counts here makes the later decrement negative, and
+    // _lf_decrement_tag_barrier_locked() then calls exit() from that listener.
+    if (env[i].barrier.requestors > 0) {
+      env[i].barrier.horizon = FOREVER_TAG;
+      lf_cond_broadcast(&env[i].global_tag_barrier_requestors_reached_zero);
     }
     lf_cond_broadcast(&env[i].event_q_changed);
     LF_MUTEX_UNLOCK(&env[i].mutex);
