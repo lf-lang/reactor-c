@@ -138,12 +138,23 @@ static void send_tag(unsigned char type, tag_t tag, bool trace_as_timestamp) {
     event_type = send_NET;
   if (type == MSG_TYPE_LATEST_TAG_CONFIRMED)
     event_type = send_LTC;
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  // The listener sets rti_failed before it acquires the environment mutex, so
+  // this can be true while the caller is still on a path that expects to send.
+  // A failed write calls exit() from whichever thread is sending.
+  if (lf_rti_has_failed()) {
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    LF_PRINT_LOG("Not sending tag " PRINTF_TAG " because the RTI has failed.", tag.time, tag.microstep);
+    return;
+  }
   // Trace the event when tracing is enabled
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
-  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-  write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, buffer, &lf_outbound_net_mutex,
-                             "Failed to send tag " PRINTF_TAG " to the RTI.", tag.time, tag.microstep);
+  int failed = write_to_net_close_on_error(_fed.net_to_RTI, bytes_to_write, buffer);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  // The flag may have been set while the write was in progress.
+  if (failed && !lf_rti_has_failed()) {
+    lf_print_error_system_failure("Failed to send tag " PRINTF_TAG " to the RTI.", tag.time, tag.microstep);
+  }
 }
 
 /**
@@ -1691,6 +1702,10 @@ static void handle_stop_request_message() {
 
   // Send the current logical time to the RTI.
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  if (lf_rti_has_failed()) {
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    return;
+  }
   write_to_net_fail_on_error(_fed.net_to_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer,
                              &lf_outbound_net_mutex, "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
@@ -2064,6 +2079,10 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
       // This should be set while holding the mutex.
       _fed.downstream_p2p_joined_tag[remote_federate_id] = joined_tag;
 
+      if (lf_rti_has_failed()) {
+        LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+        return;
+      }
       write_to_net_fail_on_error(_fed.net_to_RTI, 1 + sizeof(uint16_t) + 1, buffer, &lf_outbound_net_mutex,
                                  "Failed to send address query for federate %d to RTI.", remote_federate_id);
       LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
@@ -2763,6 +2782,13 @@ int lf_send_message(int message_type, unsigned short port, unsigned short federa
 tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
   assert(env != GLOBAL_ENVIRONMENT);
   while (true) {
+    // Checked on every iteration, including after a wait. The listener sets
+    // rti_failed before publishing FOREVER_TAG, so last_TAG may still be in
+    // the past. FOREVER_TAG grants every tag the caller could be waiting on
+    // without writing to the dead connection.
+    if (lf_rti_has_failed()) {
+      return FOREVER_TAG;
+    }
     if (!_fed.has_downstream && !_fed.has_upstream) {
       // This federate is not connected (except possibly by physical links)
       // so there is no need for the RTI to get involved.
@@ -2787,12 +2813,6 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
     if (lf_tag_compare(_fed.last_TAG, tag) >= 0) {
       LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received.",
                      _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
-
-      // The grant was synthesized because the RTI has failed. Do not send a NET;
-      // the write would fail and call exit() from this thread.
-      if (lf_rti_has_failed()) {
-        return _fed.last_TAG;
-      }
 
       // In case a downstream federate needs the NET of this tag or has not received any DNET, send
       // NET.
@@ -2866,6 +2886,9 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
                        _fed.last_TAG.time - start_time, _fed.last_TAG.microstep, tag.time - start_time, tag.microstep);
         if (lf_cond_wait(&env->event_q_changed) != 0) {
           lf_print_error("Wait error.");
+        }
+        if (lf_rti_has_failed()) {
+          return FOREVER_TAG;
         }
         // Check whether the new event on the event queue requires sending a new NET.
         tag_t next_tag = get_next_event_tag(env);
@@ -2969,6 +2992,10 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
     return;
   }
   tracepoint_federate_to_rti(send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
+  if (lf_rti_has_failed()) {
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    return;
+  }
 #else
   // Send the absent message directly to the federate
   net_abstraction_t net = _fed.net_for_outbound_p2p_connections[fed_ID];
@@ -2988,6 +3015,10 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   if (result != 0) {
     // Write failed. Response depends on whether coordination is centralized.
     if (net == _fed.net_to_RTI) {
+      // The RTI may have failed while the write was in progress. Do not call exit().
+      if (lf_rti_has_failed()) {
+        return;
+      }
       // Centralized coordination. This is a critical error.
       lf_print_error_system_failure("Failed to send port absent message for port %hu to federate %hu.", port_ID,
                                     fed_ID);
@@ -3012,7 +3043,7 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
     LF_PRINT_LOG("Sending to RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".", stop_tag.time - start_time,
                  stop_tag.microstep);
 
-    if (_fed.net_to_RTI == NULL) {
+    if (_fed.net_to_RTI == NULL || lf_rti_has_failed()) {
       lf_print_warning("RTI is no longer connected. Dropping message.");
       LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
       return -1;
@@ -3112,6 +3143,10 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
   } else {
     net = _fed.net_to_RTI;
     tracepoint_federate_to_rti(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
+    if (lf_rti_has_failed()) {
+      LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+      return 0;
+    }
   }
   if (net == NULL) {
     if (!_lf_termination_executed) {
@@ -3134,7 +3169,7 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     // Message did not send. Handling depends on message type.
     if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
-    } else {
+    } else if (!lf_rti_has_failed()) {
       lf_print_error_system_failure("Failed to send message to %s with error code %d (%s). Connection lost to the RTI.",
                                     next_destination_str, errno, strerror(errno));
     }
