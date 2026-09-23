@@ -85,6 +85,7 @@ federate_instance_t _fed = {.number_of_inbound_p2p_connections = 0,
                             .received_any_DNET = false,
                             .last_DNET = {.time = NEVER, .microstep = 0u},
                             .received_stop_request_from_rti = false,
+                            .rti_failed = 0,
                             .last_sent_LTC = {.time = NEVER, .microstep = 0u},
                             .last_sent_NET = {.time = NEVER, .microstep = 0u},
                             .last_skipped_NET = {.time = NEVER, .microstep = 0u},
@@ -1757,12 +1758,48 @@ static void send_failed_signal() {
 }
 
 /**
- * Handle a failed signal from the RTI. The RTI will only fail
- * if it is forced to exit, e.g. by a SIG_INT. Hence, this federate
- * will exit immediately with an error condition, counting on the
- * termination functions to handle any cleanup needed.
+ * Handle a failed signal from the RTI.
+ *
+ * The RTI sends MSG_TYPE_FAILED only when it is forced to exit, for example
+ * by SIGINT. This thread must not call exit(): termination() is an atexit
+ * handler that joins this thread, and a concurrent exit() from the main
+ * thread runs that handler twice. Instead, record the failure, unblock every
+ * enclave, and return so the main thread can exit once.
  */
-static void handle_rti_failed_message(void) { exit(1); }
+static void handle_rti_failed_message(void) {
+  lf_print_error("RTI has failed. Shutting down federate.");
+  // Full barrier, so a later atomic load on the main thread sees this store.
+  lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
+
+  environment_t* env;
+  int num_env = _lf_get_environments(&env);
+  for (int i = 0; i < num_env; i++) {
+    LF_MUTEX_LOCK(&env[i].mutex);
+    // last_TAG and lf_port_status_changed are guarded by the top-level environment mutex.
+    // FOREVER_TAG covers every tag lf_send_next_event_tag might still be waiting on.
+    // The RTI will not send another TAG. INT_MAX unblocks any level stall waiting
+    // on a port status that will never arrive.
+    if (i == 0) {
+      _fed.last_TAG = FOREVER_TAG;
+      _fed.is_last_TAG_provisional = false;
+      max_level_allowed_to_advance = INT_MAX;
+      lf_cond_broadcast(&lf_port_status_changed);
+    }
+
+    tag_t new_stop_tag;
+    new_stop_tag.time = env[i].current_tag.time;
+    new_stop_tag.microstep = env[i].current_tag.microstep + 1;
+    lf_set_stop_tag(&env[i], new_stop_tag);
+
+    // Drop every outstanding barrier. The listener that would have released
+    // them is about to return, and a leftover requestor would block shutdown.
+    while (env[i].barrier.requestors > 0) {
+      _lf_decrement_tag_barrier_locked(&env[i]);
+    }
+    lf_cond_broadcast(&env[i].event_q_changed);
+    LF_MUTEX_UNLOCK(&env[i].mutex);
+  }
+}
 
 /**
  * Thread that listens for network abstraction inputs from the RTI.
@@ -1830,7 +1867,9 @@ static void* listen_to_rti_net(void* args) {
       break;
     case MSG_TYPE_FAILED:
       handle_rti_failed_message();
-      break;
+      // Return so lf_terminate_execution() can join this thread. Do not read
+      // further: the RTI is closing the connection.
+      return NULL;
     case MSG_TYPE_UPSTREAM_CONNECTED:
       handle_upstream_connected_message();
       break;
@@ -1921,7 +1960,9 @@ void lf_terminate_execution(environment_t* env) {
 
   // For an abnormal termination (e.g. a SIGINT), we need to send a
   // MSG_TYPE_FAILED message to the RTI, but we should not acquire a mutex.
-  if (_fed.net_to_RTI != NULL) {
+  // If the RTI already reported failure, skip both sends. The peer is gone,
+  // and a failed write calls exit() from this atexit handler.
+  if (_fed.net_to_RTI != NULL && !lf_rti_has_failed()) {
     if (_lf_normal_termination) {
       tracepoint_federate_to_rti(send_RESIGN, _lf_my_fed_id, &env->current_tag);
       send_resign_signal();
@@ -2743,6 +2784,12 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
       LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received.",
                      _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
 
+      // The grant was synthesized because the RTI has failed. Do not send a NET;
+      // the write would fail and call exit() from this thread.
+      if (lf_rti_has_failed()) {
+        return _fed.last_TAG;
+      }
+
       // In case a downstream federate needs the NET of this tag or has not received any DNET, send
       // NET.
       if (!_fed.received_any_DNET ||
@@ -3215,6 +3262,12 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
   LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME ".", max_level_allowed_to_advance,
                  lf_time_logical_elapsed(env));
   return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
+}
+
+bool lf_rti_has_failed(void) {
+  // Compare-and-swap of 0 with 0 is an atomic load: the value is unchanged,
+  // and the call returns the value previously in memory.
+  return lf_atomic_val_compare_and_swap(&_fed.rti_failed, 0, 0) != 0;
 }
 
 void lf_stop() {

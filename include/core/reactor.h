@@ -74,6 +74,16 @@ void lf_set_federation_id(const char* fid);
  */
 const char* lf_get_federation_id();
 
+/**
+ * @brief Return true if the RTI has reported failure.
+ * @ingroup Federated
+ *
+ * Set by the RTI listener thread when it receives MSG_TYPE_FAILED.
+ * The main thread uses this to return a nonzero status without calling
+ * exit() from the listener.
+ */
+bool lf_rti_has_failed(void);
+
 #endif // FEDERATED
 
 #ifdef FEDERATED_DECENTRALIZED
