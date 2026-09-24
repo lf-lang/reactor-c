@@ -198,6 +198,14 @@ typedef struct federate_instance_t {
   bool received_stop_request_from_rti;
 
   /**
+   * Nonzero after MSG_TYPE_FAILED is received from the RTI.
+   * Set and read only through lf_atomic_bool_compare_and_swap and
+   * lf_atomic_val_compare_and_swap. The RTI listener thread sets this
+   * and returns; only the main thread may call exit().
+   */
+  int rti_failed;
+
+  /**
    * A record of the most recently sent LTC (latest tag confirmed) message.
    * In some situations, federates can send logical_tag_complete for
    * the same tag twice or more in-a-row to the RTI. For example, when
