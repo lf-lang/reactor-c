@@ -537,8 +537,7 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
   // lf_reactor_c_main (for example an RTI failure) must terminate the process.
   // exit() runs the atexit termination handler registered by the runtime.
   int status;
-  Py_BEGIN_ALLOW_THREADS
-  status = lf_reactor_c_main(argc, argv);
+  Py_BEGIN_ALLOW_THREADS status = lf_reactor_c_main(argc, argv);
   Py_END_ALLOW_THREADS
 
 #ifdef LF_TRACE
