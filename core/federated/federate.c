@@ -151,9 +151,11 @@ static void send_tag(unsigned char type, tag_t tag, bool trace_as_timestamp) {
   tracepoint_federate_to_rti(event_type, _lf_my_fed_id, &tag);
   int failed = write_to_net_close_on_error(_fed.net_to_RTI, bytes_to_write, buffer);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
-  // The flag may have been set while the write was in progress.
-  if (failed && !lf_rti_has_failed()) {
-    lf_print_error_system_failure("Failed to send tag " PRINTF_TAG " to the RTI.", tag.time, tag.microstep);
+  // Do not call exit(). The listener observes the closed socket and runs
+  // handle_rti_failed_message(); a check of rti_failed here would race that.
+  if (failed) {
+    lf_print_error("Failed to send tag " PRINTF_TAG " to the RTI.", tag.time, tag.microstep);
+    lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
   }
 }
 
@@ -1838,19 +1840,22 @@ static void* listen_to_rti_net(void* args) {
     // Check whether the RTI network abstraction is still valid.
     if (_fed.net_to_RTI == NULL || !is_net_open(_fed.net_to_RTI)) {
       lf_print_warning("network connection to the RTI unexpectedly closed.");
+      handle_rti_failed_message();
       return NULL;
     }
     // Read one byte to get the message type.
     // This will exit if the read fails.
     int read_failed = read_from_net(_fed.net_to_RTI, 1, buffer);
     if (read_failed < 0) {
-      lf_print_error("Connection to the RTI was closed by the RTI with an error. Considering this a soft error.");
+      lf_print_error("Connection to the RTI was closed by the RTI with an error.");
       close_net(_fed.net_to_RTI, false);
+      handle_rti_failed_message();
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
       lf_print_info("Connection to the RTI closed with an EOF.");
       close_net(_fed.net_to_RTI, false);
+      handle_rti_failed_message();
       return NULL;
     }
     switch (buffer[0]) {
@@ -3015,13 +3020,9 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   if (result != 0) {
     // Write failed. Response depends on whether coordination is centralized.
     if (net == _fed.net_to_RTI) {
-      // The RTI may have failed while the write was in progress. Do not call exit().
-      if (lf_rti_has_failed()) {
-        return;
-      }
-      // Centralized coordination. This is a critical error.
-      lf_print_error_system_failure("Failed to send port absent message for port %hu to federate %hu.", port_ID,
-                                    fed_ID);
+      // The listener shuts the federate down. Do not call exit() from this thread.
+      lf_print_error("Failed to send port absent message for port %hu to federate %hu.", port_ID, fed_ID);
+      lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
     } else {
       // Decentralized coordination. This is not a critical error.
       lf_print_warning("Failed to send port absent message for port %hu to federate %hu.", port_ID, fed_ID);
@@ -3169,9 +3170,10 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     // Message did not send. Handling depends on message type.
     if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       lf_print_warning("Failed to send message to %s. Dropping the message.", next_destination_str);
-    } else if (!lf_rti_has_failed()) {
-      lf_print_error_system_failure("Failed to send message to %s with error code %d (%s). Connection lost to the RTI.",
-                                    next_destination_str, errno, strerror(errno));
+    } else {
+      // The listener shuts the federate down. Do not call exit() from this thread.
+      lf_print_error("Failed to send message to %s. Connection lost to the RTI.", next_destination_str);
+      lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
     }
   }
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
