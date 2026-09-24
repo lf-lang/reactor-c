@@ -271,11 +271,11 @@ int lf_enable_interrupts_nested() {
  */
 int lf_disable_interrupts_nested() {
   _lf_nested_count++;
-  uint8_t sd_nvic_critical_region_enter = 0;
+  uint8_t is_in_critical_section = 0;
   if (_lf_nested_count == 1) {
     // First nested entry into a critical section.
     // Argument points to zero because we keep track of the nested count ourselves.
-    return sd_nvic_critical_region_enter(&sd_nvic_critical_region_enter);
+    return sd_nvic_critical_region_enter(&is_in_critical_section);
     // FIXME: If softdevice is not enabled, do the following instead of the above:
     // __disable_irq();
   }
