@@ -1708,9 +1708,13 @@ static void handle_stop_request_message() {
     LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
     return;
   }
-  write_to_net_fail_on_error(_fed.net_to_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer,
-                             &lf_outbound_net_mutex, "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
+  int failed = write_to_net_close_on_error(_fed.net_to_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer);
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  if (failed) {
+    lf_print_error("Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
+    lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
+    return;
+  }
 
   LF_PRINT_DEBUG("Sent MSG_TYPE_STOP_REQUEST_REPLY to RTI with tag " PRINTF_TAG, tag_to_stop.time,
                  tag_to_stop.microstep);
@@ -1754,9 +1758,13 @@ static void send_resign_signal() {
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_RESIGN;
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-  write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_net_mutex,
-                             "Failed to send MSG_TYPE_RESIGN.");
+  int failed = write_to_net_close_on_error(_fed.net_to_RTI, bytes_to_write, &(buffer[0]));
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  if (failed) {
+    lf_print_error("Failed to send MSG_TYPE_RESIGN.");
+    lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
+    return;
+  }
   LF_PRINT_LOG("Sent resign signal to the RTI.");
 }
 
@@ -1768,9 +1776,13 @@ static void send_failed_signal() {
   unsigned char buffer[bytes_to_write];
   buffer[0] = MSG_TYPE_FAILED;
   LF_MUTEX_LOCK(&lf_outbound_net_mutex);
-  write_to_net_fail_on_error(_fed.net_to_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_net_mutex,
-                             "Failed to send MSG_TYPE_FAILED.");
+  int failed = write_to_net_close_on_error(_fed.net_to_RTI, bytes_to_write, &(buffer[0]));
   LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  if (failed) {
+    lf_print_error("Failed to send MSG_TYPE_FAILED.");
+    lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
+    return;
+  }
   LF_PRINT_LOG("Sent failed signal to the RTI.");
 }
 
@@ -2088,9 +2100,13 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
         LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
         return;
       }
-      write_to_net_fail_on_error(_fed.net_to_RTI, 1 + sizeof(uint16_t) + 1, buffer, &lf_outbound_net_mutex,
-                                 "Failed to send address query for federate %d to RTI.", remote_federate_id);
+      int query_failed = write_to_net_close_on_error(_fed.net_to_RTI, 1 + sizeof(uint16_t) + 1, buffer);
       LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+      if (query_failed) {
+        lf_print_error("Failed to send address query for federate %d to RTI.", remote_federate_id);
+        lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
+        return;
+      }
 
       // Read RTI's response.
       read_from_net_fail_on_error(_fed.net_to_RTI, sizeof(int32_t) + 1, buffer,
@@ -3052,8 +3068,13 @@ int lf_send_stop_request_to_rti(tag_t stop_tag) {
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(send_STOP_REQ, _lf_my_fed_id, &stop_tag);
 
-    write_to_net_fail_on_error(_fed.net_to_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, buffer, &lf_outbound_net_mutex,
-                               "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
+    int failed = write_to_net_close_on_error(_fed.net_to_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, buffer);
+    if (failed) {
+      LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+      lf_print_error("Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
+      lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
+      return -1;
+    }
 
     // Treat this sending  as equivalent to having received a stop request from the RTI.
     _fed.received_stop_request_from_rti = true;
