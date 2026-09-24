@@ -166,6 +166,28 @@ int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* argum
 
 int lf_thread_join(lf_thread_t thread, void** thread_return) { return thread_join(thread, thread_return); }
 
+/**
+ * Real-time scheduling API not implemented for Arduino.
+ */
+int lf_thread_set_cpu(const int* core_ids, size_t num_core_ids) {
+  (void)core_ids;
+  (void)num_core_ids;
+  return -1;
+}
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
+  (void)thread;
+  (void)priority;
+  // Real-time scheduling API not implemented for Arduino.
+  return -1;
+}
+
+int lf_thread_set_scheduling_policy(lf_thread_t thread, lf_scheduling_policy_t* policy) {
+  (void)thread;
+  (void)policy;
+  return -1;
+}
+
 int lf_mutex_init(lf_mutex_t* mutex) {
   *mutex = (lf_mutex_t)mutex_new();
   return 0;

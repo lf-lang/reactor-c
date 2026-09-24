@@ -88,6 +88,10 @@ int lf_critical_section_exit(environment_t* env);
 // Worker priorities range from 0 to 99 where 99 is the highest priority.
 #define LF_SCHED_MAX_PRIORITY 99
 #define LF_SCHED_MIN_PRIORITY 0
+// Abstract LF priorities used by the threaded runtime; platforms map these via
+// lf_thread_set_priority() / map_priorities() into native OS priorities.
+#define LF_SLEEP_PRIORITY LF_SCHED_MAX_PRIORITY // Highest when waiting for physical time
+#define LF_NO_DEADLINE_PRIORITY 1               // Lowest for reactions without deadlines
 
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
@@ -184,15 +188,27 @@ typedef struct {
   interval_t time_slice;              // The time-slice allocated, if applicable.
 } lf_scheduling_policy_t;
 
+/** @brief Return value when a core ID is out of range. Chosen outside the errno range to avoid
+ *  colliding with platform error codes (e.g. Zephyr's -ENOENT is -2). */
+#define LF_THREAD_CPU_INVALID_CORE -512
+
 /**
- * @brief Pin a thread to a specific CPU.
+ * @brief Restrict the calling thread to run on the specified set of CPUs.
  * @ingroup Platform
  *
- * @param thread The thread
- * @param cpu_number the CPU ID
- * @return 0 on success, platform-specific error number otherwise.
+ * On platforms that support CPU affinity (e.g., Linux, Zephyr), the calling
+ * thread's affinity mask is set to include ALL cores listed in `core_ids`. The
+ * OS scheduler then decides which of those cores to run the thread on.
+ * Platforms that do not support affinity return -1.
+ *
+ * @param core_ids An array of CPU core IDs to allow the thread to run on.
+ * @param num_core_ids The number of entries in the core_ids array.
+ *                     If 0 or core_ids is NULL, no pinning is done.
+ * @return 0 on success, -1 if no pinning needed or affinity is unsupported,
+ *         @ref LF_THREAD_CPU_INVALID_CORE if a core ID is out of range,
+ *         platform-specific error otherwise.
  */
-int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number);
+int lf_thread_set_cpu(const int* core_ids, size_t num_core_ids);
 
 /**
  * @brief Set the priority of a thread.

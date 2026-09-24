@@ -23,13 +23,24 @@
 #else
 #include "lf_POSIX_threads_support.c"
 
-int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) {
-  // Create a CPU-set consisting of only the desired CPU
+int lf_thread_set_cpu(const int* core_ids, size_t num_core_ids) {
+  if (core_ids == NULL || num_core_ids == 0) {
+    return -1; // No pinning needed
+  }
+
+  int available = lf_available_cores();
+
+  // Build a CPU-set containing ALL specified cores
   cpu_set_t cpu_set;
   CPU_ZERO(&cpu_set);
-  CPU_SET(cpu_number, &cpu_set);
+  for (size_t i = 0; i < num_core_ids; i++) {
+    if (core_ids[i] < 0 || core_ids[i] >= available) {
+      return LF_THREAD_CPU_INVALID_CORE;
+    }
+    CPU_SET(core_ids[i], &cpu_set);
+  }
 
-  return pthread_setaffinity_np(thread, sizeof(cpu_set), &cpu_set);
+  return pthread_setaffinity_np(lf_thread_self(), sizeof(cpu_set), &cpu_set);
 }
 
 int lf_thread_set_priority(lf_thread_t thread, int priority) {
@@ -44,6 +55,11 @@ int lf_thread_set_priority(lf_thread_t thread, int priority) {
   res = pthread_getschedparam(thread, &posix_policy, &schedparam);
   if (res != 0) {
     return res;
+  }
+
+  // CFS (SCHED_OTHER) does not support priorities, return success as no-op
+  if (posix_policy == SCHED_OTHER) {
+    return 0;
   }
 
   min_pri = sched_get_priority_min(posix_policy);
