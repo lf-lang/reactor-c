@@ -14,11 +14,18 @@
 #include "low_level_platform.h"
 #include <machine/rtc.h>
 #include <machine/exceptions.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+
+int lf_disable_interrupts_nested(void);
+int lf_enable_interrupts_nested(void);
 
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
 // Keep track of whether we are in a critical section or not
-static volatile int _lf_num_nested_critical_sections = 0;
+
 /**
  * @brief Sleep until an absolute time.
  * Since there is no sleep mode in Patmos, and energy saving is not important for real-time systems,
@@ -76,7 +83,11 @@ int lf_nanosleep(interval_t requested_time) { return lf_sleep(requested_time); }
 /**
  * Patmos clock does not need initialization.
  */
-void _lf_initialize_clock() {}
+void _lf_initialize_clock() {
+#if !defined(LF_SINGLE_THREADED)
+  initialize_lf_patmos_core_configuration();
+#endif
+}
 
 /**
  * Write the current time in nanoseconds into the location given by the argument.
@@ -95,10 +106,13 @@ int _lf_clock_gettime(instant_t* t) {
 
 #if defined(LF_SINGLE_THREADED)
 
+static volatile int _lf_num_nested_critical_sections = 0;
+
 int lf_disable_interrupts_nested() {
-  if (_lf_num_nested_critical_sections++ == 0) {
-    intr_disable();
-  }
+  // For the single-threaded path, disable interrupts first then increment
+  // the nesting counter to avoid preemption windows on this core.
+  intr_disable();
+  _lf_num_nested_critical_sections++;
   return 0;
 }
 
@@ -117,6 +131,162 @@ int _lf_single_threaded_notify_of_event() {
   _lf_async_event = true;
   return 0;
 }
-#endif // LF_SINGLE_THREADED
+#else // multi threaded Patmos implementation
+
+/* Dynamically allocate per-core nesting counters based on get_cpucnt().
+ * This avoids a hard-coded upper bound and prevents accidental aliasing
+ * of core IDs to index 0 if the platform reports more cores than the
+ * compile-time constant. Allocation happens once during validation. */
+static volatile int* _lf_num_nested_critical_sections_by_core = NULL;
+
+void initialize_lf_patmos_core_configuration(void) {
+  if (_lf_num_nested_critical_sections_by_core != NULL) {
+    return;
+  }
+  int cpucnt = (int)get_cpucnt();
+  assert(cpucnt > 0);
+  /* Allocate the per-core nesting counter array during single-threaded startup. */
+  _lf_num_nested_critical_sections_by_core = (volatile int*)calloc((size_t)cpucnt, sizeof(int));
+  assert(_lf_num_nested_critical_sections_by_core != NULL);
+}
+
+static inline volatile int* _lf_current_core_nested_counter() {
+  return &_lf_num_nested_critical_sections_by_core[(int)get_cpuid()];
+}
+
+// Global (cross-core) lock used to make the outermost critical section
+// mutually exclusive across Patmos cores. The lock is acquired only on the
+// 0 -> 1 transition and released only on the 1 -> 0 transition.
+static pthread_mutex_t _lf_patmos_global_lock = PTHREAD_MUTEX_INITIALIZER;
+
+int lf_disable_interrupts_nested() {
+  // Disable interrupts first and increment the per-core nesting counter.
+  intr_disable();
+  volatile int* nested_counter = _lf_current_core_nested_counter();
+  if ((*nested_counter)++ == 0) {
+    int result;
+    while ((result = pthread_mutex_trylock(&_lf_patmos_global_lock)) == EBUSY) {
+      // Busy-wait until the lock is released by the owning core.
+    }
+    assert(result == 0);
+  }
+  return 0;
+}
+
+int lf_enable_interrupts_nested() {
+  volatile int* nested_counter = _lf_current_core_nested_counter();
+  if (*nested_counter <= 0) {
+    return 1;
+  }
+
+  if (--(*nested_counter) == 0) {
+    pthread_mutex_unlock(&_lf_patmos_global_lock);
+    intr_enable();
+  }
+  return 0;
+}
+
+int lf_available_cores() { return (int)get_cpucnt(); }
+
+lf_thread_t lf_thread_self() {
+  lf_thread_t self;
+  memset(&self, 0, sizeof(self));
+  self.cpuid = (int)get_cpuid();
+  return self;
+}
+
+int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*), void* arguments) {
+  assert(thread != NULL);
+  return pthread_create(&thread->handle, NULL, lf_thread, arguments);
+}
+
+int lf_thread_join(lf_thread_t thread, void** thread_return) { return pthread_join(thread.handle, thread_return); }
+
+int lf_thread_id() { return (int)get_cpuid(); }
+
+void initialize_lf_thread_id() {}
+
+/* Core-count validation happens in initialize_lf_patmos_core_configuration(). */
+
+int lf_mutex_init(lf_mutex_t* mutex) {
+  int result;
+  pthread_mutexattr_t attr;
+
+  assert(mutex != NULL);
+
+  result = pthread_mutexattr_init(&attr);
+  if (result != 0) {
+    return result;
+  }
+
+  result = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+  if (result != 0) {
+    pthread_mutexattr_destroy(&attr);
+    return result;
+  }
+
+  result = pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
+  pthread_mutexattr_destroy(&attr);
+  return result;
+}
+
+int lf_mutex_lock(lf_mutex_t* mutex) {
+  assert(mutex != NULL);
+  return pthread_mutex_lock((pthread_mutex_t*)mutex);
+}
+
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+  assert(mutex != NULL);
+  return pthread_mutex_unlock((pthread_mutex_t*)mutex);
+}
+
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+  assert(cond != NULL);
+  assert(mutex != NULL);
+  cond->mutex = mutex;
+  return pthread_cond_init((pthread_cond_t*)&cond->condition, NULL);
+}
+
+int lf_cond_signal(lf_cond_t* cond) {
+  assert(cond != NULL);
+  return pthread_cond_signal((pthread_cond_t*)&cond->condition);
+}
+
+int lf_cond_broadcast(lf_cond_t* cond) {
+  assert(cond != NULL);
+  return pthread_cond_broadcast((pthread_cond_t*)&cond->condition);
+}
+
+int lf_cond_wait(lf_cond_t* cond) {
+  assert(cond != NULL);
+  assert(cond->mutex != NULL);
+  return pthread_cond_wait((pthread_cond_t*)&cond->condition, (pthread_mutex_t*)cond->mutex);
+}
+
+int _lf_cond_timedwait(lf_cond_t* cond, instant_t wakeup_time) {
+  struct timespec ts;
+  int rc;
+
+  assert(cond != NULL);
+  assert(cond->mutex != NULL);
+
+  instant_t now;
+  _lf_clock_gettime(&now);
+
+  if (now >= wakeup_time) {
+    return LF_TIMEOUT;
+  }
+
+  ts.tv_sec = wakeup_time / 1000000000LL;
+  ts.tv_nsec = wakeup_time % 1000000000LL;
+
+  rc = pthread_cond_timedwait((pthread_cond_t*)&cond->condition, (pthread_mutex_t*)cond->mutex, &ts);
+  if (rc == ETIMEDOUT) {
+    return LF_TIMEOUT;
+  }
+  return rc;
+}
+
+#endif
 
 #endif // PLATFORM_PATMOS

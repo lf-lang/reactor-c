@@ -13,7 +13,7 @@ int map_priorities(int priority, int dest_min, int dest_max) {
                      (LF_SCHED_MAX_PRIORITY - LF_SCHED_MIN_PRIORITY));
 }
 
-#ifndef PLATFORM_ZEPHYR // on Zephyr, this is handled separately
+#if !defined(PLATFORM_ZEPHYR) && !defined(PLATFORM_PATMOS) // on Zephyr and PATMOS, this is handled separately
 #ifndef LF_SINGLE_THREADED
 static int _lf_worker_thread_count = 0;
 
