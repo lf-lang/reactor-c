@@ -122,6 +122,22 @@ void lf_tracing_set_start_time(int64_t start_time);
 void lf_tracing_tracepoint(int worker, trace_record_nodeps_t* tr);
 
 /**
+ * @brief Flush all in-memory trace buffers to disk without shutting tracing down.
+ * @ingroup Tracing
+ *
+ * Worker threads only write to disk when a per-thread buffer is full, so the
+ * records from the end of an execution otherwise remain in memory until
+ * shutdown. Call this after worker threads have joined so those remaining
+ * records are written before the process exits.
+ *
+ * This function is optional for trace plugins. The runtime provides a weak
+ * no-op default so plugins that do not buffer records (or that predate this
+ * API) continue to link. The default .lft implementation provides a strong
+ * definition.
+ */
+void lf_tracing_flush();
+
+/**
  * @brief Shut down the tracing module.
  * @ingroup Tracing
  *

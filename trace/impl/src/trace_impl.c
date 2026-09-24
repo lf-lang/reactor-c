@@ -296,6 +296,18 @@ void lf_tracing_global_init(char* process_name, char* process_names, int fedid, 
   start_trace(&trace, max_num_local_threads);
 }
 void lf_tracing_set_start_time(int64_t time) { start_time = time; }
+
+void lf_tracing_flush() {
+  if (trace_mutex == NULL || trace._lf_trace_stop) {
+    return;
+  }
+  lf_platform_mutex_lock(trace_mutex);
+  for (int i = -1; i < (int)trace._lf_number_of_trace_buffers; i++) {
+    flush_trace_locked(&trace, i);
+  }
+  lf_platform_mutex_unlock(trace_mutex);
+}
+
 void lf_tracing_global_shutdown() {
   if (trace_mutex != NULL && !trace._lf_trace_stop) {
     stop_trace(&trace);

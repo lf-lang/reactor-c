@@ -13,6 +13,7 @@
 
 #include <assert.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -26,6 +27,7 @@
 #include "rti_local.h"
 #include "reactor_common.h"
 #include "watchdog.h"
+#include "tracepoint.h"
 
 #ifdef FEDERATED
 #include "federate.h"
@@ -1229,6 +1231,19 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
   if (ret == 0) {
     LF_PRINT_LOG("---- All environment worker threads exited successfully.");
   }
+  // Worker threads only write a trace buffer to disk when it is full, so the
+  // records from the final tag(s) are still in memory. Flush them now, while
+  // those threads have already joined and before returning from main() causes
+  // the C runtime to tear the process down.
+  lf_tracing_flush();
+#ifdef FEDERATED
+  // Leave _lf_normal_termination false. termination() then skips the
+  // heap-walking cleanup, and lf_terminate_execution() does not try to
+  // talk to the dead RTI. Returning from main is the single call to exit().
+  if (lf_rti_has_failed()) {
+    return EXIT_FAILURE;
+  }
+#endif
   _lf_normal_termination = true;
   return ret;
 }
