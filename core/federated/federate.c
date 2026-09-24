@@ -2114,12 +2114,14 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
                                   remote_federate_id);
 
       if (buffer[0] != MSG_TYPE_ADDRESS_QUERY_REPLY) {
-        // Unexpected reply. Could be that RTI has failed and sent a resignation.
+        // The RTI listener can be inside this exchange when a transient
+        // downstream federate connects. MSG_TYPE_FAILED must not call exit()
+        // from that thread; the byte has already been consumed here.
         if (buffer[0] == MSG_TYPE_FAILED) {
-          lf_print_error_and_exit("RTI has failed.");
-        } else {
-          lf_print_error_and_exit("Unexpected reply of type %hhu from RTI (see net_common.h).", buffer[0]);
+          handle_rti_failed_message();
+          return;
         }
+        lf_print_error_and_exit("Unexpected reply of type %hhu from RTI (see net_common.h).", buffer[0]);
       }
       port = extract_int32(&buffer[1]);
 
