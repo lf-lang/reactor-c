@@ -3333,6 +3333,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>rti_failed</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>federate_instance_t</Scope>
+    </TokenIdentifier>
+    <Path>structfederate__instance__t.html</Path>
+    <Anchor>a8971ec2b809f1dfab99c4310c899b5c7</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>rti_host</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -8160,6 +8170,16 @@
     <Path>group__Federated.html</Path>
     <Anchor>gae3bc503fcbeaffe48f4500fddba4b21a</Anchor>
     <DeclaredIn>federate.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_rti_has_failed</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>ga873d1e93a3f0003686b17fc651684922</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>

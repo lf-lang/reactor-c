@@ -1999,6 +1999,13 @@
       <arglist>(void)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>lf_rti_has_failed</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>ga873d1e93a3f0003686b17fc651684922</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>lf_set_fed_maxwait</name>
       <anchorfile>group__Federated.html</anchorfile>
@@ -6377,6 +6384,13 @@
       <name>received_stop_request_from_rti</name>
       <anchorfile>structfederate__instance__t.html</anchorfile>
       <anchor>ae9ecde30fae3a2487757a7bbb33e918e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>rti_failed</name>
+      <anchorfile>structfederate__instance__t.html</anchorfile>
+      <anchor>a8971ec2b809f1dfab99c4310c899b5c7</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -11914,6 +11928,13 @@
       <name>lf_reset_status_fields_on_input_port_triggers</name>
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>gae3bc503fcbeaffe48f4500fddba4b21a</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>lf_rti_has_failed</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>ga873d1e93a3f0003686b17fc651684922</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function">

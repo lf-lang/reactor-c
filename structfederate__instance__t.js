@@ -22,6 +22,7 @@ var structfederate__instance__t =
     [ "number_of_outbound_p2p_connections", "structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c", null ],
     [ "received_any_DNET", "structfederate__instance__t.html#aacdbed93ccac5ebb5c141d30b20baef4", null ],
     [ "received_stop_request_from_rti", "structfederate__instance__t.html#ae9ecde30fae3a2487757a7bbb33e918e", null ],
+    [ "rti_failed", "structfederate__instance__t.html#a8971ec2b809f1dfab99c4310c899b5c7", null ],
     [ "RTI_net_listener", "structfederate__instance__t.html#a4e61aad7155ef98a682aeaa89dd04c14", null ],
     [ "server_net", "structfederate__instance__t.html#a44bfdad9ab6659ca07fb6c3339971630", null ],
     [ "staaSetter", "structfederate__instance__t.html#a80101d5534e5444c0be0e08d4e65aaae", null ],

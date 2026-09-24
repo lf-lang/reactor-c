@@ -3876,6 +3876,11 @@
               <Anchor>ae9ecde30fae3a2487757a7bbb33e918e</Anchor>
              </Node>
              <Node>
+              <Name>rti_failed</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a8971ec2b809f1dfab99c4310c899b5c7</Anchor>
+             </Node>
+             <Node>
               <Name>RTI_net_listener</Name>
               <Path>structfederate__instance__t.html</Path>
               <Anchor>a4e61aad7155ef98a682aeaa89dd04c14</Anchor>
@@ -4217,6 +4222,11 @@
             <Name>lf_reset_status_fields_on_input_port_triggers</Name>
             <Path>group__Federated.html</Path>
             <Anchor>gae3bc503fcbeaffe48f4500fddba4b21a</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_rti_has_failed</Name>
+            <Path>group__Federated.html</Path>
+            <Anchor>ga873d1e93a3f0003686b17fc651684922</Anchor>
            </Node>
            <Node>
             <Name>lf_send_message</Name>
@@ -6253,6 +6263,11 @@
               <Name>received_stop_request_from_rti</Name>
               <Path>structfederate__instance__t.html</Path>
               <Anchor>ae9ecde30fae3a2487757a7bbb33e918e</Anchor>
+             </Node>
+             <Node>
+              <Name>rti_failed</Name>
+              <Path>structfederate__instance__t.html</Path>
+              <Anchor>a8971ec2b809f1dfab99c4310c899b5c7</Anchor>
              </Node>
              <Node>
               <Name>RTI_net_listener</Name>
@@ -10586,6 +10601,11 @@
                             <Name>lf_request_stop</Name>
                             <Path>group__API.html</Path>
                             <Anchor>gab49affc958f705d9e33c5e3463848bda</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_rti_has_failed</Name>
+                            <Path>group__Federated.html</Path>
+                            <Anchor>ga873d1e93a3f0003686b17fc651684922</Anchor>
                            </Node>
                            <Node>
                             <Name>lf_set_fed_maxwait</Name>

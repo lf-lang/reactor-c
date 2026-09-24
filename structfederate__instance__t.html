@@ -170,6 +170,8 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:aacdbed93ccac5ebb5c141d30b20baef4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicator of whether this federate has received any DNET (downstream next event tag) signal.  <br /></td></tr>
 <tr class="memitem:ae9ecde30fae3a2487757a7bbb33e918e" id="r_ae9ecde30fae3a2487757a7bbb33e918e"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#ae9ecde30fae3a2487757a7bbb33e918e">received_stop_request_from_rti</a></td></tr>
 <tr class="memdesc:ae9ecde30fae3a2487757a7bbb33e918e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used to prevent the federate from sending a REQUEST_STOP message if it has already received a stop request from the RTI.  <br /></td></tr>
+<tr class="memitem:a8971ec2b809f1dfab99c4310c899b5c7" id="r_a8971ec2b809f1dfab99c4310c899b5c7"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a8971ec2b809f1dfab99c4310c899b5c7">rti_failed</a></td></tr>
+<tr class="memdesc:a8971ec2b809f1dfab99c4310c899b5c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nonzero after MSG_TYPE_FAILED is received from the RTI.  <br /></td></tr>
 <tr class="memitem:a4e61aad7155ef98a682aeaa89dd04c14" id="r_a4e61aad7155ef98a682aeaa89dd04c14"><td class="memItemLeft">lf_thread_t&#160;</td><td class="memItemRight"><a class="el" href="#a4e61aad7155ef98a682aeaa89dd04c14">RTI_net_listener</a></td></tr>
 <tr class="memdesc:a4e61aad7155ef98a682aeaa89dd04c14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Thread listening for incoming messages from the RTI.  <br /></td></tr>
 <tr class="memitem:a44bfdad9ab6659ca07fb6c3339971630" id="r_a44bfdad9ab6659ca07fb6c3339971630"><td class="memItemLeft">net_abstraction_t&#160;</td><td class="memItemRight"><a class="el" href="#a44bfdad9ab6659ca07fb6c3339971630">server_net</a></td></tr>
@@ -553,6 +555,23 @@ Data Fields</h2></td></tr>
 
 <p>Used to prevent the federate from sending a REQUEST_STOP message if it has already received a stop request from the RTI. </p>
 <p>This variable should only be accessed while holding a mutex lock. </p>
+
+</div>
+</div>
+<a id="a8971ec2b809f1dfab99c4310c899b5c7" name="a8971ec2b809f1dfab99c4310c899b5c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8971ec2b809f1dfab99c4310c899b5c7">&#9670;&#160;</a></span>rti_failed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int federate_instance_t::rti_failed</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Nonzero after MSG_TYPE_FAILED is received from the RTI. </p>
+<p>Set and read only through lf_atomic_bool_compare_and_swap and lf_atomic_val_compare_and_swap. The RTI listener thread sets this and returns; only the main thread may call exit(). </p>
 
 </div>
 </div>

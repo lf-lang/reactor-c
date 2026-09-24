@@ -14,6 +14,7 @@ var reactor_8h =
     [ "lf_reactor_full_name", "group__API.html#gab5bf112c4237da16d08736ff3e3e36b8", null ],
     [ "lf_reactor_name", "group__API.html#gae76171d83c29dadd3adb3f9294a92138", null ],
     [ "lf_request_stop", "group__API.html#gab49affc958f705d9e33c5e3463848bda", null ],
+    [ "lf_rti_has_failed", "group__Federated.html#ga873d1e93a3f0003686b17fc651684922", null ],
     [ "lf_set_fed_maxwait", "group__Federated.html#ga952c8552f9e327a465f3db2f72d8415e", null ],
     [ "lf_set_federation_id", "group__Federated.html#ga032d945ee3fd6995a5f7bb15b57f2ddf", null ],
     [ "lf_set_present", "group__API.html#gadaa6f5f1a265e7a37aeb3b6a0d101732", null ],

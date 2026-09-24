@@ -1,5 +1,7 @@
 var NAVTREEINDEX4 =
 {
+"structinflux__v2__client__t.html#aea4185f692b0ec03826caa878ab7b7c5":[3,7,5,2],
+"structlf__action__base__t.html":[3,4,20],
 "structlf__action__base__t.html#a09b0a1d42be1f4df2b1c460f966937d3":[3,4,20,4],
 "structlf__action__base__t.html#a2ffef0622ed175d43758f8a50046ed50":[3,4,20,1],
 "structlf__action__base__t.html#aaa41924b6862c8128e8ea02b1c964c52":[3,4,20,0],
@@ -247,7 +249,5 @@ var NAVTREEINDEX4 =
 "structtrace__record__t.html":[3,4,34],
 "structtrace__record__t.html#a5a8dc061d005024c8e16b97c5e1aeb2d":[3,4,34,0],
 "structtrace__record__t.html#a7707b8a45e0e5de32ded6b0f235d3417":[3,4,34,3],
-"structtrace__record__t.html#a866ea8e5ccf2bb992723bc74d6e5ee9a":[3,4,34,6],
-"structtrace__record__t.html#a886535c90ca00f6587c509baa01ebae0":[3,4,34,7],
-"structtrace__record__t.html#adb452f2dd8896678e759933c63fb718e":[3,4,34,4]
+"structtrace__record__t.html#a866ea8e5ccf2bb992723bc74d6e5ee9a":[3,4,34,6]
 };
