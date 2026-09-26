@@ -106,22 +106,24 @@ int _lf_clock_gettime(instant_t* t) {
 }
 
 int lf_enable_interrupts_nested() {
-  if (_lf_num_nested_critical_sections++ == 0) {
-    // First nested entry into a critical section.
-    // If interrupts are not initially enabled, then increment again to prevent
-    // TODO: Do we need to check whether the interrupts were enabled to
-    //  begin with? AFAIK there is no Arduino API for that
-    noInterrupts();
+  if (_lf_num_nested_critical_sections <= 0) {
+    // Error. Interrupts have not been disabled.
+    return 1;
+  }
+  if (--_lf_num_nested_critical_sections == 0) {
+    // Last nested exit from a critical section.
+    interrupts();
   }
   return 0;
 }
 
 int lf_disable_interrupts_nested() {
-  if (_lf_num_nested_critical_sections <= 0) {
-    return 1;
-  }
-  if (--_lf_num_nested_critical_sections == 0) {
-    interrupts();
+  if (_lf_num_nested_critical_sections++ == 0) {
+    // First nested entry into a critical section.
+    // TODO: If interrupts are not initially enabled, then we should increment again to
+    // prevent the interrupts from being enabled again.
+    // AFAIK there is no Arduino API for checking whether the interrupts are enabled.
+    noInterrupts();
   }
   return 0;
 }
