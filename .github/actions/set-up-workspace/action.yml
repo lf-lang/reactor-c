@@ -1,0 +1,37 @@
+
+name: Set up workspace
+description: Check out repositories, download software, install LFC, etc.
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Checkout Lingua Franca repository
+      uses: actions/checkout@v2
+      with:
+        repository: lf-lang/lingua-franca
+        path: lf
+        fetch-depth: 0  # We may need to check out older refs
+        submodules: recursive
+
+    - name: Prepare LF build environment
+      uses: ./lf/.github/actions/prepare-build-env
+
+    - name: Install Python dependencies
+      run: pip3 install -r runner/requirements.txt
+      shell: bash
+
+    - name: Set LF_PATH and LF_BENCHMARKS_PATH environmental variable
+      run: |
+        echo "LF_PATH=$GITHUB_WORKSPACE/lf" >> $GITHUB_ENV
+        echo "LF_BENCHMARKS_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Install eu-stack
+      run: |
+        sudo apt-get update
+        sudo apt-get install elfutils
+      shell: bash
