@@ -33,5 +33,11 @@ unit-tests: clean
 	cmake --build build
 	cd build && make test
 
+.PHONY: unit-tests-debug
+unit-tests-debug: clean
+	cmake -B build -DDEBUG_TESTS=1 -DLOG_LEVEL=4
+	cmake --build build
+	cd build && make test
+
 # Set help as the default target
 .DEFAULT_GOAL := help
