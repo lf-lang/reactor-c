@@ -290,6 +290,17 @@ void lf_request_stop(void) {
   lf_set_stop_tag(env, new_stop_tag);
 }
 
+int lf_add_worker_thread(environment_t* env) {
+  (void)env;
+  lf_print_error("lf_add_worker_thread() is not supported by the single-threaded runtime.");
+  return -1;
+}
+
+int lf_added_worker_thread_count(environment_t* env) {
+  (void)env;
+  return 0;
+}
+
 /**
  * The main loop of the LF program.
  *

@@ -154,6 +154,43 @@ void lf_print_snapshot(environment_t* env);
 void lf_request_stop(void);
 
 /**
+ * @brief Add a worker thread to the pool of worker threads of the specified environment.
+ * @ingroup API
+ *
+ * The new thread joins the pool immediately and starts executing reactions alongside the
+ * existing workers. This can be used, for example, to compensate for a worker thread that
+ * is about to block for an extended time inside a reaction. The thread remains in the pool
+ * until the program terminates, when it is joined like any other worker thread.
+ *
+ * This function must be called from within a reaction body, i.e., from one of the worker
+ * threads of the environment. In a reaction body, the environment is `self->base.environment`,
+ * and the convenience macro `lf_add_worker_thread()` (with no arguments) supplies it.
+ *
+ * Adding worker threads is supported by the default (NP) and GEDF_NP schedulers in the
+ * threaded runtime. The adaptive scheduler and the single-threaded runtime do not support
+ * it, in which case this function returns -1 and no thread is created.
+ *
+ * @param env The environment to which to add a worker thread.
+ * @return 0 on success, or -1 if the thread could not be created or the runtime does not
+ *  support adding worker threads.
+ */
+int lf_add_worker_thread(environment_t* env);
+
+/**
+ * @brief Return the number of worker threads added to the specified environment.
+ * @ingroup API
+ *
+ * This counts the worker threads that have been successfully added by calls to
+ * @ref lf_add_worker_thread(). It does not include the worker threads created at startup.
+ * In a reaction body, the environment is `self->base.environment`, and the convenience
+ * macro `lf_added_worker_thread_count()` (with no arguments) supplies it.
+ *
+ * @param env The environment.
+ * @return The number of worker threads added at runtime (0 in the single-threaded runtime).
+ */
+int lf_added_worker_thread_count(environment_t* env);
+
+/**
  * @brief Allocate memory and record on the specified allocation record (a self struct).
  * @ingroup Internal
  *

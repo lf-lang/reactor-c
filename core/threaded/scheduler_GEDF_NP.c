@@ -261,4 +261,18 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
     LF_MUTEX_UNLOCK(&scheduler->env->mutex);
   }
 }
+
+int lf_sched_add_worker(lf_scheduler_t* scheduler) {
+  // The caller holds the environment mutex, which protects all accesses to
+  // number_of_workers and number_of_idle_workers in this scheduler. The caller
+  // is executing a reaction, so it is not idle, and therefore no other worker
+  // can be the last to go idle until the caller and the new worker are both idle.
+  scheduler->number_of_workers++;
+  return 0;
+}
+
+void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
+  // The caller holds the environment mutex. The thread was never created.
+  scheduler->number_of_workers--;
+}
 #endif // SCHEDULER == SCHED_GEDF_NP

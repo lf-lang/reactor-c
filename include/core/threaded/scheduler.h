@@ -89,4 +89,35 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  */
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number);
 
+/**
+ * @brief Inform the scheduler that one more worker thread is about to join the pool.
+ * @ingroup Internal
+ *
+ * This is called by @ref lf_add_worker_thread() while holding the environment mutex and
+ * while the calling worker is busy executing a reaction (and hence is not idle), before
+ * the new thread is created. The scheduler should increase its count of managed workers
+ * so that its determination of when all workers are idle accounts for the new thread.
+ * A scheduler that cannot accommodate a worker added at runtime should return a non-zero
+ * value without changing its state, in which case no thread will be created.
+ *
+ * If this returns 0 but the thread subsequently cannot be created, then
+ * @ref lf_sched_cancel_add_worker() will be called to undo the effect of this call.
+ *
+ * @param scheduler The scheduler.
+ * @return 0 on success, or -1 if this scheduler does not support adding workers at runtime.
+ */
+int lf_sched_add_worker(lf_scheduler_t* scheduler);
+
+/**
+ * @brief Undo a previous successful call to @ref lf_sched_add_worker().
+ * @ingroup Internal
+ *
+ * This is called by @ref lf_add_worker_thread(), while holding the environment mutex,
+ * if the worker thread could not be created after the scheduler agreed to accommodate it.
+ * The scheduler should decrease its count of managed workers accordingly.
+ *
+ * @param scheduler The scheduler.
+ */
+void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler);
+
 #endif // LF_SCHEDULER_H

@@ -211,6 +211,23 @@
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 
 /**
+ * @brief Add a worker thread to the pool of worker threads of the environment invoking this reaction.
+ * @ingroup API
+ *
+ * See @ref lf_add_worker_thread(environment_t*) for details.
+ * @return 0 on success, or -1 if the thread could not be created or the runtime does not support it.
+ */
+#define lf_add_worker_thread() lf_add_worker_thread(self->base.environment)
+
+/**
+ * @brief Return the number of worker threads that have been added to the environment invoking this reaction.
+ * @ingroup API
+ *
+ * See @ref lf_added_worker_thread_count(environment_t*) for details.
+ */
+#define lf_added_worker_thread_count() lf_added_worker_thread_count(self->base.environment)
+
+/**
  * @brief Return the instance name of the reactor.
  * @ingroup API
  *

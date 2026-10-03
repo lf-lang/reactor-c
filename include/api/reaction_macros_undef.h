@@ -25,6 +25,9 @@
 #undef lf_time_logical
 #undef lf_time_logical_elapsed
 
+#undef lf_add_worker_thread
+#undef lf_added_worker_thread_count
+
 #undef lf_reactor_name
 #undef lf_reactor_full_name
 

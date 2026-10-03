@@ -274,15 +274,25 @@ typedef struct environment_t {
    * @brief Number of worker threads.
    *
    * Indicates the total number of worker threads available
-   * for parallel execution in this environment.
+   * for parallel execution in this environment. This includes
+   * any worker threads added at runtime with @ref lf_add_worker_thread().
    */
   int num_workers;
+
+  /**
+   * @brief Number of worker threads added at runtime.
+   *
+   * Counts the worker threads that have been added to this environment
+   * by calls to @ref lf_add_worker_thread(). Protected by the environment mutex.
+   */
+  int num_added_workers;
 
   /**
    * @brief Array of worker thread IDs.
    *
    * Stores the thread identifiers for all worker threads
-   * in this environment.
+   * in this environment. Its length is num_workers; it is grown
+   * when worker threads are added with @ref lf_add_worker_thread().
    */
   lf_thread_t* thread_ids;
 

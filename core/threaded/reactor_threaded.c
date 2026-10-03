@@ -901,6 +901,64 @@ static void* worker(void* arg) {
   return NULL;
 }
 
+int lf_add_worker_thread(environment_t* env) {
+  assert(env != GLOBAL_ENVIRONMENT);
+  LF_MUTEX_LOCK(&env->mutex);
+
+  // Refuse to add a worker before the worker threads of this environment have
+  // started or after they have all exited. In both cases, the caller cannot be
+  // a worker thread of this environment executing a reaction, which this
+  // function requires: the scheduler relies on the caller not being idle.
+  if (env->worker_thread_count <= 0) {
+    lf_print_error("lf_add_worker_thread() must be called from a reaction body while the program is running.");
+    LF_MUTEX_UNLOCK(&env->mutex);
+    return -1;
+  }
+
+  // Make room for the new thread ID.
+  lf_thread_t* thread_ids = (lf_thread_t*)realloc(env->thread_ids, (env->num_workers + 1) * sizeof(lf_thread_t));
+  if (thread_ids == NULL) {
+    lf_print_error("lf_add_worker_thread() failed to allocate memory for a new worker thread.");
+    LF_MUTEX_UNLOCK(&env->mutex);
+    return -1;
+  }
+  env->thread_ids = thread_ids;
+
+  // Ask the scheduler to account for one more worker. This must happen before the
+  // new worker can go idle. Because the new worker begins by acquiring the
+  // environment mutex, which this thread holds, it cannot interact with the
+  // scheduler until this function returns, so doing this before creating the
+  // thread is safe, and a scheduler that does not support this can refuse before
+  // any thread is created.
+  if (lf_sched_add_worker(env->scheduler) != 0) {
+    lf_print_error("lf_add_worker_thread() is not supported by the scheduler in use.");
+    LF_MUTEX_UNLOCK(&env->mutex);
+    return -1;
+  }
+
+  int worker_number = env->num_workers;
+  LF_PRINT_LOG("Env %u: Adding worker thread %d.", env->id, worker_number);
+  if (lf_thread_create(&env->thread_ids[worker_number], worker, env) != 0) {
+    lf_print_error("lf_add_worker_thread() could not create a new worker thread.");
+    lf_sched_cancel_add_worker(env->scheduler);
+    LF_MUTEX_UNLOCK(&env->mutex);
+    return -1;
+  }
+
+  env->num_workers++;
+  env->num_added_workers++;
+  LF_MUTEX_UNLOCK(&env->mutex);
+  return 0;
+}
+
+int lf_added_worker_thread_count(environment_t* env) {
+  assert(env != GLOBAL_ENVIRONMENT);
+  LF_MUTEX_LOCK(&env->mutex);
+  int result = env->num_added_workers;
+  LF_MUTEX_UNLOCK(&env->mutex);
+  return result;
+}
+
 #ifndef NDEBUG
 void lf_print_snapshot(environment_t* env) {
   assert(env != GLOBAL_ENVIRONMENT);
@@ -1001,10 +1059,18 @@ static void* initialize_environments(void* arg) {
   // Become a worker thread.
   void* ret = worker(env);
 
-  // Join the other worker threads.
-  for (int j = 1; j < env->num_workers; j++) {
+  // Join the other worker threads, including any added at runtime by
+  // lf_add_worker_thread(), which grows thread_ids and num_workers under
+  // the mutex. By the time worker() returns, the stop tag has been reached and
+  // no reaction is executing, so no further workers can be added, but read the
+  // fields under the mutex anyway to be safe.
+  LF_MUTEX_LOCK(&env->mutex);
+  int num_workers_to_join = env->num_workers;
+  lf_thread_t* thread_ids_to_join = env->thread_ids;
+  LF_MUTEX_UNLOCK(&env->mutex);
+  for (int j = 1; j < num_workers_to_join; j++) {
     void* worker_exit_status = NULL;
-    int failure = lf_thread_join(env->thread_ids[j], &worker_exit_status);
+    int failure = lf_thread_join(thread_ids_to_join[j], &worker_exit_status);
     if (failure) {
       lf_print_error_and_exit("Env %u: Failed to join worker thread %d. Error code %d: %s", env->id, j, failure,
                               strerror(failure));

@@ -399,4 +399,23 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
   LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.", reaction->name, LF_LEVEL(reaction->index));
   _lf_sched_insert_reaction(scheduler, reaction);
 }
+
+int lf_sched_add_worker(lf_scheduler_t* scheduler) {
+  // The caller is a worker executing a reaction, so it is not idle. Hence,
+  // number_of_idle_workers < number_of_workers both before and after this
+  // increment, and no worker can conclude that it is the last to go idle until
+  // the caller and the new worker have both gone idle. The new worker will
+  // simply wait on the semaphore like any other idle worker.
+  // Workers read number_of_workers in _lf_sched_wait_for_work() without holding
+  // the mutex, but a stale value is harmless there: only the last worker to go
+  // idle compares equal, and that cannot happen before the caller itself goes
+  // idle, which involves an atomic operation that publishes this update.
+  scheduler->number_of_workers++;
+  return 0;
+}
+
+void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
+  // The thread was never created, so it never interacted with the scheduler.
+  scheduler->number_of_workers--;
+}
 #endif // SCHEDULER == SCHED_NP || !defined(SCHEDULER)
