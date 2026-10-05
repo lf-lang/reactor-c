@@ -149,7 +149,8 @@ static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
  */
 static void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
   scheduler->should_stop = true;
-  lf_semaphore_release(scheduler->custom_data->semaphore, (scheduler->number_of_workers - 1));
+  int number_of_workers = lf_atomic_val_compare_and_swap((int*)&scheduler->number_of_workers, 0, 0);
+  lf_semaphore_release(scheduler->custom_data->semaphore, number_of_workers - 1);
 }
 
 /**
@@ -202,7 +203,16 @@ static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* schedul
 static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
   // Increment the number of idle workers by 1 and check if this is the last
   // worker thread to become idle.
-  if (lf_atomic_add_fetch((int*)&scheduler->number_of_idle_workers, 1) == (int)scheduler->number_of_workers) {
+  int number_of_idle_workers = lf_atomic_add_fetch((int*)&scheduler->number_of_idle_workers, 1);
+  // Read the number of workers atomically and only after the idle count has been
+  // incremented. The number of workers can be changed by lf_sched_add_worker(),
+  // which is called by a worker that is executing a reaction and hence is not
+  // idle. If the value read here predates such a change, then the new worker
+  // cannot have gone idle yet, and if it postdates it, then the caller of
+  // lf_sched_add_worker() is not idle; either way, the counts cannot match
+  // until every worker, including the new one, is idle.
+  int number_of_workers = lf_atomic_val_compare_and_swap((int*)&scheduler->number_of_workers, 0, 0);
+  if (number_of_idle_workers == number_of_workers) {
     // Last thread to go idle
     LF_PRINT_DEBUG("Scheduler: Worker %zu is the last idle thread.", worker_number);
     // Call on the scheduler to distribute work or advance tag.
@@ -407,15 +417,15 @@ int lf_sched_add_worker(lf_scheduler_t* scheduler) {
   // the caller and the new worker have both gone idle. The new worker will
   // simply wait on the semaphore like any other idle worker.
   // Workers read number_of_workers in _lf_sched_wait_for_work() without holding
-  // the mutex, but a stale value is harmless there: only the last worker to go
-  // idle compares equal, and that cannot happen before the caller itself goes
-  // idle, which involves an atomic operation that publishes this update.
-  scheduler->number_of_workers++;
+  // the mutex, so the update is made atomically, matching the atomic read there.
+  lf_atomic_fetch_add((int*)&scheduler->number_of_workers, 1);
   return 0;
 }
 
 void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
   // The thread was never created, so it never interacted with the scheduler.
-  scheduler->number_of_workers--;
+  // The caller is still executing a reaction, so the same reasoning as in
+  // lf_sched_add_worker() applies to this update.
+  lf_atomic_fetch_add((int*)&scheduler->number_of_workers, -1);
 }
 #endif // SCHEDULER == SCHED_NP || !defined(SCHEDULER)
