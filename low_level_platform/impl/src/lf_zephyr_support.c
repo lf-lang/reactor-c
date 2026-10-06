@@ -147,7 +147,37 @@ int lf_thread_id() { return *((int*)k_thread_custom_data_get()); }
 
 lf_thread_t lf_thread_self() { return k_current_get(); }
 
-int lf_thread_set_cpu(lf_thread_t thread, size_t cpu_number) { return k_thread_cpu_pin(thread, cpu_number); }
+int lf_thread_set_cpu(const int* core_ids, size_t num_core_ids) {
+  if (core_ids == NULL || num_core_ids == 0) {
+    return -1; // No pinning needed
+  }
+
+  k_tid_t thread = lf_thread_self();
+  int available = lf_available_cores();
+
+  // Validate core IDs up-front so we don't clear the mask and leave the thread runnable on no cores.
+  for (size_t i = 0; i < num_core_ids; i++) {
+    if (core_ids[i] < 0 || core_ids[i] >= available) {
+      return LF_THREAD_CPU_INVALID_CORE;
+    }
+  }
+
+  // Clear the CPU mask so the thread is initially allowed on no cores
+  int ret = k_thread_cpu_mask_clear(thread);
+  if (ret != 0) {
+    return ret;
+  }
+
+  // Enable every specified core so the thread may run on any of them
+  for (size_t i = 0; i < num_core_ids; i++) {
+    ret = k_thread_cpu_mask_enable(thread, core_ids[i]);
+    if (ret != 0) {
+      return ret;
+    }
+  }
+
+  return 0;
+}
 
 /**
  * Real-time scheduling API
