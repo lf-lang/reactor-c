@@ -72,8 +72,7 @@ static void lf_set_federate_listener_scheduling(interval_t deadline) {
                               "background thread (error %d). Try re-launching with sudo privileges.",
                               ret);
     } else {
-      LF_PRINT_LOG("Warning: Could not set federate background thread scheduling policy (error %d).",
-                   ret);
+      LF_PRINT_LOG("Warning: Could not set federate background thread scheduling policy (error %d).", ret);
     }
   }
 }
