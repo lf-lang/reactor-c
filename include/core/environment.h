@@ -24,6 +24,7 @@ typedef struct lf_scheduler_t lf_scheduler_t;
 typedef struct mode_environment_t mode_environment_t;
 typedef struct enclave_info_t enclave_info_t;
 typedef struct watchdog_t watchdog_t;
+typedef struct lf_async_state_t lf_async_state_t;
 
 /**
  * @brief The global environment.
@@ -335,6 +336,14 @@ typedef struct environment_t {
    * have reached zero.
    */
   lf_cond_t global_tag_barrier_requestors_reached_zero;
+
+  /**
+   * @brief Pending lf_async() calls in this environment, oldest first.
+   *
+   * Each entry is a reaction that is suspended in @ref lf_async(), waiting for
+   * @ref lf_async_resume() to be called on its physical action. Protected by the environment mutex.
+   */
+  lf_async_state_t* async_waiters;
 #endif // LF_SINGLE_THREADED
 
 #if defined(FEDERATED)

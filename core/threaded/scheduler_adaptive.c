@@ -741,4 +741,10 @@ void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
   // Never called because lf_sched_add_worker() always fails for this scheduler.
   (void)scheduler;
 }
+
+int lf_sched_remove_worker(lf_scheduler_t* scheduler) {
+  // See lf_sched_add_worker().
+  (void)scheduler;
+  return -1;
+}
 #endif // defined SCHEDULER && SCHEDULER == SCHED_ADAPTIVE

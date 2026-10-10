@@ -28,6 +28,7 @@
 #include "reactor_common.h"
 #include "watchdog.h"
 #include "tracepoint.h"
+#include "api/schedule.h"
 
 #ifdef FEDERATED
 #include "federate.h"
@@ -48,6 +49,9 @@ extern tag_t effective_start_tag;
  * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
  */
 lf_mutex_t global_mutex;
+
+// Defined below with the rest of the lf_async() support.
+static void _lf_async_resume_all_locked(environment_t* env);
 
 void _lf_increment_tag_barrier_locked(environment_t* env, tag_t future_tag) {
   assert(env != GLOBAL_ENVIRONMENT);
@@ -879,6 +883,11 @@ static void* worker(void* arg) {
   // This thread is exiting, so don't count it anymore.
   env->worker_thread_count--;
 
+  // Any reaction still suspended in lf_async() is waiting for an event that will
+  // never be processed because the program is stopping. Resume it so that its
+  // thread can finish and be joined.
+  _lf_async_resume_all_locked(env);
+
   if (env->worker_thread_count == 0) {
     // The last worker thread to exit will inform the RTI if needed.
 #if defined LF_ENCLAVES
@@ -957,6 +966,175 @@ int lf_added_worker_thread_count(environment_t* env) {
   int result = env->num_added_workers;
   LF_MUTEX_UNLOCK(&env->mutex);
   return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//// lf_async() support.
+
+/**
+ * @brief Resume the specified pending lf_async() call.
+ *
+ * This rejoins the pool of worker threads on behalf of the resumed thread and
+ * wakes it. The caller must hold the environment mutex, must have unlinked the
+ * state from the environment's list of pending calls, and must be a worker that
+ * is busy (executing a reaction) or exiting. Because the caller is not idle, the
+ * scheduler cannot observe all workers idle between this point and the moment
+ * the resumed thread, now counted as a busy worker, continues its reaction.
+ * Hence the tag cannot advance in between, and no handshake with the resumed
+ * thread is needed.
+ */
+static void _lf_async_resume_locked(environment_t* env, lf_async_state_t* state) {
+  lf_sched_add_worker(env->scheduler);
+  state->resumed = true;
+  LF_COND_SIGNAL(&state->resumed_cond);
+}
+
+/**
+ * @brief Resume every pending lf_async() call in the environment.
+ *
+ * This is called when the worker threads exit so that a reaction suspended in
+ * lf_async() whose action will never trigger (because the program is stopping)
+ * does not block forever. The caller must hold the environment mutex.
+ */
+static void _lf_async_resume_all_locked(environment_t* env) {
+  while (env->async_waiters != NULL) {
+    lf_async_state_t* state = env->async_waiters;
+    env->async_waiters = state->next;
+    _lf_async_resume_locked(env, state);
+  }
+}
+
+void lf_async_resume(void* action) {
+  lf_action_base_t* action_base = (lf_action_base_t*)action;
+  self_base_t* base = action_base->parent;
+  environment_t* env = base->environment;
+  if (base->executing_reaction == NULL) {
+    lf_print_error_and_exit("lf_async_resume() must be invoked from within a reaction body.");
+  }
+  LF_MUTEX_LOCK(&env->mutex);
+  // Find the oldest pending call on this action, if any.
+  lf_async_state_t** link = &env->async_waiters;
+  while (*link != NULL) {
+    lf_async_state_t* state = *link;
+    if (state->action == action) {
+      *link = state->next;
+      _lf_async_resume_locked(env, state);
+      // Do not access `state` after releasing the mutex: the resumed thread then
+      // continues executing its reaction and the state, which lives on its
+      // stack, may no longer exist.
+      break;
+    }
+    link = &state->next;
+  }
+  LF_MUTEX_UNLOCK(&env->mutex);
+  // The resumed thread cannot continue its reaction until this reaction has
+  // completed because it must first acquire the reactor mutex, which this
+  // thread holds until _lf_invoke_reaction() returns. See _lf_async_begin().
+}
+
+void _lf_async_begin(lf_async_state_t* state, void* self, void* action) {
+  self_base_t* base = (self_base_t*)self;
+  environment_t* env = base->environment;
+  assert(env != GLOBAL_ENVIRONMENT);
+  lf_action_base_t* action_base = (lf_action_base_t*)action;
+  if (action_base == NULL || action_base->trigger == NULL || !action_base->trigger->is_physical) {
+    lf_print_error_and_exit("lf_async() requires a physical action.");
+  }
+  if (base->executing_reaction == NULL) {
+    lf_print_error_and_exit("lf_async() must be invoked from within a reaction body.");
+  }
+  state->self = base;
+  state->reaction = base->executing_reaction;
+  state->action = action;
+  state->resumed = false;
+  state->next = NULL;
+  LF_COND_INIT(&state->resumed_cond, &env->mutex);
+
+  // Reactions of a reactor that uses lf_async() must be mutually exclusive, as
+  // they are for reactors with watchdogs: upon resumption, the remainder of the
+  // calling reaction must not execute until the reaction that resumed it has
+  // completed, including the bookkeeping that _lf_invoke_reaction() performs
+  // after the reaction body returns. This is ensured by the reactor mutex, which
+  // is created here if the reactor does not have one. This reaction is the only
+  // reaction of the reactor that can be executing, so no other thread can be
+  // using the mutex field. The mutex is acquired here as _lf_invoke_reaction()
+  // would have done, so that the unlock below and the lock in _lf_async_end()
+  // and the unlock in _lf_invoke_reaction() upon completion are all balanced.
+  // The mutex is freed along with the reactor.
+  if (base->reactor_mutex == NULL) {
+    base->reactor_mutex = lf_allocate(1, sizeof(lf_mutex_t), &base->allocations);
+    LF_MUTEX_INIT((lf_mutex_t*)base->reactor_mutex);
+    LF_MUTEX_LOCK((lf_mutex_t*)base->reactor_mutex);
+  }
+
+  // Leave the pool of worker threads. This must happen before, not after, the
+  // replacement worker is added. The idle-worker accounting of the schedulers is
+  // only re-evaluated when a worker goes idle, and the new worker is the one that
+  // is guaranteed to do so after this change. If the new worker were added first,
+  // it could go idle before this thread leaves, after which every remaining
+  // worker could be idle with none of them noticing, stalling the environment.
+  LF_MUTEX_LOCK(&env->mutex);
+  if (lf_sched_remove_worker(env->scheduler) != 0) {
+    LF_MUTEX_UNLOCK(&env->mutex);
+    lf_print_error_and_exit("lf_async() is not supported by the scheduler in use.");
+  }
+  LF_MUTEX_UNLOCK(&env->mutex);
+  if (lf_add_worker_thread(env) != 0) {
+    lf_print_error_and_exit("lf_async() could not add a worker thread.");
+  }
+
+  // The reaction triggered by the action belongs to the same reactor, so release
+  // the reactor's mutex so that reaction can execute while we wait.
+  LF_MUTEX_UNLOCK((lf_mutex_t*)base->reactor_mutex);
+}
+
+void _lf_async_end(lf_async_state_t* state) {
+  self_base_t* base = state->self;
+  environment_t* env = base->environment;
+
+  // Register as a pending call before scheduling the action so that the
+  // triggered reaction cannot be invoked before this call can be found.
+  // If the scheduler has already decided to stop, then no further reaction will
+  // be invoked and the action would never trigger, so do not wait at all; the
+  // reaction simply continues at the current (stop) tag. Otherwise, the worker
+  // threads have not yet begun to exit, and if they do so before the action
+  // triggers, they will resume this call (see worker()). Both the check and the
+  // registration happen under the mutex, which the exiting worker also holds,
+  // so this call cannot be missed.
+  LF_MUTEX_LOCK(&env->mutex);
+  bool stopping = env->scheduler->should_stop;
+  if (stopping) {
+    // Nobody will resume this call, so rejoin the pool of worker threads here.
+    lf_sched_add_worker(env->scheduler);
+  } else {
+    lf_async_state_t** link = &env->async_waiters;
+    while (*link != NULL) {
+      link = &(*link)->next;
+    }
+    *link = state;
+  }
+  LF_MUTEX_UNLOCK(&env->mutex);
+
+  if (!stopping) {
+    // Schedule the physical action. This may fail to schedule an event, for
+    // example because the event would be after the stop tag. In that case, we
+    // still wait: the worker threads resume all pending calls when they exit.
+    lf_schedule(state->action, 0);
+
+    // Wait to be resumed by lf_async_resume() or by an exiting worker. Whichever
+    // resumes this call also rejoins the pool of worker threads on its behalf.
+    LF_MUTEX_LOCK(&env->mutex);
+    while (!state->resumed) {
+      LF_COND_WAIT(&state->resumed_cond);
+    }
+    LF_MUTEX_UNLOCK(&env->mutex);
+  }
+
+  // Restore the state that _lf_invoke_reaction() maintains for the reaction.
+  // Acquiring the reactor mutex blocks until the resuming reaction, if any, has
+  // completed, since _lf_invoke_reaction() holds it until then.
+  LF_MUTEX_LOCK((lf_mutex_t*)base->reactor_mutex);
+  base->executing_reaction = state->reaction;
 }
 
 #ifndef NDEBUG

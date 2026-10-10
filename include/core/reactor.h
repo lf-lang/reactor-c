@@ -19,7 +19,8 @@
 #define REACTOR_H
 
 #include "lf_types.h"
-#include "modes.h" // Modal model support
+#include "low_level_platform.h" // For lf_cond_t in lf_async_state_t.
+#include "modes.h"              // Modal model support
 #include "port.h"
 #include "tag.h"   // Time-related functions.
 #include "clock.h" // Time-related functions.
@@ -189,6 +190,87 @@ int lf_add_worker_thread(environment_t* env);
  * @return The number of worker threads added at runtime (0 in the single-threaded runtime).
  */
 int lf_added_worker_thread_count(environment_t* env);
+
+/**
+ * @brief State of a pending `lf_async()` call.
+ * @ingroup Internal
+ *
+ * An instance of this struct lives on the stack of the reaction that invoked `lf_async()`.
+ * While the call is waiting to be resumed, the instance is linked into the list of pending
+ * calls of the environment (see `environment_t::async_waiters`). All fields other than
+ * `resumed_cond` are protected by the environment mutex once the instance is on that list.
+ */
+typedef struct lf_async_state_t {
+  /** The reactor whose reaction invoked `lf_async()`. */
+  self_base_t* self;
+  /** The reaction that invoked `lf_async()`. Restored as the executing reaction upon resumption. */
+  reaction_t* reaction;
+  /** The physical action (an `lf_action_base_t*`) scheduled when the function returns. */
+  void* action;
+  /** Set to true when the call has been resumed. */
+  bool resumed;
+  /** Next pending call in the environment, or NULL. */
+  struct lf_async_state_t* next;
+#if !defined(LF_SINGLE_THREADED)
+  /** Signaled when `resumed` becomes true. Associated with the environment mutex. */
+  lf_cond_t resumed_cond;
+#endif
+} lf_async_state_t;
+
+/**
+ * @brief Prepare to invoke a possibly blocking function from a reaction without blocking the environment.
+ * @ingroup Internal
+ *
+ * This is the first half of the `lf_async()` macro and is not meant to be called directly.
+ * It is called from a reaction body, by the worker thread executing the reaction, immediately
+ * before the function is invoked. It adds a worker thread to the pool of the environment (see
+ * @ref lf_add_worker_thread()) and then removes the calling worker thread from the pool so that,
+ * while the function executes, the remaining workers can advance logical time and execute other
+ * reactions as if the calling reaction had completed. The reactor mutex, which is created here
+ * if the reactor does not already have one, is released.
+ *
+ * @param state Storage for the state of the call, which must remain valid until `_lf_async_end()` returns.
+ * @param self The self struct of the reactor whose reaction is executing.
+ * @param action The physical action (an `lf_action_base_t*`) to schedule when the function returns.
+ */
+void _lf_async_begin(lf_async_state_t* state, void* self, void* action);
+
+/**
+ * @brief Complete a call prepared by `_lf_async_begin()`.
+ * @ingroup Internal
+ *
+ * This is the second half of the `lf_async()` macro and is not meant to be called directly.
+ * It is called immediately after the function has returned. It schedules the physical action
+ * recorded in `state` and blocks until a reaction triggered by that action calls
+ * @ref lf_async_resume() on it (or until the worker threads of the environment exit because
+ * the program is stopping). The calling thread, which by then has rejoined the pool of worker
+ * threads, reacquires the reactor mutex and this function returns, so that the remainder of the
+ * calling reaction executes at the tag of the event scheduled on the action, after the resuming
+ * reaction has completed.
+ *
+ * @param state The state passed to `_lf_async_begin()`.
+ */
+void _lf_async_end(lf_async_state_t* state);
+
+/**
+ * @brief Resume a reaction suspended in `lf_async()` that is waiting on the specified physical action.
+ * @ingroup API
+ *
+ * This must be called from the body of a reaction triggered by the physical action that
+ * `lf_async()` uses, and this reaction must belong to the same reactor as the action.
+ * For example, if `lf_async()` uses an action named `awake`:
+ * ```
+ * reaction(awake) {= lf_async_resume(awake); =}
+ * ```
+ * If any reaction of the reactor is suspended in `lf_async()` waiting on this action, the
+ * oldest such call is resumed: the suspended thread rejoins the pool of worker threads and,
+ * once the calling reaction has completed, continues executing its reaction at the current tag.
+ * Otherwise, this function does nothing. Only this reaction incurs any cost; the runtime
+ * does not check for pending `lf_async()` calls anywhere else.
+ *
+ * @param action The physical action, as it is in scope in the reaction body.
+ */
+void lf_async_resume(void* action);
 
 /**
  * @brief Allocate memory and record on the specified allocation record (a self struct).

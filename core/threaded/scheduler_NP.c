@@ -428,4 +428,13 @@ void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
   // lf_sched_add_worker() applies to this update.
   lf_atomic_fetch_add((int*)&scheduler->number_of_workers, -1);
 }
+
+int lf_sched_remove_worker(lf_scheduler_t* scheduler) {
+  // The caller is executing a reaction and is therefore not idle, so after this
+  // decrement number_of_idle_workers <= number_of_workers still holds. If the
+  // counts are now equal, no worker will notice until one of them goes idle;
+  // the caller guarantees that this happens by adding a worker thread next.
+  lf_atomic_fetch_add((int*)&scheduler->number_of_workers, -1);
+  return 0;
+}
 #endif // SCHEDULER == SCHED_NP || !defined(SCHEDULER)

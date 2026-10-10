@@ -275,4 +275,13 @@ void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
   // The caller holds the environment mutex. The thread was never created.
   scheduler->number_of_workers--;
 }
+
+int lf_sched_remove_worker(lf_scheduler_t* scheduler) {
+  // The caller holds the environment mutex and is executing a reaction, so it
+  // is not idle. Idle workers re-check whether they are the last ones only when
+  // a worker is about to go idle; the caller guarantees that this happens by
+  // adding a worker thread next.
+  scheduler->number_of_workers--;
+  return 0;
+}
 #endif // SCHEDULER == SCHED_GEDF_NP

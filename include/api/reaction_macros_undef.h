@@ -27,6 +27,7 @@
 
 #undef lf_add_worker_thread
 #undef lf_added_worker_thread_count
+#undef lf_async
 
 #undef lf_reactor_name
 #undef lf_reactor_full_name

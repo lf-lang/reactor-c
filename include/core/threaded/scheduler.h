@@ -120,4 +120,24 @@ int lf_sched_add_worker(lf_scheduler_t* scheduler);
  */
 void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler);
 
+/**
+ * @brief Inform the scheduler that the calling worker thread is temporarily leaving the pool.
+ * @ingroup Internal
+ *
+ * This is called by `lf_async()` while holding the environment mutex and while the calling
+ * worker is executing a reaction (and hence is not idle). The scheduler should decrease its
+ * count of managed workers so that the remaining workers can conclude that all workers are
+ * idle, and hence advance logical time, without waiting for the caller.
+ *
+ * The caller must ensure that some worker becomes idle after this call; `lf_async()` does so
+ * by adding a worker thread immediately afterwards. Otherwise, if all remaining workers are
+ * already idle, none of them would observe the change and the environment would stall.
+ *
+ * The caller later rejoins the pool with @ref lf_sched_add_worker().
+ *
+ * @param scheduler The scheduler.
+ * @return 0 on success, or -1 if this scheduler does not support workers leaving at runtime.
+ */
+int lf_sched_remove_worker(lf_scheduler_t* scheduler);
+
 #endif // LF_SCHEDULER_H
