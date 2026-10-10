@@ -278,10 +278,14 @@ void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
 
 int lf_sched_remove_worker(lf_scheduler_t* scheduler) {
   // The caller holds the environment mutex and is executing a reaction, so it
-  // is not idle. Idle workers re-check whether they are the last ones only when
-  // a worker is about to go idle; the caller guarantees that this happens by
-  // adding a worker thread next.
+  // is not idle. If every remaining worker is idle, all of them are waiting on
+  // reaction_q_changed, and none would notice that the tag or level can now
+  // advance. Wake one of them: it will re-examine the reaction queue and, finding
+  // all other workers idle, advance the level or the tag.
   scheduler->number_of_workers--;
+  if (scheduler->number_of_idle_workers == scheduler->number_of_workers && scheduler->number_of_workers > 0) {
+    LF_COND_SIGNAL(&scheduler->custom_data->reaction_q_changed);
+  }
   return 0;
 }
 #endif // SCHEDULER == SCHED_GEDF_NP

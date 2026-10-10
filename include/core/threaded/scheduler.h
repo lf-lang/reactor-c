@@ -129,11 +129,13 @@ void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler);
  * count of managed workers so that the remaining workers can conclude that all workers are
  * idle, and hence advance logical time, without waiting for the caller.
  *
- * The caller must ensure that some worker becomes idle after this call; `lf_async()` does so
- * by adding a worker thread immediately afterwards. Otherwise, if all remaining workers are
- * already idle, none of them would observe the change and the environment would stall.
+ * If, as a result, all remaining workers are idle, the scheduler must ensure that one of them
+ * notices and advances the tag, since otherwise the environment would stall. At least one
+ * worker must remain in the pool; the caller is responsible for adding a worker thread first
+ * if necessary.
  *
- * The caller later rejoins the pool with @ref lf_sched_add_worker().
+ * The caller (or another thread acting on its behalf) later rejoins the pool with
+ * @ref lf_sched_add_worker().
  *
  * @param scheduler The scheduler.
  * @return 0 on success, or -1 if this scheduler does not support workers leaving at runtime.

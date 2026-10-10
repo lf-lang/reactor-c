@@ -209,6 +209,11 @@ typedef struct lf_async_state_t {
   void* action;
   /** Set to true when the call has been resumed. */
   bool resumed;
+  /**
+   * True if the calling thread left the pool of worker threads. This is false if the program
+   * was already stopping when the call began, in which case the call does not suspend at all.
+   */
+  bool left_pool;
   /** Next pending call in the environment, or NULL. */
   struct lf_async_state_t* next;
 #if !defined(LF_SINGLE_THREADED)
@@ -223,11 +228,16 @@ typedef struct lf_async_state_t {
  *
  * This is the first half of the `lf_async()` macro and is not meant to be called directly.
  * It is called from a reaction body, by the worker thread executing the reaction, immediately
- * before the function is invoked. It adds a worker thread to the pool of the environment (see
- * @ref lf_add_worker_thread()) and then removes the calling worker thread from the pool so that,
- * while the function executes, the remaining workers can advance logical time and execute other
- * reactions as if the calling reaction had completed. The reactor mutex, which is created here
- * if the reactor does not already have one, is released.
+ * before the function is invoked. Unless every thread previously added by `lf_async()` is already
+ * compensating for another suspended call, it first adds a worker thread to the pool of the
+ * environment (see @ref lf_add_worker_thread()). It then removes the calling worker thread from
+ * the pool so that, while the function executes, the remaining workers can advance logical time
+ * and execute other reactions as if the calling reaction had completed. The thread is added before
+ * the caller leaves so that the pool is never empty; if all remaining workers are idle when the
+ * caller leaves, the scheduler wakes one of them to advance the tag (see
+ * @ref lf_sched_remove_worker()). The reactor mutex, which is created here if the reactor does not
+ * already have one, is released. If the program is already stopping, none of this happens and
+ * the function simply executes inline.
  *
  * @param state Storage for the state of the call, which must remain valid until `_lf_async_end()` returns.
  * @param self The self struct of the reactor whose reaction is executing.

@@ -49,6 +49,8 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
   env->num_workers = num_workers;
   env->num_added_workers = 0;
   env->async_waiters = NULL;
+  env->num_async_threads = 0;
+  env->num_async_suspended = 0;
   env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
   LF_ASSERT_NON_NULL(env->thread_ids);
   env->barrier.requestors = 0;

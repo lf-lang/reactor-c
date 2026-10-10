@@ -234,39 +234,51 @@
  * This macro invokes `func` with the given arguments and evaluates to the value returned by `func`,
  * but it allows logical time to advance and other reactions to execute while `func` is running.
  * It must be used within a reaction body of a reactor that declares a physical action named `awake`
- * and a reaction triggered by `awake` whose body calls @ref lf_async_resume():
+ * and a reaction triggered by `awake` whose body calls @ref lf_async_resume(). The `awake` reaction
+ * must be declared before any reaction that calls `lf_async()`, so that its level is lower:
  * ```
  * physical action awake
  * reaction(awake) {= lf_async_resume(awake); =}
+ * reaction(startup) {= int result = lf_async(slow, 50); ... =}
  * ```
  * Specifically:
  *
- * 1. A worker thread is added to the pool of the environment (see @ref lf_add_worker_thread()) and the
- *    worker thread executing the calling reaction temporarily leaves the pool. The remaining workers
- *    may therefore advance logical time and execute other reactions as if the calling reaction had
- *    completed.
+ * 1. If needed (see the caveats below), a worker thread is added to the pool of the environment (see
+ *    @ref lf_add_worker_thread()). Then the worker thread executing the reaction that calls
+ *    `lf_async()` temporarily leaves the pool. The remaining workers may therefore advance logical
+ *    time and execute other reactions as if the calling reaction had completed.
  * 2. `func` is invoked with the given arguments.
  * 3. When `func` returns, the physical action `awake` is scheduled, and the calling thread blocks until
  *    the reaction triggered by `awake` calls `lf_async_resume(awake)`.
- * 4. The calling thread rejoins the pool and, once the `awake` reaction has completed, this macro
- *    yields the value returned by `func`. The remainder of the calling reaction therefore executes
- *    at the tag of the `awake` event; in particular, `lf_time_logical()` returns the new logical time.
+ * 4. The calling thread rejoins the pool, and, once the body of the `awake` reaction has returned, this
+ *    macro yields the value returned by `func`. The remainder of the calling reaction therefore
+ *    executes at the tag of the `awake` event; in particular, `lf_time_logical()` returns the new
+ *    logical time. The propagation of any outputs of the `awake` reaction may proceed concurrently.
  *
  * Caveats:
  *
  * - `func` must return a value; functions returning `void` are not supported.
+ * - The value of state variables is not preserved across `lf_async()` calls. Other reactions in this
+ *   reactor may have modified them before `lf_async()` returns.
  * - Outputs set before invoking `lf_async()` are not propagated. Set outputs only after it returns.
- *   Reactions triggered by such outputs are executed at the new tag, which requires that their levels
- *   be greater than the level of the reaction triggered by `awake`. This holds, for example, when the
- *   `awake` reaction is declared immediately before the calling reaction and has no other triggers.
+ *   Reactions triggered by such outputs are executed at the new tag. This relies on the `awake`
+ *   reaction having a lower level than the calling reaction, which the declaration order above
+ *   ensures: every reaction downstream of the calling reaction then has a level greater than that of
+ *   the `awake` reaction, so it is queued for later in the tag rather than inserted at a level that
+ *   is already executing. If the `awake` reaction were declared after the calling reaction, a
+ *   downstream reaction could have the same level as the `awake` reaction, which is not supported.
  * - The calling reaction counts as executing while it is suspended. If it is triggered again at an
  *   intervening tag, that triggering is dropped. Other reactions of the same reactor can execute at
  *   intervening tags, so state shared with them should be handled with care.
  * - The reactions of the reactor are mutually exclusive. The first call creates a reactor mutex if
  *   the reactor does not have one. This is similar to reactors with watchdogs.
- * - Each invocation adds one worker thread to the pool that persists until the program terminates.
+ * - A worker thread is added to the pool, and persists until the program terminates, only when
+ *   every thread previously added by `lf_async()` is compensating for another call that is
+ *   currently suspended. Hence, the number of added threads is the maximum number of concurrently
+ *   suspended calls; sequential calls share a single added thread.
  * - If the program stops before the tag of the `awake` event, the call returns at the stop tag after
- *   the shutdown reactions have executed.
+ *   the shutdown reactions have executed. Any further `lf_async()` call made by the resumed reaction
+ *   invokes `func` directly without suspending.
  * - This requires the threaded runtime with the NP (default) or GEDF_NP scheduler, and a compiler that
  *   supports statement expressions and `__typeof__` (GCC and Clang do).
  *

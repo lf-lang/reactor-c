@@ -40,7 +40,31 @@ typedef struct custom_scheduler_data_t {
                              // be executing work at the same time.  Initially 0.
                              // For example, if the scheduler releases the semaphore with a count of 4,
                              // no more than 4 worker threads should wake up to process reactions.
+  int64_t worker_counts;     // The number of workers (high 32 bits) and the number of idle
+                             // workers (low 32 bits), packed so that they can be read and
+                             // updated atomically as a unit. This scheduler uses these instead
+                             // of the number_of_workers and number_of_idle_workers fields of
+                             // lf_scheduler_t because the number of workers can change at
+                             // runtime (see lf_sched_add_worker() and lf_sched_remove_worker()),
+                             // and a worker going idle and a worker leaving the pool must each
+                             // be able to decide consistently whether all workers are idle.
 } custom_scheduler_data_t;
+
+/** The increment of worker_counts corresponding to one worker. */
+#define LF_WORKER_COUNTS_ONE_WORKER (1LL << 32)
+
+/** Extract the number of workers from a worker_counts value. */
+#define LF_WORKER_COUNTS_WORKERS(counts) ((int)((counts) >> 32))
+
+/** Extract the number of idle workers from a worker_counts value. */
+#define LF_WORKER_COUNTS_IDLE(counts) ((int)((counts) & 0xffffffffLL))
+
+/**
+ * @brief Atomically read the packed worker counts.
+ */
+static inline int64_t _lf_sched_load_worker_counts(lf_scheduler_t* scheduler) {
+  return lf_atomic_val_compare_and_swap64(&scheduler->custom_data->worker_counts, 0, 0);
+}
 
 /////////////////// Scheduler Private API /////////////////////////
 
@@ -129,12 +153,14 @@ static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
   // number of reactions enabled at this level.
   // Note: All threads are idle. Therefore, there is no need to lock the mutex while accessing the index for the
   // current level.
-  size_t workers_to_awaken = LF_MIN(scheduler->number_of_idle_workers,
+  int number_of_idle_workers = LF_WORKER_COUNTS_IDLE(_lf_sched_load_worker_counts(scheduler));
+  size_t workers_to_awaken = LF_MIN((size_t)number_of_idle_workers,
                                     (size_t)(scheduler->indexes[scheduler->custom_data->next_reaction_level - 1]));
   LF_PRINT_DEBUG("Scheduler: Notifying %zu workers.", workers_to_awaken);
 
-  scheduler->number_of_idle_workers -= workers_to_awaken;
-  LF_PRINT_DEBUG("Scheduler: New number of idle workers: %zu.", scheduler->number_of_idle_workers);
+  // The awakened workers, including the caller, are no longer idle.
+  lf_atomic_fetch_add64(&scheduler->custom_data->worker_counts, -(int64_t)workers_to_awaken);
+  LF_PRINT_DEBUG("Scheduler: New number of idle workers: %zu.", (size_t)number_of_idle_workers - workers_to_awaken);
 
   if (workers_to_awaken > 1) {
     // Notify all the workers except the worker thread that has called this
@@ -149,7 +175,7 @@ static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
  */
 static void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
   scheduler->should_stop = true;
-  int number_of_workers = lf_atomic_val_compare_and_swap((int*)&scheduler->number_of_workers, 0, 0);
+  int number_of_workers = LF_WORKER_COUNTS_WORKERS(_lf_sched_load_worker_counts(scheduler));
   lf_semaphore_release(scheduler->custom_data->semaphore, number_of_workers - 1);
 }
 
@@ -202,17 +228,11 @@ static void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* schedul
  */
 static void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
   // Increment the number of idle workers by 1 and check if this is the last
-  // worker thread to become idle.
-  int number_of_idle_workers = lf_atomic_add_fetch((int*)&scheduler->number_of_idle_workers, 1);
-  // Read the number of workers atomically and only after the idle count has been
-  // incremented. The number of workers can be changed by lf_sched_add_worker(),
-  // which is called by a worker that is executing a reaction and hence is not
-  // idle. If the value read here predates such a change, then the new worker
-  // cannot have gone idle yet, and if it postdates it, then the caller of
-  // lf_sched_add_worker() is not idle; either way, the counts cannot match
-  // until every worker, including the new one, is idle.
-  int number_of_workers = lf_atomic_val_compare_and_swap((int*)&scheduler->number_of_workers, 0, 0);
-  if (number_of_idle_workers == number_of_workers) {
+  // worker thread to become idle. The number of workers is read in the same
+  // atomic operation, so this decision is consistent with any concurrent change
+  // to the number of workers by lf_sched_add_worker() or lf_sched_remove_worker().
+  int64_t counts = lf_atomic_add_fetch64(&scheduler->custom_data->worker_counts, 1);
+  if (LF_WORKER_COUNTS_IDLE(counts) == LF_WORKER_COUNTS_WORKERS(counts)) {
     // Last thread to go idle
     LF_PRINT_DEBUG("Scheduler: Worker %zu is the last idle thread.", worker_number);
     // Call on the scheduler to distribute work or advance tag.
@@ -268,6 +288,9 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
       (lf_mutex_t*)calloc((env->scheduler->max_reaction_level + 1), sizeof(lf_mutex_t));
 
   env->scheduler->custom_data->semaphore = lf_semaphore_new(0);
+
+  // All workers start out busy (none is idle).
+  env->scheduler->custom_data->worker_counts = (int64_t)number_of_workers * LF_WORKER_COUNTS_ONE_WORKER;
 
   env->scheduler->custom_data->next_reaction_level = 1;
 
@@ -412,13 +435,11 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
 
 int lf_sched_add_worker(lf_scheduler_t* scheduler) {
   // The caller is a worker executing a reaction, so it is not idle. Hence,
-  // number_of_idle_workers < number_of_workers both before and after this
-  // increment, and no worker can conclude that it is the last to go idle until
-  // the caller and the new worker have both gone idle. The new worker will
-  // simply wait on the semaphore like any other idle worker.
-  // Workers read number_of_workers in _lf_sched_wait_for_work() without holding
-  // the mutex, so the update is made atomically, matching the atomic read there.
-  lf_atomic_fetch_add((int*)&scheduler->number_of_workers, 1);
+  // the number of idle workers is less than the number of workers both before
+  // and after this increment, and no worker can conclude that it is the last to
+  // go idle until the caller and the new worker have both gone idle. The new
+  // worker will simply wait on the semaphore like any other idle worker.
+  lf_atomic_fetch_add64(&scheduler->custom_data->worker_counts, LF_WORKER_COUNTS_ONE_WORKER);
   return 0;
 }
 
@@ -426,15 +447,35 @@ void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
   // The thread was never created, so it never interacted with the scheduler.
   // The caller is still executing a reaction, so the same reasoning as in
   // lf_sched_add_worker() applies to this update.
-  lf_atomic_fetch_add((int*)&scheduler->number_of_workers, -1);
+  lf_atomic_fetch_add64(&scheduler->custom_data->worker_counts, -LF_WORKER_COUNTS_ONE_WORKER);
 }
 
 int lf_sched_remove_worker(lf_scheduler_t* scheduler) {
-  // The caller is executing a reaction and is therefore not idle, so after this
-  // decrement number_of_idle_workers <= number_of_workers still holds. If the
-  // counts are now equal, no worker will notice until one of them goes idle;
-  // the caller guarantees that this happens by adding a worker thread next.
-  lf_atomic_fetch_add((int*)&scheduler->number_of_workers, -1);
-  return 0;
+  // The caller is executing a reaction and is therefore not idle. Decrement the
+  // number of workers. If every remaining worker is then idle, all of them are
+  // waiting on the semaphore (none can have taken charge of advancing the tag,
+  // because the caller was counted as a busy worker until now), so none of them
+  // would notice that the tag can now advance. In that case, wake one of them:
+  // it is removed from the idle count, exactly as if it had been awakened by
+  // _lf_sched_notify_workers(), and it will find no reaction to execute, go idle
+  // again, and then, being the last to do so, advance the tag. Both updates are
+  // made in a single atomic operation so that this decision is consistent with
+  // the decision made by a worker that goes idle concurrently in
+  // _lf_sched_wait_for_work(): exactly one of them acts on the counts becoming
+  // equal.
+  while (true) {
+    int64_t counts = _lf_sched_load_worker_counts(scheduler);
+    int number_of_workers = LF_WORKER_COUNTS_WORKERS(counts) - 1;
+    int number_of_idle_workers = LF_WORKER_COUNTS_IDLE(counts);
+    bool wake_one = (number_of_idle_workers == number_of_workers && number_of_idle_workers > 0);
+    int64_t new_counts = counts - LF_WORKER_COUNTS_ONE_WORKER - (wake_one ? 1 : 0);
+    if (lf_atomic_bool_compare_and_swap64(&scheduler->custom_data->worker_counts, counts, new_counts)) {
+      if (wake_one) {
+        LF_PRINT_DEBUG("Scheduler: Worker leaving the pool wakes an idle worker to advance the tag.");
+        lf_semaphore_release(scheduler->custom_data->semaphore, 1);
+      }
+      return 0;
+    }
+  }
 }
 #endif // SCHEDULER == SCHED_NP || !defined(SCHEDULER)

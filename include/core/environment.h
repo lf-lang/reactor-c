@@ -344,6 +344,23 @@ typedef struct environment_t {
    * @ref lf_async_resume() to be called on its physical action. Protected by the environment mutex.
    */
   lf_async_state_t* async_waiters;
+
+  /**
+   * @brief Number of worker threads that have been added by @ref lf_async().
+   *
+   * Protected by the environment mutex.
+   */
+  int num_async_threads;
+
+  /**
+   * @brief Number of reactions currently suspended in @ref lf_async().
+   *
+   * Each of these has left the pool of worker threads. `lf_async()` adds a worker thread only
+   * when this count would otherwise exceed `num_async_threads`, so that the pool never shrinks
+   * below its original size while growing by no more than the maximum number of concurrent
+   * `lf_async()` calls. Protected by the environment mutex.
+   */
+  int num_async_suspended;
 #endif // LF_SINGLE_THREADED
 
 #if defined(FEDERATED)
