@@ -260,10 +260,9 @@
  *    logical time will be at least that delay later.  Outputs set after the call to `lf_async()` are produced
  *    at the new tag.
  * 4. If `action` is physical, it is scheduled when `func` returns. The calling thread then blocks until the
- *    reaction triggered by `action` calls `lf_async_resume(action)`. If that reaction runs before `func`
- *    returns, which happens when a logical action's delay elapses first, `lf_async_resume()` blocks
- *    until `func` returns. The worker executing it stays busy, so logical time does not
- *    advance past that tag.
+ *    reaction triggered by `action` calls `lf_async_resume(action)`. If `action` is logical and its delay
+ *    elapses before `func` returns, the triggered reaction calls `lf_async_resume()` first and blocks until
+ *    `func` returns. The worker executing it stays busy, so logical time does not advance past that tag.
  * 5. To ensure that other reactions can execute while `func` is running, if needed (see the caveats below),
  *    a worker thread is automatically added to the pool of the environment (see @ref lf_add_worker_thread()).
  *    Then the worker thread executing the reaction that calls `lf_async()` temporarily leaves the pool.
