@@ -244,9 +244,9 @@
  * Specifically:
  *
  * 1. Any outputs set so far with `lf_set`, `lf_set_array`, or `lf_set_token` are propagated at the
- *    current tag, in place, before logical time can advance. A single downstream reaction is executed
- *    in this thread; any others are queued at a later level of the same tag. Reactions triggered by
- *    those outputs therefore observe them at the tag at which they were set.
+ *    current tag before logical time can advance. Downstream reactions are queued at a later level
+ *    of the same tag rather than executed in this thread, so the call can proceed to `func`.
+ *    Reactions triggered by those outputs therefore observe them at the tag at which they were set.
  * 2. If needed (see the caveats below), a worker thread is added to the pool of the environment (see
  *    @ref lf_add_worker_thread()). Then the worker thread executing the reaction that calls
  *    `lf_async()` temporarily leaves the pool. The remaining workers may therefore advance logical

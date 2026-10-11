@@ -692,7 +692,7 @@ static bool _lf_worker_handle_deadline_violation_for_reaction(environment_t* env
 
         // If the reaction produced outputs, put the resulting
         // triggered reactions into the queue or execute them directly if possible.
-        schedule_output_reactions(env, reaction, worker_number);
+        schedule_output_reactions(env, reaction, worker_number, true);
         // Remove the reaction from the executing queue.
       }
       tracepoint_reaction_ends(env, reaction, worker_number);
@@ -747,7 +747,7 @@ static bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int
 
       // If the reaction produced outputs, put the resulting
       // triggered reactions into the queue or execute them directly if possible.
-      schedule_output_reactions(env, reaction, worker_number);
+      schedule_output_reactions(env, reaction, worker_number, true);
 
       // Reset the is_STP_violated because it has been dealt with
       reaction->is_STP_violated = false;
@@ -802,7 +802,7 @@ static void _lf_worker_invoke_reaction(environment_t* env, int worker_number, re
 
   // If the reaction produced outputs, put the resulting triggered
   // reactions into the queue or execute them immediately.
-  schedule_output_reactions(env, reaction, worker_number);
+  schedule_output_reactions(env, reaction, worker_number, true);
 
   reaction->is_STP_violated = false;
 }
@@ -1076,15 +1076,14 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action) {
 
   // Propagate outputs set with lf_set (and lf_set_array / lf_set_token) before
   // this call, and before acquiring the reactor mutex or the environment mutex
-  // below. schedule_output_reactions() may lock the environment mutex, and an
-  // inlined downstream reaction locks its own reactor mutex. This thread is
-  // still a busy worker, so the tag cannot advance. A single downstream reaction
-  // whose last enabling reaction is this one is executed in place; any others
-  // are queued and run at a higher level of this same tag once this thread
-  // leaves the pool below. An inlined reaction of this reactor clears
-  // executing_reaction, so restore it.
-  schedule_output_reactions(env, state->reaction, lf_thread_id());
-  base->executing_reaction = state->reaction;
+  // below. This thread is still a busy worker, so the tag cannot advance.
+  // Downstream reactions are queued rather than executed in this thread, so the
+  // call can proceed to the function. They run at a higher level of this same
+  // tag once this thread leaves the pool below. Executing one here could lock
+  // this reactor's mutex, which a previous lf_async() in this reaction may
+  // already hold, or create the mutex and leave the unlock below unlocking a
+  // mutex this call does not hold.
+  schedule_output_reactions(env, state->reaction, lf_thread_id(), false);
 
   // Reactions of a reactor that uses lf_async() must be mutually exclusive, as
   // they are for reactors with watchdogs: upon resumption, the remainder of the

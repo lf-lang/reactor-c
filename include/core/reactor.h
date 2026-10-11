@@ -230,7 +230,8 @@ typedef struct lf_async_state_t {
  * It is called from a reaction body, by the worker thread executing the reaction, immediately
  * before the function is invoked. Unless the program is already stopping, it first propagates any
  * outputs that the reaction has set, so reactions triggered by those outputs run at the current tag
- * before logical time can advance (see `schedule_output_reactions()`). Unless every thread previously
+ * before logical time can advance. Those reactions are queued rather than executed in this thread
+ * (see `schedule_output_reactions()`). Unless every thread previously
  * added by `lf_async()` is already compensating for another suspended call, it then adds a worker
  * thread to the pool of the environment (see @ref lf_add_worker_thread()). It then removes the calling
  * worker thread from the pool so that, while the function executes, the remaining workers can advance

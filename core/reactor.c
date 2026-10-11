@@ -172,7 +172,7 @@ int _lf_do_step(environment_t* env) {
           (*handler)(reaction->self);
           // If the reaction produced outputs, put the resulting
           // triggered reactions into the queue.
-          schedule_output_reactions(env, reaction, 0);
+          schedule_output_reactions(env, reaction, 0, true);
         }
         tracepoint_reaction_ends(env, reaction, 0);
       }
@@ -184,7 +184,7 @@ int _lf_do_step(environment_t* env) {
 
       // If the reaction produced outputs, put the resulting triggered
       // reactions into the queue.
-      schedule_output_reactions(env, reaction, 0);
+      schedule_output_reactions(env, reaction, 0, true);
     }
     // There cannot be any subsequent events that trigger this reaction at the
     //  current tag, so it is safe to conclude that it is now inactive.
