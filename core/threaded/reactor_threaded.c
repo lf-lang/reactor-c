@@ -1032,6 +1032,33 @@ static void _lf_async_resume_all_locked(environment_t* env) {
   }
 }
 
+/**
+ * @brief Resume the specified pending call from a resuming reaction.
+ *
+ * The caller must hold the environment mutex and must be executing a reaction of the reactor
+ * that made the call. If the invoked function has not returned, this blocks until it does. The
+ * calling worker is executing a reaction, so it is not idle, and logical time cannot advance
+ * while it waits. The state lives on the stack of the thread that made the call, which does not
+ * return from _lf_async_end() until the resuming reaction has completed and released the reactor
+ * mutex. The call stays on the list until it is unlinked here, and the resuming reaction holds
+ * the reactor mutex until it returns, so no other reaction of the reactor can select the same call.
+ */
+static void _lf_async_resume_from_reaction_locked(environment_t* env, lf_async_state_t* state) {
+  state->resume_waiting = true;
+  while (!state->function_done && !state->resumed) {
+    LF_COND_WAIT(&state->resumed_cond);
+  }
+  // If the call was not already resumed because the program is stopping, rejoin the pool on
+  // behalf of the suspended thread and let _lf_async_end() continue.
+  if (!state->resumed) {
+    _lf_async_unlink_locked(env, state);
+    _lf_async_resume_locked(env, state);
+  }
+  // The resumed thread cannot continue its reaction until the resuming reaction has
+  // completed because it must first acquire the reactor mutex, which this
+  // thread holds until _lf_invoke_reaction() returns. See _lf_async_begin().
+}
+
 void lf_async_resume(void* action) {
   lf_action_base_t* action_base = (lf_action_base_t*)action;
   self_base_t* base = action_base->parent;
@@ -1040,37 +1067,50 @@ void lf_async_resume(void* action) {
     lf_print_error_and_exit("lf_async_resume() must be invoked from within a reaction body.");
   }
   LF_MUTEX_LOCK(&env->mutex);
-  // The list is oldest first. Resume the oldest call on this action. If its function has not
-  // returned, block until _lf_async_end(). The call stays on the list until it is unlinked
-  // below, and this reaction holds the reactor mutex until it returns, so no other reaction
-  // of this reactor can select the same call.
-  lf_async_state_t* state = NULL;
+  // The list is oldest first. Resume the oldest call on this action.
   for (lf_async_state_t* candidate = env->async_waiters; candidate != NULL; candidate = candidate->next) {
     if (candidate->action == action_base) {
-      state = candidate;
+      _lf_async_resume_from_reaction_locked(env, candidate);
       break;
     }
   }
-  if (state != NULL) {
-    // If the invoked function has not returned, hold this tag until it does. This worker is
-    // executing a reaction, so it is not idle, and logical time cannot advance while it waits.
-    // The state lives on the stack of the thread that called lf_async(), which does not return
-    // from _lf_async_end() until this reaction has completed and released the reactor mutex.
-    state->resume_waiting = true;
-    while (!state->function_done && !state->resumed) {
-      LF_COND_WAIT(&state->resumed_cond);
-    }
-    // If the call was not already resumed because the program is stopping, rejoin the pool on
-    // behalf of the suspended thread and let _lf_async_end() continue.
-    if (!state->resumed) {
-      _lf_async_unlink_locked(env, state);
-      _lf_async_resume_locked(env, state);
-    }
-  }
   LF_MUTEX_UNLOCK(&env->mutex);
-  // The resumed thread cannot continue its reaction until this reaction has
-  // completed because it must first acquire the reactor mutex, which this
-  // thread holds until _lf_invoke_reaction() returns. See _lf_async_begin().
+}
+
+void _lf_await_resume(void* self, void* port) {
+  self_base_t* base = (self_base_t*)self;
+  environment_t* env = base->environment;
+  if (base->executing_reaction == NULL) {
+    lf_print_error_and_exit("lf_await_resume() must be invoked from within a reaction body.");
+  }
+  LF_MUTEX_LOCK(&env->mutex);
+  // Resume every lf_await() call of this reactor on this port, oldest first. The port is matched
+  // together with the reactor because an input that receives from a fanned-out output shares
+  // its address with the other receivers. Resuming a call unlinks it, and resuming may release
+  // the mutex while it waits, so restart the scan from the head after each one.
+  lf_async_state_t* state;
+  do {
+    state = NULL;
+    for (lf_async_state_t* candidate = env->async_waiters; candidate != NULL; candidate = candidate->next) {
+      if (candidate->self == base && candidate->port == (lf_port_base_t*)port) {
+        state = candidate;
+        break;
+      }
+    }
+    if (state != NULL) {
+      _lf_async_resume_from_reaction_locked(env, state);
+    }
+  } while (state != NULL);
+  LF_MUTEX_UNLOCK(&env->mutex);
+}
+
+void _lf_await(void* self, void* port) {
+  // The function that lf_async() would invoke is empty, so the call is complete as soon as it
+  // is suspended. It is resumed by lf_await_resume() on the port or, if the program stops first,
+  // by the exiting workers, at the stop tag.
+  lf_async_state_t state;
+  _lf_async_begin(&state, self, NULL, port);
+  _lf_async_end(&state);
 }
 
 /**
@@ -1078,10 +1118,10 @@ void lf_async_resume(void* action) {
  *
  * The caller must hold the environment mutex. A physical action is dedicated to one reaction.
  * The same reaction may call lf_async() on it again. Another reaction is a fatal error.
- * Logical actions are not recorded.
+ * Logical actions, and lf_await() calls, which have no action, are not recorded.
  */
 static void _lf_async_claim_physical_action(environment_t* env, lf_async_state_t* state) {
-  if (!state->action->trigger->is_physical) {
+  if (state->action == NULL || !state->action->trigger->is_physical) {
     return;
   }
   for (lf_async_physical_owner_t* owner = env->async_physical_owners; owner != NULL; owner = owner->next) {
@@ -1109,23 +1149,32 @@ static void _lf_async_claim_physical_action(environment_t* env, lf_async_state_t
   env->async_physical_owners = owner;
 }
 
-void _lf_async_begin(lf_async_state_t* state, void* self, void* action) {
+void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* port) {
   self_base_t* base = (self_base_t*)self;
   environment_t* env = base->environment;
   assert(env != GLOBAL_ENVIRONMENT);
+  // A NULL action denotes lf_await(), which is resumed by lf_await_resume() on a port rather
+  // than by an action. The port cannot be checked to belong to this reactor, because an input
+  // port struct is shared with the output that feeds it.
   lf_action_base_t* action_base = (lf_action_base_t*)action;
-  if (action_base == NULL || action_base->trigger == NULL || action_base->trigger->is_timer) {
-    lf_print_error_and_exit("lf_async() requires a logical or physical action.");
-  }
-  if (action_base->parent != base) {
-    lf_print_error_and_exit("lf_async() requires an action of the reactor whose reaction is executing.");
+  if (action_base != NULL) {
+    if (action_base->trigger == NULL || action_base->trigger->is_timer) {
+      lf_print_error_and_exit("lf_async() requires a logical or physical action.");
+    }
+    if (action_base->parent != base) {
+      lf_print_error_and_exit("lf_async() requires an action of the reactor whose reaction is executing.");
+    }
+  } else if (port == NULL) {
+    lf_print_error_and_exit("lf_await() requires an input port.");
   }
   if (base->executing_reaction == NULL) {
-    lf_print_error_and_exit("lf_async() must be invoked from within a reaction body.");
+    lf_print_error_and_exit("%s must be invoked from within a reaction body.",
+                            action_base == NULL ? "lf_await()" : "lf_async()");
   }
   state->self = base;
   state->reaction = base->executing_reaction;
   state->action = action_base;
+  state->port = (lf_port_base_t*)port;
   state->resumed = false;
   state->function_done = false;
   state->resume_waiting = false;
@@ -1210,8 +1259,8 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action) {
   // A logical action is scheduled now, at this tag plus its minimum delay, before the function
   // runs and before this thread leaves the pool. Leaving first would let logical time advance,
   // and the delay would be relative to that later tag. A physical action is scheduled in
-  // _lf_async_end(), at the physical time at which the function returns.
-  if (!state->action->trigger->is_physical) {
+  // _lf_async_end(), at the physical time at which the function returns. lf_await() has no action.
+  if (state->action != NULL && !state->action->trigger->is_physical) {
     lf_schedule(state->action, 0);
   }
 
@@ -1260,8 +1309,8 @@ void _lf_async_end(lf_async_state_t* state) {
   // when this call has already been resumed. An earlier event for the same action may have
   // resumed this call while a later call is still waiting; this event is what resumes that
   // later call. Scheduling may fail, for example because the time would be after the stop tag.
-  // In that case we still wait below: exiting workers resume pending calls.
-  bool schedule_physical = state->action->trigger->is_physical && !env->scheduler->should_stop;
+  // In that case we still wait below: exiting workers resume pending calls. lf_await() has no action.
+  bool schedule_physical = state->action != NULL && state->action->trigger->is_physical && !env->scheduler->should_stop;
   if (schedule_physical) {
     // Do not hold the mutex across lf_schedule(); it acquires the mutex itself. A resume
     // waiting for function_done may run during the call and mark this call resumed.

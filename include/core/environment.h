@@ -351,11 +351,12 @@ typedef struct environment_t {
   lf_cond_t global_tag_barrier_requestors_reached_zero;
 
   /**
-   * @brief Pending lf_async() calls in this environment, oldest first.
+   * @brief Pending lf_async() and lf_await() calls in this environment, oldest first.
    *
    * Each entry is a reaction that is suspended in @ref lf_async(), or whose invoked function has
-   * not yet returned, waiting for @ref lf_async_resume() to be called on its action. Protected by
-   * the environment mutex.
+   * not yet returned, waiting for @ref lf_async_resume() to be called on its action, or a reaction
+   * suspended in `lf_await()` waiting for `lf_await_resume()` on its port. Protected by the
+   * environment mutex.
    */
   lf_async_state_t* async_waiters;
 

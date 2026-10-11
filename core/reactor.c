@@ -301,10 +301,11 @@ int lf_added_worker_thread_count(environment_t* env) {
   return 0;
 }
 
-void _lf_async_begin(lf_async_state_t* state, void* self, void* action) {
+void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* port) {
   (void)state;
   (void)self;
   (void)action;
+  (void)port;
   lf_print_error_and_exit("lf_async() is not supported by the single-threaded runtime.");
 }
 
@@ -316,6 +317,18 @@ void _lf_async_end(lf_async_state_t* state) {
 void lf_async_resume(void* action) {
   (void)action;
   // Nothing can be waiting because lf_async() is not supported by the single-threaded runtime.
+}
+
+void _lf_await(void* self, void* port) {
+  (void)self;
+  (void)port;
+  lf_print_error_and_exit("lf_await() is not supported by the single-threaded runtime.");
+}
+
+void _lf_await_resume(void* self, void* port) {
+  (void)self;
+  (void)port;
+  // Nothing can be waiting because lf_await() is not supported by the single-threaded runtime.
 }
 
 /**

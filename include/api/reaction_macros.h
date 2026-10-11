@@ -298,11 +298,49 @@
 #define lf_async(action, func, ...)                                                                                    \
   ({                                                                                                                   \
     lf_async_state_t _lf_async_state;                                                                                  \
-    _lf_async_begin(&_lf_async_state, self, (action));                                                                 \
+    _lf_async_begin(&_lf_async_state, self, (action), NULL);                                                           \
     __typeof__(func(__VA_ARGS__)) _lf_async_result = func(__VA_ARGS__);                                                \
     _lf_async_end(&_lf_async_state);                                                                                   \
     _lf_async_result;                                                                                                  \
   })
+
+/**
+ * @brief Suspend this reaction until another reaction of this reactor calls `lf_await_resume()` on
+ * the specified input port.
+ * @ingroup API
+ *
+ * Like `lf_async()`, this allows logical time to advance and other reactions to execute while the
+ * calling reaction is suspended, and the remainder of the reaction executes at the tag at which
+ * `lf_await_resume(port)` is called. Unlike `lf_async()`, no function is invoked and no action is
+ * needed. The calling reaction must list `port` as a source so that it is in scope, and
+ * the resuming reaction must be declared before the calling reaction. For example, a reaction that
+ * sends a request and waits for the response to arrive on an input:
+ * ```
+ * reaction(response) {= lf_await_resume(response); =}
+ * reaction(startup) response -> request {=
+ *   lf_set(request, 42);
+ *   lf_await(response);
+ *   // Now at the tag at which the response arrived, and response->value is available.
+ * =}
+ * ```
+ * Several reactions of the reactor may be suspended on the same port at once; a single
+ * `lf_await_resume(port)` resumes all of them. If the program stops before `lf_await_resume()` is
+ * called, `lf_await()` returns at the stop tag so that the reaction can complete. See
+ * @ref _lf_await() for details, and see `lf_async()` for the caveats, which also apply.
+ *
+ * @param port An input port of this reactor, as it is in scope in the reaction body.
+ */
+#define lf_await(port) _lf_await(self, (port))
+
+/**
+ * @brief Resume every reaction of this reactor that is suspended in `lf_await()` on the specified port.
+ * @ingroup API
+ *
+ * If no reaction is suspended on the port, this does nothing. See @ref _lf_await_resume() for details.
+ *
+ * @param port The input port, as it is in scope in the reaction body.
+ */
+#define lf_await_resume(port) _lf_await_resume(self, (port))
 
 /**
  * @brief Return the instance name of the reactor.

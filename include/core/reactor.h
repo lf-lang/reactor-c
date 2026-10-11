@@ -205,8 +205,13 @@ typedef struct lf_async_state_t {
   self_base_t* self;
   /** The reaction that invoked `lf_async()`. Restored as the executing reaction upon resumption. */
   reaction_t* reaction;
-  /** The action that resumes this call. A physical action is scheduled in `_lf_async_end()`. */
+  /**
+   * The action that resumes this call, or NULL for `lf_await()`, which is resumed by
+   * `lf_await_resume()`. A physical action is scheduled in `_lf_async_end()`.
+   */
   lf_action_base_t* action;
+  /** The input port passed to `lf_await()`, or NULL for `lf_async()`. */
+  lf_port_base_t* port;
   /** Set to true when the call has been resumed. */
   bool resumed;
   /** Set to true in `_lf_async_end()`, once the invoked function has returned. */
@@ -251,9 +256,10 @@ typedef struct lf_async_state_t {
  * @param state Storage for the state of the call, which must remain valid until `_lf_async_end()` returns.
  * @param self The self struct of the reactor whose reaction is executing.
  * @param action The logical or physical action (an `lf_action_base_t*`) on which @ref lf_async_resume()
- * will be called. A physical action is scheduled later, by `_lf_async_end()`.
+ * will be called. A physical action is scheduled later, by `_lf_async_end()`. NULL for `lf_await()`.
+ * @param port The input port (an `lf_port_base_t*`) passed to `lf_await()`. NULL for `lf_async()`.
  */
-void _lf_async_begin(lf_async_state_t* state, void* self, void* action);
+void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* port);
 
 /**
  * @brief Complete a call prepared by `_lf_async_begin()`.
@@ -296,6 +302,55 @@ void _lf_async_end(lf_async_state_t* state);
  * @param action The action, as it is in scope in the reaction body.
  */
 void lf_async_resume(void* action);
+
+/**
+ * @brief Suspend the calling reaction until another reaction of the same reactor calls
+ * `lf_await_resume()` on the specified input port.
+ * @ingroup Internal
+ *
+ * This is the implementation of the `lf_await()` macro, which supplies `self`, and is not meant
+ * to be called directly. It behaves like `lf_async()` with no function to invoke and no action. Outputs set before the
+ * call are propagated at the current tag, the calling worker thread leaves the pool (adding a
+ * replacement if needed), and logical time advances and other reactions execute as if the
+ * calling reaction had completed. When a reaction of the same reactor calls `lf_await_resume()`
+ * on the same port, this function returns, and the remainder of the calling reaction executes at
+ * the tag of that call, after the resuming reaction has completed. Outputs set after the call are
+ * produced at that tag.
+ *
+ * If the program stops before `lf_await_resume()` is called, this function returns at the stop
+ * tag, after the shutdown reactions have executed, so that the calling reaction can complete.
+ * If the program is already stopping when this is called, it returns immediately.
+ *
+ * The caveats of `lf_async()` apply: the calling reaction counts as executing while suspended,
+ * state variables may be modified by other reactions in the meantime, the reactions of the
+ * reactor become mutually exclusive, and this requires the threaded runtime with the NP or
+ * GEDF_NP scheduler.
+ *
+ * @param self The self struct of the reactor whose reaction is executing.
+ * @param port An input port of this reactor (an `lf_port_base_t*`), as it is in scope in the
+ * reaction body. The calling reaction must list it as a trigger or source.
+ */
+void _lf_await(void* self, void* port);
+
+/**
+ * @brief Resume every reaction of this reactor that is suspended in `lf_await()` on the specified port.
+ * @ingroup Internal
+ *
+ * This is the implementation of the `lf_await_resume()` macro, which supplies `self`, and is not
+ * meant to be called directly. It must be called from the body of a reaction of the same reactor
+ * as the suspended reactions, typically a reaction triggered by the port. All pending `lf_await()`
+ * calls of this reactor on this port are resumed, oldest first. Each suspended thread rejoins the pool of worker
+ * threads and, once this reaction has completed, continues at the current tag; the reactor mutex serializes them. If no
+ * reaction of this reactor is suspended on this port, this function does nothing. Calls suspended in `lf_async()` or on
+ * other ports are not affected.
+ *
+ * The port is identified by its address together with the reactor, because an input port that
+ * receives from a fanned-out output shares its address with the other receivers.
+ *
+ * @param self The self struct of the reactor whose reaction is executing.
+ * @param port The input port (an `lf_port_base_t*`), as it is in scope in the reaction body.
+ */
+void _lf_await_resume(void* self, void* port);
 
 /**
  * @brief Allocate memory and record on the specified allocation record (a self struct).
