@@ -228,13 +228,15 @@ typedef struct lf_async_state_t {
  *
  * This is the first half of the `lf_async()` macro and is not meant to be called directly.
  * It is called from a reaction body, by the worker thread executing the reaction, immediately
- * before the function is invoked. Unless every thread previously added by `lf_async()` is already
- * compensating for another suspended call, it first adds a worker thread to the pool of the
- * environment (see @ref lf_add_worker_thread()). It then removes the calling worker thread from
- * the pool so that, while the function executes, the remaining workers can advance logical time
- * and execute other reactions as if the calling reaction had completed. The thread is added before
- * the caller leaves so that the pool is never empty; if all remaining workers are idle when the
- * caller leaves, the scheduler wakes one of them to advance the tag (see
+ * before the function is invoked. Unless the program is already stopping, it first propagates any
+ * outputs that the reaction has set, so reactions triggered by those outputs run at the current tag
+ * before logical time can advance (see `schedule_output_reactions()`). Unless every thread previously
+ * added by `lf_async()` is already compensating for another suspended call, it then adds a worker
+ * thread to the pool of the environment (see @ref lf_add_worker_thread()). It then removes the calling
+ * worker thread from the pool so that, while the function executes, the remaining workers can advance
+ * logical time and execute other reactions as if the calling reaction had completed. The thread is
+ * added before the caller leaves so that the pool is never empty; if all remaining workers are idle
+ * when the caller leaves, the scheduler wakes one of them to advance the tag (see
  * @ref lf_sched_remove_worker()). The reactor mutex, which is created here if the reactor does not
  * already have one, is released. If the program is already stopping, none of this happens and
  * the function simply executes inline.

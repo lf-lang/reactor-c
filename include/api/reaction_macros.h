@@ -243,14 +243,18 @@
  * ```
  * Specifically:
  *
- * 1. If needed (see the caveats below), a worker thread is added to the pool of the environment (see
+ * 1. Any outputs set so far with `lf_set`, `lf_set_array`, or `lf_set_token` are propagated at the
+ *    current tag, in place, before logical time can advance. A single downstream reaction is executed
+ *    in this thread; any others are queued at a later level of the same tag. Reactions triggered by
+ *    those outputs therefore observe them at the tag at which they were set.
+ * 2. If needed (see the caveats below), a worker thread is added to the pool of the environment (see
  *    @ref lf_add_worker_thread()). Then the worker thread executing the reaction that calls
  *    `lf_async()` temporarily leaves the pool. The remaining workers may therefore advance logical
  *    time and execute other reactions as if the calling reaction had completed.
- * 2. `func` is invoked with the given arguments.
- * 3. When `func` returns, the physical action `awake` is scheduled, and the calling thread blocks until
+ * 3. `func` is invoked with the given arguments.
+ * 4. When `func` returns, the physical action `awake` is scheduled, and the calling thread blocks until
  *    the reaction triggered by `awake` calls `lf_async_resume(awake)`.
- * 4. The calling thread rejoins the pool, and, once the body of the `awake` reaction has returned, this
+ * 5. The calling thread rejoins the pool, and, once the body of the `awake` reaction has returned, this
  *    macro yields the value returned by `func`. The remainder of the calling reaction therefore
  *    executes at the tag of the `awake` event; in particular, `lf_time_logical()` returns the new
  *    logical time. The propagation of any outputs of the `awake` reaction may proceed concurrently.
@@ -260,13 +264,14 @@
  * - `func` must return a value; functions returning `void` are not supported.
  * - The value of state variables is not preserved across `lf_async()` calls. Other reactions in this
  *   reactor may have modified them before `lf_async()` returns.
- * - Outputs set before invoking `lf_async()` are not propagated. Set outputs only after it returns.
- *   Reactions triggered by such outputs are executed at the new tag. This relies on the `awake`
- *   reaction having a lower level than the calling reaction, which the declaration order above
- *   ensures: every reaction downstream of the calling reaction then has a level greater than that of
- *   the `awake` reaction, so it is queued for later in the tag rather than inserted at a level that
- *   is already executing. If the `awake` reaction were declared after the calling reaction, a
- *   downstream reaction could have the same level as the `awake` reaction, which is not supported.
+ * - Outputs set before `lf_async()` are propagated at the tag at which they were set, before the call
+ *   allows logical time to advance. Outputs set after it returns are propagated when the calling
+ *   reaction completes, at the new tag. That later propagation relies on the `awake` reaction having
+ *   a lower level than the calling reaction, which the declaration order above ensures: every reaction
+ *   downstream of the calling reaction then has a level greater than that of the `awake` reaction, so
+ *   it is queued for later in the tag rather than inserted at a level that is already executing. If
+ *   the `awake` reaction were declared after the calling reaction, a downstream reaction could have
+ *   the same level as the `awake` reaction, which is not supported.
  * - The calling reaction counts as executing while it is suspended. If it is triggered again at an
  *   intervening tag, that triggering is dropped. Other reactions of the same reactor can execute at
  *   intervening tags, so state shared with them should be handled with care.

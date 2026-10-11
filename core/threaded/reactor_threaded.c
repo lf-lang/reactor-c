@@ -1057,6 +1057,35 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action) {
   state->next = NULL;
   LF_COND_INIT(&state->resumed_cond, &env->mutex);
 
+  // If the scheduler has already decided to stop, then this reaction is one
+  // that was suspended in lf_async() and resumed because the program is
+  // stopping. No further reaction will be invoked,
+  // so the action would never trigger, and worker threads may already be
+  // exiting, so no thread may be added (see lf_add_worker_thread()). In that
+  // case, stay in the pool and do not suspend: _lf_async_end() will return as
+  // soon as the function returns. Because should_stop never reverts to false,
+  // _lf_async_end() will observe the same decision. Do not propagate outputs
+  // either: the reaction completes at this tag, and _lf_invoke_reaction()
+  // propagates them then.
+  LF_MUTEX_LOCK(&env->mutex);
+  state->left_pool = !env->scheduler->should_stop;
+  LF_MUTEX_UNLOCK(&env->mutex);
+  if (!state->left_pool) {
+    return;
+  }
+
+  // Propagate outputs set with lf_set (and lf_set_array / lf_set_token) before
+  // this call, and before acquiring the reactor mutex or the environment mutex
+  // below. schedule_output_reactions() may lock the environment mutex, and an
+  // inlined downstream reaction locks its own reactor mutex. This thread is
+  // still a busy worker, so the tag cannot advance. A single downstream reaction
+  // whose last enabling reaction is this one is executed in place; any others
+  // are queued and run at a higher level of this same tag once this thread
+  // leaves the pool below. An inlined reaction of this reactor clears
+  // executing_reaction, so restore it.
+  schedule_output_reactions(env, state->reaction, lf_thread_id());
+  base->executing_reaction = state->reaction;
+
   // Reactions of a reactor that uses lf_async() must be mutually exclusive, as
   // they are for reactors with watchdogs: upon resumption, the remainder of the
   // calling reaction must not execute until the reaction that resumed it has
@@ -1074,21 +1103,6 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action) {
     LF_MUTEX_LOCK((lf_mutex_t*)base->reactor_mutex);
   }
 
-  // If the scheduler has already decided to stop, then this reaction is one
-  // that was suspended in lf_async() and resumed because the program is
-  // stopping. No further reaction will be invoked,
-  // so the action would never trigger, and worker threads may already be
-  // exiting, so no thread may be added (see lf_add_worker_thread()). In that
-  // case, stay in the pool and do not suspend: _lf_async_end() will return as
-  // soon as the function returns. Because should_stop never reverts to false,
-  // _lf_async_end() will observe the same decision.
-  LF_MUTEX_LOCK(&env->mutex);
-  state->left_pool = !env->scheduler->should_stop;
-  if (!state->left_pool) {
-    LF_MUTEX_UNLOCK(&env->mutex);
-    return;
-  }
-
   // Decide whether to add a worker thread to replace this one while it is
   // suspended. Each thread previously added by lf_async() compensates for one
   // suspended call, so a new thread is needed only if all of them are already
@@ -1096,6 +1110,7 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action) {
   // pool from ever shrinking below its original size, while the number of added
   // threads never exceeds the maximum number of concurrently suspended calls.
   // In particular, sequential calls share a single added thread.
+  LF_MUTEX_LOCK(&env->mutex);
   bool add_thread = env->num_async_suspended >= env->num_async_threads;
   env->num_async_suspended++;
   if (add_thread) {
