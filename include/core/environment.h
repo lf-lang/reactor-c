@@ -27,6 +27,19 @@ typedef struct watchdog_t watchdog_t;
 typedef struct lf_async_state_t lf_async_state_t;
 
 /**
+ * @brief A physical action dedicated to one reaction by `lf_async()`.
+ * @ingroup Internal
+ *
+ * The first reaction that passes a physical action to `lf_async()` owns it. A later call from
+ * another reaction on that same action is a fatal error.
+ */
+typedef struct lf_async_physical_owner_t {
+  lf_action_base_t* action;
+  reaction_t* reaction;
+  struct lf_async_physical_owner_t* next;
+} lf_async_physical_owner_t;
+
+/**
  * @brief The global environment.
  * @ingroup Internal
  *
@@ -340,10 +353,18 @@ typedef struct environment_t {
   /**
    * @brief Pending lf_async() calls in this environment, oldest first.
    *
-   * Each entry is a reaction that is suspended in @ref lf_async(), waiting for
-   * @ref lf_async_resume() to be called on its physical action. Protected by the environment mutex.
+   * Each entry is a reaction that is suspended in @ref lf_async(), or whose invoked function has
+   * not yet returned, waiting for @ref lf_async_resume() to be called on its action. Protected by
+   * the environment mutex.
    */
   lf_async_state_t* async_waiters;
+
+  /**
+   * @brief Physical actions passed to `lf_async()`, and the reaction each is dedicated to.
+   *
+   * Protected by the environment mutex.
+   */
+  lf_async_physical_owner_t* async_physical_owners;
 
   /**
    * @brief Number of worker threads that have been added by @ref lf_async().

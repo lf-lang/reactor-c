@@ -205,10 +205,14 @@ typedef struct lf_async_state_t {
   self_base_t* self;
   /** The reaction that invoked `lf_async()`. Restored as the executing reaction upon resumption. */
   reaction_t* reaction;
-  /** The physical action (an `lf_action_base_t*`) scheduled when the function returns. */
-  void* action;
+  /** The action that resumes this call. A physical action is scheduled in `_lf_async_end()`. */
+  lf_action_base_t* action;
   /** Set to true when the call has been resumed. */
   bool resumed;
+  /** Set to true in `_lf_async_end()`, once the invoked function has returned. */
+  bool function_done;
+  /** Set to true by `lf_async_resume()` when it is waiting for `function_done`. */
+  bool resume_waiting;
   /**
    * True if the calling thread left the pool of worker threads. This is false if the program
    * was already stopping when the call began, in which case the call does not suspend at all.
@@ -231,7 +235,9 @@ typedef struct lf_async_state_t {
  * before the function is invoked. Unless the program is already stopping, it first propagates any
  * outputs that the reaction has set, so reactions triggered by those outputs run at the current tag
  * before logical time can advance. Those reactions are queued rather than executed in this thread
- * (see `schedule_output_reactions()`). Unless every thread previously
+ * (see `schedule_output_reactions()`). If `action` is a logical action, it is scheduled at the
+ * current tag plus its minimum delay, or one microstep later than the current tag if the minimum
+ * delay is zero, before the function runs. Unless every thread previously
  * added by `lf_async()` is already compensating for another suspended call, it then adds a worker
  * thread to the pool of the environment (see @ref lf_add_worker_thread()). It then removes the calling
  * worker thread from the pool so that, while the function executes, the remaining workers can advance
@@ -244,7 +250,8 @@ typedef struct lf_async_state_t {
  *
  * @param state Storage for the state of the call, which must remain valid until `_lf_async_end()` returns.
  * @param self The self struct of the reactor whose reaction is executing.
- * @param action The physical action (an `lf_action_base_t*`) to schedule when the function returns.
+ * @param action The logical or physical action (an `lf_action_base_t*`) on which @ref lf_async_resume()
+ * will be called. A physical action is scheduled later, by `_lf_async_end()`.
  */
 void _lf_async_begin(lf_async_state_t* state, void* self, void* action);
 
@@ -253,12 +260,15 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action);
  * @ingroup Internal
  *
  * This is the second half of the `lf_async()` macro and is not meant to be called directly.
- * It is called immediately after the function has returned. It schedules the physical action
- * recorded in `state` and blocks until a reaction triggered by that action calls
- * @ref lf_async_resume() on it (or until the worker threads of the environment exit because
- * the program is stopping). The calling thread, which by then has rejoined the pool of worker
+ * It is called immediately after the function has returned. If the action is physical, it is
+ * scheduled now, even if this call has already been resumed. A logical action was already
+ * scheduled by `_lf_async_begin()`. This function then
+ * blocks until a reaction triggered by the action calls @ref lf_async_resume() on it (or until the
+ * worker threads of the environment exit because the program is stopping). If that call happens
+ * before the function returns, `lf_async_resume()` blocks until this function is called, so the
+ * tag does not advance past it. The calling thread, which by then has rejoined the pool of worker
  * threads, reacquires the reactor mutex and this function returns, so that the remainder of the
- * calling reaction executes at the tag of the event scheduled on the action, after the resuming
+ * calling reaction executes at the tag at which `lf_async_resume()` was called, after the resuming
  * reaction has completed.
  *
  * @param state The state passed to `_lf_async_begin()`.
@@ -266,22 +276,24 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action);
 void _lf_async_end(lf_async_state_t* state);
 
 /**
- * @brief Resume a reaction suspended in `lf_async()` that is waiting on the specified physical action.
+ * @brief Resume a reaction suspended in `lf_async()` that is waiting on the specified action.
  * @ingroup API
  *
- * This must be called from the body of a reaction triggered by the physical action that
- * `lf_async()` uses, and this reaction must belong to the same reactor as the action.
- * For example, if `lf_async()` uses an action named `awake`:
+ * This must be called from the body of a reaction triggered by the action passed to `lf_async()`,
+ * and this reaction must belong to the same reactor as the action. For example:
  * ```
  * reaction(awake) {= lf_async_resume(awake); =}
  * ```
- * If any reaction of the reactor is suspended in `lf_async()` waiting on this action, the
- * oldest such call is resumed: the suspended thread rejoins the pool of worker threads and,
- * once the calling reaction has completed, continues executing its reaction at the current tag.
- * Otherwise, this function does nothing. Only this reaction incurs any cost; the runtime
- * does not check for pending `lf_async()` calls anywhere else.
+ * If several calls from the same reaction share this action, this resumes the oldest one. A
+ * physical action cannot be shared with another reaction. If that call's function has not
+ * yet returned, this function blocks until `_lf_async_end()` is called for it. The calling worker
+ * is busy while it blocks, so logical time cannot advance and the suspended reaction resumes at
+ * this tag. The suspended thread rejoins the pool of worker threads and, once this reaction has
+ * completed, continues at the current tag. If no call is waiting on this action, this function
+ * does nothing. Only this reaction incurs any cost; the runtime does not check for pending
+ * `lf_async()` calls anywhere else.
  *
- * @param action The physical action, as it is in scope in the reaction body.
+ * @param action The action, as it is in scope in the reaction body.
  */
 void lf_async_resume(void* action);
 
