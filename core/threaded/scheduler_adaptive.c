@@ -728,4 +728,23 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
     return;
   worker_assignments_put(scheduler, reaction);
 }
+
+int lf_sched_add_worker(lf_scheduler_t* scheduler) {
+  // This scheduler sizes its per-worker data structures (worker assignments,
+  // worker states, and data collection) for a fixed maximum number of workers
+  // at initialization, so workers cannot be added at runtime.
+  (void)scheduler;
+  return -1;
+}
+
+void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
+  // Never called because lf_sched_add_worker() always fails for this scheduler.
+  (void)scheduler;
+}
+
+int lf_sched_remove_worker(lf_scheduler_t* scheduler) {
+  // See lf_sched_add_worker().
+  (void)scheduler;
+  return -1;
+}
 #endif // defined SCHEDULER && SCHEDULER == SCHED_ADAPTIVE

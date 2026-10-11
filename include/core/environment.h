@@ -24,6 +24,7 @@ typedef struct lf_scheduler_t lf_scheduler_t;
 typedef struct mode_environment_t mode_environment_t;
 typedef struct enclave_info_t enclave_info_t;
 typedef struct watchdog_t watchdog_t;
+typedef struct lf_async_state_t lf_async_state_t;
 
 /**
  * @brief The global environment.
@@ -274,15 +275,25 @@ typedef struct environment_t {
    * @brief Number of worker threads.
    *
    * Indicates the total number of worker threads available
-   * for parallel execution in this environment.
+   * for parallel execution in this environment. This includes
+   * any worker threads added at runtime with @ref lf_add_worker_thread().
    */
   int num_workers;
+
+  /**
+   * @brief Number of worker threads added at runtime.
+   *
+   * Counts the worker threads that have been added to this environment
+   * by calls to @ref lf_add_worker_thread(). Protected by the environment mutex.
+   */
+  int num_added_workers;
 
   /**
    * @brief Array of worker thread IDs.
    *
    * Stores the thread identifiers for all worker threads
-   * in this environment.
+   * in this environment. Its length is num_workers; it is grown
+   * when worker threads are added with @ref lf_add_worker_thread().
    */
   lf_thread_t* thread_ids;
 
@@ -325,6 +336,31 @@ typedef struct environment_t {
    * have reached zero.
    */
   lf_cond_t global_tag_barrier_requestors_reached_zero;
+
+  /**
+   * @brief Pending lf_async() calls in this environment, oldest first.
+   *
+   * Each entry is a reaction that is suspended in @ref lf_async(), waiting for
+   * @ref lf_async_resume() to be called on its physical action. Protected by the environment mutex.
+   */
+  lf_async_state_t* async_waiters;
+
+  /**
+   * @brief Number of worker threads that have been added by @ref lf_async().
+   *
+   * Protected by the environment mutex.
+   */
+  int num_async_threads;
+
+  /**
+   * @brief Number of reactions currently suspended in @ref lf_async().
+   *
+   * Each of these has left the pool of worker threads. `lf_async()` adds a worker thread only
+   * when this count would otherwise exceed `num_async_threads`, so that the pool never shrinks
+   * below its original size while growing by no more than the maximum number of concurrent
+   * `lf_async()` calls. Protected by the environment mutex.
+   */
+  int num_async_suspended;
 #endif // LF_SINGLE_THREADED
 
 #if defined(FEDERATED)

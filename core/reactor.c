@@ -172,7 +172,7 @@ int _lf_do_step(environment_t* env) {
           (*handler)(reaction->self);
           // If the reaction produced outputs, put the resulting
           // triggered reactions into the queue.
-          schedule_output_reactions(env, reaction, 0);
+          schedule_output_reactions(env, reaction, 0, true);
         }
         tracepoint_reaction_ends(env, reaction, 0);
       }
@@ -184,7 +184,7 @@ int _lf_do_step(environment_t* env) {
 
       // If the reaction produced outputs, put the resulting triggered
       // reactions into the queue.
-      schedule_output_reactions(env, reaction, 0);
+      schedule_output_reactions(env, reaction, 0, true);
     }
     // There cannot be any subsequent events that trigger this reaction at the
     //  current tag, so it is safe to conclude that it is now inactive.
@@ -288,6 +288,34 @@ void lf_request_stop(void) {
   new_stop_tag.time = env->current_tag.time;
   new_stop_tag.microstep = env->current_tag.microstep + 1;
   lf_set_stop_tag(env, new_stop_tag);
+}
+
+int lf_add_worker_thread(environment_t* env) {
+  (void)env;
+  lf_print_error("lf_add_worker_thread() is not supported by the single-threaded runtime.");
+  return -1;
+}
+
+int lf_added_worker_thread_count(environment_t* env) {
+  (void)env;
+  return 0;
+}
+
+void _lf_async_begin(lf_async_state_t* state, void* self, void* action) {
+  (void)state;
+  (void)self;
+  (void)action;
+  lf_print_error_and_exit("lf_async() is not supported by the single-threaded runtime.");
+}
+
+void _lf_async_end(lf_async_state_t* state) {
+  (void)state;
+  lf_print_error_and_exit("lf_async() is not supported by the single-threaded runtime.");
+}
+
+void lf_async_resume(void* action) {
+  (void)action;
+  // Nothing can be waiting because lf_async() is not supported by the single-threaded runtime.
 }
 
 /**

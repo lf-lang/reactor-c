@@ -211,6 +211,96 @@
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 
 /**
+ * @brief Add a worker thread to the pool of worker threads of the environment invoking this reaction.
+ * @ingroup API
+ *
+ * See @ref lf_add_worker_thread(environment_t*) for details.
+ * @return 0 on success, or -1 if the thread could not be created or the runtime does not support it.
+ */
+#define lf_add_worker_thread() lf_add_worker_thread(self->base.environment)
+
+/**
+ * @brief Return the number of worker threads that have been added to the environment invoking this reaction.
+ * @ingroup API
+ *
+ * See @ref lf_added_worker_thread_count(environment_t*) for details.
+ */
+#define lf_added_worker_thread_count() lf_added_worker_thread_count(self->base.environment)
+
+/**
+ * @brief Invoke a function that may block for a long time without blocking the rest of the program.
+ * @ingroup API
+ *
+ * This macro invokes `func` with the given arguments and evaluates to the value returned by `func`,
+ * but it allows logical time to advance and other reactions to execute while `func` is running.
+ * It must be used within a reaction body of a reactor that declares a physical action named `awake`
+ * and a reaction triggered by `awake` whose body calls @ref lf_async_resume(). The `awake` reaction
+ * must be declared before any reaction that calls `lf_async()`, so that its level is lower:
+ * ```
+ * physical action awake
+ * reaction(awake) {= lf_async_resume(awake); =}
+ * reaction(startup) {= int result = lf_async(slow, 50); ... =}
+ * ```
+ * Specifically:
+ *
+ * 1. Any outputs set so far with `lf_set`, `lf_set_array`, or `lf_set_token` are propagated at the
+ *    current tag before logical time can advance. Downstream reactions are queued at a later level
+ *    of the same tag rather than executed in this thread, so the call can proceed to `func`.
+ *    Reactions triggered by those outputs therefore observe them at the tag at which they were set.
+ * 2. If needed (see the caveats below), a worker thread is added to the pool of the environment (see
+ *    @ref lf_add_worker_thread()). Then the worker thread executing the reaction that calls
+ *    `lf_async()` temporarily leaves the pool. The remaining workers may therefore advance logical
+ *    time and execute other reactions as if the calling reaction had completed.
+ * 3. `func` is invoked with the given arguments.
+ * 4. When `func` returns, the physical action `awake` is scheduled, and the calling thread blocks until
+ *    the reaction triggered by `awake` calls `lf_async_resume(awake)`.
+ * 5. The calling thread rejoins the pool, and, once the body of the `awake` reaction has returned, this
+ *    macro yields the value returned by `func`. The remainder of the calling reaction therefore
+ *    executes at the tag of the `awake` event; in particular, `lf_time_logical()` returns the new
+ *    logical time. The propagation of any outputs of the `awake` reaction may proceed concurrently.
+ *
+ * Caveats:
+ *
+ * - `func` must return a value; functions returning `void` are not supported.
+ * - The value of state variables is not preserved across `lf_async()` calls. Other reactions in this
+ *   reactor may have modified them before `lf_async()` returns.
+ * - Outputs set before `lf_async()` are propagated at the tag at which they were set, before the call
+ *   allows logical time to advance. Outputs set after it returns are propagated when the calling
+ *   reaction completes, at the new tag. That later propagation relies on the `awake` reaction having
+ *   a lower level than the calling reaction, which the declaration order above ensures: every reaction
+ *   downstream of the calling reaction then has a level greater than that of the `awake` reaction, so
+ *   it is queued for later in the tag rather than inserted at a level that is already executing. If
+ *   the `awake` reaction were declared after the calling reaction, a downstream reaction could have
+ *   the same level as the `awake` reaction, which is not supported.
+ * - The calling reaction counts as executing while it is suspended. If it is triggered again at an
+ *   intervening tag, that triggering is dropped. Other reactions of the same reactor can execute at
+ *   intervening tags, so state shared with them should be handled with care.
+ * - The reactions of the reactor are mutually exclusive. The first call creates a reactor mutex if
+ *   the reactor does not have one. This is similar to reactors with watchdogs.
+ * - A worker thread is added to the pool, and persists until the program terminates, only when
+ *   every thread previously added by `lf_async()` is compensating for another call that is
+ *   currently suspended. Hence, the number of added threads is the maximum number of concurrently
+ *   suspended calls; sequential calls share a single added thread.
+ * - If the program stops before the tag of the `awake` event, the call returns at the stop tag after
+ *   the shutdown reactions have executed. Any further `lf_async()` call made by the resumed reaction
+ *   invokes `func` directly without suspending.
+ * - This requires the threaded runtime with the NP (default) or GEDF_NP scheduler, and a compiler that
+ *   supports statement expressions and `__typeof__` (GCC and Clang do).
+ *
+ * @param func The function to invoke.
+ * @param ... The arguments to pass to `func`.
+ * @return The value returned by `func`.
+ */
+#define lf_async(func, ...)                                                                                            \
+  ({                                                                                                                   \
+    lf_async_state_t _lf_async_state;                                                                                  \
+    _lf_async_begin(&_lf_async_state, self, &self->_lf_awake);                                                         \
+    __typeof__(func(__VA_ARGS__)) _lf_async_result = func(__VA_ARGS__);                                                \
+    _lf_async_end(&_lf_async_state);                                                                                   \
+    _lf_async_result;                                                                                                  \
+  })
+
+/**
  * @brief Return the instance name of the reactor.
  * @ingroup API
  *

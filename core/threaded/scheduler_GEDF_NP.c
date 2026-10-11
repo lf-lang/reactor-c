@@ -261,4 +261,31 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
     LF_MUTEX_UNLOCK(&scheduler->env->mutex);
   }
 }
+
+int lf_sched_add_worker(lf_scheduler_t* scheduler) {
+  // The caller holds the environment mutex, which protects all accesses to
+  // number_of_workers and number_of_idle_workers in this scheduler. The caller
+  // is executing a reaction, so it is not idle, and therefore no other worker
+  // can be the last to go idle until the caller and the new worker are both idle.
+  scheduler->number_of_workers++;
+  return 0;
+}
+
+void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
+  // The caller holds the environment mutex. The thread was never created.
+  scheduler->number_of_workers--;
+}
+
+int lf_sched_remove_worker(lf_scheduler_t* scheduler) {
+  // The caller holds the environment mutex and is executing a reaction, so it
+  // is not idle. If every remaining worker is idle, all of them are waiting on
+  // reaction_q_changed, and none would notice that the tag or level can now
+  // advance. Wake one of them: it will re-examine the reaction queue and, finding
+  // all other workers idle, advance the level or the tag.
+  scheduler->number_of_workers--;
+  if (scheduler->number_of_idle_workers == scheduler->number_of_workers && scheduler->number_of_workers > 0) {
+    LF_COND_SIGNAL(&scheduler->custom_data->reaction_q_changed);
+  }
+  return 0;
+}
 #endif // SCHEDULER == SCHED_GEDF_NP

@@ -400,11 +400,17 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker);
  * @brief Schedule the output reactions for the specified reaction in the specified environment.
  * @ingroup Internal
  *
+ * If exactly one downstream reaction is enabled by this reaction and `allow_inline` is true,
+ * that reaction may be executed in this thread. Otherwise downstream reactions are queued
+ * and run at a later level of the current tag. `lf_async()` passes false so that it can
+ * proceed to the function call without first executing downstream reactions.
+ *
  * @param env The environment in which we are executing.
  * @param reaction The reaction.
  * @param worker The worker number.
+ * @param allow_inline Whether a single downstream reaction may be executed in this thread.
  */
-void schedule_output_reactions(environment_t* env, reaction_t* reaction, int worker);
+void schedule_output_reactions(environment_t* env, reaction_t* reaction, int worker, bool allow_inline);
 
 /**
  * @brief Process the command-line arguments.
