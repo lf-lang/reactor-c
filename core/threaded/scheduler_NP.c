@@ -36,18 +36,18 @@ typedef struct custom_scheduler_data_t {
   lf_mutex_t* array_of_mutexes;
   reaction_t*** triggered_reactions;
   volatile size_t next_reaction_level;
-  lf_semaphore_t* semaphore; // Signal the maximum number of worker threads that should
-                             // be executing work at the same time.  Initially 0.
-                             // For example, if the scheduler releases the semaphore with a count of 4,
-                             // no more than 4 worker threads should wake up to process reactions.
-  int64_t worker_counts;     // The number of workers (high 32 bits) and the number of idle
-                             // workers (low 32 bits), packed so that they can be read and
-                             // updated atomically as a unit. This scheduler uses these instead
-                             // of the number_of_workers and number_of_idle_workers fields of
-                             // lf_scheduler_t because the number of workers can change at
-                             // runtime (see lf_sched_add_worker() and lf_sched_remove_worker()),
-                             // and a worker going idle and a worker leaving the pool must each
-                             // be able to decide consistently whether all workers are idle.
+  lf_semaphore_t* semaphore;  // Signal the maximum number of worker threads that should
+                              // be executing work at the same time.  Initially 0.
+                              // For example, if the scheduler releases the semaphore with a count of 4,
+                              // no more than 4 worker threads should wake up to process reactions.
+  int64_t worker_counts;      // The number of workers (high 32 bits) and the number of idle
+                              // workers (low 32 bits), packed so that they can be read and
+                              // updated atomically as a unit. This scheduler uses these instead
+                              // of the number_of_workers and number_of_idle_workers fields of
+                              // lf_scheduler_t because the number of workers can change at
+                              // runtime (see lf_sched_add_worker() and lf_sched_remove_worker()),
+                              // and a worker going idle and a worker leaving the pool must each
+                              // be able to decide consistently whether all workers are idle.
   bool caller_accounted_busy; // The worker distributing reactions has already been removed from
                               // the idle count because it released an lf_async() continuation at
                               // this level. _lf_sched_notify_workers() must not count it again.
@@ -133,7 +133,8 @@ static int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
 #endif
     size_t level = scheduler->custom_data->next_reaction_level;
     scheduler->custom_data->executing_reactions = scheduler->custom_data->triggered_reactions[level];
-    LF_PRINT_DEBUG("Start of rxn queue at %zu is %p", level, (void*)((reaction_t**)scheduler->custom_data->executing_reactions)[0]);
+    LF_PRINT_DEBUG("Start of rxn queue at %zu is %p", level,
+                   (void*)((reaction_t**)scheduler->custom_data->executing_reactions)[0]);
 
     scheduler->custom_data->next_reaction_level++;
 
