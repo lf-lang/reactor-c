@@ -361,6 +361,14 @@ typedef struct environment_t {
   lf_async_state_t* async_waiters;
 
   /**
+   * @brief Calls whose resuming reaction has run, waiting for the scheduler to reach their level.
+   *
+   * Each entry was unlinked from `async_waiters` by `lf_async_resume()` or `lf_await_resume()` and
+   * continues when the scheduler enters the level of its reaction. Protected by the environment mutex.
+   */
+  lf_async_state_t* async_deferred;
+
+  /**
    * @brief Physical actions passed to `lf_async()`, and the reaction each is dedicated to.
    *
    * Protected by the environment mutex.

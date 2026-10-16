@@ -223,6 +223,16 @@ typedef struct lf_async_state_t {
    * was already stopping when the call began, in which case the call does not suspend at all.
    */
   bool left_pool;
+  /**
+   * Tag at which a logical action resumes this call. `FOREVER_TAG` for a physical action and for
+   * `lf_await()`. Several calls that share one logical action and the same tag share one event.
+   */
+  tag_t resume_tag;
+  /**
+   * True if this call scheduled the logical action for `resume_tag`. A later call for the same
+   * action and tag leaves this false and does not schedule another event.
+   */
+  bool event_pending;
   /** Next pending call in the environment, or NULL. */
   struct lf_async_state_t* next;
 #if !defined(LF_SINGLE_THREADED)
@@ -290,14 +300,16 @@ void _lf_async_end(lf_async_state_t* state);
  * ```
  * reaction(awake) {= lf_async_resume(awake); =}
  * ```
- * If several calls from the same reaction share this action, this resumes the oldest one. A
- * physical action cannot be shared with another reaction. If that call's function has not
- * yet returned, this function blocks until `_lf_async_end()` is called for it. The calling worker
- * is busy while it blocks, so logical time cannot advance and the suspended reaction resumes at
- * this tag. The suspended thread rejoins the pool of worker threads and, once this reaction has
- * completed, continues at the current tag. If no call is waiting on this action, this function
- * does nothing. Only this reaction incurs any cost; the runtime does not check for pending
- * `lf_async()` calls anywhere else.
+ * Every pending call on this action whose scheduled tag has been reached is resumed, oldest first.
+ * A physical action cannot be shared with another reaction, so it has at most one such call. If a
+ * call's function has not yet returned, this function blocks until `_lf_async_end()` is called for
+ * it before considering the next call. The calling worker is busy while it blocks, so logical time
+ * cannot advance past this tag. A suspended reaction does not continue inline: it continues when
+ * the scheduler reaches that reaction's level, and the scheduler does not start a higher level
+ * until the continuation has completed. Reactions of one reactor have distinct levels, so the
+ * continuations run in declaration order, before any later reaction triggered by the action. If no
+ * due call is waiting on this action, this function does nothing. Only this reaction incurs any
+ * cost; the runtime does not check for pending `lf_async()` calls anywhere else.
  *
  * @param action The action, as it is in scope in the reaction body.
  */
@@ -339,8 +351,9 @@ void _lf_await(void* self, void* port);
  * This is the implementation of the `lf_await_resume()` macro, which supplies `self`, and is not
  * meant to be called directly. It must be called from the body of a reaction of the same reactor
  * as the suspended reactions, typically a reaction triggered by the port. All pending `lf_await()`
- * calls of this reactor on this port are resumed, oldest first. Each suspended thread rejoins the pool of worker
- * threads and, once this reaction has completed, continues at the current tag; the reactor mutex serializes them. If no
+ * calls of this reactor on this port are resumed. Each continues when the scheduler reaches that
+ * reaction's level, and the scheduler does not start a higher level until the continuation has
+ * completed, so they run in declaration order. If no
  * reaction of this reactor is suspended on this port, this function does nothing. Calls suspended in `lf_async()` or on
  * other ports are not affected.
  *

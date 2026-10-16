@@ -48,6 +48,9 @@ typedef struct custom_scheduler_data_t {
                              // runtime (see lf_sched_add_worker() and lf_sched_remove_worker()),
                              // and a worker going idle and a worker leaving the pool must each
                              // be able to decide consistently whether all workers are idle.
+  bool caller_accounted_busy; // The worker distributing reactions has already been removed from
+                              // the idle count because it released an lf_async() continuation at
+                              // this level. _lf_sched_notify_workers() must not count it again.
 } custom_scheduler_data_t;
 
 /** The increment of worker_counts corresponding to one worker. */
@@ -123,19 +126,30 @@ static int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
   // Note: All the threads are idle, which means that they are done inserting
   // reactions. Therefore, the reaction vectors can be accessed without
   // locking a mutex.
+  environment_t* env = scheduler->env;
   while (scheduler->custom_data->next_reaction_level <= scheduler->max_reaction_level) {
 #ifdef FEDERATED
     lf_stall_advance_level_federation(scheduler->env, scheduler->custom_data->next_reaction_level);
 #endif
-    scheduler->custom_data->executing_reactions =
-        scheduler->custom_data->triggered_reactions[scheduler->custom_data->next_reaction_level];
-    LF_PRINT_DEBUG("Start of rxn queue at %zu is %p", scheduler->custom_data->next_reaction_level,
-                   (void*)((reaction_t**)scheduler->custom_data->executing_reactions)[0]);
+    size_t level = scheduler->custom_data->next_reaction_level;
+    scheduler->custom_data->executing_reactions = scheduler->custom_data->triggered_reactions[level];
+    LF_PRINT_DEBUG("Start of rxn queue at %zu is %p", level, (void*)((reaction_t**)scheduler->custom_data->executing_reactions)[0]);
 
     scheduler->custom_data->next_reaction_level++;
 
-    if (scheduler->custom_data->executing_reactions[0] != NULL) {
-      // There is at least one reaction to execute
+    bool has_reactions = scheduler->custom_data->executing_reactions[0] != NULL;
+    // Resume lf_async()/lf_await() continuations at this level before any higher level runs,
+    // including when this level has no queued reaction. Hold the mutex across the resume so a
+    // continuation cannot finish and rejoin the idle count before this worker has left it.
+    LF_MUTEX_LOCK(&env->mutex);
+    int released = _lf_async_release_level_locked(env, level);
+    if (released > 0) {
+      lf_atomic_fetch_add64(&scheduler->custom_data->worker_counts, -1);
+      scheduler->custom_data->caller_accounted_busy = true;
+    }
+    LF_MUTEX_UNLOCK(&env->mutex);
+
+    if (has_reactions || released > 0) {
       return 1;
     }
   }
@@ -151,11 +165,25 @@ static int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
 static void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
   // Calculate the number of workers that we need to wake up, which is the
   // number of reactions enabled at this level.
-  // Note: All threads are idle. Therefore, there is no need to lock the mutex while accessing the index for the
-  // current level.
+  // Note: All threads are idle, unless this worker already left the idle count in order to
+  // release an lf_async() continuation at this level.
+  // There is no need to lock the mutex while accessing the index for the current level.
   int number_of_idle_workers = LF_WORKER_COUNTS_IDLE(_lf_sched_load_worker_counts(scheduler));
-  size_t workers_to_awaken = LF_MIN((size_t)number_of_idle_workers,
-                                    (size_t)(scheduler->indexes[scheduler->custom_data->next_reaction_level - 1]));
+  size_t reactions_at_level = (size_t)scheduler->indexes[scheduler->custom_data->next_reaction_level - 1];
+  size_t workers_to_awaken;
+  if (scheduler->custom_data->caller_accounted_busy) {
+    // This worker will try to run one reaction. Wake one idle worker per remaining reaction.
+    scheduler->custom_data->caller_accounted_busy = false;
+    size_t others = reactions_at_level > 0 ? reactions_at_level - 1 : 0;
+    workers_to_awaken = LF_MIN((size_t)number_of_idle_workers, others);
+    LF_PRINT_DEBUG("Scheduler: Notifying %zu workers.", workers_to_awaken);
+    if (workers_to_awaken > 0) {
+      lf_atomic_fetch_add64(&scheduler->custom_data->worker_counts, -(int64_t)workers_to_awaken);
+      lf_semaphore_release(scheduler->custom_data->semaphore, workers_to_awaken);
+    }
+    return;
+  }
+  workers_to_awaken = LF_MIN((size_t)number_of_idle_workers, reactions_at_level);
   LF_PRINT_DEBUG("Scheduler: Notifying %zu workers.", workers_to_awaken);
 
   // The awakened workers, including the caller, are no longer idle.

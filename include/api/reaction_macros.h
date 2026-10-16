@@ -263,6 +263,10 @@
  *    reaction triggered by `action` calls `lf_async_resume(action)`. If `action` is logical and its delay
  *    elapses before `func` returns, the triggered reaction calls `lf_async_resume()` first and blocks until
  *    `func` returns. The worker executing it stays busy, so logical time does not advance past that tag.
+ *    The calling reaction then continues when the scheduler reaches that reaction's level, and a higher
+ *    level does not start until the continuation has completed. Several reactions may suspend on one
+ *    logical action; each continues at its own level. A second call for the same logical action and tag
+ *    does not schedule another event.
  * 5. To ensure that other reactions can execute while `func` is running, if needed (see the caveats below),
  *    a worker thread is automatically added to the pool of the environment (see @ref lf_add_worker_thread()).
  *    Then the worker thread executing the reaction that calls `lf_async()` temporarily leaves the pool.

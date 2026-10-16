@@ -49,6 +49,7 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
   env->num_workers = num_workers;
   env->num_added_workers = 0;
   env->async_waiters = NULL;
+  env->async_deferred = NULL;
   env->async_physical_owners = NULL;
   env->num_async_threads = 0;
   env->num_async_suspended = 0;
