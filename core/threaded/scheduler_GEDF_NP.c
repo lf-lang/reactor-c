@@ -83,8 +83,11 @@ static int advance_tag(lf_scheduler_t* scheduler) {
   // Reset the level to 0.
   scheduler->custom_data->current_level = 0;
   // Continuations deferred to level 0 run before reactions at higher levels. The caller holds
-  // the environment mutex, so a resumed thread cannot proceed until this worker waits.
-  _lf_async_release_level_locked(scheduler->env, 0);
+  // the environment mutex, so a resumed thread cannot proceed until this worker waits. The list
+  // is empty unless a reaction has deferred an lf_async() or lf_await() continuation.
+  if (scheduler->env->async_deferred != NULL) {
+    _lf_async_release_level_locked(scheduler->env, 0);
+  }
 #ifdef FEDERATED
   // In case there are blocking network input reactions at this level, stall.
   lf_stall_advance_level_federation_locked(scheduler->custom_data->current_level);
@@ -104,8 +107,10 @@ static void advance_level(lf_scheduler_t* scheduler) {
   }
   // Release continuations at this level before considering a higher one. A resumed thread is a
   // busy worker, so the caller will not advance again until it has finished. The caller holds
-  // the environment mutex.
-  _lf_async_release_level_locked(scheduler->env, scheduler->custom_data->current_level);
+  // the environment mutex. The list is empty unless a reaction has deferred a continuation.
+  if (scheduler->env->async_deferred != NULL) {
+    _lf_async_release_level_locked(scheduler->env, scheduler->custom_data->current_level);
+  }
   LF_PRINT_DEBUG("Scheduler: Advancing to next reaction level %zu.", scheduler->custom_data->current_level);
 #ifdef FEDERATED
   // In case there are blocking network input reactions at this level, stall.

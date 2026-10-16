@@ -139,15 +139,21 @@ static int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
 
     bool has_reactions = scheduler->custom_data->executing_reactions[0] != NULL;
     // Resume lf_async()/lf_await() continuations at this level before any higher level runs,
-    // including when this level has no queued reaction. Hold the mutex across the resume so a
+    // including when this level has no queued reaction. The deferred list is written only by a
+    // worker executing a reaction, and this function runs only when every worker is idle. The
+    // idle-count updates are full barriers, so a deferral made before that worker went idle is
+    // visible here, and the empty check needs no lock. Hold the mutex across a resume so a
     // continuation cannot finish and rejoin the idle count before this worker has left it.
-    LF_MUTEX_LOCK(&env->mutex);
-    int released = _lf_async_release_level_locked(env, level);
-    if (released > 0) {
-      lf_atomic_fetch_add64(&scheduler->custom_data->worker_counts, -1);
-      scheduler->custom_data->caller_accounted_busy = true;
+    int released = 0;
+    if (env->async_deferred != NULL) {
+      LF_MUTEX_LOCK(&env->mutex);
+      released = _lf_async_release_level_locked(env, level);
+      if (released > 0) {
+        lf_atomic_fetch_add64(&scheduler->custom_data->worker_counts, -1);
+        scheduler->custom_data->caller_accounted_busy = true;
+      }
+      LF_MUTEX_UNLOCK(&env->mutex);
     }
-    LF_MUTEX_UNLOCK(&env->mutex);
 
     if (has_reactions || released > 0) {
       return 1;
