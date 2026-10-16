@@ -13,10 +13,18 @@
 int main() {
   int res;
 
-  // Set the CPU Set of the current thread.
-  res = lf_thread_set_cpu(lf_thread_self(), lf_available_cores() - 1);
-  if (res != 0) {
-    lf_print_error_and_exit("lf_thread_set_cpu failed with %d", res);
+  // Set the CPU affinity using specific (valid) core IDs.
+  {
+    int available = lf_available_cores();
+    if (available <= 0) {
+      lf_print_error_and_exit("lf_available_cores returned %d", available);
+    }
+    int core_ids[] = {0, 1};
+    size_t n = (available > 1) ? 2u : 1u;
+    res = lf_thread_set_cpu(core_ids, n);
+    if (res != 0) {
+      lf_print_error_and_exit("lf_thread_set_cpu failed with %d", res);
+    }
   }
 
   // Configure SCHED_FIFO
@@ -73,13 +81,25 @@ int main() {
     cfg.policy = LF_SCHED_FAIR;
     res = lf_thread_set_scheduling_policy(lf_thread_self(), &cfg);
     if (res != 0) {
-      lf_print_error_and_exit("lf_thread_set_scheduling_policy RR failed with %d", res);
+      lf_print_error_and_exit("lf_thread_set_scheduling_policy FAIR failed with %d", res);
     }
   }
 
-  // Try pinning to non-existant CPU core.
-  res = lf_thread_set_cpu(lf_thread_self(), lf_available_cores());
-  if (res == 0) {
-    lf_print_error_and_exit("lf_thread_set_cpu should fail for too high CPU id");
+  // Try with an invalid core ID
+  {
+    int bad_ids[] = {9999};
+    res = lf_thread_set_cpu(bad_ids, 1);
+    if (res != LF_THREAD_CPU_INVALID_CORE) {
+      lf_print_error_and_exit("lf_thread_set_cpu should return LF_THREAD_CPU_INVALID_CORE for invalid core ID");
+    }
   }
+
+  // Try with NULL core_ids - should return -1 (no pinning)
+  res = lf_thread_set_cpu(NULL, 0);
+  if (res != -1) {
+    lf_print_error_and_exit("lf_thread_set_cpu should return -1 for NULL/0");
+  }
+
+  printf("All scheduling API tests passed!\n");
+  return 0;
 }
