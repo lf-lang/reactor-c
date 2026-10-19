@@ -341,8 +341,13 @@ void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, in
     lf_stat_ll stats = {0, 0, 0, 0};
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS // Enabled by default
     stats = calculate_socket_stat(&_lf_rti_socket_stat);
-    // Issue a warning if standard deviation is high in data
+// Issue a warning if standard deviation is high in data
+// Allow federates without a real time clock to pass
+#if defined(PLATFORM_ZEPHYR)
+    if (socket_type == UDP && stats.standard_deviation >= CLOCK_SYNC_GUARD_BAND) {
+#else
     if (stats.standard_deviation >= CLOCK_SYNC_GUARD_BAND) {
+#endif
       // Reset the stats
       LF_PRINT_LOG("Clock sync: Large standard deviation detected in network delays (" PRINTF_TIME
                    ") for the current period."
