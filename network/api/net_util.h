@@ -25,7 +25,14 @@
 #else
 #include <sys/socket.h>
 #include <regex.h>
+#else
+#include <sys/socket.h>
 #endif
+
+#if !defined(PLATFORM_ZEPHYR)
+// Zephyr has no regex.
+#include <regex.h>
+#endif // !PLATFORM_ZEPHYR
 
 #include <sys/types.h>
 #include <stdbool.h>
