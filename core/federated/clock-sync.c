@@ -341,8 +341,8 @@ void handle_T4_clock_sync_message(unsigned char* buffer, void* socket_or_net, in
     lf_stat_ll stats = {0, 0, 0, 0};
 #ifdef _LF_CLOCK_SYNC_COLLECT_STATS // Enabled by default
     stats = calculate_socket_stat(&_lf_rti_socket_stat);
-// Issue a warning if standard deviation is high in data
-// Allow federates without a real time clock to pass
+// Reject the clock synchronization if the standard deviation is too high.
+// On Zephyr, we accept it regardless of the standard deviation unless the socket type is UDP.
 #if defined(PLATFORM_ZEPHYR)
     if (socket_type == UDP && stats.standard_deviation >= CLOCK_SYNC_GUARD_BAND) {
 #else
