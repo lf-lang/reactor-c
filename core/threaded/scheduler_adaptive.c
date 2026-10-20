@@ -349,7 +349,8 @@ static void worker_states_lock(lf_scheduler_t* scheduler, size_t worker) {
   worker_states_t* worker_states = scheduler->custom_data->worker_states;
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   LF_ASSERT(worker_states->num_loose_threads > 0, "Sched: No loose threads");
-  LF_ASSERT(worker_states->num_loose_threads <= (int)worker_assignments->max_num_workers, "Sched: Too many loose threads");
+  LF_ASSERT(worker_states->num_loose_threads <= (int)worker_assignments->max_num_workers,
+            "Sched: Too many loose threads");
   size_t lt = worker_states->num_loose_threads;
   if (lt > 1 || !fast) { // FIXME: Lock should be partially optimized out even when !fast
     LF_MUTEX_LOCK(&scheduler->env->mutex);
