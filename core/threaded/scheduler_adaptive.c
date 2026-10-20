@@ -401,7 +401,8 @@ static void worker_states_sleep_and_unlock(lf_scheduler_t* scheduler, size_t wor
   worker_states_t* worker_states = scheduler->custom_data->worker_states;
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   LF_ASSERT(worker < worker_assignments->max_num_workers, "Sched: Invalid worker");
-  LF_ASSERT(worker_states->num_loose_threads <= worker_assignments->max_num_workers, "Sched: Too many loose threads");
+  LF_ASSERT(worker_states->num_loose_threads <= (int)worker_assignments->max_num_workers,
+            "Sched: Too many loose threads");
   if (!worker_states->mutex_held[worker]) {
     LF_MUTEX_LOCK(&scheduler->env->mutex);
   }
