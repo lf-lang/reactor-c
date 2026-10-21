@@ -218,7 +218,12 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
 
       // If all other workers are idle, then we are done with this tag.
       if (scheduler->number_of_idle_workers == scheduler->number_of_workers - 1) {
-        // Last thread to go idle
+        // Last thread to go idle. Check whether there are any deferred continuations at the current level.
+        if (scheduler->env->async_deferred != NULL &&
+            scheduler->custom_data->current_level < scheduler->max_reaction_level) {
+          advance_level(scheduler);
+          continue;
+        }
         LF_PRINT_DEBUG("Scheduler: Worker %d is advancing the tag.", worker_number);
         if (advance_tag(scheduler)) {
           // Stop tag has been reached.
