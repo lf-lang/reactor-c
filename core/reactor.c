@@ -10,6 +10,7 @@
 #if defined(LF_SINGLE_THREADED)
 
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "reactor.h"
@@ -17,6 +18,7 @@
 #include "low_level_platform.h"
 #include "reactor_common.h"
 #include "environment.h"
+#include "tracepoint.h"
 
 // Embedded platforms with no command line interface shouldnt have signals
 #if !defined(NO_CLI)
@@ -371,6 +373,16 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
       while (next(env) != 0)
         ;
     }
+    // Persist remaining in-memory trace records before returning from main().
+    lf_tracing_flush();
+#ifdef FEDERATED
+    // Leave _lf_normal_termination false. termination() then skips the
+    // heap-walking cleanup, and lf_terminate_execution() does not try to
+    // talk to the dead RTI. Returning from main is the single call to exit().
+    if (lf_rti_has_failed()) {
+      return EXIT_FAILURE;
+    }
+#endif
     _lf_normal_termination = true;
     return 0;
   } else {

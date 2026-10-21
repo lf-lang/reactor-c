@@ -254,10 +254,14 @@ int lf_enable_interrupts_nested() {
   if (_lf_nested_count == 0)
     return 1; // Error. Interrupts have not been disabled.
   _lf_nested_count--;
-  return sd_nvic_critical_region_exit(0);
-  // FIXME: If softdevice is not enabled, do the following instead of above:
-  // __enable_irq();
-  // return 0;
+  if (_lf_nested_count == 0) {
+    // Last nested exit from a critical section.
+    // Argument is zero because we keep track of the nested count ourselves.
+    return sd_nvic_critical_region_exit(0);
+    // FIXME: If softdevice is not enabled, do the following instead of above:
+    // __enable_irq();
+  }
+  return 0;
 }
 
 /**
@@ -267,11 +271,15 @@ int lf_enable_interrupts_nested() {
  */
 int lf_disable_interrupts_nested() {
   _lf_nested_count++;
-  uint8_t success = 0;
-  return sd_nvic_critical_region_enter(&success);
-  // FIXME: If softdevice is not enabled, do the following instead of the above:
-  // __disable_irq();
-  // return 0;
+  uint8_t is_in_critical_section = 0;
+  if (_lf_nested_count == 1) {
+    // First nested entry into a critical section.
+    // Argument points to zero because we keep track of the nested count ourselves.
+    return sd_nvic_critical_region_enter(&is_in_critical_section);
+    // FIXME: If softdevice is not enabled, do the following instead of the above:
+    // __disable_irq();
+  }
+  return 0;
 }
 
 /**

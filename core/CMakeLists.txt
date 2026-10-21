@@ -54,7 +54,7 @@ lf_enable_compiler_warnings(reactor-c)
 
 include(${LF_ROOT}/core/lf_trace.cmake)
 
-include(${LF_ROOT}/version/api/CMakeLists.txt)
+include(${LF_ROOT}/lf_version/api/CMakeLists.txt)
 target_link_libraries(reactor-c PUBLIC lf::version-api)
 
 include(${LF_ROOT}/logging/api/CMakeLists.txt)

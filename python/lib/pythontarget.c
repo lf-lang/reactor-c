@@ -533,13 +533,21 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
   int num_environments = _lf_get_environments(&top_level_environment);
   LF_ASSERT(num_environments == 1, "Python target only supports programs with a single environment/enclave");
 
-  Py_BEGIN_ALLOW_THREADS lf_reactor_c_main(argc, argv);
+  // Python's start() ignores this return value, so a non-zero status from
+  // lf_reactor_c_main (for example an RTI failure) must terminate the process.
+  // exit() runs the atexit termination handler registered by the runtime.
+  int status;
+  Py_BEGIN_ALLOW_THREADS status = lf_reactor_c_main(argc, argv);
   Py_END_ALLOW_THREADS
 
 #ifdef LF_TRACE
   // Ensure trace buffers are flushed for Python runs
   lf_tracing_global_shutdown();
 #endif
+
+  if (status != 0) {
+    exit(status);
+  }
 
   Py_INCREF(Py_None);
   return Py_None;

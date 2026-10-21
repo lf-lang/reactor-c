@@ -1411,7 +1411,6 @@ void termination(void) {
   // It should only be called for the top-level environment, which, by convention, is the first environment.
   lf_terminate_execution(env);
 
-  // In order to free tokens, we perform the same actions we would have for a new time step.
   for (int i = 0; i < num_envs; i++) {
     if (!env[i].initialized) {
       lf_print_warning("---- Env %u was never initialized", env[i].id);
@@ -1423,6 +1422,18 @@ void termination(void) {
     // Make sure all watchdog threads have stopped
     _lf_watchdog_terminate_all(&env[i]);
 #endif
+  }
+
+  // Flush and close the trace file before any further cleanup. Remaining
+  // records live in per-thread memory buffers until this point; if cleanup
+  // below fails or the process is torn down, those records would be lost.
+  lf_tracing_global_shutdown();
+
+  // In order to free tokens, we perform the same actions we would have for a new time step.
+  for (int i = 0; i < num_envs; i++) {
+    if (!env[i].initialized) {
+      continue;
+    }
 
     // Skip most cleanup on abnormal termination.
     if (_lf_normal_termination) {
@@ -1467,7 +1478,6 @@ void termination(void) {
       }
     }
   }
-  lf_tracing_global_shutdown();
   // Skip most cleanup on abnormal termination.
   if (_lf_normal_termination) {
     _lf_free_all_tokens(); // Must be done before freeing reactors.
