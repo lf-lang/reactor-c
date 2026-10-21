@@ -19,12 +19,6 @@
 
 #ifdef PLATFORM_ARDUINO
 #error To be implemented. No support for federation on Arduino yet.
-#elif defined(PLATFORM_ZEPHYR)
-// Zephyr has no regex.
-#include <sys/socket.h>
-#else
-#include <sys/socket.h>
-#include <regex.h>
 #else
 #include <sys/socket.h>
 #endif
