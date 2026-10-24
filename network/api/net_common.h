@@ -733,6 +733,24 @@
 #define MSG_TYPE_PORT_ABSENT 23
 
 /**
+ * @brief Open-ended port absent sent on a direct federate-to-federate connection.
+ * @ingroup Network
+ *
+ * The sender has finished `completed_tag` and has no later local event, so it will
+ * not produce another output until it receives a network input. The payload layout
+ * matches @ref MSG_TYPE_PORT_ABSENT, except the tag is the tag the sender completed
+ * rather than a single absent tag. Receivers whose STAA is forever may treat every
+ * later tag as absent until they send to this federate or a tagged message arrives.
+ * A finite STAA ignores the message and keeps its timeout.
+ *
+ * The next 2 bytes are the port id.
+ * The next 2 bytes are the destination federate id.
+ * The next 8 bytes are the completed time.
+ * The next 4 bytes are the completed microstep.
+ */
+#define MSG_TYPE_PORT_IDLE 33
+
+/**
  * @brief A message that informs the RTI about connections between this federate and
  * other federates where messages are routed through the RTI.
  * @ingroup Network
