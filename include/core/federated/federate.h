@@ -534,6 +534,24 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
                                      unsigned short fed_ID);
 
 /**
+ * @brief If this federate has no event after the current tag, send an open-ended absent.
+ * @ingroup Federated
+ *
+ * Decentralized zero-delay cycles default STAA to forever, so a downstream federate
+ * will not assume a port is absent until a present or port-absent message arrives.
+ * An upstream with no further local events never executes the downstream's later tags
+ * and therefore never sends those port-absent messages (PingPongDecoupled.lf).
+ * This sends @ref MSG_TYPE_PORT_IDLE, promising no output after the current tag until
+ * a network input wakes the sender. No-op unless coordination is decentralized and the
+ * event queue has no future event.
+ *
+ * @param env The environment of the federate.
+ * @param port_ID Destination port id.
+ * @param fed_ID Destination federate id.
+ */
+void lf_send_idle_absent_if_quiescent(environment_t* env, unsigned short port_ID, unsigned short fed_ID);
+
+/**
  * @brief Send a MSG_TYPE_STOP_REQUEST message to the RTI.
  * @ingroup Federated
  *
