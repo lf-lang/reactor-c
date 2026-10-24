@@ -197,6 +197,61 @@ PyObject* py_tracepoint_user_event(PyObject* self, PyObject* args);
  */
 PyObject* py_tracepoint_user_value(PyObject* self, PyObject* args);
 
+/**
+ * @brief Invoke a Python callable without blocking the rest of the program.
+ *
+ * This is the Python equivalent of the C `lf_async()` macro. `args` is
+ * `(reactor, action, function, arg_tuple)`. `function` is called as
+ * `function(*arg_tuple)` while the calling worker is out of the pool, and this
+ * returns whatever `function` returns. See `lf_async()` for the semantics.
+ * The GIL is released around the parts of the call that can block, so other
+ * reactions can run Python code while `function` is suspended.
+ */
+PyObject* py_lf_async(PyObject* self, PyObject* args);
+
+/**
+ * @brief Resume the oldest `lf_async()` call waiting on the given action.
+ *
+ * `args` is `(action,)`. See `lf_async_resume()`.
+ */
+PyObject* py_lf_async_resume(PyObject* self, PyObject* args);
+
+/**
+ * @brief Suspend the calling reaction until `lf_await_resume()` is called on the port.
+ *
+ * `args` is `(reactor, port)`. On return, the Python port's `value` and `is_present`
+ * reflect the C port at the tag where the reaction resumes. See `lf_await()`.
+ */
+PyObject* py_lf_await(PyObject* self, PyObject* args);
+
+/**
+ * @brief Resume every `lf_await()` call of this reactor waiting on the given port.
+ *
+ * `args` is `(reactor, port)`. See `lf_await_resume()`.
+ */
+PyObject* py_lf_await_resume(PyObject* self, PyObject* args);
+
+/**
+ * @brief Add a worker thread. `args` is `(reactor,)`. Returns 0 on success, or -1.
+ *
+ * See `lf_add_worker_thread()`.
+ */
+PyObject* py_lf_add_worker_thread(PyObject* self, PyObject* args);
+
+/**
+ * @brief Return the number of worker threads added at runtime. `args` is `(reactor,)`.
+ *
+ * See `lf_added_worker_thread_count()`.
+ */
+PyObject* py_lf_added_worker_thread_count(PyObject* self, PyObject* args);
+
+/**
+ * @brief Return the id of the worker thread executing the caller.
+ *
+ * See `lf_thread_id()`.
+ */
+PyObject* py_lf_thread_id(PyObject* self, PyObject* args);
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 
