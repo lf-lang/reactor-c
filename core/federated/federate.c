@@ -3228,10 +3228,12 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   }
 }
 
+#ifdef FEDERATED_DECENTRALIZED
+// Only decentralized coordination sends idle notices. Centralized builds enable
+// -Werror=unused-function, so this helper must not be compiled there.
 static void lf_send_port_idle_message(environment_t* env, unsigned short port_ID, unsigned short fed_ID,
                                       tag_t completed) {
   (void)env;
-#ifdef FEDERATED_DECENTRALIZED
   size_t message_length = 1 + sizeof(port_ID) + sizeof(fed_ID) + sizeof(instant_t) + sizeof(microstep_t);
   unsigned char buffer[message_length];
 
@@ -3258,13 +3260,8 @@ static void lf_send_port_idle_message(environment_t* env, unsigned short port_ID
   if (result != 0) {
     lf_print_warning("Failed to send idle notice for port %hu to federate %hu.", port_ID, fed_ID);
   }
-#else
-  (void)env;
-  (void)port_ID;
-  (void)fed_ID;
-  (void)completed;
-#endif // FEDERATED_DECENTRALIZED
 }
+#endif // FEDERATED_DECENTRALIZED
 
 void lf_send_idle_absent_if_quiescent(environment_t* env, unsigned short port_ID, unsigned short fed_ID) {
 #ifdef FEDERATED_DECENTRALIZED
