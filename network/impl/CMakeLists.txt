@@ -69,6 +69,11 @@ else()
     message(FATAL_ERROR "Your communication type is not supported! The C target supports TCP, TLS and SST.")
 endif()
 
+# On Zephyr, the socket headers and Kconfig definitions come from zephyr_interface.
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
+    target_link_libraries(lf-network-impl PUBLIC zephyr_interface)
+endif()
+
 # Link necessary libraries
 target_link_libraries(lf-network-impl PUBLIC lf-logging-api)
 target_link_libraries(lf-network-impl PUBLIC lf-low-level-platform-api)

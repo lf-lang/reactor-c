@@ -91,7 +91,7 @@ static int set_socket_bind_option(int socket_descriptor, uint16_t specified_port
   // Server file descriptor.
   struct sockaddr_in server_fd;
   // Zero out the server address structure.
-  bzero((char*)&server_fd, sizeof(server_fd));
+  memset(&server_fd, 0, sizeof(server_fd));
   uint16_t used_port = specified_port;
   server_fd.sin_family = AF_INET;         // IPv4
   server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
@@ -277,6 +277,7 @@ int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_a
       // transient failure otherwise becomes permanent until process restart.
       // Retry on a fresh socket, preserving the fd number that the caller
       // holds via dup2(). See #595.
+#if !defined(PLATFORM_ZEPHYR)
       int fresh = create_real_time_tcp_socket_errexit();
       if (dup2(fresh, sock) < 0) {
         int dup_errno = errno;
@@ -285,6 +286,7 @@ int connect_to_socket(int sock, const char* hostname, const struct in_addr* ip_a
         lf_print_error_system_failure("Failed to recreate socket with dup2() after connect() failure.");
       }
       close(fresh);
+#endif // Zephyr has no dup2(), so it retries on the same socket.
       lf_sleep(CONNECT_RETRY_INTERVAL);
       lf_print_warning("Could not connect (errno=%d: %s). Will try again every " PRINTF_TIME
                        " nanoseconds. Connecting to port %d.\n",

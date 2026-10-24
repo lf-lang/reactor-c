@@ -405,6 +405,16 @@ void* lf_handle_p2p_connections_from_federates(void* ignored);
 void lf_latest_tag_confirmed(tag_t tag_to_send);
 
 /**
+ * @brief Hook to initialize a network interface in a federate before attempting to connect to the RTI.
+ * @ingroup Federated
+ *
+ * This function is (weakly) defined to be empty, but an application may define it to implement
+ * whatever is needed to bring up the network interface on a particular platform before the federate
+ * will attempt to connect to the RTI.
+ */
+void lf_network_up(void);
+
+/**
  * @brief Parse the address of the RTI and store them into the global federation_metadata struct.
  * @ingroup Federated
  *
