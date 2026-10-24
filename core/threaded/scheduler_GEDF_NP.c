@@ -82,6 +82,12 @@ static int advance_tag(lf_scheduler_t* scheduler) {
   scheduler->custom_data->solo_holds_mutex = false;
   // Reset the level to 0.
   scheduler->custom_data->current_level = 0;
+  // Continuations deferred to level 0 run before reactions at higher levels. The caller holds
+  // the environment mutex, so a resumed thread cannot proceed until this worker waits. The list
+  // is empty unless a reaction has deferred an lf_async() or lf_await() continuation.
+  if (scheduler->env->async_deferred != NULL) {
+    _lf_async_release_level_locked(scheduler->env, 0);
+  }
 #ifdef FEDERATED
   // In case there are blocking network input reactions at this level, stall.
   lf_stall_advance_level_federation_locked(scheduler->custom_data->current_level);
@@ -98,6 +104,12 @@ static void advance_level(lf_scheduler_t* scheduler) {
     // Since the reaction queue is not empty, we must be cycling back to level 0 due to deadlines
     // having been given precedence over levels.  Reset the current level to 1.
     scheduler->custom_data->current_level = 0;
+  }
+  // Release continuations at this level before considering a higher one. A resumed thread is a
+  // busy worker, so the caller will not advance again until it has finished. The caller holds
+  // the environment mutex. The list is empty unless a reaction has deferred a continuation.
+  if (scheduler->env->async_deferred != NULL) {
+    _lf_async_release_level_locked(scheduler->env, scheduler->custom_data->current_level);
   }
   LF_PRINT_DEBUG("Scheduler: Advancing to next reaction level %zu.", scheduler->custom_data->current_level);
 #ifdef FEDERATED
@@ -206,7 +218,12 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
 
       // If all other workers are idle, then we are done with this tag.
       if (scheduler->number_of_idle_workers == scheduler->number_of_workers - 1) {
-        // Last thread to go idle
+        // Last thread to go idle. Check whether there are any deferred continuations at the current level.
+        if (scheduler->env->async_deferred != NULL &&
+            scheduler->custom_data->current_level < scheduler->max_reaction_level) {
+          advance_level(scheduler);
+          continue;
+        }
         LF_PRINT_DEBUG("Scheduler: Worker %d is advancing the tag.", worker_number);
         if (advance_tag(scheduler)) {
           // Stop tag has been reached.
@@ -260,5 +277,32 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
 
     LF_MUTEX_UNLOCK(&scheduler->env->mutex);
   }
+}
+
+int lf_sched_add_worker(lf_scheduler_t* scheduler) {
+  // The caller holds the environment mutex, which protects all accesses to
+  // number_of_workers and number_of_idle_workers in this scheduler. The caller
+  // is executing a reaction, so it is not idle, and therefore no other worker
+  // can be the last to go idle until the caller and the new worker are both idle.
+  scheduler->number_of_workers++;
+  return 0;
+}
+
+void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
+  // The caller holds the environment mutex. The thread was never created.
+  scheduler->number_of_workers--;
+}
+
+int lf_sched_remove_worker(lf_scheduler_t* scheduler) {
+  // The caller holds the environment mutex and is executing a reaction, so it
+  // is not idle. If every remaining worker is idle, all of them are waiting on
+  // reaction_q_changed, and none would notice that the tag or level can now
+  // advance. Wake one of them: it will re-examine the reaction queue and, finding
+  // all other workers idle, advance the level or the tag.
+  scheduler->number_of_workers--;
+  if (scheduler->number_of_idle_workers == scheduler->number_of_workers && scheduler->number_of_workers > 0) {
+    LF_COND_SIGNAL(&scheduler->custom_data->reaction_q_changed);
+  }
+  return 0;
 }
 #endif // SCHEDULER == SCHED_GEDF_NP
