@@ -1,7 +1,15 @@
 var reactor_8h =
 [
     [ "SUPPRESS_UNUSED_WARNING", "reactor_8h.html#a4625be3023ef492f25fd5193ef754774", null ],
+    [ "lf_async_state_t", "group__Internal.html#ga7947c9a6d291940f4e11d118eda0d922", null ],
+    [ "_lf_async_begin", "group__Internal.html#gad1555746f02c05e5879a2b287a252286", null ],
+    [ "_lf_async_end", "group__Internal.html#ga803d7e3c9bce6be8dc2b4e143cc7b99a", null ],
+    [ "_lf_await", "group__Internal.html#ga0ca79eb4d371a5f9b4903951c629e7fe", null ],
+    [ "_lf_await_resume", "group__Internal.html#gad31a7f8781c06daca869cc528c50615c", null ],
+    [ "lf_add_worker_thread", "group__API.html#gabd3b47e909857dcd0fda4ab9a6696052", null ],
+    [ "lf_added_worker_thread_count", "group__API.html#gaccc6e088558c2d8699de5bca015df6a8", null ],
     [ "lf_allocate", "group__Internal.html#ga1a5fdb69bc112879d4014bb0790e843c", null ],
+    [ "lf_async_resume", "group__API.html#gae0e25ced19f6ea229a5c93ae565901d1", null ],
     [ "lf_free_all_reactors", "group__Internal.html#gadf76c4fc43b07691236fa6a483762481", null ],
     [ "lf_free_reactor", "group__Internal.html#ga2f0b7c8d624c2da93012538bd93568ad", null ],
     [ "lf_get_fed_maxwait", "group__Federated.html#gab4b57d55b69a4864eb694ed080b84d0e", null ],

@@ -1,5 +1,10 @@
 var reaction__macros_8h =
 [
+    [ "lf_add_worker_thread", "group__API.html#ga5eeb78d277101e8a160e3b183c0c1493", null ],
+    [ "lf_added_worker_thread_count", "group__API.html#ga056ec5b2e70bd291652853353683fd49", null ],
+    [ "lf_async", "group__API.html#ga639f325e7d15a15396baf72955d82038", null ],
+    [ "lf_await", "group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22", null ],
+    [ "lf_await_resume", "group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff", null ],
     [ "lf_reactor_full_name", "group__API.html#ga78918b87982fba15b59f35a8f926b021", null ],
     [ "lf_reactor_name", "group__API.html#ga42c6f935901d6fc56d6e82be619a8bd3", null ],
     [ "lf_set", "group__API.html#gaef602f51d34bbd214643161e425d909d", null ],

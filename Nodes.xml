@@ -199,6 +199,16 @@
             <Anchor>gaabb3bc387f7a50f8cc57319f82c17c31</Anchor>
            </Node>
            <Node>
+            <Name>lf_add_worker_thread</Name>
+            <Path>group__API.html</Path>
+            <Anchor>ga5eeb78d277101e8a160e3b183c0c1493</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_added_worker_thread_count</Name>
+            <Path>group__API.html</Path>
+            <Anchor>ga056ec5b2e70bd291652853353683fd49</Anchor>
+           </Node>
+           <Node>
             <Name>LF_ASSERT</Name>
             <Path>group__API.html</Path>
             <Anchor>ga26ab6a0fd21cdcff11a5557406536bf1</Anchor>
@@ -212,6 +222,21 @@
             <Name>LF_ASSERTN</Name>
             <Path>group__API.html</Path>
             <Anchor>ga1c464cee8cabb65eebf454fc016d47b1</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_async</Name>
+            <Path>group__API.html</Path>
+            <Anchor>ga639f325e7d15a15396baf72955d82038</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_await</Name>
+            <Path>group__API.html</Path>
+            <Anchor>ga1d7e88810c5b5ae3dee716884afb7c22</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_await_resume</Name>
+            <Path>group__API.html</Path>
+            <Anchor>gaa0653ab1c2da4d99eb0cb1825c1495ff</Anchor>
            </Node>
            <Node>
             <Name>lf_multiport_iterator</Name>
@@ -372,6 +397,21 @@
             <Name>string</Name>
             <Path>group__API.html</Path>
             <Anchor>ga4505c08c065b48840a30eedd9845cce2</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_add_worker_thread</Name>
+            <Path>group__API.html</Path>
+            <Anchor>gabd3b47e909857dcd0fda4ab9a6696052</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_added_worker_thread_count</Name>
+            <Path>group__API.html</Path>
+            <Anchor>gaccc6e088558c2d8699de5bca015df6a8</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_async_resume</Name>
+            <Path>group__API.html</Path>
+            <Anchor>gae0e25ced19f6ea229a5c93ae565901d1</Anchor>
            </Node>
            <Node>
             <Name>lf_check_deadline</Name>
@@ -1602,6 +1642,21 @@
               <Anchor>ac17908a0cfa4fdeeb95ae3f26a73017a</Anchor>
              </Node>
              <Node>
+              <Name>async_deferred</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a3136a9463b0ba4af462282bcd17bd7d3</Anchor>
+             </Node>
+             <Node>
+              <Name>async_physical_owners</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a10fc53b0aa5cd918d81ef98949a1db74</Anchor>
+             </Node>
+             <Node>
+              <Name>async_waiters</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>abf88a13b46c036277203a1975d9c3534</Anchor>
+             </Node>
+             <Node>
               <Name>barrier</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>a5573749a4205b81f375cecc34c9891cc</Anchor>
@@ -1690,6 +1745,21 @@
               <Name>need_to_send_LTC</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>aeef35dea438a853fc258631ea4a0e90c</Anchor>
+             </Node>
+             <Node>
+              <Name>num_added_workers</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a5f9b9bca5280a46dc2f355b00dfa85cf</Anchor>
+             </Node>
+             <Node>
+              <Name>num_async_suspended</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>ae6cd8cb3dff2e26ba23817173ce0f97a</Anchor>
+             </Node>
+             <Node>
+              <Name>num_async_threads</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a24ea3797618fb26a92a6e0b847d9eeec</Anchor>
              </Node>
              <Node>
               <Name>num_workers</Name>
@@ -1842,6 +1912,93 @@
               <Name>trigger</Name>
               <Path>structlf__action__base__t.html</Path>
               <Anchor>aacf5d85cce69c1ed02a1717a3fcbb46e</Anchor>
+             </Node>
+            </Subnodes>
+           </Node>
+           <Node>
+            <Name>lf_async_physical_owner_t</Name>
+            <Path>structlf__async__physical__owner__t.html</Path>
+          <Subnodes>
+             <Node>
+              <Name>action</Name>
+              <Path>structlf__async__physical__owner__t.html</Path>
+              <Anchor>a27e342f3f225cb7bb49955522786aa0d</Anchor>
+             </Node>
+             <Node>
+              <Name>next</Name>
+              <Path>structlf__async__physical__owner__t.html</Path>
+              <Anchor>ad630a69dc0c30455fd4a9e197515dbde</Anchor>
+             </Node>
+             <Node>
+              <Name>reaction</Name>
+              <Path>structlf__async__physical__owner__t.html</Path>
+              <Anchor>a3b94b1dea7dd9bd42959cf348b08574c</Anchor>
+             </Node>
+            </Subnodes>
+           </Node>
+           <Node>
+            <Name>lf_async_state_t</Name>
+            <Path>structlf__async__state__t.html</Path>
+          <Subnodes>
+             <Node>
+              <Name>action</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a4eae2701a9386162821032ba8b2c2f21</Anchor>
+             </Node>
+             <Node>
+              <Name>event_pending</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a4594f71021b4905bcad168cf3d5458d9</Anchor>
+             </Node>
+             <Node>
+              <Name>function_done</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a823311d40c23c09f65b6713e56a7dacb</Anchor>
+             </Node>
+             <Node>
+              <Name>left_pool</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a10c506c763fe019f92e177e3876e1212</Anchor>
+             </Node>
+             <Node>
+              <Name>next</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a40e49afec1a0a702c219ac3deac1d0e1</Anchor>
+             </Node>
+             <Node>
+              <Name>port</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a86497f87810659101aede30f8820cea5</Anchor>
+             </Node>
+             <Node>
+              <Name>reaction</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>ae3800e46256fccbc2307676c21e8d56b</Anchor>
+             </Node>
+             <Node>
+              <Name>resume_tag</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a9ea87be668a3a13a9e94fbf4003b3775</Anchor>
+             </Node>
+             <Node>
+              <Name>resume_waiting</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a2831c76a3bb45de371270624e93d9e3d</Anchor>
+             </Node>
+             <Node>
+              <Name>resumed</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a09ba17c05cab9a43257445336f3bac51</Anchor>
+             </Node>
+             <Node>
+              <Name>resumed_cond</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a0e0425d8a6c57a13c48be260bfb7eb68</Anchor>
+             </Node>
+             <Node>
+              <Name>self</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a11821c2c9e3c174238c8d9be0601dd8a</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -2632,6 +2789,16 @@
             <Anchor>ga4448d06be794d3f5412d0edb412dc00e</Anchor>
            </Node>
            <Node>
+            <Name>lf_async_physical_owner_t</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga4e04fe18af688cffa8c3282d757c425a</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_async_state_t</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga7947c9a6d291940f4e11d118eda0d922</Anchor>
+           </Node>
+           <Node>
             <Name>lf_port_base_t</Name>
             <Path>group__Internal.html</Path>
             <Anchor>ga91b17c088cd50ce69df73f1470a18799</Anchor>
@@ -2890,6 +3057,31 @@
             <Name>_lf_advance_tag</Name>
             <Path>group__Internal.html</Path>
             <Anchor>ga4659db62370c837baa55484134b3bfb7</Anchor>
+           </Node>
+           <Node>
+            <Name>_lf_async_begin</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>gad1555746f02c05e5879a2b287a252286</Anchor>
+           </Node>
+           <Node>
+            <Name>_lf_async_end</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga803d7e3c9bce6be8dc2b4e143cc7b99a</Anchor>
+           </Node>
+           <Node>
+            <Name>_lf_async_release_level_locked</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>gab0a572763b22476af4a8a2211df60670</Anchor>
+           </Node>
+           <Node>
+            <Name>_lf_await</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga0ca79eb4d371a5f9b4903951c629e7fe</Anchor>
+           </Node>
+           <Node>
+            <Name>_lf_await_resume</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>gad31a7f8781c06daca869cc528c50615c</Anchor>
            </Node>
            <Node>
             <Name>_lf_create_dummy_events</Name>
@@ -3197,6 +3389,16 @@
             <Anchor>ga3c0888056123fd1ef7c2fdd7a8081ddf</Anchor>
            </Node>
            <Node>
+            <Name>lf_sched_add_worker</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga7213507eeecfb1a6e2b2c554de405fd0</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_sched_cancel_add_worker</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>gac77bb863fe5dc9b73fa34a6f16e05a8e</Anchor>
+           </Node>
+           <Node>
             <Name>lf_sched_done_with_reaction</Name>
             <Path>group__Internal.html</Path>
             <Anchor>ga485e4339d95d23ae5bcbb06c244e7145</Anchor>
@@ -3215,6 +3417,11 @@
             <Name>lf_sched_init</Name>
             <Path>group__Internal.html</Path>
             <Anchor>ga0ebe8d7670a73a6572c7152d31e1fb62</Anchor>
+           </Node>
+           <Node>
+            <Name>lf_sched_remove_worker</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga1c34d07689e22379e97ed23356c7171c</Anchor>
            </Node>
            <Node>
             <Name>lf_schedule_trigger</Name>
@@ -3499,7 +3706,7 @@
            <Node>
             <Name>schedule_output_reactions</Name>
             <Path>group__Internal.html</Path>
-            <Anchor>gaeaaa76aeb7d93efc4e0f0c484548af70</Anchor>
+            <Anchor>ga22efa7f7f693527cdf27e7e88be9b218</Anchor>
            </Node>
            <Node>
             <Name>send_next_event_tag</Name>
@@ -5867,6 +6074,21 @@
               <Anchor>ac17908a0cfa4fdeeb95ae3f26a73017a</Anchor>
              </Node>
              <Node>
+              <Name>async_deferred</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a3136a9463b0ba4af462282bcd17bd7d3</Anchor>
+             </Node>
+             <Node>
+              <Name>async_physical_owners</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a10fc53b0aa5cd918d81ef98949a1db74</Anchor>
+             </Node>
+             <Node>
+              <Name>async_waiters</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>abf88a13b46c036277203a1975d9c3534</Anchor>
+             </Node>
+             <Node>
               <Name>barrier</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>a5573749a4205b81f375cecc34c9891cc</Anchor>
@@ -5955,6 +6177,21 @@
               <Name>need_to_send_LTC</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>aeef35dea438a853fc258631ea4a0e90c</Anchor>
+             </Node>
+             <Node>
+              <Name>num_added_workers</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a5f9b9bca5280a46dc2f355b00dfa85cf</Anchor>
+             </Node>
+             <Node>
+              <Name>num_async_suspended</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>ae6cd8cb3dff2e26ba23817173ce0f97a</Anchor>
+             </Node>
+             <Node>
+              <Name>num_async_threads</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a24ea3797618fb26a92a6e0b847d9eeec</Anchor>
              </Node>
              <Node>
               <Name>num_workers</Name>
@@ -6547,6 +6784,93 @@
               <Name>trigger</Name>
               <Path>structlf__action__internal__t.html</Path>
               <Anchor>a0f59c9d0f5520d8f5a733bfa9ee41930</Anchor>
+             </Node>
+            </Subnodes>
+           </Node>
+           <Node>
+            <Name>lf_async_physical_owner_t</Name>
+            <Path>structlf__async__physical__owner__t.html</Path>
+          <Subnodes>
+             <Node>
+              <Name>action</Name>
+              <Path>structlf__async__physical__owner__t.html</Path>
+              <Anchor>a27e342f3f225cb7bb49955522786aa0d</Anchor>
+             </Node>
+             <Node>
+              <Name>next</Name>
+              <Path>structlf__async__physical__owner__t.html</Path>
+              <Anchor>ad630a69dc0c30455fd4a9e197515dbde</Anchor>
+             </Node>
+             <Node>
+              <Name>reaction</Name>
+              <Path>structlf__async__physical__owner__t.html</Path>
+              <Anchor>a3b94b1dea7dd9bd42959cf348b08574c</Anchor>
+             </Node>
+            </Subnodes>
+           </Node>
+           <Node>
+            <Name>lf_async_state_t</Name>
+            <Path>structlf__async__state__t.html</Path>
+          <Subnodes>
+             <Node>
+              <Name>action</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a4eae2701a9386162821032ba8b2c2f21</Anchor>
+             </Node>
+             <Node>
+              <Name>event_pending</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a4594f71021b4905bcad168cf3d5458d9</Anchor>
+             </Node>
+             <Node>
+              <Name>function_done</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a823311d40c23c09f65b6713e56a7dacb</Anchor>
+             </Node>
+             <Node>
+              <Name>left_pool</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a10c506c763fe019f92e177e3876e1212</Anchor>
+             </Node>
+             <Node>
+              <Name>next</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a40e49afec1a0a702c219ac3deac1d0e1</Anchor>
+             </Node>
+             <Node>
+              <Name>port</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a86497f87810659101aede30f8820cea5</Anchor>
+             </Node>
+             <Node>
+              <Name>reaction</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>ae3800e46256fccbc2307676c21e8d56b</Anchor>
+             </Node>
+             <Node>
+              <Name>resume_tag</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a9ea87be668a3a13a9e94fbf4003b3775</Anchor>
+             </Node>
+             <Node>
+              <Name>resume_waiting</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a2831c76a3bb45de371270624e93d9e3d</Anchor>
+             </Node>
+             <Node>
+              <Name>resumed</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a09ba17c05cab9a43257445336f3bac51</Anchor>
+             </Node>
+             <Node>
+              <Name>resumed_cond</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a0e0425d8a6c57a13c48be260bfb7eb68</Anchor>
+             </Node>
+             <Node>
+              <Name>self</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a11821c2c9e3c174238c8d9be0601dd8a</Anchor>
              </Node>
             </Subnodes>
            </Node>
@@ -8730,6 +9054,31 @@
                           <Path>reaction__macros_8h.html</Path>
                         <Subnodes>
                            <Node>
+                            <Name>lf_add_worker_thread</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>ga5eeb78d277101e8a160e3b183c0c1493</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_added_worker_thread_count</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>ga056ec5b2e70bd291652853353683fd49</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_async</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>ga639f325e7d15a15396baf72955d82038</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_await</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>ga1d7e88810c5b5ae3dee716884afb7c22</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_await_resume</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>gaa0653ab1c2da4d99eb0cb1825c1495ff</Anchor>
+                           </Node>
+                           <Node>
                             <Name>lf_reactor_full_name</Name>
                             <Path>group__API.html</Path>
                             <Anchor>ga78918b87982fba15b59f35a8f926b021</Anchor>
@@ -9236,6 +9585,11 @@
                             <Path>reactor__threaded_8h.html</Path>
                           <Subnodes>
                              <Node>
+                              <Name>_lf_async_release_level_locked</Name>
+                              <Path>group__Internal.html</Path>
+                              <Anchor>gab0a572763b22476af4a8a2211df60670</Anchor>
+                             </Node>
+                             <Node>
                               <Name>_lf_decrement_tag_barrier_locked</Name>
                               <Path>group__Internal.html</Path>
                               <Anchor>ga5a0540790dfc6d954fb443da3336ce27</Anchor>
@@ -9282,6 +9636,16 @@
                             <Path>scheduler_8h.html</Path>
                           <Subnodes>
                              <Node>
+                              <Name>lf_sched_add_worker</Name>
+                              <Path>group__Internal.html</Path>
+                              <Anchor>ga7213507eeecfb1a6e2b2c554de405fd0</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>lf_sched_cancel_add_worker</Name>
+                              <Path>group__Internal.html</Path>
+                              <Anchor>gac77bb863fe5dc9b73fa34a6f16e05a8e</Anchor>
+                             </Node>
+                             <Node>
                               <Name>lf_sched_done_with_reaction</Name>
                               <Path>group__Internal.html</Path>
                               <Anchor>ga485e4339d95d23ae5bcbb06c244e7145</Anchor>
@@ -9300,6 +9664,11 @@
                               <Name>lf_sched_init</Name>
                               <Path>group__Internal.html</Path>
                               <Anchor>ga0ebe8d7670a73a6572c7152d31e1fb62</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>lf_sched_remove_worker</Name>
+                              <Path>group__Internal.html</Path>
+                              <Anchor>ga1c34d07689e22379e97ed23356c7171c</Anchor>
                              </Node>
                              <Node>
                               <Name>lf_scheduler_trigger_reaction</Name>
@@ -10108,6 +10477,16 @@
                             <Anchor>gaa47b54e9e041dfe1b75fffceb1051466</Anchor>
                            </Node>
                            <Node>
+                            <Name>lf_async_physical_owner_t</Name>
+                            <Path>group__Internal.html</Path>
+                            <Anchor>ga4e04fe18af688cffa8c3282d757c425a</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_async_state_t</Name>
+                            <Path>environment_8h.html</Path>
+                            <Anchor>a7947c9a6d291940f4e11d118eda0d922</Anchor>
+                           </Node>
+                           <Node>
                             <Name>lf_scheduler_t</Name>
                             <Path>environment_8h.html</Path>
                             <Anchor>a0199f9b027e13cf08095d91fe798c663</Anchor>
@@ -10538,9 +10917,49 @@
                             <Anchor>a4625be3023ef492f25fd5193ef754774</Anchor>
                            </Node>
                            <Node>
+                            <Name>lf_async_state_t</Name>
+                            <Path>group__Internal.html</Path>
+                            <Anchor>ga7947c9a6d291940f4e11d118eda0d922</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>_lf_async_begin</Name>
+                            <Path>group__Internal.html</Path>
+                            <Anchor>gad1555746f02c05e5879a2b287a252286</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>_lf_async_end</Name>
+                            <Path>group__Internal.html</Path>
+                            <Anchor>ga803d7e3c9bce6be8dc2b4e143cc7b99a</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>_lf_await</Name>
+                            <Path>group__Internal.html</Path>
+                            <Anchor>ga0ca79eb4d371a5f9b4903951c629e7fe</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>_lf_await_resume</Name>
+                            <Path>group__Internal.html</Path>
+                            <Anchor>gad31a7f8781c06daca869cc528c50615c</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_add_worker_thread</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>gabd3b47e909857dcd0fda4ab9a6696052</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_added_worker_thread_count</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>gaccc6e088558c2d8699de5bca015df6a8</Anchor>
+                           </Node>
+                           <Node>
                             <Name>lf_allocate</Name>
                             <Path>group__Internal.html</Path>
                             <Anchor>ga1a5fdb69bc112879d4014bb0790e843c</Anchor>
+                           </Node>
+                           <Node>
+                            <Name>lf_async_resume</Name>
+                            <Path>group__API.html</Path>
+                            <Anchor>gae0e25ced19f6ea229a5c93ae565901d1</Anchor>
                            </Node>
                            <Node>
                             <Name>lf_free_all_reactors</Name>
@@ -10823,7 +11242,7 @@
                            <Node>
                             <Name>schedule_output_reactions</Name>
                             <Path>group__Internal.html</Path>
-                            <Anchor>gaeaaa76aeb7d93efc4e0f0c484548af70</Anchor>
+                            <Anchor>ga22efa7f7f693527cdf27e7e88be9b218</Anchor>
                            </Node>
                            <Node>
                             <Name>termination</Name>

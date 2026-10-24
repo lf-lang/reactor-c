@@ -162,6 +162,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_async_physical_owner_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>cl</Type>
+      <Scope>lf_async_physical_owner_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__physical__owner__t.html</Path>
+    <DeclaredIn>environment.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_async_state_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>cl</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_cli_param_t</Name>
       <APILanguage>c</APILanguage>
       <Type>cl</Type>
@@ -693,6 +713,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>action</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_physical_owner_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__physical__owner__t.html</Path>
+    <Anchor>a27e342f3f225cb7bb49955522786aa0d</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>action</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a4eae2701a9386162821032ba8b2c2f21</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>actions</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -750,6 +790,36 @@
     </TokenIdentifier>
     <Path>structself__base__t.html</Path>
     <Anchor>a851c71d2d9ce4ca9c1811283bcf5f2f9</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>async_deferred</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>environment_t</Scope>
+    </TokenIdentifier>
+    <Path>structenvironment__t.html</Path>
+    <Anchor>a3136a9463b0ba4af462282bcd17bd7d3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>async_physical_owners</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>environment_t</Scope>
+    </TokenIdentifier>
+    <Path>structenvironment__t.html</Path>
+    <Anchor>a10fc53b0aa5cd918d81ef98949a1db74</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>async_waiters</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>environment_t</Scope>
+    </TokenIdentifier>
+    <Path>structenvironment__t.html</Path>
+    <Anchor>abf88a13b46c036277203a1975d9c3534</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -1333,6 +1403,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>event_pending</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a4594f71021b4905bcad168cf3d5458d9</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>event_q</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -1510,6 +1590,16 @@
     </TokenIdentifier>
     <Path>structreaction__t.html</Path>
     <Anchor>afd6087e8a7d3cc46b430d4187128896c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>function_done</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a823311d40c23c09f65b6713e56a7dacb</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2113,6 +2203,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>left_pool</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a10c506c763fe019f92e177e3876e1212</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>length</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2586,6 +2686,16 @@
       <Name>next</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
+      <Scope>lf_async_physical_owner_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__physical__owner__t.html</Path>
+    <Anchor>ad630a69dc0c30455fd4a9e197515dbde</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>next</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
       <Scope>lf_token_t</Scope>
     </TokenIdentifier>
     <Path>structlf__token__t.html</Path>
@@ -2610,6 +2720,16 @@
     </TokenIdentifier>
     <Path>structlf__multiport__iterator__t.html</Path>
     <Anchor>afecdacfcd14db12bb12e5c0b0589dba3</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>next</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a40e49afec1a0a702c219ac3deac1d0e1</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -2680,6 +2800,36 @@
     </TokenIdentifier>
     <Path>structstaa__t.html</Path>
     <Anchor>a87ab8a5a57771449baf84b2961c8a2eb</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>num_added_workers</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>environment_t</Scope>
+    </TokenIdentifier>
+    <Path>structenvironment__t.html</Path>
+    <Anchor>a5f9b9bca5280a46dc2f355b00dfa85cf</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>num_async_suspended</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>environment_t</Scope>
+    </TokenIdentifier>
+    <Path>structenvironment__t.html</Path>
+    <Anchor>ae6cd8cb3dff2e26ba23817173ce0f97a</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>num_async_threads</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>environment_t</Scope>
+    </TokenIdentifier>
+    <Path>structenvironment__t.html</Path>
+    <Anchor>a24ea3797618fb26a92a6e0b847d9eeec</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3106,6 +3256,16 @@
       <Name>port</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a86497f87810659101aede30f8820cea5</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>port</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
       <Scope>influx_client_t</Scope>
     </TokenIdentifier>
     <Path>structinflux__client__t.html</Path>
@@ -3210,6 +3370,26 @@
     </TokenIdentifier>
     <Path>structmixed__radix__int__t.html</Path>
     <Anchor>a867a3d65a976b2d4faab1b0c4129592b</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>reaction</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_physical_owner_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__physical__owner__t.html</Path>
+    <Anchor>a3b94b1dea7dd9bd42959cf348b08574c</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>reaction</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>ae3800e46256fccbc2307676c21e8d56b</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -3333,6 +3513,46 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>resume_tag</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a9ea87be668a3a13a9e94fbf4003b3775</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>resume_waiting</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a2831c76a3bb45de371270624e93d9e3d</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>resumed</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a09ba17c05cab9a43257445336f3bac51</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>resumed_cond</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a0e0425d8a6c57a13c48be260bfb7eb68</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>rti_failed</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -3420,6 +3640,16 @@
     </TokenIdentifier>
     <Path>structreaction__t.html</Path>
     <Anchor>a534c11eeddbe4c0272fc2d77abb82168</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>self</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a11821c2c9e3c174238c8d9be0601dd8a</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -4450,6 +4680,56 @@
     <Path>group__Internal.html</Path>
     <Anchor>ga4659db62370c837baa55484134b3bfb7</Anchor>
     <DeclaredIn>reactor_common.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>_lf_async_begin</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>gad1555746f02c05e5879a2b287a252286</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>_lf_async_end</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga803d7e3c9bce6be8dc2b4e143cc7b99a</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>_lf_async_release_level_locked</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>gab0a572763b22476af4a8a2211df60670</Anchor>
+    <DeclaredIn>reactor_threaded.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>_lf_await</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga0ca79eb4d371a5f9b4903951c629e7fe</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>_lf_await_resume</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>gad31a7f8781c06daca869cc528c50615c</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -6963,6 +7243,46 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_add_worker_thread</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>ga5eeb78d277101e8a160e3b183c0c1493</Anchor>
+    <DeclaredIn>reaction_macros.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_add_worker_thread</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>gabd3b47e909857dcd0fda4ab9a6696052</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_added_worker_thread_count</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>ga056ec5b2e70bd291652853353683fd49</Anchor>
+    <DeclaredIn>reaction_macros.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_added_worker_thread_count</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>gaccc6e088558c2d8699de5bca015df6a8</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_align_to_start_time_multiple</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -7013,6 +7333,56 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_async</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>ga639f325e7d15a15396baf72955d82038</Anchor>
+    <DeclaredIn>reaction_macros.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_async_physical_owner_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga4e04fe18af688cffa8c3282d757c425a</Anchor>
+    <DeclaredIn>environment.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_async_resume</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>gae0e25ced19f6ea229a5c93ae565901d1</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_async_state_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>environment_8h.html</Path>
+    <Anchor>a7947c9a6d291940f4e11d118eda0d922</Anchor>
+    <DeclaredIn>environment.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_async_state_t</Name>
+      <APILanguage>c</APILanguage>
+      <Type>tdef</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga7947c9a6d291940f4e11d118eda0d922</Anchor>
+    <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_available_cores</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -7020,6 +7390,26 @@
     <Path>group__Platform.html</Path>
     <Anchor>gae138038b96821ccfbb2d4f2ec4c364c1</Anchor>
     <DeclaredIn>low_level_platform.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_await</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>ga1d7e88810c5b5ae3dee716884afb7c22</Anchor>
+    <DeclaredIn>reaction_macros.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_await_resume</Name>
+      <APILanguage>unknown</APILanguage>
+      <Type>macro</Type>
+    </TokenIdentifier>
+    <Path>group__API.html</Path>
+    <Anchor>gaa0653ab1c2da4d99eb0cb1825c1495ff</Anchor>
+    <DeclaredIn>reaction_macros.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -8183,6 +8573,26 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_sched_add_worker</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga7213507eeecfb1a6e2b2c554de405fd0</Anchor>
+    <DeclaredIn>scheduler.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_sched_cancel_add_worker</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>gac77bb863fe5dc9b73fa34a6f16e05a8e</Anchor>
+    <DeclaredIn>scheduler.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_sched_done_with_reaction</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -8260,6 +8670,16 @@
     <Path>group__Platform.html</Path>
     <Anchor>ggadc74ec49eb5cc6eceda1447090d61ab6a31d917200c3ceb3735770c9acef3eb5e</Anchor>
     <DeclaredIn>low_level_platform.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>lf_sched_remove_worker</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga1c34d07689e22379e97ed23356c7171c</Anchor>
+    <DeclaredIn>scheduler.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -11188,7 +11608,7 @@
       <Type>func</Type>
     </TokenIdentifier>
     <Path>group__Internal.html</Path>
-    <Anchor>gaeaaa76aeb7d93efc4e0f0c484548af70</Anchor>
+    <Anchor>ga22efa7f7f693527cdf27e7e88be9b218</Anchor>
     <DeclaredIn>reactor_common.h</DeclaredIn>
   </Token>
   <Token>

@@ -3,6 +3,8 @@ var environment_8h =
     [ "GLOBAL_ENVIRONMENT", "group__Internal.html#gafaff13b938d14da158c3fa1424358353", null ],
     [ "enclave_info_t", "environment_8h.html#a1567a1034e3b7c6528bc12fdc04a4c71", null ],
     [ "environment_t", "group__Internal.html#gaa47b54e9e041dfe1b75fffceb1051466", null ],
+    [ "lf_async_physical_owner_t", "group__Internal.html#ga4e04fe18af688cffa8c3282d757c425a", null ],
+    [ "lf_async_state_t", "environment_8h.html#a7947c9a6d291940f4e11d118eda0d922", null ],
     [ "lf_scheduler_t", "environment_8h.html#a0199f9b027e13cf08095d91fe798c663", null ],
     [ "mode_environment_t", "environment_8h.html#a7941464261ddb811cc9b63a85c11d1ee", null ],
     [ "watchdog_t", "environment_8h.html#aee1cd2bc521f76fa428cc659474d9570", null ],

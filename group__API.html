@@ -150,12 +150,22 @@ Data Structures</h2></td></tr>
 Macros</h2></td></tr>
 <tr class="memitem:gaabb3bc387f7a50f8cc57319f82c17c31" id="r_gaabb3bc387f7a50f8cc57319f82c17c31"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gaabb3bc387f7a50f8cc57319f82c17c31">CHECK_TIMEOUT</a>(start,  <a class="el" href="reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77">duration</a>)</td></tr>
 <tr class="memdesc:gaabb3bc387f7a50f8cc57319f82c17c31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expression that is true if physical time since start exceeds the duration.  <br /></td></tr>
+<tr class="memitem:ga5eeb78d277101e8a160e3b183c0c1493" id="r_ga5eeb78d277101e8a160e3b183c0c1493"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga5eeb78d277101e8a160e3b183c0c1493">lf_add_worker_thread</a>()</td></tr>
+<tr class="memdesc:ga5eeb78d277101e8a160e3b183c0c1493"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a worker thread to the pool of worker threads of the environment invoking this reaction.  <br /></td></tr>
+<tr class="memitem:ga056ec5b2e70bd291652853353683fd49" id="r_ga056ec5b2e70bd291652853353683fd49"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga056ec5b2e70bd291652853353683fd49">lf_added_worker_thread_count</a>()</td></tr>
+<tr class="memdesc:ga056ec5b2e70bd291652853353683fd49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of worker threads that have been added to the environment invoking this reaction.  <br /></td></tr>
 <tr class="memitem:ga26ab6a0fd21cdcff11a5557406536bf1" id="r_ga26ab6a0fd21cdcff11a5557406536bf1"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga26ab6a0fd21cdcff11a5557406536bf1">LF_ASSERT</a>(condition,  format, ...)</td></tr>
 <tr class="memdesc:ga26ab6a0fd21cdcff11a5557406536bf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assert that a condition is true.  <br /></td></tr>
 <tr class="memitem:ga832d0deaa853b7777e1f54283e7bcc20" id="r_ga832d0deaa853b7777e1f54283e7bcc20"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga832d0deaa853b7777e1f54283e7bcc20">LF_ASSERT_NON_NULL</a>(pointer)</td></tr>
 <tr class="memdesc:ga832d0deaa853b7777e1f54283e7bcc20"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assert that a pointer is not NULL.  <br /></td></tr>
 <tr class="memitem:ga1c464cee8cabb65eebf454fc016d47b1" id="r_ga1c464cee8cabb65eebf454fc016d47b1"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(condition,  format, ...)</td></tr>
 <tr class="memdesc:ga1c464cee8cabb65eebf454fc016d47b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assert that a condition is false.  <br /></td></tr>
+<tr class="memitem:ga639f325e7d15a15396baf72955d82038" id="r_ga639f325e7d15a15396baf72955d82038"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga639f325e7d15a15396baf72955d82038">lf_async</a>(action,  func, ...)</td></tr>
+<tr class="memdesc:ga639f325e7d15a15396baf72955d82038"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoke a function that may block for a long time without blocking the rest of the program.  <br /></td></tr>
+<tr class="memitem:ga1d7e88810c5b5ae3dee716884afb7c22" id="r_ga1d7e88810c5b5ae3dee716884afb7c22"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga1d7e88810c5b5ae3dee716884afb7c22">lf_await</a>(port)</td></tr>
+<tr class="memdesc:ga1d7e88810c5b5ae3dee716884afb7c22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suspend this reaction until another reaction of this reactor calls <span class="tt"><a class="el" href="#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> on the specified input port.  <br /></td></tr>
+<tr class="memitem:gaa0653ab1c2da4d99eb0cb1825c1495ff" id="r_gaa0653ab1c2da4d99eb0cb1825c1495ff"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gaa0653ab1c2da4d99eb0cb1825c1495ff">lf_await_resume</a>(port)</td></tr>
+<tr class="memdesc:gaa0653ab1c2da4d99eb0cb1825c1495ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resume every reaction of this reactor that is suspended in <span class="tt"><a class="el" href="#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span> on the specified port.  <br /></td></tr>
 <tr class="memitem:ga5759266c62b989a6b305584cb72f8840" id="r_ga5759266c62b989a6b305584cb72f8840"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#ga5759266c62b989a6b305584cb72f8840">lf_multiport_iterator</a>(in)</td></tr>
 <tr class="memdesc:ga5759266c62b989a6b305584cb72f8840"><td class="mdescLeft">&#160;</td><td class="mdescRight">Macro for creating an iterator over an input multiport.  <br /></td></tr>
 <tr class="memitem:gab5a65df50027549a8245f6b3eaff97e4" id="r_gab5a65df50027549a8245f6b3eaff97e4"><td class="memItemLeft">#define&#160;</td><td class="memItemRight"><a class="el" href="#gab5a65df50027549a8245f6b3eaff97e4">LF_PRINT_DEBUG</a>(format, ...)</td></tr>
@@ -226,6 +236,12 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gabd3b47e909857dcd0fda4ab9a6696052" id="r_gabd3b47e909857dcd0fda4ab9a6696052"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gabd3b47e909857dcd0fda4ab9a6696052">lf_add_worker_thread</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:gabd3b47e909857dcd0fda4ab9a6696052"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a worker thread to the pool of worker threads of the specified environment.  <br /></td></tr>
+<tr class="memitem:gaccc6e088558c2d8699de5bca015df6a8" id="r_gaccc6e088558c2d8699de5bca015df6a8"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gaccc6e088558c2d8699de5bca015df6a8">lf_added_worker_thread_count</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:gaccc6e088558c2d8699de5bca015df6a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of worker threads added to the specified environment.  <br /></td></tr>
+<tr class="memitem:gae0e25ced19f6ea229a5c93ae565901d1" id="r_gae0e25ced19f6ea229a5c93ae565901d1"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gae0e25ced19f6ea229a5c93ae565901d1">lf_async_resume</a> (void *action)</td></tr>
+<tr class="memdesc:gae0e25ced19f6ea229a5c93ae565901d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resume a reaction suspended in <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> that is waiting on the specified action.  <br /></td></tr>
 <tr class="memitem:gab3a04dd0a1581844829b28686b6b3c53" id="r_gab3a04dd0a1581844829b28686b6b3c53"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#gab3a04dd0a1581844829b28686b6b3c53">lf_check_deadline</a> (void *self, bool invoke_deadline_handler)</td></tr>
 <tr class="memdesc:gab3a04dd0a1581844829b28686b6b3c53"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check the deadline of the currently executing reaction against the current physical time.  <br /></td></tr>
 <tr class="memitem:gae956f1688a3893b44cf4bced3c13ef9a" id="r_gae956f1688a3893b44cf4bced3c13ef9a"><td class="memItemLeft">size_t&#160;</td><td class="memItemRight"><a class="el" href="#gae956f1688a3893b44cf4bced3c13ef9a">lf_comma_separated_time</a> (char *buffer, <a class="el" href="#ga827080fd3c574bad5a32db9f7c367587">instant_t</a> time)</td></tr>
@@ -350,6 +366,54 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="ga5eeb78d277101e8a160e3b183c0c1493" name="ga5eeb78d277101e8a160e3b183c0c1493"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5eeb78d277101e8a160e3b183c0c1493">&#9670;&#160;</a></span>lf_add_worker_thread</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define lf_add_worker_thread</td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reaction__macros_8h.html">reaction_macros.h</a>&gt;</code></p>
+<b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="#ga5eeb78d277101e8a160e3b183c0c1493">lf_add_worker_thread</a>(self-&gt;base.environment)</div>
+<div class="ttc" id="agroup__API_html_ga5eeb78d277101e8a160e3b183c0c1493"><div class="ttname"><a href="#ga5eeb78d277101e8a160e3b183c0c1493">lf_add_worker_thread</a></div><div class="ttdeci">#define lf_add_worker_thread()</div><div class="ttdoc">Add a worker thread to the pool of worker threads of the environment invoking this reaction.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:220</div></div>
+</div><!-- fragment -->
+<p>Add a worker thread to the pool of worker threads of the environment invoking this reaction. </p>
+<p>See <a class="el" href="#ga5eeb78d277101e8a160e3b183c0c1493" title="lf_add_worker_thread(environment_t*)">lf_add_worker_thread(environment_t*)</a> for details. </p><dl class="section return"><dt>Returns</dt><dd>0 on success, or -1 if the thread could not be created or the runtime does not support it. </dd></dl>
+
+</div>
+</div>
+<a id="ga056ec5b2e70bd291652853353683fd49" name="ga056ec5b2e70bd291652853353683fd49"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga056ec5b2e70bd291652853353683fd49">&#9670;&#160;</a></span>lf_added_worker_thread_count</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define lf_added_worker_thread_count</td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reaction__macros_8h.html">reaction_macros.h</a>&gt;</code></p>
+<b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="#ga056ec5b2e70bd291652853353683fd49">lf_added_worker_thread_count</a>(self-&gt;base.environment)</div>
+<div class="ttc" id="agroup__API_html_ga056ec5b2e70bd291652853353683fd49"><div class="ttname"><a href="#ga056ec5b2e70bd291652853353683fd49">lf_added_worker_thread_count</a></div><div class="ttdeci">#define lf_added_worker_thread_count()</div><div class="ttdoc">Return the number of worker threads that have been added to the environment invoking this reaction.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:228</div></div>
+</div><!-- fragment -->
+<p>Return the number of worker threads that have been added to the environment invoking this reaction. </p>
+<p>See <a class="el" href="#ga056ec5b2e70bd291652853353683fd49" title="lf_added_worker_thread_count(environment_t*)">lf_added_worker_thread_count(environment_t*)</a> for details. </p>
 
 </div>
 </div>
@@ -480,6 +544,147 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ga639f325e7d15a15396baf72955d82038" name="ga639f325e7d15a15396baf72955d82038"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga639f325e7d15a15396baf72955d82038">&#9670;&#160;</a></span>lf_async</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define lf_async</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>action</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>func</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em></em></span>...&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reaction__macros_8h.html">reaction_macros.h</a>&gt;</code></p>
+<b>Value:</b><div class="fragment"><div class="line">({                                                                                                                   \</div>
+<div class="line">  <a class="code hl_struct" href="structlf__async__state__t.html">lf_async_state_t</a> _lf_async_state;                                                                                  \</div>
+<div class="line">  _lf_async_begin(&amp;_lf_async_state, self, (action), NULL);                                                           \</div>
+<div class="line">  __typeof__(func(__VA_ARGS__)) _lf_async_result = func(__VA_ARGS__);                                                \</div>
+<div class="line">  _lf_async_end(&amp;_lf_async_state);                                                                                   \</div>
+<div class="line">  _lf_async_result;                                                                                                  \</div>
+<div class="line">})</div>
+<div class="ttc" id="astructlf__async__state__t_html"><div class="ttname"><a href="structlf__async__state__t.html">lf_async_state_t</a></div><div class="ttdoc">State of a pending lf_async() call.</div><div class="ttdef"><b>Definition</b> reactor.h:203</div></div>
+</div><!-- fragment -->
+<p>Invoke a function that may block for a long time without blocking the rest of the program. </p>
+<p>This macro invokes <span class="tt">func</span> with the given arguments and evaluates to the value returned by <span class="tt">func</span>, but it allows logical time to advance and other reactions to execute while <span class="tt">func</span> is running. The calling reaction must list <span class="tt">action</span> as an effect, so that the action is in scope, and the reactor must have a reaction triggered by that action whose body calls <a class="el" href="#gae0e25ced19f6ea229a5c93ae565901d1" title="lf_async_resume()">lf_async_resume()</a>. That resuming reaction must be declared before the calling reaction: </p><div class="fragment"><div class="line">physical action awake</div>
+<div class="line">reaction(awake) {= <a class="code hl_function" href="#gae0e25ced19f6ea229a5c93ae565901d1">lf_async_resume</a>(awake); =}</div>
+<div class="line">reaction(startup) -&gt; awake {= <span class="keywordtype">int</span> result = <a class="code hl_define" href="#ga639f325e7d15a15396baf72955d82038">lf_async</a>(awake, slow, 50); ... =}</div>
+<div class="ttc" id="agroup__API_html_ga639f325e7d15a15396baf72955d82038"><div class="ttname"><a href="#ga639f325e7d15a15396baf72955d82038">lf_async</a></div><div class="ttdeci">#define lf_async(action, func,...)</div><div class="ttdoc">Invoke a function that may block for a long time without blocking the rest of the program.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:302</div></div>
+<div class="ttc" id="agroup__API_html_gae0e25ced19f6ea229a5c93ae565901d1"><div class="ttname"><a href="#gae0e25ced19f6ea229a5c93ae565901d1">lf_async_resume</a></div><div class="ttdeci">void lf_async_resume(void *action)</div><div class="ttdoc">Resume a reaction suspended in lf_async() that is waiting on the specified action.</div></div>
+</div><!-- fragment --><p> A physical action is dedicated to the reaction that calls <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> on it. The same reaction may call it more than once, and a call from any other reaction is a fatal error. The <span class="tt">action</span> may instead be a logical action. A logical action is scheduled before <span class="tt">func</span> is invoked, at the current tag plus the action's minimum delay (or, if no minimum delay is given, one microstep later than the current tag). A physical action is scheduled when <span class="tt">func</span> returns, at the physical time then. Hence, the logical time after the <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> call will be determined by the physical time when <span class="tt">func</span> returns.</p>
+<p>Specifically:</p>
+<ol type="1">
+<li>The <span class="tt">func</span> is invoked with the given arguments, and its return value becomes the return value of the <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> call.</li>
+<li>Any outputs set before a call to <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> are produced at the current tag. During the call to <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>, the tag advances. Any outputs set after the call will be produced at the new tag.</li>
+<li>If <span class="tt">action</span> is logical, when <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> returns, the tag will be at least one microstep later than the current tag before the call to <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>. If a <span class="tt">min_delay</span> is given for the logical action, then logical time will be at least that delay later. Outputs set after the call to <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> are produced at the new tag.</li>
+<li>If <span class="tt">action</span> is physical, it is scheduled when <span class="tt">func</span> returns. The calling thread then blocks until the reaction triggered by <span class="tt">action</span> calls <span class="tt">lf_async_resume(action)</span>. If <span class="tt">action</span> is logical and its delay elapses before <span class="tt">func</span> returns, the triggered reaction calls <span class="tt"><a class="el" href="#gae0e25ced19f6ea229a5c93ae565901d1" title="Resume a reaction suspended in lf_async() that is waiting on the specified action.">lf_async_resume()</a></span> first and blocks until <span class="tt">func</span> returns. The worker executing it stays busy, so logical time does not advance past that tag. The calling reaction then continues when the scheduler reaches that reaction's level, and a higher level does not start until the continuation has completed. Several reactions may suspend on one logical action; each continues at its own level. A second call for the same logical action and tag does not schedule another event.</li>
+<li>To ensure that other reactions can execute while <span class="tt">func</span> is running, if needed (see the caveats below), a worker thread is automatically added to the pool of the environment (see <a class="el" href="#ga5eeb78d277101e8a160e3b183c0c1493" title="lf_add_worker_thread()">lf_add_worker_thread()</a>). Then the worker thread executing the reaction that calls <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> temporarily leaves the pool. The remaining workers may therefore advance logical time and execute other reactions as if the calling reaction had completed.</li>
+<li>When <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> returns, the calling thread rejoins the pool.</li>
+</ol>
+<p>Caveats:</p>
+<ul>
+<li><span class="tt">func</span> must return a value; functions returning <span class="tt">void</span> are not supported.</li>
+<li>The value of state variables is not preserved across <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> calls. Other reactions in this reactor may have modified them before <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> returns.</li>
+<li>The calling reaction counts as executing while it is suspended. If it is triggered again at an intervening tag, that triggering is dropped. Other reactions of the same reactor can execute at intervening tags, so state shared with them should be handled with care.</li>
+<li>The reactions of the reactor are mutually exclusive. The first call creates a reactor mutex if the reactor does not already have one. This is similar to reactors with watchdogs.</li>
+<li>At least one worker thread is added to the pool, and it persists until the program terminates. Additional worker thread will be added only if there are multiple simultaneous calls to <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> pending completion.</li>
+<li>If the program stops before the resuming reaction runs, the call returns at the stop tag after the shutdown reactions have executed. Any further <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> call made by the resumed reaction invokes <span class="tt">func</span> directly without suspending.</li>
+<li>This requires the threaded runtime with the NP (default) or GEDF_NP scheduler, and a compiler that supports statement expressions and <span class="tt">__typeof__</span> (GCC and Clang do).</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">action</td><td>The logical or physical action that resumes this call, as it is in scope in the calling reaction. The reaction must list it as an effect. </td></tr>
+    <tr><td class="paramname">func</td><td>The function to invoke. </td></tr>
+    <tr><td class="paramname">...</td><td>The arguments to pass to <span class="tt">func</span>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The value returned by <span class="tt">func</span>. </dd></dl>
+
+</div>
+</div>
+<a id="ga1d7e88810c5b5ae3dee716884afb7c22" name="ga1d7e88810c5b5ae3dee716884afb7c22"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1d7e88810c5b5ae3dee716884afb7c22">&#9670;&#160;</a></span>lf_await</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define lf_await</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>port</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reaction__macros_8h.html">reaction_macros.h</a>&gt;</code></p>
+<b>Value:</b><div class="fragment"><div class="line"><a class="code hl_function" href="group__Internal.html#ga0ca79eb4d371a5f9b4903951c629e7fe">_lf_await</a>(self, (port))</div>
+<div class="ttc" id="agroup__Internal_html_ga0ca79eb4d371a5f9b4903951c629e7fe"><div class="ttname"><a href="group__Internal.html#ga0ca79eb4d371a5f9b4903951c629e7fe">_lf_await</a></div><div class="ttdeci">void _lf_await(void *self, void *port)</div><div class="ttdoc">Suspend the calling reaction until another reaction of the same reactor calls lf_await_resume() on th...</div></div>
+</div><!-- fragment -->
+<p>Suspend this reaction until another reaction of this reactor calls <span class="tt"><a class="el" href="#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> on the specified input port. </p>
+<p>Like <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>, this allows logical time to advance and other reactions to execute while the calling reaction is suspended, and the remainder of the reaction executes at the tag at which <span class="tt"><a class="el" href="#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume(port)</a></span> is called. Unlike <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>, no function is invoked and no action is needed. The calling reaction must list <span class="tt">port</span> as a source so that it is in scope, and the resuming reaction must be declared before the calling reaction. For example, a reaction that sends a request and waits for the response to arrive on an input: </p><div class="fragment"><div class="line">reaction(response) {= <a class="code hl_define" href="#gaa0653ab1c2da4d99eb0cb1825c1495ff">lf_await_resume</a>(response); =}</div>
+<div class="line">reaction(startup) response -&gt; request {=</div>
+<div class="line">  <a class="code hl_define" href="#gaef602f51d34bbd214643161e425d909d">lf_set</a>(request, 42);</div>
+<div class="line">  <a class="code hl_define" href="#ga1d7e88810c5b5ae3dee716884afb7c22">lf_await</a>(response);</div>
+<div class="line">  <span class="comment">// Now at the tag at which the response arrived, and response-&gt;value is available.</span></div>
+<div class="line">=}</div>
+<div class="ttc" id="agroup__API_html_ga1d7e88810c5b5ae3dee716884afb7c22"><div class="ttname"><a href="#ga1d7e88810c5b5ae3dee716884afb7c22">lf_await</a></div><div class="ttdeci">#define lf_await(port)</div><div class="ttdoc">Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...</div><div class="ttdef"><b>Definition</b> reaction_macros.h:337</div></div>
+<div class="ttc" id="agroup__API_html_gaa0653ab1c2da4d99eb0cb1825c1495ff"><div class="ttname"><a href="#gaa0653ab1c2da4d99eb0cb1825c1495ff">lf_await_resume</a></div><div class="ttdeci">#define lf_await_resume(port)</div><div class="ttdoc">Resume every reaction of this reactor that is suspended in lf_await() on the specified port.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:347</div></div>
+<div class="ttc" id="agroup__API_html_gaef602f51d34bbd214643161e425d909d"><div class="ttname"><a href="#gaef602f51d34bbd214643161e425d909d">lf_set</a></div><div class="ttdeci">#define lf_set(out, val)</div><div class="ttdoc">Set the specified output (or input of a contained reactor) to the specified value.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:73</div></div>
+</div><!-- fragment --><p> Several reactions of the reactor may be suspended on the same port at once; a single <span class="tt"><a class="el" href="#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume(port)</a></span> resumes all of them. If the program stops before <span class="tt"><a class="el" href="#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> is called, <span class="tt"><a class="el" href="#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span> returns at the stop tag so that the reaction can complete. See <a class="el" href="group__Internal.html#ga0ca79eb4d371a5f9b4903951c629e7fe" title="_lf_await()">_lf_await()</a> for details, and see <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> for the caveats, which also apply.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">port</td><td>An input port of this reactor, as it is in scope in the reaction body. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="gaa0653ab1c2da4d99eb0cb1825c1495ff" name="gaa0653ab1c2da4d99eb0cb1825c1495ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa0653ab1c2da4d99eb0cb1825c1495ff">&#9670;&#160;</a></span>lf_await_resume</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define lf_await_resume</td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>port</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reaction__macros_8h.html">reaction_macros.h</a>&gt;</code></p>
+<b>Value:</b><div class="fragment"><div class="line"><a class="code hl_function" href="group__Internal.html#gad31a7f8781c06daca869cc528c50615c">_lf_await_resume</a>(self, (port))</div>
+<div class="ttc" id="agroup__Internal_html_gad31a7f8781c06daca869cc528c50615c"><div class="ttname"><a href="group__Internal.html#gad31a7f8781c06daca869cc528c50615c">_lf_await_resume</a></div><div class="ttdeci">void _lf_await_resume(void *self, void *port)</div><div class="ttdoc">Resume every reaction of this reactor that is suspended in lf_await() on the specified port.</div></div>
+</div><!-- fragment -->
+<p>Resume every reaction of this reactor that is suspended in <span class="tt"><a class="el" href="#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span> on the specified port. </p>
+<p>If no reaction is suspended on the port, this does nothing. See <a class="el" href="group__Internal.html#gad31a7f8781c06daca869cc528c50615c" title="_lf_await_resume()">_lf_await_resume()</a> for details.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">port</td><td>The input port, as it is in scope in the reaction body. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ga5759266c62b989a6b305584cb72f8840" name="ga5759266c62b989a6b305584cb72f8840"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga5759266c62b989a6b305584cb72f8840">&#9670;&#160;</a></span>lf_multiport_iterator</h2>
 
@@ -596,7 +801,7 @@ Functions</h2></td></tr>
 
 <p><code>#include &lt;<a class="el" href="reaction__macros_8h.html">reaction_macros.h</a>&gt;</code></p>
 <b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="#ga78918b87982fba15b59f35a8f926b021">lf_reactor_full_name</a>(&amp;reactor-&gt;base)</div>
-<div class="ttc" id="agroup__API_html_ga78918b87982fba15b59f35a8f926b021"><div class="ttname"><a href="#ga78918b87982fba15b59f35a8f926b021">lf_reactor_full_name</a></div><div class="ttdeci">#define lf_reactor_full_name(reactor)</div><div class="ttdoc">Return the fully qualified name of the reactor.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:234</div></div>
+<div class="ttc" id="agroup__API_html_ga78918b87982fba15b59f35a8f926b021"><div class="ttname"><a href="#ga78918b87982fba15b59f35a8f926b021">lf_reactor_full_name</a></div><div class="ttdeci">#define lf_reactor_full_name(reactor)</div><div class="ttdoc">Return the fully qualified name of the reactor.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:370</div></div>
 </div><!-- fragment -->
 <p>Return the fully qualified name of the reactor. </p>
 <p>The fully qualified name of a reactor is the instance name of the reactor concatenated with the names of all of its parents, separated by dots. If the reactor or any of its parents is a bank, then the name will have a suffix of the form <span class="tt">[bank_index]</span>.</p>
@@ -626,7 +831,7 @@ Functions</h2></td></tr>
 
 <p><code>#include &lt;<a class="el" href="reaction__macros_8h.html">reaction_macros.h</a>&gt;</code></p>
 <b>Value:</b><div class="fragment"><div class="line"><a class="code hl_define" href="#ga42c6f935901d6fc56d6e82be619a8bd3">lf_reactor_name</a>(&amp;reactor-&gt;base)</div>
-<div class="ttc" id="agroup__API_html_ga42c6f935901d6fc56d6e82be619a8bd3"><div class="ttname"><a href="#ga42c6f935901d6fc56d6e82be619a8bd3">lf_reactor_name</a></div><div class="ttdeci">#define lf_reactor_name(reactor)</div><div class="ttdoc">Return the instance name of the reactor.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:222</div></div>
+<div class="ttc" id="agroup__API_html_ga42c6f935901d6fc56d6e82be619a8bd3"><div class="ttname"><a href="#ga42c6f935901d6fc56d6e82be619a8bd3">lf_reactor_name</a></div><div class="ttdeci">#define lf_reactor_name(reactor)</div><div class="ttdoc">Return the instance name of the reactor.</div><div class="ttdef"><b>Definition</b> reaction_macros.h:358</div></div>
 </div><!-- fragment -->
 <p>Return the instance name of the reactor. </p>
 <p>The instance name is the name of given to the instance created by the <span class="tt">new</span> operator in LF. If the instance is in a bank, then the name will have a suffix of the form <span class="tt">[bank_index]</span>.</p>
@@ -1322,6 +1527,95 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="gabd3b47e909857dcd0fda4ab9a6696052" name="gabd3b47e909857dcd0fda4ab9a6696052"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabd3b47e909857dcd0fda4ab9a6696052">&#9670;&#160;</a></span>lf_add_worker_thread()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_add_worker_thread </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor_8h.html">reactor.h</a>&gt;</code></p>
+
+<p>Add a worker thread to the pool of worker threads of the specified environment. </p>
+<p>The new thread joins the pool immediately and starts executing reactions alongside the existing workers. This can be used, for example, to compensate for a worker thread that is about to block for an extended time inside a reaction. The thread remains in the pool until the program terminates, when it is joined like any other worker thread.</p>
+<p>This function must be called from within a reaction body, i.e., from one of the worker threads of the environment. In a reaction body, the environment is <span class="tt">self-&gt;base.environment</span>, and the convenience macro <span class="tt"><a class="el" href="#ga5eeb78d277101e8a160e3b183c0c1493" title="Add a worker thread to the pool of worker threads of the environment invoking this reaction.">lf_add_worker_thread()</a></span> (with no arguments) supplies it.</p>
+<p>Adding worker threads is supported by the default (NP) and GEDF_NP schedulers in the threaded runtime. The adaptive scheduler and the single-threaded runtime do not support it, in which case this function returns -1 and no thread is created.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment to which to add a worker thread. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, or -1 if the thread could not be created or the runtime does not support adding worker threads. </dd></dl>
+
+</div>
+</div>
+<a id="gaccc6e088558c2d8699de5bca015df6a8" name="gaccc6e088558c2d8699de5bca015df6a8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaccc6e088558c2d8699de5bca015df6a8">&#9670;&#160;</a></span>lf_added_worker_thread_count()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_added_worker_thread_count </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor_8h.html">reactor.h</a>&gt;</code></p>
+
+<p>Return the number of worker threads added to the specified environment. </p>
+<p>This counts the worker threads that have been successfully added by calls to <a class="el" href="#ga5eeb78d277101e8a160e3b183c0c1493" title="lf_add_worker_thread()">lf_add_worker_thread()</a>. It does not include the worker threads created at startup. In a reaction body, the environment is <span class="tt">self-&gt;base.environment</span>, and the convenience macro <span class="tt"><a class="el" href="#ga056ec5b2e70bd291652853353683fd49" title="Return the number of worker threads that have been added to the environment invoking this reaction.">lf_added_worker_thread_count()</a></span> (with no arguments) supplies it.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of worker threads added at runtime (0 in the single-threaded runtime). </dd></dl>
+
+</div>
+</div>
+<a id="gae0e25ced19f6ea229a5c93ae565901d1" name="gae0e25ced19f6ea229a5c93ae565901d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae0e25ced19f6ea229a5c93ae565901d1">&#9670;&#160;</a></span>lf_async_resume()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void lf_async_resume </td>
+          <td>(</td>
+          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>action</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor_8h.html">reactor.h</a>&gt;</code></p>
+
+<p>Resume a reaction suspended in <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> that is waiting on the specified action. </p>
+<p>This must be called from the body of a reaction triggered by the action passed to <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>, and this reaction must belong to the same reactor as the action. For example: </p><div class="fragment"><div class="line">reaction(awake) {= <a class="code hl_function" href="#gae0e25ced19f6ea229a5c93ae565901d1">lf_async_resume</a>(awake); =}</div>
+</div><!-- fragment --><p> Every pending call on this action whose scheduled tag has been reached is resumed, oldest first. A physical action cannot be shared with another reaction, so it has at most one such call. If a call's function has not yet returned, this function blocks until <span class="tt"><a class="el" href="group__Internal.html#ga803d7e3c9bce6be8dc2b4e143cc7b99a" title="Complete a call prepared by _lf_async_begin().">_lf_async_end()</a></span> is called for it before considering the next call. The calling worker is busy while it blocks, so logical time cannot advance past this tag. A suspended reaction does not continue inline: it continues when the scheduler reaches that reaction's level, and the scheduler does not start a higher level until the continuation has completed. Reactions of one reactor have distinct levels, so the continuations run in declaration order, before any later reaction triggered by the action. If no due call is waiting on this action, this function does nothing. Only this reaction incurs any cost; the runtime does not check for pending <span class="tt"><a class="el" href="#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> calls anywhere else.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">action</td><td>The action, as it is in scope in the reaction body. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="gab3a04dd0a1581844829b28686b6b3c53" name="gab3a04dd0a1581844829b28686b6b3c53"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gab3a04dd0a1581844829b28686b6b3c53">&#9670;&#160;</a></span>lf_check_deadline()</h2>
 

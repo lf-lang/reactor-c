@@ -132,6 +132,12 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:a9a20bd6721513d325f75070ded6ec60e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Array of intended tag fields for federated execution.  <br /></td></tr>
 <tr class="memitem:ac17908a0cfa4fdeeb95ae3f26a73017a" id="r_ac17908a0cfa4fdeeb95ae3f26a73017a"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ac17908a0cfa4fdeeb95ae3f26a73017a">_lf_intended_tag_fields_size</a></td></tr>
 <tr class="memdesc:ac17908a0cfa4fdeeb95ae3f26a73017a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of intended tag fields allocated.  <br /></td></tr>
+<tr class="memitem:a3136a9463b0ba4af462282bcd17bd7d3" id="r_a3136a9463b0ba4af462282bcd17bd7d3"><td class="memItemLeft"><a class="el" href="environment_8h.html#a7947c9a6d291940f4e11d118eda0d922">lf_async_state_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a3136a9463b0ba4af462282bcd17bd7d3">async_deferred</a></td></tr>
+<tr class="memdesc:a3136a9463b0ba4af462282bcd17bd7d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calls whose resuming reaction has run, waiting for the scheduler to reach their level.  <br /></td></tr>
+<tr class="memitem:a10fc53b0aa5cd918d81ef98949a1db74" id="r_a10fc53b0aa5cd918d81ef98949a1db74"><td class="memItemLeft"><a class="el" href="structlf__async__physical__owner__t.html">lf_async_physical_owner_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a10fc53b0aa5cd918d81ef98949a1db74">async_physical_owners</a></td></tr>
+<tr class="memdesc:a10fc53b0aa5cd918d81ef98949a1db74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Physical actions passed to <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>, and the reaction each is dedicated to.  <br /></td></tr>
+<tr class="memitem:abf88a13b46c036277203a1975d9c3534" id="r_abf88a13b46c036277203a1975d9c3534"><td class="memItemLeft"><a class="el" href="environment_8h.html#a7947c9a6d291940f4e11d118eda0d922">lf_async_state_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#abf88a13b46c036277203a1975d9c3534">async_waiters</a></td></tr>
+<tr class="memdesc:abf88a13b46c036277203a1975d9c3534"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pending <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a> and <a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a> calls in this environment, oldest first.  <br /></td></tr>
 <tr class="memitem:a5573749a4205b81f375cecc34c9891cc" id="r_a5573749a4205b81f375cecc34c9891cc"><td class="memItemLeft"><a class="el" href="structlf__tag__advancement__barrier__t.html">lf_tag_advancement_barrier_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#a5573749a4205b81f375cecc34c9891cc">barrier</a></td></tr>
 <tr class="memdesc:a5573749a4205b81f375cecc34c9891cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Barrier for tag advancement.  <br /></td></tr>
 <tr class="memitem:ac86519935540bf879f60baba5424bc0c" id="r_ac86519935540bf879f60baba5424bc0c"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#ac86519935540bf879f60baba5424bc0c">current_tag</a></td></tr>
@@ -168,6 +174,12 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:a58106ba029a6892ca82028c163cf2e96"><td class="mdescLeft">&#160;</td><td class="mdescRight">Name identifier for this environment.  <br /></td></tr>
 <tr class="memitem:aeef35dea438a853fc258631ea4a0e90c" id="r_aeef35dea438a853fc258631ea4a0e90c"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#aeef35dea438a853fc258631ea4a0e90c">need_to_send_LTC</a></td></tr>
 <tr class="memdesc:aeef35dea438a853fc258631ea4a0e90c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Flag indicating if a logical tag complete (LTC) message needs to be sent.  <br /></td></tr>
+<tr class="memitem:a5f9b9bca5280a46dc2f355b00dfa85cf" id="r_a5f9b9bca5280a46dc2f355b00dfa85cf"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a5f9b9bca5280a46dc2f355b00dfa85cf">num_added_workers</a></td></tr>
+<tr class="memdesc:a5f9b9bca5280a46dc2f355b00dfa85cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of worker threads added at runtime.  <br /></td></tr>
+<tr class="memitem:ae6cd8cb3dff2e26ba23817173ce0f97a" id="r_ae6cd8cb3dff2e26ba23817173ce0f97a"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ae6cd8cb3dff2e26ba23817173ce0f97a">num_async_suspended</a></td></tr>
+<tr class="memdesc:ae6cd8cb3dff2e26ba23817173ce0f97a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of reactions currently suspended in <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="lf_async()">lf_async()</a>.  <br /></td></tr>
+<tr class="memitem:a24ea3797618fb26a92a6e0b847d9eeec" id="r_a24ea3797618fb26a92a6e0b847d9eeec"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a24ea3797618fb26a92a6e0b847d9eeec">num_async_threads</a></td></tr>
+<tr class="memdesc:a24ea3797618fb26a92a6e0b847d9eeec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of worker threads that have been added by <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="lf_async()">lf_async()</a>.  <br /></td></tr>
 <tr class="memitem:a3f4ab6b55dcc31b6c5cd9e082d65547d" id="r_a3f4ab6b55dcc31b6c5cd9e082d65547d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a3f4ab6b55dcc31b6c5cd9e082d65547d">num_workers</a></td></tr>
 <tr class="memdesc:a3f4ab6b55dcc31b6c5cd9e082d65547d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of worker threads.  <br /></td></tr>
 <tr class="memitem:a8f815a1dde09400b2c7e58f7b4200f66" id="r_a8f815a1dde09400b2c7e58f7b4200f66"><td class="memItemLeft"><a class="el" href="group__Internal.html#gac52d056c47d9595f94d37e95484b3acd">pqueue_tag_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a8f815a1dde09400b2c7e58f7b4200f66">recycle_q</a></td></tr>
@@ -257,6 +269,57 @@ Data Fields</h2></td></tr>
 
 <p>Number of intended tag fields allocated. </p>
 <p>Indicates the size of the _lf_intended_tag_fields array. </p><dl class="section note"><dt>Note</dt><dd>Only used in federated execution. </dd></dl>
+
+</div>
+</div>
+<a id="a3136a9463b0ba4af462282bcd17bd7d3" name="a3136a9463b0ba4af462282bcd17bd7d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3136a9463b0ba4af462282bcd17bd7d3">&#9670;&#160;</a></span>async_deferred</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="environment_8h.html#a7947c9a6d291940f4e11d118eda0d922">lf_async_state_t</a>* environment_t::async_deferred</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calls whose resuming reaction has run, waiting for the scheduler to reach their level. </p>
+<p>Each entry was unlinked from <span class="tt"><a class="el" href="#abf88a13b46c036277203a1975d9c3534" title="Pending lf_async() and lf_await() calls in this environment, oldest first.">async_waiters</a></span> by <span class="tt"><a class="el" href="group__API.html#gae0e25ced19f6ea229a5c93ae565901d1" title="Resume a reaction suspended in lf_async() that is waiting on the specified action.">lf_async_resume()</a></span> or <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> and continues when the scheduler enters the level of its reaction. Protected by the environment mutex. </p>
+
+</div>
+</div>
+<a id="a10fc53b0aa5cd918d81ef98949a1db74" name="a10fc53b0aa5cd918d81ef98949a1db74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10fc53b0aa5cd918d81ef98949a1db74">&#9670;&#160;</a></span>async_physical_owners</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structlf__async__physical__owner__t.html">lf_async_physical_owner_t</a>* environment_t::async_physical_owners</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Physical actions passed to <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>, and the reaction each is dedicated to. </p>
+<p>Protected by the environment mutex. </p>
+
+</div>
+</div>
+<a id="abf88a13b46c036277203a1975d9c3534" name="abf88a13b46c036277203a1975d9c3534"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf88a13b46c036277203a1975d9c3534">&#9670;&#160;</a></span>async_waiters</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="environment_8h.html#a7947c9a6d291940f4e11d118eda0d922">lf_async_state_t</a>* environment_t::async_waiters</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pending <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a> and <a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a> calls in this environment, oldest first. </p>
+<p>Each entry is a reaction that is suspended in <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="lf_async()">lf_async()</a>, or whose invoked function has not yet returned, waiting for <a class="el" href="group__API.html#gae0e25ced19f6ea229a5c93ae565901d1" title="lf_async_resume()">lf_async_resume()</a> to be called on its action, or a reaction suspended in <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span> waiting for <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> on its port. Protected by the environment mutex. </p>
 
 </div>
 </div>
@@ -565,6 +628,57 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
+<a id="a5f9b9bca5280a46dc2f355b00dfa85cf" name="a5f9b9bca5280a46dc2f355b00dfa85cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f9b9bca5280a46dc2f355b00dfa85cf">&#9670;&#160;</a></span>num_added_workers</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int environment_t::num_added_workers</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Number of worker threads added at runtime. </p>
+<p>Counts the worker threads that have been added to this environment by calls to <a class="el" href="group__API.html#ga5eeb78d277101e8a160e3b183c0c1493" title="lf_add_worker_thread()">lf_add_worker_thread()</a>. Protected by the environment mutex. </p>
+
+</div>
+</div>
+<a id="ae6cd8cb3dff2e26ba23817173ce0f97a" name="ae6cd8cb3dff2e26ba23817173ce0f97a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae6cd8cb3dff2e26ba23817173ce0f97a">&#9670;&#160;</a></span>num_async_suspended</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int environment_t::num_async_suspended</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Number of reactions currently suspended in <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="lf_async()">lf_async()</a>. </p>
+<p>Each of these has left the pool of worker threads. <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> adds a worker thread only when this count would otherwise exceed <span class="tt"><a class="el" href="#a24ea3797618fb26a92a6e0b847d9eeec" title="Number of worker threads that have been added by lf_async().">num_async_threads</a></span>, so that the pool never shrinks below its original size while growing by no more than the maximum number of concurrent <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> calls. Protected by the environment mutex. </p>
+
+</div>
+</div>
+<a id="a24ea3797618fb26a92a6e0b847d9eeec" name="a24ea3797618fb26a92a6e0b847d9eeec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24ea3797618fb26a92a6e0b847d9eeec">&#9670;&#160;</a></span>num_async_threads</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int environment_t::num_async_threads</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Number of worker threads that have been added by <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="lf_async()">lf_async()</a>. </p>
+<p>Protected by the environment mutex. </p>
+
+</div>
+</div>
 <a id="a3f4ab6b55dcc31b6c5cd9e082d65547d" name="a3f4ab6b55dcc31b6c5cd9e082d65547d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3f4ab6b55dcc31b6c5cd9e082d65547d">&#9670;&#160;</a></span>num_workers</h2>
 
@@ -578,7 +692,7 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Number of worker threads. </p>
-<p>Indicates the total number of worker threads available for parallel execution in this environment. </p>
+<p>Indicates the total number of worker threads available for parallel execution in this environment. This includes any worker threads added at runtime with <a class="el" href="group__API.html#ga5eeb78d277101e8a160e3b183c0c1493" title="lf_add_worker_thread()">lf_add_worker_thread()</a>. </p>
 
 </div>
 </div>
@@ -781,7 +895,7 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Array of worker thread IDs. </p>
-<p>Stores the thread identifiers for all worker threads in this environment. </p>
+<p>Stores the thread identifiers for all worker threads in this environment. Its length is num_workers; it is grown when worker threads are added with <a class="el" href="group__API.html#ga5eeb78d277101e8a160e3b183c0c1493" title="lf_add_worker_thread()">lf_add_worker_thread()</a>. </p>
 
 </div>
 </div>

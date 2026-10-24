@@ -654,6 +654,41 @@
     <filename>reaction__macros_8h.html</filename>
     <member kind="define">
       <type>#define</type>
+      <name>lf_add_worker_thread</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga5eeb78d277101e8a160e3b183c0c1493</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_added_worker_thread_count</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga056ec5b2e70bd291652853353683fd49</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_async</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga639f325e7d15a15396baf72955d82038</anchor>
+      <arglist>(action, func,...)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_await</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga1d7e88810c5b5ae3dee716884afb7c22</anchor>
+      <arglist>(port)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_await_resume</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gaa0653ab1c2da4d99eb0cb1825c1495ff</anchor>
+      <arglist>(port)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>lf_reactor_full_name</name>
       <anchorfile>group__API.html</anchorfile>
       <anchor>ga78918b87982fba15b59f35a8f926b021</anchor>
@@ -835,6 +870,7 @@
     <includes id="low__level__platform_8h" name="low_level_platform.h" local="yes" import="no" module="no" objc="no">low_level_platform.h</includes>
     <includes id="tracepoint_8h" name="tracepoint.h" local="yes" import="no" module="no" objc="no">tracepoint.h</includes>
     <class kind="struct">environment_t</class>
+    <class kind="struct">lf_async_physical_owner_t</class>
     <class kind="struct">mode_environment_t</class>
     <member kind="define">
       <type>#define</type>
@@ -855,6 +891,20 @@
       <name>environment_t</name>
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>gaa47b54e9e041dfe1b75fffceb1051466</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>struct lf_async_physical_owner_t</type>
+      <name>lf_async_physical_owner_t</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga4e04fe18af688cffa8c3282d757c425a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>struct lf_async_state_t</type>
+      <name>lf_async_state_t</name>
+      <anchorfile>environment_8h.html</anchorfile>
+      <anchor>a7947c9a6d291940f4e11d118eda0d922</anchor>
       <arglist></arglist>
     </member>
     <member kind="typedef">
@@ -1894,12 +1944,14 @@
     <path>/Users/runner/work/reactor-c/reactor-c/include/core/</path>
     <filename>reactor_8h.html</filename>
     <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
+    <includes id="low__level__platform_8h" name="low_level_platform.h" local="yes" import="no" module="no" objc="no">low_level_platform.h</includes>
     <includes id="modes_8h" name="modes.h" local="yes" import="no" module="no" objc="no">modes.h</includes>
     <includes id="port_8h" name="port.h" local="yes" import="no" module="no" objc="no">port.h</includes>
     <includes id="tag_8h" name="tag.h" local="yes" import="no" module="no" objc="no">tag.h</includes>
     <includes id="clock_8h" name="clock.h" local="yes" import="no" module="no" objc="no">clock.h</includes>
     <includes id="tracepoint_8h" name="tracepoint.h" local="yes" import="no" module="no" objc="no">tracepoint.h</includes>
     <includes id="util_8h" name="util.h" local="yes" import="no" module="no" objc="no">util.h</includes>
+    <class kind="struct">lf_async_state_t</class>
     <member kind="define">
       <type>#define</type>
       <name>SUPPRESS_UNUSED_WARNING</name>
@@ -1907,12 +1959,68 @@
       <anchor>a4625be3023ef492f25fd5193ef754774</anchor>
       <arglist>(x)</arglist>
     </member>
+    <member kind="typedef">
+      <type>struct lf_async_state_t</type>
+      <name>lf_async_state_t</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga7947c9a6d291940f4e11d118eda0d922</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>_lf_async_begin</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gad1555746f02c05e5879a2b287a252286</anchor>
+      <arglist>(lf_async_state_t *state, void *self, void *action, void *port)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>_lf_async_end</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga803d7e3c9bce6be8dc2b4e143cc7b99a</anchor>
+      <arglist>(lf_async_state_t *state)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>_lf_await</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga0ca79eb4d371a5f9b4903951c629e7fe</anchor>
+      <arglist>(void *self, void *port)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>_lf_await_resume</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gad31a7f8781c06daca869cc528c50615c</anchor>
+      <arglist>(void *self, void *port)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_add_worker_thread</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gabd3b47e909857dcd0fda4ab9a6696052</anchor>
+      <arglist>(environment_t *env)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_added_worker_thread_count</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gaccc6e088558c2d8699de5bca015df6a8</anchor>
+      <arglist>(environment_t *env)</arglist>
+    </member>
     <member kind="function">
       <type>void *</type>
       <name>lf_allocate</name>
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga1a5fdb69bc112879d4014bb0790e843c</anchor>
       <arglist>(size_t count, size_t size, struct allocation_record_t **head)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_async_resume</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gae0e25ced19f6ea229a5c93ae565901d1</anchor>
+      <arglist>(void *action)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2304,8 +2412,8 @@
       <type>void</type>
       <name>schedule_output_reactions</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>gaeaaa76aeb7d93efc4e0f0c484548af70</anchor>
-      <arglist>(environment_t *env, reaction_t *reaction, int worker)</arglist>
+      <anchor>ga22efa7f7f693527cdf27e7e88be9b218</anchor>
+      <arglist>(environment_t *env, reaction_t *reaction, int worker, bool allow_inline)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -2412,6 +2520,13 @@
     <filename>reactor__threaded_8h.html</filename>
     <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
     <member kind="function">
+      <type>int</type>
+      <name>_lf_async_release_level_locked</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gab0a572763b22476af4a8a2211df60670</anchor>
+      <arglist>(environment_t *env, size_t level)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>_lf_decrement_tag_barrier_locked</name>
       <anchorfile>group__Internal.html</anchorfile>
@@ -2475,6 +2590,20 @@
     <includes id="lf__types_8h" name="lf_types.h" local="yes" import="no" module="no" objc="no">lf_types.h</includes>
     <includes id="scheduler__instance_8h" name="scheduler_instance.h" local="yes" import="no" module="no" objc="no">scheduler_instance.h</includes>
     <member kind="function">
+      <type>int</type>
+      <name>lf_sched_add_worker</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga7213507eeecfb1a6e2b2c554de405fd0</anchor>
+      <arglist>(lf_scheduler_t *scheduler)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_sched_cancel_add_worker</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gac77bb863fe5dc9b73fa34a6f16e05a8e</anchor>
+      <arglist>(lf_scheduler_t *scheduler)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>lf_sched_done_with_reaction</name>
       <anchorfile>group__Internal.html</anchorfile>
@@ -2501,6 +2630,13 @@
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga0ebe8d7670a73a6572c7152d31e1fb62</anchor>
       <arglist>(environment_t *env, size_t number_of_workers, sched_params_t *parameters)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_sched_remove_worker</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga1c34d07689e22379e97ed23356c7171c</anchor>
+      <arglist>(lf_scheduler_t *scheduler)</arglist>
     </member>
     <member kind="function">
       <type>void</type>
@@ -5843,6 +5979,27 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>lf_async_state_t *</type>
+      <name>async_deferred</name>
+      <anchorfile>structenvironment__t.html</anchorfile>
+      <anchor>a3136a9463b0ba4af462282bcd17bd7d3</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>lf_async_physical_owner_t *</type>
+      <name>async_physical_owners</name>
+      <anchorfile>structenvironment__t.html</anchorfile>
+      <anchor>a10fc53b0aa5cd918d81ef98949a1db74</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>lf_async_state_t *</type>
+      <name>async_waiters</name>
+      <anchorfile>structenvironment__t.html</anchorfile>
+      <anchor>abf88a13b46c036277203a1975d9c3534</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>lf_tag_advancement_barrier_t</type>
       <name>barrier</name>
       <anchorfile>structenvironment__t.html</anchorfile>
@@ -5966,6 +6123,27 @@
       <name>need_to_send_LTC</name>
       <anchorfile>structenvironment__t.html</anchorfile>
       <anchor>aeef35dea438a853fc258631ea4a0e90c</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>num_added_workers</name>
+      <anchorfile>structenvironment__t.html</anchorfile>
+      <anchor>a5f9b9bca5280a46dc2f355b00dfa85cf</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>num_async_suspended</name>
+      <anchorfile>structenvironment__t.html</anchorfile>
+      <anchor>ae6cd8cb3dff2e26ba23817173ce0f97a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>int</type>
+      <name>num_async_threads</name>
+      <anchorfile>structenvironment__t.html</anchorfile>
+      <anchor>a24ea3797618fb26a92a6e0b847d9eeec</anchor>
       <arglist></arglist>
     </member>
     <member kind="variable">
@@ -6742,6 +6920,119 @@
       <name>trigger</name>
       <anchorfile>structlf__action__internal__t.html</anchorfile>
       <anchor>a0f59c9d0f5520d8f5a733bfa9ee41930</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>lf_async_physical_owner_t</name>
+    <filename>structlf__async__physical__owner__t.html</filename>
+    <member kind="variable">
+      <type>lf_action_base_t *</type>
+      <name>action</name>
+      <anchorfile>structlf__async__physical__owner__t.html</anchorfile>
+      <anchor>a27e342f3f225cb7bb49955522786aa0d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>struct lf_async_physical_owner_t *</type>
+      <name>next</name>
+      <anchorfile>structlf__async__physical__owner__t.html</anchorfile>
+      <anchor>ad630a69dc0c30455fd4a9e197515dbde</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>reaction_t *</type>
+      <name>reaction</name>
+      <anchorfile>structlf__async__physical__owner__t.html</anchorfile>
+      <anchor>a3b94b1dea7dd9bd42959cf348b08574c</anchor>
+      <arglist></arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>lf_async_state_t</name>
+    <filename>structlf__async__state__t.html</filename>
+    <member kind="variable">
+      <type>lf_action_base_t *</type>
+      <name>action</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a4eae2701a9386162821032ba8b2c2f21</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>event_pending</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a4594f71021b4905bcad168cf3d5458d9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>function_done</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a823311d40c23c09f65b6713e56a7dacb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>left_pool</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a10c506c763fe019f92e177e3876e1212</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>struct lf_async_state_t *</type>
+      <name>next</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a40e49afec1a0a702c219ac3deac1d0e1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>lf_port_base_t *</type>
+      <name>port</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a86497f87810659101aede30f8820cea5</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>reaction_t *</type>
+      <name>reaction</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>ae3800e46256fccbc2307676c21e8d56b</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>tag_t</type>
+      <name>resume_tag</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a9ea87be668a3a13a9e94fbf4003b3775</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>resume_waiting</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a2831c76a3bb45de371270624e93d9e3d</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>bool</type>
+      <name>resumed</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a09ba17c05cab9a43257445336f3bac51</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>lf_cond_t</type>
+      <name>resumed_cond</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a0e0425d8a6c57a13c48be260bfb7eb68</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>self_base_t *</type>
+      <name>self</name>
+      <anchorfile>structlf__async__state__t.html</anchorfile>
+      <anchor>a11821c2c9e3c174238c8d9be0601dd8a</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -8586,6 +8877,20 @@
     </member>
     <member kind="define">
       <type>#define</type>
+      <name>lf_add_worker_thread</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga5eeb78d277101e8a160e3b183c0c1493</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_added_worker_thread_count</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga056ec5b2e70bd291652853353683fd49</anchor>
+      <arglist>()</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
       <name>LF_ASSERT</name>
       <anchorfile>group__API.html</anchorfile>
       <anchor>ga26ab6a0fd21cdcff11a5557406536bf1</anchor>
@@ -8604,6 +8909,27 @@
       <anchorfile>group__API.html</anchorfile>
       <anchor>ga1c464cee8cabb65eebf454fc016d47b1</anchor>
       <arglist>(condition, format,...)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_async</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga639f325e7d15a15396baf72955d82038</anchor>
+      <arglist>(action, func,...)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_await</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>ga1d7e88810c5b5ae3dee716884afb7c22</anchor>
+      <arglist>(port)</arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>lf_await_resume</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gaa0653ab1c2da4d99eb0cb1825c1495ff</anchor>
+      <arglist>(port)</arglist>
     </member>
     <member kind="define">
       <type>#define</type>
@@ -8828,6 +9154,27 @@
       <anchorfile>group__API.html</anchorfile>
       <anchor>ga4505c08c065b48840a30eedd9845cce2</anchor>
       <arglist></arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_add_worker_thread</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gabd3b47e909857dcd0fda4ab9a6696052</anchor>
+      <arglist>(environment_t *env)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_added_worker_thread_count</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gaccc6e088558c2d8699de5bca015df6a8</anchor>
+      <arglist>(environment_t *env)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_async_resume</name>
+      <anchorfile>group__API.html</anchorfile>
+      <anchor>gae0e25ced19f6ea229a5c93ae565901d1</anchor>
+      <arglist>(void *action)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -10086,6 +10433,8 @@
     <class kind="struct">environment_t</class>
     <class kind="struct">event_t</class>
     <class kind="struct">lf_action_base_t</class>
+    <class kind="struct">lf_async_physical_owner_t</class>
+    <class kind="struct">lf_async_state_t</class>
     <class kind="struct">lf_cli_param_t</class>
     <class kind="struct">lf_port_base_t</class>
     <class kind="struct">lf_scheduler_t</class>
@@ -10303,6 +10652,20 @@
       <name>index_t</name>
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga4448d06be794d3f5412d0edb412dc00e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>struct lf_async_physical_owner_t</type>
+      <name>lf_async_physical_owner_t</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga4e04fe18af688cffa8c3282d757c425a</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="typedef">
+      <type>struct lf_async_state_t</type>
+      <name>lf_async_state_t</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga7947c9a6d291940f4e11d118eda0d922</anchor>
       <arglist></arglist>
     </member>
     <member kind="typedef">
@@ -10634,6 +10997,41 @@
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga4659db62370c837baa55484134b3bfb7</anchor>
       <arglist>(environment_t *env, tag_t next_tag)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>_lf_async_begin</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gad1555746f02c05e5879a2b287a252286</anchor>
+      <arglist>(lf_async_state_t *state, void *self, void *action, void *port)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>_lf_async_end</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga803d7e3c9bce6be8dc2b4e143cc7b99a</anchor>
+      <arglist>(lf_async_state_t *state)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>_lf_async_release_level_locked</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gab0a572763b22476af4a8a2211df60670</anchor>
+      <arglist>(environment_t *env, size_t level)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>_lf_await</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga0ca79eb4d371a5f9b4903951c629e7fe</anchor>
+      <arglist>(void *self, void *port)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>_lf_await_resume</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gad31a7f8781c06daca869cc528c50615c</anchor>
+      <arglist>(void *self, void *port)</arglist>
     </member>
     <member kind="function">
       <type>event_t *</type>
@@ -11063,6 +11461,20 @@
       <arglist>(event_t *event, lf_token_t *token)</arglist>
     </member>
     <member kind="function">
+      <type>int</type>
+      <name>lf_sched_add_worker</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga7213507eeecfb1a6e2b2c554de405fd0</anchor>
+      <arglist>(lf_scheduler_t *scheduler)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_sched_cancel_add_worker</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>gac77bb863fe5dc9b73fa34a6f16e05a8e</anchor>
+      <arglist>(lf_scheduler_t *scheduler)</arglist>
+    </member>
+    <member kind="function">
       <type>void</type>
       <name>lf_sched_done_with_reaction</name>
       <anchorfile>group__Internal.html</anchorfile>
@@ -11089,6 +11501,13 @@
       <anchorfile>group__Internal.html</anchorfile>
       <anchor>ga0ebe8d7670a73a6572c7152d31e1fb62</anchor>
       <arglist>(environment_t *env, size_t number_of_workers, sched_params_t *parameters)</arglist>
+    </member>
+    <member kind="function">
+      <type>int</type>
+      <name>lf_sched_remove_worker</name>
+      <anchorfile>group__Internal.html</anchorfile>
+      <anchor>ga1c34d07689e22379e97ed23356c7171c</anchor>
+      <arglist>(lf_scheduler_t *scheduler)</arglist>
     </member>
     <member kind="function">
       <type>trigger_handle_t</type>
@@ -11486,8 +11905,8 @@
       <type>void</type>
       <name>schedule_output_reactions</name>
       <anchorfile>group__Internal.html</anchorfile>
-      <anchor>gaeaaa76aeb7d93efc4e0f0c484548af70</anchor>
-      <arglist>(environment_t *env, reaction_t *reaction, int worker)</arglist>
+      <anchor>ga22efa7f7f693527cdf27e7e88be9b218</anchor>
+      <arglist>(environment_t *env, reaction_t *reaction, int worker, bool allow_inline)</arglist>
     </member>
     <member kind="function">
       <type>tag_t</type>

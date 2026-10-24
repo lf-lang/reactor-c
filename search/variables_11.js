@@ -2,7 +2,7 @@ var searchData=
 [
   ['scheduler_0',['scheduler',['../structenvironment__t.html#adb630c2889f3cc081ac09219862cbb8d',1,'environment_t']]],
   ['scheduling_5fnodes_1',['scheduling_nodes',['../structrti__common__t.html#abc9727d3d0ae56a137f773a09ffd323d',1,'rti_common_t']]],
-  ['self_2',['self',['../structreaction__t.html#a534c11eeddbe4c0272fc2d77abb82168',1,'reaction_t']]],
+  ['self_2',['self',['../structreaction__t.html#a534c11eeddbe4c0272fc2d77abb82168',1,'reaction_t::self'],['../structlf__async__state__t.html#a11821c2c9e3c174238c8d9be0601dd8a',1,'lf_async_state_t::self']]],
   ['server_5fnet_3',['server_net',['../structfederate__instance__t.html#a44bfdad9ab6659ca07fb6c3339971630',1,'federate_instance_t']]],
   ['set_4',['set',['../structhashset__itr__st.html#adb173545ffbde1e6835af6cb47bf2280',1,'hashset_itr_st']]],
   ['setpos_5',['setpos',['../structpqueue__t.html#a0960bed72e0c851bccf1591c39360c73',1,'pqueue_t']]],

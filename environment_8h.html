@@ -131,6 +131,8 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('environment_8h
 Data Structures</h2></td></tr>
 <tr class="memitem:environment_5Ft" id="r_environment_5Ft"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structenvironment__t.html">environment_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Execution environment.  <a href="structenvironment__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:lf_5Fasync_5Fphysical_5Fowner_5Ft" id="r_lf_5Fasync_5Fphysical_5Fowner_5Ft"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structlf__async__physical__owner__t.html">lf_async_physical_owner_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A physical action dedicated to one reaction by <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>.  <a href="structlf__async__physical__owner__t.html#details">More...</a><br /></td></tr>
 <tr class="memitem:mode_5Fenvironment_5Ft" id="r_mode_5Fenvironment_5Ft"><td class="memItemLeft">struct &#160;</td><td class="memItemRight"><a class="el" href="structmode__environment__t.html">mode_environment_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Environment for modal reactors.  <a href="structmode__environment__t.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
@@ -144,6 +146,9 @@ Typedefs</h2></td></tr>
 <tr class="memitem:a1567a1034e3b7c6528bc12fdc04a4c71" id="r_a1567a1034e3b7c6528bc12fdc04a4c71"><td class="memItemLeft">typedef struct enclave_info_t&#160;</td><td class="memItemRight"><a class="el" href="#a1567a1034e3b7c6528bc12fdc04a4c71">enclave_info_t</a></td></tr>
 <tr class="memitem:gaa47b54e9e041dfe1b75fffceb1051466" id="r_gaa47b54e9e041dfe1b75fffceb1051466"><td class="memItemLeft">typedef struct environment_t&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#gaa47b54e9e041dfe1b75fffceb1051466">environment_t</a></td></tr>
 <tr class="memdesc:gaa47b54e9e041dfe1b75fffceb1051466"><td class="mdescLeft">&#160;</td><td class="mdescRight">Execution environment.  <br /></td></tr>
+<tr class="memitem:ga4e04fe18af688cffa8c3282d757c425a" id="r_ga4e04fe18af688cffa8c3282d757c425a"><td class="memItemLeft">typedef struct lf_async_physical_owner_t&#160;</td><td class="memItemRight"><a class="el" href="group__Internal.html#ga4e04fe18af688cffa8c3282d757c425a">lf_async_physical_owner_t</a></td></tr>
+<tr class="memdesc:ga4e04fe18af688cffa8c3282d757c425a"><td class="mdescLeft">&#160;</td><td class="mdescRight">A physical action dedicated to one reaction by <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>.  <br /></td></tr>
+<tr class="memitem:a7947c9a6d291940f4e11d118eda0d922" id="r_a7947c9a6d291940f4e11d118eda0d922"><td class="memItemLeft">typedef struct lf_async_state_t&#160;</td><td class="memItemRight"><a class="el" href="#a7947c9a6d291940f4e11d118eda0d922">lf_async_state_t</a></td></tr>
 <tr class="memitem:a0199f9b027e13cf08095d91fe798c663" id="r_a0199f9b027e13cf08095d91fe798c663"><td class="memItemLeft">typedef struct lf_scheduler_t&#160;</td><td class="memItemRight"><a class="el" href="#a0199f9b027e13cf08095d91fe798c663">lf_scheduler_t</a></td></tr>
 <tr class="memitem:a7941464261ddb811cc9b63a85c11d1ee" id="r_a7941464261ddb811cc9b63a85c11d1ee"><td class="memItemLeft">typedef struct mode_environment_t&#160;</td><td class="memItemRight"><a class="el" href="#a7941464261ddb811cc9b63a85c11d1ee">mode_environment_t</a></td></tr>
 <tr class="memitem:aee1cd2bc521f76fa428cc659474d9570" id="r_aee1cd2bc521f76fa428cc659474d9570"><td class="memItemLeft">typedef struct watchdog_t&#160;</td><td class="memItemRight"><a class="el" href="#aee1cd2bc521f76fa428cc659474d9570">watchdog_t</a></td></tr>
@@ -174,6 +179,20 @@ Functions</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">typedef struct enclave_info_t enclave_info_t</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7947c9a6d291940f4e11d118eda0d922" name="a7947c9a6d291940f4e11d118eda0d922"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7947c9a6d291940f4e11d118eda0d922">&#9670;&#160;</a></span>lf_async_state_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct lf_async_state_t lf_async_state_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
