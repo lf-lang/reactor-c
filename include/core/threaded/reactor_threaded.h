@@ -185,4 +185,19 @@ tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply);
  * @param env Environment within which we are executing.
  */
 void _lf_next_locked(environment_t* env);
+
+/**
+ * @brief Resume every deferred lf_async() or lf_await() call whose reaction is at the given level.
+ * @ingroup Internal
+ *
+ * The caller must hold the environment mutex and must be a busy worker (executing a reaction, or
+ * the worker that is distributing this level and has therefore not gone idle). Each resumed thread
+ * rejoins the pool and continues its reaction at this level. The returned count is the number of
+ * threads that are now busy and must finish before a higher level starts.
+ *
+ * @param env The environment.
+ * @param level The level the scheduler is entering.
+ * @return The number of calls resumed.
+ */
+int _lf_async_release_level_locked(environment_t* env, size_t level);
 #endif // REACTOR_THREADED_H

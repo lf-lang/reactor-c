@@ -24,6 +24,20 @@ typedef struct lf_scheduler_t lf_scheduler_t;
 typedef struct mode_environment_t mode_environment_t;
 typedef struct enclave_info_t enclave_info_t;
 typedef struct watchdog_t watchdog_t;
+typedef struct lf_async_state_t lf_async_state_t;
+
+/**
+ * @brief A physical action dedicated to one reaction by `lf_async()`.
+ * @ingroup Internal
+ *
+ * The first reaction that passes a physical action to `lf_async()` owns it. A later call from
+ * another reaction on that same action is a fatal error.
+ */
+typedef struct lf_async_physical_owner_t {
+  lf_action_base_t* action;
+  reaction_t* reaction;
+  struct lf_async_physical_owner_t* next;
+} lf_async_physical_owner_t;
 
 /**
  * @brief The global environment.
@@ -274,15 +288,25 @@ typedef struct environment_t {
    * @brief Number of worker threads.
    *
    * Indicates the total number of worker threads available
-   * for parallel execution in this environment.
+   * for parallel execution in this environment. This includes
+   * any worker threads added at runtime with @ref lf_add_worker_thread().
    */
   int num_workers;
+
+  /**
+   * @brief Number of worker threads added at runtime.
+   *
+   * Counts the worker threads that have been added to this environment
+   * by calls to @ref lf_add_worker_thread(). Protected by the environment mutex.
+   */
+  int num_added_workers;
 
   /**
    * @brief Array of worker thread IDs.
    *
    * Stores the thread identifiers for all worker threads
-   * in this environment.
+   * in this environment. Its length is num_workers; it is grown
+   * when worker threads are added with @ref lf_add_worker_thread().
    */
   lf_thread_t* thread_ids;
 
@@ -325,6 +349,48 @@ typedef struct environment_t {
    * have reached zero.
    */
   lf_cond_t global_tag_barrier_requestors_reached_zero;
+
+  /**
+   * @brief Pending lf_async() and lf_await() calls in this environment, oldest first.
+   *
+   * Each entry is a reaction that is suspended in @ref lf_async(), or whose invoked function has
+   * not yet returned, waiting for @ref lf_async_resume() to be called on its action, or a reaction
+   * suspended in `lf_await()` waiting for `lf_await_resume()` on its port. Protected by the
+   * environment mutex.
+   */
+  lf_async_state_t* async_waiters;
+
+  /**
+   * @brief Calls whose resuming reaction has run, waiting for the scheduler to reach their level.
+   *
+   * Each entry was unlinked from `async_waiters` by `lf_async_resume()` or `lf_await_resume()` and
+   * continues when the scheduler enters the level of its reaction. Protected by the environment mutex.
+   */
+  lf_async_state_t* async_deferred;
+
+  /**
+   * @brief Physical actions passed to `lf_async()`, and the reaction each is dedicated to.
+   *
+   * Protected by the environment mutex.
+   */
+  lf_async_physical_owner_t* async_physical_owners;
+
+  /**
+   * @brief Number of worker threads that have been added by @ref lf_async().
+   *
+   * Protected by the environment mutex.
+   */
+  int num_async_threads;
+
+  /**
+   * @brief Number of reactions currently suspended in @ref lf_async().
+   *
+   * Each of these has left the pool of worker threads. `lf_async()` adds a worker thread only
+   * when this count would otherwise exceed `num_async_threads`, so that the pool never shrinks
+   * below its original size while growing by no more than the maximum number of concurrent
+   * `lf_async()` calls. Protected by the environment mutex.
+   */
+  int num_async_suspended;
 #endif // LF_SINGLE_THREADED
 
 #if defined(FEDERATED)
