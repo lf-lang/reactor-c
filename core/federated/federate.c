@@ -1960,16 +1960,23 @@ static void send_failed_signal() {
 }
 
 /**
- * Handle a failed signal from the RTI.
+ * Record that the RTI connection is no longer usable and unblock this federate
+ * so it can shut down.
  *
  * The RTI sends MSG_TYPE_FAILED only when it is forced to exit, for example
  * by SIGINT. This thread must not call exit(): termination() is an atexit
  * handler that joins this thread, and a concurrent exit() from the main
  * thread runs that handler twice. Instead, record the failure, unblock every
  * enclave, and return so the main thread can exit once.
+ *
+ * @param report_error Print "RTI has failed" when the RTI actually failed.
+ * False after a normal EOF: that path has already logged
+ * "Connection to the RTI closed with an EOF."
  */
-static void handle_rti_failed_message(void) {
-  lf_print_error("RTI has failed. Shutting down federate.");
+static void handle_rti_failed_message(bool report_error) {
+  if (report_error) {
+    lf_print_error("RTI has failed. Shutting down federate.");
+  }
   // Full barrier, so a later atomic load on the main thread sees this store.
   lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
 
@@ -2025,7 +2032,7 @@ static void* listen_to_rti_net(void* args) {
     // Check whether the RTI network abstraction is still valid.
     if (_fed.net_to_RTI == NULL || !is_net_open(_fed.net_to_RTI)) {
       lf_print_warning("network connection to the RTI unexpectedly closed.");
-      handle_rti_failed_message();
+      handle_rti_failed_message(true);
       return NULL;
     }
     // Read one byte to get the message type.
@@ -2034,13 +2041,13 @@ static void* listen_to_rti_net(void* args) {
     if (read_failed < 0) {
       lf_print_error("Connection to the RTI was closed by the RTI with an error.");
       close_net(_fed.net_to_RTI, false);
-      handle_rti_failed_message();
+      handle_rti_failed_message(true);
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
       lf_print_info("Connection to the RTI closed with an EOF.");
       close_net(_fed.net_to_RTI, false);
-      handle_rti_failed_message();
+      handle_rti_failed_message(false);
       return NULL;
     }
     switch (buffer[0]) {
@@ -2075,7 +2082,7 @@ static void* listen_to_rti_net(void* args) {
       handle_downstream_next_event_tag();
       break;
     case MSG_TYPE_FAILED:
-      handle_rti_failed_message();
+      handle_rti_failed_message(true);
       // Return so lf_terminate_execution() can join this thread. Do not read
       // further: the RTI is closing the connection.
       return NULL;
@@ -2291,7 +2298,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
         // downstream federate connects. MSG_TYPE_FAILED must not call exit()
         // from that thread; the byte has already been consumed here.
         if (buffer[0] == MSG_TYPE_FAILED) {
-          handle_rti_failed_message();
+          handle_rti_failed_message(true);
           return;
         }
         lf_print_error_and_exit("Unexpected reply of type %hhu from RTI (see net_common.h).", buffer[0]);
