@@ -359,8 +359,7 @@ void lf_async_resume(void* action);
   })
 #else
 // Statement expressions and __typeof__ are not available (e.g., with MSVC), so give a readable error.
-#define lf_async_ext(self, action, func, ...) \
-  lf_async_requires_a_compiler_that_supports_statement_expressions_such_as_gcc_or_clang()
+#define lf_async_ext(self, action, func, ...) lf_async_not_supported_on_windows()
 #endif
 
 /**
