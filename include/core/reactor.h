@@ -340,6 +340,7 @@ void lf_async_resume(void* action);
  * The resuming reaction, which calls `lf_async_resume()`, may itself be inlined or external.
  *
  * This is a macro rather than a function because it returns whatever `func` returns, whatever its type.
+ * It uses GNU statement expressions, so it requires GCC or Clang and is not available with MSVC.
  *
  * @param self The self struct of the reactor whose reaction is executing.
  * @param action The logical or physical action that resumes this call.
@@ -347,6 +348,7 @@ void lf_async_resume(void* action);
  * @param ... The arguments to pass to `func`.
  * @return The value returned by `func`.
  */
+#if defined(__GNUC__) || defined(__clang__)
 #define lf_async_ext(self, action, func, ...)                                                                          \
   ({                                                                                                                   \
     lf_async_state_t _lf_async_state;                                                                                  \
@@ -355,6 +357,11 @@ void lf_async_resume(void* action);
     _lf_async_end(&_lf_async_state);                                                                                   \
     _lf_async_result;                                                                                                  \
   })
+#else
+// Statement expressions and __typeof__ are not available (e.g., with MSVC), so give a readable error.
+#define lf_async_ext(self, action, func, ...) \
+  lf_async_requires_a_compiler_that_supports_statement_expressions_such_as_gcc_or_clang()
+#endif
 
 /**
  * @brief Suspend the calling reaction until another reaction of the same reactor calls
