@@ -168,7 +168,7 @@ void lf_request_stop(void);
  * and the convenience macro `lf_add_worker_thread()` (with no arguments) supplies it.
  *
  * Adding worker threads is supported by the default (NP) and GEDF_NP schedulers in the
- * threaded runtime. The adaptive scheduler and the single-threaded runtime do not support
+ * threaded runtime. The single-threaded runtime does not support
  * it, in which case this function returns -1 and no thread is created.
  *
  * @param env The environment to which to add a worker thread.

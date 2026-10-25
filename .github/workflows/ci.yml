@@ -88,13 +88,3 @@ jobs:
       scheduler: GEDF_NP
       all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
     if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
-
-  lf-adaptive:
-    needs: [fetch-lf]
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      scheduler: ADAPTIVE
-      all-platforms: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'mac') || contains( github.event.pull_request.labels.*.name, 'windows') }}
-    if: ${{ !github.event.pull_request.draft || contains( github.event.pull_request.labels.*.name, 'schedulers') }}
