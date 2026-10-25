@@ -659,7 +659,7 @@ PyObject* py_lf_await(PyObject* self, PyObject* args) {
     return NULL;
   }
   PyThreadState* thread_state = PyEval_SaveThread();
-  _lf_await(reactor, port);
+  lf_await_ext(reactor, port);
   PyEval_RestoreThread(thread_state);
   py_sync_port_capsule(capsule, port);
   Py_RETURN_NONE;
@@ -681,7 +681,7 @@ PyObject* py_lf_await_resume(PyObject* self, PyObject* args) {
     return NULL;
   }
   PyThreadState* thread_state = PyEval_SaveThread();
-  _lf_await_resume(reactor, port);
+  lf_await_resume_ext(reactor, port);
   PyEval_RestoreThread(thread_state);
   Py_RETURN_NONE;
 }

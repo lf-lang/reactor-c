@@ -319,13 +319,13 @@ void lf_async_resume(void* action) {
   // Nothing can be waiting because lf_async() is not supported by the single-threaded runtime.
 }
 
-void _lf_await(void* self, void* port) {
+void lf_await_ext(void* self, void* port) {
   (void)self;
   (void)port;
   lf_print_error_and_exit("lf_await() is not supported by the single-threaded runtime.");
 }
 
-void _lf_await_resume(void* self, void* port) {
+void lf_await_resume_ext(void* self, void* port) {
   (void)self;
   (void)port;
   // Nothing can be waiting because lf_await() is not supported by the single-threaded runtime.

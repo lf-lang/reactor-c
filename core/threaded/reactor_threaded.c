@@ -1137,7 +1137,7 @@ void lf_async_resume(void* action) {
   LF_MUTEX_UNLOCK(&env->mutex);
 }
 
-void _lf_await_resume(void* self, void* port) {
+void lf_await_resume_ext(void* self, void* port) {
   self_base_t* base = (self_base_t*)self;
   environment_t* env = base->environment;
   if (base->executing_reaction == NULL) {
@@ -1164,7 +1164,7 @@ void _lf_await_resume(void* self, void* port) {
   LF_MUTEX_UNLOCK(&env->mutex);
 }
 
-void _lf_await(void* self, void* port) {
+void lf_await_ext(void* self, void* port) {
   // The function that lf_async() would invoke is empty, so the call is complete as soon as it
   // is suspended. It is resumed by lf_await_resume() on the port or, if the program stops first,
   // by the exiting workers, at the stop tag.

@@ -316,12 +316,60 @@ void _lf_async_end(lf_async_state_t* state);
 void lf_async_resume(void* action);
 
 /**
- * @brief Suspend the calling reaction until another reaction of the same reactor calls
- * `lf_await_resume()` on the specified input port.
- * @ingroup Internal
+ * @brief Invoke a possibly blocking function from a reaction without blocking the environment.
+ * This is the version of `lf_async()` for externally defined reactions.
+ * @ingroup API
  *
- * This is the implementation of the `lf_await()` macro, which supplies `self`, and is not meant
- * to be called directly. It behaves like `lf_async()` with no function to invoke and no action. Outputs set before the
+ * The `lf_async()` macro is only available in reactions with bodies in the LF source because it
+ * uses the `self` variable that is in scope there. An externally defined reaction (one with a name
+ * but no body) can use this macro instead, passing its `self` argument explicitly. The semantics,
+ * requirements, and caveats are exactly those of `lf_async()`. For example, given
+ * ```
+ * reaction (awake) {= lf_async_resume(awake); =}
+ * reaction run(startup) -> awake
+ * ```
+ * the externally defined reaction might be
+ * ```
+ * void run(blocker_self_t* self, blocker_awake_t* awake) {
+ *   int result = lf_async_ext(self, awake, slow, 50);
+ * }
+ * ```
+ * The action is passed to the externally defined function as an argument after the arguments
+ * for the ports, in the order in which the actions are mentioned in the reaction signature (as
+ * triggers, then sources, then effects).
+ * The resuming reaction, which calls `lf_async_resume()`, may itself be inlined or external.
+ *
+ * This is a macro rather than a function because it returns whatever `func` returns, whatever its type.
+ *
+ * @param self The self struct of the reactor whose reaction is executing.
+ * @param action The logical or physical action that resumes this call.
+ * @param func The function to invoke.
+ * @param ... The arguments to pass to `func`.
+ * @return The value returned by `func`.
+ */
+#define lf_async_ext(self, action, func, ...)                                                                          \
+  ({                                                                                                                   \
+    lf_async_state_t _lf_async_state;                                                                                  \
+    _lf_async_begin(&_lf_async_state, (self), (action), NULL);                                                         \
+    __typeof__(func(__VA_ARGS__)) _lf_async_result = func(__VA_ARGS__);                                                \
+    _lf_async_end(&_lf_async_state);                                                                                   \
+    _lf_async_result;                                                                                                  \
+  })
+
+/**
+ * @brief Suspend the calling reaction until another reaction of the same reactor calls
+ * `lf_await_resume()` or `lf_await_resume_ext()` on the specified input port.
+ * @ingroup API
+ *
+ * This is the implementation of the `lf_await()` macro, which supplies `self`. It can also be called
+ * directly from an externally defined reaction (a reaction with a name but no body in the LF source),
+ * where the `lf_await()` macro is not available. For example:
+ * ```
+ * void requester(requester_self_t* self, requester_response_t* response) {
+ *   lf_await_ext(self, response);
+ * }
+ * ```
+ * It behaves like `lf_async()` with no function to invoke and no action. Outputs set before the
  * call are propagated at the current tag, the calling worker thread leaves the pool (adding a
  * replacement if needed), and logical time advances and other reactions execute as if the
  * calling reaction had completed. When a reaction of the same reactor calls `lf_await_resume()`
@@ -338,18 +386,21 @@ void lf_async_resume(void* action);
  * reactor become mutually exclusive, and this requires the threaded runtime with the NP or
  * GEDF_NP scheduler.
  *
- * @param self The self struct of the reactor whose reaction is executing.
+ * @param self The self struct of the reactor whose reaction is executing. In an externally
+ * defined reaction, this is the `self` argument.
  * @param port An input port of this reactor (an `lf_port_base_t*`), as it is in scope in the
- * reaction body. The calling reaction must list it as a trigger or source.
+ * reaction body. The calling reaction must list it as a trigger or source. In an externally
+ * defined reaction, this is the port argument.
  */
-void _lf_await(void* self, void* port);
+void lf_await_ext(void* self, void* port);
 
 /**
  * @brief Resume every reaction of this reactor that is suspended in `lf_await()` on the specified port.
- * @ingroup Internal
+ * @ingroup API
  *
- * This is the implementation of the `lf_await_resume()` macro, which supplies `self`, and is not
- * meant to be called directly. It must be called from the body of a reaction of the same reactor
+ * This is the implementation of the `lf_await_resume()` macro, which supplies `self`. It can also be
+ * called directly from an externally defined reaction, where the macro is not available. It must be
+ * called from the body of a reaction of the same reactor
  * as the suspended reactions, typically a reaction triggered by the port. All pending `lf_await()`
  * calls of this reactor on this port are resumed. Each continues when the scheduler reaches that
  * reaction's level, and the scheduler does not start a higher level until the continuation has
@@ -363,7 +414,7 @@ void _lf_await(void* self, void* port);
  * @param self The self struct of the reactor whose reaction is executing.
  * @param port The input port (an `lf_port_base_t*`), as it is in scope in the reaction body.
  */
-void _lf_await_resume(void* self, void* port);
+void lf_await_resume_ext(void* self, void* port);
 
 /**
  * @brief Allocate memory and record on the specified allocation record (a self struct).
