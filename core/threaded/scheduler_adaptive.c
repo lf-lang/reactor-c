@@ -13,7 +13,6 @@
 #endif // NUMBER_OF_WORKERS
 
 #include <assert.h>
-
 #include "environment.h"
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
@@ -204,16 +203,11 @@ static void worker_assignments_free(lf_scheduler_t* scheduler) {
  */
 static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
-#ifndef FEDERATED
-  int index = lf_atomic_add_fetch(worker_assignments->num_reactions_by_worker + worker, -1);
-  if (index >= 0) {
-    return worker_assignments->reactions_by_worker[worker][index];
-  }
-  worker_assignments->num_reactions_by_worker[worker] = 0;
-  return NULL;
-#else
-  // This is necessary for federated programs because reactions may be inserted into the current
-  // level.
+  // Decrement the counter with a CAS loop so that it never goes below zero. Decrementing
+  // unconditionally and clamping back to zero afterward is racy: other workers steal from this
+  // worker's queue (and the owner reads its own counter in worker_assignments_get_or_lock), so they
+  // can observe a transient negative count. This also handles federated programs, where reactions
+  // may be inserted into the current level.
   int old_num_reactions;
   int current_num_reactions = worker_assignments->num_reactions_by_worker[worker];
   int index;
@@ -225,7 +219,6 @@ static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
                 lf_atomic_val_compare_and_swap(worker_assignments->num_reactions_by_worker + worker, old_num_reactions,
                                                (index = old_num_reactions - 1))) != old_num_reactions);
   return worker_assignments->reactions_by_worker[worker][index];
-#endif
 }
 
 /**
