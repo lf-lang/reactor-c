@@ -255,7 +255,7 @@ static void update_last_known_status_on_input_ports(tag_t tag, environment_t* en
  * occur if a sequence of late messages (STP violations) are occurring all at
  * once during an execution of a logical tag.
  *
- * This function is called when a message or absent message arrives. For decentralized
+ * This function is called when a message arrives. For decentralized
  * coordination, it is also called by the background thread update_ports_from_staa_offsets
  * which uses physical time to determine when an input port can be assumed to be absent
  * if a message has not been received.
@@ -277,9 +277,9 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
   if (comparison == 0)
     tag.microstep++;
   if (comparison >= 0) {
-    LF_PRINT_LOG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
-                 input_port_action->last_known_status_tag.time - lf_time_start(),
-                 input_port_action->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
+    LF_PRINT_DEBUG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
+                   input_port_action->last_known_status_tag.time - lf_time_start(),
+                   input_port_action->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
     input_port_action->last_known_status_tag = tag;
 
     // Check whether this port update implies a change to MLAA, which may unblock reactions.
@@ -367,10 +367,10 @@ static void update_last_known_status_on_action(environment_t* env, lf_action_bas
     tag = env->current_tag;
   trigger_t* input_port_trigger = action->trigger;
   if (lf_tag_compare(tag, input_port_trigger->last_known_status_tag) > 0) {
-    LF_PRINT_LOG("Updating the last known status tag of port for upstream absent transient "
-                 "federate from " PRINTF_TAG " to " PRINTF_TAG ".",
-                 input_port_trigger->last_known_status_tag.time - lf_time_start(),
-                 input_port_trigger->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
+    LF_PRINT_DEBUG("Updating the last known status tag of port for upstream absent transient "
+                   "federate from " PRINTF_TAG " to " PRINTF_TAG ".",
+                   input_port_trigger->last_known_status_tag.time - lf_time_start(),
+                   input_port_trigger->last_known_status_tag.microstep, tag.time - lf_time_start(), tag.microstep);
     input_port_trigger->last_known_status_tag = tag;
   }
 }
@@ -636,6 +636,10 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
   LF_MUTEX_LOCK(&env->mutex);
 
   action->trigger->physical_time_of_arrival = time_of_arrival;
+#ifdef FEDERATED_DECENTRALIZED
+  // A tagged payload supersedes an idle notice: the upstream is sending again.
+  action->trigger->upstream_idle = false;
+#endif
 
   // Create a token for the message
   size_t element_size = ((token_type_t*)action)->element_size;
@@ -747,10 +751,83 @@ static int handle_tagged_message(net_abstraction_t net, int fed_id) {
   return 0;
 }
 
+#ifdef FEDERATED_DECENTRALIZED
+/**
+ * Latest tag at which this federate sent a same-tag zero-delay message to each
+ * peer. An idle notice whose completed tag is earlier than this is stale: it was
+ * sent before the peer saw the message that can wake it. NEVER_TAG means no such
+ * send has happened. Accessed only while holding the top-level environment mutex.
+ */
+static tag_t last_zero_delay_send_tag[NUMBER_OF_FEDERATES];
+static bool last_zero_delay_send_tag_ready = false;
+
+static void ensure_last_zero_delay_send_tags(void) {
+  if (last_zero_delay_send_tag_ready) {
+    return;
+  }
+  for (int i = 0; i < NUMBER_OF_FEDERATES; i++) {
+    last_zero_delay_send_tag[i] = NEVER_TAG;
+  }
+  last_zero_delay_send_tag_ready = true;
+}
+
+/** STAA recorded for a network input, or 0 if the action is not in staa_lst. */
+static interval_t staa_of_input(lf_action_base_t* action) {
+  for (size_t i = 0; i < staa_lst_size; i++) {
+    staa_t* elem = staa_lst[i];
+    if (elem == NULL) {
+      continue;
+    }
+    for (size_t j = 0; j < elem->num_actions; j++) {
+      if (elem->actions[j] == action) {
+        return (interval_t)elem->STAA;
+      }
+    }
+  }
+  return 0;
+}
+
+/**
+ * A same-tag zero-delay send can provoke a same-tag reply. Drop the idle-upstream
+ * assumption on every input from that federate so MLAA waits for the reply.
+ * The caller must not hold the environment mutex.
+ */
+static void invalidate_upstream_idle_on_send(environment_t* env, unsigned short federate, tag_t intended_tag) {
+  if (federate >= NUMBER_OF_FEDERATES) {
+    return;
+  }
+  LF_MUTEX_LOCK(&env->mutex);
+  ensure_last_zero_delay_send_tags();
+  if (lf_tag_compare(intended_tag, last_zero_delay_send_tag[federate]) > 0) {
+    last_zero_delay_send_tag[federate] = intended_tag;
+  }
+  bool changed = false;
+  for (size_t i = 0; i < _lf_action_table_size; i++) {
+    lf_action_base_t* action = _lf_action_table[i];
+    if (action->source_id != (int)federate || !action->trigger->upstream_idle) {
+      continue;
+    }
+    action->trigger->upstream_idle = false;
+    if (lf_tag_compare(env->current_tag, action->trigger->last_known_status_tag) > 0) {
+      action->trigger->status = unknown;
+    }
+    changed = true;
+  }
+  if (changed) {
+    LF_PRINT_DEBUG("Same-tag send to federate %u; waiting for a possible reply.", federate);
+    lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+    lf_cond_broadcast(&lf_port_status_changed);
+  }
+  LF_MUTEX_UNLOCK(&env->mutex);
+}
+#endif // FEDERATED_DECENTRALIZED
+
 /**
  * Handle a port absent message received from a remote federate.
- * This just sets the last known status tag of the port specified
- * in the message.
+ * This sets the last known status tag of the specified port. In decentralized
+ * coordination, if the absent tag is in the future, a dummy event is inserted
+ * so an idle federate advances to that tag and can emit its own port-absent
+ * messages (required to complete a zero-delay cycle).
  *
  * @param net Pointer to the network abstraction to read the message from
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
@@ -783,9 +860,95 @@ static int handle_port_absent_message(net_abstraction_t net, int fed_id) {
   _lf_get_environments(&env);
 
   LF_MUTEX_LOCK(&env->mutex);
-  update_last_known_status_on_input_port(env, intended_tag, port_id, true);
+
+  // Unlike update_last_known_status_on_input_port, here we do not clamp a late absent
+  // up to current_tag, and we set the port status to absent if the intended tag is
+  // equal to the current tag. Absence at an earlier tag does not imply absence at the
+  // current tag; clamping would unblock MLAA too early and let downstream reactions
+  // run before a present/absent for this tag arrives.
+  trigger_t* input_port_action = action_for_port(port_id)->trigger;
+  if (lf_tag_compare(intended_tag, input_port_action->last_known_status_tag) > 0) {
+    LF_PRINT_DEBUG("Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".", port_id,
+                   input_port_action->last_known_status_tag.time - lf_time_start(),
+                   input_port_action->last_known_status_tag.microstep, intended_tag.time - lf_time_start(),
+                   intended_tag.microstep);
+    input_port_action->last_known_status_tag = intended_tag;
+    if (lf_tag_compare(intended_tag, env->current_tag) == 0) {
+      set_network_port_status(port_id, absent);
+    }
+    lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+    lf_cond_broadcast(&lf_port_status_changed);
+    // Could be blocked waiting for physical time to advance to the STA, so unblock that too.
+    lf_cond_broadcast(&env->event_q_changed);
+  }
+
+#ifdef FEDERATED_DECENTRALIZED
+  // If this federate is idle (no local event at the absent tag), it would never
+  // execute that tag and therefore would never send its own port-absent messages.
+  // In a zero-delay cycle that stalls the peer until STAA expires. Insert a dummy
+  // event so time advances and port-absent reactions can run.
+  if (lf_tag_compare(intended_tag, env->current_tag) > 0 && !lf_is_tag_after_stop_tag(env, intended_tag)) {
+    LF_PRINT_DEBUG("Inserting dummy event at tag " PRINTF_TAG " to process port-absent.",
+                   intended_tag.time - lf_time_start(), intended_tag.microstep);
+    event_t* dummy = _lf_create_dummy_events(env, intended_tag);
+    pqueue_tag_insert(env->event_q, (pqueue_tag_element_t*)dummy);
+    lf_cond_broadcast(&env->event_q_changed);
+  }
+#endif
+
   LF_MUTEX_UNLOCK(&env->mutex);
 
+  return 0;
+}
+
+/**
+ * Handle an open-ended absent (@ref MSG_TYPE_PORT_IDLE) from a peer that has no
+ * further local events. Forever-STAA inputs stop blocking on that port until this
+ * federate sends to the peer or a tagged message arrives. Finite STAA keeps its
+ * timeout and ignores the notice. A notice completed before our latest same-tag
+ * send to that peer is stale and is ignored.
+ */
+static int handle_port_idle_message(net_abstraction_t net, int fed_id) {
+  size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t);
+  unsigned char buffer[bytes_to_read];
+  if (read_from_net_close_on_error(net, bytes_to_read, buffer)) {
+    return -1;
+  }
+
+  unsigned short port_id = extract_uint16(buffer);
+  tag_t completed = extract_tag(&(buffer[sizeof(uint16_t) + sizeof(uint16_t)]));
+
+#ifdef FEDERATED_DECENTRALIZED
+  if (fed_id < 0 || fed_id >= NUMBER_OF_FEDERATES) {
+    return 0;
+  }
+  environment_t* env;
+  _lf_get_environments(&env);
+  LF_MUTEX_LOCK(&env->mutex);
+  ensure_last_zero_delay_send_tags();
+
+  lf_action_base_t* action = action_for_port(port_id);
+  bool stale = lf_tag_compare(completed, last_zero_delay_send_tag[fed_id]) < 0;
+  if (staa_of_input(action) == FOREVER && !stale) {
+    LF_PRINT_LOG("Upstream federate %d is idle after tag " PRINTF_TAG " on port %hu.", fed_id,
+                 completed.time - lf_time_start(), completed.microstep, port_id);
+    action->trigger->upstream_idle = true;
+    if (lf_tag_compare(env->current_tag, action->trigger->last_known_status_tag) > 0 &&
+        action->trigger->status == unknown) {
+      action->trigger->status = absent;
+    }
+    lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+    lf_cond_broadcast(&lf_port_status_changed);
+    lf_cond_broadcast(&env->event_q_changed);
+  } else {
+    LF_PRINT_DEBUG("Ignoring idle notice from federate %d for port %hu.", fed_id, port_id);
+  }
+  LF_MUTEX_UNLOCK(&env->mutex);
+#else
+  (void)port_id;
+  (void)completed;
+  (void)fed_id;
+#endif // FEDERATED_DECENTRALIZED
   return 0;
 }
 
@@ -849,6 +1012,16 @@ static void* listen_to_federates(void* _args) {
       case MSG_TYPE_PORT_ABSENT:
         LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
         if (handle_port_absent_message(net, fed_id)) {
+          // P2P tagged messages are only used in decentralized coordination, and
+          // it is not a fatal error if the network abstraction is closed before the whole message is read.
+          // But this thread should exit.
+          lf_print_warning("Failed to complete reading of tagged message.");
+          net_closed = true;
+        }
+        break;
+      case MSG_TYPE_PORT_IDLE:
+        LF_PRINT_LOG("Received port idle notice from federate %d.", fed_id);
+        if (handle_port_idle_message(net, fed_id)) {
           // P2P tagged messages are only used in decentralized coordination, and
           // it is not a fatal error if the network abstraction is closed before the whole message is read.
           // But this thread should exit.
@@ -1787,16 +1960,23 @@ static void send_failed_signal() {
 }
 
 /**
- * Handle a failed signal from the RTI.
+ * Record that the RTI connection is no longer usable and unblock this federate
+ * so it can shut down.
  *
  * The RTI sends MSG_TYPE_FAILED only when it is forced to exit, for example
  * by SIGINT. This thread must not call exit(): termination() is an atexit
  * handler that joins this thread, and a concurrent exit() from the main
  * thread runs that handler twice. Instead, record the failure, unblock every
  * enclave, and return so the main thread can exit once.
+ *
+ * @param report_error Print "RTI has failed" when the RTI actually failed.
+ * False after a normal EOF: that path has already logged
+ * "Connection to the RTI closed with an EOF."
  */
-static void handle_rti_failed_message(void) {
-  lf_print_error("RTI has failed. Shutting down federate.");
+static void handle_rti_failed_message(bool report_error) {
+  if (report_error) {
+    lf_print_error("RTI has failed. Shutting down federate.");
+  }
   // Full barrier, so a later atomic load on the main thread sees this store.
   lf_atomic_bool_compare_and_swap(&_fed.rti_failed, 0, 1);
 
@@ -1852,7 +2032,7 @@ static void* listen_to_rti_net(void* args) {
     // Check whether the RTI network abstraction is still valid.
     if (_fed.net_to_RTI == NULL || !is_net_open(_fed.net_to_RTI)) {
       lf_print_warning("network connection to the RTI unexpectedly closed.");
-      handle_rti_failed_message();
+      handle_rti_failed_message(true);
       return NULL;
     }
     // Read one byte to get the message type.
@@ -1861,13 +2041,13 @@ static void* listen_to_rti_net(void* args) {
     if (read_failed < 0) {
       lf_print_error("Connection to the RTI was closed by the RTI with an error.");
       close_net(_fed.net_to_RTI, false);
-      handle_rti_failed_message();
+      handle_rti_failed_message(true);
       return NULL;
     } else if (read_failed > 0) {
       // EOF received.
       lf_print_info("Connection to the RTI closed with an EOF.");
       close_net(_fed.net_to_RTI, false);
-      handle_rti_failed_message();
+      handle_rti_failed_message(false);
       return NULL;
     }
     switch (buffer[0]) {
@@ -1902,7 +2082,7 @@ static void* listen_to_rti_net(void* args) {
       handle_downstream_next_event_tag();
       break;
     case MSG_TYPE_FAILED:
-      handle_rti_failed_message();
+      handle_rti_failed_message(true);
       // Return so lf_terminate_execution() can join this thread. Do not read
       // further: the RTI is closing the connection.
       return NULL;
@@ -2118,7 +2298,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
         // downstream federate connects. MSG_TYPE_FAILED must not call exit()
         // from that thread; the byte has already been consumed here.
         if (buffer[0] == MSG_TYPE_FAILED) {
-          handle_rti_failed_message();
+          handle_rti_failed_message(true);
           return;
         }
         lf_print_error_and_exit("Unexpected reply of type %hhu from RTI (see net_common.h).", buffer[0]);
@@ -3048,6 +3228,62 @@ void lf_send_port_absent_to_federate(environment_t* env, interval_t additional_d
   }
 }
 
+#ifdef FEDERATED_DECENTRALIZED
+// Only decentralized coordination sends idle notices. Centralized builds enable
+// -Werror=unused-function, so this helper must not be compiled there.
+static void lf_send_port_idle_message(environment_t* env, unsigned short port_ID, unsigned short fed_ID,
+                                      tag_t completed) {
+  (void)env;
+  size_t message_length = 1 + sizeof(port_ID) + sizeof(fed_ID) + sizeof(instant_t) + sizeof(microstep_t);
+  unsigned char buffer[message_length];
+
+  LF_PRINT_LOG("Sending idle notice for port %d to federate %d, completed tag " PRINTF_TAG ".", port_ID, fed_ID,
+               completed.time - start_time, completed.microstep);
+
+  buffer[0] = MSG_TYPE_PORT_IDLE;
+  encode_uint16(port_ID, &(buffer[1]));
+  encode_uint16(fed_ID, &(buffer[1 + sizeof(port_ID)]));
+  encode_tag(&(buffer[1 + sizeof(port_ID) + sizeof(fed_ID)]), completed);
+
+  LF_MUTEX_LOCK(&lf_outbound_net_mutex);
+  net_abstraction_t net = _fed.net_for_outbound_p2p_connections[fed_ID];
+  if (net == NULL) {
+    if (!_lf_termination_executed) {
+      lf_print_warning("Network connection to federate %hu is closed. Dropping idle notice.", fed_ID);
+    }
+    LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+    return;
+  }
+  tracepoint_federate_to_federate(send_PORT_ABS, _lf_my_fed_id, fed_ID, &completed);
+  int result = write_to_net_close_on_error(net, message_length, buffer);
+  LF_MUTEX_UNLOCK(&lf_outbound_net_mutex);
+  if (result != 0) {
+    lf_print_warning("Failed to send idle notice for port %hu to federate %hu.", port_ID, fed_ID);
+  }
+}
+#endif // FEDERATED_DECENTRALIZED
+
+void lf_send_idle_absent_if_quiescent(environment_t* env, unsigned short port_ID, unsigned short fed_ID) {
+#ifdef FEDERATED_DECENTRALIZED
+  assert(env != GLOBAL_ENVIRONMENT);
+  // Future local events may still produce an output. A finite stop tag likewise
+  // still has a shutdown tag to execute. Only a forever next tag means this
+  // federate will not send again until a network input arrives.
+  LF_MUTEX_LOCK(&env->mutex);
+  tag_t next = get_next_event_tag(env);
+  tag_t completed = env->current_tag;
+  LF_MUTEX_UNLOCK(&env->mutex);
+  if (next.time != FOREVER) {
+    return;
+  }
+  lf_send_port_idle_message(env, port_ID, fed_ID, completed);
+#else
+  (void)env;
+  (void)port_ID;
+  (void)fed_ID;
+#endif // FEDERATED_DECENTRALIZED
+}
+
 int lf_send_stop_request_to_rti(tag_t stop_tag) {
 
   // Send a stop request with the specified tag to the RTI
@@ -3111,6 +3347,15 @@ int lf_send_tagged_message(environment_t* env, interval_t additional_delay, int 
     LF_PRINT_LOG("Dropping message because it will be after the timeout time.");
     return -1;
   }
+
+#ifdef FEDERATED_DECENTRALIZED
+  // Do this before taking the outbound mutex. A same-tag send can wake the
+  // destination, so an idle notice it sent earlier must not hide its reply.
+  if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE &&
+      lf_tag_compare(current_message_intended_tag, env->current_tag) == 0) {
+    invalidate_upstream_idle_on_send(env, federate, current_message_intended_tag);
+  }
+#endif
 
   size_t buffer_head = 0;
   // First byte is the message type.
@@ -3317,8 +3562,17 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
     // For centralized coordination, this is applied only to input ports coming from
     // federates that are in a ZDC.  For decentralized coordination, this is applied
     // to all input ports.
-    if (lf_tag_compare(env->current_tag, input_port_action->trigger->last_known_status_tag) > 0 &&
-        !input_port_action->trigger->is_physical) {
+    // An upstream that has sent MSG_TYPE_PORT_IDLE will not produce another output
+    // until it receives a network input, so that port must not block. Reactions
+    // ordered before a same-tag send to that upstream correctly observe absence;
+    // the send clears the flag and later levels wait for a possible reply.
+    if (input_port_action->trigger->upstream_idle) {
+      if (lf_tag_compare(env->current_tag, input_port_action->trigger->last_known_status_tag) > 0 &&
+          !input_port_action->trigger->is_physical && input_port_action->trigger->status == unknown) {
+        input_port_action->trigger->status = absent;
+      }
+    } else if (lf_tag_compare(env->current_tag, input_port_action->trigger->last_known_status_tag) > 0 &&
+               !input_port_action->trigger->is_physical) {
       max_level_allowed_to_advance =
           LF_MIN(max_level_allowed_to_advance, ((int)LF_LEVEL(input_port_action->trigger->reactions[0]->index)));
     }
