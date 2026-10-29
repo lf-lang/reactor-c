@@ -10,7 +10,7 @@
  */
 
 #ifdef FEDERATED
-#if !defined(PLATFORM_Linux) && !defined(PLATFORM_Darwin)
+#if !defined(PLATFORM_Linux) && !defined(PLATFORM_Darwin) && !defined(PLATFORM_ZEPHYR)
 #error No support for federated execution on this platform.
 #endif
 
@@ -2316,7 +2316,10 @@ void lf_connect_to_federate(uint16_t remote_federate_id, tag_t joined_tag, int32
   _fed.net_for_outbound_p2p_connections[remote_federate_id] = net;
 }
 
+__attribute__((weak)) void lf_network_up(void) {}
+
 void lf_connect_to_rti(const char* hostname, int port) {
+  lf_network_up();
   LF_PRINT_LOG("Connecting to the RTI.");
 
   // Override passed hostname and port if passed as runtime arguments.
