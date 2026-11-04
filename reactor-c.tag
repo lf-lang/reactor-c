@@ -1231,6 +1231,13 @@
       <arglist>(tag_t tag_to_send)</arglist>
     </member>
     <member kind="function">
+      <type>void</type>
+      <name>lf_network_up</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gabeb8e4904e4fa43b0f3bfe05796ce8bd</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
       <type>parse_rti_code_t</type>
       <name>lf_parse_rti_addr</name>
       <anchorfile>group__Federated.html</anchorfile>
@@ -12334,6 +12341,13 @@
       <anchorfile>group__Federated.html</anchorfile>
       <anchor>ga80af1b6a9d7200df3d85c534edd8cbbc</anchor>
       <arglist>(tag_t tag_to_send)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>lf_network_up</name>
+      <anchorfile>group__Federated.html</anchorfile>
+      <anchor>gabeb8e4904e4fa43b0f3bfe05796ce8bd</anchor>
+      <arglist>(void)</arglist>
     </member>
     <member kind="function">
       <type>parse_rti_code_t</type>

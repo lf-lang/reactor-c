@@ -1,5 +1,6 @@
 var NAVTREEINDEX4 =
 {
+"structhashset__itr__st.html":[3,2,14],
 "structhashset__itr__st.html#aab8a03ec6692632867e8bb92ceb6e2bb":[3,2,14,0],
 "structhashset__itr__st.html#adb173545ffbde1e6835af6cb47bf2280":[3,2,14,1],
 "structhashset__st.html":[3,2,15],
@@ -248,6 +249,5 @@ var NAVTREEINDEX4 =
 "structself__base__t.html#a851c71d2d9ce4ca9c1811283bcf5f2f9":[3,4,33,1],
 "structself__base__t.html#aa37770fb258cdb7d8406d8416bade873":[3,4,33,4],
 "structself__base__t.html#aa450d272dcc263b883d8727d20f3c1dc":[3,4,33,6],
-"structself__base__t.html#ad19c2e3ac3920c1244d81076ecbad2c9":[3,4,33,7],
-"structsocket__stat__t.html":[3,6,5]
+"structself__base__t.html#ad19c2e3ac3920c1244d81076ecbad2c9":[3,4,33,7]
 };

@@ -8223,6 +8223,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>lf_network_up</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Federated.html</Path>
+    <Anchor>gabeb8e4904e4fa43b0f3bfe05796ce8bd</Anchor>
+    <DeclaredIn>federate.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>lf_new_reactor</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>

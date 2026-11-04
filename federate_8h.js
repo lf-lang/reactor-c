@@ -18,6 +18,7 @@ var federate_8h =
     [ "lf_enqueue_port_absent_reactions", "group__Federated.html#gae427b4c0340dbe19d46c93708fb6151a", null ],
     [ "lf_handle_p2p_connections_from_federates", "group__Federated.html#gaf7ba635fb6ffa82e4b05a51d4fc0020f", null ],
     [ "lf_latest_tag_confirmed", "group__Federated.html#ga80af1b6a9d7200df3d85c534edd8cbbc", null ],
+    [ "lf_network_up", "group__Federated.html#gabeb8e4904e4fa43b0f3bfe05796ce8bd", null ],
     [ "lf_parse_rti_addr", "group__Federated.html#gae612f180643d0436d4496738b957af68", null ],
     [ "lf_reset_status_fields_on_input_port_triggers", "group__Federated.html#gae3bc503fcbeaffe48f4500fddba4b21a", null ],
     [ "lf_send_message", "group__Federated.html#ga2f330bfe2fdb03cbf49596bcc012bc58", null ],

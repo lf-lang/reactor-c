@@ -4421,6 +4421,11 @@
             <Anchor>ga80af1b6a9d7200df3d85c534edd8cbbc</Anchor>
            </Node>
            <Node>
+            <Name>lf_network_up</Name>
+            <Path>group__Federated.html</Path>
+            <Anchor>gabeb8e4904e4fa43b0f3bfe05796ce8bd</Anchor>
+           </Node>
+           <Node>
             <Name>lf_parse_rti_addr</Name>
             <Path>group__Federated.html</Path>
             <Anchor>gae612f180643d0436d4496738b957af68</Anchor>
@@ -9387,6 +9392,11 @@
                               <Name>lf_latest_tag_confirmed</Name>
                               <Path>group__Federated.html</Path>
                               <Anchor>ga80af1b6a9d7200df3d85c534edd8cbbc</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>lf_network_up</Name>
+                              <Path>group__Federated.html</Path>
+                              <Anchor>gabeb8e4904e4fa43b0f3bfe05796ce8bd</Anchor>
                              </Node>
                              <Node>
                               <Name>lf_parse_rti_addr</Name>

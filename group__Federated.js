@@ -97,6 +97,7 @@ var group__Federated =
     [ "lf_get_sta", "group__Federated.html#gae03d197bf8d64f82be4a68c95a940195", null ],
     [ "lf_handle_p2p_connections_from_federates", "group__Federated.html#gaf7ba635fb6ffa82e4b05a51d4fc0020f", null ],
     [ "lf_latest_tag_confirmed", "group__Federated.html#ga80af1b6a9d7200df3d85c534edd8cbbc", null ],
+    [ "lf_network_up", "group__Federated.html#gabeb8e4904e4fa43b0f3bfe05796ce8bd", null ],
     [ "lf_parse_rti_addr", "group__Federated.html#gae612f180643d0436d4496738b957af68", null ],
     [ "lf_reset_status_fields_on_input_port_triggers", "group__Federated.html#gae3bc503fcbeaffe48f4500fddba4b21a", null ],
     [ "lf_rti_has_failed", "group__Federated.html#ga873d1e93a3f0003686b17fc651684922", null ],
