@@ -483,6 +483,15 @@ struct trigger_t {
    * Only present in federated execution.
    */
   instant_t physical_time_of_arrival;
+
+  /**
+   * @brief Upstream has nothing more to send until it receives a network input.
+   * Set when a decentralized peer sends @ref MSG_TYPE_PORT_IDLE and this port's
+   * STAA is forever. While set, the port does not block the max level allowed
+   * to advance. Cleared by a tagged message on this port or by a same-tag send
+   * to that upstream federate (which may provoke a same-tag reply).
+   */
+  bool upstream_idle;
 #endif
 };
 
