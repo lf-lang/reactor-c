@@ -19,8 +19,9 @@ lf_thread_t lf_thread_self() { return pthread_self(); }
 int lf_thread_join(lf_thread_t thread, void** thread_return) { return pthread_join((pthread_t)thread, thread_return); }
 
 int lf_mutex_init(lf_mutex_t* mutex) {
-  // Set up a recursive mutex
+  // Set up a recursive mutex with priority inheritance.
   pthread_mutexattr_t attr;
+  int ret;
   pthread_mutexattr_init(&attr);
   // Initialize the mutex to be recursive, meaning that it is OK
   // for the same thread to lock and unlock the mutex even if it already holds
@@ -34,7 +35,19 @@ int lf_mutex_init(lf_mutex_t* mutex) {
   // of the predicate.”  This seems like a bug in the implementation of
   // pthreads. Maybe it has been fixed?
   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-  return pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
+  // Priority inheritance: if a high-priority thread blocks on this mutex,
+  // boost the (possibly SCHED_OTHER / low-priority) owner until unlock.
+  // This mitigates priority inversion when SCHED_FIFO LF workers wait on
+  // env->mutex held by a lower-priority non-LF thread (e.g. calling lf_schedule
+  // for a physical action).
+  ret = pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT);
+  if (ret != 0) {
+    pthread_mutexattr_destroy(&attr);
+    return ret;
+  }
+  ret = pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
+  pthread_mutexattr_destroy(&attr);
+  return ret;
 }
 
 int lf_mutex_lock(lf_mutex_t* mutex) { return pthread_mutex_lock((pthread_mutex_t*)mutex); }
