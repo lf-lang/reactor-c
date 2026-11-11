@@ -990,7 +990,7 @@ int lf_added_worker_thread_count(environment_t* env) {
  * thread is needed.
  */
 static void _lf_async_resume_locked(environment_t* env, lf_async_state_t* state) {
-  // Shutdown and lf_async_resume() can both observe the same call. Only the first rejoins the pool.
+  // Shutdown and the scheduler can both observe the same call. Only the first rejoins the pool.
   if (state->resumed) {
     return;
   }
@@ -1011,6 +1011,9 @@ static void _lf_async_unlink_locked(environment_t* env, lf_async_state_t* state)
     if (*link == state) {
       *link = state->next;
       state->next = NULL;
+      if (state->port != NULL) {
+        env->num_async_port_waiters--;
+      }
       return;
     }
     link = &(*link)->next;
@@ -1035,60 +1038,63 @@ static void _lf_async_resume_list_locked(environment_t* env, lf_async_state_t** 
 
 static void _lf_async_resume_all_locked(environment_t* env) {
   _lf_async_resume_list_locked(env, &env->async_waiters);
+  env->num_async_port_waiters = 0;
   _lf_async_resume_list_locked(env, &env->async_deferred);
 }
 
 /**
- * @brief True if this call's logical action has reached the tag it was scheduled for.
+ * @brief True if the event of this call's action, occurring at the current tag, resumes the call.
  *
- * A physical action is due when its reaction calls lf_async_resume(); the event that invoked
- * that reaction is the one scheduled when the function returned. lf_await() has no action and
- * is never due here.
+ * A logical action resumes the call at the tag for which the call scheduled it. A physical action
+ * is scheduled when the function returns, so an event that occurs before then belongs to an
+ * earlier call and does not resume this one.
  */
 static bool _lf_async_call_is_due(environment_t* env, lf_async_state_t* state) {
-  if (state->action == NULL) {
-    return false;
-  }
   if (state->action->trigger->is_physical) {
-    return true;
+    return state->function_done;
   }
   return lf_tag_compare(state->resume_tag, env->current_tag) <= 0;
 }
 
 /**
- * @brief Resume the specified pending call from a resuming reaction, at the call's level.
+ * @brief Move the specified call, which the caller has unlinked from `async_waiters`, to `async_deferred`.
  *
- * The caller must hold the environment mutex and must be executing a reaction of the reactor
- * that made the call. If the invoked function has not returned, this blocks until it does. The
- * calling worker is executing a reaction, so it is not idle, and logical time cannot advance
- * while it waits. The call is unlinked here. If its reaction's level is still ahead of the
- * resuming reaction, it is queued until the scheduler enters that level; otherwise the suspended
- * thread rejoins the pool now. The resuming reaction is declared earlier in the same reactor, so
- * its level is strictly lower, and the continuation runs at its own level before any higher level.
+ * The caller must hold the environment mutex. The call continues when the scheduler enters the
+ * level of its reaction (see _lf_async_release_level_locked()).
  */
-static void _lf_async_resume_from_reaction_locked(environment_t* env, lf_async_state_t* state) {
-  state->resume_waiting = true;
-  while (!state->function_done && !state->resumed) {
-    LF_COND_WAIT(&state->resumed_cond);
-  }
-  // Shutdown may have resumed and unlinked this call while we waited.
-  if (state->resumed) {
-    return;
-  }
-  _lf_async_unlink_locked(env, state);
-  size_t waiter_level = (size_t)LF_LEVEL(state->reaction->index);
-  reaction_t* resuming = state->self->executing_reaction;
-  size_t resuming_level = resuming == NULL ? waiter_level : (size_t)LF_LEVEL(resuming->index);
-  // The scheduler is at the resuming reaction's level. A continuation at this level or lower
-  // rejoins the pool now and waits for the reactor mutex, which this reaction holds until it
-  // returns. A continuation at a higher level waits until the scheduler enters that level, so
-  // reactions declared between them run first.
-  if (env->scheduler->should_stop || waiter_level <= resuming_level) {
-    _lf_async_resume_locked(env, state);
-    return;
-  }
+static void _lf_async_defer_locked(environment_t* env, lf_async_state_t* state) {
+  state->deferred = true;
   state->next = env->async_deferred;
   env->async_deferred = state;
+}
+
+void _lf_async_action_fired_locked(environment_t* env, trigger_t* trigger) {
+  lf_async_state_t** link = &env->async_waiters;
+  while (*link != NULL) {
+    lf_async_state_t* state = *link;
+    if (state->action == NULL || state->action->trigger != trigger || !_lf_async_call_is_due(env, state)) {
+      link = &state->next;
+      continue;
+    }
+    *link = state->next;
+    _lf_async_defer_locked(env, state);
+  }
+}
+
+void _lf_async_port_set(environment_t* env, bool* is_present) {
+  LF_MUTEX_LOCK(&env->mutex);
+  lf_async_state_t** link = &env->async_waiters;
+  while (*link != NULL) {
+    lf_async_state_t* state = *link;
+    if (state->port == NULL || &state->port->is_present != is_present) {
+      link = &state->next;
+      continue;
+    }
+    *link = state->next;
+    env->num_async_port_waiters--;
+    _lf_async_defer_locked(env, state);
+  }
+  LF_MUTEX_UNLOCK(&env->mutex);
 }
 
 int _lf_async_release_level_locked(environment_t* env, size_t level) {
@@ -1098,6 +1104,12 @@ int _lf_async_release_level_locked(environment_t* env, size_t level) {
     lf_async_state_t* state = *link;
     if ((size_t)LF_LEVEL(state->reaction->index) != level) {
       link = &(*link)->next;
+      continue;
+    }
+    if (!state->function_done) {
+      // Waiting releases the mutex, so scan from the head again afterwards.
+      LF_COND_WAIT(&state->resumed_cond);
+      link = &env->async_deferred;
       continue;
     }
     *link = state->next;
@@ -1111,63 +1123,17 @@ int _lf_async_release_level_locked(environment_t* env, size_t level) {
   return released;
 }
 
-void lf_async_resume(void* action) {
-  lf_action_base_t* action_base = (lf_action_base_t*)action;
-  self_base_t* base = action_base->parent;
-  environment_t* env = base->environment;
-  if (base->executing_reaction == NULL) {
-    lf_print_error_and_exit("lf_async_resume() must be invoked from within a reaction body.");
-  }
-  LF_MUTEX_LOCK(&env->mutex);
-  // Oldest first. Waiting releases the mutex, so scan from the head again after each call.
-  // Only calls whose action has reached its scheduled tag are due; a later call stays pending.
-  lf_async_state_t* state;
-  do {
-    state = NULL;
-    for (lf_async_state_t* candidate = env->async_waiters; candidate != NULL; candidate = candidate->next) {
-      if (candidate->action == action_base && _lf_async_call_is_due(env, candidate)) {
-        state = candidate;
-        break;
-      }
-    }
-    if (state != NULL) {
-      _lf_async_resume_from_reaction_locked(env, state);
-    }
-  } while (state != NULL);
-  LF_MUTEX_UNLOCK(&env->mutex);
-}
+void lf_async_resume(void* action) { (void)action; }
 
 void _lf_await_resume(void* self, void* port) {
-  self_base_t* base = (self_base_t*)self;
-  environment_t* env = base->environment;
-  if (base->executing_reaction == NULL) {
-    lf_print_error_and_exit("lf_await_resume() must be invoked from within a reaction body.");
-  }
-  LF_MUTEX_LOCK(&env->mutex);
-  // Resume every lf_await() call of this reactor on this port, oldest first. The port is matched
-  // together with the reactor because an input that receives from a fanned-out output shares
-  // its address with the other receivers. Resuming a call unlinks it, and resuming may release
-  // the mutex while it waits, so restart the scan from the head after each one.
-  lf_async_state_t* state;
-  do {
-    state = NULL;
-    for (lf_async_state_t* candidate = env->async_waiters; candidate != NULL; candidate = candidate->next) {
-      if (candidate->self == base && candidate->port == (lf_port_base_t*)port) {
-        state = candidate;
-        break;
-      }
-    }
-    if (state != NULL) {
-      _lf_async_resume_from_reaction_locked(env, state);
-    }
-  } while (state != NULL);
-  LF_MUTEX_UNLOCK(&env->mutex);
+  (void)self;
+  (void)port;
 }
 
 void _lf_await(void* self, void* port) {
   // The function that lf_async() would invoke is empty, so the call is complete as soon as it
-  // is suspended. It is resumed by lf_await_resume() on the port or, if the program stops first,
-  // by the exiting workers, at the stop tag.
+  // is suspended. It is resumed when the port is next set or, if the program stops first, by the
+  // exiting workers, at the stop tag.
   lf_async_state_t state;
   _lf_async_begin(&state, self, NULL, port);
   _lf_async_end(&state);
@@ -1213,8 +1179,8 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* po
   self_base_t* base = (self_base_t*)self;
   environment_t* env = base->environment;
   assert(env != GLOBAL_ENVIRONMENT);
-  // A NULL action denotes lf_await(), which is resumed by lf_await_resume() on a port rather
-  // than by an action. The port cannot be checked to belong to this reactor, because an input
+  // A NULL action denotes lf_await(), which is resumed when its port is set rather than by an
+  // action. The port cannot be checked to belong to this reactor, because an input
   // port struct is shared with the output that feeds it.
   lf_action_base_t* action_base = (lf_action_base_t*)action;
   if (action_base != NULL) {
@@ -1237,7 +1203,7 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* po
   state->port = (lf_port_base_t*)port;
   state->resumed = false;
   state->function_done = false;
-  state->resume_waiting = false;
+  state->deferred = false;
   state->resume_tag = FOREVER_TAG;
   state->event_pending = false;
   state->next = NULL;
@@ -1307,8 +1273,8 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* po
   // A logical action is scheduled at this tag plus its minimum delay. Another call already
   // waiting on the same action for that same tag has scheduled the event; scheduling again would
   // push a second event to a later microstep and retrigger reactions at that microstep after the
-  // continuations have run. Record the tag either way, so one lf_async_resume() resumes every
-  // call that is due together, each at its own level.
+  // continuations have run. Record the tag either way, so the one event resumes every call that
+  // is due together, each at its own level.
   bool schedule_logical = false;
   if (state->action != NULL && !state->action->trigger->is_physical) {
     interval_t delay = state->action->trigger->offset;
@@ -1326,13 +1292,16 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* po
     }
     schedule_logical = state->event_pending;
   }
-  // Link the call before scheduling a logical action, so lf_async_resume() can find it if the
+  // Link the call before scheduling a logical action, so the action's event finds it if the
   // action's tag is reached before the function returns. Append, so the oldest call is first.
   lf_async_state_t** link = &env->async_waiters;
   while (*link != NULL) {
     link = &(*link)->next;
   }
   *link = state;
+  if (state->port != NULL) {
+    env->num_async_port_waiters++;
+  }
   LF_MUTEX_UNLOCK(&env->mutex);
   // This thread is still counted as a busy worker, so the tag cannot advance and
   // in particular the scheduler cannot decide to stop before the thread is added.
@@ -1358,8 +1327,7 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* po
   }
   LF_MUTEX_UNLOCK(&env->mutex);
 
-  // The reaction triggered by the action belongs to the same reactor, so release
-  // the reactor's mutex so that reaction can execute while we wait.
+  // Release the reactor's mutex so that other reactions of this reactor can execute while we wait.
   LF_MUTEX_UNLOCK((lf_mutex_t*)base->reactor_mutex);
 }
 
@@ -1375,13 +1343,13 @@ void _lf_async_end(lf_async_state_t* state) {
   }
 
   // The call was linked into the environment in _lf_async_begin(). If the program is already
-  // stopping and no lf_async_resume() is waiting for the function to return, no reaction will
-  // resume this call, so rejoin the pool and continue at the stop tag. Otherwise, record that
-  // the function has returned. lf_async_resume() blocks until that happens when it runs first,
-  // which is how a logical action scheduled before the function keeps the caller at its tag.
+  // stopping and the call has not been deferred, no event will resume it, so rejoin the pool and
+  // continue at the stop tag. Otherwise, record that the function has returned. If a logical
+  // action's tag was reached first, the scheduler is waiting at the level of the calling reaction
+  // for this, which is how a logical action scheduled before the function keeps the caller at its tag.
   LF_MUTEX_LOCK(&env->mutex);
   if (!state->resumed) {
-    if (env->scheduler->should_stop && !state->resume_waiting) {
+    if (env->scheduler->should_stop && !state->deferred) {
       _lf_async_unlink_locked(env, state);
       _lf_async_resume_locked(env, state);
     } else {
@@ -1389,20 +1357,18 @@ void _lf_async_end(lf_async_state_t* state) {
       LF_COND_SIGNAL(&state->resumed_cond);
     }
   }
-  // A physical action is scheduled at the physical time at which the function returned, even
-  // when this call has already been resumed. An earlier event for the same action may have
-  // resumed this call while a later call is still waiting; this event is what resumes that
-  // later call. Scheduling may fail, for example because the time would be after the stop tag.
-  // In that case we still wait below: exiting workers resume pending calls. lf_await() has no action.
+  // A physical action is scheduled at the physical time at which the function returned. Its
+  // event resumes this call. Scheduling may fail, for example because the time would be after the
+  // stop tag. In that case we still wait below: exiting workers resume pending calls. lf_await()
+  // has no action.
   bool schedule_physical = state->action != NULL && state->action->trigger->is_physical && !env->scheduler->should_stop;
   if (schedule_physical) {
-    // Do not hold the mutex across lf_schedule(); it acquires the mutex itself. A resume
-    // waiting for function_done may run during the call and mark this call resumed.
+    // Do not hold the mutex across lf_schedule(); it acquires the mutex itself.
     LF_MUTEX_UNLOCK(&env->mutex);
     lf_schedule(state->action, 0);
     LF_MUTEX_LOCK(&env->mutex);
   }
-  // Wait until lf_async_resume() or an exiting worker has rejoined the pool on our behalf.
+  // Wait until the scheduler or an exiting worker has rejoined the pool on our behalf.
   while (!state->resumed) {
     LF_COND_WAIT(&state->resumed_cond);
   }
@@ -1410,9 +1376,8 @@ void _lf_async_end(lf_async_state_t* state) {
 
   // Restore the state that _lf_invoke_reaction() maintains for the reaction.
   // The continuation was released at this reaction's level, after every lower level completed,
-  // or, if the level had already been reached, while the resuming reaction still holds this
-  // mutex. Either way the lock runs the remainder exclusively with other reactions of this
-  // reactor. The scheduler does not start a higher level until this thread finishes the reaction
+  // or by the exiting workers. Either way the lock runs the remainder exclusively with other
+  // reactions of this reactor. The scheduler does not start a higher level until this thread finishes the reaction
   // and goes idle. Reactions triggered by outputs set after this call returns have a strictly
   // greater level. See the documentation of lf_async().
   LF_MUTEX_LOCK((lf_mutex_t*)base->reactor_mutex);

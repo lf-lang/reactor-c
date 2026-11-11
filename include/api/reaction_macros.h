@@ -233,14 +233,14 @@
  *
  * This macro invokes `func` with the given arguments and evaluates to the value returned by `func`,
  * but it allows logical time to advance and other reactions to execute while `func` is running.
- * The calling reaction must list `action` as an effect, so that the action is in scope, and the
- * reactor must have a reaction triggered by that action whose body calls @ref lf_async_resume().
- * That resuming reaction must be declared before the calling reaction:
+ * The calling reaction must list `action` as an effect, so that the action is in scope. The call is
+ * resumed automatically when the event of the action occurs, so no reaction triggered by the
+ * action is needed:
  * ```
  * physical action awake
- * reaction(awake) {= lf_async_resume(awake); =}
  * reaction(startup) -> awake {= int result = lf_async(awake, slow, 50); ... =}
  * ```
+ * Reactions triggered by the action, if any, still execute at the tag of its event.
  * A physical action is dedicated to the reaction that calls `lf_async()` on it. The same reaction
  * may call it more than once, and a call from any other reaction is a fatal error.
  * The `action` may instead be a logical action. A logical action is scheduled before `func` is
@@ -260,10 +260,10 @@
  *    logical time will be at least that delay later.  Outputs set after the call to `lf_async()` are produced
  *    at the new tag.
  * 4. If `action` is physical, it is scheduled when `func` returns. The calling thread then blocks until the
- *    reaction triggered by `action` calls `lf_async_resume(action)`. If `action` is logical and its delay
- *    elapses before `func` returns, the triggered reaction calls `lf_async_resume()` first and blocks until
- *    `func` returns. The worker executing it stays busy, so logical time does not advance past that tag.
- *    The calling reaction then continues when the scheduler reaches that reaction's level, and a higher
+ *    event of `action` occurs. If `action` is logical and its delay elapses before `func` returns, the
+ *    scheduler waits for `func` to return when it reaches the level of the calling reaction, so logical
+ *    time does not advance past that tag. The calling reaction continues at the tag of the event, when
+ *    the scheduler reaches that reaction's level, after every reaction at a lower level, and a higher
  *    level does not start until the continuation has completed. Several reactions may suspend on one
  *    logical action; each continues at its own level. A second call for the same logical action and tag
  *    does not schedule another event.
@@ -287,7 +287,7 @@
  * - At least one worker thread is added to the pool, and it persists until the program terminates.
  *   Additional worker thread will be added only if there are multiple simultaneous calls to `lf_async()`
  *   pending completion.
- * - If the program stops before the resuming reaction runs, the call returns at the stop tag after
+ * - If the program stops before the event of the action occurs, the call returns at the stop tag after
  *   the shutdown reactions have executed. Any further `lf_async()` call made by the resumed reaction
  *   invokes `func` directly without suspending.
  * - This requires the threaded runtime with the NP (default) or GEDF_NP scheduler, and a compiler that
@@ -309,38 +309,43 @@
   })
 
 /**
- * @brief Suspend this reaction until another reaction of this reactor calls `lf_await_resume()` on
- * the specified input port.
+ * @brief Suspend this reaction until the specified input port is next set.
  * @ingroup API
  *
  * Like `lf_async()`, this allows logical time to advance and other reactions to execute while the
- * calling reaction is suspended, and the remainder of the reaction executes at the tag at which
- * `lf_await_resume(port)` is called. Unlike `lf_async()`, no function is invoked and no action is
- * needed. The calling reaction must list `port` as a source so that it is in scope, and
- * the resuming reaction must be declared before the calling reaction. For example, a reaction that
- * sends a request and waits for the response to arrive on an input:
+ * calling reaction is suspended. The remainder of the reaction executes at the tag at which the
+ * port is next set, after every reaction at a lower level, including any reaction of this reactor
+ * triggered by the port. Unlike `lf_async()`, no function is invoked and no action is needed.
+ * The calling reaction must list `port` as a trigger or source so that it is in scope. For example,
+ * a reaction that sends a request and waits for the response to arrive on an input:
  * ```
- * reaction(response) {= lf_await_resume(response); =}
  * reaction(startup) response -> request {=
  *   lf_set(request, 42);
  *   lf_await(response);
  *   // Now at the tag at which the response arrived, and response->value is available.
  * =}
  * ```
- * Several reactions of the reactor may be suspended on the same port at once; a single
- * `lf_await_resume(port)` resumes all of them. If the program stops before `lf_await_resume()` is
- * called, `lf_await()` returns at the stop tag so that the reaction can complete. See
- * @ref _lf_await() for details, and see `lf_async()` for the caveats, which also apply.
+ * Several reactions of the reactor may be suspended on the same port at once; setting the port
+ * resumes all of them. If the program stops before the port is set, `lf_await()` returns at the
+ * stop tag so that the reaction can complete. See @ref _lf_await() for details, and see
+ * `lf_async()` for the caveats, which also apply.
  *
- * @param port An input port of this reactor, as it is in scope in the reaction body.
+ * The port must be a single, non-mutable input port of this reactor, named directly. Anything else,
+ * such as a multiport, a channel of a multiport, a mutable input, or a port of a contained reactor,
+ * is rejected at compile time with an error that mentions
+ * `_lf_await_requires_a_single_non_mutable_input_port__` followed by the name. The code generator
+ * declares that identifier for each eligible input that is in scope.
+ *
+ * @param port A single, non-mutable input port of this reactor, as it is in scope in the reaction body.
  */
-#define lf_await(port) _lf_await(self, (port))
+#define lf_await(port) ((void)_lf_await_requires_a_single_non_mutable_input_port__##port, _lf_await(self, (port)))
 
 /**
- * @brief Resume every reaction of this reactor that is suspended in `lf_await()` on the specified port.
+ * @brief Formerly needed to resume reactions suspended in `lf_await()`. Now does nothing.
  * @ingroup API
  *
- * If no reaction is suspended on the port, this does nothing. See @ref _lf_await_resume() for details.
+ * A call to `lf_await()` is resumed automatically when its port is set. This macro is retained so
+ * that existing programs continue to compile. See @ref _lf_await_resume().
  *
  * @param port The input port, as it is in scope in the reaction body.
  */

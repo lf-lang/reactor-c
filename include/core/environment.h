@@ -354,17 +354,25 @@ typedef struct environment_t {
    * @brief Pending lf_async() and lf_await() calls in this environment, oldest first.
    *
    * Each entry is a reaction that is suspended in @ref lf_async(), or whose invoked function has
-   * not yet returned, waiting for @ref lf_async_resume() to be called on its action, or a reaction
-   * suspended in `lf_await()` waiting for `lf_await_resume()` on its port. Protected by the
-   * environment mutex.
+   * not yet returned, waiting for the event of its action, or a reaction suspended in `lf_await()`
+   * waiting for its port to be set. Protected by the environment mutex.
    */
   lf_async_state_t* async_waiters;
 
   /**
-   * @brief Calls whose resuming reaction has run, waiting for the scheduler to reach their level.
+   * @brief Number of entries in `async_waiters` that were made by `lf_await()`.
    *
-   * Each entry was unlinked from `async_waiters` by `lf_async_resume()` or `lf_await_resume()` and
-   * continues when the scheduler enters the level of its reaction. Protected by the environment mutex.
+   * Setting an output checks for waiting `lf_await()` calls only when this is nonzero. Written
+   * with the environment mutex held.
+   */
+  int num_async_port_waiters;
+
+  /**
+   * @brief Calls whose action event or port has occurred, waiting for the scheduler to reach their level.
+   *
+   * Each entry was unlinked from `async_waiters` when the event of its action was processed or its
+   * port was set, and continues when the scheduler enters the level of its reaction. Protected by
+   * the environment mutex.
    */
   lf_async_state_t* async_deferred;
 

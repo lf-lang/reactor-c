@@ -37,6 +37,7 @@
 
 #if !defined(LF_SINGLE_THREADED)
 #include "watchdog.h"
+#include "reactor_threaded.h"
 #endif
 
 #ifdef LF_ENCLAVES
@@ -318,6 +319,13 @@ void _lf_pop_events(environment_t* env) {
 #endif
 
     lf_token_t* token = event->token;
+
+#if !defined(LF_SINGLE_THREADED)
+    // An action passed to lf_async() resumes the call when its event occurs.
+    if (env->async_waiters != NULL) {
+      _lf_async_action_fired_locked(env, event->trigger);
+    }
+#endif
 
     // Put the corresponding reactions onto the reaction queue.
     for (int i = 0; i < event->trigger->number_of_reactions; i++) {
@@ -841,6 +849,13 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
   for (size_t i = 0; i < reaction->num_outputs; i++) {
     if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
       LF_PRINT_DEBUG("Env %u: Output %zu has been produced.", env->id, i);
+#if !defined(LF_SINGLE_THREADED)
+      // A port passed to lf_await() resumes the call when it is set. Any such call was made at an
+      // earlier tag or at a higher level than this reaction, so a stale count here is harmless.
+      if (env->num_async_port_waiters > 0) {
+        _lf_async_port_set(env, reaction->output_produced[i]);
+      }
+#endif
       trigger_t** triggerArray = (reaction->triggers)[i];
       LF_PRINT_DEBUG("Env %u: There are %d trigger arrays associated with output %zu.", env->id,
                      reaction->triggered_sizes[i], i);
