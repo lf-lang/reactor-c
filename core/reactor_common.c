@@ -846,13 +846,18 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
   LF_PRINT_DEBUG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
   LF_PRINT_DEBUG("Env %u: There are %zu outputs from reaction %s.", env->id, reaction->num_outputs, reaction->name);
+#if !defined(LF_SINGLE_THREADED)
+  // A port passed to lf_await() resumes the call when it is set. Any such call was made at an
+  // earlier tag or at a higher level than this reaction, so the count need only be read once, and
+  // a stale count is harmless. The compare-and-swap is an atomic load.
+  bool async_port_waiters =
+      reaction->num_outputs > 0 && lf_atomic_val_compare_and_swap(&env->num_async_port_waiters, 0, 0) > 0;
+#endif
   for (size_t i = 0; i < reaction->num_outputs; i++) {
     if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
       LF_PRINT_DEBUG("Env %u: Output %zu has been produced.", env->id, i);
 #if !defined(LF_SINGLE_THREADED)
-      // A port passed to lf_await() resumes the call when it is set. Any such call was made at an
-      // earlier tag or at a higher level than this reaction, so a stale count here is harmless.
-      if (env->num_async_port_waiters > 0) {
+      if (async_port_waiters) {
         _lf_async_port_set(env, reaction->output_produced[i]);
       }
 #endif

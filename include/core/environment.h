@@ -362,8 +362,9 @@ typedef struct environment_t {
   /**
    * @brief Number of entries in `async_waiters` that were made by `lf_await()`.
    *
-   * Setting an output checks for waiting `lf_await()` calls only when this is nonzero. Written
-   * with the environment mutex held.
+   * Setting an output checks for waiting `lf_await()` calls only when this is nonzero. It is read
+   * without the environment mutex, so every access is atomic. It is also written only with the
+   * environment mutex held, consistently with `async_waiters`.
    */
   int num_async_port_waiters;
 

@@ -1012,7 +1012,7 @@ static void _lf_async_unlink_locked(environment_t* env, lf_async_state_t* state)
       *link = state->next;
       state->next = NULL;
       if (state->port != NULL) {
-        env->num_async_port_waiters--;
+        lf_atomic_fetch_add(&env->num_async_port_waiters, -1);
       }
       return;
     }
@@ -1037,8 +1037,12 @@ static void _lf_async_resume_list_locked(environment_t* env, lf_async_state_t** 
 }
 
 static void _lf_async_resume_all_locked(environment_t* env) {
+  for (lf_async_state_t* state = env->async_waiters; state != NULL; state = state->next) {
+    if (state->port != NULL) {
+      lf_atomic_fetch_add(&env->num_async_port_waiters, -1);
+    }
+  }
   _lf_async_resume_list_locked(env, &env->async_waiters);
-  env->num_async_port_waiters = 0;
   _lf_async_resume_list_locked(env, &env->async_deferred);
 }
 
@@ -1091,7 +1095,7 @@ void _lf_async_port_set(environment_t* env, bool* is_present) {
       continue;
     }
     *link = state->next;
-    env->num_async_port_waiters--;
+    lf_atomic_fetch_add(&env->num_async_port_waiters, -1);
     _lf_async_defer_locked(env, state);
   }
   LF_MUTEX_UNLOCK(&env->mutex);
@@ -1300,7 +1304,7 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* po
   }
   *link = state;
   if (state->port != NULL) {
-    env->num_async_port_waiters++;
+    lf_atomic_fetch_add(&env->num_async_port_waiters, 1);
   }
   LF_MUTEX_UNLOCK(&env->mutex);
   // This thread is still counted as a busy worker, so the tag cannot advance and
