@@ -978,7 +978,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     //  physical time (deadline).
     // @note In absence of a STP handler, the is_STP_violated will be passed down the reaction
     //  chain until it is dealt with in a downstream STP handler.
-    if (downstream_to_execute_now->is_STP_violated == true) {
+    if (downstream_to_execute_now->is_STP_violated == true && !downstream_to_execute_now->is_an_input_reaction) {
       // Tardiness has occurred
       LF_PRINT_LOG("Env %u: Event has STP violation.", env->id);
       reaction_function_t handler = downstream_to_execute_now->STP_handler;
@@ -991,15 +991,15 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         LF_PRINT_LOG("Env %u: Invoke tardiness handler.", env->id);
         (*handler)(downstream_to_execute_now->self);
 
-        // If the reaction produced outputs, put the resulting
-        // triggered reactions into the queue or execute them directly if possible.
-        schedule_output_reactions(env, downstream_to_execute_now, worker, allow_inline);
-
-        // Reset the tardiness because it has been dealt with in the
-        // STP handler
+        // Reset the tardiness because it has been dealt with in the STP handler.
+        // This must precede scheduling the outputs, which passes it down to downstream reactions.
         downstream_to_execute_now->is_STP_violated = false;
         LF_PRINT_DEBUG("Env %u: Reset reaction's is_STP_violated field to false: %s", env->id,
                        downstream_to_execute_now->name);
+
+        // If the reaction produced outputs, put the resulting
+        // triggered reactions into the queue or execute them directly if possible.
+        schedule_output_reactions(env, downstream_to_execute_now, worker, allow_inline);
       }
     }
 #endif
