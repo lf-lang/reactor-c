@@ -199,7 +199,8 @@ void _lf_next_locked(environment_t* env);
  * @param level The level the scheduler is entering.
  * If the action of a call is logical, its tag can be reached before the invoked function returns.
  * In that case, this waits for the function to return. Every other worker is idle, so logical
- * time cannot advance in the meantime.
+ * time cannot advance in the meantime. No call is resumed until every function at this level has
+ * returned, so no resumed thread can finish and go idle while this waits.
  *
  * @return The number of calls resumed.
  */

@@ -1102,18 +1102,25 @@ void _lf_async_port_set(environment_t* env, bool* is_present) {
 }
 
 int _lf_async_release_level_locked(environment_t* env, size_t level) {
+  // Wait for every function at this level to return before resuming any call. A resumed call is a
+  // busy worker that, upon finishing, could otherwise find every worker idle while this one waits
+  // (the NP scheduler counts the distributing worker as idle) and start distributing higher levels.
+  // Waiting releases the mutex, so scan from the head again afterwards.
+  lf_async_state_t* state = env->async_deferred;
+  while (state != NULL) {
+    if ((size_t)LF_LEVEL(state->reaction->index) == level && !state->function_done) {
+      LF_COND_WAIT(&state->resumed_cond);
+      state = env->async_deferred;
+    } else {
+      state = state->next;
+    }
+  }
   int released = 0;
   lf_async_state_t** link = &env->async_deferred;
   while (*link != NULL) {
-    lf_async_state_t* state = *link;
+    state = *link;
     if ((size_t)LF_LEVEL(state->reaction->index) != level) {
       link = &(*link)->next;
-      continue;
-    }
-    if (!state->function_done) {
-      // Waiting releases the mutex, so scan from the head again afterwards.
-      LF_COND_WAIT(&state->resumed_cond);
-      link = &env->async_deferred;
       continue;
     }
     *link = state->next;
