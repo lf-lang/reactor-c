@@ -820,6 +820,42 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
 }
 
 /**
+ * @brief Claim the specified reaction for execution in this thread without going through the reaction queue.
+ *
+ * Return false if the reaction must not be executed now: either it belongs to an inactive mode, or it is
+ * not inactive, because another trigger at this tag has already queued it. In either case, it would not
+ * have been queued again by _lf_trigger_reaction(). A claimed reaction is marked running, which is how
+ * lf_async() and lf_await() recognize it, and must be released with _lf_release_inline_reaction().
+ */
+static bool _lf_claim_inline_reaction(reaction_t* reaction) {
+#ifdef MODAL_REACTORS
+  if (!_lf_mode_is_active(reaction->mode)) {
+    return false;
+  }
+#endif
+#if defined(LF_SINGLE_THREADED)
+  if (reaction->status != inactive) {
+    return false;
+  }
+  reaction->status = running;
+  return true;
+#else
+  return lf_atomic_bool_compare_and_swap((int*)&reaction->status, inactive, running);
+#endif
+}
+
+/**
+ * @brief Release a reaction claimed with _lf_claim_inline_reaction() once it has been executed.
+ */
+static void _lf_release_inline_reaction(reaction_t* reaction) {
+#if defined(LF_SINGLE_THREADED)
+  reaction->status = inactive;
+#else
+  lf_atomic_bool_compare_and_swap((int*)&reaction->status, running, inactive);
+#endif
+}
+
+/**
  * For the specified reaction, if it has produced outputs, insert the
  * resulting triggered reactions into the reaction queue.
  * This procedure assumes the mutex lock is NOT held and grabs
@@ -918,6 +954,9 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     _lf_trigger_reaction(env, downstream_to_execute_now, worker);
     downstream_to_execute_now = NULL;
   }
+  if (downstream_to_execute_now != NULL && !_lf_claim_inline_reaction(downstream_to_execute_now)) {
+    downstream_to_execute_now = NULL;
+  }
   if (downstream_to_execute_now != NULL) {
     LF_PRINT_LOG("Env %u: Worker %d: Optimizing and executing downstream reaction now: %s", env->id, worker,
                  downstream_to_execute_now->name);
@@ -1001,6 +1040,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     downstream_to_execute_now->is_STP_violated = false;
     LF_PRINT_DEBUG("Env %u: Finally, reset reaction's is_STP_violated field to false: %s", env->id,
                    downstream_to_execute_now->name);
+    _lf_release_inline_reaction(downstream_to_execute_now);
   }
 }
 
