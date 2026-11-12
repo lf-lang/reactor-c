@@ -1201,6 +1201,15 @@ void _lf_async_begin(lf_async_state_t* state, void* self, void* action, void* po
     lf_print_error_and_exit("%s must be invoked from within a reaction body.",
                             action_base == NULL ? "lf_await()" : "lf_async()");
   }
+  // The scheduler queues every reaction that it gives to a worker. A reaction that is not queued is
+  // being executed by the thread of an upstream reaction (see schedule_output_reactions()), which
+  // would be suspended along with it. The code generator does not allow this for reactions that
+  // mention lf_async() or lf_await(), but it cannot see calls made through functions defined elsewhere.
+  if (base->executing_reaction->status != queued) {
+    lf_print_error_and_exit("%s was called from a reaction that is executed by the thread of the upstream reaction "
+                            "that triggered it. Call it directly in the reaction body.",
+                            action_base == NULL ? "lf_await()" : "lf_async()");
+  }
   state->self = base;
   state->reaction = base->executing_reaction;
   state->action = action_base;
