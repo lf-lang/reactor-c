@@ -37,6 +37,7 @@
 
 #if !defined(LF_SINGLE_THREADED)
 #include "watchdog.h"
+#include "reactor_threaded.h"
 #endif
 
 #ifdef LF_ENCLAVES
@@ -318,6 +319,13 @@ void _lf_pop_events(environment_t* env) {
 #endif
 
     lf_token_t* token = event->token;
+
+#if !defined(LF_SINGLE_THREADED)
+    // An action passed to lf_async() resumes the call when its event occurs.
+    if (env->async_waiters != NULL) {
+      _lf_async_action_fired_locked(env, event->trigger);
+    }
+#endif
 
     // Put the corresponding reactions onto the reaction queue.
     for (int i = 0; i < event->trigger->number_of_reactions; i++) {
@@ -812,6 +820,42 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
 }
 
 /**
+ * @brief Claim the specified reaction for execution in this thread without going through the reaction queue.
+ *
+ * Return false if the reaction must not be executed now: either it belongs to an inactive mode, or it is
+ * not inactive, because another trigger at this tag has already queued it. In either case, it would not
+ * have been queued again by _lf_trigger_reaction(). A claimed reaction is marked running, which is how
+ * lf_async() and lf_await() recognize it, and must be released with _lf_release_inline_reaction().
+ */
+static bool _lf_claim_inline_reaction(reaction_t* reaction) {
+#ifdef MODAL_REACTORS
+  if (!_lf_mode_is_active(reaction->mode)) {
+    return false;
+  }
+#endif
+#if defined(LF_SINGLE_THREADED)
+  if (reaction->status != inactive) {
+    return false;
+  }
+  reaction->status = running;
+  return true;
+#else
+  return lf_atomic_bool_compare_and_swap((int*)&reaction->status, inactive, running);
+#endif
+}
+
+/**
+ * @brief Release a reaction claimed with _lf_claim_inline_reaction() once it has been executed.
+ */
+static void _lf_release_inline_reaction(reaction_t* reaction) {
+#if defined(LF_SINGLE_THREADED)
+  reaction->status = inactive;
+#else
+  lf_atomic_bool_compare_and_swap((int*)&reaction->status, running, inactive);
+#endif
+}
+
+/**
  * For the specified reaction, if it has produced outputs, insert the
  * resulting triggered reactions into the reaction queue.
  * This procedure assumes the mutex lock is NOT held and grabs
@@ -838,9 +882,21 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
   LF_PRINT_DEBUG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
   LF_PRINT_DEBUG("Env %u: There are %zu outputs from reaction %s.", env->id, reaction->num_outputs, reaction->name);
+#if !defined(LF_SINGLE_THREADED)
+  // A port passed to lf_await() resumes the call when it is set. Any such call was made at an
+  // earlier tag or at a higher level than this reaction, so the count need only be read once, and
+  // a stale count is harmless. The compare-and-swap is an atomic load.
+  bool async_port_waiters =
+      reaction->num_outputs > 0 && lf_atomic_val_compare_and_swap(&env->num_async_port_waiters, 0, 0) > 0;
+#endif
   for (size_t i = 0; i < reaction->num_outputs; i++) {
     if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
       LF_PRINT_DEBUG("Env %u: Output %zu has been produced.", env->id, i);
+#if !defined(LF_SINGLE_THREADED)
+      if (async_port_waiters) {
+        _lf_async_port_set(env, reaction->output_produced[i]);
+      }
+#endif
       trigger_t** triggerArray = (reaction->triggers)[i];
       LF_PRINT_DEBUG("Env %u: There are %d trigger arrays associated with output %zu.", env->id,
                      reaction->triggered_sizes[i], i);
@@ -898,6 +954,9 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     _lf_trigger_reaction(env, downstream_to_execute_now, worker);
     downstream_to_execute_now = NULL;
   }
+  if (downstream_to_execute_now != NULL && !_lf_claim_inline_reaction(downstream_to_execute_now)) {
+    downstream_to_execute_now = NULL;
+  }
   if (downstream_to_execute_now != NULL) {
     LF_PRINT_LOG("Env %u: Worker %d: Optimizing and executing downstream reaction now: %s", env->id, worker,
                  downstream_to_execute_now->name);
@@ -919,7 +978,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     //  physical time (deadline).
     // @note In absence of a STP handler, the is_STP_violated will be passed down the reaction
     //  chain until it is dealt with in a downstream STP handler.
-    if (downstream_to_execute_now->is_STP_violated == true) {
+    if (downstream_to_execute_now->is_STP_violated == true && !downstream_to_execute_now->is_an_input_reaction) {
       // Tardiness has occurred
       LF_PRINT_LOG("Env %u: Event has STP violation.", env->id);
       reaction_function_t handler = downstream_to_execute_now->STP_handler;
@@ -932,15 +991,15 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
         LF_PRINT_LOG("Env %u: Invoke tardiness handler.", env->id);
         (*handler)(downstream_to_execute_now->self);
 
-        // If the reaction produced outputs, put the resulting
-        // triggered reactions into the queue or execute them directly if possible.
-        schedule_output_reactions(env, downstream_to_execute_now, worker, allow_inline);
-
-        // Reset the tardiness because it has been dealt with in the
-        // STP handler
+        // Reset the tardiness because it has been dealt with in the STP handler.
+        // This must precede scheduling the outputs, which passes it down to downstream reactions.
         downstream_to_execute_now->is_STP_violated = false;
         LF_PRINT_DEBUG("Env %u: Reset reaction's is_STP_violated field to false: %s", env->id,
                        downstream_to_execute_now->name);
+
+        // If the reaction produced outputs, put the resulting
+        // triggered reactions into the queue or execute them directly if possible.
+        schedule_output_reactions(env, downstream_to_execute_now, worker, allow_inline);
       }
     }
 #endif
@@ -981,6 +1040,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
     downstream_to_execute_now->is_STP_violated = false;
     LF_PRINT_DEBUG("Env %u: Finally, reset reaction's is_STP_violated field to false: %s", env->id,
                    downstream_to_execute_now->name);
+    _lf_release_inline_reaction(downstream_to_execute_now);
   }
 }
 

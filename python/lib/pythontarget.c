@@ -635,10 +635,7 @@ PyObject* py_lf_async_resume(PyObject* self, PyObject* args) {
   if (action == NULL) {
     return NULL;
   }
-  // May block until the suspended callable returns, which needs the GIL.
-  PyThreadState* thread_state = PyEval_SaveThread();
   lf_async_resume(action);
-  PyEval_RestoreThread(thread_state);
   Py_RETURN_NONE;
 }
 
@@ -680,9 +677,7 @@ PyObject* py_lf_await_resume(PyObject* self, PyObject* args) {
   if (port == NULL) {
     return NULL;
   }
-  PyThreadState* thread_state = PyEval_SaveThread();
   _lf_await_resume(reactor, port);
-  PyEval_RestoreThread(thread_state);
   Py_RETURN_NONE;
 }
 
@@ -810,10 +805,10 @@ static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
     {"lf_async", (PyCFunction)py_lf_async, METH_VARARGS,
      "Invoke a Python callable without blocking the rest of the program"},
     {"lf_async_resume", (PyCFunction)py_lf_async_resume, METH_VARARGS,
-     "Resume the oldest lf_async() call waiting on an action"},
-    {"lf_await", (PyCFunction)py_lf_await, METH_VARARGS, "Suspend until lf_await_resume() is called on a port"},
+     "Does nothing; lf_async() calls resume automatically"},
+    {"lf_await", (PyCFunction)py_lf_await, METH_VARARGS, "Suspend until a port is next set"},
     {"lf_await_resume", (PyCFunction)py_lf_await_resume, METH_VARARGS,
-     "Resume every lf_await() call waiting on a port"},
+     "Does nothing; lf_await() calls resume automatically"},
     {"lf_add_worker_thread", (PyCFunction)py_lf_add_worker_thread, METH_VARARGS, "Add a worker thread"},
     {"lf_added_worker_thread_count", (PyCFunction)py_lf_added_worker_thread_count, METH_VARARGS,
      "Return the number of worker threads added at runtime"},

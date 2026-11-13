@@ -130,7 +130,9 @@ typedef enum { absent = false, present = true, unknown } port_status_t;
  *
  * @note inactive must equal zero because it should be possible to allocate a reaction
  *  with default values using calloc.
- * @note The running state does not seem to be read.
+ * @note In the threaded runtime, a reaction given to a worker by the scheduler remains 'queued' while it
+ *  executes. A reaction is 'running' there only if it is being executed by the thread of the upstream
+ *  reaction that triggered it, without going through the reaction queue (see schedule_output_reactions()).
  */
 typedef enum { inactive = 0, queued, running } reaction_status_t;
 

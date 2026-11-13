@@ -210,22 +210,23 @@ PyObject* py_tracepoint_user_value(PyObject* self, PyObject* args);
 PyObject* py_lf_async(PyObject* self, PyObject* args);
 
 /**
- * @brief Resume the oldest `lf_async()` call waiting on the given action.
+ * @brief Formerly needed to resume an `lf_async()` call. Now does nothing.
  *
  * `args` is `(action,)`. See `lf_async_resume()`.
  */
 PyObject* py_lf_async_resume(PyObject* self, PyObject* args);
 
 /**
- * @brief Suspend the calling reaction until `lf_await_resume()` is called on the port.
+ * @brief Suspend the calling reaction until the port is next set.
  *
- * `args` is `(reactor, port)`. On return, the Python port's `value` and `is_present`
- * reflect the C port at the tag where the reaction resumes. See `lf_await()`.
+ * `args` is `(reactor, port)`. A multiport raises `TypeError`. On return, the Python
+ * port's `value` and `is_present` reflect the C port at the tag where the reaction
+ * resumes. See `lf_await()`.
  */
 PyObject* py_lf_await(PyObject* self, PyObject* args);
 
 /**
- * @brief Resume every `lf_await()` call of this reactor waiting on the given port.
+ * @brief Formerly needed to resume `lf_await()` calls. Now does nothing.
  *
  * `args` is `(reactor, port)`. See `lf_await_resume()`.
  */
