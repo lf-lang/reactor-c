@@ -25,6 +25,7 @@ var structenvironment__t =
     [ "name", "structenvironment__t.html#a58106ba029a6892ca82028c163cf2e96", null ],
     [ "need_to_send_LTC", "structenvironment__t.html#aeef35dea438a853fc258631ea4a0e90c", null ],
     [ "num_added_workers", "structenvironment__t.html#a5f9b9bca5280a46dc2f355b00dfa85cf", null ],
+    [ "num_async_port_waiters", "structenvironment__t.html#a42616b33ee02e854d054e6b50537be23", null ],
     [ "num_async_suspended", "structenvironment__t.html#ae6cd8cb3dff2e26ba23817173ce0f97a", null ],
     [ "num_async_threads", "structenvironment__t.html#a24ea3797618fb26a92a6e0b847d9eeec", null ],
     [ "num_workers", "structenvironment__t.html#a3f4ab6b55dcc31b6c5cd9e082d65547d", null ],

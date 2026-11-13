@@ -1752,6 +1752,11 @@
               <Anchor>a5f9b9bca5280a46dc2f355b00dfa85cf</Anchor>
              </Node>
              <Node>
+              <Name>num_async_port_waiters</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a42616b33ee02e854d054e6b50537be23</Anchor>
+             </Node>
+             <Node>
               <Name>num_async_suspended</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>ae6cd8cb3dff2e26ba23817173ce0f97a</Anchor>
@@ -1946,6 +1951,11 @@
               <Anchor>a4eae2701a9386162821032ba8b2c2f21</Anchor>
              </Node>
              <Node>
+              <Name>deferred</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a6bafd50700fdcb6fdcacf8fb36920a63</Anchor>
+             </Node>
+             <Node>
               <Name>event_pending</Name>
               <Path>structlf__async__state__t.html</Path>
               <Anchor>a4594f71021b4905bcad168cf3d5458d9</Anchor>
@@ -1979,11 +1989,6 @@
               <Name>resume_tag</Name>
               <Path>structlf__async__state__t.html</Path>
               <Anchor>a9ea87be668a3a13a9e94fbf4003b3775</Anchor>
-             </Node>
-             <Node>
-              <Name>resume_waiting</Name>
-              <Path>structlf__async__state__t.html</Path>
-              <Anchor>a2831c76a3bb45de371270624e93d9e3d</Anchor>
              </Node>
              <Node>
               <Name>resumed</Name>
@@ -3059,6 +3064,11 @@
             <Anchor>ga4659db62370c837baa55484134b3bfb7</Anchor>
            </Node>
            <Node>
+            <Name>_lf_async_action_fired_locked</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga98eeb738003460daccfec9f0e8ca143f</Anchor>
+           </Node>
+           <Node>
             <Name>_lf_async_begin</Name>
             <Path>group__Internal.html</Path>
             <Anchor>gad1555746f02c05e5879a2b287a252286</Anchor>
@@ -3067,6 +3077,11 @@
             <Name>_lf_async_end</Name>
             <Path>group__Internal.html</Path>
             <Anchor>ga803d7e3c9bce6be8dc2b4e143cc7b99a</Anchor>
+           </Node>
+           <Node>
+            <Name>_lf_async_port_set</Name>
+            <Path>group__Internal.html</Path>
+            <Anchor>ga2d665cabdf50baa651dd3c82d600360b</Anchor>
            </Node>
            <Node>
             <Name>_lf_async_release_level_locked</Name>
@@ -6189,6 +6204,11 @@
               <Anchor>a5f9b9bca5280a46dc2f355b00dfa85cf</Anchor>
              </Node>
              <Node>
+              <Name>num_async_port_waiters</Name>
+              <Path>structenvironment__t.html</Path>
+              <Anchor>a42616b33ee02e854d054e6b50537be23</Anchor>
+             </Node>
+             <Node>
               <Name>num_async_suspended</Name>
               <Path>structenvironment__t.html</Path>
               <Anchor>ae6cd8cb3dff2e26ba23817173ce0f97a</Anchor>
@@ -6823,6 +6843,11 @@
               <Anchor>a4eae2701a9386162821032ba8b2c2f21</Anchor>
              </Node>
              <Node>
+              <Name>deferred</Name>
+              <Path>structlf__async__state__t.html</Path>
+              <Anchor>a6bafd50700fdcb6fdcacf8fb36920a63</Anchor>
+             </Node>
+             <Node>
               <Name>event_pending</Name>
               <Path>structlf__async__state__t.html</Path>
               <Anchor>a4594f71021b4905bcad168cf3d5458d9</Anchor>
@@ -6856,11 +6881,6 @@
               <Name>resume_tag</Name>
               <Path>structlf__async__state__t.html</Path>
               <Anchor>a9ea87be668a3a13a9e94fbf4003b3775</Anchor>
-             </Node>
-             <Node>
-              <Name>resume_waiting</Name>
-              <Path>structlf__async__state__t.html</Path>
-              <Anchor>a2831c76a3bb45de371270624e93d9e3d</Anchor>
              </Node>
              <Node>
               <Name>resumed</Name>
@@ -9594,6 +9614,16 @@
                             <Name>reactor_threaded.h</Name>
                             <Path>reactor__threaded_8h.html</Path>
                           <Subnodes>
+                             <Node>
+                              <Name>_lf_async_action_fired_locked</Name>
+                              <Path>group__Internal.html</Path>
+                              <Anchor>ga98eeb738003460daccfec9f0e8ca143f</Anchor>
+                             </Node>
+                             <Node>
+                              <Name>_lf_async_port_set</Name>
+                              <Path>group__Internal.html</Path>
+                              <Anchor>ga2d665cabdf50baa651dd3c82d600360b</Anchor>
+                             </Node>
                              <Node>
                               <Name>_lf_async_release_level_locked</Name>
                               <Path>group__Internal.html</Path>

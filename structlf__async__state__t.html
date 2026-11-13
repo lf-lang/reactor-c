@@ -127,7 +127,9 @@ document.addEventListener('DOMContentLoaded',() => { initNavTree('structlf__asyn
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
 <tr class="memitem:a4eae2701a9386162821032ba8b2c2f21" id="r_a4eae2701a9386162821032ba8b2c2f21"><td class="memItemLeft"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a4eae2701a9386162821032ba8b2c2f21">action</a></td></tr>
-<tr class="memdesc:a4eae2701a9386162821032ba8b2c2f21"><td class="mdescLeft">&#160;</td><td class="mdescRight">The action that resumes this call, or NULL for <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span>, which is resumed by <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span>.  <br /></td></tr>
+<tr class="memdesc:a4eae2701a9386162821032ba8b2c2f21"><td class="mdescLeft">&#160;</td><td class="mdescRight">The action whose event resumes this call, or NULL for <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span>, which is resumed when its port is set.  <br /></td></tr>
+<tr class="memitem:a6bafd50700fdcb6fdcacf8fb36920a63" id="r_a6bafd50700fdcb6fdcacf8fb36920a63"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a6bafd50700fdcb6fdcacf8fb36920a63">deferred</a></td></tr>
+<tr class="memdesc:a6bafd50700fdcb6fdcacf8fb36920a63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set to true when the call is moved to <span class="tt"><a class="el" href="structenvironment__t.html#a3136a9463b0ba4af462282bcd17bd7d3" title="Calls whose action event or port has occurred, waiting for the scheduler to reach their level.">environment_t::async_deferred</a></span>, after which only the scheduler or the exiting workers resume it.  <br /></td></tr>
 <tr class="memitem:a4594f71021b4905bcad168cf3d5458d9" id="r_a4594f71021b4905bcad168cf3d5458d9"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a4594f71021b4905bcad168cf3d5458d9">event_pending</a></td></tr>
 <tr class="memdesc:a4594f71021b4905bcad168cf3d5458d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if this call scheduled the logical action for <span class="tt"><a class="el" href="#a9ea87be668a3a13a9e94fbf4003b3775" title="Tag at which a logical action resumes this call.">resume_tag</a></span>.  <br /></td></tr>
 <tr class="memitem:a823311d40c23c09f65b6713e56a7dacb" id="r_a823311d40c23c09f65b6713e56a7dacb"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a823311d40c23c09f65b6713e56a7dacb">function_done</a></td></tr>
@@ -137,13 +139,11 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a40e49afec1a0a702c219ac3deac1d0e1" id="r_a40e49afec1a0a702c219ac3deac1d0e1"><td class="memItemLeft">struct <a class="el" href="structlf__async__state__t.html">lf_async_state_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a40e49afec1a0a702c219ac3deac1d0e1">next</a></td></tr>
 <tr class="memdesc:a40e49afec1a0a702c219ac3deac1d0e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Next pending call in the environment, or NULL.  <br /></td></tr>
 <tr class="memitem:a86497f87810659101aede30f8820cea5" id="r_a86497f87810659101aede30f8820cea5"><td class="memItemLeft"><a class="el" href="structlf__port__base__t.html">lf_port_base_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#a86497f87810659101aede30f8820cea5">port</a></td></tr>
-<tr class="memdesc:a86497f87810659101aede30f8820cea5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The input port passed to <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span>, or NULL for <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>.  <br /></td></tr>
+<tr class="memdesc:a86497f87810659101aede30f8820cea5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The input port passed to <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span>, or NULL for <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>.  <br /></td></tr>
 <tr class="memitem:ae3800e46256fccbc2307676c21e8d56b" id="r_ae3800e46256fccbc2307676c21e8d56b"><td class="memItemLeft"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#ae3800e46256fccbc2307676c21e8d56b">reaction</a></td></tr>
 <tr class="memdesc:ae3800e46256fccbc2307676c21e8d56b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The reaction that invoked <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>.  <br /></td></tr>
 <tr class="memitem:a9ea87be668a3a13a9e94fbf4003b3775" id="r_a9ea87be668a3a13a9e94fbf4003b3775"><td class="memItemLeft"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight"><a class="el" href="#a9ea87be668a3a13a9e94fbf4003b3775">resume_tag</a></td></tr>
 <tr class="memdesc:a9ea87be668a3a13a9e94fbf4003b3775"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tag at which a logical action resumes this call.  <br /></td></tr>
-<tr class="memitem:a2831c76a3bb45de371270624e93d9e3d" id="r_a2831c76a3bb45de371270624e93d9e3d"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a2831c76a3bb45de371270624e93d9e3d">resume_waiting</a></td></tr>
-<tr class="memdesc:a2831c76a3bb45de371270624e93d9e3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set to true by <span class="tt"><a class="el" href="group__API.html#gae0e25ced19f6ea229a5c93ae565901d1" title="Resume a reaction suspended in lf_async() that is waiting on the specified action.">lf_async_resume()</a></span> when it is waiting for <span class="tt"><a class="el" href="#a823311d40c23c09f65b6713e56a7dacb" title="Set to true in _lf_async_end(), once the invoked function has returned.">function_done</a></span>.  <br /></td></tr>
 <tr class="memitem:a09ba17c05cab9a43257445336f3bac51" id="r_a09ba17c05cab9a43257445336f3bac51"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a09ba17c05cab9a43257445336f3bac51">resumed</a></td></tr>
 <tr class="memdesc:a09ba17c05cab9a43257445336f3bac51"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set to true when the call has been resumed.  <br /></td></tr>
 <tr class="memitem:a0e0425d8a6c57a13c48be260bfb7eb68" id="r_a0e0425d8a6c57a13c48be260bfb7eb68"><td class="memItemLeft">lf_cond_t&#160;</td><td class="memItemRight"><a class="el" href="#a0e0425d8a6c57a13c48be260bfb7eb68">resumed_cond</a></td></tr>
@@ -167,8 +167,24 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>The action that resumes this call, or NULL for <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span>, which is resumed by <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span>. </p>
+<p>The action whose event resumes this call, or NULL for <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span>, which is resumed when its port is set. </p>
 <p>A physical action is scheduled in <span class="tt"><a class="el" href="group__Internal.html#ga803d7e3c9bce6be8dc2b4e143cc7b99a" title="Complete a call prepared by _lf_async_begin().">_lf_async_end()</a></span>. </p>
+
+</div>
+</div>
+<a id="a6bafd50700fdcb6fdcacf8fb36920a63" name="a6bafd50700fdcb6fdcacf8fb36920a63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6bafd50700fdcb6fdcacf8fb36920a63">&#9670;&#160;</a></span>deferred</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool lf_async_state_t::deferred</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set to true when the call is moved to <span class="tt"><a class="el" href="structenvironment__t.html#a3136a9463b0ba4af462282bcd17bd7d3" title="Calls whose action event or port has occurred, waiting for the scheduler to reach their level.">environment_t::async_deferred</a></span>, after which only the scheduler or the exiting workers resume it. </p>
 
 </div>
 </div>
@@ -250,7 +266,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>The input port passed to <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span>, or NULL for <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>. </p>
+<p>The input port passed to <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span>, or NULL for <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>. </p>
 
 </div>
 </div>
@@ -284,23 +300,7 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Tag at which a logical action resumes this call. </p>
-<p><span class="tt"><a class="el" href="group__Constants.html#ga183109e082a793ae85cec00d72e70d4b" title="Tag later than all other tags.">FOREVER_TAG</a></span> for a physical action and for <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span>. Several calls that share one logical action and the same tag share one event. </p>
-
-</div>
-</div>
-<a id="a2831c76a3bb45de371270624e93d9e3d" name="a2831c76a3bb45de371270624e93d9e3d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2831c76a3bb45de371270624e93d9e3d">&#9670;&#160;</a></span>resume_waiting</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool lf_async_state_t::resume_waiting</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set to true by <span class="tt"><a class="el" href="group__API.html#gae0e25ced19f6ea229a5c93ae565901d1" title="Resume a reaction suspended in lf_async() that is waiting on the specified action.">lf_async_resume()</a></span> when it is waiting for <span class="tt"><a class="el" href="#a823311d40c23c09f65b6713e56a7dacb" title="Set to true in _lf_async_end(), once the invoked function has returned.">function_done</a></span>. </p>
+<p><span class="tt"><a class="el" href="group__Constants.html#ga183109e082a793ae85cec00d72e70d4b" title="Tag later than all other tags.">FOREVER_TAG</a></span> for a physical action and for <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span>. Several calls that share one logical action and the same tag share one event. </p>
 
 </div>
 </div>

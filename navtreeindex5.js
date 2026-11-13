@@ -1,5 +1,8 @@
 var NAVTREEINDEX5 =
 {
+"structself__base__t.html#aa37770fb258cdb7d8406d8416bade873":[3,4,33,4],
+"structself__base__t.html#aa450d272dcc263b883d8727d20f3c1dc":[3,4,33,6],
+"structself__base__t.html#ad19c2e3ac3920c1244d81076ecbad2c9":[3,4,33,7],
 "structsocket__stat__t.html":[3,6,5],
 "structsocket__stat__t.html#a2d53d66644d18d6e948aafd2913b638d":[3,6,5,4],
 "structsocket__stat__t.html#a337626dbaef95e87f6e611219cc445ef":[3,6,5,8],

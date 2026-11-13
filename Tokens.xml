@@ -1173,6 +1173,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>deferred</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>lf_async_state_t</Scope>
+    </TokenIdentifier>
+    <Path>structlf__async__state__t.html</Path>
+    <Anchor>a6bafd50700fdcb6fdcacf8fb36920a63</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>delayed_grants</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -2813,6 +2823,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>num_async_port_waiters</Name>
+      <APILanguage>cpp</APILanguage>
+      <Type>data</Type>
+      <Scope>environment_t</Scope>
+    </TokenIdentifier>
+    <Path>structenvironment__t.html</Path>
+    <Anchor>a42616b33ee02e854d054e6b50537be23</Anchor>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>num_async_suspended</Name>
       <APILanguage>cpp</APILanguage>
       <Type>data</Type>
@@ -3520,16 +3540,6 @@
     </TokenIdentifier>
     <Path>structlf__async__state__t.html</Path>
     <Anchor>a9ea87be668a3a13a9e94fbf4003b3775</Anchor>
-  </Token>
-  <Token>
-    <TokenIdentifier>
-      <Name>resume_waiting</Name>
-      <APILanguage>cpp</APILanguage>
-      <Type>data</Type>
-      <Scope>lf_async_state_t</Scope>
-    </TokenIdentifier>
-    <Path>structlf__async__state__t.html</Path>
-    <Anchor>a2831c76a3bb45de371270624e93d9e3d</Anchor>
   </Token>
   <Token>
     <TokenIdentifier>
@@ -4683,6 +4693,16 @@
   </Token>
   <Token>
     <TokenIdentifier>
+      <Name>_lf_async_action_fired_locked</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga98eeb738003460daccfec9f0e8ca143f</Anchor>
+    <DeclaredIn>reactor_threaded.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
       <Name>_lf_async_begin</Name>
       <APILanguage>c</APILanguage>
       <Type>func</Type>
@@ -4700,6 +4720,16 @@
     <Path>group__Internal.html</Path>
     <Anchor>ga803d7e3c9bce6be8dc2b4e143cc7b99a</Anchor>
     <DeclaredIn>reactor.h</DeclaredIn>
+  </Token>
+  <Token>
+    <TokenIdentifier>
+      <Name>_lf_async_port_set</Name>
+      <APILanguage>c</APILanguage>
+      <Type>func</Type>
+    </TokenIdentifier>
+    <Path>group__Internal.html</Path>
+    <Anchor>ga2d665cabdf50baa651dd3c82d600360b</Anchor>
+    <DeclaredIn>reactor_threaded.h</DeclaredIn>
   </Token>
   <Token>
     <TokenIdentifier>

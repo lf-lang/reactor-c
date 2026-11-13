@@ -1,5 +1,7 @@
 var reactor__threaded_8h =
 [
+    [ "_lf_async_action_fired_locked", "group__Internal.html#ga98eeb738003460daccfec9f0e8ca143f", null ],
+    [ "_lf_async_port_set", "group__Internal.html#ga2d665cabdf50baa651dd3c82d600360b", null ],
     [ "_lf_async_release_level_locked", "group__Internal.html#gab0a572763b22476af4a8a2211df60670", null ],
     [ "_lf_decrement_tag_barrier_locked", "group__Internal.html#ga5a0540790dfc6d954fb443da3336ce27", null ],
     [ "_lf_increment_tag_barrier", "group__Internal.html#gaa8e97abcbd89bb371d396da44ff4becb", null ],

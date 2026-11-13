@@ -362,16 +362,20 @@ Enumerations</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:ga4659db62370c837baa55484134b3bfb7" id="r_ga4659db62370c837baa55484134b3bfb7"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga4659db62370c837baa55484134b3bfb7">_lf_advance_tag</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="structtag__t.html">tag_t</a> next_tag)</td></tr>
 <tr class="memdesc:ga4659db62370c837baa55484134b3bfb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance from the current tag to the next.  <br /></td></tr>
+<tr class="memitem:ga98eeb738003460daccfec9f0e8ca143f" id="r_ga98eeb738003460daccfec9f0e8ca143f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga98eeb738003460daccfec9f0e8ca143f">_lf_async_action_fired_locked</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="structtrigger__t.html">trigger_t</a> *trigger)</td></tr>
+<tr class="memdesc:ga98eeb738003460daccfec9f0e8ca143f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defer every pending <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a> call that the event of the specified trigger resumes.  <br /></td></tr>
 <tr class="memitem:gad1555746f02c05e5879a2b287a252286" id="r_gad1555746f02c05e5879a2b287a252286"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gad1555746f02c05e5879a2b287a252286">_lf_async_begin</a> (<a class="el" href="structlf__async__state__t.html">lf_async_state_t</a> *state, void *self, void *action, void *port)</td></tr>
 <tr class="memdesc:gad1555746f02c05e5879a2b287a252286"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepare to invoke a possibly blocking function from a reaction without blocking the environment.  <br /></td></tr>
 <tr class="memitem:ga803d7e3c9bce6be8dc2b4e143cc7b99a" id="r_ga803d7e3c9bce6be8dc2b4e143cc7b99a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga803d7e3c9bce6be8dc2b4e143cc7b99a">_lf_async_end</a> (<a class="el" href="structlf__async__state__t.html">lf_async_state_t</a> *state)</td></tr>
 <tr class="memdesc:ga803d7e3c9bce6be8dc2b4e143cc7b99a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Complete a call prepared by <span class="tt"><a class="el" href="#gad1555746f02c05e5879a2b287a252286" title="Prepare to invoke a possibly blocking function from a reaction without blocking the environment.">_lf_async_begin()</a></span>.  <br /></td></tr>
+<tr class="memitem:ga2d665cabdf50baa651dd3c82d600360b" id="r_ga2d665cabdf50baa651dd3c82d600360b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga2d665cabdf50baa651dd3c82d600360b">_lf_async_port_set</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, bool *is_present)</td></tr>
+<tr class="memdesc:ga2d665cabdf50baa651dd3c82d600360b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defer every pending <a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a> call on the port whose presence flag is given.  <br /></td></tr>
 <tr class="memitem:gab0a572763b22476af4a8a2211df60670" id="r_gab0a572763b22476af4a8a2211df60670"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#gab0a572763b22476af4a8a2211df60670">_lf_async_release_level_locked</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, size_t level)</td></tr>
-<tr class="memdesc:gab0a572763b22476af4a8a2211df60670"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resume every deferred <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a> or <a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a> call whose reaction is at the given level.  <br /></td></tr>
+<tr class="memdesc:gab0a572763b22476af4a8a2211df60670"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resume every deferred <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a> or <a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a> call whose reaction is at the given level.  <br /></td></tr>
 <tr class="memitem:ga0ca79eb4d371a5f9b4903951c629e7fe" id="r_ga0ca79eb4d371a5f9b4903951c629e7fe"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga0ca79eb4d371a5f9b4903951c629e7fe">_lf_await</a> (void *self, void *port)</td></tr>
-<tr class="memdesc:ga0ca79eb4d371a5f9b4903951c629e7fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suspend the calling reaction until another reaction of the same reactor calls <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> on the specified input port.  <br /></td></tr>
+<tr class="memdesc:ga0ca79eb4d371a5f9b4903951c629e7fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suspend the calling reaction until the specified input port is next set.  <br /></td></tr>
 <tr class="memitem:gad31a7f8781c06daca869cc528c50615c" id="r_gad31a7f8781c06daca869cc528c50615c"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#gad31a7f8781c06daca869cc528c50615c">_lf_await_resume</a> (void *self, void *port)</td></tr>
-<tr class="memdesc:gad31a7f8781c06daca869cc528c50615c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resume every reaction of this reactor that is suspended in <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span> on the specified port.  <br /></td></tr>
+<tr class="memdesc:gad31a7f8781c06daca869cc528c50615c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Formerly needed to resume reactions suspended in <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span>.  <br /></td></tr>
 <tr class="memitem:ga6396bfcdac50ddb71b6b29fa33a3cc5d" id="r_ga6396bfcdac50ddb71b6b29fa33a3cc5d"><td class="memItemLeft"><a class="el" href="structevent__t.html">event_t</a> *&#160;</td><td class="memItemRight"><a class="el" href="#ga6396bfcdac50ddb71b6b29fa33a3cc5d">_lf_create_dummy_events</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="memdesc:ga6396bfcdac50ddb71b6b29fa33a3cc5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a dummy event with the specified tag.  <br /></td></tr>
 <tr class="memitem:ga5a0540790dfc6d954fb443da3336ce27" id="r_ga5a0540790dfc6d954fb443da3336ce27"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ga5a0540790dfc6d954fb443da3336ce27">_lf_decrement_tag_barrier_locked</a> (<a class="el" href="structenvironment__t.html">environment_t</a> *env)</td></tr>
@@ -2030,7 +2034,7 @@ The absent and present fields need to be compatible with false and true respecti
 <p>If a reaction is 'inactive', it is neither running nor queued. If a reaction is 'queued', it is going to be executed at the current logical time, but it has not started running yet. If a reaction is 'running', its body is being executed.</p>
 <dl class="section note"><dt>Note</dt><dd>inactive must equal zero because it should be possible to allocate a reaction with default values using calloc. </dd>
 <dd>
-The running state does not seem to be read. </dd></dl>
+In the threaded runtime, a reaction given to a worker by the scheduler remains 'queued' while it executes. A reaction is 'running' there only if it is being executed by the thread of the upstream reaction that triggered it, without going through the reaction queue (see <a class="el" href="#ga22efa7f7f693527cdf27e7e88be9b218" title="Schedule the output reactions for the specified reaction in the specified environment.">schedule_output_reactions()</a>). </dd></dl>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga6e496c05213aa4bcbc0055ceee7808faa76c1253bb97844abbdf89af6dfc3c7d6" name="gga6e496c05213aa4bcbc0055ceee7808faa76c1253bb97844abbdf89af6dfc3c7d6"></a>inactive&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="gga6e496c05213aa4bcbc0055ceee7808faa8ff224790af0c8a18f259da89dfb2225" name="gga6e496c05213aa4bcbc0055ceee7808faa8ff224790af0c8a18f259da89dfb2225"></a>queued&#160;</td><td class="fielddoc"></td></tr>
@@ -2096,6 +2100,39 @@ The running state does not seem to be read. </dd></dl>
 
 </div>
 </div>
+<a id="ga98eeb738003460daccfec9f0e8ca143f" name="ga98eeb738003460daccfec9f0e8ca143f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga98eeb738003460daccfec9f0e8ca143f">&#9670;&#160;</a></span>_lf_async_action_fired_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_async_action_fired_locked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structtrigger__t.html">trigger_t</a> *</td>          <td class="paramname"><span class="paramname"><em>trigger</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor__threaded_8h.html">reactor_threaded.h</a>&gt;</code></p>
+
+<p>Defer every pending <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a> call that the event of the specified trigger resumes. </p>
+<p>This is called when an event is processed at the start of a tag. A call on a logical action is resumed by the event at the tag for which it scheduled the action. A call on a physical action is resumed once its function has returned, because the action is scheduled at that time. Each call continues when the scheduler reaches the level of its reaction. The caller must hold the environment mutex.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment. </td></tr>
+    <tr><td class="paramname">trigger</td><td>The trigger of the event. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="gad1555746f02c05e5879a2b287a252286" name="gad1555746f02c05e5879a2b287a252286"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gad1555746f02c05e5879a2b287a252286">&#9670;&#160;</a></span>_lf_async_begin()</h2>
 
@@ -2133,8 +2170,8 @@ The running state does not seem to be read. </dd></dl>
   <table class="params">
     <tr><td class="paramname">state</td><td>Storage for the state of the call, which must remain valid until <span class="tt"><a class="el" href="#ga803d7e3c9bce6be8dc2b4e143cc7b99a" title="Complete a call prepared by _lf_async_begin().">_lf_async_end()</a></span> returns. </td></tr>
     <tr><td class="paramname">self</td><td>The self struct of the reactor whose reaction is executing. </td></tr>
-    <tr><td class="paramname">action</td><td>The logical or physical action (an <span class="tt">lf_action_base_t*</span>) on which <a class="el" href="group__API.html#gae0e25ced19f6ea229a5c93ae565901d1" title="lf_async_resume()">lf_async_resume()</a> will be called. A physical action is scheduled later, by <span class="tt"><a class="el" href="#ga803d7e3c9bce6be8dc2b4e143cc7b99a" title="Complete a call prepared by _lf_async_begin().">_lf_async_end()</a></span>. NULL for <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span>. </td></tr>
-    <tr><td class="paramname">port</td><td>The input port (an <span class="tt">lf_port_base_t*</span>) passed to <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span>. NULL for <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>. </td></tr>
+    <tr><td class="paramname">action</td><td>The logical or physical action (an <span class="tt">lf_action_base_t*</span>) whose event resumes the call. A physical action is scheduled later, by <span class="tt"><a class="el" href="#ga803d7e3c9bce6be8dc2b4e143cc7b99a" title="Complete a call prepared by _lf_async_begin().">_lf_async_end()</a></span>. NULL for <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span>. </td></tr>
+    <tr><td class="paramname">port</td><td>The input port (an <span class="tt">lf_port_base_t*</span>) passed to <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span>. NULL for <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2159,10 +2196,43 @@ The running state does not seem to be read. </dd></dl>
 <p><code>#include &lt;<a class="el" href="reactor_8h.html">reactor.h</a>&gt;</code></p>
 
 <p>Complete a call prepared by <span class="tt"><a class="el" href="#gad1555746f02c05e5879a2b287a252286" title="Prepare to invoke a possibly blocking function from a reaction without blocking the environment.">_lf_async_begin()</a></span>. </p>
-<p>This is the second half of the <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> macro and is not meant to be called directly. It is called immediately after the function has returned. If the action is physical, it is scheduled now, even if this call has already been resumed. A logical action was already scheduled by <span class="tt"><a class="el" href="#gad1555746f02c05e5879a2b287a252286" title="Prepare to invoke a possibly blocking function from a reaction without blocking the environment.">_lf_async_begin()</a></span>. This function then blocks until a reaction triggered by the action calls <a class="el" href="group__API.html#gae0e25ced19f6ea229a5c93ae565901d1" title="lf_async_resume()">lf_async_resume()</a> on it (or until the worker threads of the environment exit because the program is stopping). If that call happens before the function returns, <span class="tt"><a class="el" href="group__API.html#gae0e25ced19f6ea229a5c93ae565901d1" title="Resume a reaction suspended in lf_async() that is waiting on the specified action.">lf_async_resume()</a></span> blocks until this function is called, so the tag does not advance past it. The calling thread, which by then has rejoined the pool of worker threads, reacquires the reactor mutex and this function returns, so that the remainder of the calling reaction executes at the tag at which <span class="tt"><a class="el" href="group__API.html#gae0e25ced19f6ea229a5c93ae565901d1" title="Resume a reaction suspended in lf_async() that is waiting on the specified action.">lf_async_resume()</a></span> was called, after the resuming reaction has completed.</p>
+<p>This is the second half of the <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> macro and is not meant to be called directly. It is called immediately after the function has returned. If the action is physical, it is scheduled now. A logical action was already scheduled by <span class="tt"><a class="el" href="#gad1555746f02c05e5879a2b287a252286" title="Prepare to invoke a possibly blocking function from a reaction without blocking the environment.">_lf_async_begin()</a></span>. This function then blocks until the call is resumed (or until the worker threads of the environment exit because the program is stopping). When the event of the action is processed, the runtime defers the call until the scheduler reaches the level of the calling reaction, and resumes it then. If a logical action's tag is reached before the function returns, the scheduler waits at that level for this function to be called, so the tag does not advance past it. The calling thread, which by then has rejoined the pool of worker threads, reacquires the reactor mutex and this function returns, so that the remainder of the calling reaction executes at the tag of the action's event.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">state</td><td>The state passed to <span class="tt"><a class="el" href="#gad1555746f02c05e5879a2b287a252286" title="Prepare to invoke a possibly blocking function from a reaction without blocking the environment.">_lf_async_begin()</a></span>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ga2d665cabdf50baa651dd3c82d600360b" name="ga2d665cabdf50baa651dd3c82d600360b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2d665cabdf50baa651dd3c82d600360b">&#9670;&#160;</a></span>_lf_async_port_set()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_async_port_set </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structenvironment__t.html">environment_t</a> *</td>          <td class="paramname"><span class="paramname"><em>env</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool *</td>          <td class="paramname"><span class="paramname"><em>is_present</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;<a class="el" href="reactor__threaded_8h.html">reactor_threaded.h</a>&gt;</code></p>
+
+<p>Defer every pending <a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a> call on the port whose presence flag is given. </p>
+<p>This is called by the worker that has executed a reaction that set the port. Each call continues when the scheduler reaches the level of its reaction, which is higher than that of the reaction that set the port. This acquires the environment mutex.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment. </td></tr>
+    <tr><td class="paramname">is_present</td><td>The address of the <span class="tt">is_present</span> field of the port that was set. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2190,12 +2260,12 @@ The running state does not seem to be read. </dd></dl>
 
 <p><code>#include &lt;<a class="el" href="reactor__threaded_8h.html">reactor_threaded.h</a>&gt;</code></p>
 
-<p>Resume every deferred <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a> or <a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a> call whose reaction is at the given level. </p>
+<p>Resume every deferred <a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a> or <a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a> call whose reaction is at the given level. </p>
 <p>The caller must hold the environment mutex and must be a busy worker (executing a reaction, or the worker that is distributing this level and has therefore not gone idle). Each resumed thread rejoins the pool and continues its reaction at this level. The returned count is the number of threads that are now busy and must finish before a higher level starts.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>The environment. </td></tr>
-    <tr><td class="paramname">level</td><td>The level the scheduler is entering. </td></tr>
+    <tr><td class="paramname">level</td><td>The level the scheduler is entering. If the action of a call is logical, its tag can be reached before the invoked function returns. In that case, this waits for the function to return. Every other worker is idle, so logical time cannot advance in the meantime. No call is resumed until every function at this level has returned, so no resumed thread can finish and go idle while this waits.</td></tr>
   </table>
   </dd>
 </dl>
@@ -2224,14 +2294,14 @@ The running state does not seem to be read. </dd></dl>
 
 <p><code>#include &lt;<a class="el" href="reactor_8h.html">reactor.h</a>&gt;</code></p>
 
-<p>Suspend the calling reaction until another reaction of the same reactor calls <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> on the specified input port. </p>
-<p>This is the implementation of the <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span> macro, which supplies <span class="tt">self</span>, and is not meant to be called directly. It behaves like <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> with no function to invoke and no action. Outputs set before the call are propagated at the current tag, the calling worker thread leaves the pool (adding a replacement if needed), and logical time advances and other reactions execute as if the calling reaction had completed. When a reaction of the same reactor calls <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> on the same port, this function returns, and the remainder of the calling reaction executes at the tag of that call, after the resuming reaction has completed. Outputs set after the call are produced at that tag.</p>
-<p>If the program stops before <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> is called, this function returns at the stop tag, after the shutdown reactions have executed, so that the calling reaction can complete. If the program is already stopping when this is called, it returns immediately.</p>
+<p>Suspend the calling reaction until the specified input port is next set. </p>
+<p>This is the implementation of the <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span> macro, which supplies <span class="tt">self</span>, and is not meant to be called directly. It behaves like <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> with no function to invoke and no action. Outputs set before the call are propagated at the current tag, the calling worker thread leaves the pool (adding a replacement if needed), and logical time advances and other reactions execute as if the calling reaction had completed. When an upstream reaction next sets the port, the call is deferred until the scheduler reaches the level of the calling reaction. This function then returns, and the remainder of the calling reaction executes at that tag, after every reaction at lower levels, including reactions of this reactor triggered by the port, has completed. Outputs set after the call are produced at that tag.</p>
+<p>If the program stops before the port is set, this function returns at the stop tag, after the shutdown reactions have executed, so that the calling reaction can complete. If the program is already stopping when this is called, it returns immediately.</p>
 <p>The caveats of <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> apply: the calling reaction counts as executing while suspended, state variables may be modified by other reactions in the meantime, the reactions of the reactor become mutually exclusive, and this requires the threaded runtime with the NP or GEDF_NP scheduler.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>The self struct of the reactor whose reaction is executing. </td></tr>
-    <tr><td class="paramname">port</td><td>An input port of this reactor (an <span class="tt">lf_port_base_t*</span>), as it is in scope in the reaction body. The calling reaction must list it as a trigger or source. </td></tr>
+    <tr><td class="paramname">port</td><td>A single, non-mutable input port of this reactor (an <span class="tt">lf_port_base_t*</span>), as it is in scope in the reaction body. The calling reaction must list it as a trigger or source, so that its level is higher than that of every reaction that sets the port. The port is identified by its address, which is that of the upstream port that it receives from. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2259,9 +2329,9 @@ The running state does not seem to be read. </dd></dl>
 
 <p><code>#include &lt;<a class="el" href="reactor_8h.html">reactor.h</a>&gt;</code></p>
 
-<p>Resume every reaction of this reactor that is suspended in <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span> on the specified port. </p>
-<p>This is the implementation of the <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Resume every reaction of this reactor that is suspended in lf_await() on the specified port.">lf_await_resume()</a></span> macro, which supplies <span class="tt">self</span>, and is not meant to be called directly. It must be called from the body of a reaction of the same reactor as the suspended reactions, typically a reaction triggered by the port. All pending <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until another reaction of this reactor calls lf_await_resume() on the specified...">lf_await()</a></span> calls of this reactor on this port are resumed. Each continues when the scheduler reaches that reaction's level, and the scheduler does not start a higher level until the continuation has completed, so they run in declaration order. If no reaction of this reactor is suspended on this port, this function does nothing. Calls suspended in <span class="tt"><a class="el" href="group__API.html#ga639f325e7d15a15396baf72955d82038" title="Invoke a function that may block for a long time without blocking the rest of the program.">lf_async()</a></span> or on other ports are not affected.</p>
-<p>The port is identified by its address together with the reactor, because an input port that receives from a fanned-out output shares its address with the other receivers.</p>
+<p>Formerly needed to resume reactions suspended in <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span>. </p>
+<p>Now does nothing.</p>
+<p>This is the implementation of the <span class="tt"><a class="el" href="group__API.html#gaa0653ab1c2da4d99eb0cb1825c1495ff" title="Formerly needed to resume reactions suspended in lf_await().">lf_await_resume()</a></span> macro. A call to <span class="tt"><a class="el" href="group__API.html#ga1d7e88810c5b5ae3dee716884afb7c22" title="Suspend this reaction until the specified input port is next set.">lf_await()</a></span> is resumed automatically when its port is set, so no reaction triggered by the port is needed. This function is retained so that existing programs that call it continue to compile and behave the same.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>The self struct of the reactor whose reaction is executing. </td></tr>

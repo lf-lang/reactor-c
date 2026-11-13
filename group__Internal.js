@@ -47,6 +47,7 @@ var group__Internal =
       [ "name", "structenvironment__t.html#a58106ba029a6892ca82028c163cf2e96", null ],
       [ "need_to_send_LTC", "structenvironment__t.html#aeef35dea438a853fc258631ea4a0e90c", null ],
       [ "num_added_workers", "structenvironment__t.html#a5f9b9bca5280a46dc2f355b00dfa85cf", null ],
+      [ "num_async_port_waiters", "structenvironment__t.html#a42616b33ee02e854d054e6b50537be23", null ],
       [ "num_async_suspended", "structenvironment__t.html#ae6cd8cb3dff2e26ba23817173ce0f97a", null ],
       [ "num_async_threads", "structenvironment__t.html#a24ea3797618fb26a92a6e0b847d9eeec", null ],
       [ "num_workers", "structenvironment__t.html#a3f4ab6b55dcc31b6c5cd9e082d65547d", null ],
@@ -89,6 +90,7 @@ var group__Internal =
     ] ],
     [ "lf_async_state_t", "structlf__async__state__t.html", [
       [ "action", "structlf__async__state__t.html#a4eae2701a9386162821032ba8b2c2f21", null ],
+      [ "deferred", "structlf__async__state__t.html#a6bafd50700fdcb6fdcacf8fb36920a63", null ],
       [ "event_pending", "structlf__async__state__t.html#a4594f71021b4905bcad168cf3d5458d9", null ],
       [ "function_done", "structlf__async__state__t.html#a823311d40c23c09f65b6713e56a7dacb", null ],
       [ "left_pool", "structlf__async__state__t.html#a10c506c763fe019f92e177e3876e1212", null ],
@@ -96,7 +98,6 @@ var group__Internal =
       [ "port", "structlf__async__state__t.html#a86497f87810659101aede30f8820cea5", null ],
       [ "reaction", "structlf__async__state__t.html#ae3800e46256fccbc2307676c21e8d56b", null ],
       [ "resume_tag", "structlf__async__state__t.html#a9ea87be668a3a13a9e94fbf4003b3775", null ],
-      [ "resume_waiting", "structlf__async__state__t.html#a2831c76a3bb45de371270624e93d9e3d", null ],
       [ "resumed", "structlf__async__state__t.html#a09ba17c05cab9a43257445336f3bac51", null ],
       [ "resumed_cond", "structlf__async__state__t.html#a0e0425d8a6c57a13c48be260bfb7eb68", null ],
       [ "self", "structlf__async__state__t.html#a11821c2c9e3c174238c8d9be0601dd8a", null ]
@@ -328,8 +329,10 @@ var group__Internal =
       [ "TOKEN_AND_VALUE_FREED", "group__Internal.html#ggabe23a36a87d2f0c076da417eb0114c7ea02ef194d373714ee3ac62226729e0cb0", null ]
     ] ],
     [ "_lf_advance_tag", "group__Internal.html#ga4659db62370c837baa55484134b3bfb7", null ],
+    [ "_lf_async_action_fired_locked", "group__Internal.html#ga98eeb738003460daccfec9f0e8ca143f", null ],
     [ "_lf_async_begin", "group__Internal.html#gad1555746f02c05e5879a2b287a252286", null ],
     [ "_lf_async_end", "group__Internal.html#ga803d7e3c9bce6be8dc2b4e143cc7b99a", null ],
+    [ "_lf_async_port_set", "group__Internal.html#ga2d665cabdf50baa651dd3c82d600360b", null ],
     [ "_lf_async_release_level_locked", "group__Internal.html#gab0a572763b22476af4a8a2211df60670", null ],
     [ "_lf_await", "group__Internal.html#ga0ca79eb4d371a5f9b4903951c629e7fe", null ],
     [ "_lf_await_resume", "group__Internal.html#gad31a7f8781c06daca869cc528c50615c", null ],
