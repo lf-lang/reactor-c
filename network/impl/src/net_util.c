@@ -240,6 +240,7 @@ void encode_tag(unsigned char* buffer, tag_t tag) {
   encode_uint32(tag.microstep, &(buffer[sizeof(int64_t)]));
 }
 
+#if !defined(PLATFORM_ZEPHYR)
 bool match_regex(const char* str, char* regex) {
   regex_t regex_compiled;
   regmatch_t group;
@@ -258,6 +259,8 @@ bool match_regex(const char* str, char* regex) {
   return valid;
 }
 
+#endif // !PLATFORM_ZEPHYR
+
 bool validate_port(char* port) {
   // magic number 6 since port range is [0, 65535]
   int port_len = strnlen(port, 6);
@@ -274,6 +277,7 @@ bool validate_port(char* port) {
   return port_number >= 0 && port_number <= 65535;
 }
 
+#if !defined(PLATFORM_ZEPHYR)
 bool validate_host(const char* host) {
   // regex taken from LFValidator.xtend
   char* ipv4_regex = "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])";
@@ -351,4 +355,12 @@ void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info)
   }
   regfree(&regex_compiled);
 }
-#endif
+#else  // PLATFORM_ZEPHYR
+// Zephyr has no POSIX regex and no command line, so RTI address parsing is unsupported.
+bool validate_host(const char* host) { return false; }
+
+bool validate_user(const char* user) { return false; }
+
+void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info) {}
+#endif // PLATFORM_ZEPHYR
+#endif // FEDERATED

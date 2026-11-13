@@ -506,6 +506,224 @@ PyObject* py_tracepoint_user_value(PyObject* self, PyObject* args) {
   return Py_None;
 }
 
+/**
+ * @brief Extract the C action from a Python action capsule.
+ *
+ * Sets a Python exception and returns NULL if `py_action` is not an action.
+ */
+static lf_action_base_t* py_action_pointer(PyObject* py_action, const char* api) {
+  if (!PyObject_TypeCheck(py_action, &py_action_capsule_t)) {
+    PyErr_Format(PyExc_TypeError, "%s requires an action.", api);
+    return NULL;
+  }
+  generic_action_capsule_struct* capsule = (generic_action_capsule_struct*)py_action;
+  if (capsule->action == NULL) {
+    PyErr_Format(PyExc_ValueError, "%s received an uninitialized action.", api);
+    return NULL;
+  }
+  lf_action_base_t* action = (lf_action_base_t*)PyCapsule_GetPointer(capsule->action, "action");
+  if (action == NULL && !PyErr_Occurred()) {
+    PyErr_Format(PyExc_ValueError, "%s received an invalid action.", api);
+  }
+  return action;
+}
+
+/**
+ * @brief Extract the C port from a Python port capsule.
+ *
+ * Sets a Python exception and returns NULL if `py_port` is not a single port.
+ * The capsule is returned through `capsule_out` so the caller can refresh it.
+ */
+static generic_port_instance_struct* py_port_pointer(PyObject* py_port, const char* api,
+                                                     generic_port_capsule_struct** capsule_out) {
+  if (!PyObject_TypeCheck(py_port, &py_port_capsule_t)) {
+    PyErr_Format(PyExc_TypeError, "%s requires a port.", api);
+    return NULL;
+  }
+  generic_port_capsule_struct* capsule = (generic_port_capsule_struct*)py_port;
+  if (capsule->width != -2) {
+    PyErr_Format(PyExc_TypeError, "%s requires a single port, not a multiport.", api);
+    return NULL;
+  }
+  if (capsule->port == NULL) {
+    PyErr_Format(PyExc_ValueError, "%s received an uninitialized port.", api);
+    return NULL;
+  }
+  generic_port_instance_struct* port = (generic_port_instance_struct*)PyCapsule_GetPointer(capsule->port, "port");
+  if (port == NULL && !PyErr_Occurred()) {
+    PyErr_Format(PyExc_ValueError, "%s received an invalid port.", api);
+    return NULL;
+  }
+  if (port != NULL && capsule_out != NULL) {
+    *capsule_out = capsule;
+  }
+  return port;
+}
+
+/**
+ * @brief Copy the C port's presence and value into the Python capsule.
+ *
+ * Port capsules snapshot `value` and `is_present` when a reaction starts.
+ * `lf_await()` returns at a later tag, so the capsule is updated from the C
+ * port, which the runtime has already updated in place. A present value is
+ * borrowed from the token, matching `convert_C_port_to_py()`. `Py_None`, which
+ * that function owns, is released when a real value replaces it.
+ */
+static void py_sync_port_capsule(generic_port_capsule_struct* capsule, generic_port_instance_struct* port) {
+  PyObject* new_value = (port->is_present && port->value != NULL) ? port->value : Py_None;
+  if (capsule->value == Py_None && new_value != Py_None) {
+    Py_DECREF(Py_None);
+  } else if (capsule->value != Py_None && new_value == Py_None) {
+    Py_INCREF(Py_None);
+  }
+  capsule->value = new_value;
+  capsule->is_present = port->is_present;
+}
+
+PyObject* py_lf_async(PyObject* self, PyObject* args) {
+  (void)self;
+  PyObject* py_reactor = NULL;
+  PyObject* py_action = NULL;
+  PyObject* function = NULL;
+  PyObject* func_args = NULL;
+  if (!PyArg_ParseTuple(args, "OOOO", &py_reactor, &py_action, &function, &func_args)) {
+    return NULL;
+  }
+  if (!PyCallable_Check(function)) {
+    PyErr_SetString(PyExc_TypeError, "lf_async() requires a Python callable.");
+    return NULL;
+  }
+  if (!PyTuple_Check(func_args)) {
+    PyErr_SetString(PyExc_TypeError, "lf_async() arguments must be a tuple.");
+    return NULL;
+  }
+  self_base_t* reactor = (self_base_t*)get_lf_self_pointer(py_reactor);
+  if (reactor == NULL) {
+    return NULL;
+  }
+  lf_action_base_t* action = py_action_pointer(py_action, "lf_async()");
+  if (action == NULL) {
+    return NULL;
+  }
+
+  // Release the GIL around the runtime calls. They can block until another
+  // worker runs a Python reaction, and that reaction cannot start while this
+  // thread holds the GIL. The callable itself is invoked with the GIL held;
+  // blocking Python calls such as time.sleep release it.
+  lf_async_state_t state;
+  PyThreadState* thread_state = PyEval_SaveThread();
+  _lf_async_begin(&state, reactor, action, NULL);
+  PyEval_RestoreThread(thread_state);
+
+  PyObject* result = PyObject_CallObject(function, func_args);
+
+  // Always rejoin, even when the callable raised, so the worker is not left
+  // out of the pool. The exception, if any, is restored with the GIL.
+  thread_state = PyEval_SaveThread();
+  _lf_async_end(&state);
+  PyEval_RestoreThread(thread_state);
+  return result;
+}
+
+PyObject* py_lf_async_resume(PyObject* self, PyObject* args) {
+  (void)self;
+  PyObject* py_action = NULL;
+  if (!PyArg_ParseTuple(args, "O", &py_action)) {
+    return NULL;
+  }
+  lf_action_base_t* action = py_action_pointer(py_action, "lf_async_resume()");
+  if (action == NULL) {
+    return NULL;
+  }
+  // May block until the suspended callable returns, which needs the GIL.
+  PyThreadState* thread_state = PyEval_SaveThread();
+  lf_async_resume(action);
+  PyEval_RestoreThread(thread_state);
+  Py_RETURN_NONE;
+}
+
+PyObject* py_lf_await(PyObject* self, PyObject* args) {
+  (void)self;
+  PyObject* py_reactor = NULL;
+  PyObject* py_port = NULL;
+  if (!PyArg_ParseTuple(args, "OO", &py_reactor, &py_port)) {
+    return NULL;
+  }
+  self_base_t* reactor = (self_base_t*)get_lf_self_pointer(py_reactor);
+  if (reactor == NULL) {
+    return NULL;
+  }
+  generic_port_capsule_struct* capsule = NULL;
+  generic_port_instance_struct* port = py_port_pointer(py_port, "lf_await()", &capsule);
+  if (port == NULL) {
+    return NULL;
+  }
+  PyThreadState* thread_state = PyEval_SaveThread();
+  _lf_await(reactor, port);
+  PyEval_RestoreThread(thread_state);
+  py_sync_port_capsule(capsule, port);
+  Py_RETURN_NONE;
+}
+
+PyObject* py_lf_await_resume(PyObject* self, PyObject* args) {
+  (void)self;
+  PyObject* py_reactor = NULL;
+  PyObject* py_port = NULL;
+  if (!PyArg_ParseTuple(args, "OO", &py_reactor, &py_port)) {
+    return NULL;
+  }
+  self_base_t* reactor = (self_base_t*)get_lf_self_pointer(py_reactor);
+  if (reactor == NULL) {
+    return NULL;
+  }
+  generic_port_instance_struct* port = py_port_pointer(py_port, "lf_await_resume()", NULL);
+  if (port == NULL) {
+    return NULL;
+  }
+  PyThreadState* thread_state = PyEval_SaveThread();
+  _lf_await_resume(reactor, port);
+  PyEval_RestoreThread(thread_state);
+  Py_RETURN_NONE;
+}
+
+PyObject* py_lf_add_worker_thread(PyObject* self, PyObject* args) {
+  (void)self;
+  PyObject* py_reactor = NULL;
+  if (!PyArg_ParseTuple(args, "O", &py_reactor)) {
+    return NULL;
+  }
+  self_base_t* reactor = (self_base_t*)get_lf_self_pointer(py_reactor);
+  if (reactor == NULL) {
+    return NULL;
+  }
+  PyThreadState* thread_state = PyEval_SaveThread();
+  int result = lf_add_worker_thread(reactor->environment);
+  PyEval_RestoreThread(thread_state);
+  return PyLong_FromLong(result);
+}
+
+PyObject* py_lf_added_worker_thread_count(PyObject* self, PyObject* args) {
+  (void)self;
+  PyObject* py_reactor = NULL;
+  if (!PyArg_ParseTuple(args, "O", &py_reactor)) {
+    return NULL;
+  }
+  self_base_t* reactor = (self_base_t*)get_lf_self_pointer(py_reactor);
+  if (reactor == NULL) {
+    return NULL;
+  }
+  PyThreadState* thread_state = PyEval_SaveThread();
+  int result = lf_added_worker_thread_count(reactor->environment);
+  PyEval_RestoreThread(thread_state);
+  return PyLong_FromLong(result);
+}
+
+PyObject* py_lf_thread_id(PyObject* self, PyObject* args) {
+  (void)self;
+  (void)args;
+  return PyLong_FromLong(lf_thread_id());
+}
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 
@@ -589,6 +807,17 @@ static PyMethodDef GEN_NAME(MODULE_NAME, _methods)[] = {
      "Trace a user-defined event (pass the handle from register_user_trace_event)"},
     {"tracepoint_user_value", (PyCFunction)py_tracepoint_user_value, METH_VARARGS,
      "Trace a user-defined event with a value (pass the handle from register_user_trace_event)"},
+    {"lf_async", (PyCFunction)py_lf_async, METH_VARARGS,
+     "Invoke a Python callable without blocking the rest of the program"},
+    {"lf_async_resume", (PyCFunction)py_lf_async_resume, METH_VARARGS,
+     "Resume the oldest lf_async() call waiting on an action"},
+    {"lf_await", (PyCFunction)py_lf_await, METH_VARARGS, "Suspend until lf_await_resume() is called on a port"},
+    {"lf_await_resume", (PyCFunction)py_lf_await_resume, METH_VARARGS,
+     "Resume every lf_await() call waiting on a port"},
+    {"lf_add_worker_thread", (PyCFunction)py_lf_add_worker_thread, METH_VARARGS, "Add a worker thread"},
+    {"lf_added_worker_thread_count", (PyCFunction)py_lf_added_worker_thread_count, METH_VARARGS,
+     "Return the number of worker threads added at runtime"},
+    {"lf_thread_id", (PyCFunction)py_lf_thread_id, METH_NOARGS, "Return the id of the calling worker thread"},
     {NULL, NULL, 0, NULL}};
 
 /**

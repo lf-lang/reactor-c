@@ -13,7 +13,6 @@
 #endif // NUMBER_OF_WORKERS
 
 #include <assert.h>
-
 #include "environment.h"
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
@@ -204,16 +203,11 @@ static void worker_assignments_free(lf_scheduler_t* scheduler) {
  */
 static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
-#ifndef FEDERATED
-  int index = lf_atomic_add_fetch(worker_assignments->num_reactions_by_worker + worker, -1);
-  if (index >= 0) {
-    return worker_assignments->reactions_by_worker[worker][index];
-  }
-  worker_assignments->num_reactions_by_worker[worker] = 0;
-  return NULL;
-#else
-  // This is necessary for federated programs because reactions may be inserted into the current
-  // level.
+  // Decrement the counter with a CAS loop so that it never goes below zero. Decrementing
+  // unconditionally and clamping back to zero afterward is racy: other workers steal from this
+  // worker's queue (and the owner reads its own counter in worker_assignments_get_or_lock), so they
+  // can observe a transient negative count. This also handles federated programs, where reactions
+  // may be inserted into the current level.
   int old_num_reactions;
   int current_num_reactions = worker_assignments->num_reactions_by_worker[worker];
   int index;
@@ -225,7 +219,6 @@ static reaction_t* get_reaction(lf_scheduler_t* scheduler, size_t worker) {
                 lf_atomic_val_compare_and_swap(worker_assignments->num_reactions_by_worker + worker, old_num_reactions,
                                                (index = old_num_reactions - 1))) != old_num_reactions);
   return worker_assignments->reactions_by_worker[worker][index];
-#endif
 }
 
 /**
@@ -349,7 +342,8 @@ static void worker_states_lock(lf_scheduler_t* scheduler, size_t worker) {
   worker_states_t* worker_states = scheduler->custom_data->worker_states;
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   LF_ASSERT(worker_states->num_loose_threads > 0, "Sched: No loose threads");
-  LF_ASSERT(worker_states->num_loose_threads <= worker_assignments->max_num_workers, "Sched: Too many loose threads");
+  LF_ASSERT(worker_states->num_loose_threads <= (int)worker_assignments->max_num_workers,
+            "Sched: Too many loose threads");
   size_t lt = worker_states->num_loose_threads;
   if (lt > 1 || !fast) { // FIXME: Lock should be partially optimized out even when !fast
     LF_MUTEX_LOCK(&scheduler->env->mutex);
@@ -382,7 +376,7 @@ static bool worker_states_finished_with_level_locked(lf_scheduler_t* scheduler, 
   // Why use an atomic operation when we are supposed to be "as good as locked"? Because I took a
   // shortcut, and the shortcut was imperfect.
   int ret = lf_atomic_add_fetch((int*)&worker_states->num_loose_threads, -1);
-  assert(ret <= worker_assignments->max_num_workers); // Check for underflow
+  assert(ret <= (int)worker_assignments->max_num_workers); // Check for underflow
   return (ret == 0);
 }
 
@@ -400,7 +394,8 @@ static void worker_states_sleep_and_unlock(lf_scheduler_t* scheduler, size_t wor
   worker_states_t* worker_states = scheduler->custom_data->worker_states;
   worker_assignments_t* worker_assignments = scheduler->custom_data->worker_assignments;
   LF_ASSERT(worker < worker_assignments->max_num_workers, "Sched: Invalid worker");
-  LF_ASSERT(worker_states->num_loose_threads <= worker_assignments->max_num_workers, "Sched: Too many loose threads");
+  LF_ASSERT(worker_states->num_loose_threads <= (int)worker_assignments->max_num_workers,
+            "Sched: Too many loose threads");
   if (!worker_states->mutex_held[worker]) {
     LF_MUTEX_LOCK(&scheduler->env->mutex);
   }
@@ -727,5 +722,24 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
   if (!lf_atomic_bool_compare_and_swap((int*)&reaction->status, inactive, queued))
     return;
   worker_assignments_put(scheduler, reaction);
+}
+
+int lf_sched_add_worker(lf_scheduler_t* scheduler) {
+  // This scheduler sizes its per-worker data structures (worker assignments,
+  // worker states, and data collection) for a fixed maximum number of workers
+  // at initialization, so workers cannot be added at runtime.
+  (void)scheduler;
+  return -1;
+}
+
+void lf_sched_cancel_add_worker(lf_scheduler_t* scheduler) {
+  // Never called because lf_sched_add_worker() always fails for this scheduler.
+  (void)scheduler;
+}
+
+int lf_sched_remove_worker(lf_scheduler_t* scheduler) {
+  // See lf_sched_add_worker().
+  (void)scheduler;
+  return -1;
 }
 #endif // defined SCHEDULER && SCHEDULER == SCHED_ADAPTIVE

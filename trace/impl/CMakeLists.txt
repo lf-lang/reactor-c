@@ -32,7 +32,7 @@ if(_LF_TRACE_IMPL_STANDALONE)
         include(${LF_ROOT}/logging/api/CMakeLists.txt)
     endif()
     if(NOT TARGET lf::version-api)
-        include(${LF_ROOT}/version/api/CMakeLists.txt)
+        include(${LF_ROOT}/lf_version/api/CMakeLists.txt)
     endif()
 endif()
 

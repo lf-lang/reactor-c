@@ -211,6 +211,142 @@
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 
 /**
+ * @brief Add a worker thread to the pool of worker threads of the environment invoking this reaction.
+ * @ingroup API
+ *
+ * See @ref lf_add_worker_thread(environment_t*) for details.
+ * @return 0 on success, or -1 if the thread could not be created or the runtime does not support it.
+ */
+#define lf_add_worker_thread() lf_add_worker_thread(self->base.environment)
+
+/**
+ * @brief Return the number of worker threads that have been added to the environment invoking this reaction.
+ * @ingroup API
+ *
+ * See @ref lf_added_worker_thread_count(environment_t*) for details.
+ */
+#define lf_added_worker_thread_count() lf_added_worker_thread_count(self->base.environment)
+
+/**
+ * @brief Invoke a function that may block for a long time without blocking the rest of the program.
+ * @ingroup API
+ *
+ * This macro invokes `func` with the given arguments and evaluates to the value returned by `func`,
+ * but it allows logical time to advance and other reactions to execute while `func` is running.
+ * The calling reaction must list `action` as an effect, so that the action is in scope, and the
+ * reactor must have a reaction triggered by that action whose body calls @ref lf_async_resume().
+ * That resuming reaction must be declared before the calling reaction:
+ * ```
+ * physical action awake
+ * reaction(awake) {= lf_async_resume(awake); =}
+ * reaction(startup) -> awake {= int result = lf_async(awake, slow, 50); ... =}
+ * ```
+ * A physical action is dedicated to the reaction that calls `lf_async()` on it. The same reaction
+ * may call it more than once, and a call from any other reaction is a fatal error.
+ * The `action` may instead be a logical action. A logical action is scheduled before `func` is
+ * invoked, at the current tag plus the action's minimum delay (or, if no minimum delay is given,
+ * one microstep later than the current tag). A physical action is scheduled when `func` returns,
+ * at the physical time then. Hence, the logical time after the `lf_async()` call will be determined
+ * by the physical time when `func` returns.
+ *
+ * Specifically:
+ *
+ * 1. The `func` is invoked with the given arguments, and its return value becomes the return value of the `lf_async()`
+ * call.
+ * 2. Any outputs set before a call to `lf_async()` are produced at the current tag. During the
+ *    call to `lf_async()`, the tag advances. Any outputs set after the call will be produced at the new tag.
+ * 3. If `action` is logical, when `lf_async()` returns, the tag will be at least one microstep later than
+ *    the current tag before the call to `lf_async()`. If a `min_delay` is given for the logical action, then
+ *    logical time will be at least that delay later.  Outputs set after the call to `lf_async()` are produced
+ *    at the new tag.
+ * 4. If `action` is physical, it is scheduled when `func` returns. The calling thread then blocks until the
+ *    reaction triggered by `action` calls `lf_async_resume(action)`. If `action` is logical and its delay
+ *    elapses before `func` returns, the triggered reaction calls `lf_async_resume()` first and blocks until
+ *    `func` returns. The worker executing it stays busy, so logical time does not advance past that tag.
+ *    The calling reaction then continues when the scheduler reaches that reaction's level, and a higher
+ *    level does not start until the continuation has completed. Several reactions may suspend on one
+ *    logical action; each continues at its own level. A second call for the same logical action and tag
+ *    does not schedule another event.
+ * 5. To ensure that other reactions can execute while `func` is running, if needed (see the caveats below),
+ *    a worker thread is automatically added to the pool of the environment (see @ref lf_add_worker_thread()).
+ *    Then the worker thread executing the reaction that calls `lf_async()` temporarily leaves the pool.
+ *    The remaining workers may therefore advance logical time and execute other reactions as if the
+ *    calling reaction had completed.
+ * 6. When `lf_async()` returns, the calling thread rejoins the pool.
+ *
+ * Caveats:
+ *
+ * - `func` must return a value; functions returning `void` are not supported.
+ * - The value of state variables is not preserved across `lf_async()` calls. Other reactions in this
+ *   reactor may have modified them before `lf_async()` returns.
+ * - The calling reaction counts as executing while it is suspended. If it is triggered again at an
+ *   intervening tag, that triggering is dropped. Other reactions of the same reactor can execute at
+ *   intervening tags, so state shared with them should be handled with care.
+ * - The reactions of the reactor are mutually exclusive. The first call creates a reactor mutex if
+ *   the reactor does not already have one. This is similar to reactors with watchdogs.
+ * - At least one worker thread is added to the pool, and it persists until the program terminates.
+ *   Additional worker thread will be added only if there are multiple simultaneous calls to `lf_async()`
+ *   pending completion.
+ * - If the program stops before the resuming reaction runs, the call returns at the stop tag after
+ *   the shutdown reactions have executed. Any further `lf_async()` call made by the resumed reaction
+ *   invokes `func` directly without suspending.
+ * - This requires the threaded runtime with the NP (default) or GEDF_NP scheduler, and a compiler that
+ *   supports statement expressions and `__typeof__` (GCC and Clang do).
+ *
+ * @param action The logical or physical action that resumes this call, as it is in scope in the
+ * calling reaction. The reaction must list it as an effect.
+ * @param func The function to invoke.
+ * @param ... The arguments to pass to `func`.
+ * @return The value returned by `func`.
+ */
+#define lf_async(action, func, ...)                                                                                    \
+  ({                                                                                                                   \
+    lf_async_state_t _lf_async_state;                                                                                  \
+    _lf_async_begin(&_lf_async_state, self, (action), NULL);                                                           \
+    __typeof__(func(__VA_ARGS__)) _lf_async_result = func(__VA_ARGS__);                                                \
+    _lf_async_end(&_lf_async_state);                                                                                   \
+    _lf_async_result;                                                                                                  \
+  })
+
+/**
+ * @brief Suspend this reaction until another reaction of this reactor calls `lf_await_resume()` on
+ * the specified input port.
+ * @ingroup API
+ *
+ * Like `lf_async()`, this allows logical time to advance and other reactions to execute while the
+ * calling reaction is suspended, and the remainder of the reaction executes at the tag at which
+ * `lf_await_resume(port)` is called. Unlike `lf_async()`, no function is invoked and no action is
+ * needed. The calling reaction must list `port` as a source so that it is in scope, and
+ * the resuming reaction must be declared before the calling reaction. For example, a reaction that
+ * sends a request and waits for the response to arrive on an input:
+ * ```
+ * reaction(response) {= lf_await_resume(response); =}
+ * reaction(startup) response -> request {=
+ *   lf_set(request, 42);
+ *   lf_await(response);
+ *   // Now at the tag at which the response arrived, and response->value is available.
+ * =}
+ * ```
+ * Several reactions of the reactor may be suspended on the same port at once; a single
+ * `lf_await_resume(port)` resumes all of them. If the program stops before `lf_await_resume()` is
+ * called, `lf_await()` returns at the stop tag so that the reaction can complete. See
+ * @ref _lf_await() for details, and see `lf_async()` for the caveats, which also apply.
+ *
+ * @param port An input port of this reactor, as it is in scope in the reaction body.
+ */
+#define lf_await(port) _lf_await(self, (port))
+
+/**
+ * @brief Resume every reaction of this reactor that is suspended in `lf_await()` on the specified port.
+ * @ingroup API
+ *
+ * If no reaction is suspended on the port, this does nothing. See @ref _lf_await_resume() for details.
+ *
+ * @param port The input port, as it is in scope in the reaction body.
+ */
+#define lf_await_resume(port) _lf_await_resume(self, (port))
+
+/**
  * @brief Return the instance name of the reactor.
  * @ingroup API
  *

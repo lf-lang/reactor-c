@@ -47,6 +47,12 @@ static void print_event(void* event) {
 static void environment_init_threaded(environment_t* env, int num_workers) {
 #if !defined(LF_SINGLE_THREADED)
   env->num_workers = num_workers;
+  env->num_added_workers = 0;
+  env->async_waiters = NULL;
+  env->async_deferred = NULL;
+  env->async_physical_owners = NULL;
+  env->num_async_threads = 0;
+  env->num_async_suspended = 0;
   env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
   LF_ASSERT_NON_NULL(env->thread_ids);
   env->barrier.requestors = 0;
@@ -137,6 +143,11 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
 static void environment_free_threaded(environment_t* env) {
 #if !defined(LF_SINGLE_THREADED)
   free(env->thread_ids);
+  while (env->async_physical_owners != NULL) {
+    lf_async_physical_owner_t* owner = env->async_physical_owners;
+    env->async_physical_owners = owner->next;
+    free(owner);
+  }
   lf_sched_free(env->scheduler);
 #else
   (void)env;

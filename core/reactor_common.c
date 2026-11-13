@@ -819,8 +819,9 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
  * @param env Environment in which we are executing.
  * @param reaction The reaction that has just executed.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution (for tracing).
+ * @param allow_inline If false, do not execute a downstream reaction in this thread.
  */
-void schedule_output_reactions(environment_t* env, reaction_t* reaction, int worker) {
+void schedule_output_reactions(environment_t* env, reaction_t* reaction, int worker, bool allow_inline) {
   assert(env != GLOBAL_ENVIRONMENT);
 
   // If the reaction produced outputs, put the resulting triggered
@@ -891,6 +892,12 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
       }
     }
   }
+  if (downstream_to_execute_now != NULL && !allow_inline) {
+    // lf_async() proceeds to its function call rather than executing downstream
+    // reactions in this thread. The reaction still runs at this tag.
+    _lf_trigger_reaction(env, downstream_to_execute_now, worker);
+    downstream_to_execute_now = NULL;
+  }
   if (downstream_to_execute_now != NULL) {
     LF_PRINT_LOG("Env %u: Worker %d: Optimizing and executing downstream reaction now: %s", env->id, worker,
                  downstream_to_execute_now->name);
@@ -927,7 +934,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
 
         // If the reaction produced outputs, put the resulting
         // triggered reactions into the queue or execute them directly if possible.
-        schedule_output_reactions(env, downstream_to_execute_now, worker);
+        schedule_output_reactions(env, downstream_to_execute_now, worker, allow_inline);
 
         // Reset the tardiness because it has been dealt with in the
         // STP handler
@@ -955,7 +962,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
 
           // If the reaction produced outputs, put the resulting
           // triggered reactions into the queue or execute them directly if possible.
-          schedule_output_reactions(env, downstream_to_execute_now, worker);
+          schedule_output_reactions(env, downstream_to_execute_now, worker, allow_inline);
         }
         tracepoint_reaction_ends(env, downstream_to_execute_now, worker);
       }
@@ -966,7 +973,7 @@ void schedule_output_reactions(environment_t* env, reaction_t* reaction, int wor
 
       // If the downstream_reaction produced outputs, put the resulting triggered
       // reactions into the queue (or execute them directly, if possible).
-      schedule_output_reactions(env, downstream_to_execute_now, worker);
+      schedule_output_reactions(env, downstream_to_execute_now, worker, allow_inline);
     }
 
     // Reset the is_STP_violated because it has been passed
